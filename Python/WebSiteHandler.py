@@ -1,27 +1,34 @@
-import http.server, socketserver , os
-import websockets, asyncio # pip install websockets
+import http.server, socketserver, os
+import websockets, asyncio
 import multiprocessing
 
-def RunServer():
-    WebDir = os.path.join(os.path.dirname(__file__), '../Site')
-    os.chdir(WebDir)
-    Handler = http.server.SimpleHTTPRequestHandler
-    with socketserver.TCPServer(("", 80), Handler) as httpd:
+HttpServerPort = 80
+SocketServerPort = 8765
+
+
+def run_server():
+    web_dir = os.path.join(os.path.dirname(__file__), '../Site')
+    os.chdir(web_dir)
+    handler = http.server.SimpleHTTPRequestHandler
+    with socketserver.TCPServer(("", HttpServerPort), handler) as httpd:
         print('server has started')
         httpd.serve_forever()
 
-async def WebSocketHandler(socket,path):
+
+async def web_socket_handler(socket, path):
     print('test')
     data = await socket.recv()
-    print (data)
+    print(data)
+
 
 def test():
     print('socket started')
-    socket = websockets.serve(WebSocketHandler,'ws://localhost',8765)
+    socket = websockets.serve(web_socket_handler, 'ws://localhost', SocketServerPort)
     print(socket)
 
-def RunAll():
-    HTMLProcess = multiprocessing.Process(target=RunServer)
-    SocketProcess = multiprocessing.Process(target= test)
-    HTMLProcess.start()
-    SocketProcess.start()
+
+def run_all():
+    html_process = multiprocessing.Process(target=run_server)
+    socket_process = multiprocessing.Process(target=test)
+    html_process.start()
+    socket_process.start()
