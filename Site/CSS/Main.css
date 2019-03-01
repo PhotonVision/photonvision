@@ -1,0 +1,16 @@
+body{
+    background: #212121;
+}
+.nav{
+    background: #343334;
+    box-shadow: 0 8px 5px #383838;
+}
+.nav > a{
+    color: whitesmoke;
+    font-family:Verdana;
+    font-weight: 500;
+
+}
+.nav > a:hover{
+    color: #17a2b8;
+}
