@@ -21,5 +21,11 @@
                 </div>
               </nav>
     <h1>fuck all of you web server is working like shit</h1>
+    <script>
+      var sock = new WebSocket("ws://localhost:8765");
+      while(true){
+        sock.send('test');
+      }
+    </script>
 </body>
 </html>
