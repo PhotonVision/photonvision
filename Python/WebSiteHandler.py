@@ -32,3 +32,4 @@ def run_all():
     socket_process = multiprocessing.Process(target=test)
     html_process.start()
     socket_process.start()
+
