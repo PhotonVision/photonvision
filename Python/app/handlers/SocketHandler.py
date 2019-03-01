@@ -1,12 +1,14 @@
 import tornado.websocket
 
+
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
-        print("WebSocke opend")
+        print("WebSocket opened")
 
     def on_message(self, message):
         print(message)
-        self.write_message("why the fuck did you send a messege")
+        self.write_message("why the fuck did you send a message")
+
     def on_close(self):
-        print("websocket closed")
+        print("WebSocket closed")
 
