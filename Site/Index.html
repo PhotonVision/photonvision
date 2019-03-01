@@ -15,5 +15,14 @@
         <a class="nav-link" href="#">3D</a>
     </nav>
 </div>
+<script>
+    var ws = new WebSocket("ws://localhost:8888/websocket");
+    ws.onopen = function () {
+            ws.send("hello");
+    }
+    ws.onmessage = function (ev) {
+        alert(ev.data);
+    }
+</script>
 </body>
 </html>

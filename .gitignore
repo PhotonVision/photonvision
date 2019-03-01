@@ -1,3 +1,9 @@
 Python/__pycache__/WebSiteHandler\.cpython-37\.pyc
 
 \.idea/
+
+*.pyc
+
+Python/app/__pycache__/
+
+Python/app/handlers/__pycache__/
