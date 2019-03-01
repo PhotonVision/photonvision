@@ -1,6 +1,6 @@
 import tornado.ioloop
 
-from app.Chameleon_Vision_App import ChameleonApplication
+from app.ChameleonVisionApp import ChameleonApplication
 from tornado.options import options
 
 if __name__ == "__main__":
