@@ -1,16 +1,41 @@
-body{
+body {
     background: #212121;
 }
-.nav{
+
+.nav {
     background: #343334;
-    box-shadow: 0 8px 5px #383838;
+    box-shadow: 0 3px 5px #343334;
 }
-.nav > a{
+
+.nav > a, .sidenav a {
     color: whitesmoke;
     font-family:Verdana;
     font-weight: 500;
 
 }
-.nav > a:hover{
+
+.nav > a:hover, .sidenav a:hover {
     color: #17a2b8;
+}
+
+.sidenav {
+    height: 100%;
+    width: 80px;
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+    background-color: #111;
+    overflow-x: hidden;
+    padding-top: 20px;
+    box-shadow: 3px 0px 5px #111;
+}
+
+.main {
+    margin-left: 80px;
+}
+
+#logo {
+    width: 100%;
+    height: 80px;
 }

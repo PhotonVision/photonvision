@@ -1,28 +1,23 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8">
-    <title>Chameleon Vision</title>
-    <link rel="stylesheet" type="text/css" href="CSS/bootstrap.min.css">
-    <link rel="stylesheet" type="text/css" href="CSS/Main.css" >
-</head>
-<body>
-<div>
-    <nav class="nav">
-        <a class="nav-link active" href="#">Input</a>
-        <a class="nav-link" href="#">Filter</a>
-        <a class="nav-link" href="#">Thresholds</a>
-        <a class="nav-link" href="#">3D</a>
-    </nav>
-</div>
-<script>
-    var ws = new WebSocket("ws://localhost:8888/websocket");
-    ws.onopen = function () {
-            ws.send("hello");
-    }
-    ws.onmessage = function (ev) {
-        alert(ev.data);
-    }
-</script>
-</body>
+    <head>
+        <meta charset="utf-8">
+        <title>Chameleon Vision</title>
+        <link rel="stylesheet" type="text/css" href="CSS/bootstrap.min.css">
+        <link rel="stylesheet" type="text/css" href="CSS/main.css" >
+    </head>
+    <body>
+        <div class="sidenav">
+            <a href="#"><img id="logo" src="assets/logo.png"></a>
+        </div>
+        <div class="main">
+            <nav class="nav">
+                <a class="nav-link active" href="#">Input</a>
+                <a class="nav-link" href="#">Filter</a>
+                <a class="nav-link" href="#">Thresholds</a>
+                <a class="nav-link" href="#">3D</a>
+            </nav>
+        </div>
+        <script src="JS/main.js"></script>
+    </body>
 </html>
