@@ -12,6 +12,7 @@ define("port", default=8888, help="run on the given port", type=int)
 class ChameleonApplication(tornado.web.Application):
     def __init__(self):
         handlers = [(r"/", MainHandler),
+                    (r"/(.*)", tornado.web.StaticFileHandler, {'path': os.path.join(os.path.dirname(__file__), "../../Site")}),
                     (r"/websocket", ChameleonWebSocket),
                     (r"/CSS/(.*)", tornado.web.StaticFileHandler, {'path': os.path.join(os.path.dirname(__file__), "../../Site/CSS")}),
                     (r"/JS/(.*)", tornado.web.StaticFileHandler, {'path': os.path.join(os.path.dirname(__file__), "../../Site/JS")}),

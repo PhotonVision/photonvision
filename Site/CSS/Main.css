@@ -20,7 +20,7 @@ body {
 
 .sidenav {
     height: 100%;
-    width: 80px;
+    width: 60px;
     position: fixed;
     z-index: 1;
     top: 0;
@@ -31,8 +31,21 @@ body {
     box-shadow: 3px 0px 5px #111;
 }
 
+.sidenav > ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidenav i {
+    display: inherit;
+    text-align: center;
+    color: white;
+    margin-top: 20px;
+}
+
 .main {
-    margin-left: 80px;
+    margin-left: 60px;
 }
 
 #logo {
