@@ -1,4 +1,4 @@
-let ws = new WebSocket("ws://localhost:8888/websocket");
+// let ws = new WebSocket("ws://localhost:8888/websocket");
 // ws.onopen = function () {
 //         ws.send("hello");
 // }
