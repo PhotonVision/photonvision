@@ -15,3 +15,13 @@
 
 //     document.getElementById(index).style.display = "block";
 // }
+
+let inputTab = new Vue({
+    el: "#input-tab",
+    data: {
+        sliders: [
+            { value: 25 },
+            { value: 30 }
+        ]
+      }
+})

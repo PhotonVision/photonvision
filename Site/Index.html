@@ -19,9 +19,11 @@
                 <a class="nav-link" href="#">Thresholds</a>
                 <a class="nav-link" href="#">3D</a>
             </nav>
-            <Slider v-model="value1"></Slider>
+            <div id="input-tab">
+                <Slider v-for="slider in sliders" v-model="slider.value"></Slider>
+            </div>
         </div>
-        <div id="app"></div>
+
     <script src="JS/vue.js"></script>
     <script src="JS/iview.min.js"></script>
     <script src="JS/main.js"></script>
