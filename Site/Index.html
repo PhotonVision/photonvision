@@ -4,28 +4,24 @@
         <meta charset="utf-8">
         <title>Chameleon Vision</title>
         <link rel="stylesheet" type="text/css" href="assets/icons/css/all.css">
-        <link rel="stylesheet" type="text/css" href="CSS/iview.css" >
-        <link rel="stylesheet" type="text/css" href="CSS/main.css" >
+        <link rel="stylesheet" type="text/css" href="css/iview.css" >
+        <link rel="stylesheet" type="text/css" href="css/main.css" >
     </head>
     <body>
-        <div class="sidenav">
-            <i class="fas fa-video fa-2x"></i>
-            <i class="fas fa-cog fa-2x"></i>
-        </div>
-        <div class="main">
-            <nav class="nav">
-                <a class="nav-link active" href="#">Input</a>
-                <a class="nav-link" href="#">Filter</a>
-                <a class="nav-link" href="#">Thresholds</a>
-                <a class="nav-link" href="#">3D</a>
-            </nav>
-            <div id="input-tab">
-                <Slider v-for="slider in sliders" v-model="slider.value"></Slider>
+        <div id="app">
+            <div class="sidenav">
+                <router-link to="/vision"><a><i class="fas fa-video fa-2x"></i></a></router-link>
+                <router-link to="/settings"><a><i class="fas fa-cog fa-2x"></i></a></router-link>
+            </div>
+            <div id="main">
+                <router-view></router-view>
             </div>
         </div>
 
-    <script src="JS/vue.js"></script>
-    <script src="JS/iview.min.js"></script>
-    <script src="JS/main.js"></script>
+        <script src="js/vue.js"></script>
+        <script src="js/vue-router.js"></script>
+        <script src="js/iview.min.js"></script>
+        <script src="js/main.js"></script>
+        <script src="js/routes.js"></script>
     </body>
 </html>

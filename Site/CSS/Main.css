@@ -8,18 +8,18 @@ body {
     padding: 5px;
 }
 
-.nav > a {
-    font-size: 1.8em;
-    margin-left: 15px
+.nav a {
+    font-size: 1.5em;
+    margin-left: 5px;
 }
 
-.nav > a, .sidenav > a {
+.nav a, .sidenav a {
     color: whitesmoke;
     font-family:Verdana;
     font-weight: 500;
 }
 
-.nav > a:hover, .sidenav > a:hover {
+.nav a:hover, .sidenav a:hover {
     color: #17a2b8;
 }
 
@@ -43,16 +43,6 @@ body {
     margin-top: 20px;
 }
 
-.main {
+#main {
     margin-left: 60px;
-}
-
-.main > div {
-    margin: 50px;
-    width: 30%;
-}
-
-#logo {
-    width: 100%;
-    height: 80px;
 }

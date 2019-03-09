@@ -14,8 +14,9 @@ class ChameleonApplication(tornado.web.Application):
         handlers = [(r"/", MainHandler),
                     (r"/(.*)", tornado.web.StaticFileHandler, {'path': os.path.join(os.path.dirname(__file__), "../../Site")}),
                     (r"/websocket", ChameleonWebSocket),
-                    (r"/CSS/(.*)", tornado.web.StaticFileHandler, {'path': os.path.join(os.path.dirname(__file__), "../../Site/CSS")}),
-                    (r"/JS/(.*)", tornado.web.StaticFileHandler, {'path': os.path.join(os.path.dirname(__file__), "../../Site/JS")}),
+                    (r"/css/(.*)", tornado.web.StaticFileHandler, {'path': os.path.join(os.path.dirname(__file__), "../../Site/css")}),
+                    (r"/js/(.*)", tornado.web.StaticFileHandler, {'path': os.path.join(os.path.dirname(__file__), "../../Site/js")}),
+                    (r"/templates/(.*)", tornado.web.StaticFileHandler, {'path': os.path.join(os.path.dirname(__file__), "../../Site/templates")}),
                     (r"/assets/(.*)", tornado.web.StaticFileHandler, {'path': os.path.join(os.path.dirname(__file__), "../../Site/assets")})]
 
         settings = dict(
