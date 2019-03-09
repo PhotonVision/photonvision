@@ -2,8 +2,8 @@ import tornado.web
 import tornado.websocket
 import os
 
-from handlers.MainHandler import MainHandler
-from handlers.SocketHandler import ChameleonWebSocket
+from .handlers.MainHandler import MainHandler
+from .handlers.SocketHandler import ChameleonWebSocket
 from tornado.options import define
 
 define("port", default=8888, help="run on the given port", type=int)
