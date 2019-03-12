@@ -9,6 +9,8 @@
   },
   "dependencies": {
     "iview": "^3.3.0",
+    "less": "^3.9.0",
+    "less-loader": "^4.1.0",
     "vue": "^2.6.6",
     "vue-router": "^3.0.2",
     "webpack": "^4.29.6"
