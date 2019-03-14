@@ -3,7 +3,7 @@
       <div class="layout">
         <Layout :style="{minHeight: '100vh'}">
             <Sider collapsible :collapsed-width="78" v-model="isCollapsed">
-                <Menu @on-open-change="onOpenChange" active-name="vision-input" :open-names="['vision']" theme="dark" width="auto" :class="menuitemClasses">
+                <Menu @on-open-change="onOpenChange" active-name="vision-input" :open-names="['vision']"  width="auto" :class="menuitemClasses">
                     <Submenu name="vision">
                       <template slot="title">
                         <Icon type="ios-videocam"/>
