@@ -3,14 +3,14 @@
       <div class="layout">
         <Layout :style="{minHeight: '100vh'}">
             <Sider collapsible :collapsed-width="78" v-model="isCollapsed">
-                <Menu @on-open-change="onOpenChange" active-name="vision-input" :open-names="['vision']"  width="auto" :class="menuitemClasses">
+                <Menu @on-open-change="onOpenChange" active-name="vision-input" :open-names="['vision']" theme="dark"  width="auto" :class="menuitemClasses">
                     <Submenu name="vision">
                       <template slot="title">
                         <Icon type="ios-videocam"/>
                         <span v-if="!isCollapsed">Vision</span>
                       </template>
-                      <MenuItem name="vision-input">Input</MenuItem>
-                      <MenuItem name="vision-3D">3D</MenuItem>
+                      <MenuItem name="vision-input" to="/input">Input</MenuItem>
+                      <MenuItem name="vision-3D" to="3d">3D</MenuItem>
                     </Submenu>
                     <Submenu name="settings">
                       <template slot="title">
@@ -22,6 +22,17 @@
                     </Submenu>
                 </Menu>
             </Sider>
+            <Layout id="main-layout">
+                <Content id="main-content">
+                  <router-view></router-view>
+                </Content>
+            </Layout>
+            <Layout id="camera">
+                <Content>
+                  Camera 1
+                  <img src="./assets/logo.png">
+                </Content>
+            </Layout>
         </Layout>
     </div>
   </div>
@@ -61,7 +72,12 @@ export default {
   color: #2c3e50;
 }
 
-.layout-con{
+#camera, #main-layout {
+  background-color: #272e35;
+  padding: 100px 30px 30px 30px;
+}
+
+.layout{
     height: 100%;
     width: 100%;
 }
