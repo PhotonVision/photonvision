@@ -74,7 +74,7 @@ export default {
 
 #camera, #main-layout {
   background-color: #272e35;
-  padding: 100px 30px 30px 30px;
+  /* padding: 100px 30px 30px 30px; */
 }
 
 .layout{
