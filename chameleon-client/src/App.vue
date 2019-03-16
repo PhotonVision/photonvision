@@ -1,43 +1,45 @@
-<template>
-  <div id="app">
-      <div class="layout">
-        <Layout :style="{minHeight: '100vh'}">
-            <Sider collapsible :collapsed-width="78" v-model="isCollapsed">
+  <template>
+  <div class="layout">
+      <Layout>
+        <Header>Header</Header>
+        <Layout>
+          <Sider collapsible :collapsed-width="78" v-model="isCollapsed">
                 <Menu @on-open-change="onOpenChange" active-name="vision-input" :open-names="['vision']" theme="dark"  width="auto" :class="menuitemClasses">
                     <Submenu name="vision">
                       <template slot="title">
                         <Icon type="ios-videocam"/>
                         <span v-if="!isCollapsed">Vision</span>
                       </template>
-                      <MenuItem name="vision-input" to="/input">Input</MenuItem>
-                      <MenuItem name="vision-3D" to="3d">3D</MenuItem>
+                      <MenuItem name="vision-input" to="/vision/input">Input</MenuItem>
+                      <MenuItem name="vision-3D" to="/vision/3d">3D</MenuItem>
                     </Submenu>
                     <Submenu name="settings">
                       <template slot="title">
                         <Icon type="ios-settings"/>
                         <span v-if="!isCollapsed">Settings</span>
                       </template>
-                      <MenuItem name="settings-color">Color</MenuItem>
-                      <MenuItem name="settings-brightness">Brightness</MenuItem>
+                      <MenuItem name="settings-color">System</MenuItem>
+                      <MenuItem name="settings-brightness">Cameras</MenuItem>
                     </Submenu>
                 </Menu>
             </Sider>
             <Layout id="main-layout">
-                <Content id="main-content">
-                  <router-view></router-view>
-                </Content>
-            </Layout>
-            <Layout id="camera">
-                <Content>
-                  Camera 1
+            <Content id="main-content">
+               <row type="flex" justify="start" align="middle" :gutter="5" >
+                <i-col span="12">
+                <router-view></router-view>
+                </i-col span="12">
+                <i-col>
                   <img src="./assets/logo.png">
+              </i-col>
+              </row>
                 </Content>
             </Layout>
         </Layout>
-    </div>
-  </div>
+        <!-- <Footer>Footer</Footer> -->
+    </Layout>
+</div>
 </template>
-
 <script>
 
 export default {
@@ -62,7 +64,6 @@ export default {
   }
 }
 </script>
-
 <style>
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;

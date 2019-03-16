@@ -27,8 +27,15 @@
     }
 </script>
 
-<style scoped>
+<style>
 h4 {
      color: #e6ebf1;
  }
+ .ivu-select-selection{
+     background-color: #2c3e50 !important;
+ }
+ .ivu-select-selected-value{
+     color: #fff !important;
+ }
+
 </style>

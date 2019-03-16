@@ -1,9 +1,10 @@
 
 <template>
     <div id="InputTab">
-        <chslider title="exposure"></chslider>
-        <chslider title="fuck off"></chslider>
-        <chselect title="tet" placeholdert="fuck of this took time"  :list="[1,2,23]" ></chselect>
+        <chslider class="spacing" title="exposure"></chslider>
+        <chslider class="spacing" title="Brightness"></chslider>
+        <chselect class="spacing" title="Orientation" placeholdert=""  :list="['Normal','Inverted']" ></chselect>
+        <chselect class="spacing" title="Resolution" placeholdert="" :list="['idk']"></chselect>
         </div>
 
 </template>
@@ -28,4 +29,8 @@ import chselect from './ch-select.vue'
 </script>
 
 <style scoped>
+.spacing{
+    margin-top: 20px;
+}
+
 </style>

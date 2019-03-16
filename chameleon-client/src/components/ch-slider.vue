@@ -8,7 +8,7 @@
                     <InputNumber v-model="value" size="small"></InputNumber>
                 </col>
                 <Col span="14">
-                    <Slider v-model="value"></Slider>
+                    <Slider style="margin-left:5px;" v-model="value"></Slider>
                 </col>
         </row>
 </template>
@@ -25,8 +25,14 @@
     }
 </script>
 
-<style scoped>
+<style >
 h4 {
      color: #e6ebf1;
  }
+ .ivu-input-number-input{
+     background-color: #2c3e50 !important;
+     color: #fff !important;
+ }
+ 
 </style>
+
