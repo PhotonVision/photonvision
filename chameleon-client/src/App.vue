@@ -18,13 +18,22 @@
                             <Icon type="ios-settings"/>
                             <span v-if="!isCollapsed">Settings</span>
                           </template>
-                          <MenuItem name="settings-color">System</MenuItem>
-                          <MenuItem name="settings-brightness">Cameras</MenuItem>
+                          <MenuItem name="settings-color" to="/settings/system">System</MenuItem>
+                          <MenuItem name="settings-brightness" to="/settings/camera">Cameras</MenuItem>
                         </Submenu>
                     </Menu>
                 </Sider>
                 <Layout id="main-layout">
-                  <Header id="main-header">Header</Header>
+                  <Header id="main-header" v-if="['input','threshold'].indexOf($route.name)>-1">
+                    <row type="flex" justify="start" align="middle" >
+                      <i-col span="12">
+                        <chselect title="select a camera" placeholdert="1" :list="[1,2,3]"></chselect>
+                      </i-col>
+                      <i-col span="12">
+                        <chselect title="select pipline" placeholdert="0" :list="[0,1,2,3,4,5,6,7,8,9]"></chselect>
+                      </i-col>
+                    </Row>
+                  </Header>
                   <Content id="main-content">
                     <row type="flex" justify="start" align="middle" :gutter="5" >
                         <i-col span="12">
@@ -43,11 +52,14 @@
 </template>
 
 <script>
-
   import Vue from "vue"
+  import chselect from './components/ch-select.vue'
 
   export default {
     name: 'app',
+    components:{
+      chselect
+    },
     data () {
       return {
           isCollapsed: false,
@@ -107,6 +119,7 @@
 
   #main-header {
     box-shadow: 0px 2px 10px black;
+    text-align: left
   }
 
   .layout{
