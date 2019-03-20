@@ -11,7 +11,7 @@
                             <span v-if="!isCollapsed">Vision</span>
                           </template>
                           <MenuItem name="vision-input" to="/vision/input">Input</MenuItem>
-                          <MenuItem name="vision-3D" to="/vision/3d">3D</MenuItem>
+                          <MenuItem name="vision-3D" to="/vision/3d">Threshold</MenuItem>
                         </Submenu>
                         <Submenu name="settings">
                           <template slot="title">
