@@ -1,7 +1,7 @@
 
 <template>
     <div id="InputTab">
-        <chslider class="spacing" title="exposure" v-model="val" v-on:change="test" ></chslider>
+        <chslider class="spacing" title="exposure" v-model="val" v-on:input="onChange"></chslider>
         <chslider class="spacing" title="Brightness"></chslider>
         <chselect class="spacing" title="Orientation" placeholdert=""  :list="['Normal','Inverted']" ></chselect>
         <chselect class="spacing" title="Resolution" placeholdert="" :list="['idk']"></chselect>
@@ -23,8 +23,8 @@ import chselect from './ch-select.vue'
             chslider,
             chselect
         },
-        methods:{
-            test(){
+        methods: {
+            onChange() {
                 console.log(val);
             }
         }
