@@ -8,7 +8,7 @@
                     <InputNumber v-model="value" size="small"></InputNumber>
                 </col>
                 <Col span="14">
-                    <Slider style="margin-left:5px;" v-model="value"></Slider>
+                    <Slider style="margin-left:5px;" v-model="value" @on-input="$emit('change',value)"></Slider>
                 </col>
         </row>
 </template>
@@ -16,11 +16,13 @@
 <script>
     export default {
         name: 'ch-slider',
-        props:['title'],
+        props:['title','value'],
         data() {
             return {
                 value :0
             }
+        },
+        methods:{
         }
     }
 </script>
