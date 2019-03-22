@@ -5,10 +5,10 @@
                     <h4>{{title}}</h4>
                 </Col>
                 <col span="2">
-                    <InputNumber v-model="val" size="small"></InputNumber>
+                    <InputNumber v-model="value" size="small"></InputNumber>
                 </col>
                 <Col span="14">
-                    <Slider style="margin-left:5px;" v-model="val" @on-input="handleInput"></Slider>
+                    <Slider style="margin-left:5px;" v-model="value" @on-input="handleInput"></Slider>
                 </col>
         </row>
 </template>
@@ -19,12 +19,12 @@
         props:['title','value'],
         data() {
             return {
-                val: this.value
+                content:this.value
             }
         },
         methods: {
             handleInput() {
-                this.$emit('input',this.val);
+                this.$emit('input',this.value);
             }
         }
     }
