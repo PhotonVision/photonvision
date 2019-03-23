@@ -11,7 +11,8 @@ define("port", default=8888, help="run on the given port", type=int)
 
 class ChameleonApplication(tornado.web.Application):
     def __init__(self):
-        handlers = [(r"/", MainHandler),
+        handlers = [
+            # (r"/", MainHandler),
                     (r"/websocket", ChameleonWebSocket)]
 
         settings = dict(

@@ -26,7 +26,9 @@ import chselect from './ch-select.vue'
         },
         methods: {
             onChange(i) {
-                console.log(i);
+                // console.log(i);
+                this.$socket.send(JSON.stringify(i));
+                
             }
         }
     }

@@ -54,7 +54,7 @@
 <script>
   import Vue from "vue"
   import chselect from './components/ch-select.vue'
-
+  
   export default {
     name: 'app',
     components:{
@@ -94,7 +94,10 @@
               this.isCollapsed ? 'collapsed-menu' : ''
           ]
       }
-    }
+    },
+    created () {
+    // this.$options.sockets.onmessage = (data) => console.log(data.data); // console writes recived data
+  }
   }
 
 </script>

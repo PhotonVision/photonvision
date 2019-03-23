@@ -24,7 +24,7 @@
         },
         methods: {
             handleInput() {
-                this.$emit('input',this.value);
+                this.$emit('input',{[this.title]:this.value});
             }
         }
     }
