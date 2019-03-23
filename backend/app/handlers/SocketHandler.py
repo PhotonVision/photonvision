@@ -1,6 +1,5 @@
 import tornado.websocket
 
-
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
         print("WebSocket opened")
@@ -11,4 +10,3 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
 
     def on_close(self):
         print("WebSocket closed")
-

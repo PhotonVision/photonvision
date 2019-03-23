@@ -70,6 +70,7 @@
     methods: { 
       onOpenChange(data) {
         this.isCollapsed = false;
+        console.info('App currentRoute:', this.$router.currentRoute);
       },
       onCollapse() {
 

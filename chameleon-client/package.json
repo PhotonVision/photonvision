@@ -10,6 +10,7 @@
   "dependencies": {
     "iview": "^3.3.0",
     "vue": "^2.6.6",
+    "vue-native-websocket": "^2.0.12",
     "vue-router": "^3.0.2",
     "webpack": "^4.29.6"
   },
