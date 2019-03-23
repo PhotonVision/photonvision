@@ -1,14 +1,14 @@
 
 <template>
-            <row type="flex" justify="start" align="middle" :gutter="10" >
-                <Col span="3">
-                    <h4>{{title}}</h4>
+            <row type="flex" justify="start" align="middle" :gutter="1" >
+                <Col>
+                    <h4 style="width:100%">{{title}}</h4>
                 </Col>
-                <col span="2">
-                    <InputNumber v-model="value" size="small"></InputNumber>
+                <col >
+                    <InputNumber  style="margin-left: 5px ;width:10%;"  v-model="value" size="small"></InputNumber>
                 </col>
                 <Col span="14">
-                    <Slider style="margin-left:5px;" v-model="value" @on-input="handleInput"></Slider>
+                    <Slider style="margin-left:10px;" v-model="value" @on-input="handleInput"></Slider>
                 </col>
         </row>
 </template>
@@ -38,6 +38,5 @@ h4 {
      background-color: #2c3e50 !important;
      color: #fff !important;
  }
- 
 </style>
 
