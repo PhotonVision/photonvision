@@ -5,7 +5,7 @@
             <h4>{{title}}</h4>
         </Col>
         <col span="4">
-        <InputNumber :min="0" v-model="value" size="small"></InputNumber>
+        <InputNumber :min="0" v-model="value" size="small" @on-change="handleInput"></InputNumber>
         </col>
     </row>
     </div>
@@ -17,7 +17,12 @@
         props:['title'],
         data() {
             return {
-                value
+                content:this.value
+            }
+        },
+        methods: {
+            handleInput() {
+                this.$emit('input',this.value);
             }
         }
     }

@@ -5,7 +5,7 @@
              
                 </Col>
                 <col span="12">
-                    <i-select v-model="value" size="small" style="width:400px" v-bind:placeholder="placeholdert">
+                    <i-select v-model="value" size="small" style="width:400px" v-bind:placeholder="placeholdert" @on-change="handleInput">
                         <i-option v-for="item in list" :value="item" :key="item">{{item}}</i-option>
                     </i-select>
                 </col>
@@ -22,6 +22,12 @@
         },
         data() {
             return {
+                content:this.value
+            }
+        },
+        methods: {
+            handleInput() {
+                this.$emit('input',this.value);
             }
         }
     }

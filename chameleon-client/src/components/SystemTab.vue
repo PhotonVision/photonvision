@@ -1,6 +1,6 @@
 <template>
     <div id="SystemTab">
-        <chInputNumber title="Enter Team Number"></chInputNumber>
+        <chInputNumber title="Enter Team Number" v-model="TeamVal" v-on:input="onChange(TeamVal)"></chInputNumber>
     </div>
 </template>
 
@@ -10,11 +10,16 @@
         name: 'SystemTab',
         data() {
             return {
-                value
+                TeamVal
             }
         },
         components:{
             chInputNumber
+        },
+        methods: {
+            onChange(i) {
+                console.log(i);
+            }
         }
     }
 </script>
