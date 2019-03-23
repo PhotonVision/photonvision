@@ -5,21 +5,21 @@
             <Layout>
               <Sider id="main-nav" @on-collapse="onCollapse"  collapsible :collapsed-width="78" v-model="isCollapsed">
                     <Menu ref="menu" @on-open-change="onOpenChange" :active-name="activeName" :open-names="openedNames" theme="dark"  width="auto" :class="menuitemClasses">
-                        <Submenu name="vision">
+                        <Submenu name="/vision">
                           <template slot="title">
                             <Icon type="ios-videocam"/>
                             <span v-if="!isCollapsed">Vision</span>
                           </template>
-                          <MenuItem name="vision-input" to="/vision/input">Input</MenuItem>
-                          <MenuItem name="vision-3D" to="/vision/3d">Threshold</MenuItem>
+                          <MenuItem name="/vision/input" to="/vision/input">Input</MenuItem>
+                          <MenuItem name="/vision/3d" to="/vision/3d">Threshold</MenuItem>
                         </Submenu>
-                        <Submenu name="settings">
+                        <Submenu name="/settings">
                           <template slot="title">
                             <Icon type="ios-settings"/>
                             <span v-if="!isCollapsed">Settings</span>
                           </template>
-                          <MenuItem name="settings-color" to="/settings/system">System</MenuItem>
-                          <MenuItem name="settings-brightness" to="/settings/camera">Cameras</MenuItem>
+                          <MenuItem name="/settings/color" to="/settings/system">System</MenuItem>
+                          <MenuItem name="/settings/brightness" to="/settings/camera">Cameras</MenuItem>
                         </Submenu>
                     </Menu>
                 </Sider>
@@ -63,8 +63,8 @@
     data () {
       return {
           isCollapsed: false,
-          openedNames: ['vision'],
-          activeName: "vision-input"
+          openedNames: ["/" + this.$route.path.split("/")[1]],
+          activeName: this.$route.path
       };
     },
     methods: { 
