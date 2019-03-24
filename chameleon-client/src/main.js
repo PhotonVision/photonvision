@@ -4,10 +4,11 @@ import VueRouter from 'vue-router'
 import iView from 'iview';
 import router from "./routes";
 import '../theme/index.less';
-import VueNativeSock from 'vue-native-websocket'
+import VueNativeSock from 'vue-native-websocket';
+import locale from 'iview/dist/locale/en-US';
 
 Vue.use(VueRouter);
-Vue.use(iView);
+Vue.use(iView , { locale });
 Vue.use(VueNativeSock,'ws://'+location.hostname+':8888/websocket');
 Vue.config.productionTip = false
 

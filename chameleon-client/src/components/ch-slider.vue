@@ -32,13 +32,11 @@
 
 <style>
 h4 {
-    color: #e6ebf1;
-    text-align: left;
-}
-.ivu-input-number-input{
-    background-color: #2c3e50 !important;
-    color: #fff !important;
-}
-
+     color: #e6ebf1;
+ }
+ /* .ivu-input-number-input{
+     background-color: #2c3e50 !important;
+     color: #fff !important;
+ } */
 </style>
 

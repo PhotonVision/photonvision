@@ -11,7 +11,7 @@
                             <span v-if="!isCollapsed">Vision</span>
                           </template>
                           <MenuItem name="/vision/input" to="/vision/input">Input</MenuItem>
-                          <MenuItem name="/vision/3d" to="/vision/3d">Threshold</MenuItem>
+                          <MenuItem name="/vision/threshold" to="/vision/threshold">Threshold</MenuItem>
                         </Submenu>
                         <Submenu name="/settings">
                           <template slot="title">
@@ -96,7 +96,7 @@
       }
     },
     created () {
-    // this.$options.sockets.onmessage = (data) => console.log(data.data); // console writes recived data
+    this.$options.sockets.onmessage = (data) => console.log(data.data); // console writes recived data
   }
   }
 
