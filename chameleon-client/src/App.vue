@@ -24,24 +24,24 @@
                     </Menu>
                 </Sider>
                 <Layout id="main-layout">
-                  <Header id="main-header" v-if="['input','threshold'].indexOf($route.name)>-1">
-                    <row type="flex" justify="start" align="middle" >
-                      <i-col span="12">
-                        <chselect title="select a camera" placeholdert="1" :list="[1,2,3]"></chselect>
-                      </i-col>
-                      <i-col span="12">
-                        <chselect title="select pipline" placeholdert="0" :list="[0,1,2,3,4,5,6,7,8,9]"></chselect>
-                      </i-col>
+                  <Header id="main-header" v-if="$route.path.includes('vision')">
+                    <Row type="flex" justify="start" align="middle" :gutter="10">
+                      <Col span="12">
+                        <chselect title="select a camera" :list="[1,2,3]"></chselect>
+                      </Col>
+                      <Col span="12">
+                        <chselect title="select pipline" :list="[0,1,2,3,4,5,6,7,8,9]"></chselect>
+                      </Col>
                     </Row>
                   </Header>
                   <Content id="main-content">
                     <row type="flex" justify="start" align="middle" :gutter="5" >
-                        <i-col span="12">
+                        <Col span="12">
                         <router-view></router-view>
-                        </i-col>
-                        <i-col span="12">
+                        </Col>
+                        <Colspan="12">
                           <img src="./assets/logo.png">
-                      </i-col>
+                      </Col>
                       </row>
                     </Content>
                 </Layout>
@@ -124,6 +124,10 @@
   #main-header {
     box-shadow: 0px 2px 10px black;
     text-align: left
+  }
+
+  #main-content {
+    padding: 30px
   }
 
   .layout{
