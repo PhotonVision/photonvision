@@ -5,10 +5,13 @@
                     <h4 style="width:100%">{{title}}</h4>
                 </Col>
                 <col >
-                    <InputNumber  style="margin-left: 5px ;width:10%;"  v-model="value" size="small"></InputNumber>
+                    <InputNumber  style="margin-left: 5px ;width:10%;"  v-model="value[0]" size="small"></InputNumber>
                 </col>
                 <Col span="14">
-                    <Slider style="margin-left:10px;" v-model="value" @on-input="handleInput"></Slider>
+                    <Slider range style="margin-left:10px;" v-model="value" @on-input="handleInput"></Slider>
+                </col>
+                <col >
+                    <InputNumber  style="margin-left: 5px ;width:10%;"  v-model="value[1]" size="small"></InputNumber>
                 </col>
         </row>
 </template>

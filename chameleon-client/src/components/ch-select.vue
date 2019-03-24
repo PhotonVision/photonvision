@@ -4,7 +4,7 @@
                     <h4 style="width:100% ; margin-right:10px;">{{title}}</h4>
                 </Col>
                 <col>
-                    <i-select v-model="value" size="small" style="width:40%" v-bind:placeholder="placeholdert" @on-change="handleInput">
+                    <i-select v-model="value" size="small" style="width:40%" @on-change="handleInput">
                         <i-option v-for="item in list" :value="item" :key="item">{{item}}</i-option>
                     </i-select>
                 </col>
@@ -16,7 +16,6 @@
         name: 'ch-select',
         props:[
             'title',
-            'placeholdert',
             'list'
         ],
         data() {
@@ -36,11 +35,11 @@
 h4 {
      color: #e6ebf1;
  }
- .ivu-select-selection{
+ /* .ivu-select-selection{
      background-color: #2c3e50 !important;
- }
- .ivu-select-selected-value{
+ } */
+ /* .ivu-select-selected-value{
      color: #fff !important;
- }
+ } */
 
 </style>

@@ -1,20 +1,27 @@
 <template>
-    <div id="3D">
-        <Slider v-for="slider in sliders" v-bind:key="slider.id" v-model="slider.value"></Slider>
+    <div id="Threshold">
+        <chrange title="Hue" :value="[0,10]"></chrange>
+        <chrange title="Saturation" :value="[0,10]"></chrange>
+        <chrange title="Value" :value="[0,10]"></chrange>
     </div>
 </template>
     
 <script> 
+import chrange from './ch-range.vue'
+import chselect from './ch-select.vue'
     export default {
-        name: '3D',
+        name: 'Threshold',
         data () {
             return {
-                 sliders: [
-                    { id: 'lightning', value: 25 }
-                ]
             }
+        },
+        components:{
+            chrange,
+            chselect
         }
+
     }
+
 </script>
 
 <style scoped>
