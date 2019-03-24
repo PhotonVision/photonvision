@@ -12,6 +12,7 @@
                           </template>
                           <MenuItem name="/vision/input" to="/vision/input">Input</MenuItem>
                           <MenuItem name="/vision/threshold" to="/vision/threshold">Threshold</MenuItem>
+                          <MenuItem name="/vision/contours" to="/vision/contours">Contours</MenuItem>
                         </Submenu>
                         <Submenu name="/settings">
                           <template slot="title">
@@ -39,7 +40,6 @@
                         <Col span="12">
                         <router-view></router-view>
                         </Col>
-                        <Colspan="12">
                           <img src="./assets/logo.png">
                       </Col>
                       </row>

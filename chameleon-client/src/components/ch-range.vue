@@ -1,18 +1,18 @@
 
 <template>
-            <row type="flex" justify="start" align="middle" :gutter="1" >
-                <Col>
-                    <h4 style="width:100%">{{title}}</h4>
-                </Col>
-                <col >
-                    <InputNumber  style="margin-left: 5px ;width:10%;"  v-model="value[0]" size="small"></InputNumber>
-                </col>
-                <Col span="14">
-                    <Slider range style="margin-left:10px;" v-model="value" @on-input="handleInput"></Slider>
-                </col>
-                <col >
-                    <InputNumber  style="margin-left: 5px ;width:10%;"  v-model="value[1]" size="small"></InputNumber>
-                </col>
+        <row type="flex" justify="start" align="middle" :gutter="1">
+            <Col span="4">
+                <h4>{{title.charAt(0).toUpperCase() + title.slice(1)}} :</h4>
+            </Col>
+            <Col span="4" style="text-align: left">
+                <InputNumber style="align-self: flex-start;" v-model="value[0]" size="small"></InputNumber>
+            </Col>
+            <Col span="10">
+                <Slider range v-model="value" @on-input="handleInput"></Slider>
+            </Col>
+            <Col span="4" style="text-align: right">
+                <InputNumber style="align-self: flex-end;" v-model="value[1]" size="small"></InputNumber>
+            </Col>
         </row>
 </template>
 
@@ -33,7 +33,7 @@
     }
 </script>
 
-<style >
+<style>
 h4 {
      color: #e6ebf1;
  }

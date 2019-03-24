@@ -1,8 +1,8 @@
 <template>
     <div id="Threshold">
-        <chrange title="Hue" :value="[0,10]"></chrange>
-        <chrange title="Saturation" :value="[0,10]"></chrange>
-        <chrange title="Value" :value="[0,10]"></chrange>
+        <chrange class="spacing" title="Hue" :value="[0,10]"></chrange>
+        <chrange class="spacing" title="Saturation" :value="[0,10]"></chrange>
+        <chrange class="spacing" title="Value" :value="[0,10]"></chrange>
     </div>
 </template>
     
@@ -25,5 +25,7 @@ import chselect from './ch-select.vue'
 </script>
 
 <style scoped>
- 
+.spacing{
+    margin-top: 20px;
+}
 </style>
