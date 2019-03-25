@@ -19,32 +19,12 @@
                             <Icon type="ios-settings"/>
                             <span v-if="!isCollapsed">Settings</span>
                           </template>
-                          <MenuItem name="/settings/color" to="/settings/system">System</MenuItem>
-                          <MenuItem name="/settings/brightness" to="/settings/camera">Cameras</MenuItem>
+                          <MenuItem name="/settings/system" to="/settings/system">System</MenuItem>
+                          <MenuItem name="/settings/camera" to="/settings/camera">Cameras</MenuItem>
                         </Submenu>
                     </Menu>
                 </Sider>
-                <Layout id="main-layout">
-                  <Header id="main-header" v-if="$route.path.includes('vision')">
-                    <Row type="flex" justify="start" align="middle" :gutter="10">
-                      <Col span="12">
-                        <chselect title="select a camera" :list="[1,2,3]"></chselect>
-                      </Col>
-                      <Col span="12">
-                        <chselect title="select pipline" :list="[0,1,2,3,4,5,6,7,8,9]"></chselect>
-                      </Col>
-                    </Row>
-                  </Header>
-                  <Content id="main-content">
-                    <row type="flex" justify="start" align="middle" :gutter="5" >
-                        <Col span="12">
-                        <router-view></router-view>
-                        </Col>
-                          <img src="./assets/logo.png">
-                      </Col>
-                      </row>
-                    </Content>
-                </Layout>
+                <router-view></router-view>
             </Layout>
         </Layout>
     </div>
@@ -114,7 +94,6 @@
 
   #camera, #main-layout {
     background-color: #272e35;
-    /* padding: 100px 30px 30px 30px; */
   }
 
   #main-nav {

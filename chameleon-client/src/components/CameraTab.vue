@@ -1,5 +1,5 @@
 <template>
-    <h4>camera</h4>
+    <h4>Camera</h4>
 </template>
 
 <script>
