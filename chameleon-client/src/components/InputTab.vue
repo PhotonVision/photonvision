@@ -1,10 +1,10 @@
 
 <template>
     <div id="InputTab">
-        <chslider class="spacing" title="exposure" v-model="expval" v-on:input="onChange(expval)"></chslider>
-        <chslider class="spacing" title="Brightness"></chslider>
-        <chselect class="spacing" title="Orientation" :list="['Normal','Inverted']" v-model="OrientationVal" v-on:input="onChange(OrientationVal)" ></chselect>
-        <chselect class="spacing" title="Resolution" :list="['idk']"></chselect>
+        <chslider class="spacing" title="exposure" :parentData="values.exposure" @input="values.exposure = $event"></chslider>
+        <chslider class="spacing" title="Brightness" :parentData="values.brightness" @input="values.brightness = $event"></chslider>
+        <chselect class="spacing" title="Orientation" :list="['Normal','Inverted']" :parentData="values.orientation" @input="values.orientation = $event" ></chselect>
+        <chselect class="spacing" title="Resolution" :list="['idk']" :parentData="values.resolution" @input="values.resolution = $event" ></chselect>
         </div>
 
 </template>
@@ -16,8 +16,12 @@ import chselect from './ch-select.vue'
         name: 'InputTab',
         data () {
             return{
-                expval,
-                OrientationVal
+                values:{
+                    exposure:0,
+                    brightness:0,
+                    orientation:0,
+                    resolution:0
+                }
             }
         },
         components: {
@@ -26,9 +30,7 @@ import chselect from './ch-select.vue'
         },
         methods: {
             onChange(i) {
-                // console.log(i);
-                this.$socket.send(JSON.stringify(i));
-                
+                console.log(i);
             }
         }
     }

@@ -16,7 +16,8 @@
         name: 'ch-select',
         props:[
             'title',
-            'list'
+            'list',
+            'parentData'
         ],
         data() {
             return {
@@ -25,8 +26,12 @@
         },
         methods: {
             handleInput() {
-                this.$emit('input',{[this.title]:this.value});
+                this.$emit('input',this.value);
+                this.$socket.sendObj({[this.title]:this.value});
             }
+        },
+        beforeMount () {
+            this.value = this.parentData
         }
     }
 </script>
