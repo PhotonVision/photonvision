@@ -16,8 +16,8 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         print("WebSocket opened")
 
     def on_message(self, message):
-        print(json.loads(message))
-        # print(message)
+        # print(json.loads(message))
+        print(message)
         self.write_message(message)
 
     def on_close(self):

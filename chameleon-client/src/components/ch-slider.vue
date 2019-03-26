@@ -16,16 +16,20 @@
 <script>
     export default {
         name: 'ch-slider',
-        props:['title','value'],
+        props:['title','parentData'],
         data() {
             return {
-                content:this.value
+                value:0,
             }
         },
         methods: {
             handleInput() {
-                this.$emit('input',{[this.title]:this.value});
+                this.$emit('input',this.value);
+                this.$socket.sendObj({[this.title]:this.value});
             }
+        },
+        beforeMount () {
+            this.value = this.parentData
         }
     }
 </script>

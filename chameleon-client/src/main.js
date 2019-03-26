@@ -9,7 +9,7 @@ import locale from 'iview/dist/locale/en-US';
 
 Vue.use(VueRouter);
 Vue.use(iView , { locale });
-Vue.use(VueNativeSock,'ws://'+location.hostname+':8888/websocket');
+Vue.use(VueNativeSock,'ws://'+location.hostname+':8888/websocket',{format:'JSON'});
 Vue.config.productionTip = false
 
 new Vue({
