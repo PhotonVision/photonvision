@@ -53,14 +53,12 @@
         console.info('App currentRoute:', this.$router.currentRoute);
       },
       onCollapse() {
-
         if (this.isCollapsed) {
           this.openedNames = [''];
         } else {
           this.activeName = this.$refs.menu.currentActiveName;
           this.openedNames = ["/" + this.activeName.split("/")[1]];
         }
-
         this.$nextTick(function() {
           this.$refs.menu.updateOpened();
           this.$refs.menu.updateActiveName();
@@ -76,12 +74,12 @@
       }
     },
     created () {
-    this.$options.sockets.onmessage = (data) => console.log(data.data); // console writes recived data
+    this.$options.sockets.onmessage = (data) => {
+      console.log(data.data);
+      } // console writes recived data
   }
   }
-
 </script>
-
 <style>
 
   #app {

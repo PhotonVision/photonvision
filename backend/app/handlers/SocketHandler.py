@@ -1,6 +1,6 @@
 import tornado.websocket
 import json
-from classes.ChameleonCamera import ChameleonCamera
+from app.classes.ChameleonCamera import ChameleonCamera
 
 
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):

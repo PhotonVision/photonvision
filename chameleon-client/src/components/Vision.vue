@@ -35,10 +35,10 @@
             return {
             }
         },
-        methods: {}
+        methods: {
+            
+        }
     }
 </script>
-
 <style scoped>
-
 </style>

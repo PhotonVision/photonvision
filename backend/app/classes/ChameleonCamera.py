@@ -1,4 +1,4 @@
-from ChameleonPipeLine import ChameleonPipeline
+from .ChameleonPipeLine import ChameleonPipeline
 
 
 class ChameleonCamera:
