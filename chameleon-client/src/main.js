@@ -6,6 +6,7 @@ import router from "./routes";
 import '../theme/index.less';
 import VueNativeSock from 'vue-native-websocket';
 import locale from 'iview/dist/locale/en-US';
+import {store} from './store'
 
 Vue.use(VueRouter);
 Vue.use(iView , { locale });
@@ -14,5 +15,6 @@ Vue.config.productionTip = false
 
 new Vue({
   router,
+  store,
   render: h => h(App)
 }).$mount('#app')

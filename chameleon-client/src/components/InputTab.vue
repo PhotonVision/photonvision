@@ -1,12 +1,11 @@
 
 <template>
     <div id="InputTab">
-        <chslider class="spacing" title="exposure" :parentData="values.exposure" @input="values.exposure = $event"></chslider>
-        <chslider class="spacing" title="Brightness" :parentData="values.brightness" @input="values.brightness = $event"></chslider>
-        <chselect class="spacing" title="Orientation" :list="['Normal','Inverted']" :parentData="values.orientation" @input="values.orientation = $event" ></chselect>
-        <chselect class="spacing" title="Resolution" :list="['idk']" :parentData="values.resolution" @input="values.resolution = $event" ></chselect>
+        <chslider class="spacing" title="exposure" :parentData="$store.getters.exposure" @input="onChange('exposure',$event)"></chslider>
+        <chslider class="spacing" title="Brightness" :parentData="$store.getters.brightness" @input="onChange('brightness',$event)"></chslider>
+        <chselect class="spacing" title="Orientation" :list="['Normal','Inverted']" :parentData="$store.getters.orientation" @input="onChange('orientation',$event)"></chselect>
+        <chselect class="spacing" title="Resolution" :list="['idk']" :parentData="$store.getters.resolution" @input="onChange('resolution',$event)"></chselect>
         </div>
-
 </template>
     
 <script> 
@@ -16,12 +15,6 @@ import chselect from './ch-select.vue'
         name: 'InputTab',
         data () {
             return{
-                values:{
-                    exposure:0,
-                    brightness:0,
-                    orientation:0,
-                    resolution:0
-                }
             }
         },
         components: {
@@ -29,17 +22,16 @@ import chselect from './ch-select.vue'
             chselect
         },
         methods: {
-            onChange(i) {
-                console.log(i);
+            onChange: function(key,event) {
+                this.$store.commit(key, event);
+                console.log(this.$store.getters);
             }
         }
     }
-    
 </script>
 
 <style scoped>
 .spacing{
     margin-top: 20px;
 }
-
 </style>
