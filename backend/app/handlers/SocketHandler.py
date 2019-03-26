@@ -1,15 +1,18 @@
 import tornado.websocket
 import json
 
+
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
+
     def check_origin(self, origin):
         return True
+
     def open(self):
         self.write_message(json.dumps(
             {
                 'cam1':{
-                    'pipeline':1,
-                    'exposure':12
+                    'pipeline': 1,
+                    'exposure': 12
                 }
             }
         ))

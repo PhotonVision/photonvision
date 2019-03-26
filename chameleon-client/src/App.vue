@@ -58,7 +58,7 @@
           this.openedNames = [''];
         } else {
           this.activeName = this.$refs.menu.currentActiveName;
-          this.openedNames = [this.activeName.split("-")[0]];
+          this.openedNames = ["/" + this.activeName.split("/")[1]];
         }
 
         this.$nextTick(function() {
