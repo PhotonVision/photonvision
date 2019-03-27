@@ -19,20 +19,28 @@
 <script>
     export default {
         name: 'ch-range',
-        props:['title','parentData'],
+        props:{title:'',
+        Xkey:''
+        },
         data() {
             return {
-                value:0
+                value
             }
         },
         methods: {
             handleInput() {
-                this.$emit('input',this.value);
-                this.$socket.sendObj({[this.title]:this.value});
+                this.$socket.sendObj({[this.Xkey]:this.value});
             }
         },
-        beforeMount () {
-            this.value = this.parentData
+        computed:{
+            value:{
+                get:function(){
+                    return this.$store.state[this.Xkey];
+                },
+                set:function(value){
+                    this.$store.commit(this.Xkey,value);
+                }
+            }
         }
     }
 </script>

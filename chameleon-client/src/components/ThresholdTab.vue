@@ -1,8 +1,8 @@
 <template>
     <div id="Threshold">
-        <chrange class="spacing" title="Hue" :parentData="$store.getters.hue" @input="onChange('hue',$event)"></chrange>
-        <chrange class="spacing" title="Saturation" :parentData="$store.getters.saturation" @input="onChange('saturation',$event)"></chrange>
-        <chrange class="spacing" title="Value" :parentData="$store.getters.value" @input="onChange('value',$event)"></chrange>
+        <chrange class="spacing" title="Hue" Xkey="hue"></chrange>
+        <chrange class="spacing" title="Saturation" Xkey="saturation"></chrange>
+        <chrange class="spacing" title="Value" Xkey="value"></chrange>
     </div>
 </template>
     
@@ -20,9 +20,6 @@ import chselect from './ch-select.vue'
             chselect
         },
         methods:{
-            onChange: function(key,event) {
-                this.$store.commit(key, event);
-            }
         }
     }
 
