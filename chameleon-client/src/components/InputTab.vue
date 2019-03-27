@@ -1,10 +1,11 @@
 
 <template>
     <div id="InputTab">
-        <chslider class="spacing" title="exposure" :parentData="$store.getters.exposure" @input="onChange('exposure',$event)"></chslider>
-        <chslider class="spacing" title="Brightness" :parentData="$store.getters.brightness" @input="onChange('brightness',$event)"></chslider>
-        <chselect class="spacing" title="Orientation" :list="['Normal','Inverted']" :parentData="$store.getters.orientation" @input="onChange('orientation',$event)"></chselect>
-        <chselect class="spacing" title="Resolution" :list="['idk']" :parentData="$store.getters.resolution" @input="onChange('resolution',$event)"></chselect>
+        <chslider class="spacing" title="exposure" Xkey="exposure"></chslider>
+        <chslider class="spacing" title="Brightness" Xkey="brightness"></chslider>
+        <chselect class="spacing" title="Orientation" Xkey="orientation" :list="['Normal','Inverted']"></chselect>
+        <chselect class="spacing" title="Resolution" Xkey="resolution"  :list="['Normal','Inverted']"></chselect>
+        <button v-on:click="test">test</button>
         </div>
 </template>
     
@@ -22,9 +23,8 @@ import chselect from './ch-select.vue'
             chselect
         },
         methods: {
-            onChange: function(key,event) {
-                this.$store.commit(key, event);
-                console.log(this.$store.getters);
+            test(){
+                console.log(this.$store.state)
             }
         }
     }

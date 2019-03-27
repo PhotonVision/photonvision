@@ -14,24 +14,30 @@
 <script>
     export default {
         name: 'ch-select',
-        props:[
-            'title',
-            'list',
-            'parentData'
-        ],
+        props:{
+            title:'',
+            list:[],
+            Xkey:''
+        },
         data() {
             return {
-                content:this.value
+                value
             }
         },
         methods: {
             handleInput() {
-                this.$emit('input',this.value);
-                this.$socket.sendObj({[this.title]:this.value});
+                this.$socket.sendObj({[this.Xkey]:this.value});
             }
         },
-        beforeMount () {
-            this.value = this.parentData
+        computed:{
+            value:{
+                get: function(){
+                    return this.$store.state[this.Xkey];
+                },
+                set: function(value){
+                    this.$store.commit(this.Xkey,value);
+                }
+            }
         }
     }
 </script>

@@ -3,10 +3,10 @@
         <Header id="main-header">
             <Row type="flex" justify="start" align="middle" :gutter="10">
                 <Col span="12">
-                    <chselect title="camera" :parentData="$store.getters.camera" @input="onChange('camera',$event)" :list="[1,2,3]"></chselect>
+                    <chselect title="camera" :list="[1,2,3]" Xkey="camera"></chselect>
                 </Col>
                 <Col span="12">
-                    <chselect title="pipline" :list="[0,1,2,3,4,5,6,7,8,9]" :parentData="$store.getters.pipline" @input="onChange('pipline',$event)"></chselect>
+                    <chselect title="pipline" :list="[0,1,2,3,4,5,6,7,8,9]" Xkey="pipeline"></chselect>
                 </Col>
             </Row>
         </Header>

@@ -7,13 +7,14 @@ const set = key => (state,val) =>{
     state[key] = val
 }
 export const store = new Vuex.Store({
+    strict: true,
 
     state:{
         //header
         camera:0,
         pipeline:0,
         //input
-        exposure:0,
+        exposure:54,
         brightness:0,
         orientation:0,
         resolution:0,
