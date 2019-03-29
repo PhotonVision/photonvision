@@ -9,35 +9,36 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         return True
 
     def open(self):
-        self.write_message(json.dumps(
-            {
-                'cam1': {
-                    'pipelines': [
-                        {"id": 1, "Exposure": 45}
-                    ]
-                }
-            }
-        ))
+
+        # TODO: read setting from default file store them
+        setting = json.load("file.json")
+        self.cam_name = setting["curr_cam"]
+        self.pipe_line = setting["curr_pipeline"]
+
+        # TODO: get current camera pipeline file
+        curr_setting = json.load(self.cam_name + "/" + self.pipe_line)
+
+        #  TODO: wrtie current pipeline setting to client
+        self.write_message(curr_setting)
+
         print("WebSocket opened")
 
     def on_message(self, message):
-        # print(json.loads(message))
-
         cams = []
 
         dic = {
                 'cam1': {
-                    'pipelines': [
-                        {"id": 1, "exposure": 45, "brightness": 123123},
-                        {"id": 2, "exposure": 12, "brightness": 123},
-                        {"id": 3, "exposure": 23, "brightness": 12}
-                    ]
+                    'pipelines': {
+                        "1": {"exposure": 45, "brightness": 123123},
+                        "2": {"exposure": 12, "brightness": 123},
+                        "3": {"exposure": 23, "brightness": 12}
+                    }
                 },
                 'cam2': {
-                    'pipelines': [
-                        {"id": 1, "exposure": 15, "brightness": 1233},
-                        {"id": 2, "exposure": 68, "brightness": 453}
-                    ]
+                    'pipelines': {
+                        "1": {"exposure": 15, "brightness": 1233},
+                        "2": {"exposure": 68, "brightness": 453}
+                    }
                 }
             }
 

@@ -17,12 +17,11 @@
     export default {
         name: 'ch-slider',
         props:{
-            title:'',
-            Xkey:''
+            title:String,
+            Xkey:String
         },
         data() {
             return {
-                value
             }
         },
         methods: {

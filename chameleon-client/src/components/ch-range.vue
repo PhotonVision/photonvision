@@ -19,12 +19,12 @@
 <script>
     export default {
         name: 'ch-range',
-        props:{title:'',
-        Xkey:''
+        props:{
+            title:String,
+            Xkey:String
         },
         data() {
             return {
-                value
             }
         },
         methods: {

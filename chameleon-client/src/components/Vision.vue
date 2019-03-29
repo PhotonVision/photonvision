@@ -3,10 +3,10 @@
         <Header id="main-header">
             <Row type="flex" justify="start" align="middle" :gutter="10">
                 <Col span="12">
-                    <chselect title="camera" :list="[1,2,3]" Xkey="camera"></chselect>
+                    <chselect title="camera" :list="['1','2','3']" Xkey="camera"></chselect>
                 </Col>
                 <Col span="12">
-                    <chselect title="pipline" :list="[0,1,2,3,4,5,6,7,8,9]" Xkey="pipeline"></chselect>
+                    <chselect title="pipline" :list="['0','1','2','3','4','5','6','7','8','9']" Xkey="pipeline"></chselect>
                 </Col>
             </Row>
         </Header>

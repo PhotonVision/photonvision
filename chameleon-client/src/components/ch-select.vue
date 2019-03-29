@@ -15,13 +15,13 @@
     export default {
         name: 'ch-select',
         props:{
-            title:'',
-            list:[],
-            Xkey:''
+            title: String,
+            list: Array,
+            Xkey: String
         },
         data() {
             return {
-                value
+            
             }
         },
         methods: {
