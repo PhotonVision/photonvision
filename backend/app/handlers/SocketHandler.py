@@ -25,14 +25,18 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         self.init_cameras_settings()
 
     def init_cameras_settings(self):
+        if os.path.exists(self.cams_path):
+            for curr_dir in os.listdir(self.cams_path):
+                pipelines = {}
+                for file in os.listdir(os.path.join(self.cams_path, curr_dir)):
+                    with open(os.path.join(self.cams_path, curr_dir, file)) as pipeline:
+                        pipelines[os.path.splitext(file)[0]] = json.load(pipeline)
 
-        for curr_dir in os.listdir(self.cams_path):
-            pipelines = {}
-            for file in os.listdir(os.path.join(self.cams_path, curr_dir)):
-                with open(os.path.join(self.cams_path, curr_dir, file)) as pipeline:
-                    pipelines[os.path.splitext(file)[0]] = json.load(pipeline)
-
-            self.cams[curr_dir] = pipelines
+                self.cams[curr_dir] = pipelines
+        else:
+            self.create_new_cam("cam1")
+            self.settings["curr_camera"] = "cam1"
+            self.settings["curr_pipeline"] = "pipeline1"
 
     def init_actions(self):
         self.actions["camera"] = self.change_curr_camera
@@ -124,7 +128,12 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
     def save_cameras(self):
         for cam in self.cams:
             for pipeline in self.cams[cam]:
-                with open(os.path.join(self.cams_path, cam, pipeline + '.json'), 'w') as pipeline_file:
+                path = os.path.join(self.cams_path, cam)
+
+                if not os.path.exists(path):
+                    os.makedirs(path)
+
+                with open(os.path.join(path, pipeline + '.json'), 'w+') as pipeline_file:
                     json.dump(self.cams[cam][pipeline], pipeline_file)
 
     def save_settings(self):
