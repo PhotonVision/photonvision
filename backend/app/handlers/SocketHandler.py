@@ -35,7 +35,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
             self.cams[curr_dir] = pipelines
 
     def init_actions(self):
-        self.actions["cam"] = self.change_curr_camera
+        self.actions["camera"] = self.change_curr_camera
         self.actions["pipeline"] = self.change_curr_pipeline
         self.actions["change_pipeline_values"] = self.change_pipeline_values
 
