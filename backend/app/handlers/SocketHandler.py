@@ -57,9 +57,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
 
         for key in message_dic:
             self.actions.get(key, self.actions["change_pipeline_values"])(message_dic)
-
         print(message)
-        self.write_message(message)
 
     def on_close(self):
         self.save_settings()

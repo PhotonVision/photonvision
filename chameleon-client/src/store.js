@@ -2,12 +2,10 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 
 Vue.use(Vuex);
-
 const set = key => (state,val) =>{
     state[key] = val
-}
+};
 export const store = new Vuex.Store({
-    strict: true,
 
     state:{
         //header
@@ -22,10 +20,12 @@ export const store = new Vuex.Store({
         hue:[0,10],
         saturation:[0,10],
         value:[0,10]
-
     },
     mutations:{
-        camera: set('camera'),
+        camera (state,value){
+            state['camera'] = value;
+            state['pipeline'] = "0";
+        },
         pipeline: set('pipeline'),
         brightness: set('brightness'),
         exposure: set('exposure'),
