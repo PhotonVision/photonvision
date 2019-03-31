@@ -76,7 +76,13 @@
     created () {
     this.$options.sockets.onmessage = (data) => {
       console.log(data.data);
-      } // console writes recived data
+      let message = JSON.parse(data.data);
+      for (var prop in message){
+        if(message.hasOwnProperty(prop)){
+          this.$store.state[prop] = message[prop];
+        }
+      }
+    } // console writes recived data
   }
   }
 </script>
