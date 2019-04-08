@@ -1,1 +1,5 @@
-{"team_number": 1577, "curr_camera": "cam1", "curr_pipeline": "pipeline1"}
+{
+  "team_number": 1577,
+  "curr_camera": "cam1",
+  "curr_pipeline": "pipeline1"
+}
