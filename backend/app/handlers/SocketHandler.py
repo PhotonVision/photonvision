@@ -43,9 +43,6 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         self.actions["pipeline"] = self.change_curr_pipeline
         self.actions["change_pipeline_values"] = self.change_pipeline_values
 
-    def check_origin(self, origin):
-        return True
-
     # Socket methods
 
     def open(self):
@@ -67,6 +64,9 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         self.save_settings()
         self.save_cameras()
         print("WebSocket closed")
+
+    def check_origin(self, origin):
+        return True
 
     def send_curr_cam(self):
         self.write_message(self.get_curr_pipeline())
