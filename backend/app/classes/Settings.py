@@ -1,30 +1,13 @@
 import os
 import json
+from Singleton import Singleton
 
 
-class SettingsManager:
+class SettingsManager(metaclass=Singleton):
 
     cams = {}
 
-    __instance = None
-
-    @staticmethod
-    def get_instance():
-
-        if not SettingsManager.__instance:
-            SettingsManager()
-
-        return SettingsManager.__instance
-
     def __init__(self):
-
-        if SettingsManager.__instance:
-            raise Exception("This class is a singleton!")
-        else:
-            SettingsManager.__instance = self
-            self._init_settings()
-
-    def _init_settings(self):
         self.settings_path = os.path.join(os.getcwd(), "settings")
         self.cams_path = os.path.join(self.settings_path, "cams")
         self._init_general_settings()
