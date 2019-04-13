@@ -1,12 +1,11 @@
 import tornado.ioloop
 
 from app.ChameleonVisionApp import ChameleonApplication
-from app.classes.Settings import SettingsManager
+from app.classes.SettingsManager import SettingsManager
 from tornado.options import options
 
 if __name__ == "__main__":
     mng = SettingsManager()
-    m = SettingsManager()
     tornado.options.parse_command_line()
     app = ChameleonApplication()
     print(f"Serving on port {options.port}")

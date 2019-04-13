@@ -1,6 +1,7 @@
 import tornado.websocket
 import json
 import os
+from ..classes.SettingsManager import SettingsManager
 
 
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
@@ -11,6 +12,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
 
     def __init__(self, application, request, **kwargs):
         super().__init__(application, request, **kwargs)
+        self.smng = SettingsManager()
         self.settings_path = os.path.join(os.getcwd(), "settings")
         self.cams_path = os.path.join(self.settings_path, "cams")
         self.init_settings()

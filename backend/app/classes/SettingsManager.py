@@ -1,10 +1,12 @@
 import os
 import json
-from Singleton import Singleton
+import cscore
+import networktables
+from .Singleton import Singleton
+from .CamerasHandler import CamerasHandler
 
 
 class SettingsManager(metaclass=Singleton):
-
     cams = {}
 
     def __init__(self):
@@ -28,23 +30,28 @@ class SettingsManager(metaclass=Singleton):
             init_default_settings()
 
     def _init_cameras(self):
-        if os.path.exists(self.cams_path):
-            for curr_dir in os.listdir(self.cams_path):
-                pipelines = {}
-                for file in os.listdir(os.path.join(self.cams_path, curr_dir)):
-                    with open(os.path.join(self.cams_path, curr_dir, file)) as pipeline:
-                        pipelines[os.path.splitext(file)[0]] = json.load(pipeline)
+        cameras = CamerasHandler.get_cameras()
 
-                self.cams[curr_dir] = pipelines
-        else:
-            self.create_new_cam("cam1")
-            self.settings["curr_camera"] = "cam1"
-            self.settings["curr_pipeline"] = "pipeline1"
+        for cam in cameras:
+            if os.path.exists(os.path.join(self.cams_path, cam.name)):
+                self.cams[cam.name] = {}
+                self.cams[cam.name]["pipelines"] = {}
+
+                for file in os.listdir(os.path.join(self.cams_path, cam.name)):
+                    with open(os.path.join(self.cams_path, cam.name, file)) as pipeline:
+                        self.cams[cam.name]["pipelines"][os.path.splitext(file)[0]] = json.load(pipeline)
+
+                if len(self.cams[cam.name]["pipelines"]) == 0:
+                    self.create_new_pipeline(cam_name=cam.name)
+            else:
+                self.create_new_cam(cam.name)
+
+            self.cams[cam.name]["path"] = cam.otherPaths[0] if len(cam.otherPaths) == 1 else cam.otherPaths[1]
 
     # Access methods
 
     def get_curr_pipeline(self):
-        return self.cams[self.settings["curr_camera"]][self.settings["curr_pipeline"]]
+        return self.cams[self.settings["curr_camera"]]["pipelines"][self.settings["curr_pipeline"]]
 
     def get_curr_cam(self):
         return self.cams[self.settings["curr_camera"]]
@@ -59,16 +66,23 @@ class SettingsManager(metaclass=Singleton):
 
     # Creators
 
-    def create_new_pipeline(self, pipe_name, cam=None):
-        if not cam:
-            cam = self.settings["curr_camera"]
+    def create_new_pipeline(self, pipe_name=None, cam_name=None):
 
-        with open(os.path.join(self.settings_path, 'default_pipeline.json')) as default_pipeline:
-            self.cams[cam][pipe_name] = json.load(default_pipeline)
+        if not cam_name:
+            cam_name = self.settings["curr_camera"]
 
-    def create_new_cam(self, cam):
-        self.cams[cam] = {}
-        self.create_new_pipeline('pipeline1', cam)
+        if not pipe_name:
+            pipe_name = "pipeline" + str(len(self.cams[cam_name]))
+
+        self.cams[cam_name]["pipelines"][pipe_name] = {
+            "exposure": 50,
+            "brightness": 50
+        }
+
+    def create_new_cam(self, cam_name):
+        self.cams[cam_name] = {}
+        self.cams[cam_name]["pipelines"] = {}
+        self.create_new_pipeline(cam_name=cam_name)
 
     # Savers
 
