@@ -25,3 +25,4 @@ class CamerasHandler:
             camera = cscore.UsbCamera(name='', dev=device.dev)
             cameras.append(camera)
         return cameras
+    #TODO add the pixel format to the camera Extreamly importent to do this
