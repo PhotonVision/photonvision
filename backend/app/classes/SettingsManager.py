@@ -31,7 +31,7 @@ class SettingsManager(metaclass=Singleton):
 
     def _init_cameras(self):
         cameras = CamerasHandler.get_cameras()
-
+        
         for cam in cameras:
             if os.path.exists(os.path.join(self.cams_path, cam.name)):
                 self.cams[cam.name] = {}

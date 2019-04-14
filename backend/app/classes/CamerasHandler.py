@@ -17,3 +17,11 @@ class CamerasHandler:
             cap.release()
             index += 1
         return [usb_devices[i] for i in arr]
+
+    @staticmethod
+    def start_cameras(usb_devices):
+        cameras = []
+        for device in usb_devices:
+            camera = cscore.UsbCamera(name='', dev=device.dev)
+            cameras.append(camera)
+        return cameras
