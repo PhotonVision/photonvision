@@ -67,13 +67,20 @@ def draw_image(self, input_image: numpy.ndarray, is_binary: bool, rectangles):
     return input_image
 
 
-def run(camera):
-    server = cscore.CameraServer.getInstance()
-    stream = server.putVideo('name',40,80)
-    image = numpy.zeros(shape=(480,55,3),dtype=numpy.uint8)
-    network_table = networktables.NetworkTables.getTable("Chameleon-Vision/"+"camera name")
+def run():
 
+    camera_server = cscore.CameraServer.getInstance()
+    networktables.NetworkTables.startClientTeam(team=1577)
+    networktables.NetworkTables.initialize()
+
+
+def camera_process(cvSink,stream):
+    image = numpy.zeros(shape=(0,0,3), dtype=numpy.uint8)
+    table = networktables.NetworkTables.getTable("/Chameleon-Vision/"+"cam name")
     while True:
-        _, image = camera.grabFrame(image)
+        _, image = cvSink.grabFrame(image)
+
+        stream.putFrame(image)
+
 
 
