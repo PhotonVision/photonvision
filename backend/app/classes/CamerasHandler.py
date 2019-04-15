@@ -23,6 +23,6 @@ class CamerasHandler:
         cameras = []
         for device in usb_devices:
             camera = cscore.UsbCamera(name='', dev=device.dev)
+            camera.setPixelFormat(pixelFormat=camera.enumerateVideoModes()[0].pixelFormat) #TODO if dictionary is empy do this else take from dictionary
             cameras.append(camera)
         return cameras
-    #TODO add the pixel format to the camera Extreamly importent to do this

@@ -2,7 +2,7 @@ import cscore
 import networktables
 import cv2
 import numpy
-
+from app.classes.SettingsManager import SettingsManager
 
 class VisionHandler:
     def __init__(self):
@@ -70,15 +70,15 @@ def draw_image(self, input_image: numpy.ndarray, is_binary: bool, rectangles):
 def run():
 
     camera_server = cscore.CameraServer.getInstance()
-    networktables.NetworkTables.startClientTeam(team=1577)
+    networktables.NetworkTables.startClientTeam(team=SettingsManager.settings["team_number"])
     networktables.NetworkTables.initialize()
 
 
-def camera_process(cvSink,stream):
+def camera_process(cv_sink,stream):
     image = numpy.zeros(shape=(0,0,3), dtype=numpy.uint8)
     table = networktables.NetworkTables.getTable("/Chameleon-Vision/"+"cam name")
     while True:
-        _, image = cvSink.grabFrame(image)
+        _, image = cv_sink.grabFrame(image)
 
         stream.putFrame(image)
 
