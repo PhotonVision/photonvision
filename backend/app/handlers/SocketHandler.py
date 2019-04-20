@@ -1,6 +1,6 @@
 import tornado.websocket
 import json
-import os
+from .CamerasHandler import CamerasHandler
 from ..classes.SettingsManager import SettingsManager
 
 
@@ -14,7 +14,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         self.init_actions()
 
     def init_actions(self):
-        self.actions["change_pipeline_values"] = self.settings_manager.change_pipeline_values
+        self.actions["change_pipeline_values"] = self.change_pipeline_values
         self.actions["change_general_settings_values"] = self.settings_manager.change_general_settings_values
         self.actions["change_cam"] = self.change_curr_camera
         self.actions["change_pipeline"] = self.change_curr_pipeline
@@ -56,5 +56,12 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
 
     def change_curr_pipeline(self, dic):
         self.settings_manager.set_curr_pipeline(pipe_name=dic["pipeline"])
+
+    def change_pipeline_values(self, dic):
+        self.settings_manager.change_pipeline_values(dic)
+
+        CamerasHandler.change_camera_values(CamerasHandler.get_usb_camera_by_name(self.settings_manager.general_settings["curr_camera"]), dic)
+
+
 
 

@@ -1,5 +1,5 @@
 import os
-import json
+import jsonpass
 from .Singleton import Singleton
 from handlers.CamerasHandler import CamerasHandler
 from .Exceptions import PipelineAlreadyExistsException
@@ -11,12 +11,15 @@ class SettingsManager(metaclass=Singleton):
 
     default_pipeline = {
         "exposure": 50,
-        "brightness": 50
+        "brightness": 50,
+        "hue": [0, 100],
+        "saturation": [0, 100],
+        "value": [0, 100]
     }
     default_general_settings = {
         "team_number": 1577,
-        "curr_camera": "cam1",
-        "curr_pipeline": "pipeline1"
+        "curr_camera": "",
+        "curr_pipeline": ""
     }
 
     def __init__(self):
@@ -25,7 +28,7 @@ class SettingsManager(metaclass=Singleton):
         self._init_general_settings()
         self._init_cameras()
 
-        if not self.cams[self.general_settings["curr_camera"]]:
+        if self.general_settings["curr_camera"] not in self.cams and len(list(self.cams.keys())) > 0:
             self.general_settings["curr_camera"] = list(self.cams.keys())[0]
 
     def _init_general_settings(self):
@@ -36,7 +39,7 @@ class SettingsManager(metaclass=Singleton):
             self.general_settings = self.default_general_settings.copy()
 
     def _init_cameras(self):
-        cameras = CamerasHandler.get_cameras()
+        cameras = CamerasHandler.get_cameras_info()
 
         for cam in cameras:
             if os.path.exists(os.path.join(self.cams_path, cam.name)):
@@ -98,7 +101,7 @@ class SettingsManager(metaclass=Singleton):
             suffix = 0
             pipe_name = "pipeline" + str(suffix)
 
-            while pipe_name not in self.cams[cam_name]["pipelines"]:
+            while pipe_name in self.cams[cam_name]["pipelines"]:
                 suffix += 1
                 pipe_name = "pipeline" + str(suffix)
         elif self.cams[cam_name]["pipelines"][pipe_name]:

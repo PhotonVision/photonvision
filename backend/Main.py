@@ -4,11 +4,13 @@ from app.ChameleonVisionApp import ChameleonApplication
 from app.classes.SettingsManager import SettingsManager
 from tornado.options import options
 from handlers.CamerasHandler import CamerasHandler
+from handlers.VisionHandler import VisionHandler
 
 if __name__ == "__main__":
     mng = SettingsManager()
-    a = CamerasHandler.get_cameras()
-    b = CamerasHandler.start_cameras(a)
+    a = CamerasHandler.get_cameras_info()
+    b = CamerasHandler.get_or_start_cameras(a)
+    VisionHandler().run()
 
     tornado.options.parse_command_line()
     app = ChameleonApplication()
