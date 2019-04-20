@@ -69,10 +69,17 @@ class VisionHandler:
         networktables.NetworkTables.startClientTeam(team=SettingsManager.settings["team_number"])
         networktables.NetworkTables.initialize()
 
-    def camera_process(cv_sink, stream):
+    def camera_process(self,camera, stream,):
         image = numpy.zeros(shape=(0, 0, 3), dtype=numpy.uint8)
-        table = networktables.NetworkTables.getTable("/Chameleon-Vision/" + "cam name")
+        table = networktables.NetworkTables.getTable("/Chameleon-Vision/"+camera.getInfo().name)
+
         while True:
-            _, image = cv_sink.grabFrame(image)
+            # _, image = cv_sink.grabFrame(image)
+            if table.getBoolean("Driver_Mode", False):
+                hsv_image = self._hsv_threshold()
+                contours = self.find_contours()
+                contours = self.find_contours()
+                image = self.draw_image()
+
 
             stream.putFrame(image)
