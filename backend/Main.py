@@ -3,7 +3,7 @@ import tornado.ioloop
 from app.ChameleonVisionApp import ChameleonApplication
 from app.classes.SettingsManager import SettingsManager
 from tornado.options import options
-from classes.CamerasHandler import CamerasHandler
+from handlers.CamerasHandler import CamerasHandler
 
 if __name__ == "__main__":
     mng = SettingsManager()
