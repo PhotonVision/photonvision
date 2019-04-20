@@ -3,14 +3,17 @@ from networktables import NetworkTables
 import cv2
 import numpy
 from cscore import CameraServer
+from handlers.CamerasHandler import CamerasHandler
 from app.classes.SettingsManager import SettingsManager
+import time
 
 
 class VisionHandler:
     def __init__(self):
         self.kernel = numpy.ones((5, 5), numpy.uint8)
 
-    def _hsv_threshold(self, hue: list, saturation: list, value: list, img: numpy.ndarray, is_erode: bool, is_dilate: bool):
+    def _hsv_threshold(self, hue: list, saturation: list, value: list, img: numpy.ndarray, is_erode: bool,
+                       is_dilate: bool):
         # img = cv2.medianBlur(img, 1)
         # not sure if we need noise reduction now with erode it hurts the precision if val is to high
 
@@ -23,7 +26,8 @@ class VisionHandler:
         _, contours, _ = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         return contours
 
-    def filter_contours(self, input_contours, camera_area, min_area, max_area, min_ratio, max_ratio, min_extent, max_extent):
+    def filter_contours(self, input_contours, camera_area, min_area, max_area, min_ratio, max_ratio, min_extent,
+                        max_extent):
         output = []
         rectangle = []
 
@@ -66,20 +70,20 @@ class VisionHandler:
 
     def run(self):
         camera_server = cscore.CameraServer.getInstance()
-        NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
-        NetworkTables.initialize()
+        # NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
+        NetworkTables.initialize("localhost")
+        # NetworkTables.initialize()
+        self.camera_process(CamerasHandler.get_usb_camera_by_name("USB Camera-B4.09.24.1"), None)
 
     def camera_process(self, camera, stream):
-        def driver_mode_listener(key, value, is_new):
-            raise NotImplementedError()
-
-        def pipeline_listener(key, value, is_new):
-            raise NotImplementedError()
+        def table_listener(table, key, value, is_new):
+            # TODO: call actions based on key ----> i.e. change_pipeline
+            pass
 
         image = numpy.zeros(shape=(0, 0, 3), dtype=numpy.uint8)
         table = NetworkTables.getTable("/Chameleon-Vision/" + camera.getInfo().name)
-        NetworkTables.addEntryListener("Driver_Mode", driver_mode_listener)
-        NetworkTables.addEntryListener("Pipeline", pipeline_listener)
+
+        table.addEntryListener(table_listener)
 
         cv_sink = CameraServer.getInstance().getVideo(camera=camera)
 
@@ -94,5 +98,3 @@ class VisionHandler:
 
             image = self.draw_image(input_image=hsv_image, is_binary=False, rectangles=filtered_contours)
             stream.putFrame(image)
-
-

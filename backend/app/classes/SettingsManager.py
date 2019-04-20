@@ -1,5 +1,5 @@
 import os
-import jsonpass
+import json
 from .Singleton import Singleton
 from handlers.CamerasHandler import CamerasHandler
 from .Exceptions import PipelineAlreadyExistsException
