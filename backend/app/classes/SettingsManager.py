@@ -4,10 +4,12 @@ import cscore
 import networktables
 from .Singleton import Singleton
 from .CamerasHandler import CamerasHandler
+from .Exceptions import PipelineAlreadyExistsException
 
 
 class SettingsManager(metaclass=Singleton):
     cams = {}
+    settings = {}
 
     def __init__(self):
         self.settings_path = os.path.join(os.getcwd(), "settings")
@@ -16,18 +18,15 @@ class SettingsManager(metaclass=Singleton):
         self._init_cameras()
 
     def _init_general_settings(self):
-        def init_default_settings():
+        try:
+            with open(os.path.join(self.settings_path, 'settings.json')) as setting_file:
+                self.settings = json.load(setting_file)
+        except FileNotFoundError:
             self.settings = {
                 "team_number": 1577,
                 "curr_camera": "cam1",
                 "curr_pipeline": "pipeline1"
             }
-
-        try:
-            with open(os.path.join(self.settings_path, 'settings.json')) as setting_file:
-                self.settings = json.load(setting_file)
-        except FileNotFoundError:
-            init_default_settings()
 
     def _init_cameras(self):
         cameras = CamerasHandler.get_cameras()
@@ -72,7 +71,14 @@ class SettingsManager(metaclass=Singleton):
             cam_name = self.settings["curr_camera"]
 
         if not pipe_name:
-            pipe_name = "pipeline" + str(len(self.cams[cam_name]))
+            suffix = 0
+            pipe_name = "pipeline" + str(suffix)
+
+            while pipe_name not in self.cams[cam_name]["pipelines"]:
+                suffix += 1
+                pipe_name = "pipeline" + str(suffix)
+        elif self.cams[cam_name]["pipelines"][pipe_name]:
+            raise PipelineAlreadyExistsException(pipe_name)
 
         self.cams[cam_name]["pipelines"][pipe_name] = {
             "exposure": 50,
