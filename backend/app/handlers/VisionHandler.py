@@ -66,7 +66,7 @@ class VisionHandler:
 
     def run(self):
         camera_server = cscore.CameraServer.getInstance()
-        networktables.NetworkTables.startClientTeam(team=SettingsManager.settings["team_number"])
+        networktables.NetworkTables.startClientTeam(team=SettingsManager.general_settings["team_number"])
         networktables.NetworkTables.initialize()
 
     def camera_process(cv_sink, stream):
