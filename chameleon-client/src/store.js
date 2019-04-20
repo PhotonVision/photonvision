@@ -19,7 +19,14 @@ export const store = new Vuex.Store({
         //threshold
         hue:[0,10],
         saturation:[0,10],
-        value:[0,10]
+        value:[0,10],
+        erode: false,
+        dilate: false,
+        //contours
+        area:[0,100],
+        ratio:[0,0],
+        extent:[0,100]
+
     },
     mutations:{
         camera (state,value){
@@ -33,7 +40,12 @@ export const store = new Vuex.Store({
         resolution: set('resolution'),
         hue: set('hue'),
         saturation: set('saturation'),
-        value: set('value')
+        value: set('value'),
+        erode: set('erode'),
+        dilate: set('dilate'),
+        area: set('area'),
+        ratio: set('ratio'),
+        extent: set('extent')
     },
     getters:{
         camera: state => state.camera,
@@ -45,5 +57,10 @@ export const store = new Vuex.Store({
         hue: state => state.hue,
         saturation: state => state.saturation,
         value: state => state.value,
+        erode: state => state.dilate,
+        dilate: state => state.dilate,
+        area: state =>state.area,
+        ratio: state =>state.ratio,
+        extent: state =>state.extent
     },
 });
