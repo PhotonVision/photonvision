@@ -14,15 +14,27 @@
 <script>
     export default {
         name: 'ch-InputNumber',
-        props:['title'],
+        props:{
+            title:String,
+            Xkey:String
+        },
         data() {
             return {
-                content:this.value
             }
         },
         methods: {
             handleInput() {
-                this.$emit('input',this.value);
+                this.$socket.sendObj({[this.Xkey]:this.value});
+            }
+        },
+        computed:{
+            value:{
+                get: function(){
+                    return this.$store.state[this.Xkey];
+                },
+                set: function(value){
+                    this.$store.commit(this.Xkey,value);
+                }
             }
         }
     }

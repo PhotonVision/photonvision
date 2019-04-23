@@ -1,6 +1,19 @@
 <template>
     <div id="SystemTab">
-        <chInputNumber title="Enter Team Number" v-model="TeamVal" v-on:input="onChange(TeamVal)"></chInputNumber>
+        <chInputNumber title="Enter Team Number" Xkey="teamValue"></chInputNumber>
+        <Divider class="divdiv" orientation="left">Networking</Divider>
+        <div>
+            <RadioGroup v-model="lan" style="display: flex;">
+                <Radio label="DHCP"></Radio>
+                <Radio label="Static"></Radio>
+            </RadioGroup>
+<!-- 
+                    ip 
+                    subnetmask
+                    gateway 
+
+                    hostname -->
+        </div>
     </div>
 </template>
 
@@ -10,20 +23,25 @@
         name: 'SystemTab',
         data() {
             return {
-                TeamVal
+                lan:0
             }
         },
         components:{
             chInputNumber
         },
         methods: {
-            onChange(i) {
-                console.log(i);
-            }
         }
     }
 </script>
 
-<style lang="" scoped>
-    
+<style>
+
+    .ivu-divider-inner-text{
+        color: aliceblue
+    }
+    .ivu-radio-group {
+        display: flex;
+        text-align: left;
+        color: aliceblue;
+    }
 </style>

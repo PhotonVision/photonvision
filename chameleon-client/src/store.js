@@ -25,7 +25,9 @@ export const store = new Vuex.Store({
         //contours
         area:[0,100],
         ratio:[0,0],
-        extent:[0,100]
+        extent:[0,100],
+        //Settings
+        teamValue:0
 
     },
     mutations:{
@@ -45,7 +47,8 @@ export const store = new Vuex.Store({
         dilate: set('dilate'),
         area: set('area'),
         ratio: set('ratio'),
-        extent: set('extent')
+        extent: set('extent'),
+        teamValue: set('teamValue')
     },
     getters:{
         camera: state => state.camera,
@@ -61,6 +64,7 @@ export const store = new Vuex.Store({
         dilate: state => state.dilate,
         area: state =>state.area,
         ratio: state =>state.ratio,
-        extent: state =>state.extent
+        extent: state =>state.extent,
+        teamValue: state => state.teamValue
     },
 });
