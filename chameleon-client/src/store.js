@@ -27,7 +27,11 @@ export const store = new Vuex.Store({
         ratio:[0,0],
         extent:[0,100],
         //Settings
-        teamValue:0
+        teamValue:0,
+        connectionType:"DHCP",
+        ip:0,
+        gateWay:0,
+        hostName:""
 
     },
     mutations:{
@@ -48,7 +52,11 @@ export const store = new Vuex.Store({
         area: set('area'),
         ratio: set('ratio'),
         extent: set('extent'),
-        teamValue: set('teamValue')
+        teamValue: set('teamValue'),
+        connectionType: set('connectionType'),
+        ip: set('ip'),
+        gateWay : set('gateWay'),
+        hostName : set('hostName')
     },
     getters:{
         camera: state => state.camera,
@@ -65,6 +73,11 @@ export const store = new Vuex.Store({
         area: state =>state.area,
         ratio: state =>state.ratio,
         extent: state =>state.extent,
-        teamValue: state => state.teamValue
+        teamValue: state => state.teamValue,
+        connectionType: state => state.connectionType,
+        ip: state => state.ip,
+        gateWay: state => state.gateWay,
+        hostName: state => state.hostName
+
     },
 });
