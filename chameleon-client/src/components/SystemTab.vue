@@ -70,7 +70,7 @@
         methods: {
             socketSendAll: function(){
                 this.$socket.sendObj([
-                    {'teamValue':this.teamNum},
+                    {'team_number':this.teamNum},
                     {'connectionType':this.connectionType},
                     {'ip':this.ip},
                     {'gateWay':this.gateWay},

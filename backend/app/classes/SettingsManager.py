@@ -13,12 +13,23 @@ class SettingsManager(metaclass=Singleton):
     default_pipeline = {
         "exposure": 50,
         "brightness": 50,
+        "orientation": "Normal",
+        "resolution": [320, 160],
         "hue": [0, 100],
         "saturation": [0, 100],
-        "value": [0, 100]
+        "value": [0, 100],
+        "erode": False,
+        "dilate": False,
+        "area": [0, 100],
+        "ratio": [0, 20],
+        "extent": [0, 100]
     }
     default_general_settings = {
         "team_number": 1577,
+        "connection_type": "DHCP",
+        "ip": "",
+        "gateway": "",
+        "hostname": "Chameleon-Vision",
         "curr_camera": "",
         "curr_pipeline": ""
     }
