@@ -3,7 +3,7 @@ from networktables import NetworkTables
 import cv2
 import numpy
 from cscore import CameraServer
-from handlers.CamerasHandler import CamerasHandler
+from .CamerasHandler import CamerasHandler
 from app.classes.SettingsManager import SettingsManager
 import time
 

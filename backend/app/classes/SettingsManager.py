@@ -1,7 +1,8 @@
 import os
 import json
 from .Singleton import Singleton
-from handlers.CamerasHandler import CamerasHandler
+# from .handlers.CamerasHandler import CamerasHandler
+from ..handlers.CamerasHandler import CamerasHandler
 from .Exceptions import PipelineAlreadyExistsException
 
 
