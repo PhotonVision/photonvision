@@ -5,7 +5,6 @@
         <chslider class="spacing" title="Brightness" Xkey="brightness"></chslider>
         <chselect class="spacing" title="Orientation" Xkey="orientation" :list="['Normal','Inverted']"></chselect>
         <chselect class="spacing" title="Resolution" Xkey="resolution"  :list="['Normal','Inverted']"></chselect>
-        <button v-on:click="test">test</button>
         </div>
 </template>
     
@@ -23,9 +22,6 @@ import chselect from './ch-select.vue'
             chselect
         },
         methods: {
-            test(){
-                console.log(this.$store.state)
-            }
         }
     }
 </script>

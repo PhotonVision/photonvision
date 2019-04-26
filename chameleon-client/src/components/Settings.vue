@@ -1,11 +1,7 @@
 <template>
     <Layout id="main-layout">
         <Content id="main-content">
-            <row type="flex" justify="start" align="middle" :gutter="5" >
-                <Col span="12">
-                    <router-view></router-view>
-                </Col>
-            </row>
+            <router-view></router-view>
         </Content>
     </Layout>
 </template>

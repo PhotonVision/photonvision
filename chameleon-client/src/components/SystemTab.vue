@@ -47,7 +47,7 @@
             </div>
             <Divider class="divdiv" orientation="left"></Divider>
             <row type="flex" justify="start" align="middle" style="margin-top:20px">
-                 <Button type="primary" size="small" v-on:click="socketSendAll">Save Changes</Button>
+                 <Button type="primary" size="small" v-on:click="socketSendAll">Save Changes and Restart</Button>
             </row>
         </div> 
     </div>

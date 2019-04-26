@@ -11,11 +11,13 @@
             </Row>
         </Header>
         <Content id="main-content">
-            <row type="flex" justify="start" align="middle" :gutter="5" >
+            <row type="flex" justify="start" align="top" :gutter="5" >
                 <Col span="12">
                     <router-view></router-view>
-                </Col>
-                    <img src="../assets/logo.png">
+                    </Col>
+                    <Col span="12">
+                    <img :src="steamAdress" style="">
+                    </Col>
                 </Col>
             </row>
         </Content>
@@ -37,8 +39,16 @@
         },
         methods: {
             
-        }
+        },
+        computed: {
+            steamAdress: {
+                get: function(){
+                    return this.$store.state.streamAdress;
+                }
+            }
+        },
     }
 </script>
 <style scoped>
+
 </style>

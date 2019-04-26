@@ -24,14 +24,16 @@ export const store = new Vuex.Store({
         dilate: false,
         //contours
         area:[0,100],
-        ratio:[0,0],
+        ratio:[0,1],
         extent:[0,100],
         //Settings
         teamValue:0,
         connectionType:"DHCP",
         ip:0,
         gateWay:0,
-        hostName:""
+        hostName:"",
+        //live info
+        streamAdress:("http://"+location.hostname + ":1181/?stream")
 
     },
     mutations:{
@@ -56,7 +58,8 @@ export const store = new Vuex.Store({
         connectionType: set('connectionType'),
         ip: set('ip'),
         gateWay : set('gateWay'),
-        hostName : set('hostName')
+        hostName : set('hostName'),
+        streamAdress : set('streamAdress')
     },
     getters:{
         camera: state => state.camera,
@@ -77,7 +80,8 @@ export const store = new Vuex.Store({
         connectionType: state => state.connectionType,
         ip: state => state.ip,
         gateWay: state => state.gateWay,
-        hostName: state => state.hostName
+        hostName: state => state.hostName,
+        streamAdress: state => state.streamAdress
 
     },
 });
