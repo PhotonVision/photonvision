@@ -33,7 +33,8 @@ export const store = new Vuex.Store({
         gateWay:0,
         hostName:"",
         //live info
-        streamAdress:("http://"+location.hostname + ":1181/?stream")
+        streamAdress:("http://"+location.hostname + ":1181/?stream"),
+        isBinaryImage:0
 
     },
     mutations:{
@@ -59,7 +60,8 @@ export const store = new Vuex.Store({
         ip: set('ip'),
         gateWay : set('gateWay'),
         hostName : set('hostName'),
-        streamAdress : set('streamAdress')
+        streamAdress : set('streamAdress'),
+        isBinaryImage: set('isBinaryImage')
     },
     getters:{
         camera: state => state.camera,
@@ -81,7 +83,8 @@ export const store = new Vuex.Store({
         ip: state => state.ip,
         gateWay: state => state.gateWay,
         hostName: state => state.hostName,
-        streamAdress: state => state.streamAdress
+        streamAdress: state => state.streamAdress,
+        isBinaryImage: state => state.isBinaryImage
 
     },
 });

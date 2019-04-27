@@ -16,6 +16,10 @@
                     <router-view></router-view>
                     </Col>
                     <Col span="12">
+                    <Tabs :animated="false"  v-model="isBinary" @on-click="handleImage">
+                    <TabPane label="Normal"></TabPane>    
+                    <TabPane label="Threshold"></TabPane>
+                    </Tabs>
                     <img :src="steamAdress" style="">
                     </Col>
                 </Col>
@@ -38,17 +42,29 @@
             }
         },
         methods: {
-            
+            handleImage() {
+                this.$socket.sendObj({"is_binary":this.isBinary});
+            }
         },
         computed: {
             steamAdress: {
                 get: function(){
                     return this.$store.state.streamAdress;
                 }
+            },
+            isBinary: {
+                get: function(){
+                    return this.$store.state.isBinaryImage;
+                },
+                set: function(value){
+                    this.$store.commit('isBinaryImage',value)
+                }
             }
         },
     }
 </script>
-<style scoped>
-
+<style>
+.ivu-tabs-nav .ivu-tabs-tab:hover{
+    color: #0cdfc3 !important;
+}
 </style>
