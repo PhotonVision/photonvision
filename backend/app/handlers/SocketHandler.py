@@ -1,5 +1,7 @@
 import tornado.websocket
 import json
+
+from Exceptions import NoCameraConnectedException
 from .CamerasHandler import CamerasHandler
 from ..classes.SettingsManager import SettingsManager
 
@@ -43,11 +45,20 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         return True
 
     def send_curr_cam(self):
-        self.write_message(self.settings_manager.get_curr_pipeline())
+        try:
+            self.write_message(self.settings_manager.get_curr_pipeline())
+        except NoCameraConnectedException:
+            # TODO: return something if no camera connected
+            self.write_message(None)
 
     def send_full_settings(self):
         full_settings = self.settings_manager.general_settings.copy()
-        full_settings["data"] = self.settings_manager.get_curr_pipeline()
+
+        try:
+            full_settings["data"] = self.settings_manager.get_curr_pipeline()
+        except NoCameraConnectedException:
+            # TODO: return something if no camera connected
+            full_settings["data"] = None
 
         self.write_message(full_settings)
 
