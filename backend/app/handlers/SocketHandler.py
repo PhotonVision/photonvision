@@ -1,7 +1,7 @@
 import tornado.websocket
 import json
 
-from Exceptions import NoCameraConnectedException
+from ..classes.Exceptions import NoCameraConnectedException
 from .CamerasHandler import CamerasHandler
 from ..classes.SettingsManager import SettingsManager
 

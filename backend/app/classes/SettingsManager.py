@@ -1,7 +1,6 @@
 import os
 import json
 from .Singleton import Singleton
-# from .handlers.CamerasHandler import CamerasHandler
 from ..handlers.CamerasHandler import CamerasHandler
 from .Exceptions import PipelineAlreadyExistsException, NoCameraConnectedException
 
@@ -40,9 +39,10 @@ class SettingsManager(metaclass=Singleton):
         self._init_general_settings()
         self._init_cameras()
 
-        if self.general_settings["curr_camera"] not in self.cams and len(list(self.cams.keys())) > 0:
-            self.general_settings["curr_camera"] = list(self.cams.keys())[0]
-            self.general_settings["curr_pipeline"] = list(list(self.cams.keys())[0]["pipelines"].keys())[0]
+        if self.general_settings["curr_camera"] not in self.cams and len(self.cams) > 0:
+            cam_name = list(self.cams.keys())[0]
+            self.general_settings["curr_camera"] = cam_name
+            self.general_settings["curr_pipeline"] = list(self.cams[cam_name]["pipelines"].keys())[0]
 
     def _init_general_settings(self):
         try:
