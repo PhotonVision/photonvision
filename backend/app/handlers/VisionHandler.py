@@ -1,5 +1,6 @@
 import cscore
 from networktables import NetworkTables
+import networktables
 import cv2
 import numpy
 from cscore import CameraServer
@@ -76,25 +77,34 @@ class VisionHandler:
         self.camera_process(CamerasHandler.get_usb_camera_by_name("USB Camera-B4.09.24.1"), None)
 
     def camera_process(self, camera, stream):
-        def table_listener(table, key, value, is_new):
-            # TODO: call actions based on key ----> i.e. change_pipeline
+
+        def change_camera_values():
+            camera.setBrightness(0)
+            camera.setExposureManual(0)
+
+        def pipeline_listener(table, key, value, is_new):
+            change_camera_values()
+
+        def mode_listener(table, key, value, is_new):
             pass
 
         image = numpy.zeros(shape=(0, 0, 3), dtype=numpy.uint8)
         table = NetworkTables.getTable("/Chameleon-Vision/" + camera.getInfo().name)
 
-        table.addEntryListener(table_listener)
-
+        table.addEntryListenerEx(pipeline_listener, key="Pipeline",
+                                 flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
+        table.addEntryListenerEx(mode_listener, key="Driver_Mode",
+                                 flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
+        change_camera_values()
         cv_sink = CameraServer.getInstance().getVideo(camera=camera)
 
         while True:
             _, image = cv_sink.grabFrame(image)
-            hsv_image = self._hsv_threshold()
+            # hsv_image = self._hsv_threshold()
             filtered_contours = None
-
             if table.getBoolean("Driver_Mode", False):
-                contours = self.find_contours(hsv_image)
-                filtered_contours = self.filter_contours(contours)
-
-            image = self.draw_image(input_image=hsv_image, is_binary=False, rectangles=filtered_contours)
-            stream.putFrame(image)
+                #contours = self.find_contours(hsv_image)
+                # filtered_contours = self.filter_contours(contours)
+                pass
+            # image = self.draw_image(input_image=hsv_image, is_binary=False, rectangles=[])
+            # stream.putFrame(image)
