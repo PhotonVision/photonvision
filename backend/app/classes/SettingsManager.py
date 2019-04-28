@@ -65,7 +65,7 @@ class SettingsManager(metaclass=Singleton):
             else:
                 self.create_new_cam(cam.name)
 
-            if not self.cams[cam.name]["path"]:
+            if "path" not in self.cams[cam.name]:
                 self.cams[cam.name]["path"] = cam.otherPaths[0] if len(cam.otherPaths) == 1 else cam.otherPaths[1]
 
     # Access methods
