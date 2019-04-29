@@ -4,9 +4,10 @@ import networktables
 import cv2
 import numpy
 from cscore import CameraServer
-from .CamerasHandler import CamerasHandler
+from CamerasHandler import CamerasHandler
 from app.classes.SettingsManager import SettingsManager
 import time
+import json
 
 
 class VisionHandler:
@@ -91,7 +92,8 @@ class VisionHandler:
         def mode_listener(table, key, value, is_new):
             pass
 
-        image = numpy.zeros(shape=(0, 0, 3), dtype=numpy.uint8)
+        jsonn = json.loads(camera.getConfigJson())
+        image = numpy.zeros(shape=(jsonn['width'], jsonn['height'], 3), dtype=numpy.uint8)
         table = NetworkTables.getTable("/Chameleon-Vision/" + camera.getInfo().name)
 
         table.addEntryListenerEx(pipeline_listener, key="Pipeline",
@@ -99,17 +101,21 @@ class VisionHandler:
         table.addEntryListenerEx(mode_listener, key="Driver_Mode",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         change_camera_values()
-
-        cv_sink = CameraServer.getInstance().getVideo(camera=camera)
+        cs = CameraServer.getInstance()
+        cv_sink = cs.getVideo(camera=camera)
+        cv_publish = cs.putVideo(name='ds;fjkl',width=jsonn['width'],height=jsonn['height'])
 
         while True:
-
+            start = time.time()
             _, image = cv_sink.grabFrame(image)
             # hsv_image = self._hsv_threshold()
             filtered_contours = None
-            if table.getBoolean("Driver_Mode", False):
+            # if table.getBoolean("Driver_Mode", False):
                 #contours = self.find_contours(hsv_image)
                 # filtered_contours = self.filter_contours(contours)
-                pass
+                # pass
             # image = self.draw_image(input_image=hsv_image, is_binary=False, rectangles=[])
-            # stream.putFrame(image)
+            cv_publish.putFrame(image)
+            end = time.time()
+            print(1/(end-start))
+

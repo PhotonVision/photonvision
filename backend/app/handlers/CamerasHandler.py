@@ -42,6 +42,8 @@ class CamerasHandler:
 
                 camera = cscore.UsbCamera(name=device_name, dev=device.dev)
                 camera.setPixelFormat(pixelFormat=camera.enumerateVideoModes()[0].pixelFormat) #TODO if dictionary is empy do this else take from dictionary
+                camera.setFPS(camera.enumerateVideoModes()[0].fps)
+                camera.setResolution(width=camera.enumerateVideoModes()[0].width,height=camera.enumerateVideoModes()[0].height)
 
                 cameras[device_name] = camera
 
