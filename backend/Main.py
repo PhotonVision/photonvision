@@ -7,9 +7,8 @@ from app.handlers.CamerasHandler import CamerasHandler
 from app.handlers.VisionHandler import VisionHandler
 
 if __name__ == "__main__":
-    # mng = SettingsManager()
-    a = CamerasHandler.get_cameras_info()
-    b = CamerasHandler.get_or_start_cameras(a)
+    mng = SettingsManager()
+
     VisionHandler().run()
 
     tornado.options.parse_command_line()

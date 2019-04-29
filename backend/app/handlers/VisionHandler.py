@@ -74,9 +74,12 @@ class VisionHandler:
         # NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
         NetworkTables.initialize("localhost")
         # NetworkTables.initialize()
-        self.camera_process(CamerasHandler.get_usb_camera_by_name("USB Camera-B4.09.24.1"), None)
 
-    def camera_process(self, camera, stream):
+        cams = CamerasHandler.get_or_start_cameras(CamerasHandler.get_cameras_info())
+        for cam in cams:
+            self.camera_process(cams[cam])
+
+    def camera_process(self, camera):
 
         def change_camera_values():
             camera.setBrightness(0)
@@ -96,9 +99,11 @@ class VisionHandler:
         table.addEntryListenerEx(mode_listener, key="Driver_Mode",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         change_camera_values()
+
         cv_sink = CameraServer.getInstance().getVideo(camera=camera)
 
         while True:
+
             _, image = cv_sink.grabFrame(image)
             # hsv_image = self._hsv_threshold()
             filtered_contours = None
