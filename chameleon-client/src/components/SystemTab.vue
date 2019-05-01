@@ -71,10 +71,10 @@
             socketSendAll: function(){
                 this.$socket.sendObj([
                     {'team_number':this.teamNum},
-                    {'connectionType':this.connectionType},
+                    {'connection_type':this.connectionType},
                     {'ip':this.ip},
-                    {'gateWay':this.gateWay},
-                    {'hostName':this.hostName}]);
+                    {'gateway':this.gateWay},
+                    {'hostname':this.hostName}]);
             }
         },
         computed: {
