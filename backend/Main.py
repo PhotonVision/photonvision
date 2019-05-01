@@ -7,7 +7,8 @@ from app.handlers.CamerasHandler import CamerasHandler
 from app.handlers.VisionHandler import VisionHandler
 
 if __name__ == "__main__":
-    mng = SettingsManager()
+    # SettingsManager()
+    CamerasHandler.init_camera()
 
     VisionHandler().run()
 

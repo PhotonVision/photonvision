@@ -1,5 +1,8 @@
 import cscore
 import cv2
+from cscore._cscore import VideoMode
+
+from ..classes.SettingsManager import SettingsManager
 
 
 class CamerasHandler:
@@ -41,15 +44,22 @@ class CamerasHandler:
                         device_name = "pipeline" + str(suffix)
 
                 camera = cscore.UsbCamera(name=device_name, dev=device.dev)
-                camera.setPixelFormat(pixelFormat=camera.enumerateVideoModes()[0].pixelFormat) #TODO if dictionary is empy do this else take from dictionary
-                camera.setFPS(camera.enumerateVideoModes()[0].fps)
-                camera.setResolution(width=camera.enumerateVideoModes()[0].width,height=camera.enumerateVideoModes()[0].height)
+                camera.setPixelFormat(pixelFormat=
+                                      getattr(VideoMode.PixelFormat, SettingsManager()
+                                              .get_curr_cam()["video_mode"]["pixel_format"]))
+                camera.setFPS(SettingsManager().get_curr_cam()["video_mode"]["fps"])
+                camera.setResolution(width=SettingsManager().get_curr_cam()["video_mode"]["width"],
+                                     height=SettingsManager().get_curr_cam()["video_mode"]["height"])
 
                 cameras[device_name] = camera
 
             setattr(CamerasHandler, "cams", cameras)
 
         return getattr(CamerasHandler, "cams")
+
+    @staticmethod
+    def init_camera():
+        return CamerasHandler.get_or_start_cameras(CamerasHandler.get_cameras_info())
 
     @staticmethod
     def get_usb_camera_by_name(cam_name):
