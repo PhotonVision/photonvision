@@ -41,9 +41,11 @@ class CamerasHandler:
                         device_name = "pipeline" + str(suffix)
 
                 camera = cscore.UsbCamera(name=device_name, dev=device.dev)
-                camera.setPixelFormat(pixelFormat=camera.enumerateVideoModes()[0].pixelFormat) #TODO if dictionary is empy do this else take from dictionary
-                camera.setFPS(camera.enumerateVideoModes()[0].fps)
-                camera.setResolution(width=camera.enumerateVideoModes()[0].width,height=camera.enumerateVideoModes()[0].height)
+                camera.setPixelFormat(pixelFormat=camera.enumerateVideoModes()[
+                    0].pixelFormat)
+                camera.setFPS(90)
+                camera.setResolution(width=camera.enumerateVideoModes()[0].width,
+                                     height=camera.enumerateVideoModes()[0].height)
 
                 cameras[device_name] = camera
 
@@ -56,6 +58,13 @@ class CamerasHandler:
         return CamerasHandler.get_or_start_cameras(CamerasHandler.get_cameras_info())[cam_name]
 
     @staticmethod
-    def change_camera_values(usb_camera: cscore.UsbCamera, dic):
-        usb_camera.setBrightness(dic["brightness"] or 50)
-        usb_camera.setExposureManual(dic["exposure"] or 50)
+    def set_camera_settings(usb_camera: cscore.UsbCamera, dic):
+
+        if "brightness" in dic:
+            usb_camera.setBrightness(dic["brightness"])
+
+        if "exposure" in dic:
+            usb_camera.setExposureManual(dic["exposure"])
+
+        if "video_mode" in dic:
+            usb_camera.setVideoMode(dic["video_mode"])
