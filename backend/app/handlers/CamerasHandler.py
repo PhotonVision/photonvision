@@ -66,6 +66,13 @@ class CamerasHandler:
         return CamerasHandler.get_or_start_cameras(CamerasHandler.get_cameras_info())[cam_name]
 
     @staticmethod
-    def change_camera_values(usb_camera: cscore.UsbCamera, dic):
-        usb_camera.setBrightness(dic["brightness"] or 50)
-        usb_camera.setExposureManual(dic["exposure"] or 50)
+    def set_camera_settings(usb_camera: cscore.UsbCamera, dic):
+
+        if "brightness" in dic:
+            usb_camera.setBrightness(dic["brightness"])
+
+        if "exposure" in dic:
+            usb_camera.setExposureManual(dic["exposure"])
+
+        if "video_mode" in dic:
+            usb_camera.setVideoMode(dic["video_mode"])

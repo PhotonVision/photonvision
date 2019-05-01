@@ -10,7 +10,8 @@ if __name__ == "__main__":
     # SettingsManager()
     CamerasHandler.init_camera()
 
-    VisionHandler().run()
+    #VisionHandler().run()
+    SettingsManager().save_settings()
 
     tornado.options.parse_command_line()
     app = ChameleonApplication()

@@ -1,5 +1,8 @@
 import os
 import json
+
+from cscore._cscore import VideoMode
+
 from .Singleton import Singleton
 from ..handlers.CamerasHandler import CamerasHandler
 from .Exceptions import PipelineAlreadyExistsException, NoCameraConnectedException
@@ -67,6 +70,14 @@ class SettingsManager(metaclass=Singleton):
 
             if "path" not in self.cams[cam.name]:
                 self.cams[cam.name]["path"] = cam.otherPaths[0] if len(cam.otherPaths) == 1 else cam.otherPaths[1]
+            if "video_mode" not in self.cams[cam.name]:
+                video_mode: VideoMode = CamerasHandler.get_usb_camera_by_name(cam.name).enumerateVideoModes()[0]
+                self.cams[cam.name]["video_mode"] = {
+                    "fps": video_mode.fps,
+                    "width": video_mode.width,
+                    "height": video_mode.height,
+                    "pixel_format": str(video_mode.pixelFormat).split('.')[1]
+                }
 
     # Access methods
 
@@ -85,6 +96,7 @@ class SettingsManager(metaclass=Singleton):
     def set_curr_camera(self, cam_name):
         if cam_name in self.cams:
             self.general_settings["curr_camera"] = cam_name
+            self.general_settings["curr_pipeline"] = self.get_curr_cam()["pipelines"].keys()[0]
 
     def set_curr_pipeline(self, pipe_name):
         if pipe_name in self.get_curr_cam()["pipelines"]:
@@ -134,14 +146,21 @@ class SettingsManager(metaclass=Singleton):
     # Savers
 
     def save_settings(self):
-        self._save_cameras()
         self._save_general_settings()
+        self._save_cameras()
 
     def _save_cameras(self):
+
+        if not os.path.exists(self.cams_path):
+            os.mkdir(self.cams_path)
+
         for cam in self.cams:
             with open(os.path.join(self.cams_path, cam + '.json'), 'w+') as camera:
                 json.dump(self.cams[cam], camera)
 
     def _save_general_settings(self):
+        if not os.path.exists(self.settings_path):
+            os.mkdir(self.settings_path)
+
         with open(os.path.join(self.settings_path, 'settings.json'), 'w+') as setting_file:
             json.dump(self.general_settings, setting_file)

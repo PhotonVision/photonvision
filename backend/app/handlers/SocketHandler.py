@@ -7,8 +7,9 @@ from ..classes.SettingsManager import SettingsManager
 
 
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
-
     actions = {}
+
+    set_this_camera_settings = ["exposure", "brightness", "video_mode"]
 
     def __init__(self, application, request, **kwargs):
         super().__init__(application, request, **kwargs)
@@ -44,12 +45,19 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
     def check_origin(self, origin):
         return True
 
-    def send_curr_cam(self):
+    def send_curr_pipeline(self):
         try:
             self.write_message(self.settings_manager.get_curr_pipeline())
         except NoCameraConnectedException:
             # TODO: return something if no camera connected
-            self.write_message(None)
+            self.write_message("No camera connected")
+
+    def send_curr_cam(self):
+        try:
+            self.write_message(self.settings_manager.get_curr_cam())
+        except NoCameraConnectedException:
+            # TODO: return something if no camera connected
+            self.write_message("No camera connected")
 
     def send_full_settings(self):
         full_settings = self.settings_manager.general_settings.copy()
@@ -64,15 +72,17 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
 
     def change_curr_camera(self, dic):
         self.settings_manager.set_curr_camera(cam_name=dic["cam"])
+        self.send_curr_cam()
 
     def change_curr_pipeline(self, dic):
         self.settings_manager.set_curr_pipeline(pipe_name=dic["pipeline"])
+        self.send_curr_pipeline()
 
     def change_pipeline_values(self, dic):
         self.settings_manager.change_pipeline_values(dic)
 
-        CamerasHandler.change_camera_values(CamerasHandler.get_usb_camera_by_name(self.settings_manager.general_settings["curr_camera"]), dic)
-
-
-
-
+        for key in self.set_this_camera_settings:
+            if key in dic:
+                CamerasHandler.set_camera_settings(
+                    CamerasHandler.get_usb_camera_by_name(self.settings_manager.general_settings["curr_camera"]),
+                    dic[key])
