@@ -4,7 +4,7 @@
         <chslider class="spacing" title="exposure" Xkey="exposure"></chslider>
         <chslider class="spacing" title="Brightness" Xkey="brightness"></chslider>
         <chselect class="spacing" title="Orientation" Xkey="orientation" :list="['Normal','Inverted']"></chselect>
-        <chselect class="spacing" title="Resolution" Xkey="resolution"  :list="['Normal','Inverted']"></chselect>
+        <chselect class="spacing" title="Resolution" Xkey="resolution"  :list="resolutionList"></chselect>
         </div>
 </template>
     
@@ -22,6 +22,13 @@ import chselect from './ch-select.vue'
             chselect
         },
         methods: {
+        },
+        computed:{
+            resolutionList:{
+                get:function(){
+                    return this.$store.state.resolution;
+                }
+            }
         }
     }
 </script>

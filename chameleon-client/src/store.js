@@ -15,7 +15,7 @@ export const store = new Vuex.Store({
         exposure:54,
         brightness:0,
         orientation:0,
-        resolution:0,
+        resolution:[],
         //threshold
         hue:[0,10],
         saturation:[0,10],
@@ -34,7 +34,10 @@ export const store = new Vuex.Store({
         hostName:"",
         //live info
         streamAdress:("http://"+location.hostname + ":1181/?stream"),
-        isBinaryImage:0
+        isBinaryImage:0,
+        //camera lists
+        cameraList:[],
+        pipelineList:[]
 
     },
     mutations:{
@@ -61,7 +64,9 @@ export const store = new Vuex.Store({
         gateWay : set('gateWay'),
         hostName : set('hostName'),
         streamAdress : set('streamAdress'),
-        isBinaryImage: set('isBinaryImage')
+        isBinaryImage: set('isBinaryImage'),
+        cameraList : set('cameraList'),
+        pipelineList: set('piplineList')
     },
     getters:{
         camera: state => state.camera,
@@ -84,7 +89,9 @@ export const store = new Vuex.Store({
         gateWay: state => state.gateWay,
         hostName: state => state.hostName,
         streamAdress: state => state.streamAdress,
-        isBinaryImage: state => state.isBinaryImage
+        isBinaryImage: state => state.isBinaryImage,
+        cameraList: state => state.cameraList,
+        pipelineList: state => state.pipelineList
 
     },
 });
