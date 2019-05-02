@@ -7,11 +7,12 @@ from app.handlers.CamerasHandler import CamerasHandler
 from app.handlers.VisionHandler import VisionHandler
 
 if __name__ == "__main__":
-    # SettingsManager()
-    CamerasHandler.init_camera()
+    SettingsManager()
+    # CamerasHandler.init_camera()
+
 
     #VisionHandler().run()
-    SettingsManager().save_settings()
+    # SettingsManager().save_settings()
 
     tornado.options.parse_command_line()
     app = ChameleonApplication()

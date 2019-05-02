@@ -4,7 +4,7 @@ import networktables
 import cv2
 import numpy
 from cscore import CameraServer
-from CamerasHandler import CamerasHandler
+from .CamerasHandler import CamerasHandler
 from app.classes.SettingsManager import SettingsManager
 import time
 import json
