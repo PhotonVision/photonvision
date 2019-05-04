@@ -8,8 +8,8 @@ from .Exceptions import PipelineAlreadyExistsException, NoCameraConnectedExcepti
 
 
 class SettingsManager(metaclass=Singleton):
-    cams = {}
-    cams_info = {}
+    cams = {}  #our cameras settings
+    cams_info = {} #cscore USB camera objects
     general_settings = {}
 
     default_pipeline = {
@@ -37,8 +37,6 @@ class SettingsManager(metaclass=Singleton):
     }
 
     def __init__(self):
-        pass
-
         self.settings_path = os.path.join(os.getcwd(), "settings")
         self.cams_path = os.path.join(self.settings_path, "cams")
         self._init_general_settings()
@@ -74,7 +72,7 @@ class SettingsManager(metaclass=Singleton):
             if "path" not in self.cams[cam.name]:
                 self.cams[cam.name]["path"] = cam.otherPaths[0] if len(cam.otherPaths) == 1 else cam.otherPaths[1]
             if "video_mode" not in self.cams[cam.name]:
-                video_mode: VideoMode = self.cams(cam.name).enumerateVideoModes()[0]
+                video_mode: VideoMode = self.cams[cam.name].enumerateVideoModes()[0]
                 self.cams[cam.name]["video_mode"] = {
                     "fps": video_mode.fps,
                     "width": video_mode.width,
@@ -136,7 +134,6 @@ class SettingsManager(metaclass=Singleton):
 
 
     # Access methods
-
     def get_curr_pipeline(self):
         if self.general_settings["curr_pipeline"]:
             return self.cams[self.general_settings["curr_camera"]]["pipelines"][self.general_settings["curr_pipeline"]]
