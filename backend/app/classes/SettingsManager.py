@@ -91,13 +91,13 @@ class SettingsManager(metaclass=Singleton):
 
             device_name = device.name
 
-            if device_name in self.usb_cameras_info:
-                suffix = 0
-                device_name = device.name + str(suffix)
+            if device_name in self.usb_cameras:
+                suffix = 1
+                device_name = device.name + f"({str(suffix)})"
 
                 while device_name in self.usb_cameras:
                     suffix += 1
-                    device_name = "pipeline" + str(suffix)
+                    device_name = "pipeline" + f"({str(suffix)})"
 
             camera = cscore.UsbCamera(name=device_name, dev=device.dev)
             camera.setPixelFormat(pixelFormat=
