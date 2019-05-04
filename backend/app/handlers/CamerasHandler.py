@@ -4,7 +4,7 @@ from cscore._cscore import VideoMode
 
 class CamerasHandler:
 
-    @staticmethod
+    #@staticmethod
     # def get_cameras_info():
     #
     #     if not getattr(CamerasHandler, "cams_info", False):

@@ -59,9 +59,7 @@ class SettingsManager(metaclass=Singleton):
 
     # Initiate our camera's settings
     def _init_cameras(self):
-        cameras = self._get_cameras_info()
-
-        for cam in cameras:
+        for cam in self.usb_cameras_info:
             if os.path.exists(os.path.join(self.cams_path, cam.name + '.json')):
 
                 with open(os.path.join(self.cams_path, cam.name + '.json'), 'r') as camera:
@@ -71,17 +69,6 @@ class SettingsManager(metaclass=Singleton):
                     self.create_new_pipeline(cam_name=cam.name)
             else:
                 self.create_new_cam(cam.name)
-
-            if "path" not in self.cams[cam.name]:
-                self.cams[cam.name]["path"] = cam.otherPaths[0] if len(cam.otherPaths) == 1 else cam.otherPaths[1]
-            if "video_mode" not in self.cams[cam.name]:
-                video_mode: VideoMode = self.cams(cam.name).enumerateVideoModes()[0]
-                self.cams[cam.name]["video_mode"] = {
-                    "fps": video_mode.fps,
-                    "width": video_mode.width,
-                    "height": video_mode.height,
-                    "pixel_format": str(video_mode.pixelFormat).split('.')[1]
-                }
 
     # Initiate true usb cameras(filters microphones and double cameras)
     def _init_cameras_info(self):
@@ -197,6 +184,17 @@ class SettingsManager(metaclass=Singleton):
         self.cams[cam_name] = {}
         self.cams[cam_name]["pipelines"] = {}
         self.create_new_pipeline(cam_name=cam_name)
+
+        self.cams[cam_name]["path"] = self.usb_cameras[cam_name].otherPaths[0] if len(
+            self.usb_cameras[cam_name].otherPaths) == 1 else self.usb_cameras[cam_name].otherPaths[1]
+
+        video_mode: VideoMode = self.usb_cameras[self.usb_cameras[cam_name].name].enumerateVideoModes()[0]
+        self.cams[self.usb_cameras[cam_name].name]["video_mode"] = {
+            "fps": video_mode.fps,
+            "width": video_mode.width,
+            "height": video_mode.height,
+            "pixel_format": str(video_mode.pixelFormat).split('.')[1]
+        }
 
     # Savers
 

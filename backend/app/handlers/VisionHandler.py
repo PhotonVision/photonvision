@@ -4,7 +4,6 @@ import networktables
 import cv2
 import numpy
 from cscore import CameraServer
-from .CamerasHandler import CamerasHandler
 from app.classes.SettingsManager import SettingsManager
 import time
 import json
@@ -76,9 +75,8 @@ class VisionHandler:
         NetworkTables.initialize("localhost")
         # NetworkTables.initialize()
 
-        cams = CamerasHandler.get_or_start_cameras(CamerasHandler.get_cameras_info())
-        for cam in cams:
-            self.camera_process(cams[cam])
+        for cam in SettingsManager().usb_cameras:
+            self.camera_process(SettingsManager().usb_cameras[cam])
 
     def camera_process(self, camera):
 
