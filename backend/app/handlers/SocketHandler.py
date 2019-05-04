@@ -83,6 +83,5 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
 
         for key in self.set_this_camera_settings:
             if key in dic:
-                CamerasHandler.set_camera_settings(
-                    CamerasHandler.get_usb_camera_by_name(self.settings_manager.general_settings["curr_camera"]),
-                    dic[key])
+                self.settings_manager.set_camera_settings(self.settings_manager.general_settings["curr_camera"],
+                                                          dic[key])

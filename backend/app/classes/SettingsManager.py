@@ -8,8 +8,9 @@ from .Exceptions import PipelineAlreadyExistsException, NoCameraConnectedExcepti
 
 
 class SettingsManager(metaclass=Singleton):
-    cams = {}  #our cameras settings
-    cams_info = {} #cscore USB camera objects
+    cams = {}
+    usb_cameras = {}
+    usb_cameras_info = {}
     general_settings = {}
 
     default_pipeline = {
@@ -40,8 +41,9 @@ class SettingsManager(metaclass=Singleton):
         self.settings_path = os.path.join(os.getcwd(), "settings")
         self.cams_path = os.path.join(self.settings_path, "cams")
         self._init_general_settings()
+        self._init_cameras_info()
+        self._init_usb_cameras()
         self._init_cameras()
-        self._init_camera()
 
         if self.general_settings["curr_camera"] not in self.cams and len(self.cams) > 0:
             cam_name = list(self.cams.keys())[0]
@@ -55,6 +57,7 @@ class SettingsManager(metaclass=Singleton):
         except FileNotFoundError:
             self.general_settings = self.default_general_settings.copy()
 
+    # Initiate our camera's settings
     def _init_cameras(self):
         cameras = self._get_cameras_info()
 
@@ -72,7 +75,7 @@ class SettingsManager(metaclass=Singleton):
             if "path" not in self.cams[cam.name]:
                 self.cams[cam.name]["path"] = cam.otherPaths[0] if len(cam.otherPaths) == 1 else cam.otherPaths[1]
             if "video_mode" not in self.cams[cam.name]:
-                video_mode: VideoMode = self.cams[cam.name].enumerateVideoModes()[0]
+                video_mode: VideoMode = self.cams(cam.name).enumerateVideoModes()[0]
                 self.cams[cam.name]["video_mode"] = {
                     "fps": video_mode.fps,
                     "width": video_mode.width,
@@ -80,60 +83,59 @@ class SettingsManager(metaclass=Singleton):
                     "pixel_format": str(video_mode.pixelFormat).split('.')[1]
                 }
 
-    def _get_cameras_info(self):
-        arr = []
+    # Initiate true usb cameras(filters microphones and double cameras)
+    def _init_cameras_info(self):
+        true_cameras = []
         usb_devices = cscore.UsbCamera.enumerateUsbCameras()
+
         for index in range(len(usb_devices)):
             cap = cv2.VideoCapture(index)
             if cap.isOpened():
-                arr.append(index)
+                true_cameras.append(index)
                 cap.release()
                 index += 1
 
-        return [usb_devices[i] for i in arr]
+        for index in true_cameras:
+            self.usb_cameras_info[usb_devices[index].name] = usb_devices[index]
 
-    def _get_or_start_cameras(self):
-        for device in self.cams_info:
+    # Initiate cscore usb devices
+    def _init_usb_cameras(self):
+        for device in self.usb_cameras_info:
 
             device_name = device.name
 
-            if device.name in self.cams_info:
+            if device_name in self.usb_cameras_info:
                 suffix = 0
                 device_name = device.name + str(suffix)
 
-                while device_name in self.cams:
-                    suffix +=1
+                while device_name in self.usb_cameras:
+                    suffix += 1
                     device_name = "pipeline" + str(suffix)
 
-                camera = cscore.UsbCamera(name=device_name, dev=device.dev)
-                camera.setPixelFormat(pixelFormat=
-                                      getattr(VideoMode.PixelFormat,
-                                              self.get_curr_cam()["video_mode"]["pixel_format"]))
-                camera.setFPS(self.get_curr_cam()["video_mode"]["fps"])
-                camera.setResolution(width=self.get_curr_cam()["video_mode"]["width"],
-                                     height=self.get_curr_cam()["video_mode"]["height"])
-                self.cams[device_name] = camera
+            camera = cscore.UsbCamera(name=device_name, dev=device.dev)
+            camera.setPixelFormat(pixelFormat=
+                                  getattr(VideoMode.PixelFormat,
+                                          self.get_curr_cam()["video_mode"]["pixel_format"]))
+            camera.setFPS(self.get_curr_cam()["video_mode"]["fps"])
+            camera.setResolution(width=self.get_curr_cam()["video_mode"]["width"],
+                                 height=self.get_curr_cam()["video_mode"]["height"])
 
-    def _init_camera(self):
-        return self._get_or_start_cameras()
+            self.usb_cameras[device_name] = camera
 
-    def _get_usb_camera_by_name(self):
-        pass
-
-    def set_camera_settings(self,usb_camera:cscore.UsbCamera, dic):
+    # Change usb camera settings
+    def set_camera_settings(self, camera_name, dic):
 
         if "brightness" in dic:
-            usb_camera.setBrightness(dic["brightness"])
+            self.usb_cameras[camera_name].setBrightness(dic["brightness"])
 
         if "exposure" in dic:
-            usb_camera.setExposureManual(dic["exposure"])
+            self.usb_cameras[camera_name].setExposureManual(dic["exposure"])
 
         if "video_mode" in dic:
-            usb_camera.setVideoMode(dic["video_mode"])
-
-
+            self.usb_cameras[camera_name].setVideoMode(dic["video_mode"])
 
     # Access methods
+
     def get_curr_pipeline(self):
         if self.general_settings["curr_pipeline"]:
             return self.cams[self.general_settings["curr_camera"]]["pipelines"][self.general_settings["curr_pipeline"]]

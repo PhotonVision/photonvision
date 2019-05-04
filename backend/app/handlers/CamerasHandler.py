@@ -24,35 +24,35 @@ class CamerasHandler:
     #
     #     return getattr(CamerasHandler, "cams_info")
 
-    @staticmethod
-    def get_or_start_cameras(usb_devices):
-
-        if not getattr(CamerasHandler, "cams", False):
-            cameras = {}
-            for device in usb_devices:
-                device_name = device.name
-
-                if device.name in cameras:
-                    suffix = 0
-                    device_name = device.name + str(suffix)
-
-                    while device_name in cameras:
-                        suffix += 1
-                        device_name = "pipeline" + str(suffix)
-
-                camera = cscore.UsbCamera(name=device_name, dev=device.dev)
-                camera.setPixelFormat(pixelFormat=
-                                      getattr(VideoMode.PixelFormat, SettingsManager()
-                                              .get_curr_cam()["video_mode"]["pixel_format"]))
-                camera.setFPS(SettingsManager().get_curr_cam()["video_mode"]["fps"])
-                camera.setResolution(width=SettingsManager().get_curr_cam()["video_mode"]["width"],
-                                     height=SettingsManager().get_curr_cam()["video_mode"]["height"])
-
-                cameras[device_name] = camera
-
-            setattr(CamerasHandler, "cams", cameras)
-
-        return getattr(CamerasHandler, "cams")
+    # @staticmethod
+    # def get_or_start_cameras(usb_devices):
+    #
+    #     if not getattr(CamerasHandler, "cams", False):
+    #         cameras = {}
+    #         for device in usb_devices:
+    #             device_name = device.name
+    #
+    #             if device.name in cameras:
+    #                 suffix = 0
+    #                 device_name = device.name + str(suffix)
+    #
+    #                 while device_name in cameras:
+    #                     suffix += 1
+    #                     device_name = "pipeline" + str(suffix)
+    #
+    #             camera = cscore.UsbCamera(name=device_name, dev=device.dev)
+    #             camera.setPixelFormat(pixelFormat=
+    #                                   getattr(VideoMode.PixelFormat, SettingsManager()
+    #                                           .get_curr_cam()["video_mode"]["pixel_format"]))
+    #             camera.setFPS(SettingsManager().get_curr_cam()["video_mode"]["fps"])
+    #             camera.setResolution(width=SettingsManager().get_curr_cam()["video_mode"]["width"],
+    #                                  height=SettingsManager().get_curr_cam()["video_mode"]["height"])
+    #
+    #             cameras[device_name] = camera
+    #
+    #         setattr(CamerasHandler, "cams", cameras)
+    #
+    #     return getattr(CamerasHandler, "cams")
 
     # @staticmethod
     # def init_camera():
