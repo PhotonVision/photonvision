@@ -45,6 +45,7 @@ class SettingsManager(metaclass=Singleton):
         self._init_usb_cameras()
         self._init_cameras()
 
+
         if self.general_settings["curr_camera"] not in self.cams and len(self.cams) > 0:
             cam_name = list(self.cams.keys())[0]
             self.general_settings["curr_camera"] = cam_name
@@ -59,7 +60,8 @@ class SettingsManager(metaclass=Singleton):
 
     # Initiate our camera's settings
     def _init_cameras(self):
-        for cam in self.usb_cameras_info:
+        for cam_name in self.usb_cameras_info:
+            cam = self.usb_cameras_info[cam_name]
             if os.path.exists(os.path.join(self.cams_path, cam.name + '.json')):
 
                 with open(os.path.join(self.cams_path, cam.name + '.json'), 'r') as camera:
@@ -82,12 +84,13 @@ class SettingsManager(metaclass=Singleton):
                 cap.release()
                 index += 1
 
-        for index in true_cameras:
-            self.usb_cameras_info[usb_devices[index].name] = usb_devices[index]
+        for i in true_cameras:
+            self.usb_cameras_info[usb_devices[i].name] = usb_devices[i]
 
     # Initiate cscore usb devices
     def _init_usb_cameras(self):
-        for device in self.usb_cameras_info:
+        for i in self.usb_cameras_info:
+            device = self.usb_cameras_info[i]
 
             device_name = device.name
 
@@ -185,10 +188,10 @@ class SettingsManager(metaclass=Singleton):
         self.cams[cam_name]["pipelines"] = {}
         self.create_new_pipeline(cam_name=cam_name)
 
-        self.cams[cam_name]["path"] = self.usb_cameras[cam_name].otherPaths[0] if len(
-            self.usb_cameras[cam_name].otherPaths) == 1 else self.usb_cameras[cam_name].otherPaths[1]
+        self.cams[cam_name]["path"] = self.usb_cameras_info[cam_name].otherPaths[0] if len(
+            self.usb_cameras_info[cam_name].otherPaths) == 1 else self.usb_cameras_info[cam_name].otherPaths[1]
 
-        video_mode: VideoMode = self.usb_cameras[self.usb_cameras[cam_name].name].enumerateVideoModes()[0]
+        video_mode: VideoMode = self.usb_cameras[cam_name].enumerateVideoModes()[0]
         self.cams[self.usb_cameras[cam_name].name]["video_mode"] = {
             "fps": video_mode.fps,
             "width": video_mode.width,

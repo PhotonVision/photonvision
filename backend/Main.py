@@ -8,7 +8,7 @@ from app.handlers.VisionHandler import VisionHandler
 if __name__ == "__main__":
     SettingsManager()
     
-    #VisionHandler().run()
+    # VisionHandler().run()
     # SettingsManager().save_settings()
 
     tornado.options.parse_command_line()
