@@ -44,12 +44,15 @@ class SettingsManager(metaclass=Singleton):
         self._init_cameras_info()
         self._init_usb_cameras()
         self._init_cameras()
-
+        self._init_usb_cameras_settings()
 
         if self.general_settings["curr_camera"] not in self.cams and len(self.cams) > 0:
             cam_name = list(self.cams.keys())[0]
             self.general_settings["curr_camera"] = cam_name
             self.general_settings["curr_pipeline"] = list(self.cams[cam_name]["pipelines"].keys())[0]
+        else:
+            self.general_settings["curr_camera"] = ""
+            self.general_settings["curr_pipeline"] = ""
 
     def _init_general_settings(self):
         try:
@@ -103,14 +106,14 @@ class SettingsManager(metaclass=Singleton):
                     device_name = "pipeline" + f"({str(suffix)})"
 
             camera = cscore.UsbCamera(name=device_name, dev=device.dev)
-            camera.setPixelFormat(pixelFormat=
-                                  getattr(VideoMode.PixelFormat,
-                                          self.get_curr_cam()["video_mode"]["pixel_format"]))
-            camera.setFPS(self.get_curr_cam()["video_mode"]["fps"])
-            camera.setResolution(width=self.get_curr_cam()["video_mode"]["width"],
-                                 height=self.get_curr_cam()["video_mode"]["height"])
 
             self.usb_cameras[device_name] = camera
+
+    def _init_usb_cameras_settings(self):
+        for cam_name in self.usb_cameras:
+            self.usb_cameras[cam_name].setPixelFormat(pixelFormat=getattr(VideoMode.PixelFormat, self.cams[cam_name]["video_mode"]["pixel_format"]))
+            self.usb_cameras[cam_name].setFPS(self.cams[cam_name]["video_mode"]["fps"])
+            self.usb_cameras[cam_name].setResolution(width=self.cams[cam_name]["video_mode"]["width"], height=self.cams[cam_name]["video_mode"]["height"])
 
     # Change usb camera settings
     def set_camera_settings(self, camera_name, dic):
