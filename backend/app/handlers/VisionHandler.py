@@ -76,9 +76,9 @@ class VisionHandler:
         # NetworkTables.initialize()
 
         for cam in SettingsManager().usb_cameras:
-            self.camera_process(SettingsManager().usb_cameras[cam])
+            self.camera_process(SettingsManager().usb_cameras[cam],cam)
 
-    def camera_process(self, camera):
+    def camera_process(self, camera,cam_name):
 
         def change_camera_values():
             camera.setBrightness(0)
@@ -90,8 +90,7 @@ class VisionHandler:
         def mode_listener(table, key, value, is_new):
             pass
 
-        jsonn = json.loads(camera.getConfigJson())
-        image = numpy.zeros(shape=(jsonn['width'], jsonn['height'], 3), dtype=numpy.uint8)
+        image = numpy.zeros(shape=(SettingsManager().cams[cam_name]["video_mode"]["width"], SettingsManager().cams[cam_name]["video_mode"]["height"], 3), dtype=numpy.uint8)
         table = NetworkTables.getTable("/Chameleon-Vision/" + camera.getInfo().name)
 
         table.addEntryListenerEx(pipeline_listener, key="Pipeline",
@@ -101,7 +100,8 @@ class VisionHandler:
         change_camera_values()
         cs = CameraServer.getInstance()
         cv_sink = cs.getVideo(camera=camera)
-        cv_publish = cs.putVideo(name='ds;fjkl',width=jsonn['width'],height=jsonn['height'])
+        cv_publish = cs.putVideo(name=cam_name, width=SettingsManager().cams[cam_name]["video_mode"]["width"],
+                                 height=SettingsManager().cams[cam_name]["video_mode"]["height"])
 
         while True:
             start = time.time()
