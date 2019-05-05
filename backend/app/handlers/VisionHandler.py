@@ -27,8 +27,7 @@ class VisionHandler:
         _, contours, _ = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         return contours
 
-    def filter_contours(self, input_contours, camera_area, min_area, max_area, min_ratio, max_ratio, min_extent,
-                        max_extent):
+    def filter_contours(self, input_contours, camera_area, area, ratio, extent):
         output = []
         rectangle = []
 
@@ -40,17 +39,17 @@ class VisionHandler:
             rect_area = rect[1][0] * rect[1][1]
 
             try:
-                extent = float(contour_area) / rect_area
-                ratio = float(rect[1][0]) / rect[1][1]
-                area = rect_area / camera_area
+                extent_percent = float(contour_area) / rect_area
+                ratio_percent = float(rect[1][0]) / rect[1][1]
+                area_percent = rect_area / camera_area
             except:
                 continue
 
-            if area < min_area or area > max_area:
+            if area_percent < area[0] or area_percent > area[1]:
                 continue
-            if ratio < min_ratio or ratio > max_ratio:
+            if ratio_percent < ratio[0] or ratio_percent > ratio[1]:
                 continue
-            if extent < min_extent or extent > max_extent:
+            if extent_percent < extent[0] or extent_percent > extent[1]:
                 continue
 
             output.append(contour)
@@ -80,12 +79,16 @@ class VisionHandler:
 
     def camera_process(self, camera,cam_name):
 
+        curr_pipline = list(SettingsManager.cams[cam_name]["pipelines"].values())[0]
+
         def change_camera_values():
             camera.setBrightness(0)
             camera.setExposureManual(0)
 
         def pipeline_listener(table, key, value, is_new):
-            change_camera_values()
+            if(is_new):
+                curr_pipline = SettingsManager.cams[cam_name]["pipelines"][value]
+                change_camera_values()
 
         def mode_listener(table, key, value, is_new):
             pass
@@ -102,17 +105,19 @@ class VisionHandler:
         cv_sink = cs.getVideo(camera=camera)
         cv_publish = cs.putVideo(name=cam_name, width=SettingsManager().cams[cam_name]["video_mode"]["width"],
                                  height=SettingsManager().cams[cam_name]["video_mode"]["height"])
-
+        cam_area = SettingsManager().cams[cam_name]["video_mode"]["width"] * SettingsManager().cams[cam_name]["video_mode"]["height"]
         while True:
             start = time.time()
             _, image = cv_sink.grabFrame(image)
-            # hsv_image = self._hsv_threshold()
-            filtered_contours = None
+            hsv_image = self._hsv_threshold(curr_pipline["hue"],
+                                            curr_pipline["saturation"], curr_pipline["value"],
+                                            image, curr_pipline["erode"], curr_pipline["dilate"])
+
+
             # if table.getBoolean("Driver_Mode", False):
-                #contours = self.find_contours(hsv_image)
-                # filtered_contours = self.filter_contours(contours)
-                # pass
-            # image = self.draw_image(input_image=hsv_image, is_binary=False, rectangles=[])
+            contours = self.find_contours(hsv_image)
+            filtered_contours = self.filter_contours(contours, cam_area, curr_pipline["area"], curr_pipline["ratio"], curr_pipline["extent"])
+            image = self.draw_image(input_image=image, is_binary=False, rectangles=filtered_contours)
             cv_publish.putFrame(image)
             end = time.time()
             print(1/(end-start))
