@@ -195,7 +195,7 @@ class SettingsManager(metaclass=Singleton):
             self.usb_cameras_info[cam_name].otherPaths) == 1 else self.usb_cameras_info[cam_name].otherPaths[1]
 
         video_mode: VideoMode = self.usb_cameras[cam_name].enumerateVideoModes()[0]
-        self.cams[self.usb_cameras[cam_name].name]["video_mode"] = {
+        self.cams[cam_name]["video_mode"] = {
             "fps": video_mode.fps,
             "width": video_mode.width,
             "height": video_mode.height,
