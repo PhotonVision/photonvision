@@ -7,6 +7,7 @@ from cscore import CameraServer
 from app.classes.SettingsManager import SettingsManager
 import time
 import json
+import multiprocessing
 
 
 class VisionHandler:
@@ -75,7 +76,8 @@ class VisionHandler:
         # NetworkTables.initialize()
 
         for cam in SettingsManager().usb_cameras:
-            self.camera_process(SettingsManager().usb_cameras[cam],cam)
+            multiprocessing.Process(target=self.camera_process(SettingsManager().usb_cameras[cam],cam))
+            # self.camera_process(SettingsManager().usb_cameras[cam],cam)
 
     def camera_process(self, camera,cam_name):
 

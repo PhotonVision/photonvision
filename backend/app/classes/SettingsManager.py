@@ -25,7 +25,8 @@ class SettingsManager(metaclass=Singleton):
         "dilate": False,
         "area": [0, 100],
         "ratio": [0, 20],
-        "extent": [0, 100]
+        "extent": [0, 100],
+        "is_binary": "Normal"
     }
     default_general_settings = {
         "team_number": 1577,
