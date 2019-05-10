@@ -70,14 +70,17 @@ class VisionHandler:
         return input_image
 
     def run(self):
+        procs = []
         camera_server = cscore.CameraServer.getInstance()
         # NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
         NetworkTables.initialize("localhost")
         # NetworkTables.initialize()
 
         for cam in SettingsManager().usb_cameras:
-            multiprocessing.Process(target=self.camera_process(SettingsManager().usb_cameras[cam],cam))
+            proc = multiprocessing.Process(target=self.camera_process, args=(SettingsManager().usb_cameras[cam],cam))
+            procs.append(proc)
             # self.camera_process(SettingsManager().usb_cameras[cam],cam)
+        return procs
 
     def camera_process(self, camera,cam_name):
 
@@ -102,7 +105,7 @@ class VisionHandler:
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         table.addEntryListenerEx(mode_listener, key="Driver_Mode",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
-        change_camera_values()
+        # change_camera_values()
         cs = CameraServer.getInstance()
         cv_sink = cs.getVideo(camera=camera)
         cv_publish = cs.putVideo(name=cam_name, width=SettingsManager().cams[cam_name]["video_mode"]["width"],
