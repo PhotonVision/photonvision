@@ -95,16 +95,12 @@ class SettingsManager(metaclass=Singleton):
     def _init_usb_cameras(self):
         for i in self.usb_cameras_info:
             device = self.usb_cameras_info[i]
-
             device_name = device.name
+            suffix = 1
 
-            if device_name in self.usb_cameras:
-                suffix = 1
-                device_name = device.name + f"({str(suffix)})"
-
-                while device_name in self.usb_cameras:
-                    suffix += 1
-                    device_name = "pipeline" + f"({str(suffix)})"
+            while device_name in self.usb_cameras:
+                suffix += 1
+                device_name = f"{device.name}({str(suffix)})"
 
             camera = cscore.UsbCamera(name=device_name, dev=device.dev)
 
