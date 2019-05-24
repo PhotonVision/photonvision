@@ -1,10 +1,16 @@
+from multiprocessing import Queue
+from multiprocessing.managers import BaseManager
+
 import tornado.ioloop
 import multiprocessing
+import logging
+from cscore import CameraServer
 
 from app.ChameleonVisionApp import ChameleonApplication
 from app.classes.SettingsManager import SettingsManager
 from tornado.options import options
 from app.handlers.VisionHandler import VisionHandler
+
 
 def run_server():
     tornado.options.parse_command_line()
@@ -13,21 +19,14 @@ def run_server():
     app.listen(options.port)
     tornado.ioloop.IOLoop.current().start()
 
+
+
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
     SettingsManager()
-    
-    procs = VisionHandler().run()
-    # proc = multiprocessing.Process(target=run_server)
-    # procs.append(proc)
-    # proc.start()
 
+    VisionHandler().run()
 
-    for i in procs:
-        i.start()
-    # SettingsManager().save_settings()
+    while True:
+        pass
 
-
-
-#TODO: create process for each camera
-# create proccess loop and camera publisher
-# bridge network tables for each camera

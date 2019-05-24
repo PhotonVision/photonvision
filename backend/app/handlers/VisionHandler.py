@@ -5,12 +5,13 @@ import cv2
 import numpy
 from cscore import CameraServer
 from app.classes.SettingsManager import SettingsManager
+from ..classes.Singleton import Singleton
 import time
-import json
-import multiprocessing
+from multiprocessing import Process, Pipe
+import threading
 
 
-class VisionHandler:
+class VisionHandler(metaclass=Singleton):
     def __init__(self):
         self.kernel = numpy.ones((5, 5), numpy.uint8)
 
@@ -71,59 +72,94 @@ class VisionHandler:
 
     def run(self):
         procs = []
-        camera_server = cscore.CameraServer.getInstance()
         # NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
         NetworkTables.initialize("localhost")
         # NetworkTables.initialize()
+        cs = CameraServer.getInstance()
+        pipes = []
 
-        for cam in SettingsManager().usb_cameras:
-            proc = multiprocessing.Process(target=self.camera_process, args=(SettingsManager().usb_cameras[cam],cam))
-            procs.append(proc)
-            # self.camera_process(SettingsManager().usb_cameras[cam],cam)
-        return procs
+        for cam_name in SettingsManager().usb_cameras:
+            threading.Thread(target=self.thred_proc, args=(cs,cam_name)).start()
 
-    def camera_process(self, camera,cam_name):
+
+
+        #     parent, child = Pipe()
+        #     cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
+        #     image = numpy.zeros(shape=(SettingsManager().cams[cam_name]["video_mode"]["width"],
+        #                                SettingsManager().cams[cam_name]["video_mode"]["height"], 3), dtype=numpy.uint8)
+        #     cv_publish = cs.putVideo(name=cam_name, width=SettingsManager().cams[cam_name]["video_mode"]["width"],
+        #                              height=SettingsManager().cams[cam_name]["video_mode"]["height"])
+        #
+        #     proc = Process(target=self.camera_process,
+        #                    args=(SettingsManager.usb_cameras[cam_name], cam_name, child))
+        #     proc.start()
+        #     pipes.append(
+        #         {
+        #             "cam": SettingsManager.usb_cameras[cam_name],
+        #             "cv_sink": cv_sink,
+        #             "pipe": parent,
+        #             "image": image,
+        #             "publish":cv_publish
+        #         }
+        #     )
+        #
+        # while True:
+        #     for dic in pipes:
+        #         a,b = dic["cv_sink"].grabFrame(dic["image"])
+        #         dic["pipe"].send(a)
+        #         dic["publish"].putFrame(b)
+
+
+    def thred_proc(self,cs,cam_name):
+        cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
+        image = numpy.zeros(shape=(SettingsManager().cams[cam_name]["video_mode"]["width"],
+                                       SettingsManager().cams[cam_name]["video_mode"]["height"], 3), dtype=numpy.uint8)
+        cv_publish = cs.putVideo(name=cam_name, width=SettingsManager().cams[cam_name]["video_mode"]["width"],
+                                     height=SettingsManager().cams[cam_name]["video_mode"]["height"])
+        parent,child = Pipe()
+        proc = Process(target=self.camera_process, args=(SettingsManager.usb_cameras[cam_name], cam_name, child)).start()
+        while True:
+            _, image = cv_sink.grabFrame(image)
+            parent.send(image)
+            cv_publish.putFrame(image)
+
+
+    def camera_process(self, camera, cam_name, pipe):
 
         curr_pipline = list(SettingsManager.cams[cam_name]["pipelines"].values())[0]
 
-        def change_camera_values():
-            camera.setBrightness(0)
-            camera.setExposureManual(0)
-
-        def pipeline_listener(table, key, value, is_new):
-            if(is_new):
-                curr_pipline = SettingsManager.cams[cam_name]["pipelines"][value]
-                change_camera_values()
-
-        def mode_listener(table, key, value, is_new):
-            pass
-
-        image = numpy.zeros(shape=(SettingsManager().cams[cam_name]["video_mode"]["width"], SettingsManager().cams[cam_name]["video_mode"]["height"], 3), dtype=numpy.uint8)
-        table = NetworkTables.getTable("/Chameleon-Vision/" + camera.getInfo().name)
-
-        table.addEntryListenerEx(pipeline_listener, key="Pipeline",
-                                 flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
-        table.addEntryListenerEx(mode_listener, key="Driver_Mode",
-                                 flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
+        # def change_camera_values():
+        #     camera.setBrightness(0)
+        #     camera.setExposureManual(0)
+        #
+        # def pipeline_listener(table, key, value, is_new):
+        #     if (is_new):
+        #         curr_pipline = SettingsManager.cams[cam_name]["pipelines"][value]
+        #         change_camera_values()
+        #
+        # def mode_listener(table, key, value, is_new):
+        #     pass
+        #
+        # table = NetworkTables.getTable("/Chameleon-Vision/" + camera.getInfo().name)
+        #
+        # table.addEntryListenerEx(pipeline_listener, key="Pipeline",
+        #                          flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
+        # table.addEntryListenerEx(mode_listener, key="Driver_Mode",
+        #                          flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         # change_camera_values()
-        cs = CameraServer.getInstance()
-        cv_sink = cs.getVideo(camera=camera)
-        cv_publish = cs.putVideo(name=cam_name, width=SettingsManager().cams[cam_name]["video_mode"]["width"],
-                                 height=SettingsManager().cams[cam_name]["video_mode"]["height"])
-        cam_area = SettingsManager().cams[cam_name]["video_mode"]["width"] * SettingsManager().cams[cam_name]["video_mode"]["height"]
+        cam_area = SettingsManager().cams[cam_name]["video_mode"]["width"] * \
+                   SettingsManager().cams[cam_name]["video_mode"]["height"]
+
         while True:
             start = time.time()
-            _, image = cv_sink.grabFrame(image)
-            hsv_image = self._hsv_threshold(curr_pipline["hue"],
-                                            curr_pipline["saturation"], curr_pipline["value"],
-                                            image, curr_pipline["erode"], curr_pipline["dilate"])
+            image = pipe.recv()
+            # hsv_image = self._hsv_threshold(curr_pipline["hue"],
+            #                                 curr_pipline["saturation"], curr_pipline["value"],
+            #                                 image, curr_pipline["erode"], curr_pipline["dilate"])
+            # # if table.getBoolean("Driver_Mode", False):
+            # contours = self.find_contours(hsv_image)
+            # filtered_contours = self.filter_contours(contours, cam_area, curr_pipline["area"], curr_pipline["ratio"], curr_pipline["extent"])
+            # image = self.draw_image(input_image=image, is_binary=False, rectangles=filtered_contours)
 
-
-            # if table.getBoolean("Driver_Mode", False):
-            contours = self.find_contours(hsv_image)
-            filtered_contours = self.filter_contours(contours, cam_area, curr_pipline["area"], curr_pipline["ratio"], curr_pipline["extent"])
-            image = self.draw_image(input_image=image, is_binary=False, rectangles=filtered_contours)
-            cv_publish.putFrame(image)
             end = time.time()
-            print(1/(end-start))
-
+            print(1 / (end - start))
