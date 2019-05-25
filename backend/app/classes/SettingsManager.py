@@ -81,12 +81,12 @@ class SettingsManager(metaclass=Singleton):
         true_cameras = []
         usb_devices = cscore.UsbCamera.enumerateUsbCameras()
 
-        for index in range(len(usb_devices)):
-            cap = cv2.VideoCapture(index)
+        for index, device in enumerate(usb_devices):
+            cap = cv2.VideoCapture(device.dev)
             if cap.isOpened():
                 true_cameras.append(index)
                 cap.release()
-                index += 1
+
 
         for i in true_cameras:
             self.usb_cameras_info[usb_devices[i].name] = usb_devices[i]

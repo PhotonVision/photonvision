@@ -8,8 +8,8 @@ from app.classes.SettingsManager import SettingsManager
 from ..classes.Singleton import Singleton
 import time
 from multiprocessing import Process, Pipe
+import multiprocessing
 import threading
-
 
 class VisionHandler(metaclass=Singleton):
     def __init__(self):
@@ -82,49 +82,31 @@ class VisionHandler(metaclass=Singleton):
             threading.Thread(target=self.thred_proc, args=(cs,cam_name)).start()
 
 
-
-        #     parent, child = Pipe()
-        #     cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
-        #     image = numpy.zeros(shape=(SettingsManager().cams[cam_name]["video_mode"]["width"],
-        #                                SettingsManager().cams[cam_name]["video_mode"]["height"], 3), dtype=numpy.uint8)
-        #     cv_publish = cs.putVideo(name=cam_name, width=SettingsManager().cams[cam_name]["video_mode"]["width"],
-        #                              height=SettingsManager().cams[cam_name]["video_mode"]["height"])
-        #
-        #     proc = Process(target=self.camera_process,
-        #                    args=(SettingsManager.usb_cameras[cam_name], cam_name, child))
-        #     proc.start()
-        #     pipes.append(
-        #         {
-        #             "cam": SettingsManager.usb_cameras[cam_name],
-        #             "cv_sink": cv_sink,
-        #             "pipe": parent,
-        #             "image": image,
-        #             "publish":cv_publish
-        #         }
-        #     )
-        #
-        # while True:
-        #     for dic in pipes:
-        #         a,b = dic["cv_sink"].grabFrame(dic["image"])
-        #         dic["pipe"].send(a)
-        #         dic["publish"].putFrame(b)
-
-
     def thred_proc(self,cs,cam_name):
+        async def pipe_send(pipe, data):
+            pipe.send(data)
+
+        async def pipe_recive(pipe):
+            return pipe.recv()
         cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
         image = numpy.zeros(shape=(SettingsManager().cams[cam_name]["video_mode"]["width"],
                                        SettingsManager().cams[cam_name]["video_mode"]["height"], 3), dtype=numpy.uint8)
         cv_publish = cs.putVideo(name=cam_name, width=SettingsManager().cams[cam_name]["video_mode"]["width"],
                                      height=SettingsManager().cams[cam_name]["video_mode"]["height"])
         parent,child = Pipe()
-        proc = Process(target=self.camera_process, args=(SettingsManager.usb_cameras[cam_name], cam_name, child)).start()
+        Process(target=self.camera_process, args=(SettingsManager.usb_cameras[cam_name], cam_name, child)).start()
         while True:
+            start = time.time()
             _, image = cv_sink.grabFrame(image)
             parent.send(image)
+            # pipe_send(parent,image)
+            image = parent.recv()
             cv_publish.putFrame(image)
+            end = time.time()
+            print(cam_name + "  " +  str(1 / (end - start)))
 
 
-    def camera_process(self, camera, cam_name, pipe):
+    def camera_process(self, camera, cam_name, child_pipe):
 
         curr_pipline = list(SettingsManager.cams[cam_name]["pipelines"].values())[0]
 
@@ -149,17 +131,13 @@ class VisionHandler(metaclass=Singleton):
         # change_camera_values()
         cam_area = SettingsManager().cams[cam_name]["video_mode"]["width"] * \
                    SettingsManager().cams[cam_name]["video_mode"]["height"]
-
         while True:
-            start = time.time()
-            image = pipe.recv()
-            # hsv_image = self._hsv_threshold(curr_pipline["hue"],
-            #                                 curr_pipline["saturation"], curr_pipline["value"],
-            #                                 image, curr_pipline["erode"], curr_pipline["dilate"])
-            # # if table.getBoolean("Driver_Mode", False):
-            # contours = self.find_contours(hsv_image)
-            # filtered_contours = self.filter_contours(contours, cam_area, curr_pipline["area"], curr_pipline["ratio"], curr_pipline["extent"])
-            # image = self.draw_image(input_image=image, is_binary=False, rectangles=filtered_contours)
-
-            end = time.time()
-            print(1 / (end - start))
+            image = child_pipe.recv()
+            hsv_image = self._hsv_threshold(curr_pipline["hue"],
+                                            curr_pipline["saturation"], curr_pipline["value"],
+                                            image, curr_pipline["erode"], curr_pipline["dilate"])
+            # if table.getBoolean("Driver_Mode", False):
+            contours = self.find_contours(hsv_image)
+            filtered_contours = self.filter_contours(contours, cam_area, curr_pipline["area"], curr_pipline["ratio"], curr_pipline["extent"])
+            image = self.draw_image(input_image=image, is_binary=False, rectangles=filtered_contours)
+            child_pipe.send(image)
