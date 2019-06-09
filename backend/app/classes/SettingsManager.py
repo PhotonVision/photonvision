@@ -25,7 +25,8 @@ class SettingsManager(metaclass=Singleton):
         "dilate": False,
         "area": [0, 100],
         "ratio": [0, 20],
-        "extent": [0, 100]
+        "extent": [0, 100],
+        "is_binary": "Normal"
     }
     default_general_settings = {
         "team_number": 1577,
@@ -68,42 +69,38 @@ class SettingsManager(metaclass=Singleton):
             if os.path.exists(os.path.join(self.cams_path, cam.name + '.json')):
 
                 with open(os.path.join(self.cams_path, cam.name + '.json'), 'r') as camera:
-                    self.cams[cam.name] = json.load(camera)
+                    self.cams[cam_name] = json.load(camera)
 
                 if len(self.cams[cam.name]["pipelines"]) == 0:
-                    self.create_new_pipeline(cam_name=cam.name)
+                    self.create_new_pipeline(cam_name=cam_name)
             else:
-                self.create_new_cam(cam.name)
+                self.create_new_cam(cam_name)
 
     # Initiate true usb cameras(filters microphones and double cameras)
     def _init_cameras_info(self):
         true_cameras = []
         usb_devices = cscore.UsbCamera.enumerateUsbCameras()
 
-        for index in range(len(usb_devices)):
-            cap = cv2.VideoCapture(index)
+        for index, device in enumerate(usb_devices):
+            cap = cv2.VideoCapture(device.dev)
             if cap.isOpened():
                 true_cameras.append(index)
                 cap.release()
-                index += 1
 
         for i in true_cameras:
-            self.usb_cameras_info[usb_devices[i].name] = usb_devices[i]
+            device_name = usb_devices[i].name
+            suffix = 0
+
+            while device_name in self.usb_cameras_info:
+                suffix += 1
+                device_name = f"{device.name}({str(suffix)})"
+
+            self.usb_cameras_info[device_name] = usb_devices[i]
 
     # Initiate cscore usb devices
     def _init_usb_cameras(self):
-        for i in self.usb_cameras_info:
-            device = self.usb_cameras_info[i]
-
-            device_name = device.name
-
-            if device_name in self.usb_cameras:
-                suffix = 1
-                device_name = device.name + f"({str(suffix)})"
-
-                while device_name in self.usb_cameras:
-                    suffix += 1
-                    device_name = "pipeline" + f"({str(suffix)})"
+        for device_name in self.usb_cameras_info:
+            device = self.usb_cameras_info[device_name]
 
             camera = cscore.UsbCamera(name=device_name, dev=device.dev)
 

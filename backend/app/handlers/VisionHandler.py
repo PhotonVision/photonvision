@@ -5,11 +5,15 @@ import cv2
 import numpy
 from cscore import CameraServer
 from app.classes.SettingsManager import SettingsManager
+from ..classes.Singleton import Singleton
 import time
-import json
+from multiprocessing import Process
+import multiprocessing
+import threading
+import zmq
 
 
-class VisionHandler:
+class VisionHandler(metaclass=Singleton):
     def __init__(self):
         self.kernel = numpy.ones((5, 5), numpy.uint8)
 
@@ -69,56 +73,81 @@ class VisionHandler:
         return input_image
 
     def run(self):
-        camera_server = cscore.CameraServer.getInstance()
         # NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
         NetworkTables.initialize("localhost")
         # NetworkTables.initialize()
-
-        for cam in SettingsManager().usb_cameras:
-            self.camera_process(SettingsManager().usb_cameras[cam],cam)
-
-    def camera_process(self, camera,cam_name):
-
-        curr_pipline = list(SettingsManager.cams[cam_name]["pipelines"].values())[0]
-
-        def change_camera_values():
-            camera.setBrightness(0)
-            camera.setExposureManual(0)
-
-        def pipeline_listener(table, key, value, is_new):
-            if(is_new):
-                curr_pipline = SettingsManager.cams[cam_name]["pipelines"][value]
-                change_camera_values()
-
-        def mode_listener(table, key, value, is_new):
-            pass
-
-        image = numpy.zeros(shape=(SettingsManager().cams[cam_name]["video_mode"]["width"], SettingsManager().cams[cam_name]["video_mode"]["height"], 3), dtype=numpy.uint8)
-        table = NetworkTables.getTable("/Chameleon-Vision/" + camera.getInfo().name)
-
-        table.addEntryListenerEx(pipeline_listener, key="Pipeline",
-                                 flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
-        table.addEntryListenerEx(mode_listener, key="Driver_Mode",
-                                 flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
-        change_camera_values()
         cs = CameraServer.getInstance()
-        cv_sink = cs.getVideo(camera=camera)
-        cv_publish = cs.putVideo(name=cam_name, width=SettingsManager().cams[cam_name]["video_mode"]["width"],
-                                 height=SettingsManager().cams[cam_name]["video_mode"]["height"])
-        cam_area = SettingsManager().cams[cam_name]["video_mode"]["width"] * SettingsManager().cams[cam_name]["video_mode"]["height"]
+        port = 5550
+
+        for cam_name in SettingsManager().usb_cameras:
+            threading.Thread(target=self.thread_proc, args=(cs, cam_name, str(port))).start()
+            port += 1
+
+    def thread_proc(self, cs, cam_name, port="5557"):
+        cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
+        width = SettingsManager().cams[cam_name]["video_mode"]["width"]
+        height = SettingsManager().cams[cam_name]["video_mode"]["height"]
+
+        image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
+
+        cv_publish = cs.putVideo(name=cam_name, width=width, height=height)
+
+        context = zmq.Context()
+        socket = context.socket(zmq.REQ)
+        socket.bind("tcp://*:%s" % port)
+
+        p = Process(target=self.camera_process, args=(SettingsManager.usb_cameras[cam_name], cam_name, port))
+        p.start()
+
         while True:
             start = time.time()
             _, image = cv_sink.grabFrame(image)
-            hsv_image = self._hsv_threshold(curr_pipline["hue"],
-                                            curr_pipline["saturation"], curr_pipline["value"],
-                                            image, curr_pipline["erode"], curr_pipline["dilate"])
-
-
-            # if table.getBoolean("Driver_Mode", False):
-            contours = self.find_contours(hsv_image)
-            filtered_contours = self.filter_contours(contours, cam_area, curr_pipline["area"], curr_pipline["ratio"], curr_pipline["extent"])
-            image = self.draw_image(input_image=image, is_binary=False, rectangles=filtered_contours)
+            socket.send_pyobj(image)
+            image = socket.recv_pyobj()
             cv_publish.putFrame(image)
             end = time.time()
-            print(1/(end-start))
+            print(cam_name + "  " + str(1 / (end - start)))
 
+    def camera_process(self, camera, cam_name, port):
+
+        curr_pipeline = list(SettingsManager.cams[cam_name]["pipelines"].values())[0]
+
+        # def change_camera_values():
+        #     camera.setBrightness(0)
+        #     camera.setExposureManual(0)
+        #
+        # def pipeline_listener(table, key, value, is_new):
+        #     if (is_new):
+        #         curr_pipline = SettingsManager.cams[cam_name]["pipelines"][value]
+        #         change_camera_values()
+        #
+        # def mode_listener(table, key, value, is_new):
+        #     pass
+        #
+        # table = NetworkTables.getTable("/Chameleon-Vision/" + camera.getInfo().name)
+        #
+        # table.addEntryListenerEx(pipeline_listener, key="Pipeline",
+        #                          flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
+        # table.addEntryListenerEx(mode_listener, key="Driver_Mode",
+        #                          flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
+        # change_camera_values()
+        width = SettingsManager().cams[cam_name]["video_mode"]["width"]
+        height = SettingsManager().cams[cam_name]["video_mode"]["height"]
+        cam_area = width * height
+
+        context = zmq.Context()
+        socket = context.socket(zmq.REP)
+        socket.connect("tcp://localhost:%s" % port)
+
+        while True:
+            image = socket.recv_pyobj()
+
+            hsv_image = self._hsv_threshold(curr_pipeline["hue"],
+                                            curr_pipeline["saturation"], curr_pipeline["value"],
+                                            image, curr_pipeline["erode"], curr_pipeline["dilate"])
+            # if table.getBoolean("Driver_Mode", False):
+            contours = self.find_contours(hsv_image)
+            filtered_contours = self.filter_contours(contours, cam_area, curr_pipeline["area"], curr_pipeline["ratio"],
+                                                     curr_pipeline["extent"])
+            res = self.draw_image(input_image=image, is_binary=False, rectangles=filtered_contours)
+            socket.send_pyobj(res)
