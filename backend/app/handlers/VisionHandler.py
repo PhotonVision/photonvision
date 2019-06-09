@@ -96,7 +96,7 @@ class VisionHandler(metaclass=Singleton):
         socket = context.socket(zmq.REQ)
         socket.bind("tcp://*:%s" % port)
 
-        p = Process(target=self.camera_process, args=(SettingsManager.usb_cameras[cam_name], cam_name, port))
+        p = Process(target=self.camera_process, args=(cam_name, port))
         p.start()
 
         while True:
@@ -108,7 +108,7 @@ class VisionHandler(metaclass=Singleton):
             end = time.time()
             print(cam_name + "  " + str(1 / (end - start)))
 
-    def camera_process(self, camera, cam_name, port):
+    def camera_process(self, cam_name, port):
 
         curr_pipeline = list(SettingsManager.cams[cam_name]["pipelines"].values())[0]
 
@@ -131,6 +131,7 @@ class VisionHandler(metaclass=Singleton):
         # table.addEntryListenerEx(mode_listener, key="Driver_Mode",
         #                          flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         # change_camera_values()
+
         width = SettingsManager().cams[cam_name]["video_mode"]["width"]
         height = SettingsManager().cams[cam_name]["video_mode"]["height"]
         cam_area = width * height
