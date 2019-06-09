@@ -7,9 +7,10 @@ from cscore import CameraServer
 from app.classes.SettingsManager import SettingsManager
 from ..classes.Singleton import Singleton
 import time
-from multiprocessing import Process, Pipe
+from multiprocessing import Process
 import multiprocessing
 import threading
+import zmq
 
 
 class VisionHandler(metaclass=Singleton):
@@ -72,43 +73,42 @@ class VisionHandler(metaclass=Singleton):
         return input_image
 
     def run(self):
-        procs = []
         # NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
         NetworkTables.initialize("localhost")
         # NetworkTables.initialize()
         cs = CameraServer.getInstance()
-        pipes = []
+        port = 5550
 
         for cam_name in SettingsManager().usb_cameras:
-            threading.Thread(target=self.thred_proc, args=(cs, cam_name)).start()
+            threading.Thread(target=self.thread_proc, args=(cs, cam_name, str(port))).start()
+            port += 1
 
-    def thred_proc(self, cs, cam_name):
-        async def pipe_send(pipe, data):
-            pipe.send(data)
-
-        async def pipe_recive(pipe):
-            return pipe.recv()
-
+    def thread_proc(self, cs, cam_name, port="5557"):
         cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
-        image = numpy.zeros(shape=(SettingsManager().cams[cam_name]["video_mode"]["width"],
-                                   SettingsManager().cams[cam_name]["video_mode"]["height"], 3), dtype=numpy.uint8)
-        cv_publish = cs.putVideo(name=cam_name, width=SettingsManager().cams[cam_name]["video_mode"]["width"],
-                                 height=SettingsManager().cams[cam_name]["video_mode"]["height"])
-        parent, child = Pipe()
-        Process(target=self.camera_process, args=(SettingsManager.usb_cameras[cam_name], cam_name, child)).start()
+        width = SettingsManager().cams[cam_name]["video_mode"]["width"]
+        height = SettingsManager().cams[cam_name]["video_mode"]["height"]
+
+        image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
+
+        cv_publish = cs.putVideo(name=cam_name, width=width, height=height)
+
+        context = zmq.Context()
+        socket = context.socket(zmq.REQ)
+        socket.bind("tcp://*:%s" % port)
+
+        p = Process(target=self.camera_process, args=(SettingsManager.usb_cameras[cam_name], cam_name, port))
+        p.start()
 
         while True:
             start = time.time()
             _, image = cv_sink.grabFrame(image)
-            parent.send(image)
-            # pipe_send(parent,image)
-            if parent.poll():
-                image = parent.recv()
+            socket.send_pyobj(image)
+            image = socket.recv_pyobj()
             cv_publish.putFrame(image)
             end = time.time()
             print(cam_name + "  " + str(1 / (end - start)))
 
-    def camera_process(self, camera, cam_name, child_pipe):
+    def camera_process(self, camera, cam_name, port):
 
         curr_pipeline = list(SettingsManager.cams[cam_name]["pipelines"].values())[0]
 
@@ -131,11 +131,17 @@ class VisionHandler(metaclass=Singleton):
         # table.addEntryListenerEx(mode_listener, key="Driver_Mode",
         #                          flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         # change_camera_values()
-        cam_area = SettingsManager().cams[cam_name]["video_mode"]["width"] * \
-                   SettingsManager().cams[cam_name]["video_mode"]["height"]
+        width = SettingsManager().cams[cam_name]["video_mode"]["width"]
+        height = SettingsManager().cams[cam_name]["video_mode"]["height"]
+        cam_area = width * height
+
+        context = zmq.Context()
+        socket = context.socket(zmq.REP)
+        socket.connect("tcp://localhost:%s" % port)
 
         while True:
-            image = child_pipe.recv()
+            image = socket.recv_pyobj()
+
             hsv_image = self._hsv_threshold(curr_pipeline["hue"],
                                             curr_pipeline["saturation"], curr_pipeline["value"],
                                             image, curr_pipeline["erode"], curr_pipeline["dilate"])
@@ -143,5 +149,5 @@ class VisionHandler(metaclass=Singleton):
             contours = self.find_contours(hsv_image)
             filtered_contours = self.filter_contours(contours, cam_area, curr_pipeline["area"], curr_pipeline["ratio"],
                                                      curr_pipeline["extent"])
-            image = self.draw_image(input_image=image, is_binary=False, rectangles=filtered_contours)
-            child_pipe.send(image)
+            res = self.draw_image(input_image=image, is_binary=False, rectangles=filtered_contours)
+            socket.send_pyobj(res)

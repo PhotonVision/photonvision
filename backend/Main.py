@@ -20,13 +20,9 @@ def run_server():
     tornado.ioloop.IOLoop.current().start()
 
 
-
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     SettingsManager()
 
     VisionHandler().run()
-
-    while True:
-        pass
 

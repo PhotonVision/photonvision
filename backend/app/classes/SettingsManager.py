@@ -69,12 +69,12 @@ class SettingsManager(metaclass=Singleton):
             if os.path.exists(os.path.join(self.cams_path, cam.name + '.json')):
 
                 with open(os.path.join(self.cams_path, cam.name + '.json'), 'r') as camera:
-                    self.cams[cam.name] = json.load(camera)
+                    self.cams[cam_name] = json.load(camera)
 
                 if len(self.cams[cam.name]["pipelines"]) == 0:
-                    self.create_new_pipeline(cam_name=cam.name)
+                    self.create_new_pipeline(cam_name=cam_name)
             else:
-                self.create_new_cam(cam.name)
+                self.create_new_cam(cam_name)
 
     # Initiate true usb cameras(filters microphones and double cameras)
     def _init_cameras_info(self):
@@ -87,20 +87,20 @@ class SettingsManager(metaclass=Singleton):
                 true_cameras.append(index)
                 cap.release()
 
-
         for i in true_cameras:
-            self.usb_cameras_info[usb_devices[i].name] = usb_devices[i]
+            device_name = usb_devices[i].name
+            suffix = 0
+
+            while device_name in self.usb_cameras_info:
+                suffix += 1
+                device_name = f"{device.name}({str(suffix)})"
+
+            self.usb_cameras_info[device_name] = usb_devices[i]
 
     # Initiate cscore usb devices
     def _init_usb_cameras(self):
-        for i in self.usb_cameras_info:
-            device = self.usb_cameras_info[i]
-            device_name = device.name
-            suffix = 1
-
-            while device_name in self.usb_cameras:
-                suffix += 1
-                device_name = f"{device.name}({str(suffix)})"
+        for device_name in self.usb_cameras_info:
+            device = self.usb_cameras_info[device_name]
 
             camera = cscore.UsbCamera(name=device_name, dev=device.dev)
 
