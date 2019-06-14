@@ -4,6 +4,7 @@ import networktables
 import cv2
 import numpy
 from cscore import CameraServer
+# from .app.classes.SettingsManager import SettingsManager
 from app.classes.SettingsManager import SettingsManager
 from ..classes.Singleton import Singleton
 import time
@@ -85,6 +86,7 @@ class VisionHandler(metaclass=Singleton):
 
     def thread_proc(self, cs, cam_name, port="5557"):
         cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
+
         width = SettingsManager().cams[cam_name]["video_mode"]["width"]
         height = SettingsManager().cams[cam_name]["video_mode"]["height"]
 
@@ -106,7 +108,7 @@ class VisionHandler(metaclass=Singleton):
             image = socket.recv_pyobj()
             cv_publish.putFrame(image)
             end = time.time()
-            print(cam_name + "  " + str(1 / (end - start)))
+            # print(cam_name + "  " + str(1 / (end - start)))
 
     def camera_process(self, cam_name, port):
 

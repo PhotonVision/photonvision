@@ -33,7 +33,7 @@ export const store = new Vuex.Store({
         gateWay:0,
         hostName:"",
         //live info
-        streamAdress:("http://"+location.hostname + ":1181/?stream"),
+        streamAdress:("http://"+location.hostname + ":1181/stream.mjpg"),
         isBinaryImage:0,
         //camera lists
         cameraList:[],

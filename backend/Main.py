@@ -25,4 +25,7 @@ if __name__ == "__main__":
     SettingsManager()
 
     VisionHandler().run()
+    run_server()
 
+    while True:
+        pass

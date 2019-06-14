@@ -21,7 +21,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         self.actions["change_pipeline"] = self.change_curr_pipeline
 
     def open(self):
-
+        
         self.send_full_settings()
 
         print("WebSocket opened")
@@ -31,7 +31,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         message_dic = json.loads(message)
 
         for key in message_dic:
-            self.actions.get(key, self.actions["change_pipeline_values"])(message_dic[key])
+            self.actions.get(key, self.actions["change_pipeline_values"])(message_dic)
 
         print(message)
 
@@ -59,9 +59,9 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
 
     def send_full_settings(self):
         full_settings = self.settings_manager.general_settings.copy()
-
+        full_settings["cameraList"] = list(self.settings_manager.cams.copy().keys())
         try:
-            full_settings = self.settings_manager.get_curr_pipeline()
+            full_settings.update(self.settings_manager.get_curr_pipeline())
         except NoCameraConnectedException:
             # TODO: return something if no camera connected
             full_settings["data"] = None
@@ -82,4 +82,4 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         for key in self.set_this_camera_settings:
             if key in dic:
                 self.settings_manager.set_camera_settings(self.settings_manager.general_settings["curr_camera"],
-                                                          dic[key])
+                                                          dic)

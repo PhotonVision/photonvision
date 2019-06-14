@@ -47,13 +47,14 @@ class SettingsManager(metaclass=Singleton):
         self._init_cameras()
         self._init_usb_cameras_settings()
 
-        if self.general_settings["curr_camera"] not in self.cams and len(self.cams) > 0:
-            cam_name = list(self.cams.keys())[0]
-            self.general_settings["curr_camera"] = cam_name
-            self.general_settings["curr_pipeline"] = list(self.cams[cam_name]["pipelines"].keys())[0]
-        else:
-            self.general_settings["curr_camera"] = ""
-            self.general_settings["curr_pipeline"] = ""
+        if self.general_settings["curr_camera"] not in self.cams:
+            if len(self.cams) > 0:
+                cam_name = list(self.cams.keys())[0]
+                self.general_settings["curr_camera"] = cam_name
+                self.general_settings["curr_pipeline"] = list(self.cams[cam_name]["pipelines"].keys())[0]
+            else:
+                self.general_settings["curr_camera"] = ""
+                self.general_settings["curr_pipeline"] = ""
 
     def _init_general_settings(self):
         try:
@@ -156,7 +157,7 @@ class SettingsManager(metaclass=Singleton):
             pipe_name = self.general_settings["curr_pipeline"]
 
         for key in dic:
-            if self.default_pipeline[key]:
+            if key in self.default_pipeline:
                 self.cams[cam_name]["pipelines"][pipe_name][key] = dic[key]
 
     def change_general_settings_values(self, dic):
