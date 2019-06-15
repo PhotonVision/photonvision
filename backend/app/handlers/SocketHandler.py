@@ -60,8 +60,10 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
     def send_full_settings(self):
         full_settings = self.settings_manager.general_settings.copy()
         full_settings["cameraList"] = list(self.settings_manager.cams.copy().keys())
+
         try:
             full_settings.update(self.settings_manager.get_curr_pipeline())
+            full_settings["pipelineList"] = list(self.settings_manager.cams[self.settings_manager.general_settings["curr_camera"]]["pipelines"].keys())
         except NoCameraConnectedException:
             # TODO: return something if no camera connected
             full_settings["data"] = None

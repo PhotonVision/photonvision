@@ -9,8 +9,10 @@ export const store = new Vuex.Store({
 
     state:{
         //header
-        camera:0,
-        pipeline:0,
+        curr_camera:"",
+        curr_pipeline:"",
+        cameraList:[],
+        pipelineList:[],
         //input
         exposure:54,
         brightness:0,
@@ -36,8 +38,6 @@ export const store = new Vuex.Store({
         streamAdress:("http://"+location.hostname + ":1181/stream.mjpg"),
         isBinaryImage:0,
         //camera lists
-        cameraList:[],
-        pipelineList:[]
 
     },
     mutations:{

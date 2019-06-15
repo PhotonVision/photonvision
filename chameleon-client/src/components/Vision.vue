@@ -3,10 +3,10 @@
         <Header id="main-header">
             <Row type="flex" justify="start" align="middle" :gutter="10">
                 <Col span="12">
-                    <chselect title="camera" :list="cameraList" Xkey="camera"></chselect>
+                    <chselect title="camera" :list="cameraList" Xkey="curr_camera"></chselect>
                 </Col>
                 <Col span="12">
-                    <chselect title="pipline" :list="piplineList" Xkey="pipeline"></chselect>
+                    <chselect title="pipline" :list="pipelineList" Xkey="curr_pipeline"></chselect>
                 </Col>
             </Row>
         </Header>
@@ -52,9 +52,9 @@
                     return this.$store.state.cameraList;
                 }
             },
-            piplineList:{
+            pipelineList:{
                 get: function(){
-                    return this.$store.state.piplineList;
+                    return this.$store.state.pipelineList;
                 }
             },
             steamAdress: {
