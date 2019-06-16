@@ -20,7 +20,7 @@
                     <TabPane label="Normal"></TabPane>    
                     <TabPane label="Threshold"></TabPane>
                     </Tabs>
-                    <img :src="steamAdress" style="">
+                    <img class="imageSize" :src="steamAdress" style="">
                     </Col>
                 </Col>
             </row>
@@ -76,5 +76,9 @@
 <style>
 .ivu-tabs-nav .ivu-tabs-tab:hover{
     color: #0cdfc3 !important;
+}
+.imageSize{
+    width: 75%;
+    height: 75%;
 }
 </style>

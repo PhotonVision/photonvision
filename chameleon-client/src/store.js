@@ -17,7 +17,8 @@ export const store = new Vuex.Store({
         exposure:54,
         brightness:0,
         orientation:0,
-        resolution:[],
+        resolution:0,
+        resolutionList:[],
         //threshold
         hue:[0,10],
         saturation:[0,10],

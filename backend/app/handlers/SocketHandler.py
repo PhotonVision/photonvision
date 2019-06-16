@@ -7,7 +7,7 @@ from ..classes.SettingsManager import SettingsManager
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
     actions = {}
 
-    set_this_camera_settings = ["exposure", "brightness", "video_mode"]
+    set_this_camera_settings = ["exposure", "brightness", "resolution"]
 
     def __init__(self, application, request, **kwargs):
         super().__init__(application, request, **kwargs)
@@ -64,6 +64,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         try:
             full_settings.update(self.settings_manager.get_curr_pipeline())
             full_settings["pipelineList"] = list(self.settings_manager.cams[self.settings_manager.general_settings["curr_camera"]]["pipelines"].keys())
+            full_settings["resolutionList"] = self.settings_manager.get_resolution_list()
         except NoCameraConnectedException:
             # TODO: return something if no camera connected
             full_settings["data"] = None

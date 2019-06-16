@@ -122,14 +122,25 @@ class SettingsManager(metaclass=Singleton):
         if "exposure" in dic:
             self.usb_cameras[camera_name].setExposureManual(dic["exposure"])
 
-        if "video_mode" in dic:
-            self.usb_cameras[camera_name].setVideoMode(dic["video_mode"])
+        if "resolution" in dic:
+            self.usb_cameras[camera_name].setVideoMode(self.usb_cameras[camera_name].enumerateVideoModes()[int(dic["resolution"])])
 
     # Access methods
 
     def get_curr_pipeline(self):
         if self.general_settings["curr_pipeline"]:
             return self.cams[self.general_settings["curr_camera"]]["pipelines"][self.general_settings["curr_pipeline"]]
+
+        raise NoCameraConnectedException()
+
+    def get_resolution_list(self):
+        if self.general_settings["curr_camera"]:
+            str_list = []
+            for val in self.usb_cameras[self.general_settings["curr_camera"]].enumerateVideoModes():
+                str_list.append("{width} X {height} at {fps} fps".format(width=str(val.width),
+                                                                         height=str(val.height), fps=str(val.fps)))
+
+            return str_list
 
         raise NoCameraConnectedException()
 
