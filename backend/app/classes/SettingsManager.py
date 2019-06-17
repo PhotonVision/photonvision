@@ -123,6 +123,13 @@ class SettingsManager(metaclass=Singleton):
             self.usb_cameras[camera_name].setExposureManual(dic["exposure"])
 
         if "resolution" in dic:
+            video_mode: VideoMode = self.usb_cameras[camera_name].enumerateVideoModes()[int(dic["resolution"])]
+            self.cams[camera_name]["video_mode"] = {
+                "fps": video_mode.fps,
+                "width": video_mode.width,
+                "height": video_mode.height,
+                "pixel_format": str(video_mode.pixelFormat).split('.')[1]
+            }
             self.usb_cameras[camera_name].setVideoMode(self.usb_cameras[camera_name].enumerateVideoModes()[int(dic["resolution"])])
 
     # Access methods
