@@ -1,15 +1,12 @@
-import cscore
 from networktables import NetworkTables
 import networktables
 import cv2
 import numpy
 from cscore import CameraServer
-# from .app.classes.SettingsManager import SettingsManager
 from app.classes.SettingsManager import SettingsManager
 from ..classes.Singleton import Singleton
 import time
 from multiprocessing import Process
-import multiprocessing
 import threading
 import zmq
 
@@ -97,22 +94,27 @@ class VisionHandler(metaclass=Singleton):
         context = zmq.Context()
         socket = context.socket(zmq.REQ)
         socket.bind("tcp://*:%s" % port)
-
         p = Process(target=self.camera_process, args=(cam_name, port))
         p.start()
-
+        pipeline = SettingsManager().cams[cam_name]["pipelines"]["pipeline0"]
         while True:
-            start = time.time()
+            # start = time.time()
+            if(pipeline != SettingsManager().cams[cam_name]["pipelines"]["pipeline0"]):
+
+                pipeline = SettingsManager().cams[cam_name]["pipelines"]["pipeline0"]
+
             _, image = cv_sink.grabFrame(image)
-            socket.send_pyobj(image)
+            socket.send_pyobj({'image': image,
+                               'pipeline': pipeline})
+            # end = time.time()
             image = socket.recv_pyobj()
             cv_publish.putFrame(image)
-            end = time.time()
+
             # print(cam_name + "  " + str(1 / (end - start)))
 
     def camera_process(self, cam_name, port):
 
-        curr_pipeline = list(SettingsManager.cams[cam_name]["pipelines"].values())[0]
+
 
         # def change_camera_values():
         #     camera.setBrightness(0)
@@ -143,8 +145,9 @@ class VisionHandler(metaclass=Singleton):
         socket.connect("tcp://localhost:%s" % port)
 
         while True:
-            image = socket.recv_pyobj()
-
+            obj = socket.recv_pyobj()
+            image = obj['image']
+            curr_pipeline = obj["pipeline"]
             hsv_image = self._hsv_threshold(curr_pipeline["hue"],
                                             curr_pipeline["saturation"], curr_pipeline["value"],
                                             image, curr_pipeline["erode"], curr_pipeline["dilate"])
