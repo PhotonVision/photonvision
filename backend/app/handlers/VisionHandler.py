@@ -9,6 +9,8 @@ import time
 from multiprocessing import Process
 import threading
 import zmq
+import base64
+
 
 
 class VisionHandler(metaclass=Singleton):
@@ -78,10 +80,10 @@ class VisionHandler(metaclass=Singleton):
         port = 5550
 
         for cam_name in SettingsManager().usb_cameras:
-            threading.Thread(target=self.thread_proc, args=(cs, cam_name, str(port))).start()
+            threading.Thread(target=self.thread_proc, args=(cs, cam_name, port)).start()
             port += 1
 
-    def thread_proc(self, cs, cam_name, port="5557"):
+    def thread_proc(self, cs, cam_name, port=5557):
         cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
 
         width = SettingsManager().cams[cam_name]["video_mode"]["width"]
@@ -92,29 +94,25 @@ class VisionHandler(metaclass=Singleton):
         cv_publish = cs.putVideo(name=cam_name, width=width, height=height)
 
         context = zmq.Context()
-        socket = context.socket(zmq.REQ)
-        socket.bind("tcp://*:%s" % port)
+        socket = context.socket(zmq.PAIR)
+        socket.bind('tcp://*:%s' % str(port))
+
         p = Process(target=self.camera_process, args=(cam_name, port))
         p.start()
+
         pipeline = SettingsManager().cams[cam_name]["pipelines"]["pipeline0"]
         while True:
-            # start = time.time()
-            if(pipeline != SettingsManager().cams[cam_name]["pipelines"]["pipeline0"]):
-
-                pipeline = SettingsManager().cams[cam_name]["pipelines"]["pipeline0"]
-
+            # start = time.time(
             _, image = cv_sink.grabFrame(image)
-            socket.send_pyobj({'image': image,
-                               'pipeline': pipeline})
-            # end = time.time()
-            image = socket.recv_pyobj()
-            cv_publish.putFrame(image)
-
+            socket.send_json(dict(
+                pipeline=pipeline
+            ))
+            socket.send_pyobj(image)
+            p_image = socket.recv_pyobj()
+            cv_publish.putFrame(p_image)
             # print(cam_name + "  " + str(1 / (end - start)))
 
     def camera_process(self, cam_name, port):
-
-
 
         # def change_camera_values():
         #     camera.setBrightness(0)
@@ -141,12 +139,12 @@ class VisionHandler(metaclass=Singleton):
         cam_area = width * height
 
         context = zmq.Context()
-        socket = context.socket(zmq.REP)
-        socket.connect("tcp://localhost:%s" % port)
+        socket = context.socket(zmq.PAIR)
+        socket.connect('tcp://localhost:%s' % str(port))
 
         while True:
-            obj = socket.recv_pyobj()
-            image = obj['image']
+            obj = socket.recv_json()
+            image = socket.recv_pyobj()
             curr_pipeline = obj["pipeline"]
             hsv_image = self._hsv_threshold(curr_pipeline["hue"],
                                             curr_pipeline["saturation"], curr_pipeline["value"],
@@ -156,4 +154,7 @@ class VisionHandler(metaclass=Singleton):
             filtered_contours = self.filter_contours(contours, cam_area, curr_pipeline["area"], curr_pipeline["ratio"],
                                                      curr_pipeline["extent"])
             res = self.draw_image(input_image=image, is_binary=False, rectangles=filtered_contours)
+            # cv2.putText(res, str(fps), (10, 200), font, 4, (0, 0, 0), 2, cv2.LINE_AA)
             socket.send_pyobj(res)
+
+
