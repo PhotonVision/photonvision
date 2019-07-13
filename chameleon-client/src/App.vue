@@ -13,6 +13,7 @@
                           <MenuItem name="/vision/input" to="/vision/input">Input</MenuItem>
                           <MenuItem name="/vision/threshold" to="/vision/threshold">Threshold</MenuItem>
                           <MenuItem name="/vision/contours" to="/vision/contours">Contours</MenuItem>
+                          <MenuItem name="/vision/output" to="/vision/output">Output</MenuItem>
                         </Submenu>
                         <Submenu name="/settings">
                           <template slot="title">

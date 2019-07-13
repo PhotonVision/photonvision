@@ -6,13 +6,15 @@ import Threshold from "./components/ThresholdTab.vue";
 import System from "./components/SystemTab.vue";
 import Camera from "./components/CameraTab.vue";
 import Contours from "./components/contourTab.vue";
+import Output from './components/outputTab.vue'
 
 const routes = [
   { path: '/', redirect: '/vision/input'},
   { path: '/vision', component: Vision, children: [
     { path: 'input', component: Input },
     { path: 'threshold', component: Threshold },
-    { path: 'contours', component: Contours }
+    { path: 'contours', component: Contours },
+    { path: 'output', component: Output },
   ]},
   { path: '/settings', component: Setting, children: [
     { path: 'system', component: System },
