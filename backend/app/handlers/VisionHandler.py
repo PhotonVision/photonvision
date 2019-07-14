@@ -137,18 +137,26 @@ class VisionHandler(metaclass=Singleton):
                         return False
                 if target_group != TargetGroup.Single:
                     f_contour_list = []
-                    for index, contour in i_contours:
-                        finall_contour = contour
-                        for c in range(target_group):
-                            first_contour = i_contours[index + c]
-                            second_contour = i_contours[index + c + 1]
+                    for index, g_contour in enumerate(i_contours):
+                        final_contour = g_contour
+                        for c in range(target_group.value):
+                            try:
+                                first_contour = i_contours[index + c]
+                                second_contour = i_contours[index + c + 1]
+                            except IndexError:
+                                continue
                             if is_intersecting(first_contour, second_contour, intersection_point):
-                                pass
+                                final_contour = numpy.concatenate((final_contour, second_contour))
                             else:
                                 continue
+
+                        f_contour_list.append(final_contour)
+
+                    return f_contour_list
                 else:
                     return i_contours
 
+            '''start of the first filtration of contours'''
             filtered_contours = []
             for contour in input_contours:
                 try:
@@ -177,8 +185,9 @@ class VisionHandler(metaclass=Singleton):
                 except Exception as e:
                     print(e)
                     continue
-
+            #checking for contour grouping before sorting
             grouped_contours = group_target(filtered_contours, TargetGroup[target_grouping], target_intersection)
+
             sorted_contours = getattr(self.sort_mode, sort_mode)(grouped_contours)
 
             return sorted_contours
@@ -217,6 +226,12 @@ class VisionHandler(metaclass=Singleton):
             port += 1
 
     def thread_proc(self, cs, cam_name, port=5557):
+
+        def change_camera_values():
+            SettingsManager.usb_cameras[cam_name].setBrightness(0)
+            SettingsManager.usb_cameras[cam_name].setExposureManual(0)
+            SettingsManager.usb_cameras[cam_name].setWhiteBalanceAuto()
+
         cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
 
         width = SettingsManager().cams[cam_name]["video_mode"]["width"]
@@ -303,7 +318,8 @@ class VisionHandler(metaclass=Singleton):
                                                                 extent=curr_pipeline['extent'],
                                                                 sort_mode=curr_pipeline['sort_mode'], cam_area=cam_area,
                                                                 target_grouping=curr_pipeline['target_group'],
-                                                                target_intersection=curr_pipeline['target_intersection'])
+                                                                target_intersection=
+                                                                curr_pipeline['target_intersection'])
 
             res = self.draw_image(input_image=image, is_binary=False, contours=filtered_contours)
             socket.send_pyobj(res)

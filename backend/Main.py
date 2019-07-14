@@ -1,11 +1,5 @@
-from multiprocessing import Queue
-from multiprocessing.managers import BaseManager
-
 import tornado.ioloop
-import multiprocessing
 import logging
-from cscore import CameraServer
-
 from app.ChameleonVisionApp import ChameleonApplication
 from app.classes.SettingsManager import SettingsManager
 from tornado.options import options
