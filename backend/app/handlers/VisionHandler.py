@@ -200,18 +200,26 @@ class VisionHandler(metaclass=Singleton):
         LEFT_MOST = 3
         CENTER_MOST = 4
         
-    # def output_contours():
-    #     # target_region leftmost,rightmost,upmost,downmost,centermost
-    #     # crosshair_calibration function to "put" camera in the middle
-    #     pass
+    def output_contour(self, sorted_contours):
+        if len(sorted_contours) > 0:
+            selected_contour = sorted_contours[0]
+            rect = cv2.minAreaRect(selected_contour)
+        else:
+            return []
+
+        # crosshair_calibration function to "put" camera in the middle
+        return rect
             
-    def draw_image(self, input_image: numpy.ndarray, is_binary: bool, contours):
-        if is_binary:
+    def draw_image(self, input_image, contour):
+        if len(input_image.shape)<3:
             input_image = cv2.cvtColor(input_image, cv2.COLOR_GRAY2RGB)
-        for contour in contours:
-            cv2.drawContours(input_image, contour, -1, (0, 0, 255), 3)
-            # center_point = (int(rectangle[0][0]), int(rectangle[0][1]))
-            # cv2.circle(input_image, center_point, 0, (0, 255, 0), thickness=3, lineType=8, shift=0)
+        if contour != []:
+            box = cv2.boxPoints(contour)
+            box = numpy.int0(box)
+            cv2.drawContours(input_image, [box], 0, (0, 0, 255), 3)
+
+        # center_point = (int(rectangle[0][0]), int(rectangle[0][1]))
+        # cv2.circle(input_image, center_point, 0, (0, 255, 0), thickness=3, lineType=8, shift=0)
         return input_image
 
     def run(self):
@@ -261,10 +269,6 @@ class VisionHandler(metaclass=Singleton):
 
     def camera_process(self, cam_name, port):
         from fractions import Fraction
-        # def change_camera_values():
-        #     camera.setBrightness(0)
-        #     camera.setExposureManual(0)
-        #
         # def pipeline_listener(table, key, value, is_new):
         #     if (is_new):
         #         curr_pipline = SettingsManager.cams[cam_name]["pipelines"][value]
@@ -320,8 +324,9 @@ class VisionHandler(metaclass=Singleton):
                                                                 target_grouping=curr_pipeline['target_group'],
                                                                 target_intersection=
                                                                 curr_pipeline['target_intersection'])
+            final_contour = self.output_contour(filtered_contours)
 
-            res = self.draw_image(input_image=image, is_binary=False, contours=filtered_contours)
+            res = self.draw_image(input_image=image, contour=final_contour)
             socket.send_pyobj(res)
 
 
