@@ -27,7 +27,7 @@ export const store = new Vuex.Store({
         dilate: false,
         //contours
         area:[0,100],
-        ratio:[0,1],
+        ratio:[0,20],
         extent:[0,100],
         sort_mode:'Largest', //
         target_group:'Single', //

@@ -72,10 +72,10 @@ class VisionHandler(metaclass=Singleton):
                 return math.sqrt((center_x-x)**2 + (center_y-y)**2)
 
             def Largest(self, input_contours):
-                return sorted(input_contours, key=lambda x: cv2.contourArea(x))
+                return sorted(input_contours, key=lambda x: cv2.contourArea(x), reverse=True)
 
             def Smallest(self, input_contours):
-                return sorted(input_contours, key=lambda x: cv2.contourArea(x), reverse=True)
+                return sorted(input_contours, key=lambda x: cv2.contourArea(x))
 
             def Highest(self, input_contours):
                 return sorted(input_contours, key=lambda x: self.moment_y(x))
@@ -162,7 +162,8 @@ class VisionHandler(metaclass=Singleton):
                 try:
                     contour_area = cv2.contourArea(contour)
                     target_area = float(contour_area / cam_area)*100
-                    if target_area > area[1] or target_area < area[0]:
+
+                    if target_area >= area[1] or target_area <= area[0]:
                         continue
 
                     rect = cv2.minAreaRect(contour)
@@ -172,13 +173,13 @@ class VisionHandler(metaclass=Singleton):
                     except ZeroDivisionError:
                         target_fullness = 0
 
-                    if target_fullness < extent[0] or target_fullness > extent[1]:
+                    if target_fullness <= extent[0] or target_fullness >= extent[1]:
                         continue
                     try:
-                        aspect_ratio = float(rect[1][0]/rect[1][1])*100
+                        aspect_ratio = float(rect[1][0]/rect[1][1])
                     except ZeroDivisionError:
                         aspect_ratio = 0
-                    if aspect_ratio < ratio[0] or aspect_ratio > ratio[1]:
+                    if aspect_ratio <= ratio[0] or aspect_ratio >= ratio[1]:
                         continue
 
                     filtered_contours.append(contour)
@@ -222,10 +223,20 @@ class VisionHandler(metaclass=Singleton):
         # cv2.circle(input_image, center_point, 0, (0, 255, 0), thickness=3, lineType=8, shift=0)
         return input_image
 
+    def calculate_pitch(self, pixel_y, center_y, v_focal_length):
+        pitch = math.degrees(math.atan((pixel_y - center_y) / v_focal_length))
+        # Just stopped working have to do this:
+        pitch *= -1
+        return pitch
+
+    def calculate_yaw(self, pixel_x, center_x, h_focal_length):
+        yaw = math.degrees(math.atan((pixel_x - center_x) / h_focal_length))
+        return yaw
+
     def run(self):
         # NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
         NetworkTables.initialize("localhost")
-        # NetworkTables.initialize()
+
         cs = CameraServer.getInstance()
         port = 5550
 
@@ -234,11 +245,28 @@ class VisionHandler(metaclass=Singleton):
             port += 1
 
     def thread_proc(self, cs, cam_name, port=5557):
+        pipeline = SettingsManager().cams[cam_name]["pipelines"]["pipeline0"]
 
-        def change_camera_values():
-            SettingsManager.usb_cameras[cam_name].setBrightness(0)
-            SettingsManager.usb_cameras[cam_name].setExposureManual(0)
+        def change_camera_values(pipline):
+            SettingsManager.usb_cameras[cam_name].setBrightness(pipeline['brightness'])
+            SettingsManager.usb_cameras[cam_name].setExposureManual(pipeline['exposure'])
             SettingsManager.usb_cameras[cam_name].setWhiteBalanceAuto()
+
+        def pipeline_listener(table, key, value, is_new):
+            global pipeline
+            if is_new:
+                pipeline = SettingsManager.cams[cam_name]["pipelines"][value]
+                change_camera_values()
+
+        def mode_listener(table, key, value, is_new):
+            pass
+
+        table = NetworkTables.getTable("/Chameleon-Vision/" + cam_name)
+
+        table.addEntryListenerEx(pipeline_listener, key="Pipeline",
+                                 flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
+        table.addEntryListenerEx(mode_listener, key="Driver_Mode",
+                                 flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
 
         cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
 
@@ -256,8 +284,7 @@ class VisionHandler(metaclass=Singleton):
         p = Process(target=self.camera_process, args=(cam_name, port))
         p.start()
 
-        pipeline = SettingsManager().cams[cam_name]["pipelines"]["pipeline0"]
-
+        change_camera_values(pipeline)
         while True:
             _, image = cv_sink.grabFrame(image)
             socket.send_json(dict(
@@ -265,25 +292,16 @@ class VisionHandler(metaclass=Singleton):
             ))
             socket.send_pyobj(image)
             p_image = socket.recv_pyobj()
+            nt_data = socket.recv_json()
+            if nt_data['valid']:
+                table.putNumber('pitch', nt_data['pitch'])
+                table.putNumber('yaw', nt_data['yaw'])
+            table.putBoolean('valid', nt_data['valid'])
             cv_publish.putFrame(p_image)
 
     def camera_process(self, cam_name, port):
         from fractions import Fraction
-        # def pipeline_listener(table, key, value, is_new):
-        #     if (is_new):
-        #         curr_pipline = SettingsManager.cams[cam_name]["pipelines"][value]
-        #         change_camera_values()
-        #
-        # def mode_listener(table, key, value, is_new):
-        #     pass
-        #
-        # table = NetworkTables.getTable("/Chameleon-Vision/" + camera.getInfo().name)
-        #
-        # table.addEntryListenerEx(pipeline_listener, key="Pipeline",
-        #                          flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
-        # table.addEntryListenerEx(mode_listener, key="Driver_Mode",
-        #                          flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
-        # change_camera_values()
+
         diagonalView = math.radians(68.5) #needs to be implemented in client 
 
         width = SettingsManager().cams[cam_name]["video_mode"]["width"]
@@ -295,8 +313,6 @@ class VisionHandler(metaclass=Singleton):
         aspect_fraction = Fraction(width,height)
         horizontal_ratio = aspect_fraction.numerator
         vertical_ratio = aspect_fraction.denominator
-        
-        diagonal_aspect = math.hypot(horizontal_ratio, vertical_ratio)
         
         horizontalView = math.atan(math.tan(diagonalView/2) * (horizontal_ratio / diagonalView)) * 2
         verticalView = math.atan(math.tan(diagonalView/2) * (vertical_ratio / diagonalView)) * 2
@@ -325,8 +341,23 @@ class VisionHandler(metaclass=Singleton):
                                                                 target_intersection=
                                                                 curr_pipeline['target_intersection'])
             final_contour = self.output_contour(filtered_contours)
+            try:
+                center = final_contour[0]
+                pitch = self.calculate_pitch(pixel_y=center[1], center_y=centerY, v_focal_length=V_FOCAL_LENGTH)
+                yaw = self.calculate_yaw(pixel_x=center[0], center_x=centerX, h_focal_length=H_FOCAL_LENGTH)
+                valid = True
+            except IndexError:
+                pitch = None
+                yaw = None
+                valid = False
 
             res = self.draw_image(input_image=image, contour=final_contour)
             socket.send_pyobj(res)
+            socket.send_json(dict(
+                pitch=pitch,
+                yaw=yaw,
+                valid= valid
+
+            ))
 
 
