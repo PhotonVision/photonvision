@@ -1,8 +1,14 @@
 <template>
     <div id="ContourTab">
+     <chselect class="spacing" title="Sort Mode" Xkey="sort_mode" 
+        :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Closest']"></chselect>
      <chrange class="spacing" title="Area" Xkey="area"></chrange>
-     <chrange class="spacing" title="Ratio (W/H)" Xkey="ratio"></chrange>
+     <chrange class="spacing" title="Ratio (W/H)" Xkey="ratio" :steps="0.1"></chrange>
      <chrange class="spacing" title="Extent" Xkey="extent"></chrange>
+     <chselect class="spacing" title="Target Group" Xkey="target_group" 
+        :list="['Single','Dual','Triple','Quadruple','Quintuple']"></chselect>
+    <chselect class="spacing" title="Target Intersaction" Xkey="target_intersection" 
+        :list="['Up','Down','Left','Right','Parallel']"></chselect>
      </div>
 </template>
 

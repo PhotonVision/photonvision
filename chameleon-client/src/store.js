@@ -27,8 +27,11 @@ export const store = new Vuex.Store({
         dilate: false,
         //contours
         area:[0,100],
-        ratio:[0,1],
+        ratio:[0,20],
         extent:[0,100],
+        sort_mode:'Largest', //
+        target_group:'Single', //
+        target_intersection:'Up', //
         //Settings
         teamValue:0,
         connectionType:"DHCP",
@@ -67,7 +70,10 @@ export const store = new Vuex.Store({
         streamAdress : set('streamAdress'),
         isBinaryImage: set('isBinaryImage'),
         cameraList : set('cameraList'),
-        pipelineList: set('piplineList')
+        pipelineList: set('piplineList'),
+        sort_mode: set('sort_mode'),
+        target_group:set('target_group'),
+        target_intersection:set('target_intersection')
     },
     getters:{
         camera: state => state.camera,
@@ -92,7 +98,11 @@ export const store = new Vuex.Store({
         streamAdress: state => state.streamAdress,
         isBinaryImage: state => state.isBinaryImage,
         cameraList: state => state.cameraList,
-        pipelineList: state => state.pipelineList
+        pipelineList: state => state.pipelineList,
+        sort_mode: state => state.sort_mode,
+        target_group: state => state.target_group,
+        target_intersection: state => state.target_intersection
+
 
     },
 });

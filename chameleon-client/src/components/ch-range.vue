@@ -5,13 +5,13 @@
                 <h4>{{title.charAt(0).toUpperCase() + title.slice(1)}} :</h4>
             </Col>
             <Col span="4" style="text-align: left">
-                <InputNumber style="align-self: flex-start;" v-model="value[0]" size="small"></InputNumber>
+                <InputNumber style="align-self: flex-start;" v-model="value[0]" size="small" :step="steps" ></InputNumber>
             </Col>
             <Col span="10">
-                <Slider range v-model="value" @on-input="handleInput"></Slider>
+                <Slider range v-model="value" @on-input="handleInput" :step="steps"></Slider>
             </Col>
             <Col span="4" style="text-align: right">
-                <InputNumber style="align-self: flex-end;" v-model="value[1]" size="small"></InputNumber>
+                <InputNumber style="align-self: flex-end;" v-model="value[1]" size="small"  :step="steps"></InputNumber>
             </Col>
         </row>
 </template>
@@ -21,7 +21,8 @@
         name: 'ch-range',
         props:{
             title:String,
-            Xkey:String
+            Xkey:String,
+            steps:Number
         },
         data() {
             return {
