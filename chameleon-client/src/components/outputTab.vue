@@ -1,8 +1,8 @@
 <template>
     <div id="OutputTab">
-     <chselect class="spacing" title="Target region" Xkey="target_region" 
-        :list="['Upmost','Rightmost','Downmost','Leftmost','Centermost']"></chselect>
-        
+        <chselect class="spacing" title="Sort Mode" Xkey="sort_mode" 
+        :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Closest']"></chselect>
+        <h4>calibrate crosshair</h4>
      </div>
 </template>
 
