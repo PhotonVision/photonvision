@@ -8,10 +8,10 @@
                 <InputNumber style="align-self: flex-start;" v-model="value[0]" size="small" :step="steps" ></InputNumber>
             </Col>
             <Col span="10">
-                <Slider range v-model="value" @on-input="handleInput" :step="steps"></Slider>
+                <Slider range v-model="value" @on-input="handleInput" :step="steps" :max="maximum"></Slider>
             </Col>
             <Col span="4" style="text-align: right">
-                <InputNumber style="align-self: flex-end;" v-model="value[1]" size="small"  :step="steps"></InputNumber>
+                <InputNumber style="align-self: flex-end;" v-model="value[1]" size="small"  :step="steps" :max="maximum"></InputNumber>
             </Col>
         </row>
 </template>
@@ -22,7 +22,8 @@
         props:{
             title:String,
             Xkey:String,
-            steps:Number
+            steps:Number,
+            maximum:Number
         },
         data() {
             return {

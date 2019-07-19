@@ -64,10 +64,10 @@
             },
             isBinary: {
                 get: function(){
-                    return this.$store.state.isBinaryImage;
+                    return this.$store.state.is_binary;
                 },
                 set: function(value){
-                    this.$store.commit('isBinaryImage',value)
+                    this.$store.commit('is_binary',value)
                 }
             }
         },

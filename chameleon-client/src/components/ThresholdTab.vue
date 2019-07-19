@@ -1,8 +1,8 @@
 <template>
     <div id="Threshold">
-        <chrange class="spacing" title="Hue" Xkey="hue"></chrange>
-        <chrange class="spacing" title="Saturation" Xkey="saturation"></chrange>
-        <chrange class="spacing" title="Value" Xkey="value"></chrange>
+        <chrange class="spacing" title="Hue" Xkey="hue" :maximum="180"></chrange>
+        <chrange class="spacing" title="Saturation" Xkey="saturation" :maximum="255"></chrange>
+        <chrange class="spacing" title="Value" Xkey="value" :maximum="255"></chrange>
         <chswitch class="spacing" title="Erode" Xkey="erode"></chswitch>
         <chswitch class="spacing" title="Dilate" Xkey="dilate"></chswitch>
     </div>

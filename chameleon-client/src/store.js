@@ -40,7 +40,7 @@ export const store = new Vuex.Store({
         hostName:"",
         //live info
         streamAdress:("http://"+location.hostname + ":1181/stream.mjpg"),
-        isBinaryImage:0,
+        is_binary:0,
         //camera lists
 
     },
@@ -68,7 +68,7 @@ export const store = new Vuex.Store({
         gateWay : set('gateway'),
         hostName : set('hostname'),
         streamAdress : set('streamAdress'),
-        isBinaryImage: set('isBinaryImage'),
+        is_binary: set('is_binary'),
         cameraList : set('cameraList'),
         pipelineList: set('piplineList'),
         sort_mode: set('sort_mode'),
@@ -96,7 +96,7 @@ export const store = new Vuex.Store({
         gateWay: state => state.gateWay,
         hostName: state => state.hostName,
         streamAdress: state => state.streamAdress,
-        isBinaryImage: state => state.isBinaryImage,
+        is_binary: state => state.is_binary,
         cameraList: state => state.cameraList,
         pipelineList: state => state.pipelineList,
         sort_mode: state => state.sort_mode,

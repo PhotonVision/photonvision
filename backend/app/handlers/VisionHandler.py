@@ -18,11 +18,14 @@ class VisionHandler(metaclass=Singleton):
 
     def _hsv_threshold(self, hue: list, saturation: list, value: list, img: numpy.ndarray, is_erode: bool,
                        is_dilate: bool):
-
-        img = cv2.erode(img, kernel=self.kernel, iterations=is_erode)
-        img = cv2.dilate(img, kernel=self.kernel, iterations=is_dilate)
-        out = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-        return cv2.inRange(out, (hue[0], saturation[0], value[0]), (hue[1], saturation[1], value[1]))
+        blur = cv2.blur(img, (3, 3))
+        hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
+        lower = numpy.array([hue[0], saturation[0], value[0]])
+        upper = numpy.array([hue[1], saturation[1], value[1]])
+        thresh = cv2.inRange(hsv, lower, upper)
+        erode_img = cv2.erode(thresh, kernel=self.kernel, iterations=is_erode)
+        dilate_img = cv2.dilate(erode_img, kernel=self.kernel, iterations=is_dilate)
+        return dilate_img
 
     def find_contours(self, binary_img: numpy.ndarray):
         _, contours, _ = cv2.findContours(binary_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
@@ -122,11 +125,11 @@ class VisionHandler(metaclass=Singleton):
                     intersection_y = (m_a * (intersection_x - x0_a)) + y0_a
                     # finding intersection point
                     if intersection_direction == 'Up':
-                        if intersection_y > self.center_y:
+                        if intersection_y < self.center_y:
                             return True
                     elif intersection_direction == 'Down':
                         if intersection_y > self.center_y:
-                            return False
+                            return True
                     elif intersection_direction == 'Left':
                         if intersection_x < self.center_x:
                             return True
@@ -139,18 +142,21 @@ class VisionHandler(metaclass=Singleton):
                     f_contour_list = []
                     for index, g_contour in enumerate(i_contours):
                         final_contour = g_contour
-                        for c in range(target_group.value):
+                        for c in range(target_group.value - 1):
                             try:
                                 first_contour = i_contours[index + c]
                                 second_contour = i_contours[index + c + 1]
                             except IndexError:
-                                continue
+                                final_contour = []
+                                break
                             if is_intersecting(first_contour, second_contour, intersection_point):
                                 final_contour = numpy.concatenate((final_contour, second_contour))
-                            else:
-                                continue
 
-                        f_contour_list.append(final_contour)
+                            else:
+                                final_contour = []
+                                break
+                        if final_contour != []:
+                            f_contour_list.append(final_contour)
 
                     return f_contour_list
                 else:
@@ -188,9 +194,10 @@ class VisionHandler(metaclass=Singleton):
                     continue
             #checking for contour grouping before sorting
             grouped_contours = group_target(filtered_contours, TargetGroup[target_grouping], target_intersection)
-
-            sorted_contours = getattr(self.sort_mode, sort_mode)(grouped_contours)
-
+            try:
+                sorted_contours = getattr(self.sort_mode, sort_mode)(grouped_contours)
+            except TypeError:
+                sorted_contours = []
             return sorted_contours
 
     @unique
@@ -351,7 +358,11 @@ class VisionHandler(metaclass=Singleton):
                 yaw = None
                 valid = False
 
-            res = self.draw_image(input_image=image, contour=final_contour)
+            if curr_pipeline['is_binary']:
+                draw_image = hsv_image
+            else:
+                draw_image = image
+            res = self.draw_image(input_image=draw_image, contour=final_contour)
             socket.send_pyobj(res)
             socket.send_json(dict(
                 pitch=pitch,
