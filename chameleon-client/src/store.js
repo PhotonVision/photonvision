@@ -40,14 +40,14 @@ export const store = new Vuex.Store({
         gateWay:0,
         hostname:"",
         //live info
-        streamAdress:("http://"+location.hostname + ":1181/stream.mjpg"),
+        port:1181,
         is_binary:0,
         //camera lists
 
     },
     mutations:{
-        camera (state,value){
-            state['camera'] = value;
+        curr_camera (state,value){
+            state['curr_camera'] = value;
             state['pipeline'] = "0";
         },
         pipeline: set('curr_pipeline'),
@@ -68,17 +68,17 @@ export const store = new Vuex.Store({
         ip: set('ip'),
         gateWay : set('gateway'),
         hostname : set('hostname'),
-        streamAdress : set('streamAdress'),
         is_binary: set('is_binary'),
         cameraList : set('cameraList'),
         pipelineList: set('piplineList'),
         sort_mode: set('sort_mode'),
         target_group:set('target_group'),
         target_intersection:set('target_intersection'),
-        FOV:set('FOV')
+        FOV:set('FOV'),
+        port:set('port')
     },
     getters:{
-        camera: state => state.camera,
+        curr_camera: state => state.curr_camera,
         pipeline: state => state.pipeline,
         brightness: state => state.brightness,
         exposure: state => state.exposure,
@@ -97,15 +97,14 @@ export const store = new Vuex.Store({
         ip: state => state.ip,
         gateWay: state => state.gateWay,
         hostname: state => state.hostName,
-        streamAdress: state => state.streamAdress,
         is_binary: state => state.is_binary,
         cameraList: state => state.cameraList,
         pipelineList: state => state.pipelineList,
         sort_mode: state => state.sort_mode,
         target_group: state => state.target_group,
         target_intersection: state => state.target_intersection,
-        FOV: state => state.FOV
-
+        FOV: state => state.FOV,
+        port: state => state.port
 
     },
 });

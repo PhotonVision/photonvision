@@ -279,7 +279,7 @@ class VisionHandler(metaclass=Singleton):
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         table.addEntryListenerEx(mode_listener, key="Driver_Mode",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
-
+        #gettings video from curent camera
         cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
 
         width = SettingsManager().cams[cam_name]["video_mode"]["width"]
@@ -287,16 +287,22 @@ class VisionHandler(metaclass=Singleton):
 
         image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
 
+        #setting up a video server for camera
         cv_publish = cs.putVideo(name=cam_name, width=width, height=height)
+        # saving camera port in cam name dict for usage in client
+        SettingsManager().cams_port[cam_name] = cs._sinks['serve_'+cam_name].getPort()
 
+        #setting up a zmq connection to the opencv subprocess
         context = zmq.Context()
         socket = context.socket(zmq.PAIR)
         socket.bind('tcp://*:%s' % str(port))
 
+        #starting the process with inital values
         p = Process(target=self.camera_process, args=(cam_name, port, FOV))
         p.start()
 
         change_camera_values(pipeline)
+
         while True:
             _, image = cv_sink.grabFrame(image)
             socket.send_json(dict(
@@ -313,7 +319,7 @@ class VisionHandler(metaclass=Singleton):
                 table.putNumber('pitch', nt_data['pitch'])
                 table.putNumber('yaw', nt_data['yaw'])
                 #if the selected camera in ui is this cam send the point to the ui
-                if SettingsManager().general_settings['curr_camera'] is cam_name:
+                if SettingsManager().general_settings['curr_camera'] == cam_name:
                     try:
                         if nt_data['raw_point'] is not None:
                             send_all_async({

@@ -86,6 +86,11 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
             # TODO: return something if no camera connected
             self.write_message("No camera connected")
 
+    def send_curr_port(self):
+        self.write_message({
+            'port': self.settings_manager.cams_port[self.settings_manager.general_settings["curr_camera"]]
+        })
+
     def send_full_settings(self):
         full_settings = self.settings_manager.general_settings.copy()
         full_settings["cameraList"] = list(self.settings_manager.cams.copy().keys())
@@ -95,6 +100,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
             full_settings["resolutionList"] = self.settings_manager.get_resolution_list()
             full_settings['resolution'] = self.settings_manager.get_curr_cam()['resolution']
             full_settings['FOV'] = self.settings_manager.get_curr_cam()['FOV']
+            full_settings['port'] = self.settings_manager.cams_port[self.settings_manager.general_settings["curr_camera"]]
         except NoCameraConnectedException:
             # TODO: return something if no camera connected
             full_settings["data"] = None
@@ -103,6 +109,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
 
     def change_curr_camera(self, dic):
         self.settings_manager.set_curr_camera(cam_name=dic["curr_camera"])
+        self.send_curr_port()
         self.send_curr_cam()
 
     def change_curr_pipeline(self, dic):
