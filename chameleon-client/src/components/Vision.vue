@@ -59,7 +59,7 @@
             },
             steamAdress: {
                 get: function(){
-                    return this.$store.state.streamAdress;
+                    return "http://"+location.hostname + ":"+ this.$store.state.port +"/stream.mjpg";
                 }
             },
             isBinary: {

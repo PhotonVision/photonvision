@@ -19,6 +19,7 @@ export const store = new Vuex.Store({
         orientation:0,
         resolution:0,
         resolutionList:[],
+        FOV:0,
         //threshold
         hue:[0,10],
         saturation:[0,10],
@@ -33,20 +34,20 @@ export const store = new Vuex.Store({
         target_group:'Single', //
         target_intersection:'Up', //
         //Settings
-        teamValue:0,
-        connectionType:"DHCP",
+        team_number:0,
+        connection_type:"DHCP",
         ip:0,
         gateWay:0,
-        hostName:"",
+        hostname:"",
         //live info
-        streamAdress:("http://"+location.hostname + ":1181/stream.mjpg"),
+        port:1181,
         is_binary:0,
         //camera lists
 
     },
     mutations:{
-        camera (state,value){
-            state['camera'] = value;
+        curr_camera (state,value){
+            state['curr_camera'] = value;
             state['pipeline'] = "0";
         },
         pipeline: set('curr_pipeline'),
@@ -62,21 +63,22 @@ export const store = new Vuex.Store({
         area: set('area'),
         ratio: set('ratio'),
         extent: set('extent'),
-        teamValue: set('team_number'),
-        connectionType: set('connection_type'),
+        team_number: set('team_number'),
+        connection_type: set('connection_type'),
         ip: set('ip'),
         gateWay : set('gateway'),
-        hostName : set('hostname'),
-        streamAdress : set('streamAdress'),
+        hostname : set('hostname'),
         is_binary: set('is_binary'),
         cameraList : set('cameraList'),
         pipelineList: set('piplineList'),
         sort_mode: set('sort_mode'),
         target_group:set('target_group'),
-        target_intersection:set('target_intersection')
+        target_intersection:set('target_intersection'),
+        FOV:set('FOV'),
+        port:set('port')
     },
     getters:{
-        camera: state => state.camera,
+        curr_camera: state => state.curr_camera,
         pipeline: state => state.pipeline,
         brightness: state => state.brightness,
         exposure: state => state.exposure,
@@ -90,19 +92,19 @@ export const store = new Vuex.Store({
         area: state =>state.area,
         ratio: state =>state.ratio,
         extent: state =>state.extent,
-        teamValue: state => state.teamValue,
-        connectionType: state => state.connectionType,
+        team_number: state => state.teamValue,
+        connection_type: state => state.connectionType,
         ip: state => state.ip,
         gateWay: state => state.gateWay,
-        hostName: state => state.hostName,
-        streamAdress: state => state.streamAdress,
+        hostname: state => state.hostName,
         is_binary: state => state.is_binary,
         cameraList: state => state.cameraList,
         pipelineList: state => state.pipelineList,
         sort_mode: state => state.sort_mode,
         target_group: state => state.target_group,
-        target_intersection: state => state.target_intersection
-
+        target_intersection: state => state.target_intersection,
+        FOV: state => state.FOV,
+        port: state => state.port
 
     },
 });

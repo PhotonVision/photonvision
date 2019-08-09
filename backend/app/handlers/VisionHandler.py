@@ -1,3 +1,4 @@
+import asyncio
 from networktables import NetworkTables
 import networktables
 import cv2
@@ -10,6 +11,7 @@ import threading
 import zmq
 import math
 from enum import Enum, unique
+from ..handlers.SocketHandler import send_all_async
 
 
 class VisionHandler(metaclass=Singleton):
@@ -252,7 +254,10 @@ class VisionHandler(metaclass=Singleton):
             port += 1
 
     def thread_proc(self, cs, cam_name, port=5557):
-        pipeline = SettingsManager().cams[cam_name]["pipelines"]["pipeline0"]
+        asyncio.set_event_loop(asyncio.new_event_loop())
+        pipeline_name = 'pipeline0'
+        pipeline = SettingsManager().cams[cam_name]["pipelines"][pipeline_name]
+        FOV = SettingsManager().cams[cam_name]["FOV"]
 
         def change_camera_values(pipline):
             SettingsManager.usb_cameras[cam_name].setBrightness(pipeline['brightness'])
@@ -274,7 +279,7 @@ class VisionHandler(metaclass=Singleton):
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         table.addEntryListenerEx(mode_listener, key="Driver_Mode",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
-
+        #gettings video from curent camera
         cv_sink = cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
 
         width = SettingsManager().cams[cam_name]["video_mode"]["width"]
@@ -282,34 +287,58 @@ class VisionHandler(metaclass=Singleton):
 
         image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
 
+        #setting up a video server for camera
         cv_publish = cs.putVideo(name=cam_name, width=width, height=height)
+        # saving camera port in cam name dict for usage in client
+        SettingsManager().cams_port[cam_name] = cs._sinks['serve_'+cam_name].getPort()
 
+        #setting up a zmq connection to the opencv subprocess
         context = zmq.Context()
         socket = context.socket(zmq.PAIR)
         socket.bind('tcp://*:%s' % str(port))
 
-        p = Process(target=self.camera_process, args=(cam_name, port))
+        #starting the process with inital values
+        p = Process(target=self.camera_process, args=(cam_name, port, FOV))
         p.start()
 
         change_camera_values(pipeline)
+
         while True:
             _, image = cv_sink.grabFrame(image)
             socket.send_json(dict(
                 pipeline=pipeline
             ))
+
             socket.send_pyobj(image)
             p_image = socket.recv_pyobj()
             nt_data = socket.recv_json()
+            table.putBoolean('valid', nt_data['valid'])
+            # check if point is valid
             if nt_data['valid']:
+                #send the point using network tables
                 table.putNumber('pitch', nt_data['pitch'])
                 table.putNumber('yaw', nt_data['yaw'])
-            table.putBoolean('valid', nt_data['valid'])
+                #if the selected camera in ui is this cam send the point to the ui
+                if SettingsManager().general_settings['curr_camera'] == cam_name:
+                    try:
+                        if nt_data['raw_point'] is not None:
+                            send_all_async({
+                                'raw_point': nt_data['raw_point'],
+                                'point': {
+                                    'pitch': nt_data['pitch'],
+                                    'yaw': nt_data['yaw']
+                                }
+                            })
+                    except Exception as e:
+                        print(e)
+            #send the image to the camera server
+
             cv_publish.putFrame(p_image)
 
-    def camera_process(self, cam_name, port):
+    def camera_process(self, cam_name, port, FOV):
         from fractions import Fraction
 
-        diagonalView = math.radians(68.5) #needs to be implemented in client 
+        diagonalView = math.radians(FOV) #needs to be implemented in client
 
         width = SettingsManager().cams[cam_name]["video_mode"]["width"]
         height = SettingsManager().cams[cam_name]["video_mode"]["height"]
@@ -354,6 +383,7 @@ class VisionHandler(metaclass=Singleton):
                 yaw = self.calculate_yaw(pixel_x=center[0], center_x=centerX, h_focal_length=H_FOCAL_LENGTH)
                 valid = True
             except IndexError:
+                center = None
                 pitch = None
                 yaw = None
                 valid = False
@@ -367,8 +397,8 @@ class VisionHandler(metaclass=Singleton):
             socket.send_json(dict(
                 pitch=pitch,
                 yaw=yaw,
-                valid= valid
-
+                valid=valid,
+                raw_point=center
             ))
 
 

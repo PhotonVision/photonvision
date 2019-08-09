@@ -4,7 +4,6 @@
         <chslider class="spacing" title="exposure" Xkey="exposure"></chslider>
         <chslider class="spacing" title="Brightness" Xkey="brightness"></chslider>
         <chselect class="spacing" title="Orientation" Xkey="orientation" :list="['Normal','Inverted']"></chselect>
-        <ch-index-select class="spacing" title="Resolution" Xkey="resolution"  :list="resolutionList"></ch-index-select>
         </div>
 </template>
     
