@@ -1,4 +1,6 @@
 import asyncio
+import time
+
 from networktables import NetworkTables
 import networktables
 import cv2
@@ -239,6 +241,7 @@ class VisionHandler(metaclass=Singleton):
         return pitch
 
     def calculate_yaw(self, pixel_x, center_x, h_focal_length):
+
         yaw = math.degrees(math.atan((pixel_x - center_x) / h_focal_length))
         return yaw
 
@@ -326,7 +329,8 @@ class VisionHandler(metaclass=Singleton):
                                 'raw_point': nt_data['raw_point'],
                                 'point': {
                                     'pitch': nt_data['pitch'],
-                                    'yaw': nt_data['yaw']
+                                    'yaw': nt_data['yaw'],
+                                    'fps': nt_data['fps']
                                 }
                             })
                     except Exception as e:
@@ -360,6 +364,10 @@ class VisionHandler(metaclass=Singleton):
         socket = context.socket(zmq.PAIR)
         socket.connect('tcp://localhost:%s' % str(port))
         filter_contours = self.Filter_Contours(center_x=centerX, center_y=centerY)
+        x = 1
+        counter = 0
+        start_time = time.time()
+        fps = 0
         while True:
             obj = socket.recv_json()
             image = socket.recv_pyobj()
@@ -379,8 +387,10 @@ class VisionHandler(metaclass=Singleton):
             final_contour = self.output_contour(filtered_contours)
             try:
                 center = final_contour[0]
-                pitch = self.calculate_pitch(pixel_y=center[1], center_y=centerY, v_focal_length=V_FOCAL_LENGTH)
-                yaw = self.calculate_yaw(pixel_x=center[0], center_x=centerX, h_focal_length=H_FOCAL_LENGTH)
+                center_x = (center[1] - curr_pipeline['B']) / curr_pipeline["M"]
+                center_y = (center[0] * curr_pipeline["M"]) + curr_pipeline["B"]
+                pitch = self.calculate_pitch(pixel_y=center[1], center_y=center_x, v_focal_length=V_FOCAL_LENGTH)
+                yaw = self.calculate_yaw(pixel_x=center[0], center_x=center_y, h_focal_length=H_FOCAL_LENGTH)
                 valid = True
             except IndexError:
                 center = None
@@ -398,7 +408,14 @@ class VisionHandler(metaclass=Singleton):
                 pitch=pitch,
                 yaw=yaw,
                 valid=valid,
-                raw_point=center
+                raw_point=center,
+                fps=fps
             ))
+            counter += 1
+            if (time.time() - start_time) > x:
+                fps = (counter / (time.time() - start_time))
+                counter = 0
+                start_time = time.time()
+
 
 

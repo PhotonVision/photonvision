@@ -42,7 +42,9 @@ export const store = new Vuex.Store({
         //live info
         port:1181,
         is_binary:0,
-        //camera lists
+        //points
+        raw_point:[],
+        point:{}
 
     },
     mutations:{
@@ -75,7 +77,9 @@ export const store = new Vuex.Store({
         target_group:set('target_group'),
         target_intersection:set('target_intersection'),
         FOV:set('FOV'),
-        port:set('port')
+        port:set('port'),
+        raw_point:set('raw_point'),
+        point:set('point')
     },
     getters:{
         curr_camera: state => state.curr_camera,
@@ -104,7 +108,9 @@ export const store = new Vuex.Store({
         target_group: state => state.target_group,
         target_intersection: state => state.target_intersection,
         FOV: state => state.FOV,
-        port: state => state.port
+        port: state => state.port,
+        raw_point:state => state.raw_point,
+        point: state => state.point
 
     },
 });

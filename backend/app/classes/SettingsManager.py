@@ -30,7 +30,9 @@ class SettingsManager(metaclass=Singleton):
         "is_binary": "Normal",
         "sort_mode": "Largest",
         "target_group": 'Single',
-        "target_intersection": 'Up'
+        "target_intersection": 'Up',
+        "M": 1,
+        "B": 0
     }
     default_general_settings = {
         "team_number": 1577,

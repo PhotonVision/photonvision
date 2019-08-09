@@ -17,10 +17,11 @@
                     </Col>
                     <Col span="12">
                     <Tabs :animated="false"  v-model="isBinary" @on-click="handleImage">
-                    <TabPane label="Normal"></TabPane>    
-                    <TabPane label="Threshold"></TabPane>
+                        <TabPane label="Normal"></TabPane>    
+                        <TabPane label="Threshold"></TabPane>
                     </Tabs>
                     <img class="imageSize" :src="steamAdress" style="">
+                    <h4 class="pointText">{{point}}</h4>
                     </Col>
                 </Col>
             </row>
@@ -69,6 +70,12 @@
                 set: function(value){
                     this.$store.commit('is_binary',value)
                 }
+            },
+            point:{
+                get:function(){
+                    let p = this.$store.state.point;
+                    return ("Pitch: " + parseFloat(p['pitch']).toFixed(2) + " Yaw: " + parseFloat(p['yaw']).toFixed(2) + " FPS: " + parseFloat(p['fps']).toFixed(2))
+                }
             }
         },
     }
@@ -80,5 +87,8 @@
 .imageSize{
     width: 75%;
     height: 75%;
+}
+.pointText{
+    text-align: center;
 }
 </style>

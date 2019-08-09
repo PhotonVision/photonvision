@@ -23,8 +23,7 @@
         </Row>
         
         <Button type="primary" size="small" class="buttonClass spacing" v-on:click="socketSendAll">Save settings to current camera</Button>
-          
-          <h4 class="spacing">Please Restart the computer Manually after saving all cameras</h4>
+        <h4 class="spacing">Please Restart the computer Manually after saving all cameras</h4>
         
     </div>
 </template>
