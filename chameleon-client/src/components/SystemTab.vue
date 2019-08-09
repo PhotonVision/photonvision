@@ -6,31 +6,31 @@
                     <h4>Team Number:</h4>
                 </Col>
                 <col span="4">
-                <InputNumber :min="0" v-model="teamNum" size="small"></InputNumber>
+                    <InputNumber :min="0" v-model="team_number" size="small"></InputNumber>
                 </col>
           </row>
         </div>
         <Divider class="divdiv" orientation="left">Networking</Divider>
         <div>
-            <RadioGroup v-model="connectionType" style="display: flex;">
+            <RadioGroup v-model="connection_type" style="display: flex;">
                 <Radio label="DHCP"></Radio>
                 <Radio label="Static"></Radio>
             </RadioGroup>
                 <div class="ipSettings">
                     <row type="flex" justify="start" align="middle" class="spacing">
                         <Col span="4">
-                        <h4>IP:</h4>
+                            <h4>IP:</h4>
                         </Col>
                         <Col span="10">
-                        <Input v-model="IP" size="small" :disabled="isConnection"></Input>
+                            <Input v-model="ip" size="small" :disabled="isConnection"></Input>
                         </Col>
                     </row>
                     <row type="flex" justify="start" align="middle" class="spacing">
                         <Col span="4">
-                        <h4>Gateway:</h4>
+                            <h4>Gateway:</h4>
                         </Col>
                         <Col span="10">
-                        <Input v-model="gateWay" size="small" :disabled="isConnection"></Input>
+                            <Input v-model="gateway" size="small" :disabled="isConnection"></Input>
                         </Col>
                     </row>
                     <row type="flex" justify="start" align="middle" class="spacing">
@@ -38,7 +38,7 @@
                         <h4>Hostname:</h4>
                         </Col>
                         <Col span="10">
-                            <Input v-model="hostName" size="small">
+                            <Input v-model="hostname" size="small">
                                 <span slot="prepend">http://Chameleon-Vision</span>
                                 <span slot="append">.local</span>
                             </Input>
@@ -69,32 +69,33 @@
         },
         methods: {
             socketSendAll: function(){
-                this.$socket.sendObj([
-                    {'team_number':this.teamNum},
-                    {'connection_type':this.connectionType},
-                    {'ip':this.ip},
-                    {'gateway':this.gateWay},
-                    {'hostname':this.hostName}]);
+                this.$socket.sendObj(
+                    {'change_general_settings_values':{
+                        'team_number':this.team_number,
+                        'connection_type':this.connection_type,
+                        'ip':this.ip,
+                        'gateway':this.gateway,
+                        'hostname':this.hostname}});
             }
         },
         computed: {
-            teamNum:{
+            team_number:{
                 get: function(){
-                    return this.$store.state.teamValue;
+                    return this.$store.state.team_number;
                 },
                 set: function(value){
-                    this.$store.commit('teamValue',value);
+                    this.$store.commit('team_number',value);
                 }
             },
-            connectionType:{
+            connection_type:{
                 get: function(){
-                    return this.$store.state.connectionType;
+                    return this.$store.state.connection_type;
                 },
                 set: function(value){
-                    this.$store.commit('connectionType',value);
+                    this.$store.commit('connection_type',value);
                 }
             },
-            IP:{
+            ip:{
                 get: function(){
                     return this.$store.state.ip;
                 },
@@ -102,20 +103,20 @@
                     this.$store.commit('ip',value);
                 }
             },
-            gateWay:{
+            gateway:{
                 get: function(){
-                    return this.$store.state.gateWay;
+                    return this.$store.state.gateway;
                 },
                 set: function(value){
-                    this.$store.commit('gateWay',value);
+                    this.$store.commit('gateway',value);
                 }
             },
-            hostName:{
+            hostname:{
                 get: function(){
-                    return this.$store.state.hostName;
+                    return this.$store.state.hostname;
                 },
                 set: function(value){
-                    this.$store.commit('hostName',value);
+                    this.$store.commit('hostname',value);
                 }
             },
             isConnection: function(){

@@ -1,3 +1,4 @@
+import socket
 import os
 import json
 import cv2
@@ -17,7 +18,6 @@ class SettingsManager(metaclass=Singleton):
         "exposure": 50,
         "brightness": 50,
         "orientation": "Normal",
-        "resolution": [320, 160],
         "hue": [0, 100],
         "saturation": [0, 100],
         "value": [0, 100],
@@ -36,7 +36,7 @@ class SettingsManager(metaclass=Singleton):
         "connection_type": "DHCP",
         "ip": "",
         "gateway": "",
-        "hostname": "Chameleon-Vision",
+        "hostname": "",
         "curr_camera": "",
         "curr_pipeline": ""
     }
@@ -133,8 +133,10 @@ class SettingsManager(metaclass=Singleton):
                 "height": video_mode.height,
                 "pixel_format": str(video_mode.pixelFormat).split('.')[1]
             }
-            self.usb_cameras[camera_name].setVideoMode(self.usb_cameras[camera_name].enumerateVideoModes()[int(dic["resolution"])])
 
+            self.usb_cameras[camera_name].setVideoMode(self.usb_cameras[camera_name].enumerateVideoModes()[int(dic["resolution"])])
+        if "FOV" in dic:
+            self.cams[camera_name]["FOV"] = float(dic["FOV"])
     # Access methods
 
     def get_curr_pipeline(self):
@@ -182,9 +184,13 @@ class SettingsManager(metaclass=Singleton):
                 self.cams[cam_name]["pipelines"][pipe_name][key] = dic[key]
 
     def change_general_settings_values(self, dic):
-        for key in dic:
+        for key in dic['change_general_settings_values']:
             if self.default_general_settings[key]:
-                self.general_settings[key] = dic[key]
+                self.general_settings[key] = dic['change_general_settings_values'][key]
+        self.settings_manager.save_settings()
+        #after all values has been set change settings
+        self.change_general_settings()
+
 
     # Creators
 
@@ -218,8 +224,10 @@ class SettingsManager(metaclass=Singleton):
             "fps": video_mode.fps,
             "width": video_mode.width,
             "height": video_mode.height,
-            "pixel_format": str(video_mode.pixelFormat).split('.')[1]
+            "pixel_format": str(video_mode.pixelFormat).split('.')[1],
         }
+        self.cams[cam_name]['resolution'] = 0
+        self.cams[cam_name]["FOV"] = 60.8
 
     # Savers
 
@@ -242,3 +250,8 @@ class SettingsManager(metaclass=Singleton):
 
         with open(os.path.join(self.settings_path, 'settings.json'), 'w+') as setting_file:
             json.dump(self.general_settings, setting_file)
+
+    def change_general_settings(self):
+        pass
+
+

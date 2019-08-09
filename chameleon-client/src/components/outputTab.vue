@@ -2,7 +2,7 @@
     <div id="OutputTab">
         <chselect class="spacing" title="Sort Mode" Xkey="sort_mode" 
         :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Closest']"></chselect>
-        <h4>calibrate crosshair</h4>
+        <h6>calibrate crosshair</h6>
      </div>
 </template>
 
@@ -34,4 +34,5 @@ import chrange from './ch-range.vue'
 .spacing{
     margin-top: 20px;
 }
+
 </style>
