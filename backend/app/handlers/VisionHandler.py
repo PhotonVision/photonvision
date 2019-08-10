@@ -241,7 +241,6 @@ class VisionHandler(metaclass=Singleton):
         return pitch
 
     def calculate_yaw(self, pixel_x, center_x, h_focal_length):
-
         yaw = math.degrees(math.atan((pixel_x - center_x) / h_focal_length))
         return yaw
 
@@ -389,8 +388,8 @@ class VisionHandler(metaclass=Singleton):
                 center = final_contour[0]
                 center_x = (center[1] - curr_pipeline['B']) / curr_pipeline["M"]
                 center_y = (center[0] * curr_pipeline["M"]) + curr_pipeline["B"]
-                pitch = self.calculate_pitch(pixel_y=center[1], center_y=center_x, v_focal_length=V_FOCAL_LENGTH)
-                yaw = self.calculate_yaw(pixel_x=center[0], center_x=center_y, h_focal_length=H_FOCAL_LENGTH)
+                pitch = self.calculate_pitch(pixel_y=center[1], center_y=center_y, v_focal_length=V_FOCAL_LENGTH)
+                yaw = self.calculate_yaw(pixel_x=center[0], center_x=center_x, h_focal_length=H_FOCAL_LENGTH)
                 valid = True
             except IndexError:
                 center = None

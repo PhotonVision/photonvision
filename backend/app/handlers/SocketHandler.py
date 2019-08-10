@@ -1,3 +1,5 @@
+import asyncio
+
 import tornado.websocket
 import json
 from ..classes.Exceptions import NoCameraConnectedException
@@ -14,7 +16,7 @@ def send_all_async(message):
                 web_socket_clients.remove(ws)
             else:
                 try:
-                    ws.write_message(message)
+                    ws.write_message(json.dumps(message))
                 except AssertionError as a:
                     pass
         except AssertionError:
@@ -47,11 +49,14 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
         print("WebSocket opened")
 
     def on_message(self, message):
-        message_dic = json.loads(message)
+        try:
+            message_dic = json.loads(message)
 
-        for key in message_dic:
-            self.actions.get(key, self.actions["change_pipeline_values"])(message_dic)
-        print(message)
+            for key in message_dic:
+                self.actions.get(key, self.actions["change_pipeline_values"])(message_dic)
+            print(message)
+        except:
+            print("crash " + message)
 
     def on_close(self):
         self.settings_manager.save_settings()
