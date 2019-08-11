@@ -11,16 +11,10 @@ web_socket_clients = []
 
 def send_all_async(message):
     for ws in web_socket_clients:
-        try:
-            if not ws.ws_connection.stream.socket:
-                web_socket_clients.remove(ws)
-            else:
-                try:
-                    ws.write_message(json.dumps(message))
-                except AssertionError as a:
-                    pass
-        except AssertionError:
-            pass
+            try:
+                ws.write_message(json.dumps(message))
+            except AssertionError as a:
+                pass
 
 
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
@@ -119,6 +113,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
 
     def change_curr_pipeline(self, dic):
         self.settings_manager.set_curr_pipeline(pipe_name=dic["curr_pipeline"])
+        self.settings_manager.cams_curr_pipeline[self.settings_manager.general_settings['curr_camera']] = dic["curr_pipeline"]
         self.send_curr_pipeline()
 
     def change_pipeline_values(self, dic):

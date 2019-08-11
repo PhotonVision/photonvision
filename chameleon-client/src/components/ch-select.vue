@@ -3,7 +3,7 @@
         <Col span="4">
             <h4>{{title.charAt(0).toUpperCase() + title.slice(1)}} :</h4>
         </Col>
-        <Col span="4">
+        <Col span="12">
             <i-select v-model="value" size="small" @on-change="handleInput" :disabled="isDisabled" @on-query-change="$emit('change')">
                 <i-option v-for="item in list" :value="item" :key="item">{{item}}</i-option>
             </i-select>

@@ -52,7 +52,7 @@ export const store = new Vuex.Store({
             state['curr_camera'] = value;
             state['pipeline'] = "0";
         },
-        pipeline: set('curr_pipeline'),
+        curr_pipeline: set('curr_pipeline'),
         brightness: set('brightness'),
         exposure: set('exposure'),
         orientation:set('orientation'),
@@ -83,7 +83,7 @@ export const store = new Vuex.Store({
     },
     getters:{
         curr_camera: state => state.curr_camera,
-        pipeline: state => state.pipeline,
+        curr_pipeline: state => state.curr_pipeline,
         brightness: state => state.brightness,
         exposure: state => state.exposure,
         orientation: state => state.orientation,

@@ -14,6 +14,7 @@ class SettingsManager(metaclass=Singleton):
     usb_cameras_info = {}
     general_settings = {}
     cams_port = {}
+    cams_curr_pipeline = {}
 
     default_pipeline = {
         "exposure": 50,
@@ -217,7 +218,8 @@ class SettingsManager(metaclass=Singleton):
     def create_new_cam(self, cam_name):
         self.cams[cam_name] = {}
         self.cams[cam_name]["pipelines"] = {}
-        self.create_new_pipeline(cam_name=cam_name)
+        for i in range(10):
+            self.create_new_pipeline(cam_name=cam_name)
 
         self.cams[cam_name]["path"] = self.usb_cameras_info[cam_name].otherPaths[0] if len(
             self.usb_cameras_info[cam_name].otherPaths) == 1 else self.usb_cameras_info[cam_name].otherPaths[1]

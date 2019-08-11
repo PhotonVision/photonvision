@@ -257,8 +257,8 @@ class VisionHandler(metaclass=Singleton):
 
     def thread_proc(self, cs, cam_name, port=5557):
         asyncio.set_event_loop(asyncio.new_event_loop())
-        pipeline_name = 'pipeline0'
-        pipeline = SettingsManager().cams[cam_name]["pipelines"][pipeline_name]
+        SettingsManager.cams_curr_pipeline[cam_name] = "pipeline0"
+        pipeline = SettingsManager().cams[cam_name]["pipelines"][SettingsManager.cams_curr_pipeline[cam_name]]
         FOV = SettingsManager().cams[cam_name]["FOV"]
 
         def change_camera_values(pipline):
@@ -267,16 +267,23 @@ class VisionHandler(metaclass=Singleton):
             SettingsManager.usb_cameras[cam_name].setWhiteBalanceAuto()
 
         def pipeline_listener(table, key, value, is_new):
-            global pipeline
-            if is_new:
-                pipeline = SettingsManager.cams[cam_name]["pipelines"][value]
-                change_camera_values()
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            SettingsManager.cams_curr_pipeline[cam_name] = value
+            change_camera_values(pipeline)
+            if cam_name == SettingsManager().general_settings['curr_camera']:
+                SettingsManager().general_settings['curr_pipeline'] = value
+                update_settings = SettingsManager().get_curr_pipeline()
+                update_settings['curr_pipeline'] = SettingsManager().general_settings["curr_pipeline"]
+                send_all_async(update_settings)
 
         def mode_listener(table, key, value, is_new):
-            pass
+            change_camera_values({
+                'brightness': 25,
+                'exposure': 15
+            })
 
         table = NetworkTables.getTable("/Chameleon-Vision/" + cam_name)
-
+        table.putString('Pipeline', SettingsManager.cams_curr_pipeline[cam_name])
         table.addEntryListenerEx(pipeline_listener, key="Pipeline",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         table.addEntryListenerEx(mode_listener, key="Driver_Mode",
@@ -306,21 +313,26 @@ class VisionHandler(metaclass=Singleton):
         change_camera_values(pipeline)
 
         while True:
+            pipeline = SettingsManager().cams[cam_name]["pipelines"][SettingsManager.cams_curr_pipeline[cam_name]]
             _, image = cv_sink.grabFrame(image)
             socket.send_json(dict(
                 pipeline=pipeline
-            ))
+            ), zmq.SNDMORE)
 
             socket.send_pyobj(image)
             p_image = socket.recv_pyobj()
             nt_data = socket.recv_json()
             table.putBoolean('valid', nt_data['valid'])
             # check if point is valid
+
+            # print(nt_data['fps'])
+
             if nt_data['valid']:
                 #send the point using network tables
                 table.putNumber('pitch', nt_data['pitch'])
                 table.putNumber('yaw', nt_data['yaw'])
                 #if the selected camera in ui is this cam send the point to the ui
+
                 if SettingsManager().general_settings['curr_camera'] == cam_name:
                     try:
                         if nt_data['raw_point'] is not None:
@@ -371,6 +383,9 @@ class VisionHandler(metaclass=Singleton):
             obj = socket.recv_json()
             image = socket.recv_pyobj()
             curr_pipeline = obj["pipeline"]
+            if curr_pipeline['orientation'] == "Inverted":
+                M = cv2.getRotationMatrix2D((width / 2, height / 2), 180, 1)
+                image = cv2.warpAffine(image, M, (width, height))
             hsv_image = self._hsv_threshold(curr_pipeline["hue"],
                                             curr_pipeline["saturation"], curr_pipeline["value"],
                                             image, curr_pipeline["erode"], curr_pipeline["dilate"])
