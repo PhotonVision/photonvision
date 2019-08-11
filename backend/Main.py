@@ -1,23 +1,29 @@
 import tornado.ioloop
-
+import logging
 from app.ChameleonVisionApp import ChameleonApplication
 from app.classes.SettingsManager import SettingsManager
 from tornado.options import options
-from app.handlers.CamerasHandler import CamerasHandler
 from app.handlers.VisionHandler import VisionHandler
+import threading
+import asyncio
 
-if __name__ == "__main__":
-    mng = SettingsManager()
 
-    #VisionHandler().run()
-    SettingsManager().save_settings()
-
+def run_server():
+    asyncio.set_event_loop(asyncio.new_event_loop())
     tornado.options.parse_command_line()
     app = ChameleonApplication()
     print(f"Serving on port {options.port}")
     app.listen(options.port)
     tornado.ioloop.IOLoop.current().start()
 
-#TODO: create process for each camera
-# create proccess loop and camera publisher
-# bridge network tables for each camera
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.DEBUG)
+    SettingsManager()
+
+    VisionHandler().run()
+    server_thread = threading.Thread(target=run_server)
+    server_thread.start()
+
+    while True:
+        pass

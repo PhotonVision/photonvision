@@ -1,8 +1,12 @@
 <template>
     <div id="ContourTab">
      <chrange class="spacing" title="Area" Xkey="area"></chrange>
-     <chrange class="spacing" title="Ratio (W/H)" Xkey="ratio"></chrange>
+     <chrange class="spacing" title="Ratio (W/H)" Xkey="ratio" :steps="0.1"></chrange>
      <chrange class="spacing" title="Extent" Xkey="extent"></chrange>
+     <chselect class="spacing" title="Target Group" Xkey="target_group" 
+        :list="['Single','Dual','Triple','Quadruple','Quintuple']"></chselect>
+    <chselect class="spacing" title="Target Intersaction" Xkey="target_intersection" 
+        :list="['Up','Down','Left','Right','Parallel']" :isDisabled="isSingle"></chselect>
      </div>
 </template>
 
@@ -23,8 +27,18 @@ import chrange from './ch-range.vue'
         },
         data() {
             return {
-                
             }
+        },
+        computed: {
+            isSingle:function(){
+                if (this.$store.state.target_group == 'Single'){
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        },
+        watch:{
         }
     }
 </script>

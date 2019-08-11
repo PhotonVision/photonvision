@@ -13,6 +13,7 @@
                           <MenuItem name="/vision/input" to="/vision/input">Input</MenuItem>
                           <MenuItem name="/vision/threshold" to="/vision/threshold">Threshold</MenuItem>
                           <MenuItem name="/vision/contours" to="/vision/contours">Contours</MenuItem>
+                          <MenuItem name="/vision/output" to="/vision/output">Output</MenuItem>
                         </Submenu>
                         <Submenu name="/settings">
                           <template slot="title">
@@ -75,12 +76,17 @@
     },
     created () {
     this.$options.sockets.onmessage = (data) => {
-      console.log(data.data);
-      let message = JSON.parse(data.data);
-      for (var prop in message){
+      try{
+        let message = JSON.parse(data.data);
+             for (var prop in message){
         if(message.hasOwnProperty(prop)){
           this.$store.state[prop] = message[prop];
         }
+        console.log(data.data);
+       }      
+      }
+      catch{
+        console.log("error" + data.data)
       }
     } // console writes recived data
   }

@@ -3,9 +3,9 @@
         <Col span="4">
             <h4>{{title.charAt(0).toUpperCase() + title.slice(1)}} :</h4>
         </Col>
-        <Col span="12">
-            <i-select v-model="value" size="small" @on-change="handleInput" :disabled="isDisabled" @on-query-change="$emit('change')">
-                <i-option v-for="item in list" :value="item" :key="item">{{item}}</i-option>
+        <Col span="4">
+            <i-select v-model="value" size="small" @on-change="handleInput">
+                <i-option v-for="(item,index) in list" :value="index" :key="index">{{item}}</i-option>
             </i-select>
         </Col>
     </Row>
@@ -17,8 +17,7 @@
         props:{
             title: String,
             list: Array,
-            Xkey: String,
-            isDisabled:Boolean
+            Xkey: String
         },
         data() {
             return {
