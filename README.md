@@ -24,7 +24,7 @@ so in order to run this project we will need to install python in order to run t
  
 
 ### installing 
-#####for the backend
+####for the backend
 1. sudo apt-get update 
 2. apt-get dist-upgrade
 3. sudo apt-get upgrade 
