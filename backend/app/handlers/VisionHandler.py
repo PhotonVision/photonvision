@@ -245,8 +245,8 @@ class VisionHandler(metaclass=Singleton):
         return yaw
 
     def run(self):
-        # NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
-        NetworkTables.initialize("localhost")
+        NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
+        # NetworkTables.initialize("localhost")
 
         cs = CameraServer.getInstance()
         port = 5550
