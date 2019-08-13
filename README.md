@@ -24,7 +24,7 @@ so in order to run this project we will need to install python in order to run t
  
 
 ### installing 
-####for the backend
+#### for the backend
 1. sudo apt-get update 
 2. apt-get dist-upgrade
 3. sudo apt-get upgrade 
@@ -51,7 +51,7 @@ if backed gets suck or no camera are recognized after a crash do:
 sudo pkill -9 python3
 ```
 
-####for the frontend
+#### for the frontend
 1. sudo apt-get install nodejs npm
 2. cd chameleon-client 
 3. sudo npm install
