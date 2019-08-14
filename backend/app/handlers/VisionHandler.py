@@ -257,6 +257,10 @@ class VisionHandler(metaclass=Singleton):
             port += 1
 
     def thread_proc(self, cam_name, port=5557):
+        global p_image
+        global nt_data
+        global table
+        nt_data = {'valid': False}
         asyncio.set_event_loop(asyncio.new_event_loop())
         self.settings_manager.cams_curr_pipeline[cam_name] = "pipeline0"
         pipeline = self.settings_manager.cams[cam_name]["pipelines"][self.settings_manager.cams_curr_pipeline[cam_name]]
@@ -311,13 +315,25 @@ class VisionHandler(metaclass=Singleton):
 
         change_camera_values(pipeline)
 
-        def _thread():
+        def _image_thread():
             global image
+            global p_image
             image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
+            p_image = image
             while True:
                 _, image = cv_sink.grabFrame(image)
 
-        threading.Thread(target=_thread).start()
+        def _publish_thread():
+            while True:
+                try:
+                    cv_publish.putFrame(p_image)
+
+                except:
+                    pass
+
+        threading.Thread(target=_image_thread).start()
+        threading.Thread(target=_publish_thread).start()
+
         while True:
             pipeline = self.settings_manager.cams[cam_name]["pipelines"][self.settings_manager.cams_curr_pipeline[cam_name]]
             socket.send_json(dict(
@@ -329,9 +345,6 @@ class VisionHandler(metaclass=Singleton):
             nt_data = socket.recv_json()
             table.putBoolean('valid', nt_data['valid'])
             # check if point is valid
-
-            # print(nt_data['fps'])
-
             if nt_data['valid']:
                 #send the point using network tables
                 table.putNumber('pitch', nt_data['pitch'])
@@ -352,8 +365,6 @@ class VisionHandler(metaclass=Singleton):
                     except Exception as e:
                         print(e)
             #send the image to the camera server
-            # print(nt_data['fps'])
-            cv_publish.putFrame(p_image)
 
     def camera_process(self, cam_name, port, FOV):
         from fractions import Fraction

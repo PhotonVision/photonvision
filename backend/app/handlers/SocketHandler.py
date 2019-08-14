@@ -18,6 +18,7 @@ def send_all_async(message):
 
 
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
+
     actions = {}
 
     set_this_camera_settings = ["exposure", "brightness"]

@@ -1,4 +1,3 @@
-
 class PipelineAlreadyExistsException(Exception):
 
     def __init__(self, pipe_name):
