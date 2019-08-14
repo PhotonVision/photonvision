@@ -295,8 +295,6 @@ class VisionHandler(metaclass=Singleton):
         width = self.settings_manager.cams[cam_name]["video_mode"]["width"]
         height = self.settings_manager.cams[cam_name]["video_mode"]["height"]
 
-        image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
-
         #setting up a video server for camera
         cv_publish = self.cs.putVideo(name=cam_name, width=width, height=height)
         # saving camera port in cam name dict for usage in client
@@ -313,9 +311,15 @@ class VisionHandler(metaclass=Singleton):
 
         change_camera_values(pipeline)
 
+        def _thread():
+            global image
+            image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
+            while True:
+                _, image = cv_sink.grabFrame(image)
+
+        threading.Thread(target=_thread).start()
         while True:
             pipeline = self.settings_manager.cams[cam_name]["pipelines"][self.settings_manager.cams_curr_pipeline[cam_name]]
-            _, image = cv_sink.grabFrame(image)
             socket.send_json(dict(
                 pipeline=pipeline
             ), zmq.SNDMORE)
@@ -362,7 +366,7 @@ class VisionHandler(metaclass=Singleton):
         centerY = (height / 2) - .5
         cam_area = width * height
         
-        aspect_fraction = Fraction(width,height)
+        aspect_fraction = Fraction(width, height)
         horizontal_ratio = aspect_fraction.numerator
         vertical_ratio = aspect_fraction.denominator
         
