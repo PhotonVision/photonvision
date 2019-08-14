@@ -247,35 +247,34 @@ class VisionHandler(metaclass=Singleton):
         return yaw
 
     def run(self):
-        NetworkTables.startClientTeam(team=SettingsManager.general_settings.get("team_number", 1577))
+        NetworkTables.startClientTeam(team=self.settings_manager.general_settings.get("team_number", 1577))
         # NetworkTables.initialize("localhost")
-
 
         port = 5550
 
-        for cam_name in SettingsManager().usb_cameras:
+        for cam_name in self.settings_manager.usb_cameras:
             threading.Thread(target=self.thread_proc, args=(cam_name, port)).start()
             port += 1
 
     def thread_proc(self, cam_name, port=5557):
         asyncio.set_event_loop(asyncio.new_event_loop())
-        SettingsManager.cams_curr_pipeline[cam_name] = "pipeline0"
-        pipeline = SettingsManager().cams[cam_name]["pipelines"][SettingsManager.cams_curr_pipeline[cam_name]]
-        FOV = SettingsManager().cams[cam_name]["FOV"]
+        self.settings_manager.cams_curr_pipeline[cam_name] = "pipeline0"
+        pipeline = self.settings_manager.cams[cam_name]["pipelines"][self.settings_manager.cams_curr_pipeline[cam_name]]
+        FOV = self.settings_manager.cams[cam_name]["FOV"]
 
         def change_camera_values(pipline):
-            SettingsManager.usb_cameras[cam_name].setBrightness(pipeline['brightness'])
-            SettingsManager.usb_cameras[cam_name].setExposureManual(pipeline['exposure'])
-            SettingsManager.usb_cameras[cam_name].setWhiteBalanceAuto()
+            self.settings_manager.usb_cameras[cam_name].setBrightness(pipeline['brightness'])
+            self.settings_manager.usb_cameras[cam_name].setExposureManual(pipeline['exposure'])
+            self.settings_manager.usb_cameras[cam_name].setWhiteBalanceAuto()
 
         def pipeline_listener(table, key, value, is_new):
             asyncio.set_event_loop(asyncio.new_event_loop())
-            SettingsManager.cams_curr_pipeline[cam_name] = value
+            self.settings_manager.cams_curr_pipeline[cam_name] = value
             change_camera_values(pipeline)
-            if cam_name == SettingsManager().general_settings['curr_camera']:
-                SettingsManager().general_settings['curr_pipeline'] = value
-                update_settings = SettingsManager().get_curr_pipeline()
-                update_settings['curr_pipeline'] = SettingsManager().general_settings["curr_pipeline"]
+            if cam_name == self.settings_manager.general_settings['curr_camera']:
+                self.settings_manager.general_settings['curr_pipeline'] = value
+                update_settings = self.settings_manager.get_curr_pipeline()
+                update_settings['curr_pipeline'] = self.settings_manager.general_settings["curr_pipeline"]
                 send_all_async(update_settings)
 
         def mode_listener(table, key, value, is_new):
@@ -285,23 +284,23 @@ class VisionHandler(metaclass=Singleton):
             })
 
         table = NetworkTables.getTable("/Chameleon-Vision/" + cam_name)
-        table.putString('Pipeline', SettingsManager.cams_curr_pipeline[cam_name])
+        table.putString('Pipeline', self.settings_manager.cams_curr_pipeline[cam_name])
         table.addEntryListenerEx(pipeline_listener, key="Pipeline",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         table.addEntryListenerEx(mode_listener, key="Driver_Mode",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         #gettings video from curent camera
-        cv_sink = self.cs.getVideo(camera=SettingsManager.usb_cameras[cam_name])
+        cv_sink = self.cs.getVideo(camera=self.settings_manager.usb_cameras[cam_name])
 
-        width = SettingsManager().cams[cam_name]["video_mode"]["width"]
-        height = SettingsManager().cams[cam_name]["video_mode"]["height"]
+        width = self.settings_manager.cams[cam_name]["video_mode"]["width"]
+        height = self.settings_manager.cams[cam_name]["video_mode"]["height"]
 
         image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
 
         #setting up a video server for camera
         cv_publish = self.cs.putVideo(name=cam_name, width=width, height=height)
         # saving camera port in cam name dict for usage in client
-        SettingsManager().cams_port[cam_name] = self.cs._sinks['serve_'+cam_name].getPort()
+        self.settings_manager.cams_port[cam_name] = self.cs._sinks['serve_'+cam_name].getPort()
 
         #setting up a zmq connection to the opencv subprocess
         context = zmq.Context()
@@ -315,7 +314,7 @@ class VisionHandler(metaclass=Singleton):
         change_camera_values(pipeline)
 
         while True:
-            pipeline = SettingsManager().cams[cam_name]["pipelines"][SettingsManager.cams_curr_pipeline[cam_name]]
+            pipeline = self.settings_manager.cams[cam_name]["pipelines"][self.settings_manager.cams_curr_pipeline[cam_name]]
             _, image = cv_sink.grabFrame(image)
             socket.send_json(dict(
                 pipeline=pipeline
@@ -335,7 +334,7 @@ class VisionHandler(metaclass=Singleton):
                 table.putNumber('yaw', nt_data['yaw'])
                 #if the selected camera in ui is this cam send the point to the ui
 
-                if SettingsManager().general_settings['curr_camera'] == cam_name:
+                if self.settings_manager.general_settings['curr_camera'] == cam_name:
                     try:
                         if nt_data['raw_point'] is not None:
                             send_all_async({
@@ -349,7 +348,7 @@ class VisionHandler(metaclass=Singleton):
                     except Exception as e:
                         print(e)
             #send the image to the camera server
-
+            # print(nt_data['fps'])
             cv_publish.putFrame(p_image)
 
     def camera_process(self, cam_name, port, FOV):
@@ -357,8 +356,8 @@ class VisionHandler(metaclass=Singleton):
 
         diagonalView = math.radians(FOV) #needs to be implemented in client
 
-        width = SettingsManager().cams[cam_name]["video_mode"]["width"]
-        height = SettingsManager().cams[cam_name]["video_mode"]["height"]
+        width = self.settings_manager.cams[cam_name]["video_mode"]["width"]
+        height = self.settings_manager.cams[cam_name]["video_mode"]["height"]
         centerX = (width / 2) - .5
         centerY = (height / 2) - .5
         cam_area = width * height
