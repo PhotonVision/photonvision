@@ -261,7 +261,7 @@ class VisionHandler(metaclass=Singleton):
         global nt_data
         global table
         nt_data = {'valid': False}
-        asyncio.set_event_loop(asyncio.new_event_loop())
+        # asyncio.set_event_loop(asyncio.new_event_loop())
         self.settings_manager.cams_curr_pipeline[cam_name] = "pipeline0"
         pipeline = self.settings_manager.cams[cam_name]["pipelines"][self.settings_manager.cams_curr_pipeline[cam_name]]
         FOV = self.settings_manager.cams[cam_name]["FOV"]
@@ -324,10 +324,29 @@ class VisionHandler(metaclass=Singleton):
                 _, image = cv_sink.grabFrame(image)
 
         def _publish_thread():
+            # asyncio.set_event_loop(asyncio.new_event_loop())
             while True:
                 try:
                     cv_publish.putFrame(p_image)
-
+                    table.putBoolean('valid', nt_data['valid'])
+                    # check if point is valid
+                    if nt_data['valid']:
+                        #send the point using network tables
+                        table.putNumber('pitch', nt_data['pitch'])
+                        table.putNumber('yaw', nt_data['yaw'])
+                        #if the selected camera in ui is this cam send the point to the ui
+                        if self.settings_manager.general_settings['curr_camera'] == cam_name:
+                            try:
+                                    send_all_async({
+                                        'raw_point': nt_data['raw_point'],
+                                        'point': {
+                                            'pitch': nt_data['pitch'],
+                                            'yaw': nt_data['yaw'],
+                                            'fps': nt_data['fps']
+                                        }
+                                    })
+                            except:
+                                pass
                 except:
                     pass
 
@@ -343,27 +362,6 @@ class VisionHandler(metaclass=Singleton):
             socket.send_pyobj(image)
             p_image = socket.recv_pyobj()
             nt_data = socket.recv_json()
-            table.putBoolean('valid', nt_data['valid'])
-            # check if point is valid
-            if nt_data['valid']:
-                #send the point using network tables
-                table.putNumber('pitch', nt_data['pitch'])
-                table.putNumber('yaw', nt_data['yaw'])
-                #if the selected camera in ui is this cam send the point to the ui
-
-                if self.settings_manager.general_settings['curr_camera'] == cam_name:
-                    try:
-                        if nt_data['raw_point'] is not None:
-                            send_all_async({
-                                'raw_point': nt_data['raw_point'],
-                                'point': {
-                                    'pitch': nt_data['pitch'],
-                                    'yaw': nt_data['yaw'],
-                                    'fps': nt_data['fps']
-                                }
-                            })
-                    except Exception as e:
-                        print(e)
             #send the image to the camera server
 
     def camera_process(self, cam_name, port, FOV):
