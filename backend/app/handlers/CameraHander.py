@@ -124,18 +124,18 @@ class CameraHandler:
             socket.send_pyobj(self.image)
             self.p_image = socket.recv_pyobj()
             self.nt_data = socket.recv_json()
-            if self.settings_manager.general_settings['curr_camera'] == cam_name:
-                try:
-                    send_all_async({
-                        'raw_point': self.nt_data['raw_point'],
-                        'point': {
-                            'pitch': self.nt_data['pitch'],
-                            'yaw': self.nt_data['yaw'],
-                            'fps': self.nt_data['fps']
-                        }
-                    })
-                except:
-                    pass
+            # if self.settings_manager.general_settings['curr_camera'] == cam_name:
+            #     try:
+            #         send_all_async({
+            #             'raw_point': self.nt_data['raw_point'],
+            #             'point': {
+            #                 'pitch': self.nt_data['pitch'],
+            #                 'yaw': self.nt_data['yaw'],
+            #                 'fps': self.nt_data['fps']
+            #             }
+            #         })
+            #     except:
+            #         pass
 
     def camera_process(self, cam_name, port, FOV):
         from fractions import Fraction
