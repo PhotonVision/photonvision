@@ -7,7 +7,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 so in order to run this project we will need to install python in order to run the backend and node.js with vue.js in order to run the fronted
 #### backend
-- python 3.6 and above
+- python 3.7 and above
 - opencv 3.4.5
 - tornado web framework
 - robotpy-cscore
