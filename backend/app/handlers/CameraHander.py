@@ -16,6 +16,7 @@ from .VisionHandler import VisionHandler
 
 class CameraHandler:
     def __init__(self, cam_name, port):
+        #settings vars up for vision loop
         self.cs = CameraServer.getInstance()
         self.settings_manager = SettingsManager()
         self.vision_handler = VisionHandler()
@@ -28,27 +29,24 @@ class CameraHandler:
         self.time_stamp = 0
 
     def run(self):
+        #starting main thread
         threading.Thread(target=self.thread_proc).start()
 
     def thread_proc(self):
-        cam_name = self.cam_name
-        port = self.port
-
-        asyncio.set_event_loop(asyncio.new_event_loop())
-        self.settings_manager.cams_curr_pipeline[cam_name] = "pipeline0"
-        pipeline = self.settings_manager.cams[cam_name]["pipelines"][self.settings_manager.cams_curr_pipeline[cam_name]]
-        FOV = self.settings_manager.cams[cam_name]["FOV"]
+        self.settings_manager.cams_curr_pipeline[self.cam_name] = "pipeline0"
+        pipeline = self.settings_manager.cams[self.cam_name]["pipelines"][self.settings_manager.cams_curr_pipeline[self.cam_name]]
+        FOV = self.settings_manager.cams[self.cam_name]["FOV"]
 
         def change_camera_values(pipline):
-            self.settings_manager.usb_cameras[cam_name].setBrightness(pipeline['brightness'])
-            self.settings_manager.usb_cameras[cam_name].setExposureManual(pipeline['exposure'])
-            self.settings_manager.usb_cameras[cam_name].setWhiteBalanceAuto()
+            self.settings_manager.usb_cameras[self.cam_name].setBrightness(pipeline['brightness'])
+            self.settings_manager.usb_cameras[self.cam_name].setExposureManual(pipeline['exposure'])
+            self.settings_manager.usb_cameras[self.cam_name].setWhiteBalanceAuto()
 
         def pipeline_listener(table, key, value, is_new):
             asyncio.set_event_loop(asyncio.new_event_loop())
-            self.settings_manager.cams_curr_pipeline[cam_name] = value
+            self.settings_manager.cams_curr_pipeline[self.cam_name] = value
             change_camera_values(pipeline)
-            if cam_name == self.settings_manager.general_settings['curr_camera']:
+            if self.cam_name == self.settings_manager.general_settings['curr_camera']:
                 self.settings_manager.general_settings['curr_pipeline'] = value
                 update_settings = self.settings_manager.get_curr_pipeline()
                 update_settings['curr_pipeline'] = self.settings_manager.general_settings["curr_pipeline"]
@@ -59,45 +57,43 @@ class CameraHandler:
                 'brightness': 25,
                 'exposure': 15
             })
-
-        self.table = NetworkTables.getTable("/Chameleon-Vision/" + cam_name)
-        self.table.putString('Pipeline', self.settings_manager.cams_curr_pipeline[cam_name])
+        #setting up network table
+        self.table = NetworkTables.getTable("/Chameleon-Vision/" + self.cam_name)
+        self.table.putString('Pipeline', self.settings_manager.cams_curr_pipeline[self.cam_name])
         self.table.addEntryListenerEx(pipeline_listener, key="Pipeline",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         self.table.addEntryListenerEx(mode_listener, key="Driver_Mode",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
-        # gettings video from curent camera
-        cv_sink = self.cs.getVideo(camera=self.settings_manager.usb_cameras[cam_name])
 
-        width = self.settings_manager.cams[cam_name]["video_mode"]["width"]
-        height = self.settings_manager.cams[cam_name]["video_mode"]["height"]
+        # getting video from current camera
+        cv_sink = self.cs.getVideo(camera=self.settings_manager.usb_cameras[self.cam_name])
+
+        width = self.settings_manager.cams[self.cam_name]["video_mode"]["width"]
+        height = self.settings_manager.cams[self.cam_name]["video_mode"]["height"]
 
         # setting up a video server for camera
-        cv_publish = self.cs.putVideo(name=cam_name, width=width, height=height)
+        cv_publish = self.cs.putVideo(name=self.cam_name, width=width, height=height)
         # saving camera port in cam name dict for usage in client
-        self.settings_manager.cams_port[cam_name] = self.cs._sinks['serve_' + cam_name].getPort()
+        self.settings_manager.cams_port[self.cam_name] = self.cs._sinks['serve_' + self.cam_name].getPort()
 
         # setting up a zmq connection to the opencv subprocess
         context = zmq.Context()
         socket = context.socket(zmq.PAIR)
-        socket.bind('tcp://*:%s' % str(port))
+        socket.bind('tcp://*:%s' % str(self.port))
 
-        # starting the process with inital values
-        p = Process(target=self.camera_process, args=(cam_name, port, FOV))
+        # starting the process with initial values
+        p = Process(target=self.camera_process, args=(self.cam_name, self.port, FOV))
         p.start()
 
         change_camera_values(pipeline)
 
-        def _image_thread():
+        def _publish_thread():
+            #getting image values and publishing process image and data
             self.image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
             self.p_image = self.image
             while True:
-                self.time_stamp, self.image = cv_sink.grabFrame(self.image)
-
-        def _publish_thread():
-            # asyncio.set_event_loop(asyncio.new_event_loop())
-            while True:
                 try:
+                    self.time_stamp, self.image = cv_sink.grabFrame(self.image)
                     cv_publish.putFrame(self.p_image)
                     self.table.putBoolean('valid', self.nt_data['valid'])
                     # check if point is valid
@@ -111,12 +107,31 @@ class CameraHandler:
                 except:
                     pass
 
-        threading.Thread(target=_image_thread).start()
+        def _socket_thread():
+            #publishing to websocket at slower interval
+            asyncio.set_event_loop(asyncio.new_event_loop())
+            while True:
+                time.sleep(0.05)
+                if self.settings_manager.general_settings['curr_camera'] == self.cam_name:
+                    try:
+                        send_all_async({
+                            'raw_point': self.nt_data['raw_point'],
+                            'point': {
+                                'pitch': self.nt_data['pitch'],
+                                'yaw': self.nt_data['yaw'],
+                                'fps': self.nt_data['fps']
+                            }
+                        })
+                    except:
+                        pass
+
         threading.Thread(target=_publish_thread).start()
+        threading.Thread(target=_socket_thread).start()
 
         while True:
-            pipeline = self.settings_manager.cams[cam_name]["pipelines"][
-                self.settings_manager.cams_curr_pipeline[cam_name]]
+            #sending and reciving data from opencv sub process
+            pipeline = self.settings_manager.cams[self.cam_name]["pipelines"][
+                self.settings_manager.cams_curr_pipeline[self.cam_name]]
             socket.send_json(dict(
                 pipeline=pipeline
             ), zmq.SNDMORE)
@@ -124,23 +139,11 @@ class CameraHandler:
             socket.send_pyobj(self.image)
             self.p_image = socket.recv_pyobj()
             self.nt_data = socket.recv_json()
-            # if self.settings_manager.general_settings['curr_camera'] == self.cam_name:
-            #     try:
-            #         send_all_async({
-            #             'raw_point': self.nt_data['raw_point'],
-            #             'point': {
-            #                 'pitch': self.nt_data['pitch'],
-            #                 'yaw': self.nt_data['yaw'],
-            #                 'fps': self.nt_data['fps']
-            #             }
-            #         })
-            #     except:
-            #         pass
 
     def camera_process(self, cam_name, port, FOV):
         from fractions import Fraction
-
-        diagonalView = math.radians(FOV)  # needs to be implemented in client
+        #calc fov
+        diagonalView = math.radians(FOV)
 
         width = self.settings_manager.cams[cam_name]["video_mode"]["width"]
         height = self.settings_manager.cams[cam_name]["video_mode"]["height"]
@@ -157,15 +160,18 @@ class CameraHandler:
 
         H_FOCAL_LENGTH = width / (2 * math.tan((horizontalView / 2)))
         V_FOCAL_LENGTH = height / (2 * math.tan((verticalView / 2)))
-
+        #setting up zmq socket
         context = zmq.Context()
         socket = context.socket(zmq.PAIR)
         socket.connect('tcp://localhost:%s' % str(port))
+        #setting up filter countours class
         filter_contours = self.vision_handler.Filter_Contours(center_x=centerX, center_y=centerY)
+
         x = 1
         counter = 0
         start_time = time.time()
         fps = 0
+
         while True:
             obj = socket.recv_json()
             image = socket.recv_pyobj()
@@ -217,6 +223,3 @@ class CameraHandler:
                 fps = (counter / (time.time() - start_time))
                 counter = 0
                 start_time = time.time()
-
-
-

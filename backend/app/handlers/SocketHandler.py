@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 import tornado.websocket
 import json
 from ..classes.Exceptions import NoCameraConnectedException

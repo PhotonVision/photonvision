@@ -1,7 +1,6 @@
 import tornado.web
 import tornado.websocket
 import os
-
 from .handlers.MainHandler import MainHandler
 from .handlers.SocketHandler import ChameleonWebSocket
 from tornado.options import define

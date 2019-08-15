@@ -1,11 +1,10 @@
 import cv2
 import numpy
-from ..classes.Singleton import Singleton
 import math
 from enum import Enum, unique
 
 
-class VisionHandler(metaclass=Singleton):
+class VisionHandler():
     def __init__(self):
         self.kernel = numpy.ones((5, 5), numpy.uint8)
 

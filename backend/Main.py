@@ -5,7 +5,6 @@ import logging
 from app.ChameleonVisionApp import ChameleonApplication
 from app.classes.SettingsManager import SettingsManager
 from tornado.options import options
-from app.handlers.VisionHandler import VisionHandler
 import threading
 import asyncio
 from app.handlers.SocketHandler import send_all_async
