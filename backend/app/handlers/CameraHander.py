@@ -124,7 +124,7 @@ class CameraHandler:
             socket.send_pyobj(self.image)
             self.p_image = socket.recv_pyobj()
             self.nt_data = socket.recv_json()
-            # if self.settings_manager.general_settings['curr_camera'] == cam_name:
+            # if self.settings_manager.general_settings['curr_camera'] == self.cam_name:
             #     try:
             #         send_all_async({
             #             'raw_point': self.nt_data['raw_point'],

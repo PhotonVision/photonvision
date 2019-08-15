@@ -21,19 +21,23 @@ def run_server():
     tornado.ioloop.IOLoop.current().start()
     tornado.ioloop.IOLoop.instance().add_timeout(timedelta(seconds=1),
                                                  send_all_async)
+
+
 def run():
-    # NetworkTables.startClientTeam(team=self.settings_manager.general_settings.get("team_number", 1577))
-    NetworkTables.initialize("localhost")
+    NetworkTables.startClientTeam(team=settings_manager.general_settings.get("team_number", 1577))
+    # NetworkTables.initialize("localhost")
     port = 5550
     for cam_name in settings_manager.usb_cameras:
         CameraHandler(cam_name, port).run()
         port += 1
 
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     settings_manager = SettingsManager()
+    run()
     server_thread = threading.Thread(target=run_server)
     server_thread.start()
-    run()
+
     while True:
         pass
