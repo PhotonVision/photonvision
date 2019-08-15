@@ -1,4 +1,4 @@
-import asyncio
+from datetime import timedelta
 
 import tornado.websocket
 import json
@@ -15,7 +15,6 @@ def send_all_async(message):
                 ws.write_message(json.dumps(message))
             except AssertionError as a:
                 pass
-
 
 
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
