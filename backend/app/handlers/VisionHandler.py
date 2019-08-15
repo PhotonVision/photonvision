@@ -247,8 +247,8 @@ class VisionHandler(metaclass=Singleton):
         return yaw
 
     def run(self):
-        NetworkTables.startClientTeam(team=self.settings_manager.general_settings.get("team_number", 1577))
-        # NetworkTables.initialize("localhost")
+        # NetworkTables.startClientTeam(team=self.settings_manager.general_settings.get("team_number", 1577))
+        NetworkTables.initialize("localhost")
 
         port = 5550
 
@@ -318,10 +318,11 @@ class VisionHandler(metaclass=Singleton):
         def _image_thread():
             global image
             global p_image
+            global time_stamp
             image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
             p_image = image
             while True:
-                _, image = cv_sink.grabFrame(image)
+                time_stamp, image = cv_sink.grabFrame(image)
 
         def _publish_thread():
             # asyncio.set_event_loop(asyncio.new_event_loop())
@@ -334,19 +335,9 @@ class VisionHandler(metaclass=Singleton):
                         #send the point using network tables
                         table.putNumber('pitch', nt_data['pitch'])
                         table.putNumber('yaw', nt_data['yaw'])
+                        table.putNumber('fps', nt_data['fps'])
+                        table.putNumber('time_stamp', time_stamp)
                         #if the selected camera in ui is this cam send the point to the ui
-                        if self.settings_manager.general_settings['curr_camera'] == cam_name:
-                            try:
-                                    send_all_async({
-                                        'raw_point': nt_data['raw_point'],
-                                        'point': {
-                                            'pitch': nt_data['pitch'],
-                                            'yaw': nt_data['yaw'],
-                                            'fps': nt_data['fps']
-                                        }
-                                    })
-                            except:
-                                pass
                 except:
                     pass
 

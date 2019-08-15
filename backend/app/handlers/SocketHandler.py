@@ -6,7 +6,7 @@ from ..classes.Exceptions import NoCameraConnectedException
 from ..classes.SettingsManager import SettingsManager
 
 
-web_socket_clients = []
+web_socket_clients = set()
 
 
 def send_all_async(message):
@@ -15,6 +15,7 @@ def send_all_async(message):
                 ws.write_message(json.dumps(message))
             except AssertionError as a:
                 pass
+
 
 
 class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
@@ -39,7 +40,7 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
     def open(self):
         self.send_full_settings()
         if self not in web_socket_clients:
-            web_socket_clients.append(self)
+            web_socket_clients.add(self)
 
         print("WebSocket opened")
 
