@@ -1,5 +1,5 @@
 import math
-
+import cv2
 import numpy
 from cscore import CameraServer
 from app.classes.SettingsManager import SettingsManager
@@ -21,6 +21,11 @@ class CameraHandler:
         self.vision_handler = VisionHandler()
         self.port = port
         self.cam_name = cam_name
+        self.image = None
+        self.p_image = None
+        self.table = None
+        self.nt_data = {'valid': False}
+        self.time_stamp = 0
 
     def run(self):
         threading.Thread(target=self.thread_proc).start()
@@ -28,10 +33,7 @@ class CameraHandler:
     def thread_proc(self):
         cam_name = self.cam_name
         port = self.port
-        global p_image
-        global nt_data
-        global table
-        nt_data = {'valid': False}
+
         asyncio.set_event_loop(asyncio.new_event_loop())
         self.settings_manager.cams_curr_pipeline[cam_name] = "pipeline0"
         pipeline = self.settings_manager.cams[cam_name]["pipelines"][self.settings_manager.cams_curr_pipeline[cam_name]]
@@ -58,11 +60,11 @@ class CameraHandler:
                 'exposure': 15
             })
 
-        table = NetworkTables.getTable("/Chameleon-Vision/" + cam_name)
-        table.putString('Pipeline', self.settings_manager.cams_curr_pipeline[cam_name])
-        table.addEntryListenerEx(pipeline_listener, key="Pipeline",
+        self.table = NetworkTables.getTable("/Chameleon-Vision/" + cam_name)
+        self.table.putString('Pipeline', self.settings_manager.cams_curr_pipeline[cam_name])
+        self.table.addEntryListenerEx(pipeline_listener, key="Pipeline",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
-        table.addEntryListenerEx(mode_listener, key="Driver_Mode",
+        self.table.addEntryListenerEx(mode_listener, key="Driver_Mode",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         # gettings video from curent camera
         cv_sink = self.cs.getVideo(camera=self.settings_manager.usb_cameras[cam_name])
@@ -87,27 +89,24 @@ class CameraHandler:
         change_camera_values(pipeline)
 
         def _image_thread():
-            global image
-            global p_image
-            global time_stamp
-            image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
-            p_image = image
+            self.image = numpy.zeros(shape=(width, height, 3), dtype=numpy.uint8)
+            self.p_image = self.image
             while True:
-                time_stamp, image = cv_sink.grabFrame(image)
+                self.time_stamp, self.image = cv_sink.grabFrame(self.image)
 
         def _publish_thread():
             # asyncio.set_event_loop(asyncio.new_event_loop())
             while True:
                 try:
-                    cv_publish.putFrame(p_image)
-                    table.putBoolean('valid', nt_data['valid'])
+                    cv_publish.putFrame(self.p_image)
+                    self.table.putBoolean('valid', self.nt_data['valid'])
                     # check if point is valid
-                    if nt_data['valid']:
+                    if self.nt_data['valid']:
                         # send the point using network tables
-                        table.putNumber('pitch', nt_data['pitch'])
-                        table.putNumber('yaw', nt_data['yaw'])
-                        table.putNumber('fps', nt_data['fps'])
-                        table.putNumber('time_stamp', time_stamp)
+                        self.table.putNumber('pitch', self.nt_data['pitch'])
+                        self.table.putNumber('yaw', self.nt_data['yaw'])
+                        self.table.putNumber('fps', self.nt_data['fps'])
+                        self.table.putNumber('time_stamp', self.time_stamp)
                         # if the selected camera in ui is this cam send the point to the ui
                 except:
                     pass
@@ -122,17 +121,17 @@ class CameraHandler:
                 pipeline=pipeline
             ), zmq.SNDMORE)
 
-            socket.send_pyobj(image)
-            p_image = socket.recv_pyobj()
-            nt_data = socket.recv_json()
+            socket.send_pyobj(self.image)
+            self.p_image = socket.recv_pyobj()
+            self.nt_data = socket.recv_json()
             if self.settings_manager.general_settings['curr_camera'] == cam_name:
                 try:
                     send_all_async({
-                        'raw_point': nt_data['raw_point'],
+                        'raw_point': self.nt_data['raw_point'],
                         'point': {
-                            'pitch': nt_data['pitch'],
-                            'yaw': nt_data['yaw'],
-                            'fps': nt_data['fps']
+                            'pitch': self.nt_data['pitch'],
+                            'yaw': self.nt_data['yaw'],
+                            'fps': self.nt_data['fps']
                         }
                     })
                 except:
