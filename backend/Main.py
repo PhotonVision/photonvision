@@ -31,6 +31,7 @@ def run():
         port += 1
 
 
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.DEBUG)
     settings_manager = SettingsManager()
@@ -38,5 +39,3 @@ if __name__ == "__main__":
     server_thread = threading.Thread(target=run_server)
     server_thread.start()
 
-    while True:
-        pass

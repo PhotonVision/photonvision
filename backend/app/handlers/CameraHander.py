@@ -111,7 +111,7 @@ class CameraHandler:
             #publishing to websocket at slower interval
             asyncio.set_event_loop(asyncio.new_event_loop())
             while True:
-                time.sleep(0.05)
+                time.sleep(0.1)
                 if self.settings_manager.general_settings['curr_camera'] == self.cam_name:
                     try:
                         send_all_async({

@@ -65,7 +65,11 @@ of you can auto serve the ui by
 ```
 npm run serve
 ```
-
+## Hardware
+this is important when choosing your sbc it is more important to have a good usb controller that a good cpu  
+on the odroid xu4 which is very fast i have got many bottlenecks from the usb controller and many times making the program crach
+#### networking
+it is very important to install Bonjour 
 
 
 ## docs
