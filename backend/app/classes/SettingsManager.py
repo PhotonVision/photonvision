@@ -27,7 +27,7 @@ class SettingsManager(metaclass=Singleton):
         "area": [0, 100],
         "ratio": [0, 20],
         "extent": [0, 100],
-        "is_binary": "Normal",
+        "is_binary": 0,
         "sort_mode": "Largest",
         "target_group": 'Single',
         "target_intersection": 'Up',
