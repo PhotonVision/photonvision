@@ -7,7 +7,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 so in order to run this project we will need to install python in order to run the backend and node.js with vue.js in order to run the fronted
 #### backend
-- python 3.6 and above
+- python 3.7 and above
 - opencv 3.4.5
 - tornado web framework
 - robotpy-cscore
@@ -29,7 +29,7 @@ so in order to run this project we will need to install python in order to run t
 2. apt-get dist-upgrade
 3. sudo apt-get upgrade 
 4. sudo apt-get install python3-pip python3-dev cmake zip unzip build-essential git libnss-mdns --fix-missing
-5. sudo pip3 install numpy
+5. sudo pip3 install numpy (if on raspberry pi do "sudo apt-get install python3-numpy")
 6. OPENCV_VERSION=3.4.5
 7. wget -O opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
 8. unzip opencv.zip
@@ -65,7 +65,11 @@ of you can auto serve the ui by
 ```
 npm run serve
 ```
-
+## Hardware
+this is important when choosing your sbc it is more important to have a good usb controller that a good cpu  
+on the odroid xu4 which is very fast i have got many bottlenecks from the usb controller and many times making the program crach
+#### networking
+it is very important to install Bonjour 
 
 
 ## docs
