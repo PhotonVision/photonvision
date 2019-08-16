@@ -72,13 +72,10 @@ class SettingsManager(metaclass=Singleton):
     # Initiate our camera's settings
     def _init_cameras(self):
         for cam_name in self.usb_cameras_info:
-            cam = self.usb_cameras_info[cam_name]
-            if os.path.exists(os.path.join(self.cams_path, cam.name + '.json')):
-
-                with open(os.path.join(self.cams_path, cam.name + '.json'), 'r') as camera:
+            if os.path.exists(os.path.join(self.cams_path, cam_name + '.json')):
+                with open(os.path.join(self.cams_path, cam_name + '.json'), 'r') as camera:
                     self.cams[cam_name] = json.load(camera)
-
-                if len(self.cams[cam.name]["pipelines"]) == 0:
+                if len(self.cams[cam_name]["pipelines"]) == 0:
                     self.create_new_pipeline(cam_name=cam_name)
             else:
                 self.create_new_cam(cam_name)
