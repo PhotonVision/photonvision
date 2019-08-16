@@ -102,7 +102,7 @@ class CameraHandler:
                         self.table.putNumber('pitch', self.nt_data['pitch'])
                         self.table.putNumber('yaw', self.nt_data['yaw'])
                         self.table.putNumber('fps', self.nt_data['fps'])
-                        self.table.putNumber('time_stamp', self.time_stamp)
+                        self.table.putNumber('time_stamp', self.nt_data['time_stamp'])
                         # if the selected camera in ui is this cam send the point to the ui
                 except:
                     pass
@@ -136,7 +136,7 @@ class CameraHandler:
                 pipeline=pipeline
             ), zmq.SNDMORE)
 
-            socket.send_pyobj(self.image)
+            socket.send_pyobj((self.time_stamp,self.image))
             self.p_image = socket.recv_pyobj()
             self.nt_data = socket.recv_json()
 
@@ -173,9 +173,8 @@ class CameraHandler:
         fps = 0
 
         while True:
-            obj = socket.recv_json()
-            image = socket.recv_pyobj()
-            curr_pipeline = obj["pipeline"]
+            curr_pipeline = socket.recv_json()['pipeline']
+            time_stamp, image = socket.recv_pyobj()
             if curr_pipeline['orientation'] == "Inverted":
                 M = cv2.getRotationMatrix2D((width / 2, height / 2), 180, 1)
                 image = cv2.warpAffine(image, M, (width, height))
@@ -191,7 +190,9 @@ class CameraHandler:
                                                                 target_grouping=curr_pipeline['target_group'],
                                                                 target_intersection=
                                                                 curr_pipeline['target_intersection'])
+
             final_contour = self.vision_handler.output_contour(filtered_contours)
+
             try:
                 center = final_contour[0]
                 center_x = (center[1] - curr_pipeline['B']) / curr_pipeline["M"]
@@ -209,6 +210,7 @@ class CameraHandler:
                 draw_image = hsv_image
             else:
                 draw_image = image
+
             res = self.vision_handler.draw_image(input_image=draw_image, contour=final_contour)
             socket.send_pyobj(res)
             socket.send_json(dict(
@@ -216,7 +218,8 @@ class CameraHandler:
                 yaw=yaw,
                 valid=valid,
                 raw_point=center,
-                fps=fps
+                fps=fps,
+                time_stamp=time_stamp
             ))
             counter += 1
             if (time.time() - start_time) > x:
