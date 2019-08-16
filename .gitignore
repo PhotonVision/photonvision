@@ -9,3 +9,5 @@ Python/app/__pycache__/
 Python/app/handlers/__pycache__/
 
 \.vscode/
+
+backend/settings/
