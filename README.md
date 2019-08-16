@@ -29,7 +29,7 @@ so in order to run this project we will need to install python in order to run t
 2. apt-get dist-upgrade
 3. sudo apt-get upgrade 
 4. sudo apt-get install python3-pip python3-dev cmake zip unzip build-essential git --fix-missing
-5. sudo pip3 install numpy
+5. sudo pip3 install numpy (if on raspberry pi do "sudo apt-get install python3-numpy")
 6. OPENCV_VERSION=3.4.5
 7. wget -O opencv.zip https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip
 8. unzip opencv.zip
