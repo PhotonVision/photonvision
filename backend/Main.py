@@ -24,7 +24,6 @@ def run_server():
 
 def run():
     NetworkTables.startClientTeam(team=settings_manager.general_settings.get("team_number", 1577))
-    # NetworkTables.initialize("localhost")
     port = 5550
     for cam_name in settings_manager.usb_cameras:
         CameraHandler(cam_name, port).run()

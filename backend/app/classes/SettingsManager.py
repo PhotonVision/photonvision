@@ -2,6 +2,7 @@ import os
 import json
 import cv2
 import cscore
+import subprocess
 from cscore._cscore import VideoMode
 from .Singleton import Singleton
 from .Exceptions import PipelineAlreadyExistsException, NoCameraConnectedException
@@ -187,6 +188,8 @@ class SettingsManager(metaclass=Singleton):
         for key in dic['change_general_settings_values']:
             if self.default_general_settings[key]:
                 self.general_settings[key] = dic['change_general_settings_values'][key]
+                if key == "hostname":
+                    subprocess.call(['hostnamectl set-hostname', str(self.general_settings['hostname'])])
         self.settings_manager.save_settings()
         #after all values has been set change settings
         self.change_general_settings()

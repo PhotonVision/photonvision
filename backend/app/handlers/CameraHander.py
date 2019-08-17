@@ -37,29 +37,37 @@ class CameraHandler:
         pipeline = self.settings_manager.cams[self.cam_name]["pipelines"][self.settings_manager.cams_curr_pipeline[self.cam_name]]
         FOV = self.settings_manager.cams[self.cam_name]["FOV"]
 
-        def change_camera_values(pipline):
+        def change_camera_values(pipeline):
             self.settings_manager.usb_cameras[self.cam_name].setBrightness(pipeline['brightness'])
             self.settings_manager.usb_cameras[self.cam_name].setExposureManual(pipeline['exposure'])
             self.settings_manager.usb_cameras[self.cam_name].setWhiteBalanceAuto()
 
         def pipeline_listener(table, key, value, is_new):
             asyncio.set_event_loop(asyncio.new_event_loop())
-            self.settings_manager.cams_curr_pipeline[self.cam_name] = value
-            change_camera_values(pipeline)
-            if self.cam_name == self.settings_manager.general_settings['curr_camera']:
-                self.settings_manager.general_settings['curr_pipeline'] = value
-                update_settings = self.settings_manager.get_curr_pipeline()
-                update_settings['curr_pipeline'] = self.settings_manager.general_settings["curr_pipeline"]
-                send_all_async(update_settings)
+            if value in self.settings_manager.cams[self.cam_name]['pipelines'].keys():
+                self.settings_manager.cams_curr_pipeline[self.cam_name] = value
+                change_camera_values(pipeline)
+                if self.cam_name == self.settings_manager.general_settings['curr_camera']:
+                    self.settings_manager.general_settings['curr_pipeline'] = value
+                    update_settings = self.settings_manager.get_curr_pipeline()
+                    update_settings['curr_pipeline'] = self.settings_manager.general_settings["curr_pipeline"]
+                    send_all_async(update_settings)
+            else:
+                self.table.putString('Pipeline', self.settings_manager.cams_curr_pipeline[self.cam_name])
 
         def mode_listener(table, key, value, is_new):
-            change_camera_values({
-                'brightness': 25,
-                'exposure': 15
-            })
+            if value:
+                change_camera_values({
+                    'brightness': 25,
+                    'exposure': 15
+                })
+            else:
+                change_camera_values(pipeline)
         #setting up network table
         self.table = NetworkTables.getTable("/Chameleon-Vision/" + self.cam_name)
+        #init values for pipeline and driver mode
         self.table.putString('Pipeline', self.settings_manager.cams_curr_pipeline[self.cam_name])
+        self.table.putBoolean('Driver_Mode', False)
         self.table.addEntryListenerEx(pipeline_listener, key="Pipeline",
                                  flags=networktables.NetworkTablesInstance.NotifyFlags.UPDATE)
         self.table.addEntryListenerEx(mode_listener, key="Driver_Mode",
@@ -101,8 +109,8 @@ class CameraHandler:
                         # send the point using network tables
                         self.table.putNumber('pitch', self.nt_data['pitch'])
                         self.table.putNumber('yaw', self.nt_data['yaw'])
-                        self.table.putNumber('fps', self.nt_data['fps'])
-                        self.table.putNumber('time_stamp', self.nt_data['time_stamp'])
+                    self.table.putNumber('time_stamp', self.nt_data['time_stamp'])
+                    self.table.putNumber('fps', self.nt_data['fps'])
                         # if the selected camera in ui is this cam send the point to the ui
                 except:
                     pass
@@ -132,8 +140,10 @@ class CameraHandler:
             #sending and reciving data from opencv sub process
             pipeline = self.settings_manager.cams[self.cam_name]["pipelines"][
                 self.settings_manager.cams_curr_pipeline[self.cam_name]]
+
             socket.send_json(dict(
-                pipeline=pipeline
+                pipeline=pipeline,
+                driver_mode= self.table.getBoolean('Driver_Mode', False)
             ), zmq.SNDMORE)
 
             socket.send_pyobj((self.time_stamp,self.image))
@@ -173,45 +183,55 @@ class CameraHandler:
         fps = 0
 
         while True:
-            curr_pipeline = socket.recv_json()['pipeline']
+            obj = socket.recv_json()
+            curr_pipeline = obj['pipeline']
+            driver_mode = obj['driver_mode']
             time_stamp, image = socket.recv_pyobj()
             if curr_pipeline['orientation'] == "Inverted":
                 M = cv2.getRotationMatrix2D((width / 2, height / 2), 180, 1)
                 image = cv2.warpAffine(image, M, (width, height))
-            hsv_image = self.vision_handler._hsv_threshold(curr_pipeline["hue"],
-                                            curr_pipeline["saturation"], curr_pipeline["value"],
-                                            image, curr_pipeline["erode"], curr_pipeline["dilate"])
-            # if table.getBoolean("Driver_Mode", False):
-            contours = self.vision_handler.find_contours(hsv_image)
-            filtered_contours = filter_contours.filter_contours(input_contours=contours, area=curr_pipeline['area'],
-                                                                ratio=curr_pipeline['ratio'],
-                                                                extent=curr_pipeline['extent'],
-                                                                sort_mode=curr_pipeline['sort_mode'], cam_area=cam_area,
-                                                                target_grouping=curr_pipeline['target_group'],
-                                                                target_intersection=
-                                                                curr_pipeline['target_intersection'])
+            if not driver_mode:
+                hsv_image = self.vision_handler._hsv_threshold(curr_pipeline["hue"],
+                                                curr_pipeline["saturation"], curr_pipeline["value"],
+                                                image, curr_pipeline["erode"], curr_pipeline["dilate"])
+                # if table.getBoolean("Driver_Mode", False):
+                contours = self.vision_handler.find_contours(hsv_image)
+                filtered_contours = filter_contours.filter_contours(input_contours=contours, area=curr_pipeline['area'],
+                                                                    ratio=curr_pipeline['ratio'],
+                                                                    extent=curr_pipeline['extent'],
+                                                                    sort_mode=curr_pipeline['sort_mode'], cam_area=cam_area,
+                                                                    target_grouping=curr_pipeline['target_group'],
+                                                                    target_intersection=
+                                                                    curr_pipeline['target_intersection'])
 
-            final_contour = self.vision_handler.output_contour(filtered_contours)
+                final_contour = self.vision_handler.output_contour(filtered_contours)
 
-            try:
-                center = final_contour[0]
-                center_x = (center[1] - curr_pipeline['B']) / curr_pipeline["M"]
-                center_y = (center[0] * curr_pipeline["M"]) + curr_pipeline["B"]
-                pitch = self.vision_handler.calculate_pitch(pixel_y=center[1], center_y=center_y, v_focal_length=V_FOCAL_LENGTH)
-                yaw = self.vision_handler.calculate_yaw(pixel_x=center[0], center_x=center_x, h_focal_length=H_FOCAL_LENGTH)
-                valid = True
-            except IndexError:
+                try:
+                    center = final_contour[0]
+                    center_x = (center[1] - curr_pipeline['B']) / curr_pipeline["M"]
+                    center_y = (center[0] * curr_pipeline["M"]) + curr_pipeline["B"]
+                    pitch = self.vision_handler.calculate_pitch(pixel_y=center[1], center_y=center_y, v_focal_length=V_FOCAL_LENGTH)
+                    yaw = self.vision_handler.calculate_yaw(pixel_x=center[0], center_x=center_x, h_focal_length=H_FOCAL_LENGTH)
+                    valid = True
+                except IndexError:
+                    center = None
+                    pitch = None
+                    yaw = None
+                    valid = False
+
+                if curr_pipeline['is_binary']:
+                    draw_image = hsv_image
+                else:
+                    draw_image = image
+
+                res = self.vision_handler.draw_image(input_image=draw_image, contour=final_contour)
+            else:
+                res = image
                 center = None
                 pitch = None
                 yaw = None
                 valid = False
 
-            if curr_pipeline['is_binary']:
-                draw_image = hsv_image
-            else:
-                draw_image = image
-
-            res = self.vision_handler.draw_image(input_image=draw_image, contour=final_contour)
             socket.send_pyobj(res)
             socket.send_json(dict(
                 pitch=pitch,
