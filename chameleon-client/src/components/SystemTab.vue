@@ -27,6 +27,14 @@
                     </row>
                     <row type="flex" justify="start" align="middle" class="spacing">
                         <Col span="4">
+                            <h4>Netmask:</h4>
+                        </Col>
+                        <Col span="10">
+                            <Input v-model="netmask" size="small" :disabled="isConnection"></Input>
+                        </Col>
+                    </row>
+                    <row type="flex" justify="start" align="middle" class="spacing">
+                        <Col span="4">
                             <h4>Gateway:</h4>
                         </Col>
                         <Col span="10">
@@ -101,6 +109,14 @@
                 },
                 set: function(value){
                     this.$store.commit('ip',value);
+                }
+            },
+            netmask:{
+                get: function(){
+                    return this.$store.state.netmask;
+                },
+                set: function(){
+                    this.$store.commit('netmask',value);
                 }
             },
             gateway:{

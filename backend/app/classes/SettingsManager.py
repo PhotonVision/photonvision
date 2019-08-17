@@ -40,6 +40,7 @@ class SettingsManager(metaclass=Singleton):
         "connection_type": "DHCP",
         "ip": "",
         "gateway": "",
+        "netmask": "",
         "hostname": "",
         "curr_camera": "",
         "curr_pipeline": ""
@@ -188,8 +189,6 @@ class SettingsManager(metaclass=Singleton):
         for key in dic['change_general_settings_values']:
             if self.default_general_settings[key]:
                 self.general_settings[key] = dic['change_general_settings_values'][key]
-                if key == "hostname":
-                    subprocess.call(['hostnamectl set-hostname', str(self.general_settings['hostname'])])
         self.settings_manager.save_settings()
         #after all values has been set change settings
         self.change_general_settings()
