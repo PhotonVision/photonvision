@@ -1,4 +1,3 @@
-from datetime import timedelta
 from networktables import NetworkTables
 import tornado.ioloop
 import logging
@@ -7,7 +6,6 @@ from app.classes.SettingsManager import SettingsManager
 from tornado.options import options
 import threading
 import asyncio
-from app.handlers.SocketHandler import send_all_async
 from app.handlers.CameraHander import CameraHandler
 
 
@@ -18,8 +16,6 @@ def run_server():
     print(f"Serving on port {options.port}")
     app.listen(options.port)
     tornado.ioloop.IOLoop.current().start()
-    tornado.ioloop.IOLoop.instance().add_timeout(timedelta(seconds=1),
-                                                 send_all_async)
 
 
 def run():
