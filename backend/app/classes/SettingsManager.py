@@ -6,6 +6,7 @@ import subprocess
 from cscore._cscore import VideoMode
 from .Singleton import Singleton
 from .Exceptions import PipelineAlreadyExistsException, NoCameraConnectedException
+from ..handlers.IPHandler import ChangeIP
 
 
 class SettingsManager(metaclass=Singleton):
@@ -189,9 +190,12 @@ class SettingsManager(metaclass=Singleton):
         for key in dic['change_general_settings_values']:
             if self.default_general_settings[key]:
                 self.general_settings[key] = dic['change_general_settings_values'][key]
-        self.settings_manager.save_settings()
-        #after all values has been set change settings
-        self.change_general_settings()
+        self.save_settings()
+
+        # after all values has been set change settings
+        ChangeIP(hostname=self.general_settings['hostname'], ip=self.general_settings['ip'],
+                 netmask=self.general_settings['netmask'], gateway=self.general_settings['gateway'])
+
 
 
     # Creators
@@ -254,7 +258,5 @@ class SettingsManager(metaclass=Singleton):
         with open(os.path.join(self.settings_path, 'settings.json'), 'w+') as setting_file:
             json.dump(self.general_settings, setting_file)
 
-    def change_general_settings(self):
-        pass
 
 
