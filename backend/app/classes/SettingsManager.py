@@ -194,11 +194,8 @@ class SettingsManager(metaclass=Singleton):
             if key in self.default_general_settings.keys():
                 self.general_settings[key] = dic['change_general_settings_values'][key]
         self.save_settings()
-
+        subprocess.call(['reboot'])
         # after all values has been set change settings
-        ChangeIP(connection_type=self.general_settings['connection_type'] ,hostname=self.general_settings['hostname'],
-                 ip=self.general_settings['ip'], netmask=self.general_settings['netmask'],
-                 gateway=self.general_settings['gateway'])
 
 
 
