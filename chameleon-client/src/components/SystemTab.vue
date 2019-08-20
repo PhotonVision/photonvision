@@ -47,7 +47,6 @@
                         </Col>
                         <Col span="10">
                             <Input v-model="hostname" size="small">
-                                <span slot="prepend">http://Chameleon-Vision-</span>
                                 <span slot="append">.local</span>
                             </Input>
                         </Col>
