@@ -37,7 +37,7 @@ export const store = new Vuex.Store({
         team_number:0,
         connection_type:"DHCP",
         ip:"",
-        gateWay:"",
+        gateway:"",
         netmask:"",
         hostname:"",
         //live info

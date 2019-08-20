@@ -6,6 +6,7 @@ class ChangeIP:
     def __init__(self, connection_type, ip, netmask, gateway, hostname):
 
         adapter = self.find_adapter()
+        self.shutdown_adapter(adapter)
 
         if connection_type == "DHCP":
             self.change_to_dhcp(adapter=adapter)
@@ -13,7 +14,7 @@ class ChangeIP:
             self.change_to_static(adapter=adapter, ip=ip, netmask=netmask, gateway=gateway)
 
         self.change_hostname(hostname=hostname)
-        self.restart_adapter(adapter=adapter)
+        self.start_adapter(adapter)
 
     @staticmethod
     def change_to_dhcp(adapter):
@@ -22,11 +23,13 @@ class ChangeIP:
     @staticmethod
     def change_to_static(adapter, ip, netmask, gateway):
         subprocess.call(['ifconfig', adapter, ip, 'netmask', netmask])
-        subprocess.call(['route add default gw', gateway, adapter])
+        subprocess.call(['route', 'add', 'default', 'gw', gateway, adapter])
 
     @staticmethod
-    def restart_adapter(adapter):
+    def shutdown_adapter(adapter):
         subprocess.call(['ifconfig', adapter, 'down'])
+    @staticmethod
+    def start_adapter(adapter):
         subprocess.call(['ifconfig', adapter, 'up'])
 
     @staticmethod
@@ -39,4 +42,4 @@ class ChangeIP:
 
     @staticmethod
     def change_hostname(hostname):
-        subprocess.call(['hostnamectl set-hostname', hostname])
+        subprocess.call(['hostnamectl', 'set-hostname', hostname])

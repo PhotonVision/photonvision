@@ -51,6 +51,9 @@ class SettingsManager(metaclass=Singleton):
         self.settings_path = os.path.join(os.getcwd(), "settings")
         self.cams_path = os.path.join(self.settings_path, "cams")
         self._init_general_settings()
+        ChangeIP(connection_type=self.general_settings['connection_type'], hostname=self.general_settings['hostname'],
+                 ip=self.general_settings['ip'],
+                 netmask=self.general_settings['netmask'], gateway=self.general_settings['gateway'])
         self._init_cameras_info()
         self._init_usb_cameras()
         self._init_cameras()
