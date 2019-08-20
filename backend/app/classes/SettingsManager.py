@@ -193,7 +193,7 @@ class SettingsManager(metaclass=Singleton):
         self.save_settings()
 
         # after all values has been set change settings
-        ChangeIP(hostname=self.general_settings['hostname'], ip=self.general_settings['ip'],
+        ChangeIP(connection_type=self.general_settings['connection_type'] ,hostname=self.general_settings['hostname'], ip=self.general_settings['ip'],
                  netmask=self.general_settings['netmask'], gateway=self.general_settings['gateway'])
 
 

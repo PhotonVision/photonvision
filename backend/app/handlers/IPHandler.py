@@ -3,13 +3,13 @@ import netifaces
 
 
 class ChangeIP:
-    def __init__(self, ip_type, ip, netmask, gateway, hostname):
+    def __init__(self, connection_type, ip, netmask, gateway, hostname):
 
         adapter = self.find_adapter()
 
-        if ip_type == "DHCP":
+        if connection_type == "DHCP":
             self.change_to_dhcp(adapter=adapter)
-        elif ip_type == "Static":
+        elif connection_type == "Static":
             self.change_to_static(adapter=adapter, ip=ip, netmask=netmask, gateway=gateway)
 
         self.change_hostname(hostname=hostname)
@@ -17,7 +17,7 @@ class ChangeIP:
 
     @staticmethod
     def change_to_dhcp(adapter):
-        subprocess.call(['dhclient -r', adapter])
+        subprocess.call(['dhclient',"-r", adapter])
 
     @staticmethod
     def change_to_static(adapter, ip, netmask, gateway):
@@ -39,4 +39,4 @@ class ChangeIP:
 
     @staticmethod
     def change_hostname(hostname):
-        subprocess.call(['hostnamectl set-hostname', "Chameleon-Vision-{}".format(hostname)])
+        subprocess.call(['hostnamectl', 'set-hostname', "Chameleon-Vision-" + hostname])
