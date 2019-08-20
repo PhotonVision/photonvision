@@ -27,6 +27,14 @@
                     </row>
                     <row type="flex" justify="start" align="middle" class="spacing">
                         <Col span="4">
+                            <h4>Netmask:</h4>
+                        </Col>
+                        <Col span="10">
+                            <Input v-model="netmask" size="small" :disabled="isConnection"></Input>
+                        </Col>
+                    </row>
+                    <row type="flex" justify="start" align="middle" class="spacing">
+                        <Col span="4">
                             <h4>Gateway:</h4>
                         </Col>
                         <Col span="10">
@@ -39,7 +47,6 @@
                         </Col>
                         <Col span="10">
                             <Input v-model="hostname" size="small">
-                                <span slot="prepend">http://Chameleon-Vision</span>
                                 <span slot="append">.local</span>
                             </Input>
                         </Col>
@@ -74,6 +81,7 @@
                         'team_number':this.team_number,
                         'connection_type':this.connection_type,
                         'ip':this.ip,
+                        'netmask':this.netmask,
                         'gateway':this.gateway,
                         'hostname':this.hostname}});
             }
@@ -103,6 +111,14 @@
                     this.$store.commit('ip',value);
                 }
             },
+            netmask:{
+                get: function(){
+                    return this.$store.state.netmask;
+                },
+                set: function(value){
+                    this.$store.commit('netmask',value);
+                }
+            },
             gateway:{
                 get: function(){
                     return this.$store.state.gateway;
@@ -120,7 +136,7 @@
                 }
             },
             isConnection: function(){
-                if(this.connectionType == "DHCP"){
+                if(this.connection_type == "DHCP"){
                     return true
                 } else{
                     return false

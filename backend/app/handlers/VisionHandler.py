@@ -10,17 +10,14 @@ class VisionHandler():
 
     def _hsv_threshold(self, hue: list, saturation: list, value: list, img: numpy.ndarray, is_erode: bool,
                        is_dilate: bool):
-        blur = cv2.blur(img, (3, 3))
-        hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
-        lower = numpy.array([hue[0], saturation[0], value[0]])
-        upper = numpy.array([hue[1], saturation[1], value[1]])
-        thresh = cv2.inRange(hsv, lower, upper)
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        thresh = cv2.inRange(hsv, (hue[0], saturation[0], value[0]), (hue[1], saturation[1], value[1]))
         erode_img = cv2.erode(thresh, kernel=self.kernel, iterations=is_erode)
         dilate_img = cv2.dilate(erode_img, kernel=self.kernel, iterations=is_dilate)
         return dilate_img
 
     def find_contours(self, binary_img: numpy.ndarray):
-        _, contours, _ = cv2.findContours(binary_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        _, contours, _ = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)
         return contours
 
     class Filter_Contours:

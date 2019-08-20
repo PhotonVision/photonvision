@@ -1,3 +1,4 @@
 tornado
 pyzmq
 robotpy-cscore
+netifaces

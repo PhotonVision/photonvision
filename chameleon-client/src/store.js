@@ -30,14 +30,15 @@ export const store = new Vuex.Store({
         area:[0,100],
         ratio:[0,20],
         extent:[0,100],
-        sort_mode:'Largest', //
-        target_group:'Single', //
-        target_intersection:'Up', //
+        sort_mode:'Largest', 
+        target_group:'Single', 
+        target_intersection:'Up',
         //Settings
         team_number:0,
         connection_type:"DHCP",
-        ip:0,
-        gateWay:0,
+        ip:"",
+        gateway:"",
+        netmask:"",
         hostname:"",
         //live info
         port:1181,
@@ -68,7 +69,8 @@ export const store = new Vuex.Store({
         team_number: set('team_number'),
         connection_type: set('connection_type'),
         ip: set('ip'),
-        gateWay : set('gateway'),
+        netmask: set('netmask'),
+        gateway : set('gateway'),
         hostname : set('hostname'),
         is_binary: set('is_binary'),
         cameraList : set('cameraList'),
@@ -99,7 +101,8 @@ export const store = new Vuex.Store({
         team_number: state => state.teamValue,
         connection_type: state => state.connectionType,
         ip: state => state.ip,
-        gateWay: state => state.gateWay,
+        netmask: state => state.netmask,
+        gateway: state => state.gateway,
         hostname: state => state.hostName,
         is_binary: state => state.is_binary,
         cameraList: state => state.cameraList,
