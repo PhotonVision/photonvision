@@ -82,6 +82,7 @@
                         'team_number':this.team_number,
                         'connection_type':this.connection_type,
                         'ip':this.ip,
+                        'netmask':this.netmask,
                         'gateway':this.gateway,
                         'hostname':this.hostname}});
             }
@@ -115,7 +116,7 @@
                 get: function(){
                     return this.$store.state.netmask;
                 },
-                set: function(){
+                set: function(value){
                     this.$store.commit('netmask',value);
                 }
             },
@@ -136,7 +137,7 @@
                 }
             },
             isConnection: function(){
-                if(this.connectionType == "DHCP"){
+                if(this.connection_type == "DHCP"){
                     return true
                 } else{
                     return false
