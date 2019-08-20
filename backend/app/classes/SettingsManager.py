@@ -42,7 +42,7 @@ class SettingsManager(metaclass=Singleton):
         "ip": "",
         "gateway": "",
         "netmask": "",
-        "hostname": "",
+        "hostname": "Chameleon-Vision",
         "curr_camera": "",
         "curr_pipeline": ""
     }
@@ -188,7 +188,7 @@ class SettingsManager(metaclass=Singleton):
 
     def change_general_settings_values(self, dic):
         for key in dic['change_general_settings_values']:
-            if self.default_general_settings[key]:
+            if key in self.default_general_settings.keys():
                 self.general_settings[key] = dic['change_general_settings_values'][key]
         self.save_settings()
 

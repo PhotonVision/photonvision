@@ -39,4 +39,4 @@ class ChangeIP:
 
     @staticmethod
     def change_hostname(hostname):
-        subprocess.call(['hostnamectl', 'set-hostname', "Chameleon-Vision-" + hostname])
+        subprocess.call(['hostnamectl set-hostname', hostname])
