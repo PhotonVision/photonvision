@@ -6,15 +6,17 @@ class ChangeIP:
     def __init__(self, connection_type, ip, netmask, gateway, hostname):
 
         adapter = self.find_adapter()
-        self.shutdown_adapter(adapter)
+        if adapter is not None:
+            self.shutdown_adapter(adapter)
 
-        if connection_type == "DHCP":
-            self.change_to_dhcp(adapter=adapter)
-        elif connection_type == "Static":
-            self.change_to_static(adapter=adapter, ip=ip, netmask=netmask, gateway=gateway)
+            if connection_type == "DHCP":
+                self.change_to_dhcp(adapter=adapter)
 
+            elif connection_type == "Static":
+                self.change_to_static(adapter=adapter, ip=ip, netmask=netmask, gateway=gateway)
+
+            self.start_adapter(adapter)
         self.change_hostname(hostname=hostname)
-        self.start_adapter(adapter)
 
     @staticmethod
     def change_to_dhcp(adapter):
