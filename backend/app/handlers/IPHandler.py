@@ -16,6 +16,8 @@ class ChangeIP:
                 self.change_to_static(adapter=adapter, ip=ip, netmask=netmask, gateway=gateway)
 
             self.start_adapter(adapter)
+        else:
+            print("not connected to robot radio cannot set ip")
         self.change_hostname(hostname=hostname)
 
     @staticmethod
