@@ -10,6 +10,7 @@ class VisionHandler():
 
     def _hsv_threshold(self, hue: list, saturation: list, value: list, img: numpy.ndarray, is_erode: bool,
                        is_dilate: bool):
+
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         thresh = cv2.inRange(hsv, (hue[0], saturation[0], value[0]), (hue[1], saturation[1], value[1]))
         erode_img = cv2.erode(thresh, kernel=self.kernel, iterations=is_erode)
@@ -189,24 +190,14 @@ class VisionHandler():
                 sorted_contours = []
             return sorted_contours
 
-    @unique
-    class Region(Enum):
-        UP_MOST = 0
-        RIGHT_MOST = 1
-        DOWN_MOST = 2
-        LEFT_MOST = 3
-        CENTER_MOST = 4
-        
     def output_contour(self, sorted_contours):
         if len(sorted_contours) > 0:
             selected_contour = sorted_contours[0]
             rect = cv2.minAreaRect(selected_contour)
         else:
             return []
-
-        # crosshair_calibration function to "put" camera in the middle
         return rect
-            
+
     def draw_image(self, input_image, contour):
         if len(input_image.shape)<3:
             input_image = cv2.cvtColor(input_image, cv2.COLOR_GRAY2RGB)
@@ -221,7 +212,6 @@ class VisionHandler():
 
     def calculate_pitch(self, pixel_y, center_y, v_focal_length):
         pitch = math.degrees(math.atan((pixel_y - center_y) / v_focal_length))
-        # Just stopped working have to do this:
         pitch *= -1
         return pitch
 

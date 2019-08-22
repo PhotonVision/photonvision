@@ -143,7 +143,7 @@ class CameraHandler:
 
             socket.send_json(dict(
                 pipeline=pipeline,
-                driver_mode= self.table.getBoolean('Driver_Mode', False)
+                driver_mode=self.table.getBoolean('Driver_Mode', False)
             ), zmq.SNDMORE)
 
             socket.send_pyobj((self.time_stamp,self.image))
