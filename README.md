@@ -50,7 +50,11 @@ if backed gets suck or no camera are recognized after a crash do:
 ```
 sudo pkill -9 python3
 ```
-
+#### compiling:
+in order to compile the program for runtime run:
+```
+python3 -m nuitka --follow-imports Main.py
+```
 #### for the frontend
 1. sudo apt-get install nodejs npm
 2. cd chameleon-client 

@@ -19,7 +19,7 @@ class VisionHandler():
 
     def find_contours(self, binary_img: numpy.ndarray):
 
-        contours, _ = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)
+        _,contours, _ = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)
         return contours
 
     class Filter_Contours:
