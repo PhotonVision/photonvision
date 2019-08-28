@@ -2,9 +2,11 @@ import os
 import json
 import cv2
 import cscore
+import subprocess
 from cscore._cscore import VideoMode
 from .Singleton import Singleton
 from .Exceptions import PipelineAlreadyExistsException, NoCameraConnectedException
+from ..handlers.IPHandler import ChangeIP
 
 
 class SettingsManager(metaclass=Singleton):
@@ -27,7 +29,7 @@ class SettingsManager(metaclass=Singleton):
         "area": [0, 100],
         "ratio": [0, 20],
         "extent": [0, 100],
-        "is_binary": "Normal",
+        "is_binary": 0,
         "sort_mode": "Largest",
         "target_group": 'Single',
         "target_intersection": 'Up',
@@ -39,7 +41,8 @@ class SettingsManager(metaclass=Singleton):
         "connection_type": "DHCP",
         "ip": "",
         "gateway": "",
-        "hostname": "",
+        "netmask": "",
+        "hostname": "Chameleon-Vision",
         "curr_camera": "",
         "curr_pipeline": ""
     }
@@ -48,6 +51,9 @@ class SettingsManager(metaclass=Singleton):
         self.settings_path = os.path.join(os.getcwd(), "settings")
         self.cams_path = os.path.join(self.settings_path, "cams")
         self._init_general_settings()
+        ChangeIP(connection_type=self.general_settings['connection_type'], hostname=self.general_settings['hostname'],
+                 ip=self.general_settings['ip'],
+                 netmask=self.general_settings['netmask'], gateway=self.general_settings['gateway'])
         self._init_cameras_info()
         self._init_usb_cameras()
         self._init_cameras()
@@ -72,13 +78,10 @@ class SettingsManager(metaclass=Singleton):
     # Initiate our camera's settings
     def _init_cameras(self):
         for cam_name in self.usb_cameras_info:
-            cam = self.usb_cameras_info[cam_name]
-            if os.path.exists(os.path.join(self.cams_path, cam.name + '.json')):
-
-                with open(os.path.join(self.cams_path, cam.name + '.json'), 'r') as camera:
+            if os.path.exists(os.path.join(self.cams_path, cam_name + '.json')):
+                with open(os.path.join(self.cams_path, cam_name + '.json'), 'r') as camera:
                     self.cams[cam_name] = json.load(camera)
-
-                if len(self.cams[cam.name]["pipelines"]) == 0:
+                if len(self.cams[cam_name]["pipelines"]) == 0:
                     self.create_new_pipeline(cam_name=cam_name)
             else:
                 self.create_new_cam(cam_name)
@@ -188,11 +191,12 @@ class SettingsManager(metaclass=Singleton):
 
     def change_general_settings_values(self, dic):
         for key in dic['change_general_settings_values']:
-            if self.default_general_settings[key]:
+            if key in self.default_general_settings.keys():
                 self.general_settings[key] = dic['change_general_settings_values'][key]
-        self.settings_manager.save_settings()
-        #after all values has been set change settings
-        self.change_general_settings()
+        self.save_settings()
+        subprocess.call(['reboot'])
+        # after all values has been set change settings
+
 
 
     # Creators
@@ -255,7 +259,5 @@ class SettingsManager(metaclass=Singleton):
         with open(os.path.join(self.settings_path, 'settings.json'), 'w+') as setting_file:
             json.dump(self.general_settings, setting_file)
 
-    def change_general_settings(self):
-        pass
 
 

@@ -11,3 +11,4 @@ Python/app/handlers/__pycache__/
 \.vscode/
 
 backend/settings/
+/.vscode/

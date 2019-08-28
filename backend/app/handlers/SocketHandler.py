@@ -48,8 +48,8 @@ class ChameleonWebSocket(tornado.websocket.WebSocketHandler):
             for key in message_dic:
                 self.actions.get(key, self.actions["change_pipeline_values"])(message_dic)
             print(message)
-        except:
-            print("crash " + message)
+        except Exception as e:
+            print("crash " + e)
 
     def on_close(self):
         self.settings_manager.save_settings()

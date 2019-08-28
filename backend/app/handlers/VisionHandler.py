@@ -10,17 +10,16 @@ class VisionHandler():
 
     def _hsv_threshold(self, hue: list, saturation: list, value: list, img: numpy.ndarray, is_erode: bool,
                        is_dilate: bool):
-        blur = cv2.blur(img, (3, 3))
-        hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
-        lower = numpy.array([hue[0], saturation[0], value[0]])
-        upper = numpy.array([hue[1], saturation[1], value[1]])
-        thresh = cv2.inRange(hsv, lower, upper)
+
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+        thresh = cv2.inRange(hsv, (hue[0], saturation[0], value[0]), (hue[1], saturation[1], value[1]))
         erode_img = cv2.erode(thresh, kernel=self.kernel, iterations=is_erode)
         dilate_img = cv2.dilate(erode_img, kernel=self.kernel, iterations=is_dilate)
         return dilate_img
 
     def find_contours(self, binary_img: numpy.ndarray):
-        _, contours, _ = cv2.findContours(binary_img, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+        _,contours, _ = cv2.findContours(binary_img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_TC89_L1)
         return contours
 
     class Filter_Contours:
@@ -192,24 +191,14 @@ class VisionHandler():
                 sorted_contours = []
             return sorted_contours
 
-    @unique
-    class Region(Enum):
-        UP_MOST = 0
-        RIGHT_MOST = 1
-        DOWN_MOST = 2
-        LEFT_MOST = 3
-        CENTER_MOST = 4
-        
     def output_contour(self, sorted_contours):
         if len(sorted_contours) > 0:
             selected_contour = sorted_contours[0]
             rect = cv2.minAreaRect(selected_contour)
         else:
             return []
-
-        # crosshair_calibration function to "put" camera in the middle
         return rect
-            
+
     def draw_image(self, input_image, contour):
         if len(input_image.shape)<3:
             input_image = cv2.cvtColor(input_image, cv2.COLOR_GRAY2RGB)
@@ -224,7 +213,6 @@ class VisionHandler():
 
     def calculate_pitch(self, pixel_y, center_y, v_focal_length):
         pitch = math.degrees(math.atan((pixel_y - center_y) / v_focal_length))
-        # Just stopped working have to do this:
         pitch *= -1
         return pitch
 
