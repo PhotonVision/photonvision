@@ -4,6 +4,7 @@
           <Layout :style="{minHeight: '100vh'}">
             <Layout>
               <Sider id="main-nav" @on-collapse="onCollapse"  collapsible :collapsed-width="78" v-model="isCollapsed">
+                <img src="./assets/logo.png" style="width:60px;height:auto;transition: .2s ease;" :class="menuIconClass">
                     <Menu ref="menu" @on-open-change="onOpenChange" :active-name="activeName" :open-names="openedNames" theme="dark"  width="auto" :class="menuitemClasses">
                         <Submenu name="/vision">
                           <template slot="title">
@@ -34,12 +35,14 @@
 
 <script>
   import Vue from "vue"
+
   import chselect from './components/ch-select.vue'
   
   export default {
     name: 'app',
     components:{
-      chselect
+      chselect,
+
     },
     data () {
       return {
@@ -72,6 +75,9 @@
               'menu-item',
               this.isCollapsed ? 'collapsed-menu' : ''
           ]
+      },
+      menuIconClass(){
+        return this.isCollapsed ? '' :'icon' 
       }
     },
     created () {
@@ -142,11 +148,18 @@
       width: 0px;
       transition: width .2s ease;
   }
+  .collapsed-menu .ivu-icon-ios-arrow-down{
+    display: none;
+  }
   .collapsed-menu i{
       transform: translateX(5px);
       transition: font-size .2s ease .2s, transform .2s ease .2s;
       vertical-align: middle;
       font-size: 22px;
+  }
+  .icon{
+    width: 100px !important;
+    transition: .2s ease;
   }
 
 </style>
