@@ -208,8 +208,12 @@ class CameraHandler:
 
                 try:
                     center = final_contour[0]
-                    center_x = (center[1] - curr_pipeline['B']) / curr_pipeline["M"]
-                    center_y = (center[0] * curr_pipeline["M"]) + curr_pipeline["B"]
+                    if curr_pipeline["M"] == 1 and curr_pipeline["B"] == 0:
+                        center_x = centerX
+                        center_y = centerY
+                    else:
+                        center_x = (center[1] - curr_pipeline['B']) / curr_pipeline["M"]
+                        center_y = (center[0] * curr_pipeline["M"]) + curr_pipeline["B"]
                     pitch = self.vision_handler.calculate_pitch(pixel_y=center[1], center_y=center_y, v_focal_length=V_FOCAL_LENGTH)
                     yaw = self.vision_handler.calculate_yaw(pixel_x=center[0], center_x=center_x, h_focal_length=H_FOCAL_LENGTH)
                     valid = True
