@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.chameleon-vision.main</groupId>
+    <artifactId>chameleon-vision</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <release>12</release>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <repositories>
+        <repository>
+            <id>WPI</id>
+            <name>WPI Maven repo</name>
+            <url>https://first.wpi.edu/FRC/roborio/maven/release</url>
+        </repository>
+    </repositories>
+    <dependencies>
+        <dependency>
+            <groupId>io.javalin</groupId>
+            <artifactId>javalin</artifactId>
+            <version>3.4.1</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.cscore</groupId>
+            <artifactId>cscore-java</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.ntcore</groupId>
+            <artifactId>ntcore-java</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.wpiutil</groupId>
+            <artifactId>wpiutil-java</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.opencv</groupId>
+            <artifactId>opencv-java</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+    </dependencies>
+
+
+</project>
