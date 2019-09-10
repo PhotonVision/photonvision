@@ -8,6 +8,7 @@
     <version>1.0-SNAPSHOT</version>
     <build>
         <plugins>
+            <!--setup for java jdk 12-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -19,6 +20,7 @@
         </plugins>
     </build>
     <repositories>
+        <!--WPI official maven repo for frc libs-->
         <repository>
             <id>WPI</id>
             <name>WPI Maven repo</name>
@@ -27,31 +29,40 @@
     </repositories>
     <dependencies>
         <dependency>
+        <!--javalin micro webservices framework-->
             <groupId>io.javalin</groupId>
             <artifactId>javalin</artifactId>
             <version>3.4.1</version>
         </dependency>
         <dependency>
+            <!--org.json from saving and loading data-->
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <!--frc cscore libs-->
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-java</artifactId>
             <version>RELEASE</version>
         </dependency>
         <dependency>
+            <!--frc network table core libs-->
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-java</artifactId>
             <version>RELEASE</version>
         </dependency>
         <dependency>
+            <!--frc network table client libs-->
             <groupId>edu.wpi.first.wpiutil</groupId>
             <artifactId>wpiutil-java</artifactId>
             <version>RELEASE</version>
         </dependency>
         <dependency>
+            <!--opencv libs for java-->
             <groupId>org.opencv</groupId>
             <artifactId>opencv-java</artifactId>
             <version>RELEASE</version>
         </dependency>
     </dependencies>
-
-
 </project>
