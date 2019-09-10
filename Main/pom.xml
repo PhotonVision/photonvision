@@ -41,6 +41,12 @@
             <version>RELEASE</version>
         </dependency>
         <dependency>
+            <!--slf4j for javalin -->
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.26</version>
+        </dependency>
+        <dependency>
             <!--frc cscore libs-->
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-java</artifactId>
