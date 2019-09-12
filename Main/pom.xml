@@ -70,5 +70,15 @@
             <artifactId>opencv-java</artifactId>
             <version>RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>RELEASE</version>
+        </dependency>
     </dependencies>
 </project>
