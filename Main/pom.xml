@@ -47,19 +47,39 @@
             <version>1.7.26</version>
         </dependency>
         <dependency>
-            <!--frc cscore libs-->
+            <!--frc cscore java libs-->
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-java</artifactId>
             <version>RELEASE</version>
         </dependency>
         <dependency>
-            <!--frc network table core libs-->
+            <!--frc cscore interface libs-->
+            <groupId>edu.wpi.first.cscore</groupId>
+            <artifactId>cscore-jni</artifactId>
+            <version>RELEASE</version>
+            <classifier>all</classifier>
+        </dependency>
+        <dependency>
+            <!--frc camera server libs-->
+            <groupId>edu.wpi.first.cameraserver</groupId>
+            <artifactId>cameraserver-java</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
+            <!--frc network table java libs-->
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-java</artifactId>
             <version>RELEASE</version>
         </dependency>
         <dependency>
-            <!--frc network table client libs-->
+            <!--frc network tables interface libs-->
+            <groupId>edu.wpi.first.ntcore</groupId>
+            <artifactId>ntcore-jni</artifactId>
+            <version>RELEASE</version>
+            <classifier>all</classifier>
+        </dependency>
+        <dependency>
+            <!--frc java libs-->
             <groupId>edu.wpi.first.wpiutil</groupId>
             <artifactId>wpiutil-java</artifactId>
             <version>RELEASE</version>
@@ -71,11 +91,13 @@
             <version>RELEASE</version>
         </dependency>
         <dependency>
+            <!--apache common classes libs-->
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
             <version>RELEASE</version>
         </dependency>
         <dependency>
+            <!--google json save and load library-->
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
             <version>RELEASE</version>

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import edu.wpi.cscore.*;
+import edu.wpi.first.cameraserver.CameraServer;
 
 public class SettingsManager  {
     private static SettingsManager instance;
@@ -52,10 +53,9 @@ public class SettingsManager  {
     }
 
     private void InitiateCamerasInfo(){
-        UsbCameraInfo[] TrueCameras = new UsbCameraInfo[];
+//        UsbCameraInfo[] TrueCameras = new UsbCameraInfo[];
         UsbCameraInfo[] UsbDevices = UsbCamera.enumerateUsbCameras();
-        
-        System.out.println("");
+
 
     }
     private void InitiateUsbCameras(){
