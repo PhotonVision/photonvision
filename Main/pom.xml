@@ -84,12 +84,12 @@
             <artifactId>wpiutil-java</artifactId>
             <version>RELEASE</version>
         </dependency>
-        <dependency>
-            <!--opencv libs for java-->
-            <groupId>org.opencv</groupId>
-            <artifactId>opencv-java</artifactId>
-            <version>RELEASE</version>
-        </dependency>
+<!--        <dependency>-->
+<!--            &lt;!&ndash;opencv libs for java&ndash;&gt;-->
+<!--            <groupId>org.opencv</groupId>-->
+<!--            <artifactId>opencv-java</artifactId>-->
+<!--            <version>RELEASE</version>-->
+<!--        </dependency>-->
         <dependency>
             <!--apache common classes libs-->
             <groupId>org.apache.commons</groupId>

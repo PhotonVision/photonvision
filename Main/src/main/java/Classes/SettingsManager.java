@@ -2,13 +2,17 @@ package Classes;
 import Objects.*;
 import java.io.*;
 import java.nio.file.*;
+
+import Objects.VideoMode;
 import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import edu.wpi.cscore.*;
+import org.opencv.video.Video;
 import org.opencv.videoio.VideoCapture;
 
 public class SettingsManager  {
@@ -17,6 +21,7 @@ public class SettingsManager  {
         InitiateGeneralSettings();
         InitiateCamerasInfo();
         InitiateUsbCameras();
+        InitiateCameras();
         InitiateUsbCamerasSettings();
     }
     public static synchronized SettingsManager getInstance(){
@@ -29,8 +34,8 @@ public class SettingsManager  {
         }
         return instance;
     }
-    public static HashMap cams = new HashMap();
-    public static HashMap UsbCameras = new HashMap();
+    public static HashMap<String,Camera> Cameras = new HashMap<String, Camera>();
+    public static HashMap<String,UsbCamera> UsbCameras = new HashMap<String, UsbCamera>();
     public static HashMap<String,UsbCameraInfo> USBCamerasInfo = new HashMap<String,UsbCameraInfo>();
     public static DefaultGeneralSettings GeneralSettings;
     public static HashMap CameraPort = new HashMap();
@@ -40,13 +45,7 @@ public class SettingsManager  {
 
 
     private void InitiateGeneralSettings(){
-        if (!Files.exists(SettingsPath)){
-            try {
-                Files.createDirectories(SettingsPath);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
+        CheckPath(SettingsPath);
         try {
             GeneralSettings = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(),"Settings.json").toString()),DefaultGeneralSettings.class);
         } catch (FileNotFoundException e) {
@@ -76,9 +75,69 @@ public class SettingsManager  {
         }
     }
     private void InitiateUsbCameras(){
+        for(Map.Entry<String,UsbCameraInfo> entry : USBCamerasInfo.entrySet()){
+            var device = entry.getValue();
+            var camera = new UsbCamera(device.name, device.dev);
+            UsbCameras.put(device.name,camera);
+        }
+    }
+    private void InitiateCameras(){
+        CheckPath(CamsPath);
+        for(Map.Entry<String,UsbCameraInfo> entry: USBCamerasInfo.entrySet()){
+            var camPath = Paths.get(CamsPath.toString(),String.format("%s.json",entry.getKey()));
+            if(Files.exists(camPath)){
+                try {
+                    Camera cam = new Gson().fromJson(new FileReader(camPath.toString()),Camera.class);
+                    Cameras.put(entry.getKey(),cam);
 
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            } else{
+                CreateNewCam(entry.getKey());
+            }
+        }
     }
     private void InitiateUsbCamerasSettings(){
 
     }
+    private void CheckPath(Path path){
+        if (!Files.exists(path)){
+            try {
+                Files.createDirectories(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    private void CreateNewCam(String CameraName){
+        Camera cam = new Camera();
+        var caminfo =USBCamerasInfo.get(CameraName);
+        cam.path = caminfo.path;
+        var videomode = UsbCameras.get(CameraName).enumerateVideoModes()[0];
+        VideoMode CamVideoMode = new VideoMode();
+        CamVideoMode.fps = videomode.fps;
+        CamVideoMode.heigh = videomode.height;
+        CamVideoMode.width = videomode.width;
+        CamVideoMode.pixel_format = videomode.pixelFormat.name();
+
+        cam.pipelines = new HashMap<String, DefaultPipeline>();
+        cam.resolution = 0;
+        cam.FOV = 60.8;
+        Cameras.put(CameraName,cam);
+        CreateNewPipeline("",CameraName);
+
+    }
+    private void CreateNewPipeline(String PipeName, String CamName){
+        if (CamName.equals("")){
+            CamName = GeneralSettings.curr_camera;
+        }
+        if (PipeName.equals("")){
+            var suffix = 0;
+            PipeName = "pipeline" + suffix;
+
+
+        }
+    }
+
 }
