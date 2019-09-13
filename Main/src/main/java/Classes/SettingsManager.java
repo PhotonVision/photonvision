@@ -3,11 +3,13 @@ import Objects.*;
 import java.io.*;
 import java.nio.file.*;
 import com.google.gson.Gson;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import edu.wpi.cscore.*;
-import edu.wpi.first.cameraserver.CameraServer;
+import org.opencv.videoio.VideoCapture;
 
 public class SettingsManager  {
     private static SettingsManager instance;
@@ -29,7 +31,7 @@ public class SettingsManager  {
     }
     public static HashMap cams = new HashMap();
     public static HashMap UsbCameras = new HashMap();
-    public static HashMap USBCamerasInfo = new HashMap();
+    public static HashMap<String,UsbCameraInfo> USBCamerasInfo = new HashMap<String,UsbCameraInfo>();
     public static DefaultGeneralSettings GeneralSettings;
     public static HashMap CameraPort = new HashMap();
     public static HashMap CamerasCurrentPipeline = new HashMap();
@@ -53,10 +55,25 @@ public class SettingsManager  {
     }
 
     private void InitiateCamerasInfo(){
-//        UsbCameraInfo[] TrueCameras = new UsbCameraInfo[];
+        List<Integer> TrueCameras = new ArrayList<Integer>();
         UsbCameraInfo[] UsbDevices = UsbCamera.enumerateUsbCameras();
+        for (var i=0; i < UsbDevices.length; i++){
+            var cap = new VideoCapture(UsbDevices[i].dev);
+            if (cap.isOpened()){
+                TrueCameras.add(i);
+                cap.release();
+            }
 
-
+        }
+        for (var i: TrueCameras){
+            var DeviceName = UsbDevices[i].name;
+            var suffix = 0;
+            while (USBCamerasInfo.containsKey(DeviceName)){
+                suffix++;
+                DeviceName = String.format("%s(%s)",UsbDevices[i].name,suffix);
+            }
+            USBCamerasInfo.put(DeviceName,UsbDevices[i]);
+        }
     }
     private void InitiateUsbCameras(){
 
