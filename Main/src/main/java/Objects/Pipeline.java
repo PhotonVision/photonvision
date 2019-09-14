@@ -2,7 +2,7 @@ package Objects;
 import java.util.Arrays;
 import java.util.List;
 
-public class DefaultPipeline {
+public class Pipeline {
     public int exposure = 50;
     public int brightness = 50;
     public String orientation = "Normal";

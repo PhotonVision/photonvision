@@ -1,4 +1,5 @@
 package Classes;
+import Exceptions.NoCameraException;
 import Objects.*;
 import java.io.*;
 import java.nio.file.*;
@@ -35,7 +36,7 @@ public class SettingsManager  {
     public static HashMap<String,Camera> Cameras = new HashMap<String, Camera>();
     public static HashMap<String,UsbCamera> UsbCameras = new HashMap<String, UsbCamera>();
     public static HashMap<String,UsbCameraInfo> USBCamerasInfo = new HashMap<String,UsbCameraInfo>();
-    public static DefaultGeneralSettings GeneralSettings;
+    public static Objects.GeneralSettings GeneralSettings;
     public static HashMap CameraPort = new HashMap();
     public static HashMap CamerasCurrentPipeline = new HashMap();
     private Path SettingsPath = Paths.get(System.getProperty("user.dir"),"Settings");
@@ -45,9 +46,9 @@ public class SettingsManager  {
     private void InitiateGeneralSettings(){
         CheckPath(SettingsPath);
         try {
-            GeneralSettings = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(),"Settings.json").toString()),DefaultGeneralSettings.class);
+            GeneralSettings = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(),"Settings.json").toString()), Objects.GeneralSettings.class);
         } catch (FileNotFoundException e) {
-            GeneralSettings = new DefaultGeneralSettings();
+            GeneralSettings = new GeneralSettings();
         }
     }
 
@@ -127,7 +128,7 @@ public class SettingsManager  {
         CamVideoMode.width = videomode.width;
         CamVideoMode.pixel_format = videomode.pixelFormat.name();
         cam.camVideoMode = CamVideoMode;
-        cam.pipelines = new HashMap<String, DefaultPipeline>();
+        cam.pipelines = new HashMap<String, Pipeline>();
         cam.resolution = 0;
         cam.FOV = 60.8;
         Cameras.put(CameraName,cam);
@@ -151,7 +152,44 @@ public class SettingsManager  {
         else if (cam.pipelines.containsKey(PipeName)){
             System.err.println("Pipeline Already Exists");
         }
-        cam.pipelines.put(PipeName,new DefaultPipeline());
+        cam.pipelines.put(PipeName,new Pipeline());
+    }
+    //Access Methods
+    public Pipeline GetCurrentPipeline() throws Exception {
+        if (!GeneralSettings.curr_pipeline.equals("")){
+            return Cameras.get(GeneralSettings.curr_camera).pipelines.get(GeneralSettings.curr_pipeline);
+        }
+        throw new NoCameraException();
+    }
+    public Camera GetCurrentCamera() throws Exception {
+        if (!GeneralSettings.curr_camera.equals("")){
+            return Cameras.get(GeneralSettings.curr_camera);
+        }
+        throw new NoCameraException();
+    }
+    public List<String> GetResolutionList() throws NoCameraException {
+        if (!GeneralSettings.curr_camera.equals("")){
+            List<String> list = new ArrayList<String>();
+            var cam = UsbCameras.get(GeneralSettings.curr_camera);
+            for (var res : cam.enumerateVideoModes()){
+                list.add(String.format("%s X %s at %s fps", res.width, res.height, res.fps));
+            }
+            return list;
+        }
+        throw new NoCameraException();
+    }
+    public void SetCurrentCamera(String CamName) throws Exception {
+        if (Cameras.containsKey(CamName)){
+            GeneralSettings.curr_camera = CamName;
+            GeneralSettings.curr_pipeline = GetCurrentCamera().pipelines.keySet().stream().findFirst().toString();
+
+
+        }
+    }
+    public void SetCurrentPipeline(String PipelineName) throws Exception {
+        if (GetCurrentCamera().pipelines.containsKey(PipelineName)){
+            GeneralSettings.curr_pipeline = PipelineName;
+        }
     }
     //Savers
     public void SaveSettings(){

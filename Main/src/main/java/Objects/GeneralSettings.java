@@ -1,6 +1,6 @@
 package Objects;
 
-public class DefaultGeneralSettings {
+public class GeneralSettings {
     public int team_number = 1577;
     public String connection_type = "DHCP";
     public String ip = "";
