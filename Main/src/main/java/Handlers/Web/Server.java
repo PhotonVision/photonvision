@@ -1,5 +1,6 @@
 package Handlers.Web;
 
+import Classes.SettingsManager;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class Server {
             ws.onClose(ctx -> {
                 users.remove(ctx);
                 System.out.println("Socket Disconnected");
+                SettingsManager.getInstance().SaveSettings();
             });
             ws.onMessage(ctx -> {
                 broadcastMessage(ctx, ctx.message());

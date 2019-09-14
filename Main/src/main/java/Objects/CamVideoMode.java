@@ -1,6 +1,6 @@
 package Objects;
 
-public class VideoMode {
+public class CamVideoMode {
     public int fps;
     public int width;
     public int heigh;

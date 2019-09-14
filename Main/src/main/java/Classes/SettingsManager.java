@@ -3,16 +3,14 @@ import Objects.*;
 import java.io.*;
 import java.nio.file.*;
 
-import Objects.VideoMode;
+import Objects.CamVideoMode;
 import com.google.gson.Gson;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import edu.wpi.cscore.*;
-import org.opencv.video.Video;
 import org.opencv.videoio.VideoCapture;
 
 public class SettingsManager  {
@@ -99,7 +97,14 @@ public class SettingsManager  {
         }
     }
     private void InitiateUsbCamerasSettings(){
-
+        for(Map.Entry<String,UsbCamera> entry: UsbCameras.entrySet()){
+            var cam = entry.getValue();
+            var camName = entry.getKey();
+            var camInfo = Cameras.get(camName);
+            cam.setPixelFormat(VideoMode.PixelFormat.valueOf(camInfo.camVideoMode.pixel_format));
+            cam.setFPS(camInfo.camVideoMode.fps);
+            cam.setResolution(camInfo.camVideoMode.width, camInfo.camVideoMode.heigh);
+        }
     }
     private void CheckPath(Path path){
         if (!Files.exists(path)){
@@ -110,34 +115,71 @@ public class SettingsManager  {
             }
         }
     }
+    // Creators
     private void CreateNewCam(String CameraName){
         Camera cam = new Camera();
         var caminfo =USBCamerasInfo.get(CameraName);
         cam.path = caminfo.path;
         var videomode = UsbCameras.get(CameraName).enumerateVideoModes()[0];
-        VideoMode CamVideoMode = new VideoMode();
+        CamVideoMode CamVideoMode = new CamVideoMode();
         CamVideoMode.fps = videomode.fps;
         CamVideoMode.heigh = videomode.height;
         CamVideoMode.width = videomode.width;
         CamVideoMode.pixel_format = videomode.pixelFormat.name();
-
+        cam.camVideoMode = CamVideoMode;
         cam.pipelines = new HashMap<String, DefaultPipeline>();
         cam.resolution = 0;
         cam.FOV = 60.8;
         Cameras.put(CameraName,cam);
-        CreateNewPipeline("",CameraName);
+
+        CreateNewPipeline(null,CameraName);
 
     }
     private void CreateNewPipeline(String PipeName, String CamName){
-        if (CamName.equals("")){
+        if (CamName == null){
             CamName = GeneralSettings.curr_camera;
         }
-        if (PipeName.equals("")){
+        var cam = Cameras.get(CamName);
+        if (PipeName == null){
             var suffix = 0;
             PipeName = "pipeline" + suffix;
-
-
+            while (cam.pipelines.containsKey(PipeName)){
+                suffix ++;
+                PipeName = "pipeline"+suffix;
+            }
+        }
+        else if (cam.pipelines.containsKey(PipeName)){
+            System.err.println("Pipeline Already Exists");
+        }
+        cam.pipelines.put(PipeName,new DefaultPipeline());
+    }
+    //Savers
+    public void SaveSettings(){
+        SaveCameras();
+        SaveGeneralSettings();
+    }
+    private void SaveCameras(){
+        for(Map.Entry<String,Camera> entry: Cameras.entrySet()){
+            try {
+                Gson gson = new Gson();
+                FileWriter writer = new FileWriter(Paths.get(CamsPath.toString(),String.format("%s.json",entry.getKey())).toString());
+                gson.toJson(entry.getValue(),writer);
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
-
+    private void SaveGeneralSettings(){
+        try {
+            Gson gson = new Gson();
+            FileWriter writer = new FileWriter(Paths.get(SettingsPath.toString(),"Settings.json").toString());
+            new Gson().toJson(GeneralSettings, writer);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
