@@ -37,10 +37,11 @@ public class SettingsManager  {
     public static HashMap<String,UsbCamera> UsbCameras = new HashMap<String, UsbCamera>();
     public static HashMap<String,UsbCameraInfo> USBCamerasInfo = new HashMap<String,UsbCameraInfo>();
     public static Objects.GeneralSettings GeneralSettings;
-    public static HashMap CameraPort = new HashMap();
-    public static HashMap CamerasCurrentPipeline = new HashMap();
+    public static HashMap<String, String> CamerasCurrentPipeline = new HashMap<String, String>();
+    public static HashMap<String,String> CameraPort = new HashMap<String, String>();
     private Path SettingsPath = Paths.get(System.getProperty("user.dir"),"Settings");
     private Path CamsPath = Paths.get(SettingsPath.toString(),"Cams");
+
 
 
     private void InitiateGeneralSettings(){
