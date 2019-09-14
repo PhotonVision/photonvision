@@ -30,7 +30,7 @@ public class VisionProcess {
         Imgproc.cvtColor(image,hsv,Imgproc.COLOR_BGR2HSV,3);
         new Scalar(hue.get(0),saturation.get(0),value.get(0));
         Mat threshold = new Mat();
-        Core.inRange(threshold,new Scalar(hue.get(0),saturation.get(0),value.get(0)),new Scalar(hue.get(1),saturation.get(1),value.get(1)),threshold);
+        Core.inRange(hsv,new Scalar(hue.get(0),saturation.get(0),value.get(0)),new Scalar(hue.get(1),saturation.get(1),value.get(1)),threshold);
         if (IsErode){
             Imgproc.erode(threshold,threshold, Kernel);
         }
