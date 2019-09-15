@@ -1,11 +1,18 @@
 package Handlers.Web;
 
 import Classes.SettingsManager;
+import Objects.Pipeline;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
+
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.BeanUtils;
+
 
 public class Server {
     private static List<WsContext> users = new ArrayList<WsContext>();
@@ -24,6 +31,23 @@ public class Server {
             });
             ws.onMessage(ctx -> {
                 broadcastMessage(ctx, ctx.message());
+                JSONObject jsonObject = new JSONObject(ctx.message());
+                String key =jsonObject.keySet().toArray()[0].toString();
+                Object value = jsonObject.get(key);
+                System.out.println("Key: "+key+" Value: "+value);
+                Field[] fields = Pipeline.class.getFields();
+                for (Field f : fields)
+                {//TODO: check calibration in output tab for crashes
+                    if(f.getName().equals(key))
+                    {
+                        if(BeanUtils.isSimpleValueType(value.getClass()))
+                            f.set(SettingsManager.getInstance().GetCurrentPipeline(),value);
+                        else
+                        if(value.getClass()==JSONArray.class){
+                            f.set(SettingsManager.getInstance().GetCurrentPipeline(),((JSONArray)value).toList());
+                        }
+                    }
+                }
             });
         });
         app.start(port);
@@ -36,5 +60,6 @@ public class Server {
             }
         }
     }
+
 
 }
