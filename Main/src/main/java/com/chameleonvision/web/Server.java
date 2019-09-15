@@ -1,6 +1,7 @@
 package com.chameleonvision.web;
 
 import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.vision.Pipeline;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
 

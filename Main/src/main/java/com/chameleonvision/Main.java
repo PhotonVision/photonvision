@@ -1,3 +1,5 @@
+package com.chameleonvision;
+
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.process.CameraProcess;
 import com.chameleonvision.web.Server;
@@ -15,5 +17,3 @@ public class Main {
         Server.main(8888);
     }
 }
-
-
