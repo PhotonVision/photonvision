@@ -1,11 +1,10 @@
-package Handlers.Web;
+package com.chameleonvision.web;
 
-import Classes.SettingsManager;
+import com.chameleonvision.settings.SettingsManager;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
 import java.util.ArrayList;
 import java.util.List;
-import org.json.JSONObject;
 
 public class Server {
     private static List<WsContext> users = new ArrayList<WsContext>();

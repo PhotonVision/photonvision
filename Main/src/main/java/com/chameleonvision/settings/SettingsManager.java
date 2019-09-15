@@ -1,10 +1,13 @@
-package Classes;
-import Exceptions.NoCameraException;
-import Objects.*;
+package com.chameleonvision.settings;
+import com.chameleonvision.NoCameraException;
+
 import java.io.*;
 import java.nio.file.*;
 
-import Objects.CamVideoMode;
+import com.chameleonvision.vision.CamVideoMode;
+import com.chameleonvision.vision.Camera;
+import com.chameleonvision.vision.GeneralSettings;
+import com.chameleonvision.vision.Pipeline;
 import com.google.gson.Gson;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,10 +36,10 @@ public class SettingsManager  {
         }
         return instance;
     }
-    public static HashMap<String,Camera> Cameras = new HashMap<String, Camera>();
+    public static HashMap<String, Camera> Cameras = new HashMap<String, Camera>();
     public static HashMap<String,UsbCamera> UsbCameras = new HashMap<String, UsbCamera>();
     public static HashMap<String,UsbCameraInfo> USBCamerasInfo = new HashMap<String,UsbCameraInfo>();
-    public static Objects.GeneralSettings GeneralSettings;
+    public static com.chameleonvision.vision.GeneralSettings GeneralSettings;
     public static HashMap<String, String> CamerasCurrentPipeline = new HashMap<String, String>();
     public static HashMap<String,String> CameraPort = new HashMap<String, String>();
     private Path SettingsPath = Paths.get(System.getProperty("user.dir"),"Settings");
@@ -47,7 +50,7 @@ public class SettingsManager  {
     private void InitiateGeneralSettings(){
         CheckPath(SettingsPath);
         try {
-            GeneralSettings = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(),"Settings.json").toString()), Objects.GeneralSettings.class);
+            GeneralSettings = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(),"Settings.json").toString()), com.chameleonvision.vision.GeneralSettings.class);
         } catch (FileNotFoundException e) {
             GeneralSettings = new GeneralSettings();
         }

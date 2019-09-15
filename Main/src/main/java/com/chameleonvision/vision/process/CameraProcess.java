@@ -1,16 +1,12 @@
-package Handlers.Vision;
+package com.chameleonvision.vision.process;
 
-import Classes.SettingsManager;
-import Objects.Pipeline;
-import edu.wpi.first.networktables.NetworkTable;
+import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.vision.Pipeline;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.opencv.core.Mat;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.util.FastMath;
-import org.opencv.core.MatOfPoint;
-
-import java.util.List;
 
 public class CameraProcess implements Runnable{
     private String CameraName;
@@ -25,9 +21,9 @@ public class CameraProcess implements Runnable{
         CameraServer cs = CameraServer.getInstance();
         NetworkTableInstance networkTableInstance = NetworkTableInstance.getDefault();
         SettingsManager manager = SettingsManager.getInstance();
-        manager.CamerasCurrentPipeline.put(CameraName,manager.Cameras.get(CameraName).pipelines.keySet().toArray()[0].toString());
+        SettingsManager.CamerasCurrentPipeline.put(CameraName, SettingsManager.Cameras.get(CameraName).pipelines.keySet().toArray()[0].toString());
         //Setting up camera and network table
-        var Table = networkTableInstance.getTable("/Chameleon-Vision/" + CameraName);
+        var Table = networkTableInstance.getTable("/Chameleon-vision/" + CameraName);
         var PipeLineEntry = Table.getEntry("Pipeline");
         var DriverModeEntry =  Table.getEntry("Driver_Mode");
         var cv_sink = cs.getVideo(manager.UsbCameras.get(CameraName));

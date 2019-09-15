@@ -1,10 +1,9 @@
-package Handlers.Vision;
+package com.chameleonvision.vision.process;
 
 import org.jetbrains.annotations.NotNull;
 import org.opencv.core.*;
 import org.opencv.imgproc.*;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

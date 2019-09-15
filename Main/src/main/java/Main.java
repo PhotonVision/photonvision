@@ -1,9 +1,7 @@
-import Classes.SettingsManager;
-import Handlers.Vision.CameraProcess;
-import Handlers.Web.Server;
+import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.vision.process.CameraProcess;
+import com.chameleonvision.web.Server;
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.util.Map;
 
