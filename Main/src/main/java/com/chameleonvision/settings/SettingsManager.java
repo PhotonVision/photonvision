@@ -45,8 +45,6 @@ public class SettingsManager  {
     private Path SettingsPath = Paths.get(System.getProperty("user.dir"),"Settings");
     private Path CamsPath = Paths.get(SettingsPath.toString(),"Cams");
 
-
-
     private void InitiateGeneralSettings(){
         CheckPath(SettingsPath);
         try {
