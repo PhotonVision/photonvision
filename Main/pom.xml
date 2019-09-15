@@ -102,5 +102,34 @@
             <artifactId>gson</artifactId>
             <version>RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
+            <artifactId>opencv-java</artifactId>
+            <version>3.4.4-5</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
+            <artifactId>opencv-jni</artifactId>
+            <version>3.4.4-5</version>
+            <classifier>windowsx86-64</classifier>
+        </dependency>        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
+            <artifactId>opencv-jni</artifactId>
+            <version>3.4.4-5</version>
+            <classifier>linuxx86-64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
+            <artifactId>opencv-jni</artifactId>
+            <version>3.4.4-5</version>
+            <classifier>linuxathena</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
+            <artifactId>opencv-jni</artifactId>
+            <version>3.4.4-5</version>
+            <classifier>linuxraspbian</classifier>
+        </dependency>
+
     </dependencies>
 </project>
