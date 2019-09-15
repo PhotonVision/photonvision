@@ -84,12 +84,6 @@
             <artifactId>wpiutil-java</artifactId>
             <version>RELEASE</version>
         </dependency>
-<!--        <dependency>-->
-<!--            &lt;!&ndash;opencv libs for java&ndash;&gt;-->
-<!--            <groupId>org.opencv</groupId>-->
-<!--            <artifactId>opencv-java</artifactId>-->
-<!--            <version>RELEASE</version>-->
-<!--        </dependency>-->
         <dependency>
             <!--apache common classes libs-->
             <groupId>org.apache.commons</groupId>
@@ -103,12 +97,6 @@
             <version>RELEASE</version>
         </dependency>
         <dependency>
-<<<<<<< HEAD
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-            <version>5.1.9.RELEASE</version>
-        </dependency>
-=======
             <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
             <artifactId>opencv-java</artifactId>
             <version>3.4.4-5</version>
@@ -136,7 +124,10 @@
             <version>3.4.4-5</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
-
->>>>>>> folderStructure
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>5.1.9.RELEASE</version>
+        </dependency>
     </dependencies>
 </project>
