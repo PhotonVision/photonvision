@@ -1,4 +1,4 @@
-package Objects;
+package com.chameleonvision.vision;
 
 import java.util.HashMap;
 

@@ -1,4 +1,4 @@
-package Exceptions;
+package com.chameleonvision;
 
 public class NoCameraException extends Exception {
     public NoCameraException(){

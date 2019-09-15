@@ -1,4 +1,4 @@
-package Objects;
+package com.chameleonvision.vision;
 
 public class CamVideoMode {
     public int fps;

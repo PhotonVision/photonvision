@@ -1,7 +1,6 @@
-package Handlers.Web;
+package com.chameleonvision.web;
 
-import Classes.SettingsManager;
-import Objects.Pipeline;
+import com.chameleonvision.settings.SettingsManager;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
 

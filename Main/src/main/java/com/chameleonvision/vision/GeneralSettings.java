@@ -1,4 +1,4 @@
-package Objects;
+package com.chameleonvision.vision;
 
 public class GeneralSettings {
     public int team_number = 1577;
@@ -6,7 +6,7 @@ public class GeneralSettings {
     public String ip = "";
     public String gateway = "";
     public String netmask = "";
-    public String hostname = "Chameleon-Vision";
+    public String hostname = "Chameleon-vision";
     public String curr_camera = "";
     public String curr_pipeline = "";
 

@@ -1,4 +1,4 @@
-package Objects;
+package com.chameleonvision.vision;
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,6 +16,7 @@ public class Pipeline {
     public List<Integer> extent = Arrays.asList(0,100);
     public boolean is_binary = false;
     public String sort_mode = "Largest";
+    public String target_group = "Single";
     public String target_intersection = "Largest";
     public double M = 1;
     public double B = 0;
