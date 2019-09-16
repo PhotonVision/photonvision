@@ -88,7 +88,7 @@ public class CameraProcess implements Runnable {
 
                 if (FilteredContours.size() > 0) {
                     for (int i = 0; i < FilteredContours.size(); i++) {
-                        Imgproc.drawContours(outputMat, FilteredContours, i,  contourColor, 3);
+                        Imgproc.drawContours(outputMat, FilteredContours, i,  contourColor, 10);
                     }
                 }
 

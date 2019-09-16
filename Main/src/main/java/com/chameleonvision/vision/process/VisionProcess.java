@@ -52,12 +52,12 @@ public class VisionProcess {
     }
 
     private List<MatOfPoint> FilteredContours = new ArrayList<MatOfPoint>();
-    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent, String SortMode, String TargetIntersection, String TargetGrouping){
+    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent, String SortMode, String TargetIntersection, String TargetGrouping) {
         for (MatOfPoint Contour : InputContours){
             try{
                 var contourArea = Imgproc.contourArea(Contour);
                 double targetArea = (contourArea / CamVals.ImageArea) * 100;
-                if (targetArea >= area.get(0) || targetArea <= area.get(1)){
+                if (targetArea <= area.get(0) || targetArea >= area.get(1)){
                     continue;
                 }
                 var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
