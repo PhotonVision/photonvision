@@ -11,6 +11,9 @@ public class MemoryManager {
 		this.collectionThreshold = collectionThreshold;
 	}
 
+	public void setCollectionThreshold(int collectionThreshold) {
+		this.collectionThreshold = collectionThreshold;
+	}
 
 	public static long getUsedMemory() {
 		return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();

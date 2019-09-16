@@ -37,7 +37,13 @@ public class Server {
 //                System.out.println(SettingsManager.getInstance().GetCurrentPipeline().);
                 broadcastMessage(ctx, ctx.message());
                 JSONObject jsonObject = new JSONObject(ctx.message());
-                String key = jsonObject.keySet().toArray()[0].toString();
+                String key = null;
+                try {
+                    key = jsonObject.keySet().toArray()[0].toString();
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+                if (key == null) return;
                 Object value = jsonObject.get(key);
                 if (!setField(SettingsManager.getInstance().GetCurrentPipeline(), key, value)) {
                     //If field not in pipeline
