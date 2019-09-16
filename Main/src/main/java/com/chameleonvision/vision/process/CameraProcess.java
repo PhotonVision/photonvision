@@ -30,7 +30,7 @@ public class CameraProcess implements Runnable{
 
 
         int Width = manager.Cameras.get(CameraName).camVideoMode.width;
-        int Height = manager.Cameras.get(CameraName).camVideoMode.heigh;
+        int Height = manager.Cameras.get(CameraName).camVideoMode.height;
         var cv_publish = cs.putVideo(CameraName,Width,Height);
         //initial math setup for camera
         double DiagonalView = FastMath.toRadians(manager.Cameras.get(CameraName).FOV);
