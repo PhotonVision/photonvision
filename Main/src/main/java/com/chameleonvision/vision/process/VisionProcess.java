@@ -76,38 +76,98 @@ public class VisionProcess {
         return FilteredContours;
     }
 
-    private List<MatOfPoint> FinalCountours = new ArrayList<>();
-    private List<MatOfPoint> GroupTargets(List<MatOfPoint> InputContours, String IntersectionPoint, String TargetGroup) {
+    private List<RotatedRect> FinalCountours = new ArrayList<>();
+    public List<RotatedRect> GroupTargets(List<MatOfPoint> InputContours, String IntersectionPoint, String TargetGroup) {
         FinalCountours.clear();
         if (!TargetGroup.equals("Single")){
             for (var i = 0; i < InputContours.size(); i++){
-                var FinalContour = InputContours.get(i);
+                List<Point> FinalContourList = new ArrayList<>(InputContours.get(i).toList());
                 for (var c = 0; c < (TargetGrouping.get(TargetGroup)-1);c++){
                     try{
                         MatOfPoint firstContour = InputContours.get(i + c);
                         MatOfPoint secondContour = InputContours.get(i+c+1);
                         if (IsIntersecting(firstContour, secondContour, IntersectionPoint)){
-                            System.out.println("");
+                            FinalContourList.addAll(secondContour.toList());
                         }
                         firstContour.release();
                         secondContour.release();
+                        MatOfPoint2f contour = new MatOfPoint2f();
+                        contour.fromList(FinalContourList);
+                        if (contour.cols() !=0 && contour.rows() != 0){
+                            RotatedRect rect = Imgproc.minAreaRect(contour);
+                            FinalCountours.add(rect);
+                        }
                     } catch (IndexOutOfBoundsException e){
-                        FinalContour = new MatOfPoint();
+                        FinalContourList.clear();
                         break;
                     }
                 }
             }
 
+        } else {
+            for (var i = 0; i < InputContours.size(); i++){
+                MatOfPoint2f contour = new MatOfPoint2f();
+                contour.fromArray(InputContours.get(i).toArray());
+                if (contour.cols() !=0 && contour.rows() != 0) {
+                    RotatedRect rect = Imgproc.minAreaRect(contour);
+                    FinalCountours.add(rect);
+                }
+            }
         }
-        return InputContours;
+        return FinalCountours;
     }
 
     private Mat intersectMatA = new Mat();
     private Mat intersectMatB = new Mat();
     private boolean IsIntersecting(MatOfPoint ContourOne, MatOfPoint ContourTwo, String IntersectionPoint) {
-        Imgproc.fitLine(ContourOne, intersectMatA, Imgproc.CV_DIST_L2,0,0.01,0.01);
-        Imgproc.fitLine(ContourTwo, intersectMatB, Imgproc.CV_DIST_L2,0,0.01,0.01);
-
-        return true;
+        if (IntersectionPoint.equals("None")){
+            return true;
+        }
+        try {
+            Imgproc.fitLine(ContourOne, intersectMatA, Imgproc.CV_DIST_L2,0,0.01,0.01);
+            Imgproc.fitLine(ContourTwo, intersectMatB, Imgproc.CV_DIST_L2,0,0.01,0.01);
+            double vxA = intersectMatA.get(0,0)[0];
+            double vyA = intersectMatA.get(1,0)[0];
+            double x0A = intersectMatA.get(2,0)[0];
+            double y0A = intersectMatA.get(3,0)[0];
+            double mA = vyA / vxA;
+            double vxB = intersectMatB.get(0,0)[0];
+            double vyB = intersectMatB.get(1,0)[0];
+            double x0B = intersectMatB.get(2,0)[0];
+            double y0B = intersectMatB.get(3,0)[0];
+            double mB = vyB / vxB;
+            double intersectionX = (mA * x0A) - y0A - (mB * x0B) + y0B / (mA - mB);
+            double intersectionY = (mA * (intersectionX - x0A)) + y0A;
+            switch (IntersectionPoint){
+                case "Up" :{
+                    if (intersectionY < CamVals.CenterY){
+                        return true;
+                    }
+                    break;
+                }
+                case "Down": {
+                    if (intersectionY > CamVals.CenterY){
+                        return true;
+                    }
+                    break;
+                }
+                case "Left": {
+                    if (intersectionX < CamVals.CenterX){
+                        return true;
+                    }
+                    break;
+                }
+                case "Right": {
+                    if (intersectionX > CamVals.CenterX){
+                        return true;
+                    }
+                    break;
+                }
+            }
+            return false;
+        }
+        catch (Exception e){
+            return false;
+        }
     }
 }

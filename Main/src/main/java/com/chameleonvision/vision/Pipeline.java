@@ -17,7 +17,7 @@ public class Pipeline {
     public int is_binary = 0;
     public String sort_mode = "Largest";
     public String target_group = "Single";
-    public String target_intersection = "Largest";
+    public String target_intersection = "Up";
     public double M = 1;
     public double B = 0;
 }
