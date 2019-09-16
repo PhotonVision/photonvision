@@ -19,6 +19,9 @@
             </plugin>
         </plugins>
     </build>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
     <repositories>
         <!--WPI official maven repo for frc libs-->
         <repository>
@@ -28,74 +31,132 @@
         </repository>
     </repositories>
     <dependencies>
-        <dependency>
         <!--javalin micro webservices framework-->
+        <dependency>
             <groupId>io.javalin</groupId>
             <artifactId>javalin</artifactId>
             <version>3.4.1</version>
         </dependency>
+
+        <!--org.json from saving and loading data-->
         <dependency>
-            <!--org.json from saving and loading data-->
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>RELEASE</version>
+            <version>20190722</version>
         </dependency>
+
+        <!--slf4j for javalin -->
         <dependency>
-            <!--slf4j for javalin -->
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>1.7.26</version>
         </dependency>
+
+        <!--apache common classes libs-->
         <dependency>
-            <!--frc cscore java libs-->
-            <groupId>edu.wpi.first.cscore</groupId>
-            <artifactId>cscore-java</artifactId>
-            <version>RELEASE</version>
-        </dependency>
-        <dependency>
-            <!--frc cscore interface libs-->
-            <groupId>edu.wpi.first.cscore</groupId>
-            <artifactId>cscore-jni</artifactId>
-            <version>RELEASE</version>
-            <classifier>all</classifier>
-        </dependency>
-        <dependency>
-            <!--frc camera server libs-->
-            <groupId>edu.wpi.first.cameraserver</groupId>
-            <artifactId>cameraserver-java</artifactId>
-            <version>RELEASE</version>
-        </dependency>
-        <dependency>
-            <!--frc network table java libs-->
-            <groupId>edu.wpi.first.ntcore</groupId>
-            <artifactId>ntcore-java</artifactId>
-            <version>RELEASE</version>
-        </dependency>
-        <dependency>
-            <!--frc network tables interface libs-->
-            <groupId>edu.wpi.first.ntcore</groupId>
-            <artifactId>ntcore-jni</artifactId>
-            <version>RELEASE</version>
-            <classifier>all</classifier>
-        </dependency>
-        <dependency>
-            <!--frc java libs-->
-            <groupId>edu.wpi.first.wpiutil</groupId>
-            <artifactId>wpiutil-java</artifactId>
-            <version>RELEASE</version>
-        </dependency>
-        <dependency>
-            <!--apache common classes libs-->
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
-            <version>RELEASE</version>
+            <version>3.6.1</version>
         </dependency>
+        <!--google json save and load library-->
         <dependency>
-            <!--google json save and load library-->
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>RELEASE</version>
+            <version>2.8.5</version>
         </dependency>
+        <!--what is this for again?-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>5.1.9.RELEASE</version>
+        </dependency>
+
+        <!-- supported platforms for wpilib JNI classifiers
+            linuxathena
+            linuxraspbian
+            linuxx86-64
+            windowsx86-64
+        -->
+        <!--frc cscore java libs-->
+        <dependency>
+            <groupId>edu.wpi.first.cscore</groupId>
+            <artifactId>cscore-java</artifactId>
+            <version>2019.4.1</version>
+        </dependency>
+        <!--frc cscore interface libs-->
+        <dependency>
+            <groupId>edu.wpi.first.cscore</groupId>
+            <artifactId>cscore-jni</artifactId>
+            <version>2019.4.1</version>
+            <classifier>linuxathena</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.cscore</groupId>
+            <artifactId>cscore-jni</artifactId>
+            <version>2019.4.1</version>
+            <classifier>linuxraspbian</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.cscore</groupId>
+            <artifactId>cscore-jni</artifactId>
+            <version>2019.4.1</version>
+            <classifier>linuxx86-64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.cscore</groupId>
+            <artifactId>cscore-jni</artifactId>
+            <version>2019.4.1</version>
+            <classifier>windowsx86-64</classifier>
+        </dependency>
+
+        <!--frc camera server libs-->
+        <dependency>
+            <groupId>edu.wpi.first.cameraserver</groupId>
+            <artifactId>cameraserver-java</artifactId>
+            <version>2019.4.1</version>
+        </dependency>
+
+        <!--frc network table java libs-->
+        <dependency>
+            <groupId>edu.wpi.first.ntcore</groupId>
+            <artifactId>ntcore-java</artifactId>
+            <version>2019.4.1</version>
+        </dependency>
+
+        <!--frc network tables interface libs-->
+        <dependency>
+            <groupId>edu.wpi.first.ntcore</groupId>
+            <artifactId>ntcore-jni</artifactId>
+            <version>2019.4.1</version>
+            <classifier>linuxathena</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.ntcore</groupId>
+            <artifactId>ntcore-jni</artifactId>
+            <version>2019.4.1</version>
+            <classifier>linuxraspbian</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.ntcore</groupId>
+            <artifactId>ntcore-jni</artifactId>
+            <version>2019.4.1</version>
+            <classifier>linuxx86-64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.ntcore</groupId>
+            <artifactId>ntcore-jni</artifactId>
+            <version>2019.4.1</version>
+            <classifier>windowsx86-64</classifier>
+        </dependency>
+
+        <!--frc java libs-->
+        <dependency>
+            <groupId>edu.wpi.first.wpiutil</groupId>
+            <artifactId>wpiutil-java</artifactId>
+            <version>2019.4.1</version>
+        </dependency>
+
+        <!-- WPI OpenCV for all supported platforms -->
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
             <artifactId>opencv-java</artifactId>
@@ -106,7 +167,8 @@
             <artifactId>opencv-jni</artifactId>
             <version>3.4.4-5</version>
             <classifier>windowsx86-64</classifier>
-        </dependency>        <dependency>
+        </dependency>
+        <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
             <version>3.4.4-5</version>
@@ -123,11 +185,6 @@
             <artifactId>opencv-jni</artifactId>
             <version>3.4.4-5</version>
             <classifier>linuxraspbian</classifier>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-beans</artifactId>
-            <version>5.1.9.RELEASE</version>
         </dependency>
     </dependencies>
 </project>
