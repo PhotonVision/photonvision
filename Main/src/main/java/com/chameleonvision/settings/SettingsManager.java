@@ -153,6 +153,7 @@ public class SettingsManager {
         Cameras.put(CameraName, cam);
 
         CreateNewPipeline(null, CameraName);
+        CreateNewPipeline(null, CameraName);//Created 2 pipeline for testing TODO add a create pipeline button
 
     }
 

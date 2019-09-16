@@ -49,13 +49,11 @@ public class Server {
                         case "curr_camera":
                             SettingsManager.getInstance().SetCurrentCamera((String) value);
                             //broadcastMessage((Map<String, Object>) new HashMap<String, Object>(){}.put("port",SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera)));
-                            //broadcastMessage(SettingsManager.getInstance().GetCurrentCamera());//TODO CHECK JSON FOR CAMERA CHANGE
+//                            broadcastMessage(ctx, SettingsManager.getInstance().GetCurrentCamera());//TODO CHECK JSON FOR CAMERA CHANGE
                             break;
                         case "curr_pipeline":
-                            System.out.println("change pipeline");
                             SettingsManager.getInstance().SetCurrentPipeline((String) value);
                             SettingsManager.CamerasCurrentPipeline.put(SettingsManager.GeneralSettings.curr_camera, (String) value);
-//                            broadcastMessage(SettingsManager.getInstance().GetCurrentPipeline());//TODO CHECK JSON FOR PIPELINE CHANGE
                             break;
                         case "resolution":
                             System.out.println("change res");
@@ -118,19 +116,18 @@ public class Server {
         return successful;
     }
 
-    private static void broadcastMessage(WsContext sendingUser, String message) {
+    private static void broadcastMessage(WsContext sendingUser, Object obj) {//TODO chekc if session id is a good way to differentiate users
         for (var user : users) {
-            if (user != sendingUser) {
-                user.send(message);
+            if (sendingUser!=null&&user.getSessionId()==sendingUser.getSessionId()) {
+                continue;
             }
+            if (obj.getClass() == String.class)
+                user.send((String) obj);
+            else if (obj.getClass() == HashMap.class)
+                user.send(new JSONObject((HashMap<String, Object>) obj).toString());
+            else
+                user.send(new JSONObject(obj).toString());
         }
-    }
-
-    private static void broadcastMessage(Map<String, Object> map) {
-        for (var user : users) {
-            user.send(new JSONObject(map).toString());
-        }
-
     }
 
     private static void addAllFieldsToMap(Map<String, Object> map, Object obj) {
@@ -159,7 +156,7 @@ public class Server {
             System.err.println("No camera found!");
             //TODO: add message to ui to inform that there are no cameras
         }
-        broadcastMessage(fullSettings);
+        broadcastMessage(null, fullSettings);
     }
 
 
