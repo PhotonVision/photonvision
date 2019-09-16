@@ -61,9 +61,11 @@ public class CameraProcess implements Runnable {
         Mat contourBoxPointsMat = new Mat();
         Scalar contourColor = new Scalar(255, 0, 0);
         long startTime, endTime;
-        
+        startTime = System.nanoTime();
+        int duration = 1;
+        int counter = 0;
+        double fps = 0;
         while (!Thread.interrupted()) {
-            startTime = System.nanoTime();
 
             FoundContours.clear();
             FilteredContours.clear();
@@ -97,14 +99,20 @@ public class CameraProcess implements Runnable {
                 a.add(new MatOfPoint(vertices));
                 Imgproc.drawContours(outputMat,a, 0,  contourColor, 3);
             }
-
             cv_publish.putFrame(outputMat);
+            System.out.println("fps: " + fps);
             inputMat.release();
             hsvThreshMat.release();
             for (MatOfPoint oldMat : FoundContours) { oldMat.release(); }
             for (MatOfPoint oldMat1 : FilteredContours) { oldMat1.release(); }
             memManager.run();
-            endTime = System.nanoTime();
+            counter++;
+            if ((System.nanoTime() - startTime)*1e-9 > duration){
+                fps = (counter / ((System.nanoTime() - startTime)*1e-9 ));
+                counter = 0;
+                startTime = System.nanoTime();
+            }
+
         }
 
     }
