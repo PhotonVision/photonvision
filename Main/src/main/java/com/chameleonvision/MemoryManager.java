@@ -25,17 +25,19 @@ public class MemoryManager {
 		System.runFinalization();
 	}
 
-	public void run() {
+	public void run() { run(false); }
+
+	public void run(boolean print) {
 		var usedMem = getUsedMemoryMB();
 
 		if (usedMem != lastUsedMb) {
 			lastUsedMb = usedMem;
-			System.out.printf("Memory usage: %dMB\n", usedMem);
+			if (print) System.out.printf("Memory usage: %dMB\n", usedMem);
 		}
 
 		if (usedMem >= collectionThreshold) {
 			collect();
-			System.out.printf("Garbage collected at %dMB\n", usedMem);
+			if (print) System.out.printf("Garbage collected at %dMB\n", usedMem);
 		}
 	}
 }

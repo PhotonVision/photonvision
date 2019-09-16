@@ -1,5 +1,6 @@
 package com.chameleonvision.vision.process;
 
+import com.chameleonvision.vision.CameraValues;
 import org.jetbrains.annotations.NotNull;
 import org.opencv.core.*;
 import org.opencv.imgproc.*;
@@ -18,48 +19,44 @@ public class VisionProcess {
         put("Quintuple", 5);
     }};
 
-    private double CamArea, CenterX, CenterY;
+    private final CameraValues CamVals;
 
-    VisionProcess(double CenterX, double CenterY, double CamArea){
-        this.CenterX = CenterX;
-        this.CenterY = CenterY;
-        this.CamArea = CamArea;
+    VisionProcess(CameraValues camVals){
+        CamVals = camVals;
     }
 
     private Mat Kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
 
-    private Mat hsvMat = new Mat();
-    private Mat hsvThreshMat = new Mat();
-    private Scalar hsvLower, hsvUpper;
+    private Mat hsvImage = new Mat();
 
-    Mat HSVThreshold(@NotNull List<Integer> hue, @NotNull List<Integer> saturation, @NotNull List<Integer> value, Mat image, boolean IsErode, boolean IsDilate){
-        Imgproc.cvtColor(image, hsvMat,Imgproc.COLOR_BGR2HSV,3);
-        hsvLower = new Scalar(hue.get(0), saturation.get(0), value.get(0));
-        hsvUpper = new Scalar(hue.get(1), saturation.get(1), value.get(1));
-        Core.inRange(hsvMat, hsvLower, hsvUpper, hsvThreshMat);
-        if (IsErode){
-            Imgproc.erode(hsvThreshMat, hsvThreshMat, Kernel);
+    void HSVThreshold(Mat srcImage, Mat dst, @NotNull Scalar hsvLower, @NotNull Scalar hsvUpper, boolean shouldErode, boolean shouldDilate) {
+        Imgproc.cvtColor(srcImage, hsvImage, Imgproc.COLOR_RGB2HSV,3);
+        Core.inRange(hsvImage, hsvLower, hsvUpper, dst);
+        if (shouldErode){
+            Imgproc.erode(dst, dst, Kernel);
         }
-        if (IsDilate){
-            Imgproc.dilate(hsvThreshMat, hsvThreshMat, Kernel);
+        if (shouldDilate){
+            Imgproc.dilate(dst, dst, Kernel);
         }
-        return hsvThreshMat;
+        hsvImage.release();
     }
 
     private List<MatOfPoint> FoundContours = new ArrayList<>();
-    public List<MatOfPoint> FindContours(Mat BinaryImage){
+    private Mat binaryMat = new Mat();
+    List<MatOfPoint> FindContours(Mat src) {
+        src.copyTo(binaryMat);
         FoundContours.clear();
-        Imgproc.findContours(BinaryImage, FoundContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
-        BinaryImage.release();
+        Imgproc.findContours(binaryMat, FoundContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
+        binaryMat.release();
         return FoundContours;
     }
 
     private List<MatOfPoint> FilteredContours = new ArrayList<MatOfPoint>();
-    public List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent, String SortMode, String TargetIntersection, String TargetGrouping){
+    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent, String SortMode, String TargetIntersection, String TargetGrouping){
         for (MatOfPoint Contour : InputContours){
             try{
                 var contourArea = Imgproc.contourArea(Contour);
-                double targetArea = (contourArea / CamArea) * 100;
+                double targetArea = (contourArea / CamVals.ImageArea) * 100;
                 if (targetArea >= area.get(0) || targetArea <= area.get(1)){
                     continue;
                 }
@@ -74,15 +71,13 @@ public class VisionProcess {
                 }
                 FilteredContours.add(Contour);
             }
-            catch (Exception e) {
-
-            }
+            catch (Exception ignored) { }
         }
         return FilteredContours;
     }
 
     private List<MatOfPoint> FinalCountours = new ArrayList<>();
-    private List<MatOfPoint> GroupTargets(List<MatOfPoint> InputContours, String IntersectionPoint,String TargetGroup) {
+    private List<MatOfPoint> GroupTargets(List<MatOfPoint> InputContours, String IntersectionPoint, String TargetGroup) {
         FinalCountours.clear();
         if (!TargetGroup.equals("Single")){
             for (var i = 0; i < InputContours.size(); i++){
@@ -112,7 +107,7 @@ public class VisionProcess {
     private boolean IsIntersecting(MatOfPoint ContourOne, MatOfPoint ContourTwo, String IntersectionPoint) {
         Imgproc.fitLine(ContourOne, intersectMatA, Imgproc.CV_DIST_L2,0,0.01,0.01);
         Imgproc.fitLine(ContourTwo, intersectMatB, Imgproc.CV_DIST_L2,0,0.01,0.01);
-//        Rect2d =
+
         return true;
     }
 }
