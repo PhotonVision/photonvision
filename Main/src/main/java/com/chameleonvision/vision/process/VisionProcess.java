@@ -9,42 +9,53 @@ import java.util.HashMap;
 import java.util.List;
 
 public class VisionProcess {
-    private HashMap<String, Integer>TargetGrouping= new HashMap<String, Integer>(){{
-        put("Single",1);
-        put("Dual",2);
-        put("Triple",3);
-        put("Quadruple",4);
-        put("Quintuple",5);
+
+    private HashMap<String, Integer>TargetGrouping= new HashMap<>() {{
+        put("Single", 1);
+        put("Dual", 2);
+        put("Triple", 3);
+        put("Quadruple", 4);
+        put("Quintuple", 5);
     }};
-    private double CamArea,CenterX, CenterY;
+
+    private double CamArea, CenterX, CenterY;
+
     VisionProcess(double CenterX, double CenterY, double CamArea){
         this.CenterX = CenterX;
         this.CenterY = CenterY;
         this.CamArea = CamArea;
     }
+
     private Mat Kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
 
-    public Mat HSVThreshold(@NotNull List<Integer> hue, @NotNull List<Integer> saturation , @NotNull List<Integer> value, Mat image, boolean IsErode, boolean IsDilate){
-        Mat hsv = new Mat();
-        Imgproc.cvtColor(image,hsv,Imgproc.COLOR_BGR2HSV,3);
-        new Scalar(hue.get(0),saturation.get(0),value.get(0));
-        Mat threshold = new Mat();
-        Core.inRange(hsv,new Scalar(hue.get(0),saturation.get(0),value.get(0)),new Scalar(hue.get(1),saturation.get(1),value.get(1)),threshold);
+    private Mat hsvMat = new Mat();
+    private Mat hsvThreshMat = new Mat();
+    private Scalar hsvLower, hsvUpper;
+
+    Mat HSVThreshold(@NotNull List<Integer> hue, @NotNull List<Integer> saturation, @NotNull List<Integer> value, Mat image, boolean IsErode, boolean IsDilate){
+        Imgproc.cvtColor(image, hsvMat,Imgproc.COLOR_BGR2HSV,3);
+        hsvLower = new Scalar(hue.get(0), saturation.get(0), value.get(0));
+        hsvUpper = new Scalar(hue.get(1), saturation.get(1), value.get(1));
+        Core.inRange(hsvMat, hsvLower, hsvUpper, hsvThreshMat);
         if (IsErode){
-            Imgproc.erode(threshold,threshold, Kernel);
+            Imgproc.erode(hsvThreshMat, hsvThreshMat, Kernel);
         }
         if (IsDilate){
-            Imgproc.dilate(threshold,threshold, Kernel);
+            Imgproc.dilate(hsvThreshMat, hsvThreshMat, Kernel);
         }
-        return threshold;
+        return hsvThreshMat;
     }
+
+    private List<MatOfPoint> FoundContours = new ArrayList<>();
     public List<MatOfPoint> FindContours(Mat BinaryImage){
-        List<MatOfPoint> Contours = new ArrayList<>();
-        Imgproc.findContours(BinaryImage,Contours,new Mat(),Imgproc.RETR_EXTERNAL,Imgproc.CHAIN_APPROX_TC89_L1);
-        return Contours;
+        FoundContours.clear();
+        Imgproc.findContours(BinaryImage, FoundContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
+        BinaryImage.release();
+        return FoundContours;
     }
-    public List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent, String SortMode,String TargetIntersection , String TargetGrouping){
-        List<MatOfPoint> FilteredContours = new ArrayList<MatOfPoint>();
+
+    private List<MatOfPoint> FilteredContours = new ArrayList<MatOfPoint>();
+    public List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent, String SortMode, String TargetIntersection, String TargetGrouping){
         for (MatOfPoint Contour : InputContours){
             try{
                 var contourArea = Imgproc.contourArea(Contour);
@@ -62,24 +73,29 @@ public class VisionProcess {
                     continue;
                 }
                 FilteredContours.add(Contour);
-            } catch (Exception e){
-                continue;
+            }
+            catch (Exception e) {
+
             }
         }
         return FilteredContours;
     }
-    private List<MatOfPoint> GroupTargets(List<MatOfPoint> InputContours, String IntersectionPoint,String TargetGroup){
+
+    private List<MatOfPoint> FinalCountours = new ArrayList<>();
+    private List<MatOfPoint> GroupTargets(List<MatOfPoint> InputContours, String IntersectionPoint,String TargetGroup) {
+        FinalCountours.clear();
         if (!TargetGroup.equals("Single")){
-            List<MatOfPoint> FinalCountours = new ArrayList<MatOfPoint>();
             for (var i = 0; i < InputContours.size(); i++){
                 var FinalContour = InputContours.get(i);
                 for (var c = 0; c < (TargetGrouping.get(TargetGroup)-1);c++){
                     try{
                         MatOfPoint firstContour = InputContours.get(i + c);
-                        MatOfPoint secoundContour = InputContours.get(i+c+1);
-                        if (IsIntersecting(firstContour,secoundContour, IntersectionPoint)){
+                        MatOfPoint secondContour = InputContours.get(i+c+1);
+                        if (IsIntersecting(firstContour, secondContour, IntersectionPoint)){
                             System.out.println("");
                         }
+                        firstContour.release();
+                        secondContour.release();
                     } catch (IndexOutOfBoundsException e){
                         FinalContour = new MatOfPoint();
                         break;
@@ -90,12 +106,13 @@ public class VisionProcess {
         }
         return InputContours;
     }
-    private boolean IsIntersecting(MatOfPoint ContourOne, MatOfPoint ContourTwo, String IntersectionPoint){
-        Mat LineA = new Mat();
-        Imgproc.fitLine(ContourOne,LineA,Imgproc.CV_DIST_L2,0,0.01,0.01);
-        Mat LineB = new Mat();
-        Imgproc.fitLine(ContourTwo,LineB,Imgproc.CV_DIST_L2,0,0.01,0.01);
+
+    private Mat intersectMatA = new Mat();
+    private Mat intersectMatB = new Mat();
+    private boolean IsIntersecting(MatOfPoint ContourOne, MatOfPoint ContourTwo, String IntersectionPoint) {
+        Imgproc.fitLine(ContourOne, intersectMatA, Imgproc.CV_DIST_L2,0,0.01,0.01);
+        Imgproc.fitLine(ContourTwo, intersectMatB, Imgproc.CV_DIST_L2,0,0.01,0.01);
+//        Rect2d =
         return true;
     }
-
 }

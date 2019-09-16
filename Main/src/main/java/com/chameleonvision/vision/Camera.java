@@ -8,5 +8,4 @@ public class Camera {
     public HashMap<String, Pipeline> pipelines;
     public int resolution = 0;
     public CamVideoMode camVideoMode;
-
 }
