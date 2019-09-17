@@ -38,42 +38,67 @@ public class Server {
                 broadcastMessage(ctx, ctx.message());
                 JSONObject jsonObject = new JSONObject(ctx.message());
                 String key = null;
+                var jsonKeySetArray = jsonObject.keySet().toArray();
                 try {
-                    key = jsonObject.keySet().toArray()[0].toString();
+                    key = jsonKeySetArray[0].toString();
                 } catch (Exception ex) {
-                    ex.printStackTrace();
+                    System.err.println("WebSocket JSON data was empty!");
                 }
                 if (key == null) return;
                 Object value = jsonObject.get(key);
+//                System.out.printf("Got websocket json data: [%s, %s]\n", key, value);
                 if (!setField(SettingsManager.getInstance().GetCurrentPipeline(), key, value)) {
                     //If field not in pipeline
                     switch (key) {
                         case "change_general_settings_values":
                             JSONObject newSettings = (JSONObject) value;
-                            setFields(SettingsManager.getInstance().GeneralSettings, newSettings);
+                            setFields(SettingsManager.GeneralSettings, newSettings);
                             break;
                         case "curr_camera":
-                            SettingsManager.getInstance().SetCurrentCamera((String) value);
+                            String newCamera = (String) value;
+                            System.out.printf("Changing camera to %s\n", newCamera);
+                            SettingsManager.getInstance().SetCurrentCamera(newCamera);
                             //broadcastMessage((Map<String, Object>) new HashMap<String, Object>(){}.put("port",SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera)));
-//                            broadcastMessage(ctx, SettingsManager.getInstance().GetCurrentCamera());//TODO CHECK JSON FOR CAMERA CHANGE
+                            //broadcastMessage(ctx, SettingsManager.getInstance().GetCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
                             break;
                         case "curr_pipeline":
-                            SettingsManager.getInstance().SetCurrentPipeline((String) value);
-                            SettingsManager.CamerasCurrentPipeline.put(SettingsManager.GeneralSettings.curr_camera, (String) value);
+                            String newPipeline = (String) value;
+                            System.out.printf("Changing pipeline to %s\n", newPipeline);
+                            SettingsManager.getInstance().SetCurrentPipeline(newPipeline);
+                            SettingsManager.CamerasCurrentPipeline.put(SettingsManager.GeneralSettings.curr_camera, newPipeline);
                             break;
                         case "resolution":
-                            System.out.println("change res");
-                            SettingsManager.getInstance().GetCurrentCamera().resolution = (int) value;
-                            SettingsManager.getInstance().SetCameraSettings(SettingsManager.GeneralSettings.curr_camera, "resolution", value);
+                            int newResolution = (int) value;
+                            System.out.printf("Changing resolution mode to %d\n", newResolution);
+                            SettingsManager.getInstance().GetCurrentCamera().resolution = newResolution;
+                            SettingsManager.getInstance().SetCameraSettings(SettingsManager.GeneralSettings.curr_camera, "resolution", newResolution);
                             SettingsManager.getInstance().SaveSettings();
                             break;
                         case "fov":
-                            System.out.println("change fov");
-                            SettingsManager.getInstance().GetCurrentCamera().FOV = (double) value;
+                            double newFov = (double) value;
+                            System.out.printf("Changing FOV to %d\n", newFov);
+                            SettingsManager.getInstance().GetCurrentCamera().FOV = newFov;
                             SettingsManager.getInstance().SaveSettings();
                             break;
                         default:
-                            System.out.println("Unexpected value");
+                            System.out.printf("Unexpected value from websocket: [%s, %s]\n", key, value);
+                            break;
+                    }
+                } else { //
+                    switch (key) {
+                        case "exposure":
+                            int newExposure = (int) value;
+                            System.out.printf("Changing exposure to %d\n", newExposure);
+                            SettingsManager.getInstance().GetCurrentPipeline().exposure = newExposure;
+                            SettingsManager.getInstance().GetCurrentUsbCamera().setExposureManual(newExposure);
+                            SettingsManager.getInstance().SaveSettings();
+                            break;
+                        case "brightness":
+                            int newBrightness = (int) value;
+                            System.out.printf("Changing brightness to %d\n", newBrightness);
+                            SettingsManager.getInstance().GetCurrentPipeline().brightness = newBrightness;
+                            SettingsManager.getInstance().GetCurrentUsbCamera().setBrightness(newBrightness);
+                            SettingsManager.getInstance().SaveSettings();
                             break;
                     }
                 }
@@ -124,7 +149,7 @@ public class Server {
 
     private static void broadcastMessage(WsContext sendingUser, Object obj) {//TODO chekc if session id is a good way to differentiate users
         for (var user : users) {
-            if (sendingUser!=null&&user.getSessionId()==sendingUser.getSessionId()) {
+            if (sendingUser!=null&& user.getSessionId().equals(sendingUser.getSessionId())) {
                 continue;
             }
             if (obj.getClass() == String.class)

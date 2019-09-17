@@ -190,6 +190,13 @@ public class SettingsManager {
         throw new NoCameraException();
     }
 
+    public UsbCamera GetCurrentUsbCamera() throws NoCameraException {
+        if (!GeneralSettings.curr_camera.equals("")) {
+            return UsbCameras.get(GeneralSettings.curr_camera);
+        }
+        throw new NoCameraException();
+    }
+
     public List<String> GetResolutionList() throws NoCameraException {
         if (!GeneralSettings.curr_camera.equals("")) {
             List<String> list = new ArrayList<String>();
@@ -206,8 +213,6 @@ public class SettingsManager {
         if (Cameras.containsKey(CamName)) {
             GeneralSettings.curr_camera = CamName;
             GeneralSettings.curr_pipeline = GetCurrentCamera().pipelines.keySet().stream().findFirst().toString();
-
-
         }
     }
 

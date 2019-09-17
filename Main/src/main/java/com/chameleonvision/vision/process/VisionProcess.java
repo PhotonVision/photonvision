@@ -1,13 +1,13 @@
 package com.chameleonvision.vision.process;
 
 import com.chameleonvision.vision.CameraValues;
+import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 import org.opencv.core.*;
 import org.opencv.imgproc.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class VisionProcess {
 
@@ -28,7 +28,6 @@ public class VisionProcess {
     private Mat Kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
 
     private Mat hsvImage = new Mat();
-
     void HSVThreshold(Mat srcImage, Mat dst, @NotNull Scalar hsvLower, @NotNull Scalar hsvUpper, boolean shouldErode, boolean shouldDilate) {
         Imgproc.cvtColor(srcImage, hsvImage, Imgproc.COLOR_RGB2HSV,3);
         Core.inRange(hsvImage, hsvLower, hsvUpper, dst);
@@ -61,7 +60,7 @@ public class VisionProcess {
                     continue;
                 }
                 var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
-                var targetFullness = (contourArea/rect.size.area())*100;
+                var targetFullness = (contourArea / rect.size.area()) * 100;
                 if (targetFullness <= extent.get(0) || targetArea >= extent.get(1)){
                     continue;
                 }
@@ -76,16 +75,81 @@ public class VisionProcess {
         return FilteredContours;
     }
 
+    private static Comparator<RotatedRect> SortByLargestComparator = (rect1, rect2) -> Double.compare(rect2.size.area(), rect1.size.area());
+    private static Comparator<RotatedRect> SortBySmallestComparator = SortByLargestComparator.reversed();
+
+    private static Comparator<RotatedRect> SortByHighestComparator = (rect1, rect2) -> Double.compare(rect2.center.y, rect1.center.y);
+    private static Comparator<RotatedRect> SortByLowestComparator = SortByHighestComparator.reversed();
+
+    private static Comparator<RotatedRect> SortByLeftmostComparator = Comparator.comparingDouble(rect -> rect.center.x);
+    private static Comparator<RotatedRect> SortByRightmostComparator = SortByLeftmostComparator.reversed();
+
+    private double calcDistance(RotatedRect rect) {
+        return FastMath.sqrt(FastMath.pow(CamVals.CenterX - rect.center.x, 2) + FastMath.pow(CamVals.CenterY - rect.center.y, 2));
+    }
+
+    private Comparator<RotatedRect> SortByCentermostComparator = Comparator.comparingDouble(this::calcDistance);
+
+    RotatedRect SortTargetsToOne(List<RotatedRect> inputRects, String sortMode) {
+        switch (sortMode) {
+            case "Largest":
+                return Collections.max(inputRects, Comparator.comparing(rect -> rect.size.area()));
+            case "Smallest":
+                return Collections.min(inputRects, Comparator.comparing(rect -> rect.size.area()));
+            case "Highest":
+                return Collections.min(inputRects, Comparator.comparing(rect -> rect.center.y));
+            case "Lowest":
+                return Collections.max(inputRects, Comparator.comparing(rect -> rect.center.y));
+            case "Leftmost":
+                return Collections.min(inputRects, Comparator.comparing(rect -> rect.center.x));
+            case "Rightmost":
+                return Collections.max(inputRects, Comparator.comparing(rect -> rect.center.x));
+            case "Centermost":
+                return inputRects.stream().sorted(SortByCentermostComparator).collect(Collectors.toList()).get(0);
+            default:
+                return inputRects.get(0); // default to whatever the first contour is, but this should never happen
+        }
+    }
+
+
+    void SortTargets(List<RotatedRect> inputRects, String sortMode) {
+        switch (sortMode) {
+            case "Largest":
+                inputRects.sort(SortByLargestComparator);
+                break;
+            case "Smallest":
+                inputRects.sort(SortBySmallestComparator);
+                break;
+            case "Highest":
+                inputRects.sort(SortByHighestComparator);
+                break;
+            case "Lowest":
+                inputRects.sort(SortByLowestComparator);
+                break;
+            case "Leftmost":
+                inputRects.sort(SortByLeftmostComparator);
+                break;
+            case "Rightmost":
+                inputRects.sort(SortByRightmostComparator);
+                break;
+            case "Centermost":
+                inputRects.sort(SortByCentermostComparator);
+                break;
+            default:
+                break;
+        }
+    }
+
     private List<RotatedRect> FinalCountours = new ArrayList<>();
-    public List<RotatedRect> GroupTargets(List<MatOfPoint> InputContours, String IntersectionPoint, String TargetGroup) {
+    List<RotatedRect> GroupTargets(List<MatOfPoint> InputContours, String IntersectionPoint, String TargetGroup) {
         FinalCountours.clear();
         if (!TargetGroup.equals("Single")){
             for (var i = 0; i < InputContours.size(); i++){
                 List<Point> FinalContourList = new ArrayList<>(InputContours.get(i).toList());
-                for (var c = 0; c < (TargetGrouping.get(TargetGroup)-1);c++){
+                for (var c = 0; c < (TargetGrouping.get(TargetGroup) - 1); c++){
                     try{
                         MatOfPoint firstContour = InputContours.get(i + c);
-                        MatOfPoint secondContour = InputContours.get(i+c+1);
+                        MatOfPoint secondContour = InputContours.get(i + c + 1);
                         if (IsIntersecting(firstContour, secondContour, IntersectionPoint)){
                             FinalContourList.addAll(secondContour.toList());
                         }
@@ -93,7 +157,7 @@ public class VisionProcess {
                         secondContour.release();
                         MatOfPoint2f contour = new MatOfPoint2f();
                         contour.fromList(FinalContourList);
-                        if (contour.cols() !=0 && contour.rows() != 0){
+                        if (contour.cols() != 0 && contour.rows() != 0){
                             RotatedRect rect = Imgproc.minAreaRect(contour);
                             FinalCountours.add(rect);
                         }
@@ -105,10 +169,10 @@ public class VisionProcess {
             }
 
         } else {
-            for (var i = 0; i < InputContours.size(); i++){
+            for (MatOfPoint inputContour : InputContours) {
                 MatOfPoint2f contour = new MatOfPoint2f();
-                contour.fromArray(InputContours.get(i).toArray());
-                if (contour.cols() !=0 && contour.rows() != 0) {
+                contour.fromArray(inputContour.toArray());
+                if (contour.cols() != 0 && contour.rows() != 0) {
                     RotatedRect rect = Imgproc.minAreaRect(contour);
                     FinalCountours.add(rect);
                 }
