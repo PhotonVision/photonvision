@@ -91,8 +91,9 @@ public class SettingsManager {
     private void InitiateUsbCameras() {
         for (Map.Entry<String, UsbCameraInfo> entry : USBCamerasInfo.entrySet()) {
             var device = entry.getValue();
-            var camera = new UsbCamera(device.name, device.dev);
-            UsbCameras.put(device.name, camera);
+            var name = entry.getKey();
+            UsbCamera camera = new UsbCamera(name, device.dev);
+            UsbCameras.put(name, camera);
         }
     }
 
