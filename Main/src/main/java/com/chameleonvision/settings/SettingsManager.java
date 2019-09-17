@@ -224,27 +224,6 @@ public class SettingsManager {
     }
 
 
-    public void SetCameraSettings(String cameraName, String field, Object value) {
-        switch (field) {
-            case "brightness":
-                UsbCameras.get(cameraName).setBrightness((int) value);
-                break;
-            case "exposure":
-                UsbCameras.get(cameraName).setExposureManual((int) value);
-                break;
-            case "resolution":
-                VideoMode videoMode = UsbCameras.get(cameraName).enumerateVideoModes()[(int) value];
-                Camera cam = Cameras.get(cameraName);
-                cam.camVideoMode.height = videoMode.height;
-                cam.camVideoMode.width = videoMode.width;
-                cam.camVideoMode.fps = videoMode.fps;
-                //cam.camVideoMode.pixel_format=videoMode.pixelFormat.toString().split(".")[1];//legacy from python
-                cam.camVideoMode.pixel_format = videoMode.pixelFormat.toString();
-                break;
-        }
-
-    }
-
     //Savers
     public void SaveSettings() {
         SaveCameras();

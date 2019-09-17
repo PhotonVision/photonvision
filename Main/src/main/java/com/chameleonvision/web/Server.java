@@ -71,7 +71,6 @@ public class Server {
                             int newResolution = (int) value;
                             System.out.printf("Changing resolution mode to %d\n", newResolution);
                             SettingsManager.getInstance().GetCurrentCamera().resolution = newResolution;
-                            SettingsManager.getInstance().SetCameraSettings(SettingsManager.GeneralSettings.curr_camera, "resolution", newResolution);
                             SettingsManager.getInstance().SaveSettings();
                             break;
                         case "fov":
