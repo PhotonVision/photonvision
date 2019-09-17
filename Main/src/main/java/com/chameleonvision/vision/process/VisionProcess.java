@@ -105,7 +105,8 @@ public class VisionProcess {
             case "Rightmost":
                 return Collections.max(inputRects, Comparator.comparing(rect -> rect.center.x));
             case "Centermost":
-                return inputRects.stream().sorted(SortByCentermostComparator).collect(Collectors.toList()).get(0);
+                return Collections.min(inputRects, SortByCentermostComparator);
+//                return inputRects.stream().sorted(SortByCentermostComparator).collect(Collectors.toList()).get(0);
             default:
                 return inputRects.get(0); // default to whatever the first contour is, but this should never happen
         }
