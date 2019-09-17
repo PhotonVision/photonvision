@@ -35,4 +35,10 @@ public class CameraValues {
         HorizontalFocalLength = ImageWidth / (2 * FastMath.tan(HorizontalView /2));
         VerticalFocalLength = ImageWidth / (2 * FastMath.tan(VerticalView /2));
     }
+    public double CalculatePitch(double PixelY, double centerY){
+        return (FastMath.toDegrees((FastMath.atan(PixelY - centerY) / VerticalFocalLength)) * -1);
+    }
+    public double CalculateYaw(double PixelX, double centerX){
+        return FastMath.toDegrees(FastMath.atan(PixelX - centerX) / HorizontalFocalLength);
+    }
 }

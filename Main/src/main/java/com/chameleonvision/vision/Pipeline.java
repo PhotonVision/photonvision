@@ -20,4 +20,5 @@ public class Pipeline {
     public String target_intersection = "Up";
     public double M = 1;
     public double B = 0;
+    public boolean is_calibrated = false;
 }

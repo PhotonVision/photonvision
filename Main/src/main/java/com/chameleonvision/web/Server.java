@@ -147,7 +147,7 @@ public class Server {
         return successful;
     }
 
-    private static void broadcastMessage(WsContext sendingUser, Object obj) {//TODO chekc if session id is a good way to differentiate users
+    public static void broadcastMessage(WsContext sendingUser, Object obj) {//TODO chekc if session id is a good way to differentiate users
         for (var user : users) {
             if (sendingUser!=null&& user.getSessionId().equals(sendingUser.getSessionId())) {
                 continue;

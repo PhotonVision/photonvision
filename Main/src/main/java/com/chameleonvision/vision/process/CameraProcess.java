@@ -4,9 +4,11 @@ import com.chameleonvision.MemoryManager;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.CameraValues;
 import com.chameleonvision.vision.Pipeline;
+import com.chameleonvision.web.Server;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
+import org.apache.commons.math3.stat.descriptive.moment.Variance;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
@@ -17,7 +19,7 @@ public class CameraProcess implements Runnable {
     private String CameraName;
 
     private CameraServer cs = CameraServer.getInstance();
-    private NetworkTableEntry ntPipelineEntry, ntDriverModeEntry,ntYawEntry,ntPitchEntry,ntDistanceEntry,ntTimeStampEntry;
+    private NetworkTableEntry ntPipelineEntry, ntDriverModeEntry,ntYawEntry,ntPitchEntry,ntDistanceEntry,ntTimeStampEntry,ntValidEntry;
 
     private MemoryManager memManager = new MemoryManager(125);
 
@@ -58,6 +60,7 @@ public class CameraProcess implements Runnable {
         ntYawEntry = ntTable.getEntry("Yaw");
         ntDistanceEntry = ntTable.getEntry("Distance");
         ntTimeStampEntry = ntTable.getEntry("TimeStamp");
+        ntValidEntry = ntTable.getEntry("Valid");
         ntDriverModeEntry.addListener(this::DriverModeListener, EntryListenerFlags.kUpdate);
         ntPipelineEntry.addListener(this::PipelineListener, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
@@ -89,6 +92,9 @@ public class CameraProcess implements Runnable {
         long startTime;
         double processTimeMs;
         double fps;
+        //camera results
+        double CalibratedX,CalibratedY , Pitch, Yaw;
+        boolean isValid;
 
         while (!Thread.interrupted()) {
             FoundContours.clear();
@@ -122,9 +128,18 @@ public class CameraProcess implements Runnable {
                     GroupedContours = visionProcess.GroupTargets(FilteredContours, currentPipeline.target_intersection, currentPipeline.target_group);
                     if (GroupedContours.size() > 0) {
                         var finalRect = visionProcess.SortTargetsToOne(GroupedContours, currentPipeline.sort_mode);
-                        // TODO Add calibration calc
-                        //TODO Calc Pitch Yaw And Distance Send it them using networktables
-                        // TODO Send pitch yaw distance and Raw Point using websockets to client for calic calc
+                        if (!currentPipeline.is_calibrated){
+                            CalibratedX = camVals.CenterX;
+                            CalibratedY = camVals.CenterY;
+                        } else{
+                                CalibratedX = (finalRect.center.y - currentPipeline.B) / currentPipeline.M;
+                                CalibratedY = finalRect.center.x * currentPipeline.M + currentPipeline.B;
+                                Pitch = camVals.CalculatePitch(finalRect.center.y, CalibratedY);
+                                Yaw = camVals.CalculateYaw(finalRect.center.x, CalibratedX);
+                        }
+                        isValid = true;
+                        // Send calc using networktables
+                        // TODO Send pitch yaw distance and Raw Point using websockets to client for calib calc
                         if (finalRect != null) {
                             List<MatOfPoint> a = new ArrayList<>();
                             Point[] vertices = new Point[4];
@@ -133,6 +148,8 @@ public class CameraProcess implements Runnable {
                             Imgproc.drawContours(outputMat, a, 0, contourColor, 3);
                         }
 
+                    } else{
+                        isValid = false;
                     }
                 }
             }
