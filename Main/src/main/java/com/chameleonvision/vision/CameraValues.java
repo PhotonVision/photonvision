@@ -19,6 +19,10 @@ public class CameraValues {
    public final double HorizontalFocalLength;
    public final double VerticalFocalLength;
 
+   public CameraValues(Camera camera) {
+       this(camera.camVideoMode.width, camera.camVideoMode.height, camera.FOV);
+   }
+
     public CameraValues(int imageWidth, int imageHeight, double fov) {
         ImageWidth = imageWidth;
         ImageHeight = imageHeight;
