@@ -4,6 +4,7 @@ import com.chameleonvision.MemoryManager;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.CameraValues;
 import com.chameleonvision.vision.Pipeline;
+import com.chameleonvision.web.Server;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.first.networktables.*;
@@ -12,6 +13,7 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class CameraProcess implements Runnable {
@@ -73,7 +75,7 @@ public class CameraProcess implements Runnable {
 
     public CameraProcess(String cameraName) {
         CameraName = cameraName;
-
+        SettingsManager.CamerasCurrentPipeline.put(CameraName,SettingsManager.Cameras.get(CameraName).pipelines.keySet().stream().findFirst().toString());
         // NetworkTables
         NetworkTable ntTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraName);
         ntPipelineEntry = ntTable.getEntry("Pipeline");
@@ -131,6 +133,7 @@ public class CameraProcess implements Runnable {
                 GroupedContours = visionProcess.GroupTargets(FilteredContours, currentPipeline.target_intersection, currentPipeline.target_group);
                 if (GroupedContours.size() > 0) {
                     var finalRect = visionProcess.SortTargetsToOne(GroupedContours, currentPipeline.sort_mode);
+                    pipelineResult.RawPoint = finalRect;
                     pipelineResult.IsValid = true;
                     if (!currentPipeline.is_calibrated) {
                         pipelineResult.CalibratedX = camVals.CenterX;
@@ -141,7 +144,6 @@ public class CameraProcess implements Runnable {
                         pipelineResult.Pitch = camVals.CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
                         pipelineResult.Yaw = camVals.CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
                     }
-                    // Send calc using networktables
                     // TODO Send pitch yaw distance and Raw Point using websockets to client for calib calc
                     drawContour(outputImage, finalRect);
                 }
@@ -154,21 +156,20 @@ public class CameraProcess implements Runnable {
     @Override
     public void run() {
         // processing time tracking
-        long startTime;
+        long startTime, TimeStamp;
         double processTimeMs;
-        double fps;
+        double fps = 0;
 
         while (!Thread.interrupted()) {
             FoundContours.clear();
             FilteredContours.clear();
             GroupedContours.clear();
-            SettingsManager.CamerasCurrentPipeline.put(CameraName,SettingsManager.Cameras.get(CameraName).pipelines.keySet().stream().findFirst().toString());
             currentPipeline = SettingsManager.Cameras.get(CameraName).pipelines.get(SettingsManager.CamerasCurrentPipeline.get(CameraName));
             
 //            System.out.println(SettingsManager.CamerasCurrentPipeline.get(CameraName));
             // start fps counter right before grabbing input frame
             startTime = System.nanoTime();
-            cvSink.grabFrame(cameraInputMat);
+            TimeStamp = cvSink.grabFrame(cameraInputMat);
             if (cameraInputMat.cols() == 0 && cameraInputMat.rows() == 0) {
                 continue;
             }
@@ -176,6 +177,25 @@ public class CameraProcess implements Runnable {
             // get vision data
             var pipelineResult = runVisionProcess(cameraInputMat, streamOutputMat);
 
+            ntValidEntry.setBoolean(pipelineResult.IsValid);
+            if (pipelineResult.IsValid){
+                ntYawEntry.setNumber(pipelineResult.Yaw);
+                ntPitchEntry.setNumber(pipelineResult.Pitch);
+            }
+            ntTimeStampEntry.setNumber(TimeStamp);
+            if (CameraName.equals(SettingsManager.GeneralSettings.curr_camera)){
+                HashMap<String,Object> WebSend = new HashMap<>();
+                HashMap<String,Object> point = new HashMap<>();
+                List<Double> center = new ArrayList<Double>();
+                center.add(pipelineResult.RawPoint.center.x);
+                center.add(pipelineResult.RawPoint.center.y);
+                point.put("pitch", pipelineResult.Pitch);
+                point.put("yaw", pipelineResult.Yaw);
+                point.put("fps", fps);
+                WebSend.put("point", point);
+                WebSend.put("raw_point",center);
+                Server.broadcastMessage(WebSend);
+            }
             cvPublish.putFrame(streamOutputMat);
             // calculate FPS after publishing output frame
             processTimeMs = (System.nanoTime() - startTime) * 1e-6;

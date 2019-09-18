@@ -150,7 +150,7 @@ public class Server {
         }
     }
 
-    private static void broadcastMessage(Object obj) {
+    public static void broadcastMessage(Object obj) {
         broadcastMessage(obj, null);//Broadcasts the message to ever user
     }
 
