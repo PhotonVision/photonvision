@@ -23,7 +23,7 @@ public class SettingsManager {
     private static SettingsManager instance;
 
     private SettingsManager() {
-        InitiateGeneralSettings();
+        InitiateSavedSettings();
         InitiateCamerasInfo();
         InitiateUsbCameras();
         InitiateCameras();
@@ -57,9 +57,11 @@ public class SettingsManager {
     private Path CamsPath = Paths.get(SettingsPath.toString(), "Cams");
 
 
-    private void InitiateGeneralSettings() {
+    private void InitiateSavedSettings() {
         CheckPath(SettingsPath);
         try {
+            CamerasCurrentPipeline = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(),"SelectedPipelines.json").toString()),HashMap.class);
+//            CamerasCurrentPipeline = new JSONArray(Paths.get(SettingsPath.toString(),"SelectedPipelines.json")).toList();
             GeneralSettings = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(), "Settings.json").toString()), com.chameleonvision.vision.GeneralSettings.class);
         } catch (FileNotFoundException e) {
             GeneralSettings = new GeneralSettings();
@@ -152,16 +154,13 @@ public class SettingsManager {
         cam.FOV = 60.8;
         Cameras.put(CameraName, cam);
 
-        CreateNewPipeline(null, CameraName);
-        CreateNewPipeline(null, CameraName);//Created 2 pipeline for testing TODO add a create pipeline button
+        CreateNewPipeline(null,cam);
+        CreateNewPipeline(null,cam);//Created 2 pipeline for testing TODO add a create pipeline button
+        CamerasCurrentPipeline.put(CameraName,"pipeline0");//sets pipeline0 as the default pipeline
 
     }
 
-    private void CreateNewPipeline(String PipeName, String CamName) {
-        if (CamName == null) {
-            CamName = GeneralSettings.curr_camera;
-        }
-        var cam = Cameras.get(CamName);
+    public void CreateNewPipeline(String PipeName,Camera cam) {
         if (PipeName == null) {
             var suffix = 0;
             PipeName = "pipeline" + suffix;
@@ -248,6 +247,7 @@ public class SettingsManager {
     public void SaveSettings() {
         SaveCameras();
         SaveGeneralSettings();
+        SaveSelectedPipelines();
     }
 
     private void SaveCameras() {
@@ -266,7 +266,6 @@ public class SettingsManager {
 
     private void SaveGeneralSettings() {
         try {
-            Gson gson = new Gson();
             FileWriter writer = new FileWriter(Paths.get(SettingsPath.toString(), "Settings.json").toString());
             new Gson().toJson(GeneralSettings, writer);
             writer.flush();
@@ -276,5 +275,15 @@ public class SettingsManager {
         }
     }
 
+    private void SaveSelectedPipelines() {
+        try {
+            FileWriter writer = new FileWriter(Paths.get(SettingsPath.toString(), "SelectedPipelines.json").toString());
+            new Gson().toJson(CamerasCurrentPipeline, writer);
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 }

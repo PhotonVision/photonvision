@@ -14,43 +14,45 @@ import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class CameraProcess implements Runnable {
     private String CameraName;
 
     private CameraServer cs = CameraServer.getInstance();
-    private NetworkTableEntry ntPipelineEntry, ntDriverModeEntry,ntYawEntry,ntPitchEntry,ntDistanceEntry,ntTimeStampEntry,ntValidEntry;
+    private NetworkTableEntry ntPipelineEntry, ntDriverModeEntry, ntYawEntry, ntPitchEntry, ntDistanceEntry, ntTimeStampEntry, ntValidEntry;
 
     private MemoryManager memManager = new MemoryManager(125);
 
     private int imgWidth, imgHeight;
-    private void ChangeCameraValues(int Exposure, int Brightness){
+
+    private void ChangeCameraValues(int Exposure, int Brightness) {
         SettingsManager.getInstance().UsbCameras.get(CameraName).setBrightness(Brightness);
         SettingsManager.getInstance().UsbCameras.get(CameraName).setExposureManual(Exposure);
     }
-    private void DriverModeListener(EntryNotification entryNotification){
-        if (entryNotification.value.getBoolean()){
-            ChangeCameraValues(25,15);
-        } else{
+
+    private void DriverModeListener(EntryNotification entryNotification) {
+        if (entryNotification.value.getBoolean()) {
+            ChangeCameraValues(25, 15);
+        } else {
             Pipeline pipeline = SettingsManager.Cameras.get(CameraName).pipelines.get(SettingsManager.CamerasCurrentPipeline.get(CameraName));
             ChangeCameraValues(pipeline.exposure, pipeline.brightness);
         }
     }
-    private void PipelineListener(EntryNotification entryNotification){
-        if (SettingsManager.Cameras.get(CameraName).pipelines.containsKey(entryNotification.value.getString())){
-            SettingsManager.CamerasCurrentPipeline.put(CameraName,entryNotification.value.getString());
+
+    private void PipelineListener(EntryNotification entryNotification) {
+        if (SettingsManager.Cameras.get(CameraName).pipelines.containsKey(entryNotification.value.getString())) {
+            SettingsManager.CamerasCurrentPipeline.put(CameraName, entryNotification.value.getString());
             Pipeline pipeline = SettingsManager.Cameras.get(CameraName).pipelines.get(SettingsManager.CamerasCurrentPipeline.get(CameraName));
             ChangeCameraValues(pipeline.exposure, pipeline.brightness);
             //TODO Send Pipeline change using websocket to client
-        } else{
+        } else {
             ntPipelineEntry.setString(SettingsManager.CamerasCurrentPipeline.get(CameraName));
         }
     }
+
     public CameraProcess(String CameraName) {
         this.CameraName = CameraName;
-
-        // add pipeline
-        SettingsManager.CamerasCurrentPipeline.put(CameraName, SettingsManager.Cameras.get(CameraName).pipelines.keySet().toArray()[0].toString());
 
         // NetworkTables
         NetworkTable ntTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + CameraName);
@@ -93,7 +95,7 @@ public class CameraProcess implements Runnable {
         double processTimeMs;
         double fps;
         //camera results
-        double CalibratedX,CalibratedY , Pitch, Yaw;
+        double CalibratedX, CalibratedY, Pitch, Yaw;
         boolean isValid;
 
         while (!Thread.interrupted()) {
@@ -103,6 +105,7 @@ public class CameraProcess implements Runnable {
 
             currentPipeline = SettingsManager.Cameras.get(CameraName).pipelines.get(SettingsManager.CamerasCurrentPipeline.get(CameraName));
 
+//            System.out.println(SettingsManager.CamerasCurrentPipeline.get(CameraName));
             // start fps counter right before grabbing input frame
             startTime = System.nanoTime();
             cv_sink.grabFrame(inputMat);
@@ -128,14 +131,14 @@ public class CameraProcess implements Runnable {
                     GroupedContours = visionProcess.GroupTargets(FilteredContours, currentPipeline.target_intersection, currentPipeline.target_group);
                     if (GroupedContours.size() > 0) {
                         var finalRect = visionProcess.SortTargetsToOne(GroupedContours, currentPipeline.sort_mode);
-                        if (!currentPipeline.is_calibrated){
+                        if (!currentPipeline.is_calibrated) {
                             CalibratedX = camVals.CenterX;
                             CalibratedY = camVals.CenterY;
-                        } else{
-                                CalibratedX = (finalRect.center.y - currentPipeline.B) / currentPipeline.M;
-                                CalibratedY = finalRect.center.x * currentPipeline.M + currentPipeline.B;
-                                Pitch = camVals.CalculatePitch(finalRect.center.y, CalibratedY);
-                                Yaw = camVals.CalculateYaw(finalRect.center.x, CalibratedX);
+                        } else {
+                            CalibratedX = (finalRect.center.y - currentPipeline.B) / currentPipeline.M;
+                            CalibratedY = finalRect.center.x * currentPipeline.M + currentPipeline.B;
+                            Pitch = camVals.CalculatePitch(finalRect.center.y, CalibratedY);
+                            Yaw = camVals.CalculateYaw(finalRect.center.x, CalibratedX);
                         }
                         isValid = true;
                         // Send calc using networktables
@@ -148,7 +151,7 @@ public class CameraProcess implements Runnable {
                             Imgproc.drawContours(outputMat, a, 0, contourColor, 3);
                         }
 
-                    } else{
+                    } else {
                         isValid = false;
                     }
                 }
@@ -158,7 +161,7 @@ public class CameraProcess implements Runnable {
             // calculate FPS after publishing output frame
             processTimeMs = (System.nanoTime() - startTime) * 1e-6;
             fps = 1000 / processTimeMs;
-            System.out.printf("%s Process time: %fms, FPS: %.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n",CameraName ,processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
+//            System.out.printf("%s Process time: %fms, FPS: %.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n",CameraName ,processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
 
             inputMat.release();
             hsvThreshMat.release();

@@ -2,9 +2,7 @@ package com.chameleonvision.web;
 
 import com.chameleonvision.NoCameraException;
 import com.chameleonvision.settings.SettingsManager;
-import com.chameleonvision.vision.GeneralSettings;
-import com.chameleonvision.vision.Pipeline;
-import com.google.gson.JsonObject;
+import edu.wpi.cscore.VideoException;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
 
@@ -34,8 +32,7 @@ public class Server {
                 SettingsManager.getInstance().SaveSettings();
             });
             ws.onMessage(ctx -> {
-//                System.out.println(SettingsManager.getInstance().GetCurrentPipeline().);
-                broadcastMessage(ctx, ctx.message());
+                broadcastMessage(ctx.message(), ctx);
                 JSONObject jsonObject = new JSONObject(ctx.message());
                 String key = null;
                 var jsonKeySetArray = jsonObject.keySet().toArray();
@@ -47,7 +44,7 @@ public class Server {
                 if (key == null) return;
                 Object value = jsonObject.get(key);
 //                System.out.printf("Got websocket json data: [%s, %s]\n", key, value);
-                if (!setField(SettingsManager.getInstance().GetCurrentPipeline(), key, value)) {
+                if (!allFieldsToMap(SettingsManager.getInstance().GetCurrentPipeline()).containsKey(key)) {
                     //If field not in pipeline
                     switch (key) {
                         case "change_general_settings_values":
@@ -59,13 +56,14 @@ public class Server {
                             System.out.printf("Changing camera to %s\n", newCamera);
                             SettingsManager.getInstance().SetCurrentCamera(newCamera);
                             //broadcastMessage((Map<String, Object>) new HashMap<String, Object>(){}.put("port",SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera)));
-                            //broadcastMessage(ctx, SettingsManager.getInstance().GetCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
+                            broadcastMessage(SettingsManager.getInstance().GetCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
                             break;
                         case "curr_pipeline":
                             String newPipeline = (String) value;
                             System.out.printf("Changing pipeline to %s\n", newPipeline);
                             SettingsManager.getInstance().SetCurrentPipeline(newPipeline);
                             SettingsManager.CamerasCurrentPipeline.put(SettingsManager.GeneralSettings.curr_camera, newPipeline);
+                            broadcastMessage(allFieldsToMap(SettingsManager.getInstance().GetCurrentPipeline()));
                             break;
                         case "resolution":
                             int newResolution = (int) value;
@@ -76,7 +74,7 @@ public class Server {
                             break;
                         case "fov":
                             double newFov = (double) value;
-                            System.out.printf("Changing FOV to %d\n", newFov);
+                            System.out.printf("Changing FOV to %f\n", newFov);
                             SettingsManager.getInstance().GetCurrentCamera().FOV = newFov;
                             SettingsManager.getInstance().SaveSettings();
                             break;
@@ -84,21 +82,29 @@ public class Server {
                             System.out.printf("Unexpected value from websocket: [%s, %s]\n", key, value);
                             break;
                     }
-                } else { //
+                } else {
+                    setField(SettingsManager.getInstance().GetCurrentPipeline(), key, value);
+                    //Special cases for exposure and brightness
+                    //TODO maybe add listener for value changes instead of this special case
                     switch (key) {
                         case "exposure":
                             int newExposure = (int) value;
                             System.out.printf("Changing exposure to %d\n", newExposure);
                             SettingsManager.getInstance().GetCurrentPipeline().exposure = newExposure;
-                            SettingsManager.getInstance().GetCurrentUsbCamera().setExposureManual(newExposure);
-                            SettingsManager.getInstance().SaveSettings();
+                            try {
+                                SettingsManager.getInstance().GetCurrentUsbCamera().setExposureManual(newExposure);
+                            }
+                            catch ( VideoException e)
+                            {
+                                System.out.println("Exposure changes is not supported on your webcam/webcam's driver");
+                            }
+                            //TODO check if this crash occurs on linux
                             break;
                         case "brightness":
                             int newBrightness = (int) value;
                             System.out.printf("Changing brightness to %d\n", newBrightness);
                             SettingsManager.getInstance().GetCurrentPipeline().brightness = newBrightness;
                             SettingsManager.getInstance().GetCurrentUsbCamera().setBrightness(newBrightness);
-                            SettingsManager.getInstance().SaveSettings();
                             break;
                     }
                 }
@@ -107,14 +113,11 @@ public class Server {
         app.start(port);
     }
 
-
-    public static boolean setField(Object obj, String fieldName, Object value) {
-        boolean successful = false;
+    private static void setField(Object obj, String fieldName, Object value) {
         try {
             Field[] fields = obj.getClass().getFields();
             for (Field f : fields) {
                 if (f.getName().equals(fieldName)) {
-                    successful = true;
                     if (BeanUtils.isSimpleValueType(value.getClass())) {
                         f.set(obj, value);
                     } else if (value.getClass() == JSONArray.class) {
@@ -123,33 +126,20 @@ public class Server {
                 }
             }
         } catch (IllegalAccessException e) {
-            return false;
+            System.out.println("IllegalAccessException ");
+            e.printStackTrace();
         }
-        return successful;
     }
 
-    public static boolean setFields(Object obj, JSONObject data) {
-        boolean successful = false;
-        try {
-            Field[] fields = obj.getClass().getFields();
-            for (Field f : fields) {
-                if (data.has(f.getName())) {
-                    Object value = data.get(f.getName());
-                    if (BeanUtils.isSimpleValueType(value.getClass())) {
-                        successful = true;
-                        f.set(obj, value);
-                    }
-                }
-            }
-        } catch (IllegalAccessException e) {
-            return false;
-        }
-        return successful;
+    private static void setFields(Object obj, JSONObject data) {
+        Map<String,Object> map = data.toMap();
+        map.forEach((s, o) -> setField(obj,s,o));
     }
 
-    public static void broadcastMessage(WsContext sendingUser, Object obj) {//TODO chekc if session id is a good way to differentiate users
+
+    private static void broadcastMessage(Object obj, WsContext userToSkip) {//TODO chekc if session id is a good way to differentiate users
         for (var user : users) {
-            if (sendingUser!=null&& user.getSessionId().equals(sendingUser.getSessionId())) {
+            if (userToSkip != null && user.getSessionId().equals(userToSkip.getSessionId())) {
                 continue;
             }
             if (obj.getClass() == String.class)
@@ -161,7 +151,12 @@ public class Server {
         }
     }
 
-    private static void addAllFieldsToMap(Map<String, Object> map, Object obj) {
+    private static void broadcastMessage(Object obj) {
+        broadcastMessage(obj, null);//Broadcasts the message to ever user
+    }
+
+    private static Map<String, Object> allFieldsToMap(Object obj) {
+        Map map = new HashMap<>();
         try {
             Field[] fields = obj.getClass().getFields();
             for (Field field : fields)
@@ -169,15 +164,16 @@ public class Server {
         } catch (IllegalAccessException e) {
             System.err.println("Illegal Access error:" + e.getStackTrace().toString());
         }
+        return map;
     }
 
     private static void sendFullSettings() {
         Map<String, Object> fullSettings = new HashMap<>();
         //General settings
-        addAllFieldsToMap(fullSettings, SettingsManager.GeneralSettings);
+        fullSettings.putAll(allFieldsToMap(SettingsManager.GeneralSettings));
         fullSettings.put("cameraList", SettingsManager.Cameras.keySet());
         try {
-            addAllFieldsToMap(fullSettings, SettingsManager.getInstance().GetCurrentPipeline());
+            fullSettings.putAll(allFieldsToMap(SettingsManager.getInstance().GetCurrentPipeline()));
             fullSettings.put("pipelineList", SettingsManager.getInstance().GetCurrentCamera().pipelines.keySet());
             fullSettings.put("resolutionList", SettingsManager.getInstance().GetResolutionList());
             fullSettings.put("resolution", SettingsManager.getInstance().GetCurrentCamera().resolution);
@@ -187,7 +183,7 @@ public class Server {
             System.err.println("No camera found!");
             //TODO: add message to ui to inform that there are no cameras
         }
-        broadcastMessage(null, fullSettings);
+        broadcastMessage(fullSettings);
     }
 
 
