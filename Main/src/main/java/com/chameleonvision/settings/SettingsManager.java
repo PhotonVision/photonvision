@@ -23,7 +23,7 @@ public class SettingsManager {
     private static SettingsManager instance;
 
     private SettingsManager() {
-        InitiateSavedSettings();
+        InitiateGeneralSettings();
         InitiateCamerasInfo();
         InitiateUsbCameras();
         InitiateCameras();
@@ -57,11 +57,9 @@ public class SettingsManager {
     private Path CamsPath = Paths.get(SettingsPath.toString(), "Cams");
 
 
-    private void InitiateSavedSettings() {
+    private void InitiateGeneralSettings() {
         CheckPath(SettingsPath);
         try {
-            CamerasCurrentPipeline = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(),"SelectedPipelines.json").toString()),HashMap.class);
-//            CamerasCurrentPipeline = new JSONArray(Paths.get(SettingsPath.toString(),"SelectedPipelines.json")).toList();
             GeneralSettings = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(), "Settings.json").toString()), com.chameleonvision.vision.GeneralSettings.class);
         } catch (FileNotFoundException e) {
             GeneralSettings = new GeneralSettings();
@@ -157,7 +155,6 @@ public class SettingsManager {
 
         CreateNewPipeline(null,cam);
         CreateNewPipeline(null,cam);//Created 2 pipeline for testing TODO add a create pipeline button
-        CamerasCurrentPipeline.put(CameraName,"pipeline0");//sets pipeline0 as the default pipeline
 
     }
 
@@ -227,7 +224,6 @@ public class SettingsManager {
     public void SaveSettings() {
         SaveCameras();
         SaveGeneralSettings();
-        SaveSelectedPipelines();
     }
 
     private void SaveCameras() {
@@ -254,16 +250,4 @@ public class SettingsManager {
             e.printStackTrace();
         }
     }
-
-    private void SaveSelectedPipelines() {
-        try {
-            FileWriter writer = new FileWriter(Paths.get(SettingsPath.toString(), "SelectedPipelines.json").toString());
-            new Gson().toJson(CamerasCurrentPipeline, writer);
-            writer.flush();
-            writer.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 }

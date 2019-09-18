@@ -102,9 +102,9 @@ public class CameraProcess implements Runnable {
             FoundContours.clear();
             FilteredContours.clear();
             GroupedContours.clear();
-
+            SettingsManager.CamerasCurrentPipeline.put(CameraName,SettingsManager.Cameras.get(CameraName).pipelines.keySet().stream().findFirst().toString());
             currentPipeline = SettingsManager.Cameras.get(CameraName).pipelines.get(SettingsManager.CamerasCurrentPipeline.get(CameraName));
-
+            
 //            System.out.println(SettingsManager.CamerasCurrentPipeline.get(CameraName));
             // start fps counter right before grabbing input frame
             startTime = System.nanoTime();
