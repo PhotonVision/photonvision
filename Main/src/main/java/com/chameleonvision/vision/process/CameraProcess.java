@@ -1,8 +1,11 @@
 package com.chameleonvision.vision.process;
 
+import com.chameleonvision.CameraException;
 import com.chameleonvision.MemoryManager;
 import com.chameleonvision.settings.SettingsManager;
-import com.chameleonvision.vision.CameraValues;
+import com.chameleonvision.vision.camera.Camera;
+import com.chameleonvision.vision.camera.CameraManager;
+import com.chameleonvision.vision.camera.CameraValues;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.web.Server;
 import edu.wpi.cscore.CvSink;
@@ -17,7 +20,9 @@ import java.util.HashMap;
 import java.util.List;
 
 public class CameraProcess implements Runnable {
-    private String CameraName;
+
+    private final Camera camera;
+    private final String cameraName;
 
     // NetworkTables
     private NetworkTableEntry ntPipelineEntry;
@@ -48,34 +53,38 @@ public class CameraProcess implements Runnable {
     private Mat streamOutputMat = new Mat();
     private Scalar contourRectColor = new Scalar(255, 0, 0);
 
-    private void ChangeCameraValues(int exposure, int brightness) {
-        SettingsManager.UsbCameras.get(CameraName).setBrightness(brightness);
-        SettingsManager.UsbCameras.get(CameraName).setExposureManual(exposure);
+    public void restartProcess() {
+        // TODO: Restart process and re-create cvPublish for new resolution
     }
 
     private void DriverModeListener(EntryNotification entryNotification) {
         if (entryNotification.value.getBoolean()) {
-            ChangeCameraValues(25, 15);
+            camera.setExposure(25);
+            camera.setBrightness(15);
         } else {
-            Pipeline pipeline = SettingsManager.Cameras.get(CameraName).pipelines.get(SettingsManager.CamerasCurrentPipeline.get(CameraName));
-            ChangeCameraValues(pipeline.exposure, pipeline.brightness);
+            Pipeline pipeline = camera.getCurrentPipeline();
+            camera.setExposure(pipeline.exposure);
+            camera.setBrightness(pipeline.brightness);
         }
     }
 
     private void PipelineListener(EntryNotification entryNotification) {
-        if (SettingsManager.Cameras.get(CameraName).pipelines.containsKey(entryNotification.value.getString())) {
-            SettingsManager.CamerasCurrentPipeline.put(CameraName, entryNotification.value.getString());
-            Pipeline pipeline = SettingsManager.Cameras.get(CameraName).pipelines.get(SettingsManager.CamerasCurrentPipeline.get(CameraName));
-            ChangeCameraValues(pipeline.exposure, pipeline.brightness);
+        if (camera.getPipelines().containsKey(entryNotification.value.getString())) {
+//            camera.setPntryNotification.value.getString());
+            Pipeline pipeline = camera.getCurrentPipeline();
+
+            camera.setExposure(pipeline.exposure);
+            camera.setBrightness(pipeline.brightness);
             //TODO Send Pipeline change using websocket to client
         } else {
-            ntPipelineEntry.setString(SettingsManager.CamerasCurrentPipeline.get(CameraName));
+            ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());
         }
     }
 
-    public CameraProcess(String cameraName) {
-        CameraName = cameraName;
-        SettingsManager.CamerasCurrentPipeline.put(CameraName,SettingsManager.Cameras.get(CameraName).pipelines.keySet().stream().findFirst().toString());
+    public CameraProcess(Camera processCam) {
+        camera = processCam;
+        this.cameraName = camera.name;
+
         // NetworkTables
         NetworkTable ntTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraName);
         ntPipelineEntry = ntTable.getEntry("Pipeline");
@@ -88,17 +97,16 @@ public class CameraProcess implements Runnable {
         ntDriverModeEntry.addListener(this::DriverModeListener, EntryListenerFlags.kUpdate);
         ntPipelineEntry.addListener(this::PipelineListener, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
-        ntPipelineEntry.setString(SettingsManager.CamerasCurrentPipeline.get(cameraName));
+        ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());
 
         // camera settings
-        camVals = new CameraValues(SettingsManager.Cameras.get(cameraName));
+        camVals = new CameraValues(camera);
         visionProcess = new VisionProcess(camVals);
 
         // cscore setup
         CameraServer cs = CameraServer.getInstance();
-        cvSink = cs.getVideo(SettingsManager.UsbCameras.get(cameraName));
+        cvSink = cs.getVideo(camera.UsbCam);
         cvPublish = cs.putVideo(cameraName, camVals.ImageWidth, camVals.ImageHeight);
-
     }
 
     private void drawContour(Mat inputMat, RotatedRect contourRect) {
@@ -111,9 +119,17 @@ public class CameraProcess implements Runnable {
         Imgproc.circle(inputMat, contourRect.center, 3, contourRectColor);
     }
 
-    // TODO: Separate video output, contour drawing, data output to separate function, maybe even second thread
+    private void updateNetworkTables(PipelineResult pipelineResult) {
+
+    }
+
+    // TODO: Separate video output to separate function, maybe even second thread
     private PipelineResult runVisionProcess(Mat inputImage, Mat outputImage) {
         var pipelineResult = new PipelineResult();
+
+        if (currentPipeline == null) {
+            return pipelineResult;
+        }
 
         Scalar hsvLower = new Scalar(currentPipeline.hue.get(0), currentPipeline.saturation.get(0), currentPipeline.value.get(0));
         Scalar hsvUpper = new Scalar(currentPipeline.hue.get(1), currentPipeline.saturation.get(1), currentPipeline.value.get(1));
@@ -164,9 +180,9 @@ public class CameraProcess implements Runnable {
             FoundContours.clear();
             FilteredContours.clear();
             GroupedContours.clear();
-            currentPipeline = SettingsManager.Cameras.get(CameraName).pipelines.get(SettingsManager.CamerasCurrentPipeline.get(CameraName));
-            
-//            System.out.println(SettingsManager.CamerasCurrentPipeline.get(CameraName));
+
+            currentPipeline = camera.getCurrentPipeline();
+
             // start fps counter right before grabbing input frame
             startTime = System.nanoTime();
             TimeStamp = cvSink.grabFrame(cameraInputMat);
@@ -183,10 +199,10 @@ public class CameraProcess implements Runnable {
                 ntPitchEntry.setNumber(pipelineResult.Pitch);
             }
             ntTimeStampEntry.setNumber(TimeStamp);
-            if (CameraName.equals(SettingsManager.GeneralSettings.curr_camera)){
+            if (cameraName.equals(SettingsManager.GeneralSettings.curr_camera) && pipelineResult.IsValid) {
                 HashMap<String,Object> WebSend = new HashMap<>();
                 HashMap<String,Object> point = new HashMap<>();
-                List<Double> center = new ArrayList<Double>();
+                List<Double> center = new ArrayList<>();
                 center.add(pipelineResult.RawPoint.center.x);
                 center.add(pipelineResult.RawPoint.center.y);
                 point.put("pitch", pipelineResult.Pitch);
@@ -200,7 +216,7 @@ public class CameraProcess implements Runnable {
             // calculate FPS after publishing output frame
             processTimeMs = (System.nanoTime() - startTime) * 1e-6;
             fps = 1000 / processTimeMs;
-            System.out.printf("%s - Process time: %fms, FPS: %.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n",CameraName ,processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
+            System.out.printf("%s - Process time: %fms, FPS: %.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n", cameraName,processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
 
             cameraInputMat.release();
             hsvThreshMat.release();
