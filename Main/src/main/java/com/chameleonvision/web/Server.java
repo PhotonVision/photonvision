@@ -1,7 +1,8 @@
 package com.chameleonvision.web;
 
-import com.chameleonvision.NoCameraException;
+import com.chameleonvision.CameraException;
 import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.vision.camera.CameraManager;
 import edu.wpi.cscore.VideoException;
 import io.javalin.Javalin;
 import io.javalin.websocket.WsContext;
@@ -15,7 +16,7 @@ import org.springframework.beans.BeanUtils;
 
 
 public class Server {
-    private static List<WsContext> users = new ArrayList<WsContext>();
+    private static List<WsContext> users = new ArrayList<>();
 
     public static void main(int port) {
         Javalin app = Javalin.create();
@@ -33,6 +34,9 @@ public class Server {
             });
             ws.onMessage(ctx -> {
                 broadcastMessage(ctx.message(), ctx);
+
+
+
                 JSONObject jsonObject = new JSONObject(ctx.message());
                 String key = null;
                 var jsonKeySetArray = jsonObject.keySet().toArray();
@@ -44,7 +48,7 @@ public class Server {
                 if (key == null) return;
                 Object value = jsonObject.get(key);
 //                System.out.printf("Got websocket json data: [%s, %s]\n", key, value);
-                if (!allFieldsToMap(SettingsManager.getInstance().GetCurrentPipeline()).containsKey(key)) {
+                if (!allFieldsToMap(CameraManager.getCurrentPipeline()).containsKey(key)) {
                     //If field not in pipeline
                     switch (key) {
                         case "change_general_settings_values":
@@ -54,44 +58,41 @@ public class Server {
                         case "curr_camera":
                             String newCamera = (String) value;
                             System.out.printf("Changing camera to %s\n", newCamera);
-                            SettingsManager.getInstance().SetCurrentCamera(newCamera);
+                            CameraManager.setCurrentCamera(newCamera);
                             //broadcastMessage((Map<String, Object>) new HashMap<String, Object>(){}.put("port",SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera)));
-                            broadcastMessage(SettingsManager.getInstance().GetCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
+                            broadcastMessage(CameraManager.getCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
                             break;
                         case "curr_pipeline":
                             String newPipeline = (String) value;
+                            var pipelineNumber = Integer.parseInt(newPipeline.replace("pipeline", ""));
                             System.out.printf("Changing pipeline to %s\n", newPipeline);
-                            SettingsManager.getInstance().SetCurrentPipeline(newPipeline);
-                            SettingsManager.CamerasCurrentPipeline.put(SettingsManager.GeneralSettings.curr_camera, newPipeline);
-                            broadcastMessage(allFieldsToMap(SettingsManager.getInstance().GetCurrentPipeline()));
+                            CameraManager.setCurrentPipeline(pipelineNumber);
+                            broadcastMessage(allFieldsToMap(CameraManager.getCurrentPipeline()));
                             break;
                         case "resolution":
-                            int newResolution = (int) value;
-                            System.out.printf("Changing resolution mode to %d\n", newResolution);
-                            SettingsManager.getInstance().GetCurrentCamera().resolution = newResolution;
-                            SettingsManager.getInstance().SaveSettings();
+                            int newVideoMode = (int) value;
+                            System.out.printf("Changing video mode to %d\n", newVideoMode);
+                            CameraManager.getCurrentCamera().setCamVideoMode(newVideoMode);
                             break;
-                        case "fov":
+                        case "FOV":
                             double newFov = (double) value;
                             System.out.printf("Changing FOV to %f\n", newFov);
-                            SettingsManager.getInstance().GetCurrentCamera().FOV = newFov;
-                            SettingsManager.getInstance().SaveSettings();
+                            CameraManager.getCurrentCamera().setFOV(newFov);
                             break;
                         default:
                             System.out.printf("Unexpected value from websocket: [%s, %s]\n", key, value);
                             break;
                     }
                 } else {
-                    setField(SettingsManager.getInstance().GetCurrentPipeline(), key, value);
+                    setField(CameraManager.getCurrentPipeline(), key, value);
                     //Special cases for exposure and brightness
                     //TODO maybe add listener for value changes instead of this special case
                     switch (key) {
                         case "exposure":
                             int newExposure = (int) value;
                             System.out.printf("Changing exposure to %d\n", newExposure);
-                            SettingsManager.getInstance().GetCurrentPipeline().exposure = newExposure;
                             try {
-                                SettingsManager.getInstance().GetCurrentUsbCamera().setExposureManual(newExposure);
+                                CameraManager.getCurrentCamera().setExposure(newExposure);
                             }
                             catch ( VideoException e)
                             {
@@ -102,8 +103,7 @@ public class Server {
                         case "brightness":
                             int newBrightness = (int) value;
                             System.out.printf("Changing brightness to %d\n", newBrightness);
-                            SettingsManager.getInstance().GetCurrentPipeline().brightness = newBrightness;
-                            SettingsManager.getInstance().GetCurrentUsbCamera().setBrightness(newBrightness);
+                            CameraManager.getCurrentCamera().setBrightness(newBrightness);
                             break;
                     }
                 }
@@ -155,30 +155,31 @@ public class Server {
     }
 
     private static Map<String, Object> allFieldsToMap(Object obj) {
-        Map map = new HashMap<>();
+        Map map = new HashMap<String, Object>();
         try {
             Field[] fields = obj.getClass().getFields();
-            for (Field field : fields)
+            for (Field field : fields) {
                 map.put(field.getName(), field.get(obj));
+            }
         } catch (IllegalAccessException e) {
-            System.err.println("Illegal Access error:" + e.getStackTrace().toString());
+            System.err.println("Illegal Access error:" + e.getStackTrace());
         }
         return map;
     }
 
     private static void sendFullSettings() {
-        Map<String, Object> fullSettings = new HashMap<>();
         //General settings
-        fullSettings.putAll(allFieldsToMap(SettingsManager.GeneralSettings));
-        fullSettings.put("cameraList", SettingsManager.Cameras.keySet());
+        Map<String, Object> fullSettings = new HashMap<>(allFieldsToMap(SettingsManager.GeneralSettings));
+        fullSettings.put("cameraList", CameraManager.getAllCamerasByName().keySet());
         try {
-            fullSettings.putAll(allFieldsToMap(SettingsManager.getInstance().GetCurrentPipeline()));
-            fullSettings.put("pipelineList", SettingsManager.getInstance().GetCurrentCamera().pipelines.keySet());
-            fullSettings.put("resolutionList", SettingsManager.getInstance().GetResolutionList());
-            fullSettings.put("resolution", SettingsManager.getInstance().GetCurrentCamera().resolution);
-            fullSettings.put("FOV", SettingsManager.getInstance().GetCurrentCamera().FOV);
+            var currentCamera = CameraManager.getCurrentCamera();
+            fullSettings.putAll(allFieldsToMap(currentCamera.getCurrentPipeline()));
+            fullSettings.put("pipelineList", currentCamera.getPipelines().keySet());
+            fullSettings.put("resolutionList", CameraManager.getResolutionList());
+            fullSettings.put("resolution", currentCamera.getVideoModeIndex());
+            fullSettings.put("FOV", currentCamera.getFOV());
 //            fullSettings.put("port", SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera));
-        } catch (NoCameraException e) {
+        } catch (CameraException e) {
             System.err.println("No camera found!");
             //TODO: add message to ui to inform that there are no cameras
         }

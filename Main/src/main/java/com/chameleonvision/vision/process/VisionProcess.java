@@ -1,13 +1,12 @@
 package com.chameleonvision.vision.process;
 
-import com.chameleonvision.vision.CameraValues;
+import com.chameleonvision.vision.camera.CameraValues;
 import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 import org.opencv.core.*;
 import org.opencv.imgproc.*;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class VisionProcess {
 

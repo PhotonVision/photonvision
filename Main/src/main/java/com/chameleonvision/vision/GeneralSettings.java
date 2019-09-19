@@ -8,7 +8,7 @@ public class GeneralSettings {
     public String netmask = "";
     public String hostname = "Chameleon-vision";
     public String curr_camera = "";
-    public String curr_pipeline = "";
+    public Integer curr_pipeline = null;
 
 
 }

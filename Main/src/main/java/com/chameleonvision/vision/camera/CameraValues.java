@@ -1,4 +1,4 @@
-package com.chameleonvision.vision;
+package com.chameleonvision.vision.camera;
 
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.util.FastMath;
@@ -20,7 +20,7 @@ public class CameraValues {
    public final double VerticalFocalLength;
 
    public CameraValues(Camera camera) {
-       this(camera.camVideoMode.width, camera.camVideoMode.height, camera.FOV);
+       this(camera.getVideoMode().width, camera.getVideoMode().height, camera.getFOV());
    }
 
     public CameraValues(int imageWidth, int imageHeight, double fov) {
