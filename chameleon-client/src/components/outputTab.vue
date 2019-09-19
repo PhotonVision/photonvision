@@ -44,7 +44,7 @@ import chrange from './ch-range.vue'
                     let m = (this.pointB[1] - this.pointA[1]) / (this.pointB[0] - this.pointA[0]);
                     let b = this.pointA[1] - (m * this.pointA[0]);
                     if(isNaN(m) === false && isNaN(b) === false){
-                        this.sendSlope(m,b);
+                        this.sendSlope(m,b,true);
                     } else{
                         this.$Message.error("Point A and B are to close apart");
                     }
@@ -53,13 +53,14 @@ import chrange from './ch-range.vue'
                 }
             },
             clearPoints:function(){
-                this.sendSlope(1,0);
+                this.sendSlope(1,0,false);
                 this.pointA = undefined;
                 this.pointB = undefined;
             },
-            sendSlope(m,b){
+            sendSlope(m,b,valid){
                 this.$socket.sendObj({'M':m});
                 this.$socket.sendObj({'B':b});
+                this.$socket.sendObj({'is_calibrated':valid});
             }
         },
         computed: {
