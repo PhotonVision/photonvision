@@ -52,6 +52,7 @@ public class CameraProcess implements Runnable {
     private Mat hsvThreshMat = new Mat();
     private Mat streamOutputMat = new Mat();
     private Scalar contourRectColor = new Scalar(255, 0, 0);
+    private long TimeStamp = 0;
 
     public void restartProcess() {
         // TODO: Restart process and re-create cvPublish for new resolution
@@ -120,7 +121,12 @@ public class CameraProcess implements Runnable {
     }
 
     private void updateNetworkTables(PipelineResult pipelineResult) {
-
+        ntValidEntry.setBoolean(pipelineResult.IsValid);
+        if (pipelineResult.IsValid){
+            ntYawEntry.setNumber(pipelineResult.Yaw);
+            ntPitchEntry.setNumber(pipelineResult.Pitch);
+        }
+        ntTimeStampEntry.setNumber(TimeStamp);
     }
 
     // TODO: Separate video output to separate function, maybe even second thread
@@ -130,7 +136,10 @@ public class CameraProcess implements Runnable {
         if (currentPipeline == null) {
             return pipelineResult;
         }
-
+        if (ntDriverModeEntry.getBoolean(false)){
+            inputImage.copyTo(outputImage);
+            return pipelineResult;
+        }
         Scalar hsvLower = new Scalar(currentPipeline.hue.get(0), currentPipeline.saturation.get(0), currentPipeline.value.get(0));
         Scalar hsvUpper = new Scalar(currentPipeline.hue.get(1), currentPipeline.saturation.get(1), currentPipeline.value.get(1));
 
@@ -141,7 +150,6 @@ public class CameraProcess implements Runnable {
         } else {
             inputImage.copyTo(outputImage);
         }
-
         FoundContours = visionProcess.FindContours(hsvThreshMat);
         if (FoundContours.size() > 0) {
             FilteredContours = visionProcess.FilterContours(FoundContours, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent, currentPipeline.sort_mode, currentPipeline.target_intersection, currentPipeline.target_group);
@@ -172,7 +180,7 @@ public class CameraProcess implements Runnable {
     @Override
     public void run() {
         // processing time tracking
-        long startTime, TimeStamp;
+        long startTime;
         double processTimeMs;
         double fps = 0;
 
@@ -182,7 +190,6 @@ public class CameraProcess implements Runnable {
             GroupedContours.clear();
 
             currentPipeline = camera.getCurrentPipeline();
-
             // start fps counter right before grabbing input frame
             startTime = System.nanoTime();
             TimeStamp = cvSink.grabFrame(cameraInputMat);
@@ -192,13 +199,7 @@ public class CameraProcess implements Runnable {
 
             // get vision data
             var pipelineResult = runVisionProcess(cameraInputMat, streamOutputMat);
-
-            ntValidEntry.setBoolean(pipelineResult.IsValid);
-            if (pipelineResult.IsValid){
-                ntYawEntry.setNumber(pipelineResult.Yaw);
-                ntPitchEntry.setNumber(pipelineResult.Pitch);
-            }
-            ntTimeStampEntry.setNumber(TimeStamp);
+            updateNetworkTables(pipelineResult);
             if (cameraName.equals(SettingsManager.GeneralSettings.curr_camera) && pipelineResult.IsValid) {
                 HashMap<String,Object> WebSend = new HashMap<>();
                 HashMap<String,Object> point = new HashMap<>();
