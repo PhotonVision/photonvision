@@ -10,11 +10,7 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import org.opencv.videoio.VideoCapture;
 
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Files;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -25,7 +21,6 @@ public class CameraManager {
 
     private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "Cams");
 
-    // TODO: throw a camera Exception if no camera is connected
     static HashMap<String, UsbCameraInfo> AllUsbCameraInfosByName = new HashMap<>() {{
         var suffix = 0;
         for (var info : UsbCamera.enumerateUsbCameras()) {
@@ -46,25 +41,28 @@ public class CameraManager {
 
     public static HashMap<String, Camera> getAllCamerasByName() { return AllCamerasByName; }
 
-    public static void initializeCameras() {
+    public static boolean initializeCameras() {
+        if (AllUsbCameraInfosByName.size() == 0) return false;
         FileHelper.CheckPath(CamConfigPath);
         for (var entry : AllUsbCameraInfosByName.entrySet()) {
             var camPath = Paths.get(CamConfigPath.toString(), String.format("%s.json", entry.getKey()));
-            if (Files.exists(camPath)) {
+            File camJsonFile = new File(camPath.toString());
+            if (camJsonFile.exists() && camJsonFile.length() != 0) {
                 try {
-                    // TODO: Check if deserializing correctly, if not, add CameraDeserializer
-                    var camJsonFile = new FileReader(camPath.toString());
-                    var gsonRead = new Gson().fromJson(camJsonFile, Camera.class);
+                    Gson gson = new GsonBuilder().registerTypeAdapter(Camera.class, new CameraDeserializer()).create();
+                    var camJsonFileReader = new FileReader(camPath.toString());
+                    var gsonRead = gson.fromJson(camJsonFileReader, Camera.class);
                     AllCamerasByName.put(entry.getKey(), gsonRead);
                 } catch (FileNotFoundException ex) {
                     ex.printStackTrace();
                 }
             } else {
-                if (!addCamera(new Camera(entry.getKey()),entry.getKey())) {
+                if (!addCamera(new Camera(entry.getKey()), entry.getKey())) {
                     System.err.println("Failed to add camera! Already exists!");
                 }
             }
         }
+        return true;
     }
 
     private static boolean addCamera(Camera camera, String cameraName) {

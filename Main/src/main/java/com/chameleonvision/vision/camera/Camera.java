@@ -15,8 +15,7 @@ public class Camera {
 	public final String name;
 	public final String path;
 
-	public final UsbCamera UsbCam;
-	private final UsbCameraInfo UsbCamInfo;
+	final UsbCamera UsbCam;
 	private final VideoMode[] availableVideoModes;
 
 	private final CameraServer cs = CameraServer.getInstance();
@@ -29,7 +28,7 @@ public class Camera {
 	private CamVideoMode camVideoMode;
 
 	private int currentPipelineIndex;
-	private HashMap<Integer, Pipeline> pipelines = new HashMap<>();
+	private HashMap<Integer, Pipeline> pipelines;
 
 	public Camera(String cameraName) {
 		this(cameraName, defaultFOV);
@@ -44,12 +43,21 @@ public class Camera {
 	}
 
 	public Camera(UsbCameraInfo usbCamInfo, double fov) {
-		UsbCamInfo = usbCamInfo;
+		this(usbCamInfo, fov, new HashMap<>());
+	}
+
+	public Camera(String cameraName, double fov, HashMap<Integer, Pipeline> pipelines) {
+		this(CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines);
+	}
+
+	public Camera(UsbCameraInfo usbCamInfo, double fov, HashMap<Integer, Pipeline> pipelines) {
 		FOV = fov;
 		name = usbCamInfo.name;
 		path = usbCamInfo.path;
 
 		UsbCam = new UsbCamera(name, path);
+
+		this.pipelines = pipelines;
 
 		// set up video mode
 		availableVideoModes = UsbCam.enumerateVideoModes();
@@ -81,7 +89,7 @@ public class Camera {
 		}
 	}
 
-	public void addPipeline() {
+	void addPipeline() {
 		addPipeline(pipelines.size());
 	}
 
@@ -98,7 +106,7 @@ public class Camera {
 		return currentPipelineIndex;
 	}
 
-	public void setCurrentPipelineIndex(int pipelineNumber) {
+	void setCurrentPipelineIndex(int pipelineNumber) {
 		if (pipelineNumber - 1 > pipelines.size()) return;
 		currentPipelineIndex = pipelineNumber;
 	}
@@ -106,7 +114,7 @@ public class Camera {
 		return pipelines;
 	}
 
-	public CamVideoMode getVideoMode() {
+	CamVideoMode getVideoMode() {
 		return camVideoMode;
 	}
 

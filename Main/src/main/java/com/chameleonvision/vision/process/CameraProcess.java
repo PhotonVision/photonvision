@@ -60,9 +60,10 @@ public class CameraProcess implements Runnable {
     }
 
     private void PipelineListener(EntryNotification entryNotification) {
-        if (camera.getPipelines().containsKey(entryNotification.value.getString())) {
-//            camera.setPntryNotification.value.getString());
-            Pipeline pipeline = camera.getCurrentPipeline();
+        var ntPipelineIndex = Integer.parseInt(entryNotification.value.getString().replace("pipeline", ""));
+        if (camera.getPipelines().containsKey(ntPipelineIndex)) {
+//            camera.setEntryNotification.value.getString());
+            var pipeline = camera.getCurrentPipeline();
 
             camera.setExposure(pipeline.exposure);
             camera.setBrightness(pipeline.brightness);
@@ -206,8 +207,6 @@ public class CameraProcess implements Runnable {
 
             cameraInputMat.release();
             hsvThreshMat.release();
-
-            memManager.run(true);
         }
     }
 }
