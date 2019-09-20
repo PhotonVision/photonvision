@@ -54,7 +54,7 @@ public class VisionProcess {
         for (MatOfPoint Contour : InputContours){
             try{
                 var contourArea = Imgproc.contourArea(Contour);
-                double targetArea = (contourArea / CamVals.ImageArea) * 100;
+                double targetArea = FastMath.round((contourArea / CamVals.ImageArea) * 100);
                 if (targetArea <= area.get(0) || targetArea >= area.get(1)){
                     continue;
                 }
