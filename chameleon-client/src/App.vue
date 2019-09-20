@@ -101,7 +101,7 @@
              for (var prop in message){
         if(message.hasOwnProperty(prop)){
             this.$store.state[prop] = message[prop];
-            console.log(message);
+            // console.log(message);
         
         }
 
