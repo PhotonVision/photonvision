@@ -48,10 +48,6 @@ public class CameraProcess implements Runnable {
     private Scalar contourRectColor = new Scalar(255, 0, 0);
     private long TimeStamp = 0;
 
-    public void restartProcess() {
-        // TODO: Restart process and re-create cvPublish for new resolution
-    }
-
     private void DriverModeListener(EntryNotification entryNotification) {
         if (entryNotification.value.getBoolean()) {
             camera.setExposure(25);

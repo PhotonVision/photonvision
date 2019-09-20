@@ -18,8 +18,10 @@ public class Camera {
 	public final UsbCamera UsbCam;
 	private final UsbCameraInfo UsbCamInfo;
 	private final VideoMode[] availableVideoModes;
+
+	private final CameraServer cs = CameraServer.getInstance();
 	private final CvSink cvSink;
-	private final CvSource cvSource;
+	private CvSource cvSource;
 
 	private double FOV;
 
@@ -53,7 +55,6 @@ public class Camera {
 		availableVideoModes = UsbCam.enumerateVideoModes();
 		setCamVideoMode(new CamVideoMode(availableVideoModes[0]));
 
-		CameraServer cs = CameraServer.getInstance();
 		cvSink = cs.getVideo(UsbCam);
 		cvSource = cs.putVideo(name, camVals.ImageWidth, camVals.ImageHeight);
 	}
@@ -66,13 +67,18 @@ public class Camera {
 		setCamVideoMode(new CamVideoMode(videoMode));
 	}
 
-	private void setCamVideoMode(CamVideoMode camVideoMode) {
-		this.camVideoMode = camVideoMode;
-		UsbCam.setPixelFormat(camVideoMode.getActualPixelFormat());
-		UsbCam.setFPS(camVideoMode.fps);
-		UsbCam.setResolution(camVideoMode.width, camVideoMode.height);
+	private void setCamVideoMode(CamVideoMode newVideoMode) {
+		var prevVideoMode = this.camVideoMode;
+		this.camVideoMode = newVideoMode;
+		UsbCam.setPixelFormat(newVideoMode.getActualPixelFormat());
+		UsbCam.setFPS(newVideoMode.fps);
+		UsbCam.setResolution(newVideoMode.width, newVideoMode.height);
+
+		// update camera values
 		camVals = new CameraValues(this);
-		// TODO: Automatically restart CameraProcess when resolution changes (not FPS)
+		if ( prevVideoMode != null && prevVideoMode.width != newVideoMode.width && prevVideoMode.height != newVideoMode.height) { //  if resolution changed
+			cvSource = cs.putVideo(name, newVideoMode.width, newVideoMode.height);
+		}
 	}
 
 	public void addPipeline() {
