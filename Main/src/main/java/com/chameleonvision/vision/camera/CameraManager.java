@@ -25,21 +25,20 @@ public class CameraManager {
 
     private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "Cams");
 
-    // TODO: Fix suffix for camera
     // TODO: throw a camera Exception if no camera is connected
     static HashMap<String, UsbCameraInfo> AllUsbCameraInfosByName = new HashMap<>() {{
         var suffix = 0;
         for (var info : UsbCamera.enumerateUsbCameras()) {
-            var cap = new VideoCapture(info.name);
+            var cap = new VideoCapture(info.dev);
             if (cap.isOpened()) {
                 cap.release();
+                var name = info.name;
+                while (this.containsKey(name)) {
+                    suffix++;
+                    name = String.format("%s(%s)", info.name, suffix);
+                }
+                put(name, info);
             }
-            var name = info.name;
-            while (this.containsKey(name)) {
-                suffix++;
-                name = String.format("%s(%s)", info.name, suffix);
-            }
-            put(name, info);
         }
     }};
 
@@ -66,10 +65,6 @@ public class CameraManager {
                 if (!addCamera(new Camera(entry.getKey()))) {
                     System.err.println("Failed to add camera! Already exists!");
                 }
-            }
-            // TODO: Set currentCameraName from GeneralSettings instead of this
-            if (currentCameraName == null && AllCamerasByName.size() == 1) { // set current camera to first found
-                currentCameraName = AllCamerasByName.keySet().stream().findFirst().get();
             }
         }
     }

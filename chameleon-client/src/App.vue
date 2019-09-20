@@ -100,12 +100,9 @@
         let message = JSON.parse(data.data);
              for (var prop in message){
         if(message.hasOwnProperty(prop)){
-          if(!this.isEquale(message,prop)){
             this.$store.state[prop] = message[prop];
             console.log(message);
-          } else{
-            console.log("data is the same");
-          }
+        
         }
 
        }      
