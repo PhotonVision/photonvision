@@ -1,52 +1,49 @@
 <template>
-  <v-app>
-    <v-app-bar app dark>
-      <img src="./assets/logo.png" class="imgClass">
-      <v-toolbar-title class="headline text-uppercase">
-        <span>Chameleon Vision</span>
-      </v-toolbar-title>
-      <v-spacer></v-spacer>
-    </v-app-bar>
-    <v-content>
-      <v-navigation-drawer
-      expand-on-hover
-      permanent
-    >
-  
-
-      <v-list
-        nav
-        dense
-      >
-      <v-list-group
-        value="true"
-        prepend-icon="mdi-xbox-controller">
-        <template v-slot:activator>
-          <v-list-item-title> test</v-list-item-title>
-        </template>
-        <v-list-item>
-             <v-list-item-icon>
-              <v-icon>mdi-account</v-icon>
-            </v-list-item-icon>
-          <v-list-item-title>test sub</v-list-item-title>
+ <v-app>
+    <!-- <v-navigation-drawer app clipped dark width="200">
+      <v-list dense>
+        <v-list-item link to="Vision">
+          <v-list-item-action>
+            <v-icon>mdi-video</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Vision</v-list-item-title>
+          </v-list-item-content>
         </v-list-item>
-      </v-list-group>
-
-        <v-list-item link>
-          <v-list-item-icon>
-            <v-icon>mdi-account-multiple</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>Shared with me</v-list-item-title>
-        </v-list-item>
-        <v-list-item link>
-          <v-list-item-icon>
-            <v-icon>mdi-star</v-icon>
-          </v-list-item-icon>
-          <v-list-item-title>Starred</v-list-item-title>
+        <v-list-item link to="Settings">
+          <v-list-item-action>
+            <v-icon>mdi-settings</v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>Settings</v-list-item-title>
+          </v-list-item-content>
         </v-list-item>
       </v-list>
-    </v-navigation-drawer>
+    </v-navigation-drawer> -->
+
+    <v-app-bar app clipped-left dark>
+      <img class="imgClass" src="./assets/logo.png">
+      <v-toolbar-title id="title">Chameleon Vision</v-toolbar-title>
+      <div class="flex-grow-1"></div>
+      <v-toolbar-items>
+      <v-tabs dark height="64" slider-color="#4baf62">
+        <v-tab to="Vision">Vision</v-tab>
+        <v-tab to="Settings">Settings</v-tab>
+    </v-tabs>
+      </v-toolbar-items>
+    </v-app-bar>
+    <v-content>
+      <v-container fluid fill-height>
+        <v-layout>
+          <v-flex>
+            <router-view></router-view>
+          </v-flex>
+        </v-layout>
+      </v-container>
     </v-content>
+    <v-footer app dark>
+      <span>&copy; 2019 Chameleon Vision Project</span>
+    </v-footer>
   </v-app>
 </template>
 
@@ -59,6 +56,7 @@ export default {
     
   },
   data: () => ({
+    drawer:null,
     //
   }),
 };
@@ -66,7 +64,7 @@ export default {
 
 <style>
   html{
-    overflow-y: hidden;
+    overflow-y: hidden !important;
   }
   
   .imgClass{
@@ -74,6 +72,16 @@ export default {
     height: 58px;
     vertical-align: middle;
     padding-right: 5px;
+  }
+  .tabClass{
+    color: #4baf62;
+  }
+  .container{
+    background-color: #212121;
+    padding: 0!important;
+  }
+  #title{
+    color:#4baf62;
   }
 </style>
 
