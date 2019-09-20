@@ -1,23 +1,17 @@
 package com.chameleonvision.settings;
 
 import com.chameleonvision.FileHelper;
-import com.chameleonvision.CameraException;
-
-import java.io.*;
-import java.nio.file.*;
-
-import com.chameleonvision.vision.camera.Camera;
 import com.chameleonvision.vision.GeneralSettings;
-import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.CameraManager;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import edu.wpi.cscore.*;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class SettingsManager {
     private static SettingsManager instance;
@@ -25,10 +19,11 @@ public class SettingsManager {
     private SettingsManager() {
         InitiateGeneralSettings();
 
-        if (!Cameras.containsKey(GeneralSettings.curr_camera) && Cameras.size() > 0) {
-            String camName = Cameras.keySet().stream().findFirst().get();
-            GeneralSettings.curr_camera = camName;
-            GeneralSettings.curr_pipeline = CameraManager.getCamera(camName).getCurrentPipelineIndex();
+        var allCameras = CameraManager.getAllCamerasByName();
+        if (!allCameras.containsKey(GeneralSettings.curr_camera) && allCameras.size() > 0) {
+            var cam = allCameras.entrySet().stream().findFirst().get().getValue();
+            GeneralSettings.curr_camera = cam.name;
+            GeneralSettings.curr_pipeline = cam.getCurrentPipelineIndex();
         }
     }
 
@@ -43,10 +38,7 @@ public class SettingsManager {
         return instance;
     }
 
-    public static HashMap<String, Camera> Cameras = new HashMap<>();
-    public static HashMap<String, UsbCamera> UsbCameras = new HashMap<>();
     public static com.chameleonvision.vision.GeneralSettings GeneralSettings;
-    public static HashMap<String, String> CamerasCurrentPipeline = new HashMap<>();
     //    public static HashMap<String, String> CameraPorts = new HashMap<>();//TODO Implement ports
     public static final Path SettingsPath = Paths.get(System.getProperty("user.dir"), "Settings");
 
@@ -60,20 +52,7 @@ public class SettingsManager {
         }
     }
 
-
     //Access Methods
-    public List<String> GetResolutionList() throws CameraException {
-        if (!GeneralSettings.curr_camera.equals("")) {
-            List<String> list = new ArrayList<>();
-            var cam = CameraManager.getCamera(GeneralSettings.curr_camera).UsbCam;
-            for (var res : cam.enumerateVideoModes()) {
-                list.add(String.format("%s X %s at %s fps", res.width, res.height, res.fps));
-            }
-            return list;
-        }
-        throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
-    }
-
     public void updateCameraSetting(String cameraName, int pipelineNumber) {
         GeneralSettings.curr_camera = cameraName;
         GeneralSettings.curr_pipeline = pipelineNumber;
@@ -83,31 +62,17 @@ public class SettingsManager {
         GeneralSettings.curr_pipeline = pipelineNumber;
     }
 
-
     //Savers
     public void SaveSettings() {
         CameraManager.saveCameras();
         SaveGeneralSettings();
     }
 
-    private void SaveCameras() {
-        for (Map.Entry<String, Camera> entry : Cameras.entrySet()) {
-            try {
-                Gson gson = new Gson();
-                FileWriter writer = new FileWriter(Paths.get(CameraManager.CamConfigPath.toString(), String.format("%s.json", entry.getKey())).toString());
-                gson.toJson(entry.getValue(), writer);
-                writer.flush();
-                writer.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     private void SaveGeneralSettings() {
         try {
-            FileWriter writer = new FileWriter(Paths.get(SettingsPath.toString(), "Settings.json").toString());
-            new Gson().toJson(GeneralSettings, writer);
+            Gson gson = new GsonBuilder().setPrettyPrinting().create();
+            FileWriter writer = new FileWriter(Paths.get(SettingsPath.toString(), "settings.json").toString());
+            gson.toJson(GeneralSettings, writer);
             writer.flush();
             writer.close();
         } catch (IOException e) {

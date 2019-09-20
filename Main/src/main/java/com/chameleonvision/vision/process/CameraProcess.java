@@ -1,17 +1,15 @@
 package com.chameleonvision.vision.process;
 
-import com.chameleonvision.CameraException;
 import com.chameleonvision.MemoryManager;
 import com.chameleonvision.settings.SettingsManager;
-import com.chameleonvision.vision.camera.Camera;
-import com.chameleonvision.vision.camera.CameraManager;
-import com.chameleonvision.vision.camera.CameraValues;
 import com.chameleonvision.vision.Pipeline;
+import com.chameleonvision.vision.camera.Camera;
+import com.chameleonvision.vision.camera.CameraValues;
 import com.chameleonvision.web.Server;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
-import edu.wpi.first.networktables.*;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.networktables.*;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
@@ -39,10 +37,6 @@ public class CameraProcess implements Runnable {
     private Pipeline currentPipeline;
     private VisionProcess visionProcess;
     private CameraValues camVals;
-
-    // cscore
-    private CvSink cvSink;
-    private CvSource cvPublish;
 
     // pipeline process items
     private List<MatOfPoint> FoundContours = new ArrayList<>();
@@ -103,11 +97,6 @@ public class CameraProcess implements Runnable {
         // camera settings
         camVals = new CameraValues(camera);
         visionProcess = new VisionProcess(camVals);
-
-        // cscore setup
-        CameraServer cs = CameraServer.getInstance();
-        cvSink = cs.getVideo(camera.UsbCam);
-        cvPublish = cs.putVideo(cameraName, camVals.ImageWidth, camVals.ImageHeight);
     }
 
     private void drawContour(Mat inputMat, RotatedRect contourRect) {
@@ -192,7 +181,7 @@ public class CameraProcess implements Runnable {
             currentPipeline = camera.getCurrentPipeline();
             // start fps counter right before grabbing input frame
             startTime = System.nanoTime();
-            TimeStamp = cvSink.grabFrame(cameraInputMat);
+            TimeStamp = camera.grabFrame(cameraInputMat);
             if (cameraInputMat.cols() == 0 && cameraInputMat.rows() == 0) {
                 continue;
             }
@@ -210,10 +199,10 @@ public class CameraProcess implements Runnable {
                 point.put("yaw", pipelineResult.Yaw);
                 point.put("fps", fps);
                 WebSend.put("point", point);
-                WebSend.put("raw_point",center);
+                WebSend.put("raw_point", center);
                 Server.broadcastMessage(WebSend);
             }
-            cvPublish.putFrame(streamOutputMat);
+            camera.putFrame(streamOutputMat);
             // calculate FPS after publishing output frame
             processTimeMs = (System.nanoTime() - startTime) * 1e-6;
             fps = 1000 / processTimeMs;

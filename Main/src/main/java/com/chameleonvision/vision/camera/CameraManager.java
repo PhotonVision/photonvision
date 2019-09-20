@@ -23,20 +23,23 @@ import java.util.List;
 
 public class CameraManager {
 
-    public static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "Cams");
+    private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "Cams");
 
     // TODO: Fix suffix for camera
-    // TODO: throw a camera Exeption if no camera is connected
+    // TODO: throw a camera Exception if no camera is connected
     static HashMap<String, UsbCameraInfo> AllUsbCameraInfosByName = new HashMap<>() {{
         var suffix = 0;
         for (var info : UsbCamera.enumerateUsbCameras()) {
             var cap = new VideoCapture(info.name);
             if (cap.isOpened()) {
                 cap.release();
-                var name = String.format("%s(%s)", info.name, suffix);
-                put(name, info);
+            }
+            var name = info.name;
+            while (this.containsKey(name)) {
                 suffix++;
-            }            
+                name = String.format("%s(%s)", info.name, suffix);
+            }
+            put(name, info);
         }
     }};
 
@@ -78,7 +81,7 @@ public class CameraManager {
         return true;
     }
 
-    public static Camera getCamera(String cameraName) {
+    private static Camera getCamera(String cameraName) {
         return AllCamerasByName.get(cameraName);
     }
 
