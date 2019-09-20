@@ -44,8 +44,6 @@ public class CameraManager {
 
     private static HashMap<String, Camera> AllCamerasByName = new HashMap<>();
 
-    private static String currentCameraName;
-
     public static HashMap<String, Camera> getAllCamerasByName() { return AllCamerasByName; }
 
     public static void initializeCameras() {
@@ -62,17 +60,17 @@ public class CameraManager {
                     ex.printStackTrace();
                 }
             } else {
-                if (!addCamera(new Camera(entry.getKey()))) {
+                if (!addCamera(new Camera(entry.getKey()),entry.getKey())) {
                     System.err.println("Failed to add camera! Already exists!");
                 }
             }
         }
     }
 
-    private static boolean addCamera(Camera camera) {
-        if (AllCamerasByName.containsKey(camera.name)) return false;
+    private static boolean addCamera(Camera camera, String cameraName) {
+        if (AllCamerasByName.containsKey(cameraName)) return false;
         camera.addPipeline();
-        AllCamerasByName.put(camera.name, camera);
+        AllCamerasByName.put(cameraName, camera);
         return true;
     }
 
@@ -82,13 +80,13 @@ public class CameraManager {
 
     public static void setCurrentCamera(String cameraName) throws CameraException {
         if (!AllCamerasByName.containsKey(cameraName)) throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
-        currentCameraName = cameraName;
+        SettingsManager.GeneralSettings.curr_camera = cameraName;
         SettingsManager.getInstance().updateCameraSetting(cameraName, getCurrentCamera().getCurrentPipelineIndex());
     }
 
     public static Camera getCurrentCamera() throws CameraException {
         if (AllCamerasByName.size() == 0) throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
-        var curCam = AllCamerasByName.get(currentCameraName);
+        var curCam = AllCamerasByName.get(SettingsManager.GeneralSettings.curr_camera);
         if (curCam == null) throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
         return curCam;
     }
@@ -104,9 +102,9 @@ public class CameraManager {
     }
 
     public static List<String> getResolutionList() throws CameraException {
-        if (!currentCameraName.equals("")) {
+        if (!SettingsManager.GeneralSettings.curr_camera.equals("")) {
             List<String> list = new ArrayList<>();
-            var cam = CameraManager.getCamera(currentCameraName).UsbCam;
+            var cam = CameraManager.getCamera(SettingsManager.GeneralSettings.curr_camera).UsbCam;
             for (var res : cam.enumerateVideoModes()) {
                 list.add(String.format("%s X %s at %s fps", res.width, res.height, res.fps));
             }
