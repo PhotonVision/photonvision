@@ -79,7 +79,7 @@ public class CameraManager {
     public static void setCurrentCamera(String cameraName) throws CameraException {
         if (!AllCamerasByName.containsKey(cameraName)) throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
         SettingsManager.GeneralSettings.curr_camera = cameraName;
-        SettingsManager.getInstance().updateCameraSetting(cameraName, getCurrentCamera().getCurrentPipelineIndex());
+        SettingsManager.updateCameraSetting(cameraName, getCurrentCamera().getCurrentPipelineIndex());
     }
 
     public static Camera getCurrentCamera() throws CameraException {
@@ -92,7 +92,7 @@ public class CameraManager {
     public static void setCurrentPipeline(int pipelineNumber) throws CameraException {
         if (!getCurrentCamera().getPipelines().containsKey(pipelineNumber)) throw new CameraException(CameraException.CameraExceptionType.BAD_PIPELINE);
         getCurrentCamera().setCurrentPipelineIndex(pipelineNumber);
-        SettingsManager.getInstance().updatePipelineSetting(pipelineNumber);
+        SettingsManager.updatePipelineSetting(pipelineNumber);
     }
 
     public static Pipeline getCurrentPipeline() throws CameraException {

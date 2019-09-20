@@ -30,7 +30,7 @@ public class Server {
             ws.onClose(ctx -> {
                 users.remove(ctx);
                 System.out.println("Socket Disconnected");
-                SettingsManager.getInstance().SaveSettings();
+                SettingsManager.saveSettings();
             });
             ws.onMessage(ctx -> {
                 broadcastMessage(ctx.message(), ctx);

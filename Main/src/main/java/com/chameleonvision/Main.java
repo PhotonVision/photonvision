@@ -8,7 +8,7 @@ import com.chameleonvision.web.Server;
 public class Main {
     public static void main(String[] args) {
         if (CameraManager.initializeCameras()) {
-            SettingsManager manager = SettingsManager.getInstance();
+            SettingsManager.intialize();
             for (var camSet : CameraManager.getAllCamerasByName().entrySet()) {
                 new Thread(new CameraProcess(camSet.getValue())).start();
             }
