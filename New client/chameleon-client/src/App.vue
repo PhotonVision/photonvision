@@ -1,26 +1,5 @@
 <template>
  <v-app>
-    <!-- <v-navigation-drawer app clipped dark width="200">
-      <v-list dense>
-        <v-list-item link to="Vision">
-          <v-list-item-action>
-            <v-icon>mdi-video</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>Vision</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-        <v-list-item link to="Settings">
-          <v-list-item-action>
-            <v-icon>mdi-settings</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title>Settings</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer> -->
-
     <v-app-bar app clipped-left dark>
       <img class="imgClass" src="./assets/logo.png">
       <v-toolbar-title id="title">Chameleon Vision</v-toolbar-title>
@@ -42,7 +21,7 @@
       </v-container>
     </v-content>
     <v-footer app dark>
-      <span>&copy; 2019 Chameleon Vision Project</span>
+      <span>&copy; 2019 Chameleon Vision</span>
     </v-footer>
   </v-app>
 </template>
@@ -66,7 +45,6 @@ export default {
   html{
     overflow-y: hidden !important;
   }
-  
   .imgClass{
     width: auto;
     height: 58px;
