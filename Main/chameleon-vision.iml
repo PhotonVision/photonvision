@@ -39,7 +39,6 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-beans:5.1.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-core:5.1.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-jcl:5.1.9.RELEASE" level="project" />
-    <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.9" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-java:2019.4.1" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxathena:2019.4.1" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxraspbian:2019.4.1" level="project" />
