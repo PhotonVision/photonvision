@@ -33,7 +33,6 @@ public class CameraProcess implements Runnable {
     // chameleon specific
     private Pipeline currentPipeline;
     private VisionProcess visionProcess;
-    private CameraValues camVals;
 
     // pipeline process items
     private List<MatOfPoint> FoundContours = new ArrayList<>();
@@ -91,7 +90,7 @@ public class CameraProcess implements Runnable {
         ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());
 
         // camera settings
-        visionProcess = new VisionProcess(camVals);
+        visionProcess = new VisionProcess(camera.getCamVals());
         streamProcess = new StreamProcess(camera);
     }
 
@@ -145,13 +144,13 @@ public class CameraProcess implements Runnable {
                     pipelineResult.RawPoint = finalRect;
                     pipelineResult.IsValid = true;
                     if (!currentPipeline.is_calibrated) {
-                        pipelineResult.CalibratedX = camVals.CenterX;
-                        pipelineResult.CalibratedY = camVals.CenterY;
+                        pipelineResult.CalibratedX = camera.getCamVals().CenterX;
+                        pipelineResult.CalibratedY = camera.getCamVals().CenterY;
                     } else {
                         pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.B) / currentPipeline.M;
                         pipelineResult.CalibratedY = finalRect.center.x * currentPipeline.M + currentPipeline.B;
-                        pipelineResult.Pitch = camVals.CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
-                        pipelineResult.Yaw = camVals.CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
+                        pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
+                        pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
                     }
                     // TODO Send pitch yaw distance and Raw Point using websockets to client for calib calc
                     drawContour(outputImage, finalRect);
@@ -171,53 +170,61 @@ public class CameraProcess implements Runnable {
 
         new Thread(streamProcess).start();
 
+        long lastFrameEndNanosec = 0;
+
         while (!Thread.interrupted()) {
-            FoundContours.clear();
-            FilteredContours.clear();
-            GroupedContours.clear();
-
-            currentPipeline = camera.getCurrentPipeline();
-            // start fps counter right before grabbing input frame
             startTime = System.nanoTime();
-            TimeStamp = camera.grabFrame(cameraInputMat);
-            if (cameraInputMat.cols() == 0 && cameraInputMat.rows() == 0) {
-                continue;
-            }
+            if ((startTime - lastFrameEndNanosec) * 1e-6 >= 1000.0/camera.getVideoMode().fps) {
 
-            // get vision data
-            var pipelineResult = runVisionProcess(cameraInputMat, streamOutputMat);
-            updateNetworkTables(pipelineResult);
-            if (cameraName.equals(SettingsManager.GeneralSettings.curr_camera)) {
-                HashMap<String,Object> WebSend = new HashMap<>();
-                HashMap<String,Object> point = new HashMap<>();
-                List<Double> center = new ArrayList<>();
-                if (pipelineResult.IsValid) {
-                    center.add(pipelineResult.RawPoint.center.x);
-                    center.add(pipelineResult.RawPoint.center.y);
-                    point.put("pitch", pipelineResult.Pitch);
-                    point.put("yaw", pipelineResult.Yaw);
-                } else {
-                    center.add(0.0);
-                    center.add(0.0);
-                    point.put("pitch", 0);
-                    point.put("yaw", 0);
+
+                FoundContours.clear();
+                FilteredContours.clear();
+                GroupedContours.clear();
+
+                currentPipeline = camera.getCurrentPipeline();
+                // start fps counter right before grabbing input frame
+                startTime = System.nanoTime();
+                TimeStamp = camera.grabFrame(cameraInputMat);
+                if (cameraInputMat.cols() == 0 && cameraInputMat.rows() == 0) {
+                    continue;
                 }
-                point.put("fps", fps);
-                WebSend.put("point", point);
-                WebSend.put("raw_point", center);
-                Server.broadcastMessage(WebSend);
+
+                // get vision data
+                var pipelineResult = runVisionProcess(cameraInputMat, streamOutputMat);
+                updateNetworkTables(pipelineResult);
+                if (cameraName.equals(SettingsManager.GeneralSettings.curr_camera)) {
+                    HashMap<String, Object> WebSend = new HashMap<>();
+                    HashMap<String, Object> point = new HashMap<>();
+                    List<Double> center = new ArrayList<>();
+                    if (pipelineResult.IsValid) {
+                        center.add(pipelineResult.RawPoint.center.x);
+                        center.add(pipelineResult.RawPoint.center.y);
+                        point.put("pitch", pipelineResult.Pitch);
+                        point.put("yaw", pipelineResult.Yaw);
+                    } else {
+                        center.add(0.0);
+                        center.add(0.0);
+                        point.put("pitch", 0);
+                        point.put("yaw", 0);
+                    }
+                    point.put("fps", fps);
+                    WebSend.put("point", point);
+                    WebSend.put("raw_point", center);
+                    Server.broadcastMessage(WebSend);
+                }
+
+                //camera.putFrame(streamOutputMat);
+                streamProcess.updateFrame(streamOutputMat);
+
+                cameraInputMat.release();
+                hsvThreshMat.release();
+
+                // calculate FPS
+                lastFrameEndNanosec = System.nanoTime();
+                processTimeMs = (lastFrameEndNanosec - startTime) * 1e-6;
+                fps = 1000 / processTimeMs;
+                System.out.printf("%s - Process time: %.2fms, FPS: %.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n", cameraName, processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
             }
-
-            //camera.putFrame(streamOutputMat);
-            streamProcess.updateFrame(streamOutputMat);
-
-            // calculate FPS after publishing output frame
-            processTimeMs = (System.nanoTime() - startTime) * 1e-6;
-            fps = 1000 / processTimeMs;
-            System.out.printf("%s - Process time: %fms, FPS: %.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n", cameraName,processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
-
-            cameraInputMat.release();
-            hsvThreshMat.release();
         }
     }
 }
