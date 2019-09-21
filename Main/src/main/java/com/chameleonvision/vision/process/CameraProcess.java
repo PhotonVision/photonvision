@@ -139,7 +139,7 @@ public class CameraProcess implements Runnable {
         }
         FoundContours = visionProcess.FindContours(hsvThreshMat);
         if (FoundContours.size() > 0) {
-            FilteredContours = visionProcess.FilterContours(FoundContours, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent, currentPipeline.sort_mode, currentPipeline.target_intersection, currentPipeline.target_group);
+            FilteredContours = visionProcess.FilterContours(FoundContours, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent);
             if (FilteredContours.size() > 0) {
                 GroupedContours = visionProcess.GroupTargets(FilteredContours, currentPipeline.target_intersection, currentPipeline.target_group);
                 if (GroupedContours.size() > 0) {
@@ -155,7 +155,6 @@ public class CameraProcess implements Runnable {
                     }
                     pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
                     pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
-                    // TODO Send pitch yaw distance and Raw Point using websockets to client for calib calc
                     drawContour(outputImage, finalRect);
                 }
             }

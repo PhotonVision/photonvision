@@ -50,7 +50,7 @@ public class VisionProcess {
     }
 
     private List<MatOfPoint> FilteredContours = new ArrayList<MatOfPoint>();
-    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent, String SortMode, String TargetIntersection, String TargetGrouping) {
+    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent) {
         for (MatOfPoint Contour : InputContours){
             try{
                 var contourArea = Imgproc.contourArea(Contour);
