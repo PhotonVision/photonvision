@@ -37,10 +37,11 @@ public class CameraValues {
         HorizontalView = FastMath.atan(FastMath.tan(DiagonalView / 2) * (HorizontalRatio / DiagonalView)) * 2;
         VerticalView = FastMath.atan(FastMath.tan(DiagonalView/2) * (VerticalRatio / DiagonalView)) * 2;
         HorizontalFocalLength = ImageWidth / (2 * FastMath.tan(HorizontalView /2));
-        VerticalFocalLength = ImageWidth / (2 * FastMath.tan(VerticalView /2));
+        VerticalFocalLength = ImageHeight / (2 * FastMath.tan(VerticalView /2));
     }
     public double CalculatePitch(double PixelY, double centerY){
-        return (FastMath.toDegrees((FastMath.atan(PixelY - centerY) / VerticalFocalLength)) * -1);
+       double pitch =  (FastMath.toDegrees((FastMath.atan(PixelY - centerY) / VerticalFocalLength)));
+       return (pitch * -1);
     }
     public double CalculateYaw(double PixelX, double centerX){
         return FastMath.toDegrees(FastMath.atan(PixelX - centerX) / HorizontalFocalLength);

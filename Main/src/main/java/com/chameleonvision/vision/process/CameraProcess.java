@@ -120,6 +120,9 @@ public class CameraProcess implements Runnable {
         if (currentPipeline == null) {
             return pipelineResult;
         }
+        if (!currentPipeline.orientation.equals("Normal")){
+            Core.flip(inputImage,inputImage,-1);
+        }
         if (ntDriverModeEntry.getBoolean(false)){
             inputImage.copyTo(outputImage);
             return pipelineResult;
@@ -149,9 +152,9 @@ public class CameraProcess implements Runnable {
                     } else {
                         pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.B) / currentPipeline.M;
                         pipelineResult.CalibratedY = finalRect.center.x * currentPipeline.M + currentPipeline.B;
-                        pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
-                        pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
                     }
+                    pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
+                    pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
                     // TODO Send pitch yaw distance and Raw Point using websockets to client for calib calc
                     drawContour(outputImage, finalRect);
                 }
