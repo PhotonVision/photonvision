@@ -210,7 +210,7 @@ public class CameraProcess implements Runnable {
                     point.put("fps", fps);
                     WebSend.put("point", point);
                     WebSend.put("raw_point", center);
-                    Server.broadcastMessage(WebSend);
+                    Server.handler.broadcastMessage(WebSend);
                 }
 
                 //camera.putFrame(streamOutputMat);
