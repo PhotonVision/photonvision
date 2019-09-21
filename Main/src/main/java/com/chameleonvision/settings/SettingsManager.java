@@ -12,16 +12,24 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 public class SettingsManager {
 	public static final Path SettingsPath = Paths.get(System.getProperty("user.dir"), "Settings");
 	public static com.chameleonvision.vision.GeneralSettings GeneralSettings;
-	//    public static HashMap<String, String> CameraPorts = new HashMap<>();//TODO Implement ports
+	    public static HashMap<String, Integer> CameraPorts = new HashMap<>();
 
 	private SettingsManager() {}
 
-	public static void intialize() {
+	public static void initialize() {
 		initGeneralSettings();
+		NetworkSettings netSettings = new NetworkSettings();
+		netSettings.hostname=GeneralSettings.hostname;
+		netSettings.gateway=GeneralSettings.gateway;
+		netSettings.netmask=GeneralSettings.netmask;
+		netSettings.connectionType=GeneralSettings.connection_type;
+		netSettings.ip=GeneralSettings.ip;
+		netSettings.run();
 
 		var allCameras = CameraManager.getAllCamerasByName();
 		if (!allCameras.containsKey(GeneralSettings.curr_camera) && allCameras.size() > 0) {

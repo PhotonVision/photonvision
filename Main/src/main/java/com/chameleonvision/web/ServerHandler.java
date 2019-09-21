@@ -83,8 +83,9 @@ public class ServerHandler {
                     String newCamera = (String) value;
                     System.out.printf("Changing camera to %s\n", newCamera);
                     CameraManager.setCurrentCamera(newCamera);
-                    //broadcastMessage((Map<String, Object>) new HashMap<String, Object>(){}.put("port",SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera)));
+                    broadcastMessage(new HashMap<String, Object>(){}.put("port",SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera)));
                     broadcastMessage(CameraManager.getCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
+
                     break;
                 case "curr_pipeline":
                     String newPipeline = (String) value;
@@ -182,7 +183,7 @@ public class ServerHandler {
             fullSettings.put("resolutionList", CameraManager.getResolutionList());
             fullSettings.put("resolution", currentCamera.getVideoModeIndex());
             fullSettings.put("FOV", currentCamera.getFOV());
-//            fullSettings.put("port", SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera));
+            fullSettings.put("port", SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera));
         } catch (CameraException e) {
             System.err.println("No camera found!");
             //TODO: add message to ui to inform that there are no cameras

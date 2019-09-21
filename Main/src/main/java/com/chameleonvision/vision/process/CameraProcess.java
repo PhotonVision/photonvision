@@ -65,7 +65,10 @@ public class CameraProcess implements Runnable {
 
             camera.setExposure(pipeline.exposure);
             camera.setBrightness(pipeline.brightness);
-            //TODO Send Pipeline change using websocket to client
+            HashMap<String,Object> pipeChange = new HashMap<>();
+            pipeChange.put("curr_pipeline",ntPipelineIndex);
+            Server.handler.broadcastMessage(pipeChange);
+
         } else {
             ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());
         }
@@ -113,7 +116,6 @@ public class CameraProcess implements Runnable {
         ntTimeStampEntry.setNumber(TimeStamp);
     }
 
-    // TODO: Separate video output to separate function, maybe even second thread
     private PipelineResult runVisionProcess(Mat inputImage, Mat outputImage) {
         var pipelineResult = new PipelineResult();
 
