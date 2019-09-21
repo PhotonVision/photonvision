@@ -15,7 +15,6 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 	public Camera deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) throws JsonParseException {
 		var jsonObj = jsonElement.getAsJsonObject();
 		var camFOV = jsonObj.get("FOV").getAsDouble();
-		var camPath = jsonObj.get("path").getAsString();
 		var camName = jsonObj.get("name").getAsString();
 
 		var pipelines = jsonObj.get("pipelines");

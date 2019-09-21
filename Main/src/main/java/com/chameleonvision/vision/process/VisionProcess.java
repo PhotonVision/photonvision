@@ -8,6 +8,7 @@ import org.opencv.imgproc.*;
 
 import java.util.*;
 
+@SuppressWarnings("WeakerAccess")
 public class VisionProcess {
 
     private HashMap<String, Integer>TargetGrouping= new HashMap<>() {{
@@ -49,7 +50,7 @@ public class VisionProcess {
         return FoundContours;
     }
 
-    private List<MatOfPoint> FilteredContours = new ArrayList<MatOfPoint>();
+    private List<MatOfPoint> FilteredContours = new ArrayList<>();
     List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent) {
         for (MatOfPoint Contour : InputContours){
             try{
@@ -74,15 +75,6 @@ public class VisionProcess {
         return FilteredContours;
     }
 
-    private static Comparator<RotatedRect> SortByLargestComparator = (rect1, rect2) -> Double.compare(rect2.size.area(), rect1.size.area());
-    private static Comparator<RotatedRect> SortBySmallestComparator = SortByLargestComparator.reversed();
-
-    private static Comparator<RotatedRect> SortByHighestComparator = (rect1, rect2) -> Double.compare(rect2.center.y, rect1.center.y);
-    private static Comparator<RotatedRect> SortByLowestComparator = SortByHighestComparator.reversed();
-
-    private static Comparator<RotatedRect> SortByLeftmostComparator = Comparator.comparingDouble(rect -> rect.center.x);
-    private static Comparator<RotatedRect> SortByRightmostComparator = SortByLeftmostComparator.reversed();
-
     private double calcDistance(RotatedRect rect) {
         return FastMath.sqrt(FastMath.pow(CamVals.CenterX - rect.center.x, 2) + FastMath.pow(CamVals.CenterY - rect.center.y, 2));
     }
@@ -105,38 +97,8 @@ public class VisionProcess {
                 return Collections.max(inputRects, Comparator.comparing(rect -> rect.center.x));
             case "Centermost":
                 return Collections.min(inputRects, SortByCentermostComparator);
-//                return inputRects.stream().sorted(SortByCentermostComparator).collect(Collectors.toList()).get(0);
             default:
                 return inputRects.get(0); // default to whatever the first contour is, but this should never happen
-        }
-    }
-
-
-    void SortTargets(List<RotatedRect> inputRects, String sortMode) {
-        switch (sortMode) {
-            case "Largest":
-                inputRects.sort(SortByLargestComparator);
-                break;
-            case "Smallest":
-                inputRects.sort(SortBySmallestComparator);
-                break;
-            case "Highest":
-                inputRects.sort(SortByHighestComparator);
-                break;
-            case "Lowest":
-                inputRects.sort(SortByLowestComparator);
-                break;
-            case "Leftmost":
-                inputRects.sort(SortByLeftmostComparator);
-                break;
-            case "Rightmost":
-                inputRects.sort(SortByRightmostComparator);
-                break;
-            case "Centermost":
-                inputRects.sort(SortByCentermostComparator);
-                break;
-            default:
-                break;
         }
     }
 

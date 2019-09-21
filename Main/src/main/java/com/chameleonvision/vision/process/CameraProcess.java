@@ -1,11 +1,9 @@
 package com.chameleonvision.vision.process;
 
-import com.chameleonvision.MemoryManager;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
-import com.chameleonvision.vision.camera.CameraValues;
-import com.chameleonvision.web.Server;
+import com.chameleonvision.web.ServerHandler;
 import edu.wpi.first.networktables.*;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -27,8 +25,6 @@ public class CameraProcess implements Runnable {
     private NetworkTableEntry ntDistanceEntry;
     private NetworkTableEntry ntTimeStampEntry;
     private NetworkTableEntry ntValidEntry;
-
-    private MemoryManager memManager = new MemoryManager(125);
 
     // chameleon specific
     private Pipeline currentPipeline;
@@ -67,7 +63,7 @@ public class CameraProcess implements Runnable {
             camera.setBrightness(pipeline.brightness);
             HashMap<String,Object> pipeChange = new HashMap<>();
             pipeChange.put("curr_pipeline",ntPipelineIndex);
-            Server.handler.broadcastMessage(pipeChange);
+            ServerHandler.broadcastMessage(pipeChange);
 
         } else {
             ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());
@@ -169,8 +165,11 @@ public class CameraProcess implements Runnable {
     public void run() {
         // processing time tracking
         long startTime;
+        long fpsLastTime = 0;
         double processTimeMs;
         double fps = 0;
+        double uiFps = 0;
+        int maxFps = camera.getVideoMode().fps;
 
         new Thread(streamProcess).start();
 
@@ -178,16 +177,23 @@ public class CameraProcess implements Runnable {
 
         while (!Thread.interrupted()) {
             startTime = System.nanoTime();
-            if ((startTime - lastFrameEndNanosec) * 1e-6 >= 1000.0/camera.getVideoMode().fps) {
-
-
+            if ((startTime - lastFrameEndNanosec) * 1e-6 >= 1000.0/maxFps + 3) { // 3 additional fps to allow for overhead
                 FoundContours.clear();
                 FilteredContours.clear();
                 GroupedContours.clear();
 
+                // update FPS for ui only every 0.5 seconds
+                if ((startTime - fpsLastTime) * 1e-6 >= 500) {
+                    if (fps >= maxFps) {
+                        uiFps = maxFps;
+                    } else {
+                        uiFps = fps;
+                    }
+                    fpsLastTime = System.nanoTime();
+                }
+
                 currentPipeline = camera.getCurrentPipeline();
                 // start fps counter right before grabbing input frame
-                startTime = System.nanoTime();
                 TimeStamp = camera.grabFrame(cameraInputMat);
                 if (cameraInputMat.cols() == 0 && cameraInputMat.rows() == 0) {
                     continue;
@@ -211,10 +217,10 @@ public class CameraProcess implements Runnable {
                         point.put("pitch", 0);
                         point.put("yaw", 0);
                     }
-                    point.put("fps", fps);
+                    point.put("fps", uiFps);
                     WebSend.put("point", point);
                     WebSend.put("raw_point", center);
-                    Server.handler.broadcastMessage(WebSend);
+                    ServerHandler.broadcastMessage(WebSend);
                 }
 
                 //camera.putFrame(streamOutputMat);
@@ -227,7 +233,8 @@ public class CameraProcess implements Runnable {
                 lastFrameEndNanosec = System.nanoTime();
                 processTimeMs = (lastFrameEndNanosec - startTime) * 1e-6;
                 fps = 1000 / processTimeMs;
-                System.out.printf("%s - Process time: %.2fms, FPS: %.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n", cameraName, processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
+
+                System.out.printf("%s - Process time: %-5.2fms, FPS: %-5.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n", cameraName, processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
             }
         }
     }

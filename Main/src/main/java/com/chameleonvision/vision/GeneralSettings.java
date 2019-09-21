@@ -9,6 +9,4 @@ public class GeneralSettings {
     public String hostname = "Chameleon-vision";
     public String curr_camera = "";
     public Integer curr_pipeline = null;
-
-
 }

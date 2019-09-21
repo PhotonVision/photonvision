@@ -23,11 +23,11 @@ public class ServerHandler {
 
     private static List<WsContext> users;
 
-    public ServerHandler() {
-        this.users = new ArrayList<>();
+    ServerHandler() {
+        users = new ArrayList<>();
     }
 
-    public void onConnect(WsConnectContext context) {
+    void onConnect(WsConnectContext context) {
         users.add(context);
         sendFullSettings();
     }
@@ -36,7 +36,7 @@ public class ServerHandler {
         users.remove(context);
     }
 
-    public void onMessage(WsMessageContext data) throws CameraException {
+    void onMessage(WsMessageContext data) throws CameraException {
         broadcastMessage(data.message(), data);
 
         JSONObject jsonObject = new JSONObject(data.message());
@@ -83,7 +83,7 @@ public class ServerHandler {
                     String newCamera = (String) value;
                     System.out.printf("Changing camera to %s\n", newCamera);
                     CameraManager.setCurrentCamera(newCamera);
-                    broadcastMessage(new HashMap<String, Object>(){}.put("port",SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera)));
+                    broadcastMessage(new HashMap<String, Object>(){}.put("port",CameraManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera)));
                     broadcastMessage(CameraManager.getCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
 
                     break;
@@ -183,7 +183,7 @@ public class ServerHandler {
             fullSettings.put("resolutionList", CameraManager.getResolutionList());
             fullSettings.put("resolution", currentCamera.getVideoModeIndex());
             fullSettings.put("FOV", currentCamera.getFOV());
-            fullSettings.put("port", SettingsManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera));
+            fullSettings.put("port", CameraManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera));
         } catch (CameraException e) {
             System.err.println("No camera found!");
             //TODO: add message to ui to inform that there are no cameras

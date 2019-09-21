@@ -2,6 +2,7 @@ package com.chameleonvision.vision.camera;
 
 import edu.wpi.cscore.VideoMode;
 
+@SuppressWarnings("WeakerAccess")
 public class CamVideoMode {
     public final int fps;
     public final int width;

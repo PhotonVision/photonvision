@@ -3,6 +3,7 @@ package com.chameleonvision.vision.camera;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.util.FastMath;
 
+@SuppressWarnings("WeakerAccess")
 public class CameraValues {
    public final int ImageWidth;
    public final int ImageHeight;

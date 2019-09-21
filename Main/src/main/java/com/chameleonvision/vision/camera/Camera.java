@@ -1,6 +1,5 @@
 package com.chameleonvision.vision.camera;
 
-import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
 import edu.wpi.cscore.*;
 import edu.wpi.first.cameraserver.CameraServer;
@@ -70,7 +69,7 @@ public class Camera {
 		cvSink = cs.getVideo(UsbCam);
 		cvSource = cs.putVideo(name, camVals.ImageWidth, camVals.ImageHeight);
 		var s = (MjpegServer) cs.getServer("serve_" + name);
-		SettingsManager.CameraPorts.put(name, s.getPort());
+		CameraManager.CameraPorts.put(name, s.getPort());
 	}
 
 	public void setCamVideoMode(int videoMode) {
@@ -158,10 +157,6 @@ public class Camera {
 
 	public long grabFrame(Mat image) {
 	    return cvSink.grabFrame(image);
-    }
-
-    public long grabFrame(Mat image, double timeout) {
-	    return cvSink.grabFrame(image, timeout);
     }
 
     public CameraValues getCamVals() {

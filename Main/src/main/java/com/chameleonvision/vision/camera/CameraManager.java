@@ -39,7 +39,11 @@ public class CameraManager {
 
     private static HashMap<String, Camera> AllCamerasByName = new HashMap<>();
 
-    public static HashMap<String, Camera> getAllCamerasByName() { return AllCamerasByName; }
+    public static HashMap<String, Camera> getAllCamerasByName() {
+        return AllCamerasByName;
+    }
+
+    public static HashMap<String, Integer> CameraPorts = new HashMap<>();
 
     public static boolean initializeCameras() {
         if (AllUsbCameraInfosByName.size() == 0) return false;
@@ -77,7 +81,8 @@ public class CameraManager {
     }
 
     public static void setCurrentCamera(String cameraName) throws CameraException {
-        if (!AllCamerasByName.containsKey(cameraName)) throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
+        if (!AllCamerasByName.containsKey(cameraName))
+            throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
         SettingsManager.GeneralSettings.curr_camera = cameraName;
         SettingsManager.updateCameraSetting(cameraName, getCurrentCamera().getCurrentPipelineIndex());
     }
@@ -90,7 +95,8 @@ public class CameraManager {
     }
 
     public static void setCurrentPipeline(int pipelineNumber) throws CameraException {
-        if (!getCurrentCamera().getPipelines().containsKey(pipelineNumber)) throw new CameraException(CameraException.CameraExceptionType.BAD_PIPELINE);
+        if (!getCurrentCamera().getPipelines().containsKey(pipelineNumber))
+            throw new CameraException(CameraException.CameraExceptionType.BAD_PIPELINE);
         getCurrentCamera().setCurrentPipelineIndex(pipelineNumber);
         SettingsManager.updatePipelineSetting(pipelineNumber);
     }
