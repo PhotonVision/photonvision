@@ -65,7 +65,10 @@ public class CameraProcess implements Runnable {
 
             camera.setExposure(pipeline.exposure);
             camera.setBrightness(pipeline.brightness);
-            //TODO Send Pipeline change using websocket to client
+            HashMap<String,Object> pipeChange = new HashMap<>();
+            pipeChange.put("curr_pipeline",ntPipelineIndex);
+            Server.handler.broadcastMessage(pipeChange);
+
         } else {
             ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());
         }
@@ -113,7 +116,6 @@ public class CameraProcess implements Runnable {
         ntTimeStampEntry.setNumber(TimeStamp);
     }
 
-    // TODO: Separate video output to separate function, maybe even second thread
     private PipelineResult runVisionProcess(Mat inputImage, Mat outputImage) {
         var pipelineResult = new PipelineResult();
 
@@ -155,7 +157,6 @@ public class CameraProcess implements Runnable {
                     }
                     pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
                     pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
-                    // TODO Send pitch yaw distance and Raw Point using websockets to client for calib calc
                     drawContour(outputImage, finalRect);
                 }
             }

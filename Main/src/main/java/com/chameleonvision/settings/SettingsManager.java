@@ -12,11 +12,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 public class SettingsManager {
 	public static final Path SettingsPath = Paths.get(System.getProperty("user.dir"), "Settings");
 	public static com.chameleonvision.vision.GeneralSettings GeneralSettings;
-	//    public static HashMap<String, String> CameraPorts = new HashMap<>();//TODO Implement ports
+	    public static HashMap<String, Integer> CameraPorts = new HashMap<>();
 
 	private SettingsManager() {}
 
