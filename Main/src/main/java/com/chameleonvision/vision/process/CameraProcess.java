@@ -6,9 +6,6 @@ import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
 import com.chameleonvision.vision.camera.CameraValues;
 import com.chameleonvision.web.Server;
-import edu.wpi.cscore.CvSink;
-import edu.wpi.cscore.CvSource;
-import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.*;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -47,6 +44,8 @@ public class CameraProcess implements Runnable {
     private Mat streamOutputMat = new Mat();
     private Scalar contourRectColor = new Scalar(255, 0, 0);
     private long TimeStamp = 0;
+
+    private final StreamProcess streamProcess;
 
     private void DriverModeListener(EntryNotification entryNotification) {
         if (entryNotification.value.getBoolean()) {
@@ -92,8 +91,8 @@ public class CameraProcess implements Runnable {
         ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());
 
         // camera settings
-        camVals = new CameraValues(camera);
         visionProcess = new VisionProcess(camVals);
+        streamProcess = new StreamProcess(camera);
     }
 
     private void drawContour(Mat inputMat, RotatedRect contourRect) {
@@ -170,6 +169,8 @@ public class CameraProcess implements Runnable {
         double processTimeMs;
         double fps = 0;
 
+        new Thread(streamProcess).start();
+
         while (!Thread.interrupted()) {
             FoundContours.clear();
             FilteredContours.clear();
@@ -186,20 +187,30 @@ public class CameraProcess implements Runnable {
             // get vision data
             var pipelineResult = runVisionProcess(cameraInputMat, streamOutputMat);
             updateNetworkTables(pipelineResult);
-            if (cameraName.equals(SettingsManager.GeneralSettings.curr_camera) && pipelineResult.IsValid) {
+            if (cameraName.equals(SettingsManager.GeneralSettings.curr_camera)) {
                 HashMap<String,Object> WebSend = new HashMap<>();
                 HashMap<String,Object> point = new HashMap<>();
                 List<Double> center = new ArrayList<>();
-                center.add(pipelineResult.RawPoint.center.x);
-                center.add(pipelineResult.RawPoint.center.y);
-                point.put("pitch", pipelineResult.Pitch);
-                point.put("yaw", pipelineResult.Yaw);
+                if (pipelineResult.IsValid) {
+                    center.add(pipelineResult.RawPoint.center.x);
+                    center.add(pipelineResult.RawPoint.center.y);
+                    point.put("pitch", pipelineResult.Pitch);
+                    point.put("yaw", pipelineResult.Yaw);
+                } else {
+                    center.add(0.0);
+                    center.add(0.0);
+                    point.put("pitch", 0);
+                    point.put("yaw", 0);
+                }
                 point.put("fps", fps);
                 WebSend.put("point", point);
                 WebSend.put("raw_point", center);
                 Server.broadcastMessage(WebSend);
             }
-            camera.putFrame(streamOutputMat);
+
+            //camera.putFrame(streamOutputMat);
+            streamProcess.updateFrame(streamOutputMat);
+
             // calculate FPS after publishing output frame
             processTimeMs = (System.nanoTime() - startTime) * 1e-6;
             fps = 1000 / processTimeMs;

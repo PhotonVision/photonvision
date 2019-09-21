@@ -30,6 +30,9 @@ public class Camera {
 	private int currentPipelineIndex;
 	private HashMap<Integer, Pipeline> pipelines;
 
+	private final Object cvSourceLock = new Object();
+
+
 	public Camera(String cameraName) {
 		this(cameraName, defaultFOV);
 	}
@@ -85,7 +88,9 @@ public class Camera {
 		// update camera values
 		camVals = new CameraValues(this);
 		if ( prevVideoMode != null && prevVideoMode.width != newVideoMode.width && prevVideoMode.height != newVideoMode.height) { //  if resolution changed
-			cvSource = cs.putVideo(name, newVideoMode.width, newVideoMode.height);
+			synchronized (cvSourceLock) {
+				cvSource = cs.putVideo(name, newVideoMode.width, newVideoMode.height);
+			}
 		}
 	}
 
@@ -114,7 +119,7 @@ public class Camera {
 		return pipelines;
 	}
 
-	CamVideoMode getVideoMode() {
+	public CamVideoMode getVideoMode() {
 		return camVideoMode;
 	}
 
@@ -156,7 +161,13 @@ public class Camera {
 	    return cvSink.grabFrame(image, timeout);
     }
 
+    public CameraValues getCamVals() {
+		return camVals;
+	}
+
     public void putFrame(Mat image) {
-	    cvSource.putFrame(image);
+		synchronized(cvSourceLock) {
+			cvSource.putFrame(image);
+		}
     }
 }
