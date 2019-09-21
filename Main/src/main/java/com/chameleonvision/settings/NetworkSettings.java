@@ -51,8 +51,7 @@ public class NetworkSettings {
                 Enumeration<InetAddress> ee = netint.getInetAddresses();
                 for (InetAddress addr : Collections.list(ee))
                     if (addr instanceof Inet4Address)
-//                    if ((addr.getAddress()[0] & 0xFF) == 10 && (addr.getAddress()[1] & 0xFF) == SettingsManager.GeneralSettings.team_number) {
-                        if ((addr.getAddress()[0] & 0xFF) == 192 && (addr.getAddress()[1] & 0xFF) == 168) {
+                    if ((addr.getAddress()[0] & 0xFF) == 10 && (addr.getAddress()[1] & 0xFF) == SettingsManager.GeneralSettings.team_number) {
                             System.out.println("found robot network interface at " + netint.getName() + " ip: " + addr.getHostAddress());
                             return netint.getName();
                         }
