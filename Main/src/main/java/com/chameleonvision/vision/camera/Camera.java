@@ -20,7 +20,7 @@ public class Camera {
 	public final String name;
 	public final String path;
 
-	final UsbCamera UsbCam;
+	private final UsbCamera UsbCam;
 	private final VideoMode[] availableVideoModes;
 
 	private final CameraServer cs = CameraServer.getInstance();
@@ -38,23 +38,23 @@ public class Camera {
 		this(cameraName, DEFAULT_FOV);
 	}
 
-	public Camera(UsbCameraInfo usbCamInfo) {
-		this(usbCamInfo, DEFAULT_FOV);
-	}
-
 	public Camera(String cameraName, double fov) {
 		this(CameraManager.AllUsbCameraInfosByName.get(cameraName), fov);
 	}
 
 	public Camera(UsbCameraInfo usbCamInfo, double fov) {
-		this(usbCamInfo, fov, new HashMap<>());
+		this(usbCamInfo, fov, new HashMap<>(), 0);
 	}
 
-	public Camera(String cameraName, double fov, HashMap<Integer, Pipeline> pipelines) {
-		this(CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines);
+	public Camera(String cameraName, double fov, int videoModeIndex) {
+		this(cameraName, fov, new HashMap<>(), videoModeIndex);
 	}
 
-	public Camera(UsbCameraInfo usbCamInfo, double fov, HashMap<Integer, Pipeline> pipelines) {
+	public Camera(String cameraName, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
+		this(CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex);
+	}
+
+	public Camera(UsbCameraInfo usbCamInfo, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
 		FOV = fov;
 		name = usbCamInfo.name;
 		path = usbCamInfo.path;
@@ -65,7 +65,11 @@ public class Camera {
 
 		// set up video modes according to minimums
 		availableVideoModes = Arrays.stream(UsbCam.enumerateVideoModes()).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT).toArray(VideoMode[]::new);
-		setCamVideoMode(new CamVideoMode(availableVideoModes[0]));
+		if (videoModeIndex <= availableVideoModes.length - 1) {
+			setCamVideoMode(videoModeIndex, false);
+		} else {
+			setCamVideoMode(0, false);
+		}
 
 		cvSink = cs.getVideo(UsbCam);
 		cvSource = cs.putVideo(name, camVals.ImageWidth, camVals.ImageHeight);
@@ -73,7 +77,7 @@ public class Camera {
 		CameraManager.CameraPorts.put(name, s.getPort());
 	}
 
-	public VideoMode[] getAvailableVideoModes() {
+	VideoMode[] getAvailableVideoModes() {
 		return availableVideoModes;
 	}
 
@@ -82,15 +86,11 @@ public class Camera {
 		return s.getPort();
 	}
 
-	public void setCamVideoMode(int videoMode) {
-		setCamVideoMode(availableVideoModes[videoMode]);
+	public void setCamVideoMode(int videoMode, boolean updateCvSource) {
+		setCamVideoMode(new CamVideoMode(availableVideoModes[videoMode]), updateCvSource);
 	}
 
-	private void setCamVideoMode(VideoMode videoMode) {
-		setCamVideoMode(new CamVideoMode(videoMode));
-	}
-
-	private void setCamVideoMode(CamVideoMode newVideoMode) {
+	private void setCamVideoMode(CamVideoMode newVideoMode, boolean updateCvSource) {
 		var prevVideoMode = this.camVideoMode;
 		this.camVideoMode = newVideoMode;
 		UsbCam.setPixelFormat(newVideoMode.getActualPixelFormat());
@@ -99,12 +99,11 @@ public class Camera {
 
 		// update camera values
 		camVals = new CameraValues(this);
-		if (prevVideoMode != null && !prevVideoMode.equals(newVideoMode)) { //  if resolution changed
+		if (prevVideoMode != null && !prevVideoMode.equals(newVideoMode) && updateCvSource) { //  if resolution changed
 			synchronized (cvSourceLock) {
- 				cvSource = cs.putVideo(name, newVideoMode.width, newVideoMode.height);
+				cvSource = cs.putVideo(name, newVideoMode.width, newVideoMode.height);
 			}
 			ServerHandler.sendFullSettings();
-//			ServerHandler.broadcastMessage(new HashMap<String, Object>(){}.put("port", getStreamPort()));
 		}
 	}
 

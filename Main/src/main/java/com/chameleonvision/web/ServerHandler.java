@@ -98,7 +98,7 @@ public class ServerHandler {
                 case "resolution":
                     int newVideoMode = (int) value;
                     System.out.printf("Changing video mode to %d\n", newVideoMode);
-                    CameraManager.getCurrentCamera().setCamVideoMode(newVideoMode);
+                    CameraManager.getCurrentCamera().setCamVideoMode(newVideoMode, true);
                     break;
                 case "FOV":
                     double newFov = (double) value;

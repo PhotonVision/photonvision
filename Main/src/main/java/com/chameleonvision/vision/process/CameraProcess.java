@@ -33,7 +33,7 @@ public class CameraProcess implements Runnable {
 	}
 
 	void updateFrame(Mat inputFrame) {
-		synchronized (inputFrameLock) {
+            synchronized (inputFrameLock) {
 			inputFrame.copyTo(this.inputFrame);
 		}
 	}
