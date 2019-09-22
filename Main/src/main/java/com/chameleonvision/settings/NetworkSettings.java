@@ -24,13 +24,17 @@ public class NetworkSettings {
             }
             executeCommand("hostnamectl set-hostname " + this.hostname);
         }
-        //TODO add windows networking commands
-
-//            else
-//            if (SystemUtils.IS_OS_WINDOWS)
-//            {
-//                executeCommand("cmd /c COMMAND HERE");
-//        }
+        //TODO check windows commands
+        else if (SystemUtils.IS_OS_WINDOWS) {
+            if (!adapter.equals("")) {
+                if (connectionType.equals("DHCP"))
+                    executeCommand("cmd /c interface ip set address \"" + adapter + "\" dhcp");
+                else if (connectionType.equals("Static")) {
+                    executeCommand("cmd /c netsh interface ip set address \"" + adapter + "\" static " + this.ip + " " + this.netmask + " " + this.gateway + "1");
+                }
+            }
+            //TODO find a way to change hostname in windows
+        }
     }
 
     private void executeCommand(String command) {
@@ -51,7 +55,7 @@ public class NetworkSettings {
                 Enumeration<InetAddress> ee = netint.getInetAddresses();
                 for (InetAddress addr : Collections.list(ee))
                     if (addr instanceof Inet4Address)
-                    if ((addr.getAddress()[0] & 0xFF) == 10 && (addr.getAddress()[1] & 0xFF) == SettingsManager.GeneralSettings.team_number) {
+                        if ((addr.getAddress()[0] & 0xFF) == 10 && (addr.getAddress()[1] & 0xFF) == SettingsManager.GeneralSettings.team_number) {
                             System.out.println("found robot network interface at " + netint.getName() + " ip: " + addr.getHostAddress());
                             return netint.getName();
                         }
