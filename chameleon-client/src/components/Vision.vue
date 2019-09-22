@@ -6,7 +6,7 @@
                     <chselect title="camera" :list="cameraList" Xkey="curr_camera"></chselect>
                 </Col>
                 <Col span="12">
-                    <chselect title="pipline" :list="pipelineList" Xkey="curr_pipeline"></chselect>
+                    <chselect title="pipeline" :list="pipelineList" Xkey="curr_pipeline"></chselect>
                 </Col>
             </Row>
         </Header>
