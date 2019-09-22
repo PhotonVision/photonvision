@@ -65,7 +65,6 @@ public class CVProcess {
                     continue;
                 }
                 double aspectRatio = rect.size.width / rect.size.height;//TODO i think aspectRatio is inverted
-                System.out.println(aspectRatio);
                 if (aspectRatio < ratio.get(0) || aspectRatio > ratio.get(1)){
                     continue;
                 }
