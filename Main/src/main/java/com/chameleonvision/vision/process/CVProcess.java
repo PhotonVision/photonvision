@@ -53,29 +53,33 @@ public class CVProcess {
 		return FoundContours;
 	}
 
-	List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent) {
-		for (MatOfPoint Contour : InputContours) {
-			try {
-				var contourArea = Imgproc.contourArea(Contour);
-				double targetArea = FastMath.round((contourArea / CamVals.ImageArea) * 100);
-				if (targetArea <= area.get(0) || targetArea >= area.get(1)) {
-					continue;
-				}
-				var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
-				var targetFullness = (contourArea / rect.size.area()) * 100;
-				if (targetFullness <= extent.get(0) || targetArea >= extent.get(1)) {
-					continue;
-				}
-				var aspectRatio = rect.size.width / rect.size.height;
-				if (aspectRatio <= ratio.get(0) || aspectRatio >= ratio.get(1)) {
-					continue;
-				}
-				FilteredContours.add(Contour);
-			} catch (Exception ignored) {
-			}
-		}
-		return FilteredContours;
-	}
+    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent) {
+        for (MatOfPoint Contour : InputContours){
+            try{
+                var contourArea = Imgproc.contourArea(Contour);//TODO change scaling
+                int targetArea = (int) ((((float) contourArea) / CamVals.ImageArea) * 100);
+                if (targetArea < area.get(0) || targetArea > area.get(1)){
+                    continue;
+                }
+                var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
+                var targetFullness = (contourArea / rect.size.area()) * 100;
+                if (targetFullness < extent.get(0) || targetArea > extent.get(1)){
+                    continue;
+                }
+                double aspectRatio = rect.size.width / rect.size.height;//TODO i think aspectRatio is inverted
+                if (aspectRatio < ratio.get(0) || aspectRatio > ratio.get(1)){
+                    continue;
+                }
+                FilteredContours.add(Contour);
+            }
+            catch (Exception e)
+            {
+                System.err.println("Error while filtering contours");
+                e.printStackTrace();
+            }
+        }
+        return FilteredContours;
+    }
 
 	private double calcDistance(RotatedRect rect) {
 		return FastMath.sqrt(FastMath.pow(CamVals.CenterX - rect.center.x, 2) + FastMath.pow(CamVals.CenterY - rect.center.y, 2));
