@@ -3,6 +3,7 @@ package com.chameleonvision.web;
 import com.chameleonvision.CameraException;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
+import com.chameleonvision.vision.camera.Camera;
 import com.chameleonvision.vision.camera.CameraManager;
 import edu.wpi.cscore.VideoException;
 import io.javalin.websocket.WsCloseContext;
@@ -83,9 +84,8 @@ public class ServerHandler {
                     String newCamera = (String) value;
                     System.out.printf("Changing camera to %s\n", newCamera);
                     CameraManager.setCurrentCamera(newCamera);
-                    broadcastMessage(new HashMap<String, Object>(){}.put("port",CameraManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera)));
+                    broadcastMessage(new HashMap<String, Object>(){}.put("port", CameraManager.getCurrentCamera().getStreamPort()));
                     broadcastMessage(CameraManager.getCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
-
                     break;
                 case "curr_pipeline":
                     String newPipeline = (String) value;
@@ -172,7 +172,7 @@ public class ServerHandler {
         return map;
     }
 
-    private static void sendFullSettings() {
+    public static void sendFullSettings() {
         //General settings
         Map<String, Object> fullSettings = new HashMap<>(allFieldsToMap(SettingsManager.GeneralSettings));
         fullSettings.put("cameraList", CameraManager.getAllCamerasByName().keySet());
@@ -183,7 +183,7 @@ public class ServerHandler {
             fullSettings.put("resolutionList", CameraManager.getResolutionList());
             fullSettings.put("resolution", currentCamera.getVideoModeIndex());
             fullSettings.put("FOV", currentCamera.getFOV());
-            fullSettings.put("port", CameraManager.CameraPorts.get(SettingsManager.GeneralSettings.curr_camera));
+            fullSettings.put("port", currentCamera.getStreamPort());
         } catch (CameraException e) {
             System.err.println("No camera found!");
             //TODO: add message to ui to inform that there are no cameras

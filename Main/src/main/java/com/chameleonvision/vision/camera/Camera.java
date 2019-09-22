@@ -1,16 +1,21 @@
 package com.chameleonvision.vision.camera;
 
 import com.chameleonvision.vision.Pipeline;
+import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.*;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.opencv.core.Mat;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.stream.IntStream;
 
 public class Camera {
 
-	private static double defaultFOV = 60.8;
+	private static final double DEFAULT_FOV = 60.8;
+	private static final int MINIMUM_FPS = 30;
+	private static final int MINIMUM_WIDTH = 320;
+	private static final int MINIMUM_HEIGHT = 240;
 
 	public final String name;
 	public final String path;
@@ -20,25 +25,21 @@ public class Camera {
 
 	private final CameraServer cs = CameraServer.getInstance();
 	private final CvSink cvSink;
+	private final Object cvSourceLock = new Object();
 	private CvSource cvSource;
-
 	private double FOV;
-
 	private CameraValues camVals;
 	private CamVideoMode camVideoMode;
-
 	private int currentPipelineIndex;
 	private HashMap<Integer, Pipeline> pipelines;
 
-	private final Object cvSourceLock = new Object();
-
 
 	public Camera(String cameraName) {
-		this(cameraName, defaultFOV);
+		this(cameraName, DEFAULT_FOV);
 	}
 
 	public Camera(UsbCameraInfo usbCamInfo) {
-		this(usbCamInfo, defaultFOV);
+		this(usbCamInfo, DEFAULT_FOV);
 	}
 
 	public Camera(String cameraName, double fov) {
@@ -62,8 +63,8 @@ public class Camera {
 
 		this.pipelines = pipelines;
 
-		// set up video mode
-		availableVideoModes = UsbCam.enumerateVideoModes();
+		// set up video modes according to minimums
+		availableVideoModes = Arrays.stream(UsbCam.enumerateVideoModes()).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT).toArray(VideoMode[]::new);
 		setCamVideoMode(new CamVideoMode(availableVideoModes[0]));
 
 		cvSink = cs.getVideo(UsbCam);
@@ -72,8 +73,17 @@ public class Camera {
 		CameraManager.CameraPorts.put(name, s.getPort());
 	}
 
+	public VideoMode[] getAvailableVideoModes() {
+		return availableVideoModes;
+	}
+
+	public int getStreamPort() {
+		var s = (MjpegServer) cs.getServer("serve_" + name);
+		return s.getPort();
+	}
+
 	public void setCamVideoMode(int videoMode) {
-		setCamVideoMode(UsbCam.enumerateVideoModes()[videoMode]);
+		setCamVideoMode(availableVideoModes[videoMode]);
 	}
 
 	private void setCamVideoMode(VideoMode videoMode) {
@@ -89,10 +99,12 @@ public class Camera {
 
 		// update camera values
 		camVals = new CameraValues(this);
-		if ( prevVideoMode != null && prevVideoMode.width != newVideoMode.width && prevVideoMode.height != newVideoMode.height) { //  if resolution changed
+		if (prevVideoMode != null && !prevVideoMode.equals(newVideoMode)) { //  if resolution changed
 			synchronized (cvSourceLock) {
-				cvSource = cs.putVideo(name, newVideoMode.width, newVideoMode.height);
+ 				cvSource = cs.putVideo(name, newVideoMode.width, newVideoMode.height);
 			}
+			ServerHandler.sendFullSettings();
+//			ServerHandler.broadcastMessage(new HashMap<String, Object>(){}.put("port", getStreamPort()));
 		}
 	}
 
@@ -117,6 +129,7 @@ public class Camera {
 		if (pipelineNumber - 1 > pipelines.size()) return;
 		currentPipelineIndex = pipelineNumber;
 	}
+
 	public HashMap<Integer, Pipeline> getPipelines() {
 		return pipelines;
 	}
@@ -127,7 +140,7 @@ public class Camera {
 
 	public int getVideoModeIndex() {
 		return IntStream.range(0, availableVideoModes.length)
-				.filter(i -> camVideoMode.isEqualToVideoMode(availableVideoModes[i]))
+				.filter(i -> camVideoMode.equals(availableVideoModes[i]))
 				.findFirst()
 				.orElse(-1);
 	}
@@ -156,16 +169,16 @@ public class Camera {
 	}
 
 	public long grabFrame(Mat image) {
-	    return cvSink.grabFrame(image);
-    }
+		return cvSink.grabFrame(image);
+	}
 
-    public CameraValues getCamVals() {
+	public CameraValues getCamVals() {
 		return camVals;
 	}
 
-    public void putFrame(Mat image) {
-		synchronized(cvSourceLock) {
+	public void putFrame(Mat image) {
+		synchronized (cvSourceLock) {
 			cvSource.putFrame(image);
 		}
-    }
+	}
 }
