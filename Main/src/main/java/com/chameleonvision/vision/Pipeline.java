@@ -12,9 +12,9 @@ public class Pipeline {
 	public List<Integer> value = Arrays.asList(50, 255);
 	public boolean erode = false;
 	public boolean dilate = false;
-	public List<Integer> area = Arrays.asList(0, 100);
-	public List<Integer> ratio = Arrays.asList(0, 20);
-	public List<Integer> extent = Arrays.asList(0, 100);
+	public List<Double> area = Arrays.asList(0.0, 100.0);
+	public List<Double> ratio = Arrays.asList(0.0, 20.0);
+	public List<Double> extent = Arrays.asList(0.0, 100.0);
 	public int is_binary = 0;
 	public String sort_mode = "Largest";
 	public String target_group = "Single";

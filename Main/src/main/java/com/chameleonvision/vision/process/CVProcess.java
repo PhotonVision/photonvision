@@ -53,12 +53,14 @@ public class CVProcess {
         return FoundContours;
     }
 
-    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Integer> ratio, List<Integer> extent) {
+    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Double> area, List<Double> ratio, List<Double> extent) {
         for (MatOfPoint Contour : InputContours) {
             try {
-                var contourArea = Imgproc.contourArea(Contour);//TODO change scaling
-                int targetArea = (int) ((((float) contourArea) / CamVals.ImageArea) * 100);
-                if (targetArea < area.get(0) || targetArea > area.get(1)) {
+                double contourArea = Imgproc.contourArea(Contour); //TODO change scaling
+                double targetArea = (contourArea / CamVals.ImageArea) * 100;
+                double minArea = Math.pow(area.get(0), 4);
+                double maxArea = Math.pow(area.get(1), 4);
+                if (targetArea < minArea || targetArea > maxArea) {
                     continue;
                 }
                 var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));

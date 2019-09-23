@@ -21,6 +21,9 @@ public class CameraManager {
 
 	private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "Cams");
 	public static HashMap<String, Integer> CameraPorts = new HashMap<>();
+
+	private static HashMap<String, Camera> AllCamerasByName = new HashMap<>();
+
 	static HashMap<String, UsbCameraInfo> AllUsbCameraInfosByName = new HashMap<>() {{
 		var suffix = 0;
 		for (var info : UsbCamera.enumerateUsbCameras()) {
@@ -36,7 +39,6 @@ public class CameraManager {
 			}
 		}
 	}};
-	private static HashMap<String, Camera> AllCamerasByName = new HashMap<>();
 
 	public static HashMap<String, Camera> getAllCamerasByName() {
 		return AllCamerasByName;
