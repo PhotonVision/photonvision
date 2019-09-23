@@ -116,6 +116,10 @@ public class CVProcess {
                         if (IsIntersecting(firstContour, secondContour, IntersectionPoint)) {
                             FinalContourList.addAll(secondContour.toList());
                         }
+                        else{
+                            FinalContourList.clear();
+                            break;
+                        }
                         firstContour.release();
                         secondContour.release();
                         MatOfPoint2f contour = new MatOfPoint2f();
@@ -161,29 +165,33 @@ public class CVProcess {
             double x0B = intersectMatB.get(2, 0)[0];
             double y0B = intersectMatB.get(3, 0)[0];
             double mB = vyB / vxB;
+            double bA = y0A - (mA*x0A);
+            double bB = y0B - (mB*x0B);
             double intersectionX = ((mA * x0A) - y0A - (mB * x0B) + y0B )/ (mA - mB);
             double intersectionY = (mA * (intersectionX - x0A)) + y0A;
+            double massX = intersectionX + 1;
+            double massY = intersectionY + ((mA + bA + mB +bB) / 2);
             switch (IntersectionPoint) {
                 case "Up": {
-                    if (intersectionY < CamVals.CenterY) {
+                    if (intersectionY < massY) {
                         return true;
                     }
                     break;
                 }
                 case "Down": {
-                    if (intersectionY > CamVals.CenterY) {
+                    if (intersectionY > massY) {
                         return true;
                     }
                     break;
                 }
                 case "Left": {
-                    if (intersectionX < CamVals.CenterX) {
+                    if (intersectionX < massX) {
                         return true;
                     }
                     break;
                 }
                 case "Right": {
-                    if (intersectionX > CamVals.CenterX) {
+                    if (intersectionX > massX) {
                         return true;
                     }
                     break;
