@@ -228,8 +228,8 @@ public class VisionProcess implements Runnable {
 				lastFrameEndNanosec = System.nanoTime();
 				processTimeMs = (lastFrameEndNanosec - startTime) * 1e-6;
 				fps = 1000 / processTimeMs;
-
-				System.out.printf("%s - Process time: %-5.2fms, FPS: %-5.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n", cameraName, processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
+				//please dont enable if you are not debugging
+				//				System.out.printf("%s - Process time: %-5.2fms, FPS: %-5.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n", cameraName, processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
 			}
 		}
 	}

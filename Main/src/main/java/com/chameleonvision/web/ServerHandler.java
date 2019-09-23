@@ -84,7 +84,9 @@ public class ServerHandler {
                     String newCamera = (String) value;
                     System.out.printf("Changing camera to %s\n", newCamera);
                     CameraManager.setCurrentCamera(newCamera);
-                    broadcastMessage(new HashMap<String, Object>(){}.put("port", CameraManager.getCurrentCamera().getStreamPort()));
+                    HashMap<String,Integer> portMap = new HashMap<String, Integer>();
+                    portMap.put("port",CameraManager.getCurrentCamera().getStreamPort());
+                    broadcastMessage(portMap);
                     broadcastMessage(CameraManager.getCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
                     break;
                 case "curr_pipeline":

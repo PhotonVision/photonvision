@@ -39,11 +39,11 @@ public class Camera {
 	}
 
 	public Camera(String cameraName, double fov) {
-		this(CameraManager.AllUsbCameraInfosByName.get(cameraName), fov);
+		this(cameraName,CameraManager.AllUsbCameraInfosByName.get(cameraName), fov);
 	}
 
-	public Camera(UsbCameraInfo usbCamInfo, double fov) {
-		this(usbCamInfo, fov, new HashMap<>(), 0);
+	public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov) {
+		this(cameraName ,usbCamInfo, fov, new HashMap<>(), 0);
 	}
 
 	public Camera(String cameraName, double fov, int videoModeIndex) {
@@ -51,12 +51,12 @@ public class Camera {
 	}
 
 	public Camera(String cameraName, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
-		this(CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex);
+		this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex);
 	}
 
-	public Camera(UsbCameraInfo usbCamInfo, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
+	public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
 		FOV = fov;
-		name = usbCamInfo.name;
+		name = cameraName;
 		path = usbCamInfo.path;
 
 		UsbCam = new UsbCamera(name, path);
