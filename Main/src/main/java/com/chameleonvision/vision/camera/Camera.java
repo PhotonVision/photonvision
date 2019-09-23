@@ -64,6 +64,10 @@ public class Camera {
 		this.pipelines = pipelines;
 
 		// set up video modes according to minimums
+        while(!UsbCam.isConnected())
+        {
+            System.out.println("notConnected");//TODO add a time sleep, can wait only so long before giving up
+        }
 		availableVideoModes = Arrays.stream(UsbCam.enumerateVideoModes()).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT).toArray(VideoMode[]::new);
 		if (videoModeIndex <= availableVideoModes.length - 1) {
 			setCamVideoMode(videoModeIndex, false);
