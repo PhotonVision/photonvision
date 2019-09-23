@@ -5,6 +5,7 @@ import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
 import com.chameleonvision.vision.camera.CameraManager;
+import com.google.gson.JsonArray;
 import edu.wpi.cscore.VideoException;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
@@ -52,9 +53,7 @@ public class ServerHandler {
         Object value = jsonObject.get(key);
         System.out.printf("Got websocket json data: [%s, %s]\n", key, value);
         if (hasField(CameraManager.getCurrentPipeline(), key)) {
-            setField(CameraManager.getCurrentPipeline(), key, value);
-            //Special cases for exposure and brightness
-            //TODO maybe add listener for value changes instead of this special case
+            //Special cases for exposure and brightness and aspect ratio
             switch (key) {
                 case "exposure":
                     int newExposure = (int) value;
@@ -64,12 +63,23 @@ public class ServerHandler {
                     } catch (VideoException e) {
                         System.out.println("Exposure changes is not supported on your webcam/webcam's driver");
                     }
-                    //TODO check if this crash occurs on linux
                     break;
                 case "brightness":
                     int newBrightness = (int) value;
                     System.out.printf("Changing brightness to %d\n", newBrightness);
                     CameraManager.getCurrentCamera().setBrightness(newBrightness);
+                    break;
+                case "ratio":
+                    //If there is any better to convert Integer to Double you're welcome to change it
+                    List<Double> doubleRatio = CameraManager.getCurrentPipeline().ratio;
+                    List<Object> newRatio = ((JSONArray) value).toList();
+                    for (int i = 0; i < newRatio.size(); i++) {
+                        doubleRatio.set(i, Double.parseDouble(newRatio.get(i).toString()));
+                    }
+                    break;
+                default:
+                    //Any other field in CameraManager that doesn't need anything special
+                    setField(CameraManager.getCurrentPipeline(), key, value);
                     break;
             }
         } else {
@@ -84,8 +94,8 @@ public class ServerHandler {
                     String newCamera = (String) value;
                     System.out.printf("Changing camera to %s\n", newCamera);
                     CameraManager.setCurrentCamera(newCamera);
-                    HashMap<String,Integer> portMap = new HashMap<String, Integer>();
-                    portMap.put("port",CameraManager.getCurrentCamera().getStreamPort());
+                    HashMap<String, Integer> portMap = new HashMap<String, Integer>();
+                    portMap.put("port", CameraManager.getCurrentCamera().getStreamPort());
                     broadcastMessage(portMap);
                     broadcastMessage(CameraManager.getCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
                     break;

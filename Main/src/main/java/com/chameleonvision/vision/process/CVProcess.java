@@ -53,7 +53,7 @@ public class CVProcess {
         return FoundContours;
     }
 
-    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Double> area, List<Double> ratio, List<Double> extent) {
+    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Double> ratio, List<Integer> extent) {
         for (MatOfPoint Contour : InputContours) {
             try {
                 double contourArea = Imgproc.contourArea(Contour); //TODO change scaling
