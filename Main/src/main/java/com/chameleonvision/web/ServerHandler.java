@@ -94,10 +94,9 @@ public class ServerHandler {
                     String newCamera = (String) value;
                     System.out.printf("Changing camera to %s\n", newCamera);
                     CameraManager.setCurrentCamera(newCamera);
-                    HashMap<String, Integer> portMap = new HashMap<String, Integer>();
+                    HashMap<String, Integer> portMap = new HashMap<>();
                     portMap.put("port", CameraManager.getCurrentCamera().getStreamPort());
-                    broadcastMessage(portMap);
-                    broadcastMessage(CameraManager.getCurrentCamera()); //TODO CHECK JSON FOR CAMERA CHANGE
+                    sendFullSettings();
                     break;
                 case "curr_pipeline":
                     String newPipeline = (String) value;
@@ -113,7 +112,7 @@ public class ServerHandler {
                     CameraManager.getCurrentCamera().setCamVideoMode(newVideoMode, true);
                     break;
                 case "FOV":
-                    double newFov = (double) value;
+                    double newFov = Double.parseDouble(value.toString());
                     System.out.printf("Changing FOV to %f\n", newFov);
                     CameraManager.getCurrentCamera().setFOV(newFov);
                     break;
