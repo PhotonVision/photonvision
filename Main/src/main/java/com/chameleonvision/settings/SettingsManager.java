@@ -37,6 +37,45 @@ public class SettingsManager {
 		}
 	}
 
+	public enum Platform {
+		WINDOWS_64("Windows x64"),
+		LINUX_64("Linux x64"),
+		LINUX_RASPBIAN("Linux Raspbian"),
+		LINUX_AARCH64("Linux ARM 64bit"),
+		MACOS_64("Mac OS x64"),
+		UNSUPPORTED("Unsupported Platform");
+
+		public final String value;
+
+		Platform(String value) {
+			this.value = value;
+		}
+	}
+
+	public static Platform getCurrentPlatform() {
+		var osName = System.getProperty("os.name");
+		var osArch = System.getProperty("os.arch");
+
+		if (osName.contains("Windows")) {
+			if (osArch.equals("amd64")) return Platform.WINDOWS_64;
+			return Platform.UNSUPPORTED;
+		}
+
+		if (osName.contains("Linux")) {
+			if (osArch.equals("amd64")) return Platform.LINUX_64;
+			if (osArch.contains("rasp")) return Platform.LINUX_RASPBIAN;
+			if (osArch.contains("aarch")) return Platform.LINUX_64;
+			return Platform.UNSUPPORTED;
+		}
+
+		if (osName.contains("Mac")) {
+			if (osArch.equals("amd64")) return Platform.MACOS_64;
+			return Platform.UNSUPPORTED;
+		}
+
+		return Platform.UNSUPPORTED;
+	}
+
 	private static void initGeneralSettings() {
 		FileHelper.CheckPath(SettingsPath);
 		try {

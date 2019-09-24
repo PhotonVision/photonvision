@@ -1,5 +1,6 @@
 package com.chameleonvision.vision.camera;
 
+import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.*;
@@ -16,6 +17,7 @@ public class Camera {
 	private static final int MINIMUM_FPS = 30;
 	private static final int MINIMUM_WIDTH = 320;
 	private static final int MINIMUM_HEIGHT = 240;
+	private static final int MAX_INIT_MS = 1500;
 
 	public final String name;
 	public final String path;
@@ -32,6 +34,7 @@ public class Camera {
 	private CamVideoMode camVideoMode;
 	private int currentPipelineIndex;
 	private HashMap<Integer, Pipeline> pipelines;
+	private long initTimeout;
 
 
 	public Camera(String cameraName) {
@@ -64,10 +67,19 @@ public class Camera {
 		this.pipelines = pipelines;
 
 		// set up video modes according to minimums
-        while(!UsbCam.isConnected())
-        {
-            System.out.println("notConnected");//TODO add a time sleep, can wait only so long before giving up
-        }
+		if (SettingsManager.getCurrentPlatform() == SettingsManager.Platform.WINDOWS_64 && !UsbCam.isConnected()) {
+			System.out.print("Waiting on camera... ");
+			initTimeout = System.nanoTime();
+			while(!UsbCam.isConnected())
+			{
+				//TODO add a time sleep, can wait only so long before giving up
+				if (((System.nanoTime() - initTimeout)  / 1e6 ) >= MAX_INIT_MS) {
+					break;
+				}
+			}
+			var initTimeMs = (System.nanoTime() - initTimeout) / 1e6;
+			System.out.printf("Camera initialized in %.2fms\n", initTimeMs);
+		}
 		availableVideoModes = Arrays.stream(UsbCam.enumerateVideoModes()).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT).toArray(VideoMode[]::new);
 		if (videoModeIndex <= availableVideoModes.length - 1) {
 			setCamVideoMode(videoModeIndex, false);
