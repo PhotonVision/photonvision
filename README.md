@@ -152,3 +152,12 @@ main docs can be found at [google docs](https://docs.google.com/document/d/1qDuw
 * the [robotpy project](https://github.com/robotpy) and mainly the cscore libs
 
 * basically all of stackoverflow
+
+##License
+Copyright (C) 2019 Ori Agranat oriagranat9@gmail.com
+
+
+* This file is part of Chameleon Vision.
+
+Chameleon Vision can not be copied without the express permission of Ori Agranat
+Chameleon Vision binaries may be distributed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)

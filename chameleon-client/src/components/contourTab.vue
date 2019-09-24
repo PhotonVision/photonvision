@@ -5,7 +5,7 @@
      <chrange class="spacing" title="Extent" Xkey="extent"></chrange>
      <chselect class="spacing" title="Target Group" Xkey="target_group" 
         :list="['Single','Dual','Triple','Quadruple','Quintuple']"></chselect>
-    <chselect class="spacing" title="Target Intersaction" Xkey="target_intersection" 
+    <chselect class="spacing" title="Target Intersection" Xkey="target_intersection" 
         :list="['Up','Down','Left','Right','Parallel']" :isDisabled="isSingle"></chselect>
      </div>
 </template>
