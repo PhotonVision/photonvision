@@ -67,6 +67,20 @@
           this.$refs.menu.updateOpened();
           this.$refs.menu.updateActiveName();
         })
+      },
+      isEquale(message,prop){
+        if(typeof (this.$store.state[prop]) == "object"){
+          for(var i = this.$store.state[prop].length; i--;) {
+            if(this.$store.state[prop][i] !== message[prop][i]){
+                return false;
+            }
+        }
+        } else{
+          if(this.$store.state[prop] != message[prop]){
+            return false
+          }
+        }
+        return true;
       }
     },
     computed: {
@@ -86,9 +100,11 @@
         let message = JSON.parse(data.data);
              for (var prop in message){
         if(message.hasOwnProperty(prop)){
-          this.$store.state[prop] = message[prop];
+            this.$store.state[prop] = message[prop];
+            // console.log(message);
+        
         }
-        console.log(data.data);
+
        }      
       }
       catch{
