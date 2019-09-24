@@ -86,9 +86,9 @@ public class ServerHandler {
             switch (key) {
                 case "change_general_settings_values":
                     JSONObject newSettings = (JSONObject) value;
-//                    setFields(SettingsManager.GeneralSettings, newSettings);
                     Map<String, Object> map = newSettings.toMap();
                     map.forEach((s, o) -> setField(SettingsManager.GeneralSettings, s, o));
+                    SettingsManager.saveSettings();
                     break;
                 case "curr_camera":
                     String newCamera = (String) value;
