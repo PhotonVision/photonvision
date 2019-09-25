@@ -99,12 +99,13 @@ public class ServerHandler {
                     sendFullSettings();
                     break;
                 case "curr_pipeline":
-                    String newPipeline = (String) value;
+                    String newPipeline = value.toString();
                     var pipelineNumber = Integer.parseInt(newPipeline.replace("pipeline", ""));
                     System.out.printf("Changing pipeline to %s\n", newPipeline);
                     CameraManager.setCurrentPipeline(pipelineNumber);
 //                    broadcastMessage(allFieldsToMap(CameraManager.getCurrentPipeline()));
                     broadcastMessage(allFieldsToMap(CameraManager.getCurrentPipeline()));
+
                     break;
                 case "resolution":
                     int newVideoMode = (int) value;

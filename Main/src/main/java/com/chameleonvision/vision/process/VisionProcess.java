@@ -3,7 +3,9 @@ package com.chameleonvision.vision.process;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
+import com.chameleonvision.web.Server;
 import com.chameleonvision.web.ServerHandler;
+import edu.wpi.cscore.VideoException;
 import edu.wpi.first.networktables.*;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -77,12 +79,18 @@ public class VisionProcess implements Runnable {
 		if (camera.getPipelines().containsKey(ntPipelineIndex)) {
 //            camera.setEntryNotification.value.getString());
 			var pipeline = camera.getCurrentPipeline();
-
-			camera.setExposure(pipeline.exposure);
+			camera.setCurrentPipelineIndex(ntPipelineIndex);
+			try{
+				camera.setExposure(pipeline.exposure);
+			}
+			catch (VideoException e){
+				System.err.println(e.toString());
+			}
 			camera.setBrightness(pipeline.brightness);
 			HashMap<String, Object> pipeChange = new HashMap<>();
 			pipeChange.put("curr_pipeline", ntPipelineIndex);
 			ServerHandler.broadcastMessage(pipeChange);
+			ServerHandler.sendFullSettings();
 
 		} else {
 			ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());

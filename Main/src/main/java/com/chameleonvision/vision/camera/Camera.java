@@ -140,7 +140,7 @@ public class Camera {
 		return currentPipelineIndex;
 	}
 
-	void setCurrentPipelineIndex(int pipelineNumber) {
+	public void setCurrentPipelineIndex(int pipelineNumber) {
 		if (pipelineNumber - 1 > pipelines.size()) return;
 		currentPipelineIndex = pipelineNumber;
 	}
