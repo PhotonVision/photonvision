@@ -146,6 +146,7 @@ public class VisionProcess implements Runnable {
 				GroupedContours = cvProcess.GroupTargets(FilteredContours, currentPipeline.target_intersection, currentPipeline.target_group);
 				if (GroupedContours.size() > 0) {
 					var finalRect = cvProcess.SortTargetsToOne(GroupedContours, currentPipeline.sort_mode);
+//					System.out.printf("Largest Contour Area: %.2f\n", finalRect.size.area());
 					pipelineResult.RawPoint = finalRect;
 					pipelineResult.IsValid = true;
 					if (!currentPipeline.is_calibrated) {
