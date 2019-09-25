@@ -57,15 +57,18 @@ public class CVProcess {
         for (MatOfPoint Contour : InputContours) {
             try {
                 double contourArea = Imgproc.contourArea(Contour); //TODO change scaling
-                double targetArea = (contourArea / CamVals.ImageArea) * 100;
-                double minArea = (double) area.get(0) / 100;
-                double maxArea = (double) area.get(1) / 100;
-                if (targetArea < minArea || targetArea > maxArea) {
+                double targetArea = contourArea;
+                double minArea = (double) (area.get(0) * CamVals.ImageArea)/ 100;
+                double maxArea = (double) (area.get(1) * CamVals.ImageArea) / 100;
+                if (targetArea <= minArea || targetArea >= maxArea) {
                     continue;
                 }
                 var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
-                var targetFullness = (contourArea / rect.size.area()) * 100;
-                if (targetFullness < extent.get(0) || targetArea > extent.get(1)) {
+
+                var targetFullness = contourArea;
+                double minExtent = (double) (extent.get(0) * rect.size.area())/ 100;
+                double maxExtent = (double) (extent.get(1) * rect.size.area()) / 100;
+                if (targetFullness <= minExtent || targetArea >= maxExtent) {
                     continue;
                 }
                 double aspectRatio = rect.size.width / rect.size.height;//TODO i think aspectRatio is inverted
