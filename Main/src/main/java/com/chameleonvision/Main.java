@@ -13,7 +13,8 @@ public class Main {
 			for (var camSet : CameraManager.getAllCamerasByName().entrySet()) {
 				new Thread(new VisionProcess(camSet.getValue())).start();
 			}
-			  NetworkTableInstance.getDefault().startClientTeam(SettingsManager.GeneralSettings.team_number);
+			NetworkTableInstance.getDefault().startClientTeam(SettingsManager.GeneralSettings.team_number);
+			//NetworkTableInstance.getDefault().startClient("localhost");
 			Server.main(8888);
 		} else {
 			System.err.println("No cameras connected!");
