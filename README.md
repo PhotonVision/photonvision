@@ -13,7 +13,7 @@ These instructions will get you a copy of the project up and running on your loc
 ---
 #### For the co-processor
 
-- Java 12 Runtime
+- Java 12 Runtime (See Deployment - Software)
 - Avahi Daemon
 
 #### For the driver station
@@ -24,6 +24,17 @@ These instructions will get you a copy of the project up and running on your loc
 ## Deployment
 Deploying is as simple as uploading the chameleon-vision-1.xx.jar file to your target device.  
 Run the program with `java -jar chameleon-vision-1.xx.jar`
+
+## Software
+
+### Java 12 
+Follow the correct instructions for your platform from [BellSoft](https://bell-sw.com/pages/liberica_install_guide-12.0.2/)
+
+### Avahi Daemon (Linux systems)
+`sudo apt-get install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan`
+
+### Bonjour (Windows Systems)
+Download and install Bonjour [from here](https://support.apple.com/kb/DL999?locale=en_US)
 
 ## Hardware
 
