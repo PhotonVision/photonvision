@@ -146,6 +146,7 @@ public class VisionProcess implements Runnable {
 				GroupedContours = cvProcess.GroupTargets(FilteredContours, currentPipeline.target_intersection, currentPipeline.target_group);
 				if (GroupedContours.size() > 0) {
 					var finalRect = cvProcess.SortTargetsToOne(GroupedContours, currentPipeline.sort_mode);
+//					System.out.printf("Largest Contour Area: %.2f\n", finalRect.size.area());
 					pipelineResult.RawPoint = finalRect;
 					pipelineResult.IsValid = true;
 					if (!currentPipeline.is_calibrated) {
@@ -153,7 +154,7 @@ public class VisionProcess implements Runnable {
 						pipelineResult.CalibratedY = camera.getCamVals().CenterY;
 					} else {
 						pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.B) / currentPipeline.M;
-						pipelineResult.CalibratedY = finalRect.center.x * currentPipeline.M + currentPipeline.B;
+						pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.M) + currentPipeline.B;
 					}
 					pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
 					pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
