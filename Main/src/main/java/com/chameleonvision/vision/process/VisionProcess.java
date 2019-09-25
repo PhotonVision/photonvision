@@ -153,7 +153,7 @@ public class VisionProcess implements Runnable {
 						pipelineResult.CalibratedY = camera.getCamVals().CenterY;
 					} else {
 						pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.B) / currentPipeline.M;
-						pipelineResult.CalibratedY = finalRect.center.x * currentPipeline.M + currentPipeline.B;
+						pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.M) + currentPipeline.B;
 					}
 					pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
 					pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
