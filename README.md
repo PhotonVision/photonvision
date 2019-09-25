@@ -1,163 +1,78 @@
 # Chameleon-Vision
 
-a free software for FRC teams to use for vision proccesing on their robots
+Chameleon Vision is free open-source software for FRC teams to use for vision proccesing on their robots.
 
-## getting started
+## Getting started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+See Deployment for notes on how to deploy the project on a live system.
 
-  
+These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.  
+(Coming soon!)  
 
 ### Prerequisites
+---
+#### For the co-processor
 
-  
+- Java 12 Runtime (See Deployment - Software)
+- Avahi Daemon
 
-so in order to run this project we will need to install python in order to run the backend and node.js with vue.js in order to run the fronted
+#### For the driver station
 
-#### backend
+- Bonjour
 
-- python 3.7 and above
 
-- opencv 3.4.5
+## Deployment
+Deploying is as simple as uploading the chameleon-vision-1.xx.jar file to your target device.  
+Run the program with `java -jar chameleon-vision-1.xx.jar`
 
-- tornado web framework
+## Software
 
-- robotpy-cscore
+### Java 12 
+Follow the correct instructions for your platform from [BellSoft](https://bell-sw.com/pages/liberica_install_guide-12.0.2/)
 
-- pynetworktables
+### Avahi Daemon (Linux systems)
+`sudo apt-get install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan`
 
-- pymq
-
-  
-
-#### frontend
-
-- vue.js
-
-- vuex
-
-- vue-router
-
-- less and less-loader
-
-- iView
-
-- vue-native-websocket
-
-  
-
-### installing
-
-#### for the backend
-
-1. sudo apt-get update
-
-2. apt-get dist-upgrade
-
-3. sudo apt-get upgrade
-
-4. sudo apt-get install python3-pip python3-dev cmake zip unzip build-essential git libnss-mdns --fix-missing
-
-5. sudo pip3 install numpy (if on raspberry pi do "sudo apt-get install python3-numpy")
-6. sudo apt-get install python3-opencv
-7. pip3 install robotpy-cscore 
-8. pip3 install pyzmq
-9. pip3 install tornado
-
-  
-
-to run the backend:
-
-```
-
-sudo python3 Main.py
-
-```
-
-if backed gets suck or no camera are recognized after a crash do:
-
-```
-
-sudo pkill -9 python3
-
-```
-
-#### compiling:
-
-in order to compile the program for runtime run: (still needs to install dependencies)
-
-```
-
-python3 -m nuitka --follow-imports Main.py
-
-```
-
-#### for the frontend
-
-1. sudo apt-get install nodejs npm
-
-2. cd chameleon-client
-
-3. sudo npm install
-
-4. sudo npm install @vue/cli
-
-  
-
-to run the front end you can open the cli ui by:
-
-```
-
-vue ui
-
-```
-
-of you can auto serve the ui by
-
-```
-
-npm run serve
-
-```
+### Bonjour (Windows Systems)
+Download and install Bonjour [from here](https://support.apple.com/kb/DL999?locale=en_US)
 
 ## Hardware
 
-this is important when choosing your sbc it is more important to have a good usb controller that a good cpu
+### ARM Co-processors
+Currently only Raspberry Pi 3 or 4 models with at least 1GB of RAM are tested and supported.  
+Additional ARM-based single board computers (Odroid, Nvidia Jetson, etc.) will be supported in the near future.
 
-on the odroid xu4 which is very fast i have got many bottlenecks from the usb controller and many times making the program crach
 
-#### networking
-
-it is very important to install Bonjour
-
-  
-  
-
-## docs
-
-main docs can be found at [google docs](https://docs.google.com/document/d/1qDuwHtpIPJfyXGIL8PJG89LZwRWbn2J9f-5g19lWL9U/edit?usp=sharing)
-
-  
+### x86 Computers
+Currently any 64-Bit devices (Windows, Linux and Mac OS) are supported.  
+32 Bit devices are not supported.
 
 ## Authors
 
 *  **Sagi Frimer** - *initial work* - websocket, settings manager, UI
 
-*  **Ori Agranat** - *main coder* - vision loop , UI, websocket, networktables
+*  **Ori Agranat** - *main coder* - vision loop, UI, websocket, networktables
 
-  
+*  **Omer Zipory** - *developer* - vision loop, websocket, networking
+
+*  **Banks Troutman** - *developer* - vision loop, websocket, networking
+
+*  **Matt Morley** - *developer* - documentation
+
 
 ## Acknowledgments
 
-* the [robotpy project](https://github.com/robotpy) and mainly the cscore libs
+* [WPILib](https://github.com/wpilibsuite) - Specifically [cscore](https://github.com/wpilibsuite/allwpilib/tree/master/cscore), [CameraServer](https://github.com/wpilibsuite/allwpilib/tree/master/cameraserver), [NTCore](https://github.com/wpilibsuite/allwpilib/tree/master/ntcore), and [OpenCV](https://github.com/wpilibsuite/thirdparty-opencv). 
 
-* basically all of stackoverflow
+* [Apache Commons](https://commons.apache.org/) - Specifically [Commons Math](https://commons.apache.org/proper/commons-math/), and [Commons Lang](https://commons.apache.org/proper/commons-lang/)
 
-##License
-Copyright (C) 2019 Ori Agranat oriagranat9@gmail.com
+* [Javalin](https://javalin.io/)
 
+* [Spring Framework](https://spring.io/)
 
-* This file is part of Chameleon Vision.
+* [JSON](https://json.org)
 
-Chameleon Vision can not be copied without the express permission of Ori Agranat
-Chameleon Vision binaries may be distributed under [Creative Commons Attribution 4.0](https://creativecommons.org/licenses/by/4.0/)
+* [Google](https://github.com/google) - Specifically [Gson](https://github.com/google/gson)
+
+## License  
+Usage of Chameleon Vision must fall under all terms of [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
