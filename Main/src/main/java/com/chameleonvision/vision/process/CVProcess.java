@@ -57,8 +57,7 @@ public class CVProcess {
         for (MatOfPoint Contour : InputContours) {
             try {
                 double contourArea = Imgproc.contourArea(Contour);
-                double minAreaSlider = Math.log(area.get(0));
-                double minArea = (minAreaSlider * CamVals.ImageArea) / 100;
+                double minArea = (area.get(0) * CamVals.ImageArea) / 100;
                 double maxArea = (area.get(1) * CamVals.ImageArea) / 100;
                 if (contourArea <= minArea || contourArea >= maxArea) {
                     continue;
