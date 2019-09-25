@@ -58,8 +58,8 @@ public class CVProcess {
             try {
                 double contourArea = Imgproc.contourArea(Contour); //TODO change scaling
                 double targetArea = (contourArea / CamVals.ImageArea) * 100;
-                double minArea = Math.pow(area.get(0), 4);
-                double maxArea = Math.pow(area.get(1), 4);
+                double minArea = (double) area.get(0) / 100;
+                double maxArea = (double) area.get(1) / 100;
                 if (targetArea < minArea || targetArea > maxArea) {
                     continue;
                 }
