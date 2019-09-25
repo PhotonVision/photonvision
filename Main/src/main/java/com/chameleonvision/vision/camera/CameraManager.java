@@ -70,7 +70,9 @@ public class CameraManager {
 
 	private static boolean addCamera(Camera camera, String cameraName) {
 		if (AllCamerasByName.containsKey(cameraName)) return false;
-		camera.addPipeline();
+		for (int i = 0; i < 10;i++){
+			camera.addPipeline(); // simple fix to create more pipelines for now
+		}
 		AllCamerasByName.put(cameraName, camera);
 		return true;
 	}
