@@ -36,8 +36,6 @@ public class Camera {
 	private CamVideoMode camVideoMode;
 	private int currentPipelineIndex;
 	private HashMap<Integer, Pipeline> pipelines;
-	private long initTimeout;
-
 
 	public Camera(String cameraName) {
 		this(cameraName, DEFAULT_FOV);
@@ -71,7 +69,7 @@ public class Camera {
 		// set up video modes according to minimums
 		if (SettingsManager.getCurrentPlatform() == SettingsManager.Platform.WINDOWS_64 && !UsbCam.isConnected()) {
 			System.out.print("Waiting on camera... ");
-			initTimeout = System.nanoTime();
+			long initTimeout = System.nanoTime();
 			while(!UsbCam.isConnected())
 			{
 				//TODO add a time sleep, can wait only so long before giving up
@@ -96,8 +94,6 @@ public class Camera {
 
 		cvSink = cs.getVideo(UsbCam);
 		cvSource = cs.putVideo(name, camVals.ImageWidth, camVals.ImageHeight);
-		var s = (MjpegServer) cs.getServer("serve_" + name);
-		CameraManager.CameraPorts.put(name, s.getPort());
 	}
 
 	VideoMode[] getAvailableVideoModes() {

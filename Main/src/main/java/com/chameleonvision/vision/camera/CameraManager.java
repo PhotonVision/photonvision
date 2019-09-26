@@ -20,7 +20,6 @@ import java.util.List;
 public class CameraManager {
 
 	private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "Cams");
-	public static HashMap<String, Integer> CameraPorts = new HashMap<>();
 
 	private static HashMap<String, Camera> AllCamerasByName = new HashMap<>();
 

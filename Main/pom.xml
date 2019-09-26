@@ -44,15 +44,15 @@
     </properties>
     <repositories>
         <!--WPI official maven repo for frc libs-->
+<!--        <repository>-->
+<!--            <id>WPI</id>-->
+<!--            <name>WPI Maven repo</name>-->
+<!--            <url>https://first.wpi.edu/FRC/roborio/maven/release</url>-->
+<!--        </repository>-->
         <repository>
             <id>WPI</id>
-            <name>WPI Maven repo</name>
-            <url>https://first.wpi.edu/FRC/roborio/maven/release</url>
-        </repository>
-        <repository>
-            <id>WPIArtifactory</id>
             <name>WPILib Artifactory Server-releases</name>
-            <url>https://frcmaven.wpi.edu:443/artifactory/release</url>
+            <url>https://frcmaven.wpi.edu:443/artifactory/development</url>
         </repository>
     </repositories>
     <dependencies>
@@ -116,31 +116,37 @@
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-java</artifactId>
-            <version>2019.4.1</version>
+            <version>2019.4.1-176-ga5650b9</version>
         </dependency>
         <!--frc cscore interface libs-->
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1</version>
-            <classifier>linuxathena</classifier>
+            <version>2019.4.1-176-ga5650b9</version>
+            <classifier>linuxaarch64bionic</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1</version>
+            <version>2019.4.1-176-ga5650b9</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1</version>
+            <version>2019.4.1-176-ga5650b9</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1</version>
+            <version>2019.4.1-176-ga5650b9</version>
+            <classifier>osxx86-64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.cscore</groupId>
+            <artifactId>cscore-jni</artifactId>
+            <version>2019.4.1-176-ga5650b9</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
@@ -148,39 +154,39 @@
         <dependency>
             <groupId>edu.wpi.first.cameraserver</groupId>
             <artifactId>cameraserver-java</artifactId>
-            <version>2019.4.1</version>
+            <version>2019.4.1-176-ga5650b9</version>
         </dependency>
 
         <!--frc network table java libs-->
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-java</artifactId>
-            <version>2019.4.1</version>
+            <version>2019.4.1-176-ga5650b9</version>
         </dependency>
 
         <!--frc network tables interface libs-->
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1</version>
-            <classifier>linuxathena</classifier>
+            <version>2019.4.1-176-ga5650b9</version>
+            <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1</version>
+            <version>2019.4.1-176-ga5650b9</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1</version>
+            <version>2019.4.1-176-ga5650b9</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1</version>
+            <version>2019.4.1-176-ga5650b9</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
@@ -188,11 +194,10 @@
         <dependency>
             <groupId>edu.wpi.first.wpiutil</groupId>
             <artifactId>wpiutil-java</artifactId>
-            <version>2019.4.1</version>
+            <version>2019.4.1-176-ga5650b9</version>
         </dependency>
 
         <!-- WPI OpenCV for all supported platforms -->
-        <!-- NEW 2020 OpenCV Deps -->
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-java</artifactId>
@@ -228,36 +233,5 @@
             <version>3.4.7-1</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
-        <!-- OLD 2019 OpenCV Deps
-        <dependency>
-            <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
-            <artifactId>opencv-java</artifactId>
-            <version>3.4.4-5</version>
-        </dependency>
-        <dependency>
-            <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
-            <artifactId>opencv-jni</artifactId>
-            <version>3.4.4-5</version>
-            <classifier>windowsx86-64</classifier>
-        </dependency>
-        <dependency>
-            <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
-            <artifactId>opencv-jni</artifactId>
-            <version>3.4.4-5</version>
-            <classifier>linuxx86-64</classifier>
-        </dependency>
-        <dependency>
-            <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
-            <artifactId>opencv-jni</artifactId>
-            <version>3.4.4-5</version>
-            <classifier>linuxathena</classifier>
-        </dependency>
-        <dependency>
-            <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
-            <artifactId>opencv-jni</artifactId>
-            <version>3.4.4-5</version>
-            <classifier>linuxraspbian</classifier>
-        </dependency>
-        -->
     </dependencies>
 </project>
