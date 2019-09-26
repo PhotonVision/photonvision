@@ -49,6 +49,11 @@
             <name>WPI Maven repo</name>
             <url>https://first.wpi.edu/FRC/roborio/maven/release</url>
         </repository>
+        <repository>
+            <id>WPIArtifactory</id>
+            <name>WPILib Artifactory Server-releases</name>
+            <url>https://frcmaven.wpi.edu:443/artifactory/release</url>
+        </repository>
     </repositories>
     <dependencies>
         <!--javalin micro webservices framework-->
@@ -84,7 +89,6 @@
             <artifactId>gson</artifactId>
             <version>2.8.5</version>
         </dependency>
-        <!--what is this for again?-->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
@@ -95,11 +99,17 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.9</version>
         </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.10.0.pr1</version>
+        </dependency>
 
         <!-- supported platforms for wpilib JNI classifiers
-            linuxathena
+            linuxaarch64bionic
             linuxraspbian
             linuxx86-64
+            osxx86-64
             windowsx86-64
         -->
         <!--frc cscore java libs-->
@@ -182,6 +192,43 @@
         </dependency>
 
         <!-- WPI OpenCV for all supported platforms -->
+        <!-- NEW 2020 OpenCV Deps -->
+        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
+            <artifactId>opencv-java</artifactId>
+            <version>3.4.7-1</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
+            <artifactId>opencv-jni</artifactId>
+            <version>3.4.7-1</version>
+            <classifier>linuxaarch64bionic</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
+            <artifactId>opencv-jni</artifactId>
+            <version>3.4.7-1</version>
+            <classifier>linuxraspbian</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
+            <artifactId>opencv-jni</artifactId>
+            <version>3.4.7-1</version>
+            <classifier>linuxx86-64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
+            <artifactId>opencv-jni</artifactId>
+            <version>3.4.7-1</version>
+            <classifier>osxx86-64</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
+            <artifactId>opencv-jni</artifactId>
+            <version>3.4.7-1</version>
+            <classifier>windowsx86-64</classifier>
+        </dependency>
+        <!-- OLD 2019 OpenCV Deps
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2019.opencv</groupId>
             <artifactId>opencv-java</artifactId>
@@ -211,10 +258,6 @@
             <version>3.4.4-5</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <version>2.10.0.pr1</version>
-        </dependency>
+        -->
     </dependencies>
 </project>

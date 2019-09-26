@@ -1,11 +1,13 @@
 package com.chameleonvision.vision.camera;
 
+import com.chameleonvision.CameraException;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.*;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.opencv.core.Mat;
+import org.springframework.core.env.Environment;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -80,7 +82,12 @@ public class Camera {
 			var initTimeMs = (System.nanoTime() - initTimeout) / 1e6;
 			System.out.printf("Camera initialized in %.2fms\n", initTimeMs);
 		}
-		availableVideoModes = Arrays.stream(UsbCam.enumerateVideoModes()).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT).toArray(VideoMode[]::new);
+		var trueVideoModes = UsbCam.enumerateVideoModes();
+		availableVideoModes = Arrays.stream(trueVideoModes).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT && v.pixelFormat == VideoMode.PixelFormat.kYUYV).toArray(VideoMode[]::new);
+		if (availableVideoModes.length == 0) {
+			System.err.println("Camera not supported!");
+			throw new RuntimeException(new CameraException(CameraException.CameraExceptionType.BAD_CAMERA));
+		}
 		if (videoModeIndex <= availableVideoModes.length - 1) {
 			setCamVideoMode(videoModeIndex, false);
 		} else {
@@ -109,9 +116,7 @@ public class Camera {
 	private void setCamVideoMode(CamVideoMode newVideoMode, boolean updateCvSource) {
 		var prevVideoMode = this.camVideoMode;
 		this.camVideoMode = newVideoMode;
-		UsbCam.setPixelFormat(newVideoMode.getActualPixelFormat());
-		UsbCam.setFPS(newVideoMode.fps);
-		UsbCam.setResolution(newVideoMode.width, newVideoMode.height);
+		UsbCam.setVideoMode(newVideoMode.getActualPixelFormat(), newVideoMode.width, newVideoMode.height, newVideoMode.fps);
 
 		// update camera values
 		camVals = new CameraValues(this);
