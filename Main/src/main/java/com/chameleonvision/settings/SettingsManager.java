@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class SettingsManager {
-	public static final Path SettingsPath = Paths.get(System.getProperty("user.dir"), "Settings");
+	public static final Path SettingsPath = Paths.get(System.getProperty("user.dir"), "settings");
 	public static com.chameleonvision.vision.GeneralSettings GeneralSettings;
 
 	private SettingsManager() {}
@@ -79,7 +79,7 @@ public class SettingsManager {
 	private static void initGeneralSettings() {
 		FileHelper.CheckPath(SettingsPath);
 		try {
-			GeneralSettings = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(), "Settings.json").toString()), com.chameleonvision.vision.GeneralSettings.class);
+			GeneralSettings = new Gson().fromJson(new FileReader(Paths.get(SettingsPath.toString(), "settings.json").toString()), com.chameleonvision.vision.GeneralSettings.class);
 		} catch (FileNotFoundException e) {
 			GeneralSettings = new GeneralSettings();
 		}
