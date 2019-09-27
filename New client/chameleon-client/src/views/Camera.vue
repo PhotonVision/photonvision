@@ -7,8 +7,9 @@
                     <v-tab>Threshold</v-tab>
                     <v-tab>Contours</v-tab>
                     <v-tab>Output</v-tab>
+                    <!-- <v-tab>3D</v-tab> -->
                 </v-tabs>
-                <div>
+                <div style="padding-left:30px">
                     <component :is="selectedComponent"></component>
                 </div>
             </v-col>
@@ -24,10 +25,16 @@
 
 <script>
 import InputTab from './CameraViewes/InputTab'
+import ThresholdTab from './CameraViewes/ThresholdTab'
+import ContoursTab from './CameraViewes/ContoursTab'
+import OutputTab from './CameraViewes/OutputTab'
     export default {
         name: 'CameraTab',
         components:{
-            InputTab
+            InputTab,
+            ThresholdTab,
+            ContoursTab,
+            OutputTab
         },
         data() {
             return {

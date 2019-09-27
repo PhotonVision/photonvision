@@ -35,8 +35,6 @@ export default {
     
   },
   data: () => ({
-    drawer:null,
-    //
   }),
 };
 </script>
@@ -60,6 +58,9 @@ export default {
   }
   #title{
     color:#4baf62;
+  }
+  span{
+    color: white;
   }
 </style>
 
