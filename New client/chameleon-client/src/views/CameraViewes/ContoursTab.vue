@@ -1,6 +1,6 @@
 <template>
     <div>
-        <CVrangeSlider v-model="value.Area" name="Area" :min="0" :max="100"></CVrangeSlider>
+        <CVrangeSlider v-model="value.Area" name="Area" :min="0" :max="100" :step="0.1"></CVrangeSlider>
         <CVrangeSlider v-model="value.Ratio" name="Ratio (W/H)" :min="0" :max="100" :step="0.1"></CVrangeSlider>
         <CVrangeSlider v-model="value.Extent" name="Extent" :min="0" :max="100"></CVrangeSlider>
         <CVselect name="Target Group" :list="['Single','Dual','Triple','Quadruple','Quintuple']" v-model="value.TargetGrouping"></CVselect>
