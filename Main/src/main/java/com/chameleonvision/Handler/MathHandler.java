@@ -8,7 +8,7 @@ public class MathHandler {
         double b = -0.05;
         double k = 200;
         if (x < 50){
-            bias = -1.339;
+            bias = -1.338;
         }
         return ((k / (1 + Math.pow(Math.E,(a + (b * x))))) + bias);
     }
