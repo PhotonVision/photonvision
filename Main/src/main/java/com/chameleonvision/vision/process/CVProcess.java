@@ -1,11 +1,11 @@
 package com.chameleonvision.vision.process;
 
 import com.chameleonvision.vision.camera.CameraValues;
+import com.chameleonvision.Handler.MathHandler;
 import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
-
 import java.util.*;
 
 @SuppressWarnings("WeakerAccess")
@@ -57,8 +57,8 @@ public class CVProcess {
         for (MatOfPoint Contour : InputContours) {
             try {
                 double contourArea = Imgproc.contourArea(Contour);
-                double minArea = (area.get(0) * CamVals.ImageArea) / 100;
-                double maxArea = (area.get(1) * CamVals.ImageArea) / 100;
+                double minArea = (MathHandler.sigmoid(area.get(0)) * CamVals.ImageArea) / 100;
+                double maxArea = (MathHandler.sigmoid(area.get(1)) * CamVals.ImageArea) / 100;
                 if (contourArea <= minArea || contourArea >= maxArea) {
                     continue;
                 }
