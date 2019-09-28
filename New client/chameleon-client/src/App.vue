@@ -20,19 +20,13 @@
         </v-layout>
       </v-container>
     </v-content>
-    <v-footer app dark>
-      <span>&copy; 2019 Chameleon Vision</span>
-    </v-footer>
   </v-app>
 </template>
 
 <script>
-
-
 export default {
   name: 'App',
   components: {
-    
   },
   data: () => ({
   }),

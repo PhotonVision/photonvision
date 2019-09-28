@@ -1,8 +1,8 @@
 <template>
     <div>
-        <CVslider name="Exposure" v-model="t" :min="0" :max="100"></CVslider>
-        <CVslider name="Brightness" v-model="t" :min="0" :max="100"></CVslider>
-        <CVselect name="Orientation" v-model="a" :list="['Normal','Inverted']"></CVselect>
+        <CVslider name="Exposure" v-model="value.Exposure" :min="0" :max="100"></CVslider>
+        <CVslider name="Brightness" v-model="value.Brightness" :min="0" :max="100"></CVslider>
+        <CVselect name="Orientation" v-model="value.Orientation" :list="['Normal','Inverted']"></CVselect>
     </div>
 </template>
 
@@ -13,6 +13,7 @@ import CVselect from '../../components/cv-select'
 import CVswitch from '../../components/cv-switch'
     export default {
         name: 'Input',
+        props:['value'],
         components:{
             CVslider,
             rangeSlider,
@@ -26,7 +27,8 @@ import CVswitch from '../../components/cv-switch'
             }
         },
         methods:{
-        }
+        },
+        computed:{}
     }
 </script>
 
