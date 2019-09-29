@@ -103,7 +103,8 @@ public class ServerHandler {
                     var pipelineNumber = Integer.parseInt(newPipeline.replace("pipeline", ""));
                     System.out.printf("Changing pipeline to %s\n", newPipeline);
                     CameraManager.setCurrentPipeline(pipelineNumber);
-//                    broadcastMessage(allFieldsToMap(CameraManager.getCurrentPipeline()));
+                    var Proccess =  CameraManager.getCurrentCameraProcess();
+                    Proccess.ntPipelineEntry.setString("pipeline"+pipelineNumber);
                     broadcastMessage(allFieldsToMap(CameraManager.getCurrentPipeline()));
 
                     break;

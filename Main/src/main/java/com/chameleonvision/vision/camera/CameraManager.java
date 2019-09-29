@@ -3,7 +3,9 @@ package com.chameleonvision.vision.camera;
 import com.chameleonvision.CameraException;
 import com.chameleonvision.FileHelper;
 import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.vision.GeneralSettings;
 import com.chameleonvision.vision.Pipeline;
+import com.chameleonvision.vision.process.VisionProcess;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.wpi.cscore.UsbCamera;
@@ -22,6 +24,7 @@ public class CameraManager {
 	private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "cameras");
 
 	private static HashMap<String, Camera> AllCamerasByName = new HashMap<>();
+	private static HashMap<String, VisionProcess> AllVisionProcessesByName = new HashMap<>();
 
 	static HashMap<String, UsbCameraInfo> AllUsbCameraInfosByName = new HashMap<>() {{
 		var suffix = 0;
@@ -65,6 +68,14 @@ public class CameraManager {
 			}
 		}
 		return true;
+	}
+
+	public static void initializeThreads(){
+		for (var camSet : AllCamerasByName.entrySet()) {
+			VisionProcess visionProcess = new VisionProcess(camSet.getValue());
+			AllVisionProcessesByName.put(camSet.getKey(),visionProcess);
+			new Thread(visionProcess).start();
+		}
 	}
 
 	private static boolean addCamera(Camera camera, String cameraName) {
@@ -112,6 +123,12 @@ public class CameraManager {
 				list.add(String.format("%s X %s at %s fps", res.width, res.height, res.fps));
 			}
 			return list;
+		}
+		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
+	}
+	public static VisionProcess getCurrentCameraProcess() throws CameraException{
+		if (!SettingsManager.GeneralSettings.curr_camera.equals("")){
+			return AllVisionProcessesByName.get(SettingsManager.GeneralSettings.curr_camera);
 		}
 		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
 	}

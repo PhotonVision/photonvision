@@ -38,10 +38,7 @@ public class Main {
 
 		if (CameraManager.initializeCameras()) {
 			SettingsManager.initialize();
-			for (var camSet : CameraManager.getAllCamerasByName().entrySet()) {
-				new Thread(new VisionProcess(camSet.getValue())).start();
-			}
-
+			CameraManager.initializeThreads();
 			NetworkTableInstance.getDefault().startClientTeam(SettingsManager.GeneralSettings.team_number);
 //			NetworkTableInstance.getDefault().startClient("localhost");
 			System.out.println("Starting WebServer At Port:" + port);
