@@ -20,8 +20,8 @@ public class VisionProcess implements Runnable {
 	private final String cameraName;
 	private final CameraProcess cameraProcess;
 	// NetworkTables
-	private NetworkTableEntry ntPipelineEntry;
-	private NetworkTableEntry ntDriverModeEntry;
+	public NetworkTableEntry ntPipelineEntry;
+	public NetworkTableEntry ntDriverModeEntry;
 	private NetworkTableEntry ntYawEntry;
 	private NetworkTableEntry ntPitchEntry;
 	private NetworkTableEntry ntDistanceEntry;
