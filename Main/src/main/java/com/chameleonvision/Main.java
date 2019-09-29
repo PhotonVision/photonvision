@@ -11,7 +11,22 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import java.io.IOException;
 
 public class Main {
+	private static final String PORT_KEY = "-port";
 	public static void main(String[] args) {
+		int port = 8888;
+		for(int i=0; i<args.length; i+=2)
+		{
+			String key = args[i];
+			String value = args[i+1];
+			if (PORT_KEY.equals(key)) {
+				try{
+					port = Integer.parseInt(value);
+				}
+				catch (NumberFormatException e){
+					System.err.println("Given Port Was Not A Number Starting Server At Default Port");
+				}
+			}
+		}
 		// Attempt to load the JNI Libraries
 		try {
 			CameraServerJNI.forceLoad();
@@ -29,7 +44,8 @@ public class Main {
 
 			NetworkTableInstance.getDefault().startClientTeam(SettingsManager.GeneralSettings.team_number);
 //			NetworkTableInstance.getDefault().startClient("localhost");
-			Server.main(8888);
+			System.out.println("Starting WebServer At Port:" + port);
+			Server.main(port);
 		} else {
 			System.err.println("No cameras connected!");
 		}
