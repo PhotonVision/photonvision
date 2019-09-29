@@ -87,11 +87,14 @@ public class VisionProcess implements Runnable {
 				System.err.println(e.toString());
 			}
 			camera.setBrightness(pipeline.brightness);
-			HashMap<String, Object> pipeChange = new HashMap<>();
-			pipeChange.put("curr_pipeline", ntPipelineIndex);
-			ServerHandler.broadcastMessage(pipeChange);
-			ServerHandler.sendFullSettings();
+			if (SettingsManager.GeneralSettings.curr_camera.equals(cameraName)){
+				SettingsManager.GeneralSettings.curr_pipeline = ntPipelineIndex;
+				HashMap<String, Object> pipeChange = new HashMap<>();
+				pipeChange.put("curr_pipeline", ntPipelineIndex);
+				ServerHandler.broadcastMessage(pipeChange);
+				ServerHandler.sendFullSettings();
 
+			}
 		} else {
 			ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());
 		}
