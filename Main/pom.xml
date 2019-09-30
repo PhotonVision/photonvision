@@ -116,39 +116,37 @@
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-java</artifactId>
-            <version>2019.4.1-136-gb2861f8</version>
+            <version>2019.4.1-200-g2271570</version>
         </dependency>
         <!--frc cscore interface libs-->
-        <!-- linuxaarch64bionic has been temporarily disabled
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1-136-gb2861f8</version>
+            <version>2019.4.1-200-g2271570</version>
             <classifier>linuxaarch64bionic</classifier>
         </dependency>
-        -->
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1-136-gb2861f8</version>
+            <version>2019.4.1-200-g2271570</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1-136-gb2861f8</version>
+            <version>2019.4.1-200-g2271570</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1-136-gb2861f8</version>
+            <version>2019.4.1-200-g2271570</version>
             <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1-136-gb2861f8</version>
+            <version>2019.4.1-200-g2271570</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
