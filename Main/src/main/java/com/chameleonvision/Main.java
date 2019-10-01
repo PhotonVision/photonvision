@@ -16,13 +16,13 @@ public class Main {
     private static final String PORT_KEY = "--port"; // expects integer
     private static final String NT_SERVERMODE_KEY = "--nt-servermode"; // no args for this setting
     private static final String NT_CLIENTMODESERVER_KEY = "--nt-client-server"; // expects String representing an IP address (hostnames will be rejected!)
-    private static final String NETWORK_MANAGE_KEY = "--manage-network"; // no args for this setting
+    private static final String NETWORK_MANAGE_KEY = "--unmanage-network"; // no args for this setting
 
     private static final int DEFAULT_PORT = 8888;
 
     private static int webserverPort = DEFAULT_PORT;
     private static boolean ntServerMode = false;
-    private static boolean manageNetwork = false;
+    private static boolean manageNetwork = true;
     private static String ntClientModeServer = null;
 
     private static void handleArgs(String[] args) {
@@ -75,7 +75,7 @@ public class Main {
                     System.err.println("Argument for NT Server Host was invalid, defaulting to team number host");
                     break;
                 case NETWORK_MANAGE_KEY:
-                    manageNetwork = true;
+                    manageNetwork = false;
                     break;
             }
         }
@@ -93,7 +93,7 @@ public class Main {
         }
 
         if (CameraManager.initializeCameras()) {
-            SettingsManager.initialize();
+            SettingsManager.initialize(manageNetwork);
             CameraManager.initializeThreads();
 
             if (ntServerMode) {
