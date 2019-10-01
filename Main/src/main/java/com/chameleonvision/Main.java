@@ -14,13 +14,15 @@ import java.io.IOException;
 public class Main {
 
     private static final String PORT_KEY = "--port"; // expects integer
-    private static final String NT_SERVERMODE_KEY = "--ntservermode"; // no args for this setting
-    private static final String NT_CLIENTMODESERVER_KEY = "--ntclientserver"; // expects String representing an IP address (hostnames will be rejected!)
+    private static final String NT_SERVERMODE_KEY = "--nt-servermode"; // no args for this setting
+    private static final String NT_CLIENTMODESERVER_KEY = "--nt-client-server"; // expects String representing an IP address (hostnames will be rejected!)
+    private static final String NETWORK_MANAGE_KEY = "--manage-network"; // no args for this setting
 
     private static final int DEFAULT_PORT = 8888;
 
     private static int webserverPort = DEFAULT_PORT;
     private static boolean ntServerMode = false;
+    private static boolean manageNetwork = false;
     private static String ntClientModeServer = null;
 
     private static void handleArgs(String[] args) {
@@ -40,18 +42,20 @@ public class Main {
                     i++; // increment to skip an 'arg' next go-around of for loop, as that would be this value
                     break;
                 case NT_SERVERMODE_KEY:
+                case NETWORK_MANAGE_KEY:
                     // nothing
             }
 
             // this switch actually handles the arguments.
             switch (key) {
                 case PORT_KEY:
-                    try {
-                        if (value == null) throw new Exception("Bad or No argument value");
-                        webserverPort = Integer.parseInt(value);
-                    } catch (Exception ex) {
-                        System.err.printf("Argument for port was invalid, starting server at port %d\n", DEFAULT_PORT);
-                    }
+                    System.out.println("INFO - The \"--port\" argument is currently disabled.");
+//                    try {
+//                        if (value == null) throw new Exception("Bad or No argument value");
+//                        webserverPort = Integer.parseInt(value);
+//                    } catch (Exception ex) {
+//                        System.err.printf("Argument for port was invalid, starting server at port %d\n", DEFAULT_PORT);
+//                    }
                     break;
                 case NT_SERVERMODE_KEY:
                     ntServerMode = true;
@@ -69,6 +73,9 @@ public class Main {
                         }
                     }
                     System.err.println("Argument for NT Server Host was invalid, defaulting to team number host");
+                    break;
+                case NETWORK_MANAGE_KEY:
+                    manageNetwork = true;
                     break;
             }
         }

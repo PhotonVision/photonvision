@@ -19,16 +19,17 @@ public class SettingsManager {
 
 	private SettingsManager() {}
 
-	public static void initialize() {
+	public static void initialize(boolean manageNetwork) {
 		initGeneralSettings();
-		NetworkSettings netSettings = new NetworkSettings();
-		netSettings.hostname = GeneralSettings.hostname;
-		netSettings.gateway = GeneralSettings.gateway;
-		netSettings.netmask = GeneralSettings.netmask;
-		netSettings.connectionType = GeneralSettings.connection_type;
-		netSettings.ip = GeneralSettings.ip;
-		netSettings.run();
-
+		if (manageNetwork) {
+            NetworkSettings netSettings = new NetworkSettings();
+            netSettings.hostname = GeneralSettings.hostname;
+            netSettings.gateway = GeneralSettings.gateway;
+            netSettings.netmask = GeneralSettings.netmask;
+            netSettings.connectionType = GeneralSettings.connection_type;
+            netSettings.ip = GeneralSettings.ip;
+            netSettings.run();
+        }
 		var allCameras = CameraManager.getAllCamerasByName();
 		if (!allCameras.containsKey(GeneralSettings.curr_camera) && allCameras.size() > 0) {
 			var cam = allCameras.entrySet().stream().findFirst().get().getValue();

@@ -115,6 +115,7 @@ public class VisionProcess implements Runnable {
 			ntYawEntry.setNumber(pipelineResult.Yaw);
 			ntPitchEntry.setNumber(pipelineResult.Pitch);
 			ntDistanceEntry.setNumber(pipelineResult.Area);
+			NetworkTableInstance.getDefault().flush();
 		}
 		ntTimeStampEntry.setNumber(TimeStamp);
 	}
