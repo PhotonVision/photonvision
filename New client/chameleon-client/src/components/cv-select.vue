@@ -1,7 +1,7 @@
 <template>
     <div>
         <v-row align="center">
-            <v-col :cols="2">
+            <v-col :cols="3">
                 <span>{{name}}</span>
             </v-col>
             <v-col :cols="9">

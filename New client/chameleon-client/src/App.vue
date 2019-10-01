@@ -26,9 +26,12 @@
 <script>
 export default {
   name: 'App',
+
   components: {
+
   },
   data: () => ({
+
   }),
 };
 </script>
@@ -57,4 +60,3 @@ export default {
     color: white;
   }
 </style>
-

@@ -7,12 +7,40 @@
                         <CVselect name="Camera" :list="[1,2,3]"></CVselect>
                     </div>
                 </v-col>
+                <v-col :cols="1">
+                    <CVicon color="white" text="edit" tooltip="Edit camera name"></CVicon>
+                </v-col>
                 <v-col :cols="3" class="colsClass">
                     <CVselect name="Pipeline" :list="[1,2,3]"></CVselect>
                 </v-col>
-                 <v-col :cols="2" class="colsClass">
-                     <v-icon color="white" @click="test">add</v-icon>
-                     <v-icon color="red darken-2" @click="test">delete</v-icon>
+                 <v-col :cols="1" class="colsClass">
+                        <v-menu offset-y dark auto>
+                            <template v-slot:activator="{ on }">
+                                <v-icon color="white" @click="test" v-on="on">menu</v-icon>
+                            </template>
+                            <v-list dense>
+                                <v-list-item @click="test">
+                                    <v-list-item-title>
+                                        <CVicon color="white" :right="true" text="edit" tooltip="Edit pipeline name"></CVicon>
+                                    </v-list-item-title>
+                                </v-list-item>
+                                      <v-list-item @click="test">
+                                    <v-list-item-title>
+                                        <CVicon color="white" :right="true" text="add" tooltip="Add new pipeline"></CVicon>
+                                    </v-list-item-title>
+                                </v-list-item>
+                                <v-list-item @click="test">
+                                    <v-list-item-title>
+                                        <CVicon color="red darken-2" :right="true" text="delete" tooltip="Delete pipeline"></CVicon>
+                                    </v-list-item-title>
+                                </v-list-item>
+                                <v-list-item @click="test">
+                                    <v-list-item-title>
+                                        <CVicon color="white" :right="true" text="mdi-content-copy" tooltip="Duplicate pipeline"></CVicon>
+                                    </v-list-item-title>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
                 </v-col>
             </v-row>
         </div>
@@ -48,6 +76,7 @@ import ThresholdTab from './CameraViewes/ThresholdTab'
 import ContoursTab from './CameraViewes/ContoursTab'
 import OutputTab from './CameraViewes/OutputTab'
 import CVselect from '../components/cv-select'
+import CVicon from '../components/cv-icon'
     export default {
         name: 'CameraTab',
         components:{
@@ -55,7 +84,8 @@ import CVselect from '../components/cv-select'
             ThresholdTab,
             ContoursTab,
             OutputTab,
-            CVselect
+            CVselect,
+            CVicon
         },
         methods:{
             test(){
