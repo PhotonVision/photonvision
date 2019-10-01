@@ -8,5 +8,6 @@ public class PipelineResult {
 	public double CalibratedY = 0.0;
 	public double Pitch = 0.0;
 	public double Yaw = 0.0;
+	public double Area = 0.0;
 	RotatedRect RawPoint;
 }

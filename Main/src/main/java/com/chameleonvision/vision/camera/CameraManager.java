@@ -16,8 +16,10 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CameraManager {
 
@@ -49,38 +51,38 @@ public class CameraManager {
 	public static boolean initializeCameras() {
 		if (AllUsbCameraInfosByName.size() == 0) return false;
 		FileHelper.CheckPath(CamConfigPath);
-		for (var entry : AllUsbCameraInfosByName.entrySet()) {
-			var camPath = Paths.get(CamConfigPath.toString(), String.format("%s.json", entry.getKey()));
+		AllUsbCameraInfosByName.forEach((key, value) -> {
+			var camPath = Paths.get(CamConfigPath.toString(), String.format("%s.json", key));
 			File camJsonFile = new File(camPath.toString());
 			if (camJsonFile.exists() && camJsonFile.length() != 0) {
 				try {
 					Gson gson = new GsonBuilder().registerTypeAdapter(Camera.class, new CameraDeserializer()).create();
 					var camJsonFileReader = new FileReader(camPath.toString());
 					var gsonRead = gson.fromJson(camJsonFileReader, Camera.class);
-					AllCamerasByName.put(entry.getKey(), gsonRead);
+					AllCamerasByName.put(key, gsonRead);
 				} catch (FileNotFoundException ex) {
 					ex.printStackTrace();
 				}
 			} else {
-				if (!addCamera(new Camera(entry.getKey()), entry.getKey())) {
+				if (!addCamera(new Camera(key), key)) {
 					System.err.println("Failed to add camera! Already exists!");
 				}
 			}
-		}
+		});
 		return true;
 	}
 
 	public static void initializeThreads(){
-		for (var camSet : AllCamerasByName.entrySet()) {
-			VisionProcess visionProcess = new VisionProcess(camSet.getValue());
-			AllVisionProcessesByName.put(camSet.getKey(),visionProcess);
+		AllCamerasByName.forEach((key, value) -> {
+			VisionProcess visionProcess = new VisionProcess(value);
+			AllVisionProcessesByName.put(key, visionProcess);
 			new Thread(visionProcess).start();
-		}
+		});
 	}
 
 	private static boolean addCamera(Camera camera, String cameraName) {
 		if (AllCamerasByName.containsKey(cameraName)) return false;
-		for (int i = 0; i < 10;i++){
+		for (int i = 0; i < 10; i++){
 			camera.addPipeline(); // simple fix to create more pipelines for now
 		}
 		AllCamerasByName.put(cameraName, camera);
@@ -118,11 +120,8 @@ public class CameraManager {
 
 	public static List<String> getResolutionList() throws CameraException {
 		if (!SettingsManager.GeneralSettings.curr_camera.equals("")) {
-			List<String> list = new ArrayList<>();
-			for (var res : CameraManager.getCamera(SettingsManager.GeneralSettings.curr_camera).getAvailableVideoModes()) {
-				list.add(String.format("%s X %s at %s fps", res.width, res.height, res.fps));
-			}
-			return list;
+			return Arrays.stream(CameraManager.getCamera(SettingsManager.GeneralSettings.curr_camera).getAvailableVideoModes())
+					.map(res -> String.format("%s X %s at %s fps", res.width, res.height, res.fps)).collect(Collectors.toList());
 		}
 		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
 	}
