@@ -99,11 +99,10 @@ public class ServerHandler {
                     sendFullSettings();
                     break;
                 case "curr_pipeline":
-                    String newPipeline = value.toString();
-                    var pipelineNumber = Integer.parseInt(newPipeline.replace("pipeline", ""));
+                    int newPipeline = (int) value;
                     System.out.printf("Changing pipeline to %s\n", newPipeline);
-                    CameraManager.setCurrentPipeline(pipelineNumber);
-//                    broadcastMessage(allFieldsToMap(CameraManager.getCurrentPipeline()));
+                    CameraManager.setCurrentPipeline(newPipeline);
+                    CameraManager.getCurrentCameraProcess().ntPipelineEntry.setNumber(newPipeline);
                     broadcastMessage(allFieldsToMap(CameraManager.getCurrentPipeline()));
 
                     break;

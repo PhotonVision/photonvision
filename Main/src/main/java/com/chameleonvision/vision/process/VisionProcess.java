@@ -20,8 +20,8 @@ public class VisionProcess implements Runnable {
 	private final String cameraName;
 	private final CameraProcess cameraProcess;
 	// NetworkTables
-	private NetworkTableEntry ntPipelineEntry;
-	private NetworkTableEntry ntDriverModeEntry;
+	public NetworkTableEntry ntPipelineEntry;
+	public NetworkTableEntry ntDriverModeEntry;
 	private NetworkTableEntry ntYawEntry;
 	private NetworkTableEntry ntPitchEntry;
 	private NetworkTableEntry ntDistanceEntry;
@@ -46,17 +46,17 @@ public class VisionProcess implements Runnable {
 
 		// NetworkTables
 		NetworkTable ntTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraName);
-		ntPipelineEntry = ntTable.getEntry("Pipeline");
-		ntDriverModeEntry = ntTable.getEntry("Driver_Mode");
-		ntPitchEntry = ntTable.getEntry("Pitch");
-		ntYawEntry = ntTable.getEntry("Yaw");
-		ntDistanceEntry = ntTable.getEntry("Distance");
-		ntTimeStampEntry = ntTable.getEntry("TimeStamp");
-		ntValidEntry = ntTable.getEntry("Valid");
+		ntPipelineEntry = ntTable.getEntry("pipeline");
+		ntDriverModeEntry = ntTable.getEntry("driver_mode");
+		ntPitchEntry = ntTable.getEntry("pitch");
+		ntYawEntry = ntTable.getEntry("yaw");
+		ntDistanceEntry = ntTable.getEntry("distance");
+		ntTimeStampEntry = ntTable.getEntry("timestamp");
+		ntValidEntry = ntTable.getEntry("is_valid");
 		ntDriverModeEntry.addListener(this::DriverModeListener, EntryListenerFlags.kUpdate);
 		ntPipelineEntry.addListener(this::PipelineListener, EntryListenerFlags.kUpdate);
 		ntDriverModeEntry.setBoolean(false);
-		ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());
+		ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
 
 		// camera settings
 		cvProcess = new CVProcess(camera.getCamVals());
@@ -75,7 +75,7 @@ public class VisionProcess implements Runnable {
 	}
 
 	private void PipelineListener(EntryNotification entryNotification) {
-		var ntPipelineIndex = Integer.parseInt(entryNotification.value.getString().replace("pipeline", ""));
+		var ntPipelineIndex = (int) entryNotification.value.getDouble();
 		if (camera.getPipelines().containsKey(ntPipelineIndex)) {
 //            camera.setEntryNotification.value.getString());
 			var pipeline = camera.getCurrentPipeline();
@@ -87,13 +87,15 @@ public class VisionProcess implements Runnable {
 				System.err.println(e.toString());
 			}
 			camera.setBrightness(pipeline.brightness);
-			HashMap<String, Object> pipeChange = new HashMap<>();
-			pipeChange.put("curr_pipeline", ntPipelineIndex);
-			ServerHandler.broadcastMessage(pipeChange);
-			ServerHandler.sendFullSettings();
-
+			if (SettingsManager.GeneralSettings.curr_camera.equals(cameraName)){
+				SettingsManager.GeneralSettings.curr_pipeline = ntPipelineIndex;
+				HashMap<String, Object> pipeChange = new HashMap<>();
+				pipeChange.put("curr_pipeline", ntPipelineIndex);
+				ServerHandler.broadcastMessage(pipeChange);
+				ServerHandler.sendFullSettings();
+			}
 		} else {
-			ntPipelineEntry.setString("pipeline" + camera.getCurrentPipelineIndex());
+			ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
 		}
 	}
 
@@ -112,6 +114,8 @@ public class VisionProcess implements Runnable {
 		if (pipelineResult.IsValid) {
 			ntYawEntry.setNumber(pipelineResult.Yaw);
 			ntPitchEntry.setNumber(pipelineResult.Pitch);
+			ntDistanceEntry.setNumber(pipelineResult.Area);
+			NetworkTableInstance.getDefault().flush();
 		}
 		ntTimeStampEntry.setNumber(TimeStamp);
 	}
@@ -158,6 +162,7 @@ public class VisionProcess implements Runnable {
 					}
 					pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
 					pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
+					pipelineResult.Area = finalRect.size.area();
 					drawContour(outputImage, finalRect);
 				}
 			}

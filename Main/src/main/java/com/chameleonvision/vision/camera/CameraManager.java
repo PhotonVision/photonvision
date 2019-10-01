@@ -3,7 +3,9 @@ package com.chameleonvision.vision.camera;
 import com.chameleonvision.CameraException;
 import com.chameleonvision.FileHelper;
 import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.vision.GeneralSettings;
 import com.chameleonvision.vision.Pipeline;
+import com.chameleonvision.vision.process.VisionProcess;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.wpi.cscore.UsbCamera;
@@ -14,15 +16,17 @@ import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CameraManager {
 
-	private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "Cams");
-	public static HashMap<String, Integer> CameraPorts = new HashMap<>();
+	private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "cameras");
 
 	private static HashMap<String, Camera> AllCamerasByName = new HashMap<>();
+	private static HashMap<String, VisionProcess> AllVisionProcessesByName = new HashMap<>();
 
 	static HashMap<String, UsbCameraInfo> AllUsbCameraInfosByName = new HashMap<>() {{
 		var suffix = 0;
@@ -47,30 +51,38 @@ public class CameraManager {
 	public static boolean initializeCameras() {
 		if (AllUsbCameraInfosByName.size() == 0) return false;
 		FileHelper.CheckPath(CamConfigPath);
-		for (var entry : AllUsbCameraInfosByName.entrySet()) {
-			var camPath = Paths.get(CamConfigPath.toString(), String.format("%s.json", entry.getKey()));
+		AllUsbCameraInfosByName.forEach((key, value) -> {
+			var camPath = Paths.get(CamConfigPath.toString(), String.format("%s.json", key));
 			File camJsonFile = new File(camPath.toString());
 			if (camJsonFile.exists() && camJsonFile.length() != 0) {
 				try {
 					Gson gson = new GsonBuilder().registerTypeAdapter(Camera.class, new CameraDeserializer()).create();
 					var camJsonFileReader = new FileReader(camPath.toString());
 					var gsonRead = gson.fromJson(camJsonFileReader, Camera.class);
-					AllCamerasByName.put(entry.getKey(), gsonRead);
+					AllCamerasByName.put(key, gsonRead);
 				} catch (FileNotFoundException ex) {
 					ex.printStackTrace();
 				}
 			} else {
-				if (!addCamera(new Camera(entry.getKey()), entry.getKey())) {
+				if (!addCamera(new Camera(key), key)) {
 					System.err.println("Failed to add camera! Already exists!");
 				}
 			}
-		}
+		});
 		return true;
+	}
+
+	public static void initializeThreads(){
+		AllCamerasByName.forEach((key, value) -> {
+			VisionProcess visionProcess = new VisionProcess(value);
+			AllVisionProcessesByName.put(key, visionProcess);
+			new Thread(visionProcess).start();
+		});
 	}
 
 	private static boolean addCamera(Camera camera, String cameraName) {
 		if (AllCamerasByName.containsKey(cameraName)) return false;
-		for (int i = 0; i < 10;i++){
+		for (int i = 0; i < 10; i++){
 			camera.addPipeline(); // simple fix to create more pipelines for now
 		}
 		AllCamerasByName.put(cameraName, camera);
@@ -108,11 +120,14 @@ public class CameraManager {
 
 	public static List<String> getResolutionList() throws CameraException {
 		if (!SettingsManager.GeneralSettings.curr_camera.equals("")) {
-			List<String> list = new ArrayList<>();
-			for (var res : CameraManager.getCamera(SettingsManager.GeneralSettings.curr_camera).getAvailableVideoModes()) {
-				list.add(String.format("%s X %s at %s fps", res.width, res.height, res.fps));
-			}
-			return list;
+			return Arrays.stream(CameraManager.getCamera(SettingsManager.GeneralSettings.curr_camera).getAvailableVideoModes())
+					.map(res -> String.format("%s X %s at %s fps", res.width, res.height, res.fps)).collect(Collectors.toList());
+		}
+		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
+	}
+	public static VisionProcess getCurrentCameraProcess() throws CameraException{
+		if (!SettingsManager.GeneralSettings.curr_camera.equals("")){
+			return AllVisionProcessesByName.get(SettingsManager.GeneralSettings.curr_camera);
 		}
 		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
 	}
