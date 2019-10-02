@@ -11,7 +11,7 @@
                 </div>
             </v-col>
             <v-col v-if="selectedTab === 1" class="colsClass">
-                <img class="videoClass" src="https://pbs.twimg.com/profile_images/846659478120366082/K-kZVvT8_400x400.jpg">
+                <img class="videoClass" :src="steamAdress">
             </v-col>
       </v-row>
     </div>
@@ -39,7 +39,12 @@ import Cameras from './SettingsViewes/Cameras'
                     case 1:
                         return "Cameras";
                 }
-            }
+            },
+            steamAdress: {
+                get: function(){
+                    return "http://"+location.hostname + ":"+ this.$store.state.port +"/stream.mjpg";
+                }
+            },
         }
     }
 </script>

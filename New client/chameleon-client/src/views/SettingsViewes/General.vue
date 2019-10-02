@@ -1,13 +1,13 @@
 <template>
     <div>
         <CVnumberinput name="Team Number"></CVnumberinput>
-        <CVradio v-model="t" :list="['DHCP','Static']"></CVradio>
+        <CVradio v-model="settings.connectionType" :list="['DHCP','Static']"></CVradio>
         <v-divider color="white"></v-divider>
-        <CVinput name="IP" :disabled="isDisabled"></CVinput>
-        <CVinput name="NetMask" :disabled="isDisabled"></CVinput>
-        <CVinput name="Gateway" :disabled="isDisabled"></CVinput>
+        <CVinput name="IP" v-model="settings.ip" :disabled="isDisabled"></CVinput>
+        <CVinput name="NetMask" v-model="settings.netmask" :disabled="isDisabled"></CVinput>
+        <CVinput name="Gateway" v-model="settings.gateway" :disabled="isDisabled"></CVinput>
         <v-divider color="white"></v-divider>
-        <CVinput name="Hostname" ></CVinput>
+        <CVinput name="Hostname" v-model="settings.hostname"></CVinput>
         <v-btn style="margin-top:10px" small color="#4baf62">Save General Settings</v-btn>
     </div>
 </template>
@@ -25,16 +25,23 @@ import CVinput from '../../components/cv-input'
         },
         data() {
             return {
-                t:0
             }
         },
         computed:{
             isDisabled(){
-                if(this.t === 0){
+                if(this.settings.connectionType === 0){
                     return true;
                 }
                 return false;
             },
+            settings:{
+                get(){
+                    return this.$store.state.settings;
+                },
+                set(value){
+                    this.$store.commit('settings',value);
+                }
+            }
             
         }
     }

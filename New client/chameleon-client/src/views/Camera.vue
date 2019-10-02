@@ -4,14 +4,14 @@
             <v-row align="center">
                 <v-col :cols="3" class="colsClass">
                     <div style="padding-left:30px">
-                        <CVselect name="Camera" :list="[1,2,3]"></CVselect>
+                        <CVselect name="Camera" v-model="currentCameraIndex" :list="cameraList"></CVselect>
                     </div>
                 </v-col>
                 <v-col :cols="1">
                     <CVicon color="white" text="edit" tooltip="Edit camera name"></CVicon>
                 </v-col>
                 <v-col :cols="3" class="colsClass">
-                    <CVselect name="Pipeline" :list="[1,2,3]"></CVselect>
+                    <CVselect name="Pipeline" :list="pipelineList" v-model="currentPipelineIndex"></CVselect>
                 </v-col>
                  <v-col :cols="1" class="colsClass">
                         <v-menu offset-y dark auto>
@@ -62,8 +62,8 @@
                         <v-tab>Normal</v-tab>
                         <v-tab>Threshold</v-tab>
                     </v-tabs>
-                    <img class="videoClass" src="https://pbs.twimg.com/profile_images/846659478120366082/K-kZVvT8_400x400.jpg">
-                    <h5 id="Point">Yaw: 222 Pitch: 111 FPS: 15</h5>
+                    <img class="videoClass" :src="steamAdress">
+                    <h5 id="Point">{{point}}</h5>
                 </div>
             </v-col>
       </v-row>
@@ -95,22 +95,6 @@ import CVicon from '../components/cv-icon'
         data() {
             return {
                 selectedTab:0,
-                pipeline:{
-                    Exposure:0,
-                    Brightness:0,
-                    Orientation:0,
-                    Hue:[0,15],
-                    Saturation:[0,15],
-                    Value:[0,25],
-                    Erode:false,
-                    Dilate:false,
-                    Area:[0,12],
-                    Ratio:[0,12],
-                    Extent:[0,12],
-                    TargetGrouping:0,
-                    TargetIntersection:0,
-                    SortMode:0
-                }
             }
         },
         computed:{
@@ -125,7 +109,62 @@ import CVicon from '../components/cv-icon'
                     case 3:
                         return "OutputTab";
                 }
-            }
+            },
+            point:{
+                 get:function(){
+                    let p = this.$store.state.point.calulated;
+                    if(p !== undefined){
+                        return ("Pitch: " + parseFloat(p['pitch']).toFixed(2) + " Yaw: " + parseFloat(p['yaw']).toFixed(2) + " FPS: " + parseFloat(p['fps']).toFixed(2))
+                    } else{
+                        return undefined;
+                    }
+                }
+            },
+            currentCameraIndex:{
+                get(){
+                    return this.$store.state.currentCameraIndex;
+                },
+                set(value){
+                    this.$store.commit('currentCameraIndex',value);
+                }
+            },
+            currentPipelineIndex:{
+                get(){
+                    return this.$store.state.currentPipelineIndex;
+                },
+                set(value){
+                    this.$store.commit('currentPipelineIndex',value);
+                }
+            },
+            cameraList:{
+                get(){
+                    return this.$store.state.cameraList;
+                },
+                set(value){
+                    this.$store.commit('cameraList',value);
+                }
+            },
+            pipelineList:{
+                get(){
+                    return this.$store.state.pipelinelist;
+                },
+                set(value){
+                    this.$store.commit('pipelinelist',value);
+                }
+            },
+            pipeline:{
+                get(){
+                    return this.$store.state.pipeline;
+                },
+                set(value){
+                    this.$store.commit('pipeline',value);
+                }
+            },
+            steamAdress: {
+                get: function(){
+                    return "http://"+location.hostname + ":"+ this.$store.state.port +"/stream.mjpg";
+                }
+            },
         }
     }
 </script>

@@ -30,9 +30,33 @@ export default {
   components: {
 
   },
+  methods:{
+    handleMessage(key,val){
+      switch(key){
+        default:{
+          this.$store.commit(key,value);
+        }
+      }
+    }
+  },
   data: () => ({
 
   }),
+  created(){
+    this.$options.sockets.onmessage = (data) =>{
+      try{
+        let message = JSON.parse(data.data);
+        for(let prop in message){
+          if(message.hasOwnProperty(prop)){
+            this.handleMessage(prop,message[prop]);
+          }
+        }
+      }
+      catch{
+        console.error('error: ' + data.data);
+      }      
+    }
+  }
 };
 </script>
 
