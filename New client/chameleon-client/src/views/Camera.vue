@@ -62,7 +62,9 @@
                         <v-tab>Normal</v-tab>
                         <v-tab>Threshold</v-tab>
                     </v-tabs>
-                    <img class="videoClass" :src="steamAdress">
+                    <div class="videoClass">
+                        <img :src="steamAdress">
+                    </div>
                     <h5 id="Point">{{point}}</h5>
                 </div>
             </v-col>
@@ -175,9 +177,12 @@ import CVicon from '../components/cv-icon'
         
     }
     .videoClass{
-        display: block;
-        margin-right: auto;
-        margin-left: auto;
+        text-align: center;
+    }
+    .videoClass img{
+        height: auto !important;
+        width: 75%;
+        vertical-align: middle;
     }
     #Point{
         padding-top: 5px;

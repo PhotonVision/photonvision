@@ -5,7 +5,8 @@ import store from './store'
 import vuetify from './plugins/vuetify';
 import VueNativeSock from 'vue-native-websocket';
 Vue.config.productionTip = false;
-Vue.use(VueNativeSock,'ws://' + location.host + '/websocket',{format: 'json'});
+// Vue.use(VueNativeSock,'ws://' + location.host + '/websocket',{format: 'json'});
+Vue.use(VueNativeSock,'ws://'+location.hostname+':8888/websocket',{format:'JSON'});
 new Vue({
   router,
   store,

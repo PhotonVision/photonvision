@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-row>
+        <v-row align="center">
             <v-col cols="6" class="colsClass">
                 <v-tabs fixed-tabs background-color="#212121" dark height="50" slider-color="#4baf62" v-model="selectedTab">
                     <v-tab to="">General</v-tab>
@@ -10,8 +10,10 @@
                     <component :is="selectedComponent"></component>
                 </div>
             </v-col>
-            <v-col v-if="selectedTab === 1" class="colsClass">
-                <img class="videoClass" :src="steamAdress">
+            <v-col v-show="selectedTab === 1" class="colsClass">
+                <div class="videoClass">
+                    <img :src="steamAdress">
+                </div>
             </v-col>
       </v-row>
     </div>
@@ -20,11 +22,12 @@
 <script>
 import General from './SettingsViewes/General'
 import Cameras from './SettingsViewes/Cameras'
+
     export default {
         name: 'SettingsTab',
         components:{
             General,
-            Cameras
+            Cameras,
         },
         data() {
             return {
@@ -51,9 +54,12 @@ import Cameras from './SettingsViewes/Cameras'
 
 <style scoped>
     .videoClass{
-        display: block;
-        margin-right: auto;
-        margin-left: auto;
+        text-align: center;
+    }
+    .videoClass img{
+        height: auto !important;
+        width: 75%;
+        vertical-align: middle;
     }
     .colsClass{
         padding: 0 !important;
