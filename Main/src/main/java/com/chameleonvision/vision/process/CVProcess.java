@@ -11,54 +11,54 @@ import java.util.*;
 @SuppressWarnings("WeakerAccess")
 public class CVProcess {
 
-    private final CameraValues CamVals;
-    private HashMap<String, Integer> TargetGrouping = new HashMap<>() {{
+    private final CameraValues cameraValues;
+    private HashMap<String, Integer> targetGrouping = new HashMap<>() {{
         put("Single", 1);
         put("Dual", 2);
         put("Triple", 3);
         put("Quadruple", 4);
         put("Quintuple", 5);
     }};
-    private Mat Kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
+    private Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
     private Mat hsvImage = new Mat();
-    private List<MatOfPoint> FoundContours = new ArrayList<>();
+    private List<MatOfPoint> foundContours = new ArrayList<>();
     private Mat binaryMat = new Mat();
-    private List<MatOfPoint> FilteredContours = new ArrayList<>();
-    private Comparator<RotatedRect> SortByCentermostComparator = Comparator.comparingDouble(this::calcDistance);
-    private List<RotatedRect> FinalCountours = new ArrayList<>();
+    private List<MatOfPoint> filteredContours = new ArrayList<>();
+    private Comparator<RotatedRect> sortByCentermostComparator = Comparator.comparingDouble(this::calcDistance);
+    private List<RotatedRect> finalCountours = new ArrayList<>();
     private Mat intersectMatA = new Mat();
     private Mat intersectMatB = new Mat();
 
-    CVProcess(CameraValues camVals) {
-        CamVals = camVals;
+    CVProcess(CameraValues cameraValues) {
+        this.cameraValues = cameraValues;
     }
 
-    void HSVThreshold(Mat srcImage, Mat dst, @NotNull Scalar hsvLower, @NotNull Scalar hsvUpper, boolean shouldErode, boolean shouldDilate) {
+    void hsvThreshold(Mat srcImage, Mat dst, @NotNull Scalar hsvLower, @NotNull Scalar hsvUpper, boolean shouldErode, boolean shouldDilate) {
         Imgproc.cvtColor(srcImage, hsvImage, Imgproc.COLOR_RGB2HSV, 3);
         Core.inRange(hsvImage, hsvLower, hsvUpper, dst);
         if (shouldErode) {
-            Imgproc.erode(dst, dst, Kernel);
+            Imgproc.erode(dst, dst, kernel);
         }
         if (shouldDilate) {
-            Imgproc.dilate(dst, dst, Kernel);
+            Imgproc.dilate(dst, dst, kernel);
         }
         hsvImage.release();
     }
 
-    List<MatOfPoint> FindContours(Mat src) {
+    List<MatOfPoint> findContours(Mat src) {
         src.copyTo(binaryMat);
-        FoundContours.clear();
-        Imgproc.findContours(binaryMat, FoundContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
+        foundContours.clear();
+        Imgproc.findContours(binaryMat, foundContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
         binaryMat.release();
-        return FoundContours;
+        return foundContours;
     }
 
-    List<MatOfPoint> FilterContours(List<MatOfPoint> InputContours, List<Integer> area, List<Double> ratio, List<Integer> extent) {
-        for (MatOfPoint Contour : InputContours) {
+    List<MatOfPoint> filterContours(List<MatOfPoint> inputContours, List<Integer> area, List<Double> ratio, List<Integer> extent) {
+        for (MatOfPoint Contour : inputContours) {
             try {
                 double contourArea = Imgproc.contourArea(Contour);
-                double minArea = (MathHandler.sigmoid(area.get(0)) * CamVals.ImageArea) / 100;
-                double maxArea = (MathHandler.sigmoid(area.get(1)) * CamVals.ImageArea) / 100;
+                double minArea = (MathHandler.sigmoid(area.get(0)) * cameraValues.ImageArea) / 100;
+                double maxArea = (MathHandler.sigmoid(area.get(1)) * cameraValues.ImageArea) / 100;
                 if (contourArea <= minArea || contourArea >= maxArea) {
                     continue;
                 }
@@ -74,20 +74,20 @@ public class CVProcess {
                 if (aspectRatio < ratio.get(0) || aspectRatio > ratio.get(1)) {
                     continue;
                 }
-                FilteredContours.add(Contour);
+                filteredContours.add(Contour);
             } catch (Exception e) {
                 System.err.println("Error while filtering contours");
                 e.printStackTrace();
             }
         }
-        return FilteredContours;
+        return filteredContours;
     }
 
     private double calcDistance(RotatedRect rect) {
-        return FastMath.sqrt(FastMath.pow(CamVals.CenterX - rect.center.x, 2) + FastMath.pow(CamVals.CenterY - rect.center.y, 2));
+        return FastMath.sqrt(FastMath.pow(cameraValues.CenterX - rect.center.x, 2) + FastMath.pow(cameraValues.CenterY - rect.center.y, 2));
     }
 
-    RotatedRect SortTargetsToOne(List<RotatedRect> inputRects, String sortMode) {
+    RotatedRect sortTargetsToOne(List<RotatedRect> inputRects, String sortMode) {
         switch (sortMode) {
             case "Largest":
                 return Collections.max(inputRects, Comparator.comparing(rect -> rect.size.area()));
@@ -102,22 +102,22 @@ public class CVProcess {
             case "Rightmost":
                 return Collections.max(inputRects, Comparator.comparing(rect -> rect.center.x));
             case "Centermost":
-                return Collections.min(inputRects, SortByCentermostComparator);
+                return Collections.min(inputRects, sortByCentermostComparator);
             default:
                 return inputRects.get(0); // default to whatever the first contour is, but this should never happen
         }
     }
 
-    List<RotatedRect> GroupTargets(List<MatOfPoint> InputContours, String IntersectionPoint, String TargetGroup) {
-        FinalCountours.clear();
-        if (!TargetGroup.equals("Single")) {
-            for (var i = 0; i < InputContours.size(); i++) {
-                List<Point> FinalContourList = new ArrayList<>(InputContours.get(i).toList());
-                for (var c = 0; c < (TargetGrouping.get(TargetGroup) - 1); c++) {
+    List<RotatedRect> groupTargets(List<MatOfPoint> inputContours, String intersectionPoint, String targetGroup) {
+        finalCountours.clear();
+        if (!targetGroup.equals("Single")) {
+            for (var i = 0; i < inputContours.size(); i++) {
+                List<Point> FinalContourList = new ArrayList<>(inputContours.get(i).toList());
+                for (var c = 0; c < (targetGrouping.get(targetGroup) - 1); c++) {
                     try {
-                        MatOfPoint firstContour = InputContours.get(i + c);
-                        MatOfPoint secondContour = InputContours.get(i + c + 1);
-                        if (IsIntersecting(firstContour, secondContour, IntersectionPoint)) {
+                        MatOfPoint firstContour = inputContours.get(i + c);
+                        MatOfPoint secondContour = inputContours.get(i + c + 1);
+                        if (isIntersecting(firstContour, secondContour, intersectionPoint)) {
                             FinalContourList.addAll(secondContour.toList());
                         }
                         else{
@@ -130,7 +130,7 @@ public class CVProcess {
                         contour.fromList(FinalContourList);
                         if (contour.cols() != 0 && contour.rows() != 0) {
                             RotatedRect rect = Imgproc.minAreaRect(contour);
-                            FinalCountours.add(rect);
+                            finalCountours.add(rect);
                         }
                     } catch (IndexOutOfBoundsException e) {
                         FinalContourList.clear();
@@ -140,19 +140,19 @@ public class CVProcess {
             }
 
         } else {
-            for (MatOfPoint inputContour : InputContours) {
+            for (MatOfPoint inputContour : inputContours) {
                 MatOfPoint2f contour = new MatOfPoint2f();
                 contour.fromArray(inputContour.toArray());
                 if (contour.cols() != 0 && contour.rows() != 0) {
                     RotatedRect rect = Imgproc.minAreaRect(contour);
-                    FinalCountours.add(rect);
+                    finalCountours.add(rect);
                 }
             }
         }
-        return FinalCountours;
+        return finalCountours;
     }
 
-    private boolean IsIntersecting(MatOfPoint ContourOne, MatOfPoint ContourTwo, String IntersectionPoint) {
+    private boolean isIntersecting(MatOfPoint ContourOne, MatOfPoint ContourTwo, String IntersectionPoint) {
         if (IntersectionPoint.equals("None")) {
             return true;
         }
