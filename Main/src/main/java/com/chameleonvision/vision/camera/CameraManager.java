@@ -121,7 +121,7 @@ public class CameraManager {
 	public static List<String> getResolutionList() throws CameraException {
 		if (!SettingsManager.GeneralSettings.curr_camera.equals("")) {
 			return Arrays.stream(CameraManager.getCamera(SettingsManager.GeneralSettings.curr_camera).getAvailableVideoModes())
-					.map(res -> String.format("%s X %s at %s fps", res.width, res.height, res.fps)).collect(Collectors.toList());
+					.map(res -> String.format("%s X %s at %s fps using %s ", res.width, res.height, res.fps, res.pixelFormat.toString())).collect(Collectors.toList());
 		}
 		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
 	}

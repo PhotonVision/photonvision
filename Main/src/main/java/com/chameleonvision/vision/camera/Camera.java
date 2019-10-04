@@ -80,8 +80,7 @@ public class Camera {
 			var initTimeMs = (System.nanoTime() - initTimeout) / 1e6;
 			System.out.printf("Camera initialized in %.2fms\n", initTimeMs);
 		}
-		var trueVideoModes = UsbCam.enumerateVideoModes();
-		availableVideoModes = Arrays.stream(trueVideoModes).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT && v.pixelFormat == VideoMode.PixelFormat.kYUYV).toArray(VideoMode[]::new);
+		availableVideoModes = UsbCam.enumerateVideoModes();
 		if (availableVideoModes.length == 0) {
 			System.err.println("Camera not supported!");
 			throw new RuntimeException(new CameraException(CameraException.CameraExceptionType.BAD_CAMERA));
