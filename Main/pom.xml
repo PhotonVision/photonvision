@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.chameleon-vision.main</groupId>
     <artifactId>chameleon-vision</artifactId>
-    <version>1.1.0-BETA</version>
+    <version>1.1.2-BETA</version>
     <build>
         <plugins>
             <!--setup for java jdk 12-->
@@ -154,39 +154,39 @@
         <dependency>
             <groupId>edu.wpi.first.cameraserver</groupId>
             <artifactId>cameraserver-java</artifactId>
-            <version>2019.4.1-176-ga5650b9</version>
+            <version>2019.4.1-200-g2271570</version>
         </dependency>
 
         <!--frc network table java libs-->
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-java</artifactId>
-            <version>2019.4.1-176-ga5650b9</version>
+            <version>2019.4.1-200-g2271570</version>
         </dependency>
 
         <!--frc network tables interface libs-->
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1-176-ga5650b9</version>
+            <version>2019.4.1-200-g2271570</version>
             <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1-176-ga5650b9</version>
+            <version>2019.4.1-200-g2271570</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1-176-ga5650b9</version>
+            <version>2019.4.1-200-g2271570</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1-176-ga5650b9</version>
+            <version>2019.4.1-200-g2271570</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
@@ -194,7 +194,7 @@
         <dependency>
             <groupId>edu.wpi.first.wpiutil</groupId>
             <artifactId>wpiutil-java</artifactId>
-            <version>2019.4.1-176-ga5650b9</version>
+            <version>2019.4.1-200-g2271570</version>
         </dependency>
 
         <!-- WPI OpenCV for all supported platforms -->

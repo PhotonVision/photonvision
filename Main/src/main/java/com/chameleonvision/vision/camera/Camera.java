@@ -1,13 +1,11 @@
 package com.chameleonvision.vision.camera;
 
-import com.chameleonvision.CameraException;
-import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.settings.Platform;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.*;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.opencv.core.Mat;
-import org.springframework.core.env.Environment;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -67,12 +65,11 @@ public class Camera {
 		this.pipelines = pipelines;
 
 		// set up video modes according to minimums
-		if (SettingsManager.getCurrentPlatform() == SettingsManager.Platform.WINDOWS_64 && !UsbCam.isConnected()) {
+		if (Platform.getCurrentPlatform() == Platform.WINDOWS_64 && !UsbCam.isConnected()) {
 			System.out.print("Waiting on camera... ");
 			long initTimeout = System.nanoTime();
 			while(!UsbCam.isConnected())
 			{
-				//TODO add a time sleep, can wait only so long before giving up
 				if (((System.nanoTime() - initTimeout)  / 1e6 ) >= MAX_INIT_MS) {
 					break;
 				}

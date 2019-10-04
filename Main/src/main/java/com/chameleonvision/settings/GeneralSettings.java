@@ -1,4 +1,4 @@
-package com.chameleonvision.vision;
+package com.chameleonvision.settings;
 
 public class GeneralSettings {
 	public int team_number = 1577;

@@ -1,4 +1,4 @@
-package com.chameleonvision;
+package com.chameleonvision.util;
 
 public class MemoryManager {
 
