@@ -37,6 +37,7 @@ public class VisionProcess implements Runnable {
 	private Mat hsvThreshMat = new Mat();
 	private Mat streamOutputMat = new Mat();
 	private Scalar contourRectColor = new Scalar(255, 0, 0);
+	private Scalar BoxRectColor = new Scalar(0, 0, 233);
 	private long timeStamp = 0;
 
 	public VisionProcess(Camera processCam) {
@@ -103,9 +104,12 @@ public class VisionProcess implements Runnable {
 		List<MatOfPoint> drawnContour = new ArrayList<>();
 		Point[] vertices = new Point[4];
 		contourRect.points(vertices);
-		drawnContour.add(new MatOfPoint(vertices));
+		MatOfPoint contour = new MatOfPoint(vertices);
+		drawnContour.add(contour);
+		Rect box = Imgproc.boundingRect(contour);
 		Imgproc.drawContours(inputMat, drawnContour, 0, contourRectColor, 3);
 		Imgproc.circle(inputMat, contourRect.center, 3, contourRectColor);
+		Imgproc.rectangle(inputMat,new Point(box.x, box.y), new Point((box.x + box.width),(box.y + box.height)), BoxRectColor,2);
 	}
 
 	private void updateNetworkTables(PipelineResult pipelineResult) {

@@ -1,4 +1,6 @@
 package com.chameleonvision.Handler;
+import org.apache.commons.math3.util.FastMath;
+
 import java.lang.Math;
 public class MathHandler {
     MathHandler(){}
@@ -11,5 +13,8 @@ public class MathHandler {
             bias = -1.338;
         }
         return ((k / (1 + Math.pow(Math.E,(a + (b * x))))) + bias);
+    }
+    public static double toSlope(double angle){
+        return FastMath.atan(FastMath.toRadians(angle - 90));
     }
 }
