@@ -1,4 +1,4 @@
-package com.chameleonvision.settings.network;
+package com.chameleonvision.network;
 
 public enum NetworkIPMode {
 	DHCP,

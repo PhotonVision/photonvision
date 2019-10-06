@@ -1,6 +1,6 @@
 package com.chameleonvision.settings;
 
-import com.chameleonvision.settings.network.NetworkManager;
+import com.chameleonvision.network.NetworkManager;
 import com.chameleonvision.util.FileHelper;
 import com.chameleonvision.vision.camera.CameraManager;
 import com.google.gson.Gson;
@@ -19,10 +19,10 @@ public class SettingsManager {
 
 	private SettingsManager() {}
 
-	public static void initialize(boolean manageNetwork) {
+	public static void initialize() {
 		initGeneralSettings();
-		if (manageNetwork) {
-			NetworkManager.init();
+//		if (manageNetwork) {
+
 //            NetworkSettings netSettings = new NetworkSettings();
 //            netSettings.hostname = GeneralSettings.hostname;
 //            netSettings.gateway = GeneralSettings.gateway;
@@ -30,7 +30,7 @@ public class SettingsManager {
 //            netSettings.connectionType = GeneralSettings.connection_type;
 //            netSettings.ip = GeneralSettings.ip;
 //            netSettings.run();
-        }
+//        }
 		var allCameras = CameraManager.getAllCamerasByName();
 		if (!allCameras.containsKey(GeneralSettings.curr_camera) && allCameras.size() > 0) {
 			var cam = allCameras.entrySet().stream().findFirst().get().getValue();
