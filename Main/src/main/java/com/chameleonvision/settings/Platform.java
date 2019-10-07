@@ -2,13 +2,15 @@ package com.chameleonvision.settings;
 
 import com.chameleonvision.util.ShellExec;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public enum Platform {
 	WINDOWS_64("Windows x64"),
 	LINUX_64("Linux x64"),
 	LINUX_RASPBIAN("Linux Raspbian"),
-	LINUX_TEGRA("Linux For Tegra"),
 	LINUX_ARM64("Linux ARM64"),
 	MACOS_64("Mac OS x64"),
 	UNSUPPORTED("Unsupported Platform");
@@ -19,12 +21,15 @@ public enum Platform {
 		this.value = value;
 	}
 
+	private static final String OS_NAME =  System.getProperty("os.name");
+	private static final String OS_ARCH = System.getProperty("os.arch");
+
 	public boolean isWindows() {
 		return this == WINDOWS_64;
 	}
 
 	public boolean isLinux() {
-		return this == LINUX_64 || this == LINUX_RASPBIAN || this == LINUX_ARM64 || this == LINUX_TEGRA;
+		return this == LINUX_64 || this == LINUX_RASPBIAN || this == LINUX_ARM64;
 	}
 
 	public boolean isMac() {
@@ -54,28 +59,39 @@ public enum Platform {
 		return false;
 	}
 
+	private static boolean isRaspbian() {
+		try (BufferedReader reader = Files.newBufferedReader(Paths.get("/etc/os-release"))) {
+			String value = reader.readLine();
+			return value.contains("Raspbian");
+		} catch (IOException ex) {
+			return false;
+		}
+	}
+
 	public static Platform getCurrentPlatform() {
-		var osName = System.getProperty("os.name");
-		var osArch = System.getProperty("os.arch");
-
-		if (osName.contains("Windows")) {
-			if (osArch.equals("amd64")) return Platform.WINDOWS_64;
-			return Platform.UNSUPPORTED;
+		if (OS_NAME.contains("Windows")) {
+			if (OS_ARCH.equals("amd64")) return Platform.WINDOWS_64;
 		}
 
-		if (osName.contains("Linux")) {
-			if (osName.contains("Tegra")) return Platform.LINUX_TEGRA;
-			if (osArch.equals("amd64")) return Platform.LINUX_64;
-			if (osArch.contains("rasp")) return Platform.LINUX_RASPBIAN;
-			if (osArch.contains("aarch")) return Platform.LINUX_ARM64;
-			return Platform.UNSUPPORTED;
+		if (OS_NAME.contains("Linux")) {
+			if (OS_ARCH.equals("amd64")) return Platform.LINUX_64;
+			if (isRaspbian()) return Platform.LINUX_RASPBIAN;
+			if (OS_ARCH.contains("aarch")) return Platform.LINUX_ARM64;
 		}
 
-		if (osName.contains("Mac")) {
-			if (osArch.equals("amd64")) return Platform.MACOS_64;
-			return Platform.UNSUPPORTED;
+		if (OS_NAME.contains("Mac")) {
+			if (OS_ARCH.equals("amd64")) return Platform.MACOS_64;
 		}
 
+		System.out.printf("Unknown Platform! OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
 		return Platform.UNSUPPORTED;
+	}
+
+	public String toString() {
+		if (this.equals(UNSUPPORTED)) {
+			return String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
+		} else {
+			return this.value;
+		}
 	}
 }
