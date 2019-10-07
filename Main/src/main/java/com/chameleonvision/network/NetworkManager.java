@@ -33,6 +33,10 @@ public class NetworkManager {
             return;
 		}
 
+		if (networking == null) {
+			throw new RuntimeException("Failed to detect platform!");
+		}
+
 		List<java.net.NetworkInterface> interfaces = new ArrayList<>();
 		List<NetworkInterface> goodInterfaces = new ArrayList<>();
 

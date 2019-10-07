@@ -105,6 +105,13 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        if (CurrentPlatform.equals(Platform.UNSUPPORTED)) {
+            System.err.printf("Sorry, this platform is not supported. Give these details to the developers.\n%s\n", CurrentPlatform.toString());
+            return;
+        } else {
+            System.out.printf("Starting Chameleon Vision on platform %s\n", CurrentPlatform.toString());
+        }
+
         handleArgs(args);
 
         if (!CurrentPlatform.isRoot()) {
