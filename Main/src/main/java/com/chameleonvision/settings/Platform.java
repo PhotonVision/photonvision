@@ -8,7 +8,8 @@ public enum Platform {
 	WINDOWS_64("Windows x64"),
 	LINUX_64("Linux x64"),
 	LINUX_RASPBIAN("Linux Raspbian"),
-	LINUX_AARCH64("Linux For Tegra"),
+	LINUX_TEGRA("Linux For Tegra"),
+	LINUX_ARM64("Linux ARM64"),
 	MACOS_64("Mac OS x64"),
 	UNSUPPORTED("Unsupported Platform");
 
@@ -23,7 +24,7 @@ public enum Platform {
 	}
 
 	public boolean isLinux() {
-		return this == LINUX_64 || this == LINUX_RASPBIAN || this == LINUX_AARCH64;
+		return this == LINUX_64 || this == LINUX_RASPBIAN || this == LINUX_ARM64 || this == LINUX_TEGRA;
 	}
 
 	public boolean isMac() {
@@ -63,9 +64,10 @@ public enum Platform {
 		}
 
 		if (osName.contains("Linux")) {
+			if (osName.contains("Tegra")) return Platform.LINUX_TEGRA;
 			if (osArch.equals("amd64")) return Platform.LINUX_64;
 			if (osArch.contains("rasp")) return Platform.LINUX_RASPBIAN;
-			if (osArch.contains("aarch")) return Platform.LINUX_64;
+			if (osArch.contains("aarch")) return Platform.LINUX_ARM64;
 			return Platform.UNSUPPORTED;
 		}
 

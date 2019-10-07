@@ -19,45 +19,23 @@ public class LinuxNetworking extends SysNetworking {
 
 	@Override
 	public boolean setDHCP() {
-		var ifaceName = networkInterface.name;
-		var ethResetCmd = String.format("ifconfig %s 0.0.0.0 0.0.0.0", ifaceName);
-		var dhclientCmd = String.format("dhclient %s", ifaceName);
-
-
-		// ifconfig eth0 0.0.0.0 0.0.0.0
+		String[] clearArgs = { "addr", "flush", "dev", networkInterface.name };
 		try {
-			int retCode = shell.execute("ifconfig", null, true, ifaceName, "0.0.0.0", "0.0.0.0");
-			while (!shell.isOutputCompleted() && !shell.isErrorCompleted()) {}
-			var out = shell.getOutput();
-			var err = shell.getError();
-			if (retCode != 0) return false;
+			int clearRetCode = shell.execute("ip", clearArgs);
+			int dhcpRetCode = shell.execute("dhclient", networkInterface.name);
+			return clearRetCode == 0 && dhcpRetCode == 0;
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
 		}
-
-		try {
-			int retCode = shell.execute("dhclient", null, true, ifaceName);
-			while (!shell.isOutputCompleted() && !shell.isErrorCompleted()) {}
-			var out = shell.getOutput();
-			var err = shell.getError();
-			if (retCode != 0) return false;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-
-		return true;
 	}
 
 	@Override
 	public boolean setHostname(String newHostname) {
-		var cmdString = String.format("hostnamectl set-hostname %s", newHostname);
-
+		String[] setHostnameArgs = { "set-hostname", newHostname };
 		try {
-			var process = Runtime.getRuntime().exec(cmdString);
-			var returnCode = shell.execute("hostnamectl", null, true, "set-hostname", newHostname);
-			return returnCode == 0;
+			var setHostnameRetCode = shell.execute("hostnamectl", setHostnameArgs);
+			return setHostnameRetCode == 0;
 		} catch(Exception e)  {
 			e.printStackTrace();
 			return false;
@@ -67,9 +45,14 @@ public class LinuxNetworking extends SysNetworking {
 	@Override
 	public boolean setStatic(String ipAddress, String netmask, String gateway, String broadcast) {
 		try {
-			int clearRetCode = shell.execute("ip addr flush dev", null, true, networkInterface.name);
-			int setIPRetCode = shell.execute(String.format("ip addr add %s/%s broadcast %s dev %s", ipAddress, netmask, broadcast, networkInterface.name), null, true);
-			int setGatewayRetCode = shell.execute(String.format("ip route replace default via %s dev %s", gateway, networkInterface.name), null, false);
+			String[] clearArgs = { "addr", "flush", "dev", networkInterface.name };
+			String[] setIPArgs = { "addr", "add", String.format("%s/%s", ipAddress, netmask), "broadcast", broadcast, "dev", networkInterface.name };
+			String[] setGatewayArgs = { "route", "replace", "default", "via", gateway, "dev", networkInterface.name };
+
+			int clearRetCode = shell.execute("ip", clearArgs);
+			int setIPRetCode = shell.execute("ip", setIPArgs);
+			int setGatewayRetCode = shell.execute("ip", setGatewayArgs);
+
 			return clearRetCode == 0 && setIPRetCode == 0 && setGatewayRetCode == 0;
 		} catch (IOException e) {
 			e.printStackTrace();

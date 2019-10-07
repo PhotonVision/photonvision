@@ -16,7 +16,7 @@ public class Camera {
 	private static final double DEFAULT_FOV = 60.8;
 	private static final int MINIMUM_FPS = 30;
 	private static final int MINIMUM_WIDTH = 320;
-	private static final int MINIMUM_HEIGHT = 240;
+	private static final int MINIMUM_HEIGHT = 200;
 	private static final int MAX_INIT_MS = 1500;
 
 	public final String name;
@@ -78,7 +78,7 @@ public class Camera {
 			System.out.printf("Camera initialized in %.2fms\n", initTimeMs);
 		}
 		var trueVideoModes = UsbCam.enumerateVideoModes();
-		availableVideoModes = Arrays.stream(trueVideoModes).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT && v.pixelFormat == VideoMode.PixelFormat.kYUYV).toArray(VideoMode[]::new);
+		availableVideoModes = Arrays.stream(trueVideoModes).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT).toArray(VideoMode[]::new);
 		if (availableVideoModes.length == 0) {
 			System.err.println("Camera not supported!");
 			throw new RuntimeException(new CameraException(CameraException.CameraExceptionType.BAD_CAMERA));

@@ -81,7 +81,7 @@ public class NetworkManager {
 		}
 
 		var genSettings = SettingsManager.GeneralSettings;
-		boolean isStatic = genSettings.connection_type.toLowerCase().equals("Static");
+		boolean isStatic = genSettings.connection_type.toLowerCase().equals("static");
 
 		if (isStatic) {
 			var splitIPAddr = genSettings.ip.split("\\.");

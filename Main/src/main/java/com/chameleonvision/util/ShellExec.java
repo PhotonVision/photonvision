@@ -20,6 +20,16 @@ public class ShellExec {
     }
 
     /**
+     * Execute a command in current folder, and wait for process to end
+     * @param command   command ("c:/some/folder/script.bat" or "some/folder/script.sh")
+     * @param args  0..n command line arguments
+     * @return  process exit code
+     */
+    public int execute(String command, String... args) throws IOException {
+        return execute(command, null, true, args);
+    }
+
+    /**
      * Execute a command.
      * @param command   command ("c:/some/folder/script.bat" or "some/folder/script.sh")
      * @param workdir   working directory or NULL to use command folder

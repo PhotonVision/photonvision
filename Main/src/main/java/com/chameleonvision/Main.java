@@ -120,6 +120,7 @@ public class Main {
 
         // Attempt to load the JNI Libraries
         try {
+            if (CurrentPlatform.equals(Platform.LINUX_ARM64))
             CameraServerJNI.forceLoad();
             CameraServerCvJNI.forceLoad();
         } catch (IOException e) {
