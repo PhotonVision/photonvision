@@ -1,11 +1,8 @@
 package com.chameleonvision.web;
 
-import com.chameleonvision.CameraException;
+import com.chameleonvision.vision.camera.CameraException;
 import com.chameleonvision.settings.SettingsManager;
-import com.chameleonvision.vision.Pipeline;
-import com.chameleonvision.vision.camera.Camera;
 import com.chameleonvision.vision.camera.CameraManager;
-import com.google.gson.JsonArray;
 import edu.wpi.cscore.VideoException;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;

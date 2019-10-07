@@ -1,15 +1,18 @@
 package com.chameleonvision;
 
+import com.chameleonvision.network.NetworkManager;
+import com.chameleonvision.settings.Platform;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.util.Utilities;
 import com.chameleonvision.vision.camera.CameraManager;
-import com.chameleonvision.vision.process.VisionProcess;
 import com.chameleonvision.web.Server;
 import edu.wpi.cscore.CameraServerCvJNI;
 import edu.wpi.cscore.CameraServerJNI;
+import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 public class Main {
 
@@ -17,13 +20,30 @@ public class Main {
     private static final String NT_SERVERMODE_KEY = "--nt-servermode"; // no args for this setting
     private static final String NT_CLIENTMODESERVER_KEY = "--nt-client-server"; // expects String representing an IP address (hostnames will be rejected!)
     private static final String NETWORK_MANAGE_KEY = "--unmanage-network"; // no args for this setting
+    private static final String IGNORE_ROOT = "--ignore-root"; // no args for this setting
 
     private static final int DEFAULT_PORT = 8888;
 
     private static int webserverPort = DEFAULT_PORT;
     private static boolean ntServerMode = false;
     private static boolean manageNetwork = true;
+    private static boolean ignoreRoot = false;
     private static String ntClientModeServer = null;
+
+    private static class NTLogger implements Consumer<LogMessage> {
+
+        private boolean hasReportedConnectionFailure = false;
+
+        @Override
+        public void accept(LogMessage logMessage) {
+            if (!hasReportedConnectionFailure && logMessage.message.contains("timed out")) {
+                System.err.println("NT Connection has failed!");
+                hasReportedConnectionFailure = true;
+            }
+        }
+    }
+
+    public static final Platform CurrentPlatform = Platform.getCurrentPlatform();
 
     private static void handleArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
@@ -43,6 +63,7 @@ public class Main {
                     break;
                 case NT_SERVERMODE_KEY:
                 case NETWORK_MANAGE_KEY:
+                case IGNORE_ROOT:
                     // nothing
             }
 
@@ -77,29 +98,46 @@ public class Main {
                 case NETWORK_MANAGE_KEY:
                     manageNetwork = false;
                     break;
+                case IGNORE_ROOT:
+                    ignoreRoot = true;
             }
         }
     }
 
     public static void main(String[] args) {
         handleArgs(args);
+
+        if (!CurrentPlatform.isRoot()) {
+            if (ignoreRoot) {
+                // TODO: should we do this?
+                // manageNetwork = false;
+                System.out.println("Ignoring root, network will not be managed!");
+            } else {
+                System.err.println("This program must be run as root!");
+                    return;
+            }
+        }
+
         // Attempt to load the JNI Libraries
         try {
+            if (CurrentPlatform.equals(Platform.LINUX_ARM64))
             CameraServerJNI.forceLoad();
             CameraServerCvJNI.forceLoad();
         } catch (IOException e) {
-            var errorStr = SettingsManager.getCurrentPlatform().equals(SettingsManager.Platform.UNSUPPORTED) ? "Unsupported platform!" : "Failed to load JNI Libraries!";
+            var errorStr = CurrentPlatform.equals(Platform.UNSUPPORTED) ? "Unsupported platform!" : "Failed to load JNI Libraries!";
             throw new RuntimeException(errorStr);
         }
 
         if (CameraManager.initializeCameras()) {
-            SettingsManager.initialize(manageNetwork);
+            SettingsManager.initialize();
+            NetworkManager.initialize(manageNetwork);
             CameraManager.initializeThreads();
 
             if (ntServerMode) {
                 System.out.println("Starting NT Server");
                 NetworkTableInstance.getDefault().startServer();
             } else {
+                NetworkTableInstance.getDefault().addLogger(new NTLogger(), 0, 255); // to hide error messages
                 if (ntClientModeServer != null) {
                     NetworkTableInstance.getDefault().startClient(ntClientModeServer);
                 } else {

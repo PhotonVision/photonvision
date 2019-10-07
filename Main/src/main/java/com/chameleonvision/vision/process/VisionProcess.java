@@ -113,14 +113,20 @@ public class VisionProcess implements Runnable {
 	}
 
 	private void updateNetworkTables(PipelineResult pipelineResult) {
-		ntValidEntry.setBoolean(pipelineResult.IsValid);
 		if (pipelineResult.IsValid) {
+			ntValidEntry.setBoolean(true);
 			ntYawEntry.setNumber(pipelineResult.Yaw);
 			ntPitchEntry.setNumber(pipelineResult.Pitch);
 			ntDistanceEntry.setNumber(pipelineResult.Area);
+			ntTimeStampEntry.setNumber(TimeStamp);
 			NetworkTableInstance.getDefault().flush();
+		} else {
+			ntYawEntry.setNumber(0.0);
+			ntPitchEntry.setNumber(0.0);
+			ntDistanceEntry.setNumber(0.0);
+			ntTimeStampEntry.setNumber(TimeStamp);
+			ntValidEntry.setBoolean(false);
 		}
-		ntTimeStampEntry.setNumber(timeStamp);
 	}
 
 	private PipelineResult runVisionProcess(Mat inputImage, Mat outputImage) {

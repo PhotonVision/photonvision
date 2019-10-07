@@ -1,9 +1,12 @@
 package com.chameleonvision.settings;
 
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 
+import com.chameleonvision.util.Utilities;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.SystemUtils;
 
 public class NetworkSettings {
@@ -51,20 +54,26 @@ public class NetworkSettings {
         }
     }
 
+    public static byte[] GetTeamNumberIPBytes(int teamNumber) {
+        return new byte[]{(byte) (teamNumber / 100), (byte) (teamNumber % 100)};
+    }
+
     public static String getAdapter() {
         try {//TODO fix windows get adapter
             Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
             for (NetworkInterface netint : Collections.list(nets)) {
                 Enumeration<InetAddress> ee = netint.getInetAddresses();
                 for (InetAddress addr : Collections.list(ee))
-                    if (addr instanceof Inet4Address)
-                        if ((addr.getAddress()[0] & 0xFF) == 192 && (addr.getAddress()[1] & 0xFF) == 168) {
+                    if (addr instanceof Inet4Address) {
+                        var addrString = addr.toString();
+                        if ((addr.getAddress()[0] & 0xFF) == 10 && (addr.getAddress()[1] & 0xFF) == 168) {
                             System.out.println("found robot network interface at " + netint.getName() + " ip: " + addr.getHostAddress());
                             return netint.getName();
                         }
+                    }
             }
         } catch (SocketException e) {
-            System.err.println("Socket exception while trying to find current ip");
+            System.err.println("Socket exception while trying to find current IP");
         }
         return "";
     }

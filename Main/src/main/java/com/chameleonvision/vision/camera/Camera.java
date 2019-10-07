@@ -1,13 +1,11 @@
 package com.chameleonvision.vision.camera;
 
-import com.chameleonvision.CameraException;
-import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.settings.Platform;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.*;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.opencv.core.Mat;
-import org.springframework.core.env.Environment;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,7 +16,7 @@ public class Camera {
 	private static final double DEFAULT_FOV = 60.8;
 	private static final int MINIMUM_FPS = 30;
 	private static final int MINIMUM_WIDTH = 320;
-	private static final int MINIMUM_HEIGHT = 240;
+	private static final int MINIMUM_HEIGHT = 200;
 	private static final int MAX_INIT_MS = 1500;
 
 	public final String name;
@@ -67,12 +65,11 @@ public class Camera {
 		this.pipelines = pipelines;
 
 		// set up video modes according to minimums
-		if (SettingsManager.getCurrentPlatform() == SettingsManager.Platform.WINDOWS_64 && !UsbCam.isConnected()) {
+		if (Platform.getCurrentPlatform() == Platform.WINDOWS_64 && !UsbCam.isConnected()) {
 			System.out.print("Waiting on camera... ");
 			long initTimeout = System.nanoTime();
 			while(!UsbCam.isConnected())
 			{
-				//TODO add a time sleep, can wait only so long before giving up
 				if (((System.nanoTime() - initTimeout)  / 1e6 ) >= MAX_INIT_MS) {
 					break;
 				}
@@ -80,7 +77,8 @@ public class Camera {
 			var initTimeMs = (System.nanoTime() - initTimeout) / 1e6;
 			System.out.printf("Camera initialized in %.2fms\n", initTimeMs);
 		}
-		availableVideoModes = UsbCam.enumerateVideoModes();
+		var trueVideoModes = UsbCam.enumerateVideoModes();
+		availableVideoModes = Arrays.stream(trueVideoModes).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT).toArray(VideoMode[]::new);
 		if (availableVideoModes.length == 0) {
 			System.err.println("Camera not supported!");
 			throw new RuntimeException(new CameraException(CameraException.CameraExceptionType.BAD_CAMERA));

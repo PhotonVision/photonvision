@@ -1,7 +1,7 @@
 package com.chameleonvision.vision.process;
 
 import com.chameleonvision.vision.camera.CameraValues;
-import com.chameleonvision.Handler.MathHandler;
+import com.chameleonvision.util.MathHandler;
 import org.apache.commons.math3.util.FastMath;
 import org.jetbrains.annotations.NotNull;
 import org.opencv.core.*;
