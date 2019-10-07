@@ -1,6 +1,7 @@
 package com.chameleonvision.util;
 
 import java.lang.Math;
+import org.apache.commons.math3.util.FastMath;
 
 public class MathHandler {
     MathHandler() {}
