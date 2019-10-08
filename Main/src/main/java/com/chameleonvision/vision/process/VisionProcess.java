@@ -3,7 +3,6 @@ package com.chameleonvision.vision.process;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
-import com.chameleonvision.web.Server;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.VideoException;
 import edu.wpi.first.networktables.*;
@@ -31,14 +30,15 @@ public class VisionProcess implements Runnable {
 	private Pipeline currentPipeline;
 	private CVProcess cvProcess;
 	// pipeline process items
-	private List<MatOfPoint> FoundContours = new ArrayList<>();
-	private List<MatOfPoint> FilteredContours = new ArrayList<>();
-	private List<RotatedRect> GroupedContours = new ArrayList<>();
+	private List<MatOfPoint> foundContours = new ArrayList<>();
+	private List<MatOfPoint> filteredContours = new ArrayList<>();
+	private List<RotatedRect> groupedContours = new ArrayList<>();
 	private Mat cameraInputMat = new Mat();
 	private Mat hsvThreshMat = new Mat();
 	private Mat streamOutputMat = new Mat();
 	private Scalar contourRectColor = new Scalar(255, 0, 0);
-	private long TimeStamp = 0;
+	private Scalar BoxRectColor = new Scalar(0, 0, 233);
+	private long timeStamp = 0;
 
 	public VisionProcess(Camera processCam) {
 		camera = processCam;
@@ -53,8 +53,8 @@ public class VisionProcess implements Runnable {
 		ntDistanceEntry = ntTable.getEntry("distance");
 		ntTimeStampEntry = ntTable.getEntry("timestamp");
 		ntValidEntry = ntTable.getEntry("is_valid");
-		ntDriverModeEntry.addListener(this::DriverModeListener, EntryListenerFlags.kUpdate);
-		ntPipelineEntry.addListener(this::PipelineListener, EntryListenerFlags.kUpdate);
+		ntDriverModeEntry.addListener(this::driverModeListener, EntryListenerFlags.kUpdate);
+		ntPipelineEntry.addListener(this::pipelineListener, EntryListenerFlags.kUpdate);
 		ntDriverModeEntry.setBoolean(false);
 		ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
 
@@ -63,7 +63,7 @@ public class VisionProcess implements Runnable {
 		cameraProcess = new CameraProcess(camera);
 	}
 
-	private void DriverModeListener(EntryNotification entryNotification) {
+	private void driverModeListener(EntryNotification entryNotification) {
 		if (entryNotification.value.getBoolean()) {
 			camera.setExposure(25);
 			camera.setBrightness(15);
@@ -74,7 +74,7 @@ public class VisionProcess implements Runnable {
 		}
 	}
 
-	private void PipelineListener(EntryNotification entryNotification) {
+	private void pipelineListener(EntryNotification entryNotification) {
 		var ntPipelineIndex = (int) entryNotification.value.getDouble();
 		if (camera.getPipelines().containsKey(ntPipelineIndex)) {
 //            camera.setEntryNotification.value.getString());
@@ -104,20 +104,29 @@ public class VisionProcess implements Runnable {
 		List<MatOfPoint> drawnContour = new ArrayList<>();
 		Point[] vertices = new Point[4];
 		contourRect.points(vertices);
-		drawnContour.add(new MatOfPoint(vertices));
+		MatOfPoint contour = new MatOfPoint(vertices);
+		drawnContour.add(contour);
+		Rect box = Imgproc.boundingRect(contour);
 		Imgproc.drawContours(inputMat, drawnContour, 0, contourRectColor, 3);
 		Imgproc.circle(inputMat, contourRect.center, 3, contourRectColor);
+		Imgproc.rectangle(inputMat,new Point(box.x, box.y), new Point((box.x + box.width),(box.y + box.height)), BoxRectColor,2);
 	}
 
 	private void updateNetworkTables(PipelineResult pipelineResult) {
-		ntValidEntry.setBoolean(pipelineResult.IsValid);
 		if (pipelineResult.IsValid) {
+			ntValidEntry.setBoolean(true);
 			ntYawEntry.setNumber(pipelineResult.Yaw);
 			ntPitchEntry.setNumber(pipelineResult.Pitch);
 			ntDistanceEntry.setNumber(pipelineResult.Area);
+			ntTimeStampEntry.setNumber(timeStamp);
 			NetworkTableInstance.getDefault().flush();
+		} else {
+			ntYawEntry.setNumber(0.0);
+			ntPitchEntry.setNumber(0.0);
+			ntDistanceEntry.setNumber(0.0);
+			ntTimeStampEntry.setNumber(timeStamp);
+			ntValidEntry.setBoolean(false);
 		}
-		ntTimeStampEntry.setNumber(TimeStamp);
 	}
 
 	private PipelineResult runVisionProcess(Mat inputImage, Mat outputImage) {
@@ -136,20 +145,20 @@ public class VisionProcess implements Runnable {
 		Scalar hsvLower = new Scalar(currentPipeline.hue.get(0), currentPipeline.saturation.get(0), currentPipeline.value.get(0));
 		Scalar hsvUpper = new Scalar(currentPipeline.hue.get(1), currentPipeline.saturation.get(1), currentPipeline.value.get(1));
 
-		cvProcess.HSVThreshold(inputImage, hsvThreshMat, hsvLower, hsvUpper, currentPipeline.erode, currentPipeline.dilate);
+		cvProcess.hsvThreshold(inputImage, hsvThreshMat, hsvLower, hsvUpper, currentPipeline.erode, currentPipeline.dilate);
 
 		if (currentPipeline.is_binary == 1) {
 			Imgproc.cvtColor(hsvThreshMat, outputImage, Imgproc.COLOR_GRAY2BGR, 3);
 		} else {
 			inputImage.copyTo(outputImage);
 		}
-		FoundContours = cvProcess.FindContours(hsvThreshMat);
-		if (FoundContours.size() > 0) {
-			FilteredContours = cvProcess.FilterContours(FoundContours, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent);
-			if (FilteredContours.size() > 0) {
-				GroupedContours = cvProcess.GroupTargets(FilteredContours, currentPipeline.target_intersection, currentPipeline.target_group);
-				if (GroupedContours.size() > 0) {
-					var finalRect = cvProcess.SortTargetsToOne(GroupedContours, currentPipeline.sort_mode);
+		foundContours = cvProcess.findContours(hsvThreshMat);
+		if (foundContours.size() > 0) {
+			filteredContours = cvProcess.filterContours(foundContours, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent);
+			if (filteredContours.size() > 0) {
+				groupedContours = cvProcess.groupTargets(filteredContours, currentPipeline.target_intersection, currentPipeline.target_group);
+				if (groupedContours.size() > 0) {
+					var finalRect = cvProcess.sortTargetsToOne(groupedContours, currentPipeline.sort_mode);
 //					System.out.printf("Largest Contour Area: %.2f\n", finalRect.size.area());
 					pipelineResult.RawPoint = finalRect;
 					pipelineResult.IsValid = true;
@@ -188,9 +197,9 @@ public class VisionProcess implements Runnable {
 		while (!Thread.interrupted()) {
 			startTime = System.nanoTime();
 			if ((startTime - lastFrameEndNanosec) * 1e-6 >= 1000.0 / maxFps + 3) { // 3 additional fps to allow for overhead
-				FoundContours.clear();
-				FilteredContours.clear();
-				GroupedContours.clear();
+				foundContours.clear();
+				filteredContours.clear();
+				groupedContours.clear();
 
 				// update FPS for ui only every 0.5 seconds
 				if ((startTime - fpsLastTime) * 1e-6 >= 500) {
@@ -204,7 +213,7 @@ public class VisionProcess implements Runnable {
 
 				currentPipeline = camera.getCurrentPipeline();
 				// start fps counter right before grabbing input frame
-				TimeStamp = cameraProcess.getLatestFrame(cameraInputMat);
+				timeStamp = cameraProcess.getLatestFrame(cameraInputMat);
 				if (cameraInputMat.cols() == 0 && cameraInputMat.rows() == 0) {
 					continue;
 				}

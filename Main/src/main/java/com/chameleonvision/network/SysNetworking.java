@@ -1,0 +1,37 @@
+package com.chameleonvision.network;
+
+import com.chameleonvision.util.ShellExec;
+
+import java.io.IOException;
+import java.net.SocketException;
+import java.util.List;
+import java.util.Scanner;
+
+public abstract class SysNetworking {
+
+	NetworkInterface networkInterface;
+	ShellExec shell = new ShellExec(true, true);
+
+	public String getHostname() {
+		try {
+			var retCode = shell.execute("hostname", null, true);
+			if (retCode == 0) {
+				while(!shell.isOutputCompleted()) {}
+				return shell.getOutput();
+			} else {
+				return null;
+			}
+		} catch (IOException e) {
+			return null;
+		}
+	}
+
+	public void setNetworkInterface(NetworkInterface networkInterface) {
+		this.networkInterface = networkInterface;
+	}
+	public abstract boolean setDHCP();
+	public abstract boolean setHostname(String hostname);
+	public abstract boolean setStatic(String ipAddress, String netmask, String gateway, String broadcast);
+	public abstract List<java.net.NetworkInterface> getNetworkInterfaces() throws SocketException;
+
+}

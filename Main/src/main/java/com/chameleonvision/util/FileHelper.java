@@ -1,4 +1,4 @@
-package com.chameleonvision;
+package com.chameleonvision.util;
 
 import java.io.IOException;
 import java.nio.file.Files;

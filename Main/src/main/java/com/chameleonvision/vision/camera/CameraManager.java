@@ -1,9 +1,7 @@
 package com.chameleonvision.vision.camera;
 
-import com.chameleonvision.CameraException;
-import com.chameleonvision.FileHelper;
+import com.chameleonvision.util.FileHelper;
 import com.chameleonvision.settings.SettingsManager;
-import com.chameleonvision.vision.GeneralSettings;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.process.VisionProcess;
 import com.google.gson.Gson;
@@ -15,7 +13,6 @@ import org.opencv.videoio.VideoCapture;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -121,7 +118,7 @@ public class CameraManager {
 	public static List<String> getResolutionList() throws CameraException {
 		if (!SettingsManager.GeneralSettings.curr_camera.equals("")) {
 			return Arrays.stream(CameraManager.getCamera(SettingsManager.GeneralSettings.curr_camera).getAvailableVideoModes())
-					.map(res -> String.format("%s X %s at %s fps", res.width, res.height, res.fps)).collect(Collectors.toList());
+					.map(res -> String.format("%s X %s at %s fps using %s ", res.width, res.height, res.fps, res.pixelFormat.toString())).collect(Collectors.toList());
 		}
 		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
 	}

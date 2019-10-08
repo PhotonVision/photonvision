@@ -1,4 +1,4 @@
-package com.chameleonvision;
+package com.chameleonvision.vision.camera;
 
 public class CameraException extends Exception {
     public enum CameraExceptionType {
@@ -19,7 +19,7 @@ public class CameraException extends Exception {
         }
     }
 
-    public CameraException(CameraExceptionType camExceptionType) {
+    CameraException(CameraExceptionType camExceptionType) {
         super(camExceptionType.toString());
     }
 }
