@@ -8,7 +8,7 @@ import msgPack from 'msgpack5';
 
 Vue.config.productionTip = false;
 // Vue.use(VueNativeSock,'ws://' + location.host + '/websocket',{format: 'json'});
-Vue.use(VueNativeSock,'ws://'+location.hostname+':8888/websocket',{format:'JSON'});
+Vue.use(VueNativeSock,'ws://'+location.hostname+':8888/websocket');
 Vue.prototype.$msgPack = msgPack;
 new Vue({
   router,
