@@ -31,7 +31,7 @@ export default {
 
   },
   methods:{
-    handleMessage(key,val){
+    handleMessage(key,value){
       switch(key){
         default:{
           this.$store.commit(key,value);

@@ -110,6 +110,7 @@ import CVicon from '../components/cv-icon'
                         case 3:
                             return "OutputTab";
                     }
+                    return "";
                 }
             },
             point:{

@@ -1,10 +1,10 @@
 <template>
     <div>
-        <CVrangeSlider v-model="value.Area" name="Area" :min="0" :max="100" :step="0.1"></CVrangeSlider>
-        <CVrangeSlider v-model="value.Ratio" name="Ratio (W/H)" :min="0" :max="100" :step="0.1"></CVrangeSlider>
-        <CVrangeSlider v-model="value.Extent" name="Extent" :min="0" :max="100"></CVrangeSlider>
-        <CVselect name="Target Group" :list="['Single','Dual','Triple','Quadruple','Quintuple']" v-model="value.TargetGrouping"></CVselect>
-        <CVselect name="Target Intersection" :list="['None','Up','Down','Left','Right']" :disabled="isDisabled" v-model="value.TargetIntersection"></CVselect>
+        <CVrangeSlider v-model="value.Area" name="Area" :min="0" :max="100" :step="0.1" @input="handleInput('Area',value.Area)"></CVrangeSlider>
+        <CVrangeSlider v-model="value.Ratio" name="Ratio (W/H)" :min="0" :max="100" :step="0.1" @input="handleInput('Ratio',value.Ratio)"></CVrangeSlider>
+        <CVrangeSlider v-model="value.Extent" name="Extent" :min="0" :max="100" @input="handleInput('Extent',value.Extent)"></CVrangeSlider>
+        <CVselect name="Target Group" :list="['Single','Dual','Triple','Quadruple','Quintuple']" v-model="value.TargetGrouping" @input="handleInput('TargetGrouping',value.TargetGrouping)"></CVselect>
+        <CVselect name="Target Intersection" :list="['None','Up','Down','Left','Right']" :disabled="isDisabled" v-model="value.TargetIntersection" @input="handleInput('TargetIntersection',value.TargetIntersection)"></CVselect>
 
     </div>
 </template>
