@@ -16,7 +16,6 @@ import CVswitch from '../../components/cv-switch'
         props:['value'],
         components:{
             CVslider,
-            rangeSlider,
             CVselect,
             CVswitch
         },

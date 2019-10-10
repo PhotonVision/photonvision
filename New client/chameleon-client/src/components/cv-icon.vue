@@ -2,7 +2,7 @@
     <div>
         <v-tooltip :right="right" :bottom="!right" nudge-right="10">
             <template v-slot:activator="{ on }">
-                <v-icon @click="handleClick"  v-on="on" :color="color">{{text}}</v-icon>
+                <v-icon :class="hoverClass" @click="handleClick"  v-on="on" :color="color">{{text}}</v-icon>
             </template>
             <span>{{tooltip}}</span>
         </v-tooltip>
@@ -12,7 +12,7 @@
 <script>
     export default {
         name: 'Icon',
-        props:['color','tooltip','text','right'],
+        props:['color','tooltip','text','right','hover'],
         data() {
             return {
                 
@@ -22,10 +22,20 @@
             handleClick(){
                 this.$emit('click');
             }
-        }
+        },
+        computed:{
+            hoverClass(){
+                if(this.hover !== undefined){
+                    return "hover";
+                }
+            }
+        },
+
     }
 </script>
 
-<style lang="" scoped>
-    
+<style scoped>
+.hover:hover{
+     color: white !important;
+ }
 </style>

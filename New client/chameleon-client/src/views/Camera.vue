@@ -8,7 +8,7 @@
                     </div>
                 </v-col>
                 <v-col :cols="1">
-                    <CVicon color="white" text="edit" tooltip="Edit camera name"></CVicon>
+                    <CVicon color="#c5c5c5" hover text="edit" @click="test" tooltip="Edit camera name"></CVicon>
                 </v-col>
                 <v-col :cols="3" class="colsClass">
                     <CVselect name="Pipeline" :list="pipelineList" v-model="currentPipelineIndex"></CVselect>
@@ -21,12 +21,12 @@
                             <v-list dense>
                                 <v-list-item @click="test">
                                     <v-list-item-title>
-                                        <CVicon color="white" :right="true" text="edit" tooltip="Edit pipeline name"></CVicon>
+                                        <CVicon color="#c5c5c5" :right="true" text="edit" tooltip="Edit pipeline name"></CVicon>
                                     </v-list-item-title>
                                 </v-list-item>
                                       <v-list-item @click="test">
                                     <v-list-item-title>
-                                        <CVicon color="white" :right="true" text="add" tooltip="Add new pipeline"></CVicon>
+                                        <CVicon color="#c5c5c5" :right="true" text="add" tooltip="Add new pipeline"></CVicon>
                                     </v-list-item-title>
                                 </v-list-item>
                                 <v-list-item @click="test">
@@ -36,7 +36,7 @@
                                 </v-list-item>
                                 <v-list-item @click="test">
                                     <v-list-item-title>
-                                        <CVicon color="white" :right="true" text="mdi-content-copy" tooltip="Duplicate pipeline"></CVicon>
+                                        <CVicon color="#c5c5c5" :right="true" text="mdi-content-copy" tooltip="Duplicate pipeline"></CVicon>
                                     </v-list-item-title>
                                 </v-list-item>
                             </v-list>
@@ -63,7 +63,8 @@
                         <v-tab>Threshold</v-tab>
                     </v-tabs>
                     <div class="videoClass">
-                        <img :src="steamAdress">
+                        <img v-if="cameraList.length > 0" :src="steamAdress">
+                        <span v-else>No Cameras Are connected</span>
                     </div>
                     <h5 id="Point">{{point}}</h5>
                 </div>
@@ -91,7 +92,8 @@ import CVicon from '../components/cv-icon'
         },
         methods:{
             test(){
-
+                let o = this.$msgPack().encode("dasd");
+                console.log(o);
             }
         },
         data() {
@@ -100,16 +102,18 @@ import CVicon from '../components/cv-icon'
             }
         },
         computed:{
-            selectedComponent(){
-                switch(this.selectedTab){
-                    case 0:
-                        return "InputTab";
-                    case 1:
-                        return "ThresholdTab";
-                    case 2:
-                        return "ContoursTab";
-                    case 3:
-                        return "OutputTab";
+            selectedComponent:{
+                get(){
+                    switch(this.selectedTab){
+                        case 0:
+                            return "InputTab";
+                        case 1:
+                            return "ThresholdTab";
+                        case 2:
+                            return "ContoursTab";
+                        case 3:
+                            return "OutputTab";
+                    }
                 }
             },
             point:{
