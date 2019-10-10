@@ -23,6 +23,8 @@ import CVswitch from '../../components/cv-switch'
             }
         },
         computed:{
+        },
+        methods:{
         }
     }
 </script>

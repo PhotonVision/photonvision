@@ -5,9 +5,9 @@
                 <span>{{name}}</span>
             </v-col>
             <v-col :cols="10">
-            <v-slider v-model="localValue" dark class="align-center" :max="max" :min="min" hide-details color="#4baf62" :step="step">
+                <v-slider :value="localValue" @input="handleInput" dark class="align-center" :max="max" :min="min" hide-details color="#4baf62" :step="step">
             <template v-slot:append>
-              <v-text-field dark v-model="localValue" class="mt-0 pt-0" hide-details single-line type="number" style="width: 50px" :step="step"></v-text-field>
+              <v-text-field dark :value="localValue" @input="handleChange" @focus="isFocused = true" @blur="isFocused = false" class="mt-0 pt-0" hide-details single-line type="number" style="width: 50px" :step="step"></v-text-field>
             </template>
           </v-slider>
             </v-col>
@@ -21,10 +21,20 @@
         props:['min','max','name','value','step'],
         data() {
             return {
-                
+                isFocused:false
             }
         },
         methods:{
+            handleChange(val){
+                if(this.isFocused){
+                    this.localValue = parseFloat(val);
+                }
+            },
+            handleInput(val){
+                if(!this.isFocused){
+                this.localValue = val;
+                }
+            }
         },
         computed:{
             localValue:{

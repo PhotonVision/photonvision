@@ -23,10 +23,7 @@ import CVselect from '../../components/cv-select'
             }
         },
         methods:{
-            // handleInput(key,val){
-            //     let msg = this.$msgPack().encode({key,val});
-            //     this.$socket.send(msg);
-            // }
+
         },
         computed:{}
     }

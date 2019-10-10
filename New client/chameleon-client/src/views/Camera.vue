@@ -91,6 +91,9 @@ import CVicon from '../components/cv-icon'
             CVicon
         },
         methods:{
+                        test(value){
+                console.log(value)
+            }
         },
         data() {
             return {
