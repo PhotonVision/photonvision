@@ -23,8 +23,9 @@ public class Server {
                 SettingsManager.saveSettings();
             });
             ws.onMessage(ctx -> {
-                handler.onMessage(ctx);
+//                handler.onMessage(ctx);
             });
+            ws.onBinaryMessage(ctx->handler.onMessage(ctx));
         });
         app.start(port);
     }

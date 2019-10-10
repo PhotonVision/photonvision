@@ -4,26 +4,30 @@ import com.chameleonvision.vision.camera.CameraException;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.camera.CameraManager;
 import edu.wpi.cscore.VideoException;
-import io.javalin.websocket.WsCloseContext;
-import io.javalin.websocket.WsConnectContext;
-import io.javalin.websocket.WsContext;
-import io.javalin.websocket.WsMessageContext;
+import io.javalin.websocket.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.msgpack.MessagePack;
+import org.msgpack.template.Templates;
+import org.msgpack.type.ArrayValue;
+import org.msgpack.type.BooleanValue;
+import org.msgpack.type.IntegerValue;
+import org.msgpack.type.MapValue;
 import org.springframework.beans.BeanUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ServerHandler {
 
     private static List<WsContext> users;
+    private MessagePack msgpack;
 
     ServerHandler() {
         users = new ArrayList<>();
+        msgpack = new MessagePack();
     }
 
     void onConnect(WsConnectContext context) {
@@ -35,89 +39,103 @@ public class ServerHandler {
         users.remove(context);
     }
 
-    void onMessage(WsMessageContext data) throws CameraException {
-        broadcastMessage(data.message(), data);
+    void onMessage(WsBinaryMessageContext data) throws IOException {
+        byte[] b = ArrayUtils.toPrimitive(data.data());
+        System.out.println(msgpack.read(b).isMapValue());
+        Map entries = msgpack.read(b,Templates.tMap(Templates.TString,Templates.TValue));
+        System.out.println(Arrays.toString(entries.entrySet().toArray()));
+        entries.forEach((k, value) -> {
+            /*
+             To get int from value
+             ((IntegerValue)value).getInt();
 
-        JSONObject jsonObject = new JSONObject(data.message());
-        String key = null;
-        var jsonKeySetArray = jsonObject.keySet().toArray();
-        try {
-            key = jsonKeySetArray[0].toString();
-        } catch (Exception ex) {
-            System.err.println("WebSocket JSON data was empty!");
-        }
-        if (key == null) return;
-        Object value = jsonObject.get(key);
-        System.out.printf("Got websocket json data: [%s, %s]\n", key, value);
-        if (hasField(CameraManager.getCurrentPipeline(), key)) {
-            //Special cases for exposure and brightness and aspect ratio
-            switch (key) {
-                case "exposure":
-                    int newExposure = (int) value;
-                    System.out.printf("Changing exposure to %d\n", newExposure);
-                    try {
-                        CameraManager.getCurrentCamera().setExposure(newExposure);
-                    } catch (VideoException e) {
-                        System.out.println("Exposure changes is not supported on your webcam/webcam's driver");
-                    }
-                    break;
-                case "brightness":
-                    int newBrightness = (int) value;
-                    System.out.printf("Changing brightness to %d\n", newBrightness);
-                    CameraManager.getCurrentCamera().setBrightness(newBrightness);
-                    break;
-                case "ratio":
-                    //If there is any better to convert Integer to Double you're welcome to change it
-                    List<Double> doubleRatio = CameraManager.getCurrentPipeline().ratio;
-                    List<Object> newRatio = ((JSONArray) value).toList();
-                    for (int i = 0; i < newRatio.size(); i++) {
-                        doubleRatio.set(i, Double.parseDouble(newRatio.get(i).toString()));
-                    }
-                    break;
-                default:
-                    //Any other field in CameraManager that doesn't need anything special
-                    setField(CameraManager.getCurrentPipeline(), key, value);
-                    break;
-            }
-        } else {
-            switch (key) {
-                case "change_general_settings_values":
-                    JSONObject newSettings = (JSONObject) value;
-                    Map<String, Object> map = newSettings.toMap();
-                    map.forEach((s, o) -> setField(SettingsManager.GeneralSettings, s, o));
-                    SettingsManager.saveSettings();
-                    break;
-                case "curr_camera":
-                    String newCamera = (String) value;
-                    System.out.printf("Changing camera to %s\n", newCamera);
-                    CameraManager.setCurrentCamera(newCamera);
-                    HashMap<String, Integer> portMap = new HashMap<>();
-                    portMap.put("port", CameraManager.getCurrentCamera().getStreamPort());
-                    sendFullSettings();
-                    break;
-                case "curr_pipeline":
-                    int newPipeline = (int) value;
-                    System.out.printf("Changing pipeline to %s\n", newPipeline);
-                    CameraManager.setCurrentPipeline(newPipeline);
-                    CameraManager.getCurrentCameraProcess().ntPipelineEntry.setNumber(newPipeline);
-                    broadcastMessage(allFieldsToMap(CameraManager.getCurrentPipeline()));
+             To get boolean from value
+             ((BooleanValue)value).getBoolean();
 
-                    break;
-                case "resolution":
-                    int newVideoMode = (int) value;
-                    System.out.printf("Changing video mode to %d\n", newVideoMode);
-                    CameraManager.getCurrentCamera().setCamVideoMode(newVideoMode, true);
-                    break;
-                case "FOV":
-                    double newFov = Double.parseDouble(value.toString());
-                    System.out.printf("Changing FOV to %f\n", newFov);
-                    CameraManager.getCurrentCamera().setFOV(newFov);
-                    break;
-                default:
-                    System.out.printf("Unexpected value from websocket: [%s, %s]\n", key, value);
-                    break;
+             To get Array from value
+             ((ArrayValue) value).toArray();
+
+            */
+            String key = k.toString();
+            System.out.printf("Got websocket msgpack data: [%s, %s]\n", key, value);
+
+
+            try{
+            if (hasField(CameraManager.getCurrentPipeline(), key)) {
+                //Special cases for exposure and brightness and aspect ratio
+                switch (key) {
+                    case "exposure":
+                        int newExposure =  ((IntegerValue)value).getInt();
+                        System.out.printf("Changing exposure to %d\n", newExposure);
+                        try {
+                            CameraManager.getCurrentCamera().setExposure(newExposure);
+                        } catch (VideoException e) {
+                            System.out.println("Exposure changes is not supported on your webcam/webcam's driver");
+                        }
+                        break;
+                    case "brightness":
+                        int newBrightness = (int) value;
+                        System.out.printf("Changing brightness to %d\n", newBrightness);
+                        CameraManager.getCurrentCamera().setBrightness(newBrightness);
+                        break;
+                    case "ratio":
+                        //If there is any better to convert Integer to Double you're welcome to change it
+                        List<Double> doubleRatio = CameraManager.getCurrentPipeline().ratio;
+                        List<Object> newRatio = ((JSONArray) value).toList();
+                        for (int i = 0; i < newRatio.size(); i++) {
+                            doubleRatio.set(i, Double.parseDouble(newRatio.get(i).toString()));
+                        }
+                        break;
+                    default:
+                        //Any other field in CameraManager that doesn't need anything special
+                        setField(CameraManager.getCurrentPipeline(), key, value);
+                        System.out.println("CameraManager.getCurrentPipeline().hue = " + CameraManager.getCurrentPipeline().hue.get(0));
+                        break;
+                }
+            } else {
+                switch (key) {
+                    case "change_general_settings_values":
+                        Map<String, Object> map = (Map<String, Object>) value;
+                        map.forEach((s, o) -> setField(SettingsManager.GeneralSettings, s, o));
+                        SettingsManager.saveSettings();
+                        break;
+                    case "curr_camera":
+                        String newCamera = (String) value;
+                        System.out.printf("Changing camera to %s\n", newCamera);
+                        CameraManager.setCurrentCamera(newCamera);
+                        HashMap<String, Integer> portMap = new HashMap<>();
+                        portMap.put("port", CameraManager.getCurrentCamera().getStreamPort());
+                        sendFullSettings();
+                        break;
+                    case "curr_pipeline":
+                        int newPipeline = (int) value;
+                        System.out.printf("Changing pipeline to %s\n", newPipeline);
+                        CameraManager.setCurrentPipeline(newPipeline);
+                        CameraManager.getCurrentCameraProcess().ntPipelineEntry.setNumber(newPipeline);
+                        broadcastMessage(allFieldsToMap(CameraManager.getCurrentPipeline()));
+                        break;
+                    case "resolution":
+                        int newVideoMode = (int) value;
+                        System.out.printf("Changing video mode to %d\n", newVideoMode);
+                        CameraManager.getCurrentCamera().setCamVideoMode(newVideoMode, true);
+                        break;
+                    case "FOV":
+                        double newFov = Double.parseDouble(value.toString());//TODO check this
+                        System.out.printf("Changing FOV to %f\n", newFov);
+                        CameraManager.getCurrentCamera().setFOV(newFov);
+                        break;
+                    default:
+                        System.out.printf("Unexpected value from websocket: [%s, %s]\n", key, value);
+                        break;
+                }}
             }
-        }
+            catch (CameraException e)
+            {
+                System.err.println("Camera error");
+                e.printStackTrace();
+            }
+        });
+        broadcastMessage(entries, data);
     }
 
     private void setField(Object obj, String fieldName, Object value) {
@@ -127,8 +145,8 @@ public class ServerHandler {
                 if (f.getName().equals(fieldName)) {
                     if (BeanUtils.isSimpleValueType(value.getClass())) {
                         f.set(obj, value);
-                    } else if (value.getClass() == JSONArray.class) {
-                        f.set(obj, ((JSONArray) value).toList());
+                    } else if (value.getClass() == ArrayValue.class) {
+                        f.set(obj, ((ArrayValue) value).toArray());
                     }
                 }
             }
@@ -144,17 +162,18 @@ public class ServerHandler {
             if (userToSkip != null && user.getSessionId().equals(userToSkip.getSessionId())) {
                 continue;
             }
-            if (obj.getClass() == String.class)
-                user.send((String) obj);
-            else if (obj.getClass() == HashMap.class)
-                user.send(new JSONObject((HashMap<String, Object>) obj).toString());
-            else
-                user.send(new JSONObject(obj).toString());
+            user.send(obj);
+//            if (obj.getClass() == String.class)
+//                user.send((String) obj);
+//            else if (obj.getClass() == HashMap.class)
+//                user.send(new JSONObject((HashMap<String, Object>) obj).toString());
+//            else
+//                user.send(new JSONObject(obj).toString());
         }
     }
 
-    public static void broadcastMessage(Object obj) {
-        broadcastMessage(obj, null);//Broadcasts the message to ever user
+    public static void broadcastMessage(Object obj) {//TODO fix sending for msgpack
+        broadcastMessage(obj, null);//Broadcasts the message to every user
     }
 
 
