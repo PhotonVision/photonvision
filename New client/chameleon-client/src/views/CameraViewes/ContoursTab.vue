@@ -19,6 +19,7 @@ import CVselect from '../../components/cv-select'
             CVrangeSlider,
             CVselect
         },
+
         data() {
             return {
             }
@@ -30,7 +31,7 @@ import CVselect from '../../components/cv-select'
                 }
                 return false;
             }
-        }
+        },
     }
 </script>
 

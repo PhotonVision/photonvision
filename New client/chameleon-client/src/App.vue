@@ -45,10 +45,12 @@ export default {
   created(){
     this.$options.sockets.onmessage = (data) =>{
       try{
-        let message = JSON.parse(data.data);
+        // let message = JSON.parse(data.data);
+        let message = this.$msgPack().decode(data.data);
         for(let prop in message){
           if(message.hasOwnProperty(prop)){
-            this.handleMessage(prop,message[prop]);
+            // this.handleMessage(prop,message[prop]);
+            console.log(message);
           }
         }
       }

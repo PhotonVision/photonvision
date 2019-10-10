@@ -91,10 +91,6 @@ import CVicon from '../components/cv-icon'
             CVicon
         },
         methods:{
-            test(){
-                let o = this.$msgPack().encode("dasd");
-                console.log(o);
-            }
         },
         data() {
             return {
