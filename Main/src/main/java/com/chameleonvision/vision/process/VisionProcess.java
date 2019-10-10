@@ -20,7 +20,7 @@ public class VisionProcess implements Runnable {
 	private final CameraProcess cameraProcess;
 	// NetworkTables
 	public NetworkTableEntry ntPipelineEntry;
-	public NetworkTableEntry ntDriverModeEntry;
+	private NetworkTableEntry ntDriverModeEntry;
 	private NetworkTableEntry ntYawEntry;
 	private NetworkTableEntry ntPitchEntry;
 	private NetworkTableEntry ntDistanceEntry;
@@ -112,7 +112,11 @@ public class VisionProcess implements Runnable {
 		Imgproc.rectangle(inputMat,new Point(box.x, box.y), new Point((box.x + box.width),(box.y + box.height)), BoxRectColor,2);
 	}
 
+	private boolean wasValid = false;
+
 	private void updateNetworkTables(PipelineResult pipelineResult) {
+		boolean isValid = pipelineResult.IsValid;
+
 		if (pipelineResult.IsValid) {
 			ntValidEntry.setBoolean(true);
 			ntYawEntry.setNumber(pipelineResult.Yaw);
@@ -127,20 +131,25 @@ public class VisionProcess implements Runnable {
 			ntTimeStampEntry.setNumber(timeStamp);
 			ntValidEntry.setBoolean(false);
 		}
+		// on validity state change, force a flush
+		if (isValid != wasValid) {
+//			System.out.printf("Validity changed from %b to %b\n", wasValid, isValid);
+			NetworkTableInstance.getDefault().flush();
+			wasValid = isValid;
+		}
 	}
 
 	private PipelineResult runVisionProcess(Mat inputImage, Mat outputImage) {
-		var pipelineResult = new PipelineResult();
 
 		if (currentPipeline == null) {
-			return pipelineResult;
+			return new PipelineResult();
 		}
 		if (!currentPipeline.orientation.equals("Normal")) {
 			Core.flip(inputImage, inputImage, -1);
 		}
 		if (ntDriverModeEntry.getBoolean(false)) {
 			inputImage.copyTo(outputImage);
-			return pipelineResult;
+			return new PipelineResult();
 		}
 		Scalar hsvLower = new Scalar(currentPipeline.hue.get(0), currentPipeline.saturation.get(0), currentPipeline.value.get(0));
 		Scalar hsvUpper = new Scalar(currentPipeline.hue.get(1), currentPipeline.saturation.get(1), currentPipeline.value.get(1));
@@ -159,25 +168,25 @@ public class VisionProcess implements Runnable {
 				groupedContours = cvProcess.groupTargets(filteredContours, currentPipeline.target_intersection, currentPipeline.target_group);
 				if (groupedContours.size() > 0) {
 					var finalRect = cvProcess.sortTargetsToOne(groupedContours, currentPipeline.sort_mode);
-//					System.out.printf("Largest Contour Area: %.2f\n", finalRect.size.area());
-					pipelineResult.RawPoint = finalRect;
-					pipelineResult.IsValid = true;
+					double calX, calY;
+
 					if (!currentPipeline.is_calibrated) {
-						pipelineResult.CalibratedX = camera.getCamVals().CenterX;
-						pipelineResult.CalibratedY = camera.getCamVals().CenterY;
+						calX = camera.getCamVals().CenterX;
+						calY = camera.getCamVals().CenterY;
 					} else {
-						pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.B) / currentPipeline.M;
-						pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.M) + currentPipeline.B;
+						calX = (finalRect.center.y - currentPipeline.B) / currentPipeline.M;
+						calY = (finalRect.center.x * currentPipeline.M) + currentPipeline.B;
 					}
-					pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
-					pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
-					pipelineResult.Area = finalRect.size.area();
+					var pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, calY);
+					var yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, calX);
+					var area = finalRect.size.area();
 					drawContour(outputImage, finalRect);
+					return new PipelineResult(calX, calY, pitch, yaw, area, finalRect);
 				}
 			}
 		}
 
-		return pipelineResult;
+		return new PipelineResult();
 	}
 
 	@Override

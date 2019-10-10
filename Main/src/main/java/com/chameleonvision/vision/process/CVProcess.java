@@ -70,14 +70,13 @@ public class CVProcess {
                 }
                 var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
 
-                var targetFullness = contourArea;
-                double minExtent = (double) (extent.get(0) * rect.size.area()) / 100;
-                double maxExtent = (double) (extent.get(1) * rect.size.area()) / 100;
-                if (targetFullness <= minExtent || contourArea >= maxExtent) {
+                double minExtent = (extent.get(0) * rect.size.area()) / 100;
+                double maxExtent = (extent.get(1) * rect.size.area()) / 100;
+                if (contourArea <= minExtent || contourArea >= maxExtent) {
                     continue;
                 }
                 Rect bb = Imgproc.boundingRect(Contour);
-                double aspectRatio = (bb.width / bb.height);
+                double aspectRatio = ((double)bb.width / bb.height);
                 if (aspectRatio < ratio.get(0) || aspectRatio > ratio.get(1)) {
                     continue;
                 }

@@ -1,20 +1,17 @@
 package com.chameleonvision.network;
 
 
-import com.chameleonvision.settings.NetworkSettings;
 import com.chameleonvision.settings.Platform;
 import com.chameleonvision.settings.SettingsManager;
 
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class NetworkManager {
 	private NetworkManager() {}
 
-	protected static SysNetworking networking;
-	protected static NetworkInterface botInterface = null;
+	private static SysNetworking networking;
 	private static boolean isManaged = false;
 
 	public static void initialize(boolean manage) {
@@ -46,7 +43,7 @@ public class NetworkManager {
 			e.printStackTrace();
 		}
 
-        var teamBytes = NetworkSettings.GetTeamNumberIPBytes(SettingsManager.GeneralSettings.team_number);
+        var teamBytes = NetworkManager.GetTeamNumberIPBytes(SettingsManager.GeneralSettings.team_number);
 
         if (interfaces.size() > 0) {
 			for (var inetface : interfaces) {
@@ -65,7 +62,7 @@ public class NetworkManager {
 				return;
 			}
 
-			botInterface = goodInterfaces.get(0);
+	        NetworkInterface botInterface = goodInterfaces.get(0);
 			networking.setNetworkInterface(botInterface);
 		} else {
         	isManaged = false;
@@ -77,6 +74,10 @@ public class NetworkManager {
 			isManaged = false;
 			System.err.println("Failed to load network settings. Staying unmanaged!");
 		}
+	}
+
+	private static byte[] GetTeamNumberIPBytes(int teamNumber) {
+		return new byte[]{(byte) (teamNumber / 100), (byte) (teamNumber % 100)};
 	}
 
 	private static boolean loadFromGeneralSettings() {
