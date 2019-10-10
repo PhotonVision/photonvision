@@ -13,7 +13,7 @@ Vue.prototype.$msgPack = msgPack;
 Vue.mixin({
   methods:{
     handleInput(key,value){
-      let msg = this.$msgPack().encode({key,value})
+      let msg = this.$msgPack().encode({[key]:value})
       this.$socket.send(msg);
     }
   }
