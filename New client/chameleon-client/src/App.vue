@@ -32,9 +32,17 @@ export default {
   },
   methods:{
     handleMessage(key,value){
-      switch(key){
-        default:{
-          this.$store.commit(key,value);
+      if(this.$store.state.hasOwnProperty(key)){
+        this.$store.commit(key,value);
+      } else if(this.$store.state.pipeline.hasOwnProperty(key)){
+        this.$store.commit('setPipeValues',{[key]:value});
+      }
+      else{
+        switch(key){
+          
+          default:{
+            console.log(key + " : " + value);
+          }
         }
       }
     }

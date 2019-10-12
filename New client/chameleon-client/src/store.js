@@ -4,7 +4,8 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 
 const set = key => (state,val) =>{
-  state[key] = val
+  // state[key] = val
+  Vue.set(state,key,val);
 };
 
 export default new Vuex.Store({
@@ -59,5 +60,10 @@ export default new Vuex.Store({
     cameraList: state =>state.cameraList,
     pipelinelist: state =>state.pipelinelist,
     point: state =>state.point,
+    setPipeValues(state,obj){
+      for(let i in obj){
+        Vue.set(state.pipeline,i,obj[i]);
+      }
+    }
   }
 })

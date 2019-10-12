@@ -129,41 +129,26 @@ import CVicon from '../components/cv-icon'
             currentCameraIndex:{
                 get(){
                     return this.$store.state.currentCameraIndex;
-                },
-                set(value){
-                    this.$store.commit('currentCameraIndex',value);
                 }
             },
             currentPipelineIndex:{
                 get(){
                     return this.$store.state.currentPipelineIndex;
-                },
-                set(value){
-                    this.$store.commit('currentPipelineIndex',value);
                 }
             },
             cameraList:{
                 get(){
                     return this.$store.state.cameraList;
-                },
-                set(value){
-                    this.$store.commit('cameraList',value);
                 }
             },
             pipelineList:{
                 get(){
                     return this.$store.state.pipelinelist;
-                },
-                set(value){
-                    this.$store.commit('pipelinelist',value);
                 }
             },
             pipeline:{
                 get(){
                     return this.$store.state.pipeline;
-                },
-                set(value){
-                    this.$store.commit('pipeline',value);
                 }
             },
             steamAdress: {
