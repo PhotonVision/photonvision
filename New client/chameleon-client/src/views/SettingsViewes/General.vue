@@ -8,7 +8,7 @@
         <CVinput name="Gateway" v-model="settings.gateway" :disabled="isDisabled"></CVinput>
         <v-divider color="white"></v-divider>
         <CVinput name="Hostname" v-model="settings.hostname"></CVinput>
-        <v-btn style="margin-top:10px" small color="#4baf62">Save General Settings</v-btn>
+        <v-btn style="margin-top:10px" small color="#4baf62" @click="sendGeneralSettings">Save General Settings</v-btn>
     </div>
 </template>
 
@@ -27,6 +27,11 @@ import CVinput from '../../components/cv-input'
             return {
             }
         },
+        methods:{
+            sendGeneralSettings(){
+                this.handleInput('generalSettings',this.settings);
+            }
+        },
         computed:{
             isDisabled(){
                 if(this.settings.connectionType === 0){
@@ -37,12 +42,8 @@ import CVinput from '../../components/cv-input'
             settings:{
                 get(){
                     return this.$store.state.settings;
-                },
-                set(value){
-                    this.$store.commit('settings',value);
                 }
             }
-            
         }
     }
 </script>

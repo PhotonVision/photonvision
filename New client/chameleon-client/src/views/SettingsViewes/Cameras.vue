@@ -22,6 +22,11 @@ import CVnumberinput from '../../components/cv-number-input'
                 
             }
         },
+        methods:{
+            sendCameraSettings(){
+                this.handleInput('cameraSettings',this.cameraSettings);
+            }
+        },
         computed:{
             currentCameraIndex:{
                 get(){
