@@ -1,6 +1,6 @@
 <template>
     <div>
-        <CVselect name="SortMode" v-model="value.SortMode" :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Closest']" @input="handleInput('SortMode',value.SortMode)"></CVselect>
+        <CVselect name="SortMode" v-model="value.SortMode" :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']" @input="handleInput('sortMode',value.SortMode)"></CVselect>
         <span>Calibrate:</span><v-divider dark color="white"></v-divider>
         <v-row align="center" justify="start">
             <v-col style="padding-right:0px" :cols="3"> 

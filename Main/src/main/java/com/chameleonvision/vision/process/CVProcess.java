@@ -1,5 +1,8 @@
 package com.chameleonvision.vision.process;
 
+import com.chameleonvision.vision.SortMode;
+import com.chameleonvision.vision.TargetGroup;
+import com.chameleonvision.vision.TargetIntersection;
 import com.chameleonvision.vision.camera.CameraValues;
 import com.chameleonvision.util.MathHandler;
 import org.apache.commons.math3.util.FastMath;
@@ -14,13 +17,6 @@ import java.util.*;
 public class CVProcess {
 
     private final CameraValues cameraValues;
-    private HashMap<String, Integer> targetGrouping = new HashMap<>() {{
-        put("Single", 1);
-        put("Dual", 2);
-        put("Triple", 3);
-        put("Quadruple", 4);
-        put("Quintuple", 5);
-    }};
     private Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
     private Size blur = new Size(1,1);
     private Mat hsvImage = new Mat();
@@ -58,7 +54,7 @@ public class CVProcess {
         return foundContours;
     }
 
-    List<MatOfPoint> filterContours(List<MatOfPoint> inputContours, List<Integer> area, List<Double> ratio, List<Integer> extent) {
+    List<MatOfPoint> filterContours(List<MatOfPoint> inputContours, List<Float> area, List<Float> ratio, List<Integer> extent) {
         for (MatOfPoint Contour : inputContours) {
             try {
                 double contourArea = Imgproc.contourArea(Contour);
@@ -97,34 +93,34 @@ public class CVProcess {
         Moments m = Imgproc.moments(c);
         return (m.get_m10()/m.get_m00());
     }
-    RotatedRect sortTargetsToOne(List<RotatedRect> inputRects, String sortMode) {
+    RotatedRect sortTargetsToOne(List<RotatedRect> inputRects, SortMode sortMode) {
         switch (sortMode) {
-            case "Largest":
+            case Largest:
                 return Collections.max(inputRects, Comparator.comparing(rect -> rect.size.area()));
-            case "Smallest":
+            case Smallest:
                 return Collections.min(inputRects, Comparator.comparing(rect -> rect.size.area()));
-            case "Highest":
+            case Highest:
                 return Collections.min(inputRects, Comparator.comparing(rect -> rect.center.y));
-            case "Lowest":
+            case Lowest:
                 return Collections.max(inputRects, Comparator.comparing(rect -> rect.center.y));
-            case "Leftmost":
+            case Leftmost:
                 return Collections.min(inputRects, Comparator.comparing(rect -> rect.center.x));
-            case "Rightmost":
+            case Rightmost:
                 return Collections.max(inputRects, Comparator.comparing(rect -> rect.center.x));
-            case "Centermost":
+            case Centermost:
                 return Collections.min(inputRects, sortByCentermostComparator);
             default:
                 return inputRects.get(0); // default to whatever the first contour is, but this should never happen
         }
     }
 
-    List<RotatedRect> groupTargets(List<MatOfPoint> inputContours, String intersectionPoint, String targetGroup) {
+    List<RotatedRect> groupTargets(List<MatOfPoint> inputContours, TargetIntersection intersectionPoint, TargetGroup targetGroup) {
         finalCountours.clear();
-        if (!targetGroup.equals("Single")) {
+        if (!targetGroup.equals(TargetGroup.Single)) {
             inputContours.sort(sortByMomentsX);
             for (var i = 0; i < inputContours.size(); i++) {
                 List<Point> FinalContourList = new ArrayList<>(inputContours.get(i).toList());
-                for (var c = 0; c < (targetGrouping.get(targetGroup) - 1); c++) {
+                for (var c = 0; c < targetGroup.ordinal(); c++) {
                     try {
                         MatOfPoint firstContour = inputContours.get(i + c);
                         MatOfPoint secondContour = inputContours.get(i + c + 1);
@@ -163,8 +159,8 @@ public class CVProcess {
         return finalCountours;
     }
 
-    private boolean isIntersecting(MatOfPoint ContourOne, MatOfPoint ContourTwo, String IntersectionPoint) {
-        if (IntersectionPoint.equals("None")) {
+    private boolean isIntersecting(MatOfPoint ContourOne, MatOfPoint ContourTwo, TargetIntersection intersectionPoint) {
+        if (intersectionPoint.equals(TargetIntersection.None)) {
             return true;
         }
         try {
@@ -182,26 +178,26 @@ public class CVProcess {
             double intersectionY = (mA * (intersectionX - x0A)) + y0A;
             double massX = (x0A + x0B) / 2;
             double massY = (y0A + y0B) / 2;
-            switch (IntersectionPoint) {
-                case "Up": {
+            switch (intersectionPoint) {
+                case Up: {
                     if (intersectionY < massY) {
                         return true;
                     }
                     break;
                 }
-                case "Down": {
+                case Down: {
                     if (intersectionY > massY) {
                         return true;
                     }
                     break;
                 }
-                case "Left": {
+                case Left: {
                     if (intersectionX < massX) {
                         return true;
                     }
                     break;
                 }
-                case "Right": {
+                case Right: {
                     if (intersectionX > massX) {
                         return true;
                     }

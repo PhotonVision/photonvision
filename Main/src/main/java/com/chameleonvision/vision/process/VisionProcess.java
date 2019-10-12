@@ -1,6 +1,7 @@
 package com.chameleonvision.vision.process;
 
 import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.vision.Orientation;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
 import com.chameleonvision.web.ServerHandler;
@@ -135,7 +136,7 @@ public class VisionProcess implements Runnable {
 		if (currentPipeline == null) {
 			return pipelineResult;
 		}
-		if (!currentPipeline.orientation.equals("Normal")) {
+		if (currentPipeline.orientation.equals(Orientation.Inverted)) {
 			Core.flip(inputImage, inputImage, -1);
 		}
 		if (ntDriverModeEntry.getBoolean(false)) {
@@ -147,7 +148,7 @@ public class VisionProcess implements Runnable {
 
 		cvProcess.hsvThreshold(inputImage, hsvThreshMat, hsvLower, hsvUpper, currentPipeline.erode, currentPipeline.dilate);
 
-		if (currentPipeline.is_binary == 1) {
+		if (currentPipeline.isBinary == true) {
 			Imgproc.cvtColor(hsvThreshMat, outputImage, Imgproc.COLOR_GRAY2BGR, 3);
 		} else {
 			inputImage.copyTo(outputImage);
@@ -156,13 +157,13 @@ public class VisionProcess implements Runnable {
 		if (foundContours.size() > 0) {
 			filteredContours = cvProcess.filterContours(foundContours, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent);
 			if (filteredContours.size() > 0) {
-				groupedContours = cvProcess.groupTargets(filteredContours, currentPipeline.target_intersection, currentPipeline.target_group);
+				groupedContours = cvProcess.groupTargets(filteredContours, currentPipeline.targetIntersection, currentPipeline.targetGroup);
 				if (groupedContours.size() > 0) {
-					var finalRect = cvProcess.sortTargetsToOne(groupedContours, currentPipeline.sort_mode);
+					var finalRect = cvProcess.sortTargetsToOne(groupedContours, currentPipeline.sortMode);
 //					System.out.printf("Largest Contour Area: %.2f\n", finalRect.size.area());
 					pipelineResult.RawPoint = finalRect;
 					pipelineResult.IsValid = true;
-					if (!currentPipeline.is_calibrated) {
+					if (!currentPipeline.isCalibrated) {
 						pipelineResult.CalibratedX = camera.getCamVals().CenterX;
 						pipelineResult.CalibratedY = camera.getCamVals().CenterY;
 					} else {

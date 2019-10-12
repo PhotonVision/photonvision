@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 public class Camera {
 
-	private static final double DEFAULT_FOV = 60.8;
+	private static final float DEFAULT_FOV = 60.8f;
 	private static final int MINIMUM_FPS = 30;
 	private static final int MINIMUM_WIDTH = 320;
 	private static final int MINIMUM_HEIGHT = 200;
@@ -29,7 +29,7 @@ public class Camera {
 	private final CvSink cvSink;
 	private final Object cvSourceLock = new Object();
 	private CvSource cvSource;
-	private double FOV;
+	private float FOV;
 	private CameraValues camVals;
 	private CamVideoMode camVideoMode;
 	private int currentPipelineIndex;
@@ -39,23 +39,23 @@ public class Camera {
 		this(cameraName, DEFAULT_FOV);
 	}
 
-	public Camera(String cameraName, double fov) {
+	public Camera(String cameraName, float fov) {
 		this(cameraName,CameraManager.AllUsbCameraInfosByName.get(cameraName), fov);
 	}
 
-	public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov) {
+	public Camera(String cameraName, UsbCameraInfo usbCamInfo, float fov) {
 		this(cameraName ,usbCamInfo, fov, new HashMap<>(), 0);
 	}
 
-	public Camera(String cameraName, double fov, int videoModeIndex) {
+	public Camera(String cameraName, float fov, int videoModeIndex) {
 		this(cameraName, fov, new HashMap<>(), videoModeIndex);
 	}
 
-	public Camera(String cameraName, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
+	public Camera(String cameraName, float fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
 		this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex);
 	}
 
-	public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
+	public Camera(String cameraName, UsbCameraInfo usbCamInfo, float fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
 		FOV = fov;
 		name = cameraName;
 		path = usbCamInfo.path;
@@ -158,11 +158,11 @@ public class Camera {
 				.orElse(-1);
 	}
 
-	public double getFOV() {
+	public float getFOV() {
 		return FOV;
 	}
 
-	public void setFOV(double fov) {
+	public void setFOV(float fov) {
 		FOV = fov;
 		camVals = new CameraValues(this);
 	}

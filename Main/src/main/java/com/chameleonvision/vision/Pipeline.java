@@ -6,20 +6,20 @@ import java.util.List;
 public class Pipeline {
 	public int exposure = 50;
 	public int brightness = 50;
-	public String orientation = "Normal";
+	public Orientation orientation = Orientation.Normal;
 	public List<Integer> hue = Arrays.asList(50, 180);
 	public List<Integer> saturation = Arrays.asList(50, 255);
 	public List<Integer> value = Arrays.asList(50, 255);
 	public boolean erode = false;
 	public boolean dilate = false;
-	public List<Integer> area = Arrays.asList(0, 100);
-	public List<Double> ratio = Arrays.asList(0D, 20D);
+	public List<Float> area = Arrays.asList(0f, 100f);
+	public List<Float> ratio = Arrays.asList(0f, 20f);
 	public List<Integer> extent = Arrays.asList(0, 100);
-	public int is_binary = 0;
-	public String sort_mode = "Largest";
-	public String target_group = "Single";
-	public String target_intersection = "Up";
+	public boolean isBinary = false;
+	public SortMode sortMode = SortMode.Largest;
+	public TargetGroup targetGroup = TargetGroup.Single;
+	public TargetIntersection targetIntersection = TargetIntersection.Up;
 	public double M = 1;
 	public double B = 0;
-	public boolean is_calibrated = false;
+	public boolean isCalibrated = false;
 }
