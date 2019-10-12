@@ -1,10 +1,10 @@
 <template>
     <div>
-        <CVrangeSlider v-model="value.Hue" name="Hue" :min="0" :max="180" @input="handleInput('hue',value.Hue)"></CVrangeSlider>
-        <CVrangeSlider v-model="value.Saturation" name="Saturation" :min="0" :max="255" @input="handleInput('saturation',value.Saturation)"></CVrangeSlider>
-        <CVrangeSlider v-model="value.Value" name="Value" :min="0" :max="255" @input="handleInput('value',value.Value)"></CVrangeSlider>
-        <CVswitch v-model="value.Erode" name="Erode" @input="handleInput('erode',value.Erode)"></CVswitch>
-        <CVswitch v-model="value.Dilate" name="Dilate" @input="handleInput('dilate',value.Dilate)"></CVswitch>
+        <CVrangeSlider v-model="value.hue" name="Hue" :min="0" :max="180" @input="handleInput('hue',value.hue)"></CVrangeSlider>
+        <CVrangeSlider v-model="value.saturation" name="Saturation" :min="0" :max="255" @input="handleInput('saturation',value.saturation)"></CVrangeSlider>
+        <CVrangeSlider v-model="value.value" name="Value" :min="0" :max="255" @input="handleInput('value',value.value)"></CVrangeSlider>
+        <CVswitch v-model="value.erode" name="Erode" @input="handleInput('erode',value.erode)"></CVswitch>
+        <CVswitch v-model="value.dilate" name="Dilate" @input="handleInput('dilate',value.dilate)"></CVswitch>
     </div>
 </template>
 

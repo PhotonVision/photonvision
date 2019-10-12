@@ -1,8 +1,8 @@
 <template>
     <div>
-        <CVslider name="Exposure" v-model="value.Exposure" :min="0" :max="100" @input="handleInput('exposure',value.Exposure)"></CVslider>
-        <CVslider name="Brightness" v-model="value.Brightness" :min="0" :max="100" @input="handleInput('brightness',value.Brightness)"></CVslider>
-        <CVselect name="Orientation" v-model="value.Orientation" :list="['Normal','Inverted']" @input="handleInput('orientation',value.Orientation)"></CVselect>
+        <CVslider name="Exposure" v-model="value.exposure" :min="0" :max="100" @input="handleInput('exposure',value.exposure)"></CVslider>
+        <CVslider name="Brightness" v-model="value.brightness" :min="0" :max="100" @input="handleInput('brightness',value.brightness)"></CVslider>
+        <CVselect name="Orientation" v-model="value.orientation" :list="['Normal','Inverted']" @input="handleInput('orientation',value.orientation)"></CVselect>
     </div>
 </template>
 

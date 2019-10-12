@@ -7,11 +7,11 @@
             <v-col :cols="10">
                 <v-range-slider :value="localValue" @input="handleInput" :max="max" :min="min" hide-details class="align-center" dark color="#4baf62" :step="step">
                     <template v-slot:prepend> 
-                        <v-text-field :value="localValue[0]" @input="handleChange" @focus="prependFocused = true" @blur="prependFocused = false" class="mt-0 pt-0" hide-details single-line type="number" style="width: 50px" :step="step"></v-text-field>
+                        <v-text-field :value="localValue[0]" :max="max" :min="min" @input="handleChange" @focus="prependFocused = true" @blur="prependFocused = false" class="mt-0 pt-0" hide-details single-line type="number" style="width: 50px" :step="step"></v-text-field>
                     </template>
 
                     <template v-slot:append>
-                        <v-text-field :value="localValue[1]" @input="handleChange" @focus="appendFocused = true" @blur="appendFocused = false" class="mt-0 pt-0" hide-details single-line type="number" style="width: 50px" :step="step"></v-text-field>
+                        <v-text-field :value="localValue[1]" :max="max" :min="min" @input="handleChange" @focus="appendFocused = true" @blur="appendFocused = false" class="mt-0 pt-0" hide-details single-line type="number" style="width: 50px" :step="step"></v-text-field>
                     </template>
                 </v-range-slider>
             </v-col>
