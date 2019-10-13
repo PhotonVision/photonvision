@@ -85,12 +85,13 @@ public class ServerHandler {
                         }
                         else
                             setValue(CameraManager.getCurrentPipeline(), key, value);//All of the other assignments fields
-
+                        broadcastMessage(data.data());
                         System.out.println(ToStringBuilder.reflectionToString(CameraManager.getCurrentPipeline()));//Print all pipeline data for debugging
                         break;
                     }
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 unexpectedData(key, value);
             }
         }
@@ -185,6 +186,6 @@ public class ServerHandler {
             System.err.println("No camera found!");
             //TODO: add message to ui to inform that there are no cameras
         }
-        broadcastMessage(fullSettings);
+//        broadcastMessage(fullSettings);
     }
 }

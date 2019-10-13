@@ -53,17 +53,16 @@ export default {
   created(){
     this.$options.sockets.onmessage = (data) =>{
       try{
-        // let message = JSON.parse(data.data);
-        let message = this.$msgPack().decode(data.data);
+		let info = new Uint8Array(data.data.substring(1, data.data.length-1).split(","));//Converts incoming data to data that msgpack can decode
+        let message = this.$msgPack().decode(info);
         for(let prop in message){
           if(message.hasOwnProperty(prop)){
-            // this.handleMessage(prop,message[prop]);
             console.log(message);
           }
         }
       }
-      catch{
-        console.error('error: ' + data.data);
+      catch(error){
+        console.error('error: ' + data.data+ " , "+ error);
       }      
     }
   }
