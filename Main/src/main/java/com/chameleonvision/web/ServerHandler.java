@@ -1,19 +1,24 @@
 package com.chameleonvision.web;
 
+import com.chameleonvision.vision.Orientation;
+import com.chameleonvision.vision.SortMode;
+import com.chameleonvision.vision.TargetGroup;
+import com.chameleonvision.vision.TargetIntersection;
 import com.chameleonvision.vision.camera.CameraException;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.camera.CameraManager;
+import edu.wpi.cscore.VideoException;
 import io.javalin.websocket.*;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 import org.msgpack.core.MessagePack;
 import org.msgpack.core.MessageUnpacker;
 import org.msgpack.value.ImmutableArrayValue;
 import org.msgpack.value.ImmutableValue;
 import org.msgpack.value.Value;
-
+import org.springframework.beans.BeanUtils;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.*;
 
 
@@ -40,62 +45,115 @@ public class ServerHandler {
         for (int mapIndex = 0; mapIndex < length; mapIndex++) {
             String key = unpacker.unpackString();  // key
             Object value = get(unpacker.unpackValue());
-            runMethod(ApplyFields.class, "set" + key, value);
+            try {
+                if (hasField(CameraManager.getCurrentPipeline(), key)) {
+                    //Special cases for exposure and brightness and aspect ratio
+                    switch (key) {
+                        case "exposure":
+                            int newExposure = (int) value;
+                            System.out.printf("Changing exposure to %d\n", newExposure);
+                            try {
+                                ;
+                                CameraManager.getCurrentCamera().setExposure(newExposure);
+                            } catch (VideoException e) {
+                                System.out.println("Exposure changes is not supported on your webcam/webcam's driver");
+                            }
+                            break;
+                        case "brightness":
+                            int newBrightness = (int) value;
+                            System.out.printf("Changing brightness to %d\n", newBrightness);
+                            CameraManager.getCurrentCamera().setBrightness(newBrightness);
+                            break;
+                        case "ratio":
+                            CameraManager.getCurrentPipeline().ratio=getFloatList((ImmutableArrayValue) value);
+                            break;
+                        case "area":
+                            CameraManager.getCurrentPipeline().area=getFloatList((ImmutableArrayValue) value);
+                            break;
+                        //Enums
+                        case "targetIntersection":
+                            setField(CameraManager.getCurrentPipeline(), key, TargetIntersection.values()[(int) value]);
+                            break;
+                        case "targetGroup":
+                            setField(CameraManager.getCurrentPipeline(), key, TargetGroup.values()[(int) value]);
+                            break;
+                        case "sortMode":
+                            setField(CameraManager.getCurrentPipeline(), key, SortMode.values()[(int) value]);
+                            break;
+                        case "orientation":
+                            setField(CameraManager.getCurrentPipeline(), key, Orientation.values()[(int) value]);
+                            break;
+                        default:
+                            //Any other field in CameraManager that doesn't need anything special
+                            setField(CameraManager.getCurrentPipeline(), key, value);
+                            break;
+                    }
+                } else {
+                    switch (key) {
+                        case "change_general_settings_values":
+                            Map<String, Object> map = (Map<String, Object>) value;
+                            map.forEach((s, o) -> setField(SettingsManager.GeneralSettings, s, o));
+                            SettingsManager.saveSettings();
+                            break;
+                        case "curr_camera":
+                            String newCamera = (String) value;
+                            System.out.printf("Changing camera to %s\n", newCamera);
+                            CameraManager.setCurrentCamera(newCamera);
+                            HashMap<String, Integer> portMap = new HashMap<>();
+                            portMap.put("port", CameraManager.getCurrentCamera().getStreamPort());
+                            sendFullSettings();
+                            break;
+                        case "curr_pipeline":
+                            int newPipeline = (int) value;
+                            System.out.printf("Changing pipeline to %s\n", newPipeline);
+                            CameraManager.setCurrentPipeline(newPipeline);
+                            CameraManager.getCurrentCameraProcess().ntPipelineEntry.setNumber(newPipeline);
+                            broadcastMessage(allFieldsToMap(CameraManager.getCurrentPipeline()));
+                            break;
+                        case "resolution":
+                            int newVideoMode = (int) value;
+                            System.out.printf("Changing video mode to %d\n", newVideoMode);
+                            CameraManager.getCurrentCamera().setCamVideoMode(newVideoMode, true);
+                            break;
+                        case "FOV":
+                            float newFov = ((Integer) value) * 1F;//TODO check this
+                            System.out.printf("Changing FOV to %f\n", newFov);
+                            CameraManager.getCurrentCamera().setFOV(newFov);
+                            break;
+                        default:
+                            System.out.printf("Unexpected value from websocket: [%s, %s]\n", key, value);
+                            break;
+                    }
+                }
+            } catch (CameraException e) {
+                System.err.println("Camera error");
+                e.printStackTrace();
+            }
         }
-        System.out.println(ReflectionToStringBuilder.toString(CameraManager.getCurrentPipeline()));
     }
 
-    private void runMethod(Class clazz, String funcName, Object param) {
+    private void setField(Object obj, String fieldName, Object value) {
         try {
-            Method[] methods = clazz.getDeclaredMethods();
-            for (Method method : methods) {
-                if (funcName.equalsIgnoreCase(method.getName())) {
-                    method.invoke(null, param);
-                    return;
+            Field[] fields = obj.getClass().getFields();
+            for (Field f : fields) {
+                if (f.getName().equals(fieldName)) {
+                    if (BeanUtils.isSimpleValueType(f.getType())) {
+                        f.set(obj, value);
+                    } else if (value instanceof ImmutableArrayValue) {
+                        List<Value> valLst = ((ImmutableArrayValue) value).list();
+                        List<Object> lst = new ArrayList<>();
+                        for (Value val : valLst) {
+                            lst.add(get((ImmutableValue) val));
+                        }
+                        f.set(obj, lst);
+                    }
                 }
             }
         } catch (Exception e) {
-            System.out.println("Error while trying to call a function");
+            System.out.println("Exception setting field ");
             e.printStackTrace();
         }
     }
-
-
-//    private void setField(Object obj, String fieldName, Object value) {
-//        try {
-//            Field[] fields = obj.getClass().getFields();
-//            for (Field f : fields) {
-//                if (f.getName().equals(fieldName)) {
-//                    if (BeanUtils.isSimpleValueType(f.getType())) {
-//                        f.set(obj, value);
-//                    } else if (value instanceof ImmutableArrayValue) {
-//                        List<Value> valLst = ((ImmutableArrayValue) value).list();
-//                        List<Object> lst = new ArrayList<>();
-//                        for (Value val : valLst) {
-//                            lst.add(get((ImmutableValue) val));
-//                        }
-//                        f.set(obj, lst);
-//                    }
-//                }
-//            }
-//        } catch (Exception e) {
-//            System.out.println("Exception setting field ");
-//            e.printStackTrace();
-//        }
-//    }
-//
-//    public List<Object> getList(ImmutableArrayValue value) {
-//        List<Value> valLst = value.list();
-//        List<Object> lst = new ArrayList<>();
-//        for (Value val : valLst) {
-//            try {
-//                lst.add(get((ImmutableValue) val));
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        }
-//        return lst;
-//    }
 
     private Object get(ImmutableValue v) throws Exception {
         //TODO find a smarter way to write this
@@ -117,23 +175,14 @@ public class ServerHandler {
         throw new Exception("Value not recognized");
     }
 
-    public List<Float> getFloatList(ImmutableArrayValue arrayValue) {
+    private List<Float> getFloatList(ImmutableArrayValue arrayValue) {
         List<Float> output = new ArrayList<>();
         List<Value> values = arrayValue.list();
-        for (Value v : values) {
+        for (Value v:values) {
             if (v.isFloatValue())
                 output.add(v.asFloatValue().toFloat());
             else
                 output.add((float) v.asIntegerValue().toInt());
-        }
-        return output;
-    }
-
-    public List<Integer > getIntList(ImmutableArrayValue arrayValue) {
-        List<Integer> output = new ArrayList<>();
-        List<Value> values = arrayValue.list();
-        for (Value v : values) {
-            output.add((int) v.asIntegerValue().toInt());
         }
         return output;
     }
@@ -153,16 +202,16 @@ public class ServerHandler {
     }
 
 
-//    private boolean hasField(Object obj, String fieldName) {
-//        Field[] fields = obj.getClass().getFields();
-//        for (Field field : fields) {
-//            if (fieldName.equals(field.getName()))
-//                return true;
-//        }
-//        return false;
-//    }
+    private boolean hasField(Object obj, String fieldName) {
+        Field[] fields = obj.getClass().getFields();
+        for (Field field : fields) {
+            if (fieldName.equals(field.getName()))
+                return true;
+        }
+        return false;
+    }
 
-    public static Map<String, Object> allFieldsToMap(Object obj) {
+    private static Map<String, Object> allFieldsToMap(Object obj) {
         Map map = new HashMap<String, Object>();
         try {
             Field[] fields = obj.getClass().getFields();
