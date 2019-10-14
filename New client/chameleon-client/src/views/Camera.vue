@@ -143,7 +143,7 @@ import CVicon from '../components/cv-icon'
             },
             pipelineList:{
                 get(){
-                    return this.$store.state.pipelinelist;
+                    return this.$store.state.pipelineList;
                 }
             },
             pipeline:{

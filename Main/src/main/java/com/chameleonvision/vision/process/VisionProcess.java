@@ -240,7 +240,7 @@ public class VisionProcess implements Runnable {
 					point.put("fps", uiFps);
 					WebSend.put("point", point);
 					WebSend.put("raw_point", center);
-					ServerHandler.broadcastMessage(WebSend);
+//					ServerHandler.broadcastMessage(WebSend);
 				}
 
 				cameraProcess.updateFrame(streamOutputMat);

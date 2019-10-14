@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import { async } from 'q';
 export default {
   name: 'App',
 
@@ -51,13 +52,13 @@ export default {
 
   }),
   created(){
-    this.$options.sockets.onmessage = (data) =>{
+    this.$options.sockets.onmessage = async (data) =>{
       try{
-		let info = new Uint8Array(data.data.substring(1, data.data.length-1).split(","));//Converts incoming data to data that msgpack can decode
-        let message = this.$msgPack().decode(info);
+        var buffer = await data.data.arrayBuffer();
+        let message = this.$msgPack.decode(buffer);
         for(let prop in message){
           if(message.hasOwnProperty(prop)){
-            console.log(message);
+            this.handleMessage(prop, message[prop]);
           }
         }
       }

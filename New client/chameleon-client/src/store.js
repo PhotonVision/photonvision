@@ -34,7 +34,7 @@ export default new Vuex.Store({
     currentCameraIndex:0,
     currentPipelineIndex:0,
     cameraList:[],
-    pipelinelist:[],
+    pipelineList:[],
     point:{}
   },
   mutations: {
@@ -46,7 +46,7 @@ export default new Vuex.Store({
     currentCameraIndex: set('currentCameraIndex'),
     currentPipelineIndex: set('currentPipelineIndex'),
     cameraList: set('cameraList'),
-    pipelinelist: set('cameraList'),
+    pipelineList: set('pipelineList'),
     point:set('point')
   },
   actions: {
@@ -58,7 +58,7 @@ export default new Vuex.Store({
     currentCameraIndex: state =>state.currentCameraIndex,
     currentPipelineIndex: state =>state.currentPipelineIndex,
     cameraList: state =>state.cameraList,
-    pipelinelist: state =>state.pipelinelist,
+    pipelineList: state =>state.pipelineList,
     point: state =>state.point,
     setPipeValues(state,obj){
       for(let i in obj){
