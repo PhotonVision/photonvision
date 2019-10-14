@@ -44,8 +44,8 @@ public class ServerHandler {
         users.remove(context);
     }
 
-    void onBinaryMessage(WsBinaryMessageContext data) throws Exception {
-        Map<String, Object> deserialized = objectMapper.readValue(ArrayUtils.toPrimitive(data.data()), new TypeReference<Map<String,Object>>(){});
+    void onBinaryMessage(WsBinaryMessageContext context) throws Exception {
+        Map<String, Object> deserialized = objectMapper.readValue(ArrayUtils.toPrimitive(context.data()), new TypeReference<Map<String,Object>>(){});
         for (Map.Entry<String,Object> entry: deserialized.entrySet()) {
             try {
                 switch (entry.getKey()) {
@@ -87,14 +87,18 @@ public class ServerHandler {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+            broadcastMessage(deserialized,context);
         }
     }
     private void setField(Object obj, String fieldName, Object value) {
         try {
             Field field = obj.getClass().getField(fieldName);
             if (BeanUtils.isSimpleValueType(field.getType())){
-                //if enum needs to convert
-             field.set(obj,value);
+                if (field.getType().isEnum()){
+                    field.set(obj,field.getType().getEnumConstants()[(Integer) value]);
+                }else{
+                    field.set(obj,value);
+                }
             } else if(field.getType() == List.class){
                 field.set(obj,value);
             }
