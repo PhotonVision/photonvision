@@ -1,10 +1,7 @@
 package com.chameleonvision.web;
 
 import com.chameleonvision.settings.GeneralSettings;
-import com.chameleonvision.vision.Orientation;
-import com.chameleonvision.vision.SortMode;
-import com.chameleonvision.vision.TargetGroup;
-import com.chameleonvision.vision.TargetIntersection;
+import com.chameleonvision.vision.*;
 import com.chameleonvision.vision.camera.Camera;
 import com.chameleonvision.vision.camera.CameraException;
 import com.chameleonvision.settings.SettingsManager;
@@ -126,7 +123,19 @@ public class ServerHandler {
         broadcastMessage(obj, null);//Broadcasts the message to every user
     }
 
+    public static HashMap<String,Object> getOrdinalPipeline() throws CameraException, IllegalAccessException {
+        HashMap<String,Object> tmp = new HashMap<>();
 
+        for (Field f : Pipeline.class.getFields()){
+            if (!f.getType().isEnum()){
+                tmp.put(f.getName(),f.get(CameraManager.getCurrentCamera().getCurrentPipeline()));
+            } else{
+                var i = (Enum) f.get(CameraManager.getCurrentCamera().getCurrentPipeline());
+                tmp.put(f.getName(),i.ordinal());
+            }
+        }
+        return tmp;
+    }
     public static void sendFullSettings() {
         //General settings
         Map<String, Object> fullSettings = new HashMap<String, Object>();
@@ -134,13 +143,12 @@ public class ServerHandler {
         fullSettings.put("cameraList", CameraManager.getAllCamerasByName().keySet());
         try {
             var currentCamera = CameraManager.getCurrentCamera();
-            fullSettings.put("pipeline",currentCamera.getCurrentPipeline());
+            fullSettings.put("pipeline", getOrdinalPipeline());
             fullSettings.put("pipelineList", currentCamera.getPipelines().keySet());
             fullSettings.put("resolutionList", CameraManager.getResolutionList());
             fullSettings.put("port", currentCamera.getStreamPort());
-        } catch (CameraException e) {
+        } catch (CameraException | IllegalAccessException e) {
             System.err.println("No camera found!");
-            //TODO: add message to ui to inform that there are no cameras
         }
         broadcastMessage(fullSettings);
     }
