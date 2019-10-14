@@ -18,6 +18,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -71,13 +72,21 @@ public class ServerHandler {
                     case "currentPipeline": {
                         CameraManager.getCurrentCamera().setCurrentPipelineIndex((Integer) entry.getValue());
                         HashMap<String,Object> tmp = new HashMap<>();
-                        tmp.put("pipeline",CameraManager.getCurrentCamera().getCurrentPipeline());
+                        tmp.put("pipeline",getOrdinalPipeline());
                         //TODO Add cam settings to the map
                         broadcastMessage(tmp);
                         break;
                     }
                     default: {
                         setField(CameraManager.getCurrentCamera().getCurrentPipeline(),entry.getKey(),entry.getValue());
+                        switch (entry.getKey()){
+                            case "exposure":{
+                                CameraManager.getCurrentCamera().setExposure((Integer) entry.getValue());
+                            }
+                            case "brightness":{
+                                CameraManager.getCurrentCamera().setBrightness((Integer) entry.getValue());
+                            }
+                        }
                         break;
                     }
                 }
@@ -97,7 +106,8 @@ public class ServerHandler {
                     field.set(obj,value);
                 }
             } else if(field.getType() == List.class){
-                field.set(obj,value);
+//                if(((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0] == Double.class){
+                    field.set(obj,value);
             }
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();

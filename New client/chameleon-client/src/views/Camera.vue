@@ -11,7 +11,7 @@
                     <CVicon color="#c5c5c5" hover text="edit" @click="test" tooltip="Edit camera name"></CVicon>
                 </v-col>
                 <v-col :cols="3" class="colsClass">
-                    <CVselect name="Pipeline" :list="pipelineList" v-model="currentPipelineIndex"></CVselect>
+                    <CVselect name="Pipeline" :list="pipelineList" v-model="currentPipelineIndex" @input="handleInput('currentPipeline',currentPipelineIndex)"></CVselect>
                 </v-col>
                  <v-col :cols="1" class="colsClass">
                         <v-menu offset-y dark auto>
@@ -134,6 +134,9 @@ import CVicon from '../components/cv-icon'
             currentPipelineIndex:{
                 get(){
                     return this.$store.state.currentPipelineIndex;
+                },
+                set(value){
+                    this.$store.commit('currentPipelineIndex',value);
                 }
             },
             cameraList:{

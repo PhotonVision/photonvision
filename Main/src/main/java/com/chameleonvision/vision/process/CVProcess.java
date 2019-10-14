@@ -54,7 +54,7 @@ public class CVProcess {
         return foundContours;
     }
 
-    List<MatOfPoint> filterContours(List<MatOfPoint> inputContours, List<Float> area, List<Float> ratio, List<Integer> extent) {
+    List<MatOfPoint> filterContours(List<MatOfPoint> inputContours, List<Number> area, List<Number> ratio, List<Number> extent) {
         for (MatOfPoint Contour : inputContours) {
             try {
                 double contourArea = Imgproc.contourArea(Contour);
@@ -67,14 +67,14 @@ public class CVProcess {
                 var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
 
                 var targetFullness = contourArea;
-                double minExtent = (double) (extent.get(0) * rect.size.area()) / 100;
-                double maxExtent = (double) (extent.get(1) * rect.size.area()) / 100;
+                double minExtent = (double) (extent.get(0).doubleValue() * rect.size.area()) / 100;
+                double maxExtent = (double) (extent.get(1).doubleValue() * rect.size.area()) / 100;
                 if (targetFullness <= minExtent || contourArea >= maxExtent) {
                     continue;
                 }
                 Rect bb = Imgproc.boundingRect(Contour);
                 double aspectRatio = (bb.width / bb.height);
-                if (aspectRatio < ratio.get(0) || aspectRatio > ratio.get(1)) {
+                if (aspectRatio < ratio.get(0).doubleValue() || aspectRatio > ratio.get(1).doubleValue()) {
                     continue;
                 }
                 filteredContours.add(Contour);
