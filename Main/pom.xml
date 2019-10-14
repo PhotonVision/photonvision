@@ -94,11 +94,11 @@
             <artifactId>msgpack-core</artifactId>
             <version>0.8.18</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.msgpack</groupId>-->
-<!--            <artifactId>msgpack</artifactId>-->
-<!--            <version>0.6.12</version>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.msgpack</groupId>
+            <artifactId>jackson-dataformat-msgpack</artifactId>
+            <version>0.8.18</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>

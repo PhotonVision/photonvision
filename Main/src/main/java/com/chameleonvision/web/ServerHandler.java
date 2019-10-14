@@ -7,29 +7,37 @@ import com.chameleonvision.vision.TargetIntersection;
 import com.chameleonvision.vision.camera.CameraException;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.camera.CameraManager;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.cscore.VideoException;
 import io.javalin.websocket.*;
+
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import org.eclipse.jetty.util.ArrayUtil;
 import org.msgpack.core.MessagePack;
+import org.msgpack.core.MessagePacker;
 import org.msgpack.core.MessageUnpacker;
+import org.msgpack.core.buffer.MessageBufferOutput;
+import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.msgpack.value.ImmutableArrayValue;
 import org.msgpack.value.ImmutableValue;
 import org.msgpack.value.Value;
-import org.springframework.beans.BeanUtils;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.ByteBuffer;
 import java.util.*;
 
 
 public class ServerHandler {
 
     private static List<WsContext> users;
+    private static ObjectMapper objectMapper;
 
     ServerHandler() {
         users = new ArrayList<>();
+        objectMapper = new ObjectMapper(new MessagePackFactory());
     }
 
     void onConnect(WsConnectContext context) {
@@ -42,14 +50,10 @@ public class ServerHandler {
     }
 
     void onBinaryMessage(WsBinaryMessageContext data) throws Exception {
-        MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(ArrayUtils.toPrimitive(data.data()));
-        int length = unpacker.unpackMapHeader();
-        for (int mapIndex = 0; mapIndex < length; mapIndex++) {
-            String key = unpacker.unpackString();  // key
-//            Object value = get(unpacker.unpackValue());
-            ImmutableValue value = unpacker.unpackValue();
+        Map<String, Object> deserialized = objectMapper.readValue(ArrayUtils.toPrimitive(data.data()), new TypeReference<Map<String,Object>>(){});
+        for (Map.Entry<String,Object> entry: deserialized.entrySet()) {
             try {
-                switch (key) {
+                switch (entry.getKey()) {
                     case "generalSettings": {
                         //change general settings using a general settings object
                         break;
@@ -72,30 +76,27 @@ public class ServerHandler {
                     }
                     default: {//Change pipeline values
                         //Two special cases for exposure and brightness changes
-                        if (key.equals("exposure"))
+                        if (entry.getKey().equals("exposure"))
                             try {
-                                CameraManager.getCurrentCamera().setExposure(value.asIntegerValue().toInt());
+//                                CameraManager.getCurrentCamera().setExposure(value.asIntegerValue().toInt());
                             } catch (VideoException e) {
                                 System.out.println("Exposure changes is not supported on your webcam/webcam's driver");
                             }
-                        else if (key.equals("brightness")) try {
-                            CameraManager.getCurrentCamera().setBrightness(value.asIntegerValue().toInt());
+                        else if (entry.getKey().equals("brightness")) try {
+//                            CameraManager.getCurrentCamera().setBrightness(value.asIntegerValue().toInt());
                         } catch (VideoException e) {
                             e.printStackTrace();
                         }
                         else
-                            setValue(CameraManager.getCurrentPipeline(), key, value);//All of the other assignments fields
-                        broadcastMessage(data.data());
-                        System.out.println(ToStringBuilder.reflectionToString(CameraManager.getCurrentPipeline()));//Print all pipeline data for debugging
+//                            setValue(CameraManager.getCurrentPipeline(), entry.getKey(), entry.getValue());//All of the other assignments fields
                         break;
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                unexpectedData(key, value);
+//                unexpectedData(key, value);
             }
         }
-
     }
 
     private void setValue(Object obj, String fieldName, ImmutableValue value) {
@@ -149,7 +150,12 @@ public class ServerHandler {
                 if (userToSkip != null && user.getSessionId().equals(userToSkip.getSessionId())) {
                     continue;
                 }
-                user.send(obj);
+                try{
+                    ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(obj));
+                    user.send(b);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
             }
     }
 
