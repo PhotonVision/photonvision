@@ -65,8 +65,8 @@
                     <div class="videoClass">
                         <img v-if="cameraList.length > 0" :src="steamAdress">
                         <span v-else>No Cameras Are connected</span>
+                        <h5 id="Point">{{point}}</h5>
                     </div>
-                    <h5 id="Point">{{point}}</h5>
                 </div>
             </v-col>
       </v-row>
@@ -118,9 +118,10 @@ import CVicon from '../components/cv-icon'
             },
             point:{
                  get:function(){
-                    let p = this.$store.state.point.calulated;
+                    let p = this.$store.state.point.calculated;
+                    let fps = this.$store.state.point.fps;
                     if(p !== undefined){
-                        return ("Pitch: " + parseFloat(p['pitch']).toFixed(2) + " Yaw: " + parseFloat(p['yaw']).toFixed(2) + " FPS: " + parseFloat(p['fps']).toFixed(2))
+                        return ("Pitch: " + parseFloat(p['pitch']).toFixed(2) + " Yaw: " + parseFloat(p['yaw']).toFixed(2) + " FPS: " + fps.toFixed(2))
                     } else{
                         return undefined;
                     }
@@ -173,7 +174,7 @@ import CVicon from '../components/cv-icon'
     }
     .videoClass img{
         height: auto !important;
-        width: 75%;
+        width: 70%;
         vertical-align: middle;
     }
     #Point{

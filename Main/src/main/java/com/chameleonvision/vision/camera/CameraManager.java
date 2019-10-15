@@ -92,7 +92,7 @@ public class CameraManager {
 
 	public static Camera getCurrentCamera() throws CameraException {
 		if (AllCamerasByName.size() == 0) throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
-		var curCam = AllCamerasByName.get(SettingsManager.GeneralSettings.curr_camera);
+		var curCam = AllCamerasByName.get(SettingsManager.GeneralSettings.currentCamera);
 		if (curCam == null) throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
 		return curCam;
 	}
@@ -100,7 +100,7 @@ public class CameraManager {
 	public static void setCurrentCamera(String cameraName) throws CameraException {
 		if (!AllCamerasByName.containsKey(cameraName))
 			throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
-		SettingsManager.GeneralSettings.curr_camera = cameraName;
+		SettingsManager.GeneralSettings.currentCamera = cameraName;
 		SettingsManager.updateCameraSetting(cameraName, getCurrentCamera().getCurrentPipelineIndex());
 	}
 
@@ -116,15 +116,15 @@ public class CameraManager {
 	}
 
 	public static List<String> getResolutionList() throws CameraException {
-		if (!SettingsManager.GeneralSettings.curr_camera.equals("")) {
-			return Arrays.stream(CameraManager.getCamera(SettingsManager.GeneralSettings.curr_camera).getAvailableVideoModes())
+		if (!SettingsManager.GeneralSettings.currentCamera.equals("")) {
+			return Arrays.stream(CameraManager.getCamera(SettingsManager.GeneralSettings.currentCamera).getAvailableVideoModes())
 					.map(res -> String.format("%s X %s at %s fps using %s ", res.width, res.height, res.fps, res.pixelFormat.toString())).collect(Collectors.toList());
 		}
 		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
 	}
 	public static VisionProcess getCurrentCameraProcess() throws CameraException{
-		if (!SettingsManager.GeneralSettings.curr_camera.equals("")){
-			return AllVisionProcessesByName.get(SettingsManager.GeneralSettings.curr_camera);
+		if (!SettingsManager.GeneralSettings.currentCamera.equals("")){
+			return AllVisionProcessesByName.get(SettingsManager.GeneralSettings.currentCamera);
 		}
 		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
 	}

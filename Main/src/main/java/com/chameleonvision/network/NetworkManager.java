@@ -1,6 +1,7 @@
 package com.chameleonvision.network;
 
 
+import com.chameleonvision.settings.ConnectionType;
 import com.chameleonvision.settings.NetworkSettings;
 import com.chameleonvision.settings.Platform;
 import com.chameleonvision.settings.SettingsManager;
@@ -46,7 +47,7 @@ public class NetworkManager {
 			e.printStackTrace();
 		}
 
-        var teamBytes = NetworkSettings.GetTeamNumberIPBytes(SettingsManager.GeneralSettings.team_number);
+        var teamBytes = NetworkSettings.GetTeamNumberIPBytes(SettingsManager.GeneralSettings.teamNumber);
 
         if (interfaces.size() > 0) {
 			for (var inetface : interfaces) {
@@ -85,7 +86,7 @@ public class NetworkManager {
 		}
 
 		var genSettings = SettingsManager.GeneralSettings;
-		boolean isStatic = genSettings.connection_type.toLowerCase().equals("static");
+		boolean isStatic = genSettings.connectionType.equals(ConnectionType.Static);
 
 		if (isStatic) {
 			var splitIPAddr = genSettings.ip.split("\\.");

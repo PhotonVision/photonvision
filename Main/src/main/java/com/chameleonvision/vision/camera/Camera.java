@@ -118,6 +118,7 @@ public class Camera {
 				cvSource = cs.putVideo(name, newVideoMode.width, newVideoMode.height);
 			}
 			ServerHandler.sendFullSettings();
+
 		}
 	}
 

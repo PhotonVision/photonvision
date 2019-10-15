@@ -1,6 +1,6 @@
 <template>
     <div>
-        <CVnumberinput name="Team Number"></CVnumberinput>
+        <CVnumberinput v-model="settings.teamNumber" name="Team Number"></CVnumberinput>
         <CVradio v-model="settings.connectionType" :list="['DHCP','Static']"></CVradio>
         <v-divider color="white"></v-divider>
         <CVinput name="IP" v-model="settings.ip" :disabled="isDisabled"></CVinput>

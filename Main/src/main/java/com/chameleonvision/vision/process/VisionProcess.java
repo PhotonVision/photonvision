@@ -4,6 +4,7 @@ import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Orientation;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
+import com.chameleonvision.vision.camera.CameraException;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.VideoException;
 import edu.wpi.first.networktables.*;
@@ -88,12 +89,13 @@ public class VisionProcess implements Runnable {
 				System.err.println(e.toString());
 			}
 			camera.setBrightness(pipeline.brightness);
-			if (SettingsManager.GeneralSettings.curr_camera.equals(cameraName)){
-				SettingsManager.GeneralSettings.curr_pipeline = ntPipelineIndex;
+			if (SettingsManager.GeneralSettings.currentCamera.equals(cameraName)){
+				SettingsManager.GeneralSettings.currentPipeline = ntPipelineIndex;
 				HashMap<String, Object> pipeChange = new HashMap<>();
-				pipeChange.put("curr_pipeline", ntPipelineIndex);
+				pipeChange.put("currentPipeline", ntPipelineIndex);
 				ServerHandler.broadcastMessage(pipeChange);
 				ServerHandler.sendFullSettings();
+
 			}
 		} else {
 			ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
@@ -222,25 +224,27 @@ public class VisionProcess implements Runnable {
 				// get vision data
 				var pipelineResult = runVisionProcess(cameraInputMat, streamOutputMat);
 				updateNetworkTables(pipelineResult);
-				if (cameraName.equals(SettingsManager.GeneralSettings.curr_camera)) {
+				if (cameraName.equals(SettingsManager.GeneralSettings.currentCamera)) {
 					HashMap<String, Object> WebSend = new HashMap<>();
 					HashMap<String, Object> point = new HashMap<>();
+					HashMap<String, Object> calculated = new HashMap<>();
 					List<Double> center = new ArrayList<>();
 					if (pipelineResult.IsValid) {
 						center.add(pipelineResult.RawPoint.center.x);
 						center.add(pipelineResult.RawPoint.center.y);
-						point.put("pitch", pipelineResult.Pitch);
-						point.put("yaw", pipelineResult.Yaw);
+						calculated.put("pitch", pipelineResult.Pitch);
+						calculated.put("yaw", pipelineResult.Yaw);
 					} else {
 						center.add(0.0);
 						center.add(0.0);
-						point.put("pitch", 0);
-						point.put("yaw", 0);
+						calculated.put("pitch", 0);
+						calculated.put("yaw", 0);
 					}
 					point.put("fps", uiFps);
+					point.put("calculated",calculated);
+					point.put("rawPoint",center);
 					WebSend.put("point", point);
-					WebSend.put("raw_point", center);
-//					ServerHandler.broadcastMessage(WebSend);
+					ServerHandler.broadcastMessage(WebSend);
 				}
 
 				cameraProcess.updateFrame(streamOutputMat);

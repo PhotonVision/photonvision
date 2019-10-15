@@ -48,8 +48,9 @@ public class ServerHandler {
             try {
                 switch (entry.getKey()) {
                     case "generalSettings": {
-                        System.out.println("asdds");
-                        //change general settings using a general settings object
+                        for (HashMap.Entry<String,Object> e : ((HashMap<String,Object>)entry.getValue()).entrySet()){
+                            setField(SettingsManager.GeneralSettings,e.getKey(),e.getValue());
+                        }
                         break;
                     }
                     case "cameraSettings": {
@@ -133,7 +134,7 @@ public class ServerHandler {
         broadcastMessage(obj, null);//Broadcasts the message to every user
     }
 
-    public static HashMap<String,Object> getOrdinalPipeline() throws CameraException, IllegalAccessException {
+    private static HashMap<String,Object> getOrdinalPipeline() throws CameraException, IllegalAccessException {
         HashMap<String,Object> tmp = new HashMap<>();
 
         for (Field f : Pipeline.class.getFields()){
@@ -146,12 +147,22 @@ public class ServerHandler {
         }
         return tmp;
     }
+    private static HashMap<String,Object> getOrdinalSettings() throws IllegalAccessException {
+        HashMap<String,Object> tmp = new HashMap<>();
+        tmp.put("teamNumber",SettingsManager.GeneralSettings.teamNumber);
+        tmp.put("connectionType",SettingsManager.GeneralSettings.connectionType.ordinal());
+        tmp.put("ip",SettingsManager.GeneralSettings.ip);
+        tmp.put("gateway",SettingsManager.GeneralSettings.gateway);
+        tmp.put("netmask",SettingsManager.GeneralSettings.netmask);
+        tmp.put("hostname",SettingsManager.GeneralSettings.hostname);
+        return tmp;
+    }
     public static void sendFullSettings() {
         //General settings
-        Map<String, Object> fullSettings = new HashMap<String, Object>();
-        fullSettings.put("settings", SettingsManager.GeneralSettings);
-        fullSettings.put("cameraList", CameraManager.getAllCamerasByName().keySet());
+        Map<String, Object> fullSettings = new HashMap<>();
         try {
+            fullSettings.put("settings", getOrdinalSettings());
+            fullSettings.put("cameraList", CameraManager.getAllCamerasByName().keySet());
             var currentCamera = CameraManager.getCurrentCamera();
             fullSettings.put("pipeline", getOrdinalPipeline());
             fullSettings.put("pipelineList", currentCamera.getPipelines().keySet());

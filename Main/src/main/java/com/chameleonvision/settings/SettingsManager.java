@@ -32,10 +32,10 @@ public class SettingsManager {
 //            netSettings.run();
 //        }
 		var allCameras = CameraManager.getAllCamerasByName();
-		if (!allCameras.containsKey(GeneralSettings.curr_camera) && allCameras.size() > 0) {
+		if (!allCameras.containsKey(GeneralSettings.currentCamera) && allCameras.size() > 0) {
 			var cam = allCameras.entrySet().stream().findFirst().get().getValue();
-			GeneralSettings.curr_camera = cam.name;
-			GeneralSettings.curr_pipeline = cam.getCurrentPipelineIndex();
+			GeneralSettings.currentCamera = cam.name;
+			GeneralSettings.currentPipeline = cam.getCurrentPipelineIndex();
 		}
 	}
 
@@ -49,12 +49,12 @@ public class SettingsManager {
 	}
 
 	public static void updateCameraSetting(String cameraName, int pipelineNumber) {
-		GeneralSettings.curr_camera = cameraName;
-		GeneralSettings.curr_pipeline = pipelineNumber;
+		GeneralSettings.currentCamera = cameraName;
+		GeneralSettings.currentPipeline = pipelineNumber;
 	}
 
 	public static void updatePipelineSetting(int pipelineNumber) {
-		GeneralSettings.curr_pipeline = pipelineNumber;
+		GeneralSettings.currentPipeline = pipelineNumber;
 	}
 
 	public static void saveSettings() {

@@ -148,7 +148,7 @@ public class Main {
                 if (ntClientModeServer != null) {
                     NetworkTableInstance.getDefault().startClient(ntClientModeServer);
                 } else {
-                    NetworkTableInstance.getDefault().startClientTeam(SettingsManager.GeneralSettings.team_number);
+                    NetworkTableInstance.getDefault().startClientTeam(SettingsManager.GeneralSettings.teamNumber);
                 }
             }
 

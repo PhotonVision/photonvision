@@ -26,7 +26,7 @@
                     return this.value;
                 },
                 set(value){
-                    this.$emit('input',value);
+                    this.$emit('input', parseInt(value));
                 }
             }
         }

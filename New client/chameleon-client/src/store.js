@@ -4,13 +4,19 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 
 const set = key => (state,val) =>{
-  // state[key] = val
   Vue.set(state,key,val);
 };
 
 export default new Vuex.Store({
   state: {
-    settings:{},
+    settings:{
+      teamNumber:1577,
+      connectionType:0,
+      ip:"",
+      gateway:"",
+      netmask:"",
+      hostname: "Chameleon-vision"
+    },
     pipeline:{
       exposure:0,
       brightness:0,
