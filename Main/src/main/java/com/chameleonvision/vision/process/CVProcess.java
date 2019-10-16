@@ -18,7 +18,7 @@ public class CVProcess {
 
     private final CameraValues cameraValues;
     private Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
-    private Size blur = new Size(1,1);
+    private Size blur = new Size(2,2);
     private Mat hsvImage = new Mat();
     private List<MatOfPoint> foundContours = new ArrayList<>();
     private Mat binaryMat = new Mat();

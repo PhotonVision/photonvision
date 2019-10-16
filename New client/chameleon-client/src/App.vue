@@ -1,11 +1,11 @@
 <template>
  <v-app>
-    <v-app-bar app clipped-left dark>
+    <v-app-bar app dense clipped-left dark>
       <img class="imgClass" src="./assets/logo.png">
       <v-toolbar-title id="title">Chameleon Vision</v-toolbar-title>
       <div class="flex-grow-1"></div>
       <v-toolbar-items>
-      <v-tabs dark height="64" slider-color="#4baf62">
+      <v-tabs dark height="48" slider-color="#4baf62">
         <v-tab to="Vision">Vision</v-tab>
         <v-tab to="Settings">Settings</v-tab>
     </v-tabs>
@@ -24,7 +24,6 @@
 </template>
 
 <script>
-import { async } from 'q';
 export default {
   name: 'App',
 
@@ -76,7 +75,7 @@ export default {
   }
   .imgClass{
     width: auto;
-    height: 58px;
+    height: 45px;
     vertical-align: middle;
     padding-right: 5px;
   }

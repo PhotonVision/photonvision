@@ -11,7 +11,6 @@
 <script>
 import CVselect from '../../components/cv-select'
 import CVnumberinput from '../../components/cv-number-input'
-import { get } from 'http';
     export default {
         name: 'CameraSettings',
         components:{
