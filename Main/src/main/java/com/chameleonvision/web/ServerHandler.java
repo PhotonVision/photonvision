@@ -54,8 +54,10 @@ public class ServerHandler {
                         break;
                     }
                     case "cameraSettings": {
-                        System.out.println("sadfsdf");
-                        //change camera settings using a camera settings object
+                        HashMap camSettings = (HashMap)entry.getValue();
+                        CameraManager.getCurrentCamera().setFOV((float)camSettings.get("fov"));
+                        CameraManager.getCurrentCamera().setStreamDivisor((Integer) camSettings.get("streamDivisor"));
+                        CameraManager.getCurrentCamera().setCamVideoMode((Integer) camSettings.get("resolution"),true);
                         break;
                     }
                     case "command": {
@@ -67,6 +69,8 @@ public class ServerHandler {
                         CameraManager.setCurrentCamera((String) entry.getValue());
                         HashMap<String,Object> tmp = new HashMap<>();
                         tmp.put("pipeline",CameraManager.getCurrentCamera().getCurrentPipeline());
+                        tmp.put("port", CameraManager.getCurrentCamera().getStreamPort());
+                        tmp.put("resolutionList",CameraManager.getResolutionList());
                         broadcastMessage(tmp);
                         break;
                     }
@@ -74,7 +78,6 @@ public class ServerHandler {
                         CameraManager.getCurrentCamera().setCurrentPipelineIndex((Integer) entry.getValue());
                         HashMap<String,Object> tmp = new HashMap<>();
                         tmp.put("pipeline",getOrdinalPipeline());
-                        //TODO Add cam settings to the map
                         broadcastMessage(tmp);
                         break;
                     }

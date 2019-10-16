@@ -30,6 +30,7 @@ public class Camera {
 	private final Object cvSourceLock = new Object();
 	private CvSource cvSource;
 	private float FOV;
+	private int streamDivisor;
 	private CameraValues camVals;
 	private CamVideoMode camVideoMode;
 	private int currentPipelineIndex;
@@ -138,10 +139,15 @@ public class Camera {
 	public int getCurrentPipelineIndex() {
 		return currentPipelineIndex;
 	}
-
 	public void setCurrentPipelineIndex(int pipelineNumber) {
 		if (pipelineNumber - 1 > pipelines.size()) return;
 		currentPipelineIndex = pipelineNumber;
+	}
+	public int getStreamDivisor(){
+		return streamDivisor;
+	}
+	public void setStreamDivisor(int divisor){
+		streamDivisor = divisor;
 	}
 
 	public HashMap<Integer, Pipeline> getPipelines() {
