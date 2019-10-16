@@ -26,7 +26,7 @@ import CVselect from '../../components/cv-select'
         },
         computed:{
             isDisabled(){
-                if(this.value.TargetGrouping === 0){
+                if(this.value.targetGroup === 0){
                     return true;
                 }
                 return false;

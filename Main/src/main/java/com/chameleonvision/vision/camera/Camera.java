@@ -13,7 +13,8 @@ import java.util.stream.IntStream;
 
 public class Camera {
 
-	private static final float DEFAULT_FOV = 60.8f;
+	private static final double DEFAULT_FOV = 60.8;
+	private static final StreamDivisor DEFAULT_STREAMDIVISOR = StreamDivisor.none;
 	private static final int MINIMUM_FPS = 30;
 	private static final int MINIMUM_WIDTH = 320;
 	private static final int MINIMUM_HEIGHT = 200;
@@ -29,8 +30,8 @@ public class Camera {
 	private final CvSink cvSink;
 	private final Object cvSourceLock = new Object();
 	private CvSource cvSource;
-	private float FOV;
-	private int streamDivisor;
+	private Double FOV;
+	private StreamDivisor streamDivisor;
 	private CameraValues camVals;
 	private CamVideoMode camVideoMode;
 	private int currentPipelineIndex;
@@ -40,27 +41,29 @@ public class Camera {
 		this(cameraName, DEFAULT_FOV);
 	}
 
-	public Camera(String cameraName, float fov) {
+	public Camera(String cameraName, double fov) {
 		this(cameraName,CameraManager.AllUsbCameraInfosByName.get(cameraName), fov);
 	}
-
-	public Camera(String cameraName, UsbCameraInfo usbCamInfo, float fov) {
-		this(cameraName ,usbCamInfo, fov, new HashMap<>(), 0);
+	public Camera(String cameraName, UsbCameraInfo usbCameraInfo, double fov) {
+		this(cameraName,usbCameraInfo, fov, DEFAULT_STREAMDIVISOR);
+	}
+	public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov,StreamDivisor divisor) {
+		this(cameraName ,usbCamInfo, fov, new HashMap<>(), 0, divisor);
 	}
 
-	public Camera(String cameraName, float fov, int videoModeIndex) {
-		this(cameraName, fov, new HashMap<>(), videoModeIndex);
+	public Camera(String cameraName, double fov, int videoModeIndex , StreamDivisor divisor) {
+		this(cameraName, fov, new HashMap<>(), videoModeIndex, divisor);
 	}
 
-	public Camera(String cameraName, float fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
-		this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex);
+	public Camera(String cameraName, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex , StreamDivisor divisor) {
+		this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex, divisor);
 	}
 
-	public Camera(String cameraName, UsbCameraInfo usbCamInfo, float fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex) {
+	public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor) {
 		FOV = fov;
 		name = cameraName;
 		path = usbCamInfo.path;
-
+		streamDivisor = divisor;
 		UsbCam = new UsbCamera(name, path);
 
 		this.pipelines = pipelines;
@@ -143,11 +146,11 @@ public class Camera {
 		if (pipelineNumber - 1 > pipelines.size()) return;
 		currentPipelineIndex = pipelineNumber;
 	}
-	public int getStreamDivisor(){
+	public StreamDivisor getStreamDivisor(){
 		return streamDivisor;
 	}
 	public void setStreamDivisor(int divisor){
-		streamDivisor = divisor;
+		streamDivisor = StreamDivisor.values()[divisor];
 	}
 
 	public HashMap<Integer, Pipeline> getPipelines() {
@@ -165,12 +168,12 @@ public class Camera {
 				.orElse(-1);
 	}
 
-	public float getFOV() {
+	public double getFOV() {
 		return FOV;
 	}
 
-	public void setFOV(float fov) {
-		FOV = fov;
+	public void setFOV(Number fov) {
+		FOV = fov.doubleValue();
 		camVals = new CameraValues(this);
 	}
 

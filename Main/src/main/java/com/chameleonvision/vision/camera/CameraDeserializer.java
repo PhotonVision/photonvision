@@ -14,9 +14,10 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 	@Override
 	public Camera deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) throws JsonParseException {
 		var jsonObj = jsonElement.getAsJsonObject();
-		var camFOV = jsonObj.get("FOV").getAsFloat();
+		var camFOV = jsonObj.get("FOV").getAsDouble();
 		var camName = jsonObj.get("name").getAsString();
 		var videoModeIndex = jsonObj.get("resolution").getAsInt();
+		var divisor = StreamDivisor.values()[jsonObj.get("streamDivisor").getAsInt()];
 
 
 		var pipelines = jsonObj.get("pipelines");
@@ -30,6 +31,6 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 			e.printStackTrace();
 		}
 
-		return actualPipelines != null ? new Camera(camName, camFOV, actualPipelines, videoModeIndex) : new Camera(camName, camFOV, videoModeIndex);
+		return actualPipelines != null ? new Camera(camName, camFOV, actualPipelines, videoModeIndex,divisor) : new Camera(camName, camFOV, videoModeIndex, divisor);
 	}
 }

@@ -4,7 +4,6 @@ import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Orientation;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
-import com.chameleonvision.vision.camera.CameraException;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.VideoException;
 import edu.wpi.first.networktables.*;
@@ -169,8 +168,8 @@ public class VisionProcess implements Runnable {
 						pipelineResult.CalibratedX = camera.getCamVals().CenterX;
 						pipelineResult.CalibratedY = camera.getCamVals().CenterY;
 					} else {
-						pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.B) / currentPipeline.M;
-						pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.M) + currentPipeline.B;
+						pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
+						pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
 					}
 					pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
 					pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);

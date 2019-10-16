@@ -1,8 +1,10 @@
 package com.chameleonvision.settings;
 
+import com.chameleonvision.network.NetworkIPMode;
+
 public class GeneralSettings {
 	public int teamNumber = 1577;
-	public ConnectionType connectionType = ConnectionType.DHCP;
+	public NetworkIPMode connectionType = NetworkIPMode.DHCP;
 	public String ip = "";
 	public String gateway = "";
 	public String netmask = "";

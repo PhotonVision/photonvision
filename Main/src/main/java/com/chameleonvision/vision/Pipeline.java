@@ -19,7 +19,7 @@ public class Pipeline {
 	public SortMode sortMode = SortMode.Largest;
 	public TargetGroup targetGroup = TargetGroup.Single;
 	public TargetIntersection targetIntersection = TargetIntersection.Up;
-	public double M = 1;
-	public double B = 0;
+	public double m = 1;
+	public double b = 0;
 	public boolean isCalibrated = false;
 }

@@ -7,7 +7,7 @@ import org.apache.commons.math3.util.FastMath;
 public class CameraValues {
    public final int ImageWidth;
    public final int ImageHeight;
-   public final float FOV;
+   public final double FOV;
    public final double ImageArea;
    public final double CenterX;
    public final double CenterY;
@@ -24,7 +24,7 @@ public class CameraValues {
        this(camera.getVideoMode().width, camera.getVideoMode().height, camera.getFOV());
    }
 
-    public CameraValues(int imageWidth, int imageHeight, float fov) {
+    public CameraValues(int imageWidth, int imageHeight, double fov) {
         ImageWidth = imageWidth;
         ImageHeight = imageHeight;
         FOV = fov;

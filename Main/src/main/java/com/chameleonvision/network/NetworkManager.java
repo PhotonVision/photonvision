@@ -1,14 +1,12 @@
 package com.chameleonvision.network;
 
 
-import com.chameleonvision.settings.ConnectionType;
 import com.chameleonvision.settings.NetworkSettings;
 import com.chameleonvision.settings.Platform;
 import com.chameleonvision.settings.SettingsManager;
 
 import java.net.SocketException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class NetworkManager {
@@ -86,7 +84,7 @@ public class NetworkManager {
 		}
 
 		var genSettings = SettingsManager.GeneralSettings;
-		boolean isStatic = genSettings.connectionType.equals(ConnectionType.Static);
+		boolean isStatic = genSettings.connectionType.equals(NetworkIPMode.STATIC);
 
 		if (isStatic) {
 			var splitIPAddr = genSettings.ip.split("\\.");

@@ -73,7 +73,7 @@ import CVselect from '../../components/cv-select'
         computed:{
             rawPoint:{
                 get(){
-                    return this.$store.state.point.raw;
+                    return this.$store.state.point.rawPoint;
                 }
             }
         }

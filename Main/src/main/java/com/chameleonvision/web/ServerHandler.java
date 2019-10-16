@@ -55,7 +55,7 @@ public class ServerHandler {
                     }
                     case "cameraSettings": {
                         HashMap camSettings = (HashMap)entry.getValue();
-                        CameraManager.getCurrentCamera().setFOV((float)camSettings.get("fov"));
+                        CameraManager.getCurrentCamera().setFOV((Number)camSettings.get("fov"));
                         CameraManager.getCurrentCamera().setStreamDivisor((Integer) camSettings.get("streamDivisor"));
                         CameraManager.getCurrentCamera().setCamVideoMode((Integer) camSettings.get("resolution"),true);
                         break;
@@ -85,7 +85,12 @@ public class ServerHandler {
                         setField(CameraManager.getCurrentCamera().getCurrentPipeline(),entry.getKey(),entry.getValue());
                         switch (entry.getKey()){
                             case "exposure":{
-                                CameraManager.getCurrentCamera().setExposure((Integer) entry.getValue());
+                                try{
+                                    CameraManager.getCurrentCamera().setExposure((Integer) entry.getValue());
+                                } catch (Exception e){
+                                    System.err.println("Camera Does not support exposure change");
+                                }
+
                             }
                             case "brightness":{
                                 CameraManager.getCurrentCamera().setBrightness((Integer) entry.getValue());
@@ -133,13 +138,12 @@ public class ServerHandler {
             }
     }
 
-    public static void broadcastMessage(Object obj) {//TODO fix sending for msgpack
+    public static void broadcastMessage(Object obj) {
         broadcastMessage(obj, null);//Broadcasts the message to every user
     }
 
     private static HashMap<String,Object> getOrdinalPipeline() throws CameraException, IllegalAccessException {
         HashMap<String,Object> tmp = new HashMap<>();
-
         for (Field f : Pipeline.class.getFields()){
             if (!f.getType().isEnum()){
                 tmp.put(f.getName(),f.get(CameraManager.getCurrentCamera().getCurrentPipeline()));
@@ -150,7 +154,7 @@ public class ServerHandler {
         }
         return tmp;
     }
-    private static HashMap<String,Object> getOrdinalSettings() throws IllegalAccessException {
+    private static HashMap<String,Object> getOrdinalSettings(){
         HashMap<String,Object> tmp = new HashMap<>();
         tmp.put("teamNumber",SettingsManager.GeneralSettings.teamNumber);
         tmp.put("connectionType",SettingsManager.GeneralSettings.connectionType.ordinal());
@@ -160,11 +164,24 @@ public class ServerHandler {
         tmp.put("hostname",SettingsManager.GeneralSettings.hostname);
         return tmp;
     }
+    private static HashMap<String ,Object> getOrdinalCameraSettings(){
+        HashMap<String,Object> tmp = new HashMap<>();
+        try {
+            var currentCamera = CameraManager.getCurrentCamera();
+            tmp.put("fov",currentCamera.getFOV());
+            tmp.put("streamDivisor",currentCamera.getStreamDivisor().ordinal());
+            tmp.put("resolution",currentCamera.getVideoModeIndex());
+        } catch (CameraException e) {
+            e.printStackTrace();
+        }
+        return tmp;
+    }
     public static void sendFullSettings() {
         //General settings
         Map<String, Object> fullSettings = new HashMap<>();
         try {
             fullSettings.put("settings", getOrdinalSettings());
+            fullSettings.put("cameraSettings",getOrdinalCameraSettings());
             fullSettings.put("cameraList", CameraManager.getAllCamerasByName().keySet());
             var currentCamera = CameraManager.getCurrentCamera();
             fullSettings.put("pipeline", getOrdinalPipeline());
