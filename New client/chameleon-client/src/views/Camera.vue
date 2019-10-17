@@ -58,7 +58,7 @@
             </v-col>
             <v-col cols="6" class="colsClass">
                 <div>
-                    <v-tabs background-color="#212121" dark height="48" slider-color="#4baf62" centered style="padding-bottom:10px" v-model="isBinaryNumber" @change="handleInput('isBinary',!!pipeline.isBinary)">
+                    <v-tabs background-color="#212121" dark height="48" slider-color="#4baf62" centered style="padding-bottom:10px" v-model="isBinaryNumber" @change="handleInput('isBinary',pipeline.isBinary)">
                         <v-tab>Normal</v-tab>
                         <v-tab>Threshold</v-tab>
                     </v-tabs>
@@ -104,6 +104,9 @@ import CVicon from '../components/cv-icon'
             isBinaryNumber:{
                 get(){
                     return this.pipeline.isBinary ? 1:0
+                },
+                set(value){
+                    this.pipeline.isBinary = !!value;
                 }
             },
             selectedComponent:{

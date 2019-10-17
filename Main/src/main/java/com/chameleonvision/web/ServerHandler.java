@@ -90,7 +90,6 @@ public class ServerHandler {
                                 } catch (Exception e){
                                     System.err.println("Camera Does not support exposure change");
                                 }
-
                             }
                             case "brightness":{
                                 CameraManager.getCurrentCamera().setBrightness((Integer) entry.getValue());
