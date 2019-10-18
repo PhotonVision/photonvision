@@ -4,7 +4,7 @@
             <v-row align="center">
                 <v-col :cols="3" class="colsClass">
                     <div style="padding-left:30px">
-                        <CVselect v-if="isCameraNameEdit == false" name="Camera" v-model="currentCameraIndex" :list="cameraList"></CVselect>
+                        <CVselect v-if="isCameraNameEdit == false" name="Camera" v-model="currentCameraIndex" :list="cameraList" @input="handleInput('currentCamera',currentCameraIndex)"></CVselect>
                         <CVinput v-else name="Camera" v-model="newCameraName" @Enter="saveCameraNameChange" :errorMessage="checkCameraName"></CVinput>
                     </div>
                 </v-col>
@@ -223,6 +223,9 @@ import CVinput from '../components/cv-input'
             currentCameraIndex:{
                 get(){
                     return this.$store.state.currentCameraIndex;
+                },
+                set(value){
+                    this.$store.commit('currentCameraIndex',value);
                 }
             },
             currentPipelineIndex:{
