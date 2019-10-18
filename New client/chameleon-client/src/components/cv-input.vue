@@ -1,11 +1,11 @@
 <template>
     <div>
-        <v-row align="center">
-            <v-col :cols="2">
+        <v-row dense align="center">
+            <v-col :cols="3">
                 <span>{{name}}</span>
             </v-col>
-            <v-col>
-                 <v-text-field dark v-model="localValue" class="mt-0 pt-0" hide-details single-line :disabled="disabled"></v-text-field>
+            <v-col :cols="9">
+                 <v-text-field @keydown="handleKeyboard" dark v-model="localValue" dense  :disabled="disabled" :error-messages="errorMessage"></v-text-field>
             </v-col>
         </v-row>
     </div>
@@ -14,10 +14,17 @@
 <script>
     export default {
         name: 'Input',
-        props:['name','value','disabled'],
+        props:['name','value','disabled','errorMessage'],
         data() {
             return {
                 
+            }
+        },
+        methods:{
+            handleKeyboard(event){
+                if(event.key == "Enter"){
+                    this.$emit("Enter");
+                }
             }
         },
         computed:{

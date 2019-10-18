@@ -1,11 +1,11 @@
 <template>
     <div>
-        <v-row align="center">
+        <v-row dense align="center">
             <v-col :cols="3">
                 <span>{{name}}</span>
             </v-col>
             <v-col :cols="9">
-                <v-select v-model="localValue" :items="indexList" item-text="name" item-value="index" dark color="#4baf62" item-color="green" dense :disabled="disabled"></v-select>
+                <v-select v-model="localValue" :items="indexList" item-text="name" item-value="index" dark color="#4baf62" item-color="green"  :disabled="disabled"></v-select>
             </v-col>
         </v-row>
     </div>

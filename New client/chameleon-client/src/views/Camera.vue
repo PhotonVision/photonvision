@@ -4,44 +4,55 @@
             <v-row align="center">
                 <v-col :cols="3" class="colsClass">
                     <div style="padding-left:30px">
-                        <CVselect name="Camera" v-model="currentCameraIndex" :list="cameraList"></CVselect>
+                        <CVselect v-if="isCameraNameEdit == false" name="Camera" v-model="currentCameraIndex" :list="cameraList"></CVselect>
+                        <CVinput v-else name="Camera" v-model="newCameraName" @Enter="saveCameraNameChange" :errorMessage="checkCameraName"></CVinput>
                     </div>
                 </v-col>
                 <v-col :cols="1">
-                    <CVicon color="#c5c5c5" hover text="edit" @click="test" tooltip="Edit camera name"></CVicon>
+                    <CVicon color="#c5c5c5" v-if="isCameraNameEdit == false" hover text="edit" @click="toCameraNameChange" tooltip="Edit camera name"></CVicon>
+                    <div v-else>
+                        <CVicon color="#c5c5c5" style="display: inline-block;"  hover text="save" @click="saveCameraNameChange" tooltip="Save Camera Name"></CVicon>
+                        <CVicon color="error" style="display: inline-block;"  hover text="close" @click="discardCameraNameChange" tooltip="Discard Changes"></CVicon>
+                    </div>
                 </v-col>
                 <v-col :cols="3" class="colsClass">
-                    <CVselect name="Pipeline" :list="pipelineList" v-model="currentPipelineIndex" @input="handleInput('currentPipeline',currentPipelineIndex)"></CVselect>
+                    <CVselect v-if="isPipelineEdit == false" name="Pipeline" :list="pipelineList" v-model="currentPipelineIndex" @input="handleInput('currentPipeline',currentPipelineIndex)"></CVselect>
+                    <CVinput v-else name="Pipeline" v-model="newPipelineName" @Enter="savePipelineNameChange"></CVinput>
                 </v-col>
                  <v-col :cols="1" class="colsClass">
-                        <v-menu offset-y dark auto>
+                        <v-menu v-if="isPipelineEdit == false" offset-y dark auto>
                             <template v-slot:activator="{ on }">
-                                <v-icon color="white" @click="test" v-on="on">menu</v-icon>
+                                <v-icon color="white" v-on="on">menu</v-icon>
                             </template>
                             <v-list dense>
-                                <v-list-item @click="test">
+                                <v-list-item @click="toPipelineNameChange">
                                     <v-list-item-title>
                                         <CVicon color="#c5c5c5" :right="true" text="edit" tooltip="Edit pipeline name"></CVicon>
                                     </v-list-item-title>
                                 </v-list-item>
-                                      <v-list-item @click="test">
+                                      <v-list-item @click="handleInput('command','addNewPipeline')">
                                     <v-list-item-title>
                                         <CVicon color="#c5c5c5" :right="true" text="add" tooltip="Add new pipeline"></CVicon>
                                     </v-list-item-title>
                                 </v-list-item>
-                                <v-list-item @click="test">
+                                <v-list-item @click="handleInput('command','deleteCurrentPipeline')">
                                     <v-list-item-title>
                                         <CVicon color="red darken-2" :right="true" text="delete" tooltip="Delete pipeline"></CVicon>
                                     </v-list-item-title>
                                 </v-list-item>
-                                <v-list-item @click="test">
+                                <v-list-item @click="duplicateDialog = true">
                                     <v-list-item-title>
                                         <CVicon color="#c5c5c5" :right="true" text="mdi-content-copy" tooltip="Duplicate pipeline"></CVicon>
                                     </v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
+                        <div v-else>
+                            <CVicon color="#c5c5c5" style="display: inline-block;"  hover text="save" @click="savePipelineNameChange" tooltip="Save Pipeline Name"></CVicon>
+                            <CVicon color="error" style="display: inline-block;"  hover text="close" @click="discardPipelineNameChange" tooltip="Discard Changes"></CVicon>
+                        </div>
                 </v-col>
+                
             </v-row>
         </div>
         <v-row>
@@ -70,6 +81,24 @@
                 </div>
             </v-col>
       </v-row>
+      <!-- pipeline duplicate dialog -->
+      <v-dialog dark v-model="duplicateDialog" width="500" height="357" >
+        <v-card dark>
+            <v-card-title class="headline" primary-title>Duplicate Pipeline</v-card-title>
+                <v-card-text>
+                    <CVselect name="Pipeline" :list="pipelineList" v-model="pipelineDuplicate.pipeline" @input="handleInput('currentPipeline',currentPipelineIndex)"></CVselect>
+                    <v-checkbox  dark :label="'To another camera'" v-model="pipelineDuplicate.anotherCamera"></v-checkbox>
+                    <CVselect v-if="pipelineDuplicate.anotherCamera === true" name="Camera" v-model="pipelineDuplicate.camera" :list="cameraList"></CVselect>
+                </v-card-text>
+                <v-divider>
+                </v-divider>
+                <v-card-actions>
+                    <v-spacer></v-spacer>
+                    <v-btn color="#4baf62" text @click="duplicatePipeline">Duplicate</v-btn>
+                    <v-btn color="error" text @click="closeDuplicateDialog">Discard</v-btn>
+                </v-card-actions>
+        </v-card>
+    </v-dialog>
     </div>
 </template>
 
@@ -80,6 +109,7 @@ import ContoursTab from './CameraViewes/ContoursTab'
 import OutputTab from './CameraViewes/OutputTab'
 import CVselect from '../components/cv-select'
 import CVicon from '../components/cv-icon'
+import CVinput from '../components/cv-input'
     export default {
         name: 'CameraTab',
         components:{
@@ -88,19 +118,74 @@ import CVicon from '../components/cv-icon'
             ContoursTab,
             OutputTab,
             CVselect,
-            CVicon
+            CVicon,
+            CVinput
         },
         methods:{
             test(value){
                 console.log(value)
+            },
+            toCameraNameChange(){
+                this.newCameraName = this.cameraList[this.currentCameraIndex];
+                this.isCameraNameEdit = true;
+            },
+            saveCameraNameChange(){
+                if(this.cameraNameError === ""){
+                    this.handleInput("changeCameraName",this.newCameraName);
+                    this.discardCameraNameChange();   
+                }
+            },
+            discardCameraNameChange(){
+                this.isCameraNameEdit = false;
+                this.newCameraName = "";
+            },
+            toPipelineNameChange(){
+                this.newPipelineName = this.pipelineList[this.currentPipelineIndex];
+                this.isPipelineEdit = true;
+            },
+            savePipelineNameChange(){
+                this.handleInput("changePipelineName",this.newPipelineName);
+                this.discardPipelineNameChange();
+            },
+            discardPipelineNameChange(){
+                this.isPipelineEdit = false;
+                this.newPipelineName = "";
+            },
+            duplicatePipeline(){
+                this.handleInput("dupicatePipeline",this.pipelineDuplicate);
+                this.closeDuplicateDialog();
+            },
+            closeDuplicateDialog(){
+                this.duplicateDialog = false;
+                this.pipelineDuplicate = {}
             }
         },
         data() {
             return {
                 selectedTab:0,
+                // camera edit variables
+                isCameraNameEdit:false,
+                newCameraName:"",
+                cameraNameError:"",
+                // pipeline edit variables
+                isPipelineEdit:false,
+                newPipelineName:"",
+                duplicateDialog:false,
+                pipelineDuplicate:{},
+
             }
         },
         computed:{
+            checkCameraName(){
+                if(this.newCameraName !== this.cameraList[this.currentCameraIndex]){
+                    for(let cam in this.cameraList){
+                        if(this.newCameraName == this.cameraList[cam]){
+                            return "Camera by that name already Exists"
+                        }
+                    }
+                }
+                return ""
+            },
             isBinaryNumber:{
                 get(){
                     return this.pipeline.isBinary ? 1:0
