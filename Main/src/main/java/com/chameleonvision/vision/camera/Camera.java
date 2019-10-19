@@ -122,17 +122,19 @@ public class Camera {
 				cvSource = cs.putVideo(name, newVideoMode.width, newVideoMode.height);
 			}
 			ServerHandler.sendFullSettings();
-
 		}
 	}
 
-	void addPipeline() {
+	public void addPipeline() {
 		addPipeline(pipelines.size());
 	}
 
 	private void addPipeline(int pipelineNumber) {
 		if (pipelines.containsKey(pipelineNumber)) return;
 		pipelines.put(pipelineNumber, new Pipeline());
+	}
+	public void deleteCurrentPipeline() {
+		pipelines.remove(getCurrentPipelineIndex());
 	}
 
 	public Pipeline getCurrentPipeline() {

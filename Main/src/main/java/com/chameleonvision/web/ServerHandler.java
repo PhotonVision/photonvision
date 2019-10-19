@@ -61,7 +61,17 @@ public class ServerHandler {
                         break;
                     }
                     case "command": {
-                        System.err.println("not implemented");
+                        switch ((String) entry.getValue()){
+                            case "addNewPipeline":
+                                CameraManager.getCurrentCamera().addPipeline();
+                                break;
+                            case "deleteCurrentPipeline":
+                                var cam = CameraManager.getCurrentCamera();
+                                CameraManager.getCurrentCamera().deleteCurrentPipeline();
+                                CameraManager.getCurrentCamera().setCurrentPipelineIndex(cam.getCurrentPipelineIndex() -1);
+                                sendFullSettings();
+                                break;
+                        }
                         // used to define all incoming commands
                         break;
                     }
@@ -99,7 +109,7 @@ public class ServerHandler {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                System.err.println(e.getMessage());
             }
             broadcastMessage(deserialized,context);
         }
