@@ -60,6 +60,15 @@ public class ServerHandler {
                         CameraManager.getCurrentCamera().setCamVideoMode((Integer) camSettings.get("resolution"),true);
                         break;
                     }
+                    case "changeCameraName":{
+                        // needs to be implemented
+                    }
+                    case "changePipelineName":{
+                        // needs to be implemented
+                    }
+                    case "duplicatePipeline":{
+                        // needs to be implemented
+                    }
                     case "command": {
                         switch ((String) entry.getValue()){
                             case "addNewPipeline":

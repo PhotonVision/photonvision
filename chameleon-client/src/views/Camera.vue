@@ -152,7 +152,7 @@ import CVinput from '../components/cv-input'
                 this.newPipelineName = "";
             },
             duplicatePipeline(){
-                this.handleInput("dupicatePipeline",this.pipelineDuplicate);
+                this.handleInput("duplicatePipeline",this.pipelineDuplicate);
                 this.closeDuplicateDialog();
             },
             closeDuplicateDialog(){
