@@ -25,7 +25,8 @@ public class Server {
             ws.onBinaryMessage(ctx -> {
                 handler.onBinaryMessage(ctx);
             });
-            app.start(port);
         });
+
+        app.start(port);
     }
 }

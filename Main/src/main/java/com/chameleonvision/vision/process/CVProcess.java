@@ -18,7 +18,7 @@ public class CVProcess {
 
     private final CameraValues cameraValues;
     private Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
-    private Size blur = new Size(2,2);
+    private Size blur = new Size(2, 2);
     private Mat hsvImage = new Mat();
     private List<MatOfPoint> foundContours = new ArrayList<>();
     private Mat binaryMat = new Mat();
@@ -58,7 +58,7 @@ public class CVProcess {
         for (MatOfPoint Contour : inputContours) {
             try {
                 double contourArea = Imgproc.contourArea(Contour);
-                double AreaRatio = (contourArea / cameraValues.ImageArea)*100;
+                double AreaRatio = (contourArea / cameraValues.ImageArea) * 100;
                 double minArea = (MathHandler.sigmoid(area.get(0)));
                 double maxArea = (MathHandler.sigmoid(area.get(1)));
                 if (AreaRatio < minArea || AreaRatio > maxArea) {
@@ -89,10 +89,12 @@ public class CVProcess {
     private double calcDistance(RotatedRect rect) {
         return FastMath.sqrt(FastMath.pow(cameraValues.CenterX - rect.center.x, 2) + FastMath.pow(cameraValues.CenterY - rect.center.y, 2));
     }
-    private double calcMomentsX(MatOfPoint c){
+
+    private double calcMomentsX(MatOfPoint c) {
         Moments m = Imgproc.moments(c);
-        return (m.get_m10()/m.get_m00());
+        return (m.get_m10() / m.get_m00());
     }
+
     RotatedRect sortTargetsToOne(List<RotatedRect> inputRects, SortMode sortMode) {
         switch (sortMode) {
             case Largest:
@@ -116,37 +118,34 @@ public class CVProcess {
 
     List<RotatedRect> groupTargets(List<MatOfPoint> inputContours, TargetIntersection intersectionPoint, TargetGroup targetGroup) {
         finalCountours.clear();
-        if (!targetGroup.equals(TargetGroup.Single)) {
+        if (targetGroup.equals(TargetGroup.Dual)) {
             inputContours.sort(sortByMomentsX);
             for (var i = 0; i < inputContours.size(); i++) {
                 List<Point> FinalContourList = new ArrayList<>(inputContours.get(i).toList());
-                for (var c = 0; c < targetGroup.ordinal(); c++) {
-                    try {
-                        MatOfPoint firstContour = inputContours.get(i + c);
-                        MatOfPoint secondContour = inputContours.get(i + c + 1);
-                        if (isIntersecting(firstContour, secondContour, intersectionPoint)) {
-                            FinalContourList.addAll(secondContour.toList());
-                        }
-                        else{
-                            FinalContourList.clear();
-                            break;
-                        }
-                        firstContour.release();
-                        secondContour.release();
-                        MatOfPoint2f contour = new MatOfPoint2f();
-                        contour.fromList(FinalContourList);
-                        if (contour.cols() != 0 && contour.rows() != 0) {
-                            RotatedRect rect = Imgproc.minAreaRect(contour);
-                            finalCountours.add(rect);
-                        }
-                    } catch (IndexOutOfBoundsException e) {
+                try {
+                    MatOfPoint firstContour = inputContours.get(i);
+                    MatOfPoint secondContour = inputContours.get(i + 1);
+                    if (isIntersecting(firstContour, secondContour, intersectionPoint)) {
+                        FinalContourList.addAll(secondContour.toList());
+                    } else {
                         FinalContourList.clear();
                         break;
                     }
+                    firstContour.release();
+                    secondContour.release();
+                    MatOfPoint2f contour = new MatOfPoint2f();
+                    contour.fromList(FinalContourList);
+                    if (contour.cols() != 0 && contour.rows() != 0) {
+                        RotatedRect rect = Imgproc.minAreaRect(contour);
+                        finalCountours.add(rect);
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    FinalContourList.clear();
+                    break;
                 }
             }
 
-        } else {
+        } else if (targetGroup.equals(TargetGroup.Single)) {
             for (MatOfPoint inputContour : inputContours) {
                 MatOfPoint2f contour = new MatOfPoint2f();
                 contour.fromArray(inputContour.toArray());
@@ -174,7 +173,7 @@ public class CVProcess {
             double y0A = a.center.y;
             double x0B = b.center.x;
             double y0B = b.center.y;
-            double intersectionX = ((mA * x0A) - y0A - (mB * x0B) + y0B )/ (mA - mB);
+            double intersectionX = ((mA * x0A) - y0A - (mB * x0B) + y0B) / (mA - mB);
             double intersectionY = (mA * (intersectionX - x0A)) + y0A;
             double massX = (x0A + x0B) / 2;
             double massY = (y0A + y0B) / 2;
