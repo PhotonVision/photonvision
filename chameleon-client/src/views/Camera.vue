@@ -157,7 +157,10 @@ import CVinput from '../components/cv-input'
             },
             closeDuplicateDialog(){
                 this.duplicateDialog = false;
-                this.pipelineDuplicate = {}
+                this.pipelineDuplicate = {
+                    pipeline:undefined,
+                    anotherCamera:false,
+                    camera:null}
             }
         },
         data() {
@@ -171,7 +174,11 @@ import CVinput from '../components/cv-input'
                 isPipelineEdit:false,
                 newPipelineName:"",
                 duplicateDialog:false,
-                pipelineDuplicate:{},
+                pipelineDuplicate:{
+                    pipeline:undefined,
+                    anotherCamera:false,
+                    camera:null
+                },
 
             }
         },
