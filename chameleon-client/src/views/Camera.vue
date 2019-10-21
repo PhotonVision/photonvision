@@ -86,7 +86,7 @@
         <v-card dark>
             <v-card-title class="headline" primary-title>Duplicate Pipeline</v-card-title>
                 <v-card-text>
-                    <CVselect name="Pipeline" :list="pipelineList" v-model="pipelineDuplicate.pipeline" @input="handleInput('currentPipeline',currentPipelineIndex)"></CVselect>
+                    <CVselect name="Pipeline" :list="pipelineList" v-model="pipelineDuplicate.pipeline"></CVselect>
                     <v-checkbox  dark :label="'To another camera'" v-model="pipelineDuplicate.anotherCamera"></v-checkbox>
                     <CVselect v-if="pipelineDuplicate.anotherCamera === true" name="Camera" v-model="pipelineDuplicate.camera" :list="cameraList"></CVselect>
                 </v-card-text>
