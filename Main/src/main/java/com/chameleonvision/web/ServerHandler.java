@@ -52,6 +52,7 @@ public class ServerHandler {
                         for (HashMap.Entry<String, Object> e : ((HashMap<String, Object>) entry.getValue()).entrySet()) {
                             setField(SettingsManager.GeneralSettings, e.getKey(), e.getValue());
                         }
+                        SettingsManager.saveSettings();
                         break;
                     }
                     case "cameraSettings": {
@@ -59,6 +60,7 @@ public class ServerHandler {
                         CameraManager.getCurrentCamera().setFOV((Number) camSettings.get("fov"));
                         CameraManager.getCurrentCamera().setStreamDivisor((Integer) camSettings.get("streamDivisor"));
                         CameraManager.getCurrentCamera().setCamVideoMode((Integer) camSettings.get("resolution"), true);
+                        SettingsManager.saveSettings();
                         break;
                     }
                     case "changeCameraName": {
@@ -89,6 +91,7 @@ public class ServerHandler {
                         CameraManager.setCurrentCamera((String) entry.getValue());
                         HashMap<String, Object> tmp = new HashMap<>();
                         tmp.put("pipeline", CameraManager.getCurrentCamera().getCurrentPipeline());
+                        tmp.put("pipelineList", CameraManager.getCurrentCamera().getPipelines().keySet());
                         tmp.put("port", CameraManager.getCurrentCamera().getStreamPort());
                         tmp.put("resolutionList", CameraManager.getResolutionList());
                         broadcastMessage(tmp);

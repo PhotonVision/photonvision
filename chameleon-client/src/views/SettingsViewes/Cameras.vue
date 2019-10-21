@@ -1,8 +1,8 @@
 <template>
     <div>
         <CVselect name="Camera" :list="cameraList" v-model="currentCameraIndex"></CVselect>
-        <CVselect name="Resulotion" v-model="cameraSettings.resolution" :list="resolutionList"></CVselect>
-        <CVselect name="Stream Resulotion" v-model="cameraSettings.streamDivisor"  :list="['1:1','1:2','1:4','1:6']"></CVselect>
+        <CVselect name="Resolution" v-model="cameraSettings.resolution" :list="resolutionList"></CVselect>
+        <CVselect name="Stream Resolution" v-model="cameraSettings.streamDivisor" :list="['1:1','1:2','1:4','1:6']"></CVselect>
         <CVnumberinput name="Diagonal FOV" v-model="cameraSettings.fov" ></CVnumberinput>
         <v-btn style="margin-top:10px" small color="#4baf62" @click="sendCameraSettings">Save Camera Settings</v-btn>
     </div>
