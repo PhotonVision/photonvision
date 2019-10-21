@@ -87,8 +87,8 @@
             <v-card-title class="headline" primary-title>Duplicate Pipeline</v-card-title>
                 <v-card-text>
                     <CVselect name="Pipeline" :list="pipelineList" v-model="pipelineDuplicate.pipeline"></CVselect>
-                    <v-checkbox  dark :label="'To another camera'" v-model="pipelineDuplicate.anotherCamera"></v-checkbox>
-                    <CVselect v-if="pipelineDuplicate.anotherCamera === true" name="Camera" v-model="pipelineDuplicate.camera" :list="cameraList"></CVselect>
+                    <v-checkbox  dark :label="'To another camera'" v-model="anotherCamera"></v-checkbox>
+                    <CVselect v-if="anotherCamera === true" name="Camera" v-model="pipelineDuplicate.camera" :list="cameraList"></CVselect>
                 </v-card-text>
                 <v-divider>
                 </v-divider>
@@ -152,6 +152,9 @@ import CVinput from '../components/cv-input'
                 this.newPipelineName = "";
             },
             duplicatePipeline(){
+                if(!this.anotherCamera){
+                    this.pipelineDuplicate.camera = -1
+                }
                 this.handleInput("duplicatePipeline",this.pipelineDuplicate);
                 this.closeDuplicateDialog();
             },
@@ -159,8 +162,8 @@ import CVinput from '../components/cv-input'
                 this.duplicateDialog = false;
                 this.pipelineDuplicate = {
                     pipeline:undefined,
-                    anotherCamera:false,
-                    camera:null}
+                    camera:-1
+                }
             }
         },
         data() {
@@ -174,10 +177,10 @@ import CVinput from '../components/cv-input'
                 isPipelineEdit:false,
                 newPipelineName:"",
                 duplicateDialog:false,
+                anotherCamera:false,
                 pipelineDuplicate:{
                     pipeline:undefined,
-                    anotherCamera:false,
-                    camera:null
+                    camera:-1
                 },
 
             }
