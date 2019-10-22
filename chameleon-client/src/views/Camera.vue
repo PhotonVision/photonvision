@@ -35,7 +35,7 @@
                                         <CVicon color="#c5c5c5" :right="true" text="add" tooltip="Add new pipeline"></CVicon>
                                     </v-list-item-title>
                                 </v-list-item>
-                                <v-list-item @click="handleInput('command','deleteCurrentPipeline')">
+                                <v-list-item @click="deleteCurrentPipeline">
                                     <v-list-item-title>
                                         <CVicon color="red darken-2" :right="true" text="delete" tooltip="Delete pipeline"></CVicon>
                                     </v-list-item-title>
@@ -56,6 +56,7 @@
             </v-row>
         </div>
         <v-row>
+            <!-- vision tabs -->
             <v-col cols="6" class="colsClass">
                 <v-tabs fixed-tabs background-color="#212121" dark height="48" slider-color="#4baf62" v-model="selectedTab">
                     <v-tab>Input</v-tab>
@@ -64,15 +65,18 @@
                     <v-tab>Output</v-tab>
                 </v-tabs>
                 <div style="padding-left:30px">
+                    <!-- vision component -->
                     <component v-model="pipeline" :is="selectedComponent"></component>
                 </div>
             </v-col>
             <v-col cols="6" class="colsClass">
                 <div>
+                    <!-- camera image tabs -->
                     <v-tabs background-color="#212121" dark height="48" slider-color="#4baf62" centered style="padding-bottom:10px" v-model="isBinaryNumber" @change="handleInput('isBinary',pipeline.isBinary)">
                         <v-tab>Normal</v-tab>
                         <v-tab>Threshold</v-tab>
                     </v-tabs>
+                    <!-- camera image stream -->
                     <div class="videoClass">
                         <img v-if="cameraList.length > 0" :src="steamAdress">
                         <span v-else>No Cameras Are connected</span>
@@ -87,7 +91,7 @@
             <v-card-title class="headline" primary-title>Duplicate Pipeline</v-card-title>
                 <v-card-text>
                     <CVselect name="Pipeline" :list="pipelineList" v-model="pipelineDuplicate.pipeline"></CVselect>
-                    <v-checkbox  dark :label="'To another camera'" v-model="anotherCamera"></v-checkbox>
+                    <v-checkbox v-if="cameraList.length > 1" dark :label="'To another camera'" v-model="anotherCamera"></v-checkbox>
                     <CVselect v-if="anotherCamera === true" name="Camera" v-model="pipelineDuplicate.camera" :list="cameraList"></CVselect>
                 </v-card-text>
                 <v-divider>
@@ -99,6 +103,11 @@
                 </v-card-actions>
         </v-card>
     </v-dialog>
+    <!-- snack bar -->
+    <v-snackbar :timeout="3000" v-model="snackbar" top color="error">
+            <span style="color:#000">Only one pipeline left</span>
+            <v-btn color="black" text @click="snackbar = false">Close</v-btn>
+    </v-snackbar>
     </div>
 </template>
 
@@ -164,6 +173,13 @@ import CVinput from '../components/cv-input'
                     pipeline:undefined,
                     camera:-1
                 }
+            },
+            deleteCurrentPipeline(){
+                if (this.pipelineList.length > 1) {
+                    this.andleInput('command','deleteCurrentPipeline');   
+                } else {
+                    this.snackbar = true;
+                }
             }
         },
         data() {
@@ -182,6 +198,7 @@ import CVinput from '../components/cv-input'
                     pipeline:undefined,
                     camera:-1
                 },
+                snackbar:false
 
             }
         },
