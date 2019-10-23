@@ -1,12 +1,21 @@
 package com.chameleonvision.network;
 
+import com.chameleonvision.settings.NetworkSettings;
+import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.util.ShellExec;
+
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class LinuxNetworking extends SysNetworking {
+
+	private ShellExec shell = new ShellExec(true, true);
 
 	@Override
 	public boolean setDHCP() {

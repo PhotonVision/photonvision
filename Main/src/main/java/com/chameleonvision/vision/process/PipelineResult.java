@@ -2,7 +2,6 @@ package com.chameleonvision.vision.process;
 
 import org.opencv.core.RotatedRect;
 
-@SuppressWarnings("WeakerAccess")
 public class PipelineResult {
     public boolean IsValid = false;
     public double CalibratedX = 0.0;

@@ -101,7 +101,7 @@ public class ShellExec {
      * http://www.javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html?page=4
      */
     @SuppressWarnings("WeakerAccess")
-    private static class StreamGobbler extends Thread {
+    private class StreamGobbler extends Thread {
         private InputStream is;
         private StringBuilder output;
         private volatile boolean completed; // mark volatile to guarantee a thread safety

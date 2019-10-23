@@ -24,6 +24,7 @@ public class Main {
 
     private static final int DEFAULT_PORT = 8888;
 
+    private static int webserverPort = DEFAULT_PORT;
     private static boolean ntServerMode = false;
     private static boolean manageNetwork = true;
     private static boolean ignoreRoot = false;
@@ -42,7 +43,7 @@ public class Main {
         }
     }
 
-    private static final Platform CurrentPlatform = Platform.getCurrentPlatform();
+    public static final Platform CurrentPlatform = Platform.getCurrentPlatform();
 
     private static void handleArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
@@ -126,10 +127,12 @@ public class Main {
 
         // Attempt to load the JNI Libraries
         try {
+            if (CurrentPlatform.equals(Platform.LINUX_ARM64))
             CameraServerJNI.forceLoad();
             CameraServerCvJNI.forceLoad();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to load JNI Libraries!");
+            var errorStr = CurrentPlatform.equals(Platform.UNSUPPORTED) ? "Unsupported platform!" : "Failed to load JNI Libraries!";
+            throw new RuntimeException(errorStr);
         }
 
         if (CameraManager.initializeCameras()) {
@@ -149,7 +152,6 @@ public class Main {
                 }
             }
 
-            int webserverPort = DEFAULT_PORT;
             System.out.printf("Starting Webserver at port %d\n", webserverPort);
             Server.main(webserverPort);
         } else {

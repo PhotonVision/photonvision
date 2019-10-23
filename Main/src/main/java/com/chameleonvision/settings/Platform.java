@@ -45,9 +45,7 @@ public enum Platform {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			while (!shell.isOutputCompleted()) {
-				// ignored
-			}
+			while (!shell.isOutputCompleted()) {}
 			if (shell.getExitCode() == 0) {
 				var out = shell.getOutput();
 				out = out.split("\n")[0];
