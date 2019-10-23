@@ -33,6 +33,7 @@ public class VisionProcess implements Runnable {
     // pipeline process items
     private List<MatOfPoint> foundContours = new ArrayList<>();
     private List<MatOfPoint> filteredContours = new ArrayList<>();
+    private List<MatOfPoint> deSpeckledContours = new ArrayList<>();
     private List<RotatedRect> groupedContours = new ArrayList<>();
     private Mat cameraInputMat = new Mat();
     private Mat hsvThreshMat = new Mat();
@@ -148,7 +149,7 @@ public class VisionProcess implements Runnable {
 
         cvProcess.hsvThreshold(inputImage, hsvThreshMat, hsvLower, hsvUpper, currentPipeline.erode, currentPipeline.dilate);
 
-        if (currentPipeline.isBinary == true) {
+        if (currentPipeline.isBinary) {
             Imgproc.cvtColor(hsvThreshMat, outputImage, Imgproc.COLOR_GRAY2BGR, 3);
         } else {
             inputImage.copyTo(outputImage);
@@ -157,23 +158,26 @@ public class VisionProcess implements Runnable {
         if (foundContours.size() > 0) {
             filteredContours = cvProcess.filterContours(foundContours, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent);
             if (filteredContours.size() > 0) {
-                groupedContours = cvProcess.groupTargets(filteredContours, currentPipeline.targetIntersection, currentPipeline.targetGroup);
-                if (groupedContours.size() > 0) {
-                    var finalRect = cvProcess.sortTargetsToOne(groupedContours, currentPipeline.sortMode);
-//					System.out.printf("Largest Contour Area: %.2f\n", finalRect.size.area());
-                    pipelineResult.RawPoint = finalRect;
-                    pipelineResult.IsValid = true;
-                    if (!currentPipeline.isCalibrated) {
-                        pipelineResult.CalibratedX = camera.getCamVals().CenterX;
-                        pipelineResult.CalibratedY = camera.getCamVals().CenterY;
-                    } else {
-                        pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
-                        pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
+                deSpeckledContours = cvProcess.rejectSpeckles(filteredContours, currentPipeline.speckle.doubleValue());
+                if (deSpeckledContours.size() > 0){
+                    groupedContours = cvProcess.groupTargets(deSpeckledContours, currentPipeline.targetIntersection, currentPipeline.targetGroup);
+                    if (groupedContours.size() > 0) {
+                        var finalRect = cvProcess.sortTargetsToOne(groupedContours, currentPipeline.sortMode);
+    //					System.out.printf("Largest Contour Area: %.2f\n", finalRect.size.area());
+                        pipelineResult.RawPoint = finalRect;
+                        pipelineResult.IsValid = true;
+                        if (!currentPipeline.isCalibrated) {
+                            pipelineResult.CalibratedX = camera.getCamVals().CenterX;
+                            pipelineResult.CalibratedY = camera.getCamVals().CenterY;
+                        } else {
+                            pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
+                            pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
+                        }
+                        pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
+                        pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
+                        pipelineResult.Area = finalRect.size.area();
+                        drawContour(outputImage, finalRect);
                     }
-                    pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
-                    pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
-                    pipelineResult.Area = finalRect.size.area();
-                    drawContour(outputImage, finalRect);
                 }
             }
         }
