@@ -1,5 +1,8 @@
 package com.chameleonvision.network;
 
+import com.chameleonvision.settings.NetworkSettings;
+import com.chameleonvision.settings.SettingsManager;
+
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collections;

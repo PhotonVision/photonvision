@@ -26,7 +26,7 @@ public class Utilities {
     }
 
     public static List<Integer> getDigits(int num) {
-        List<Integer> digits = new ArrayList<>();
+        List<Integer> digits = new ArrayList<Integer>();
         collectDigits(num, digits);
         return digits;
     }
