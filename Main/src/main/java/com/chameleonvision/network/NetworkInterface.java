@@ -1,10 +1,8 @@
 package com.chameleonvision.network;
 
-import com.chameleonvision.settings.GeneralSettings;
-
-import java.net.InetAddress;
 import java.net.InterfaceAddress;
 
+@SuppressWarnings("WeakerAccess")
 public class NetworkInterface {
 	public final String name;
 	public final String displayName;
@@ -43,9 +41,8 @@ public class NetworkInterface {
             }
             // Transform the resulting value in xxx.xxx.xxx.xxx format, like if
             /// it was a standard address...
-            String maskString = ((shiftby >> 24) & 255) + "." + ((shiftby >> 16) & 255) + "." + ((shiftby >> 8) & 255) + "." + (shiftby & 255);
-            // Return the address thus created...
-            return maskString;
+	        // Return the address thus created...
+            return ((shiftby >> 24) & 255) + "." + ((shiftby >> 16) & 255) + "." + ((shiftby >> 8) & 255) + "." + (shiftby & 255);
 //            return InetAddress.getByName(maskString);
         }
         catch(Exception e) {
