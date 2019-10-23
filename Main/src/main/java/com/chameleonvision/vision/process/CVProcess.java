@@ -24,6 +24,7 @@ public class CVProcess {
     private Mat binaryMat = new Mat();
     private List<MatOfPoint> filteredContours = new ArrayList<>();
     private Comparator<RotatedRect> sortByCentermostComparator = Comparator.comparingDouble(this::calcDistance);
+    private List<MatOfPoint> speckleRejectedContours = new ArrayList<>();
     private Comparator<MatOfPoint> sortByMomentsX = Comparator.comparingDouble(this::calcMomentsX);
     private List<RotatedRect> finalCountours = new ArrayList<>();
     private MatOfPoint2f intersectMatA = new MatOfPoint2f();
@@ -84,6 +85,20 @@ public class CVProcess {
             }
         }
         return filteredContours;
+    }
+
+    List<MatOfPoint> rejectSpeckles(List<MatOfPoint> inputContours, Double minimumPercentOfAverage) {
+        double averageArea = 0.0;
+        for(MatOfPoint c : inputContours) {
+            averageArea += Imgproc.contourArea(c);
+        }
+        averageArea /= inputContours.size();
+        var minimumAllowableArea = minimumPercentOfAverage / 100.0 * averageArea;
+        speckleRejectedContours.clear();
+        for(MatOfPoint c : inputContours) {
+            if(Imgproc.contourArea(c) >= minimumAllowableArea) speckleRejectedContours.add(c);
+        }
+        return speckleRejectedContours;
     }
 
     private double calcDistance(RotatedRect rect) {
