@@ -64,23 +64,36 @@ public class ServerHandler {
                         break;
                     }
                     case "changeCameraName": {
-                        // needs to be implemented
+                        CameraManager.getCurrentCamera().setNickname((String) entry.getValue());
+                        break;
                     }
                     case "changePipelineName": {
-                        // needs to be implemented
+                        CameraManager.getCurrentPipeline().nickname = (String) entry.getValue();
+                        break;
                     }
                     case "duplicatePipeline": {
-                        // needs to be implemented
+                        HashMap pipelineVals = (HashMap) entry.getValue();
+                        int pipelineIndex = (int) pipelineVals.get("pipeline");
+                        int cameraIndex = (int) pipelineVals.get("camera");
+
+                        Pipeline origPipeline = CameraManager.getCurrentCamera().getPipelineByIndex(pipelineIndex);
+
+                        if (cameraIndex != -1) {
+                            CameraManager.getCameraByIndex(cameraIndex).addPipeline(origPipeline);
+                        } else {
+                            CameraManager.getCurrentCamera().addPipeline(origPipeline);
+                        }
+                        break;
                     }
                     case "command": {
+                        var cam = CameraManager.getCurrentCamera();
                         switch ((String) entry.getValue()) {
                             case "addNewPipeline":
-                                CameraManager.getCurrentCamera().addPipeline();
+                                cam.addPipeline();
                                 break;
                             case "deleteCurrentPipeline":
-                                var cam = CameraManager.getCurrentCamera();
-                                CameraManager.getCurrentCamera().deleteCurrentPipeline();
-                                CameraManager.getCurrentCamera().setCurrentPipelineIndex(cam.getCurrentPipelineIndex() - 1);
+                                cam.deleteCurrentPipeline();
+                                cam.setCurrentPipelineIndex(cam.getCurrentPipelineIndex() - 1);
                                 sendFullSettings();
                                 break;
                         }
@@ -89,11 +102,12 @@ public class ServerHandler {
                     }
                     case "currentCamera": {
                         CameraManager.setCurrentCamera((String) entry.getValue());
+                        var cam = CameraManager.getCurrentCamera();
                         HashMap<String, Object> tmp = new HashMap<>();
-                        tmp.put("pipeline", CameraManager.getCurrentCamera().getCurrentPipeline());
-                        tmp.put("pipelineList", CameraManager.getCurrentCamera().getPipelines().keySet());
-                        tmp.put("port", CameraManager.getCurrentCamera().getStreamPort());
-                        tmp.put("resolutionList", CameraManager.getResolutionList());
+                        tmp.put("pipeline", cam.getCurrentPipeline());
+                        tmp.put("pipelineList", cam.getPipelines().keySet());
+                        tmp.put("port", cam.getStreamPort());
+                        tmp.put("resolutionList", cam.getResolutionList());
                         broadcastMessage(tmp);
                         break;
                     }
@@ -212,7 +226,7 @@ public class ServerHandler {
             var currentCamera = CameraManager.getCurrentCamera();
             fullSettings.put("pipeline", getOrdinalPipeline());
             fullSettings.put("pipelineList", currentCamera.getPipelines().keySet());
-            fullSettings.put("resolutionList", CameraManager.getResolutionList());
+            fullSettings.put("resolutionList", currentCamera.getResolutionList());
             fullSettings.put("port", currentCamera.getStreamPort());
         } catch (CameraException | IllegalAccessException e) {
             System.err.println("No camera found!");

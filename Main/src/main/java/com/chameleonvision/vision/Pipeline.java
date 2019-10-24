@@ -23,4 +23,5 @@ public class Pipeline {
 	public double m = 1;
 	public double b = 0;
 	public boolean isCalibrated = false;
+    public String nickname;
 }

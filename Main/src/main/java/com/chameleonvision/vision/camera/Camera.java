@@ -1,6 +1,8 @@
 package com.chameleonvision.vision.camera;
 
+import com.chameleonvision.Main;
 import com.chameleonvision.settings.Platform;
+import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.*;
@@ -9,6 +11,8 @@ import org.opencv.core.Mat;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class Camera {
@@ -19,9 +23,12 @@ public class Camera {
     private static final int MINIMUM_WIDTH = 320;
     private static final int MINIMUM_HEIGHT = 200;
     private static final int MAX_INIT_MS = 1500;
+    private static final List<VideoMode.PixelFormat> ALLOWED_PIXEL_FORMATS = Arrays.asList(VideoMode.PixelFormat.kYUYV, VideoMode.PixelFormat.kMJPEG);
 
     public final String name;
     public final String path;
+
+    private String nickname;
 
     private final UsbCamera UsbCam;
     private final VideoMode[] availableVideoModes;
@@ -64,7 +71,14 @@ public class Camera {
     public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor) {
         FOV = fov;
         name = cameraName;
-        path = usbCamInfo.path;
+
+        if (Platform.getCurrentPlatform().isWindows()) {
+            path = usbCamInfo.path;
+        } else {
+            var truePath = Arrays.stream(usbCamInfo.otherPaths).filter(x -> x.contains("/dev/v4l/by-path")).findFirst();
+            path = truePath.isPresent() ? truePath.toString() : null;
+        }
+
         streamDivisor = divisor;
         UsbCam = new UsbCamera(name, path);
 
@@ -83,7 +97,8 @@ public class Camera {
             System.out.printf("Camera initialized in %.2fms\n", initTimeMs);
         }
         var trueVideoModes = UsbCam.enumerateVideoModes();
-        availableVideoModes = Arrays.stream(trueVideoModes).filter(v -> v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT).toArray(VideoMode[]::new);
+        availableVideoModes = Arrays.stream(trueVideoModes).filter(v ->
+                v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT && ALLOWED_PIXEL_FORMATS.contains(v.pixelFormat)).toArray(VideoMode[]::new);
         if (availableVideoModes.length == 0) {
             System.err.println("Camera not supported!");
             throw new RuntimeException(new CameraException(CameraException.CameraExceptionType.BAD_CAMERA));
@@ -130,9 +145,19 @@ public class Camera {
         addPipeline(pipelines.size());
     }
 
+    public void addPipeline(Pipeline pipeline) {
+        int newPipelineIndex = pipelines.size();
+        addPipeline(newPipelineIndex, pipeline);
+    }
+
     private void addPipeline(int pipelineNumber) {
         if (pipelines.containsKey(pipelineNumber)) return;
         pipelines.put(pipelineNumber, new Pipeline());
+    }
+
+    private void addPipeline(int pipelineIndex, Pipeline pipeline) {
+        if (pipelines.containsKey(pipelineIndex)) return;
+        pipelines.put(pipelineIndex, pipeline);
     }
 
     public void deleteCurrentPipeline() {
@@ -140,7 +165,11 @@ public class Camera {
     }
 
     public Pipeline getCurrentPipeline() {
-        return pipelines.get(currentPipelineIndex);
+        return getPipelineByIndex(currentPipelineIndex);
+    }
+
+    public Pipeline getPipelineByIndex(int pipelineIndex) {
+        return pipelines.get(pipelineIndex);
     }
 
     public int getCurrentPipelineIndex() {
@@ -210,5 +239,19 @@ public class Camera {
         synchronized (cvSourceLock) {
             cvSource.putFrame(image);
         }
+    }
+
+    public List<String> getResolutionList() {
+        return Arrays.stream(availableVideoModes)
+                .map(res -> String.format("%sx%s@%sFPS, %s", res.width, res.height, res.fps, res.pixelFormat.toString()))
+                .collect(Collectors.toList());
+    }
+
+    public void setNickname(String newNickname) {
+        nickname = newNickname;
+    }
+
+    public String getNickname() {
+        return nickname == null ? name : nickname;
     }
 }

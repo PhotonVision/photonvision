@@ -16,9 +16,9 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 		var jsonObj = jsonElement.getAsJsonObject();
 		var camFOV = jsonObj.get("FOV").getAsDouble();
 		var camName = jsonObj.get("name").getAsString();
+		var camNickname = jsonObj.get("nickname").getAsString();
 		var videoModeIndex = jsonObj.get("resolution").getAsInt();
 		var divisor = StreamDivisor.values()[jsonObj.get("streamDivisor").getAsInt()];
-
 
 		var pipelines = jsonObj.get("pipelines");
 		HashMap<Integer, Pipeline> actualPipelines = new HashMap<>();
@@ -31,6 +31,8 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 			e.printStackTrace();
 		}
 
-		return actualPipelines != null ? new Camera(camName, camFOV, actualPipelines, videoModeIndex,divisor) : new Camera(camName, camFOV, videoModeIndex, divisor);
+		var newCamera = actualPipelines != null ? new Camera(camName, camFOV, actualPipelines, videoModeIndex, divisor) : new Camera(camName, camFOV, videoModeIndex, divisor);
+		newCamera.setNickname(camNickname != null ? camNickname : "");
+		return newCamera;
 	}
 }
