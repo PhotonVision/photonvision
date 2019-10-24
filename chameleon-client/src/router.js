@@ -11,15 +11,15 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect:'/Vision'
+      redirect:'/vision'
     },
     {
-      path: '/Vision',
+      path: '/vision',
       name: 'Vision',
       component: lazyLoad('Camera')
     },
     {
-      path: '/Settings',
+      path: '/settings',
       name: 'Settings',
       component: lazyLoad('Settings')
     }

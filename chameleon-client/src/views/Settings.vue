@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-row align="center">
+        <v-row>
             <v-col cols="6" class="colsClass">
                 <v-tabs fixed-tabs background-color="#212121" dark height="50" slider-color="#4baf62" v-model="selectedTab">
                     <v-tab to="">General</v-tab>
@@ -57,6 +57,7 @@ import Cameras from './SettingsViewes/Cameras'
         text-align: center;
     }
     .videoClass img{
+        padding-top: 10px;
         height: auto !important;
         width: 75%;
         vertical-align: middle;

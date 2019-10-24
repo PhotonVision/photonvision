@@ -6,8 +6,8 @@
       <div class="flex-grow-1"></div>
       <v-toolbar-items>
       <v-tabs dark height="48" slider-color="#4baf62">
-        <v-tab to="Vision">Vision</v-tab>
-        <v-tab to="Settings">Settings</v-tab>
+        <v-tab to="vision">Vision</v-tab>
+        <v-tab to="settings">Settings</v-tab>
     </v-tabs>
       </v-toolbar-items>
     </v-app-bar>
