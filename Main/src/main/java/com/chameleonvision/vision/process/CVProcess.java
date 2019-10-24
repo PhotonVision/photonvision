@@ -18,7 +18,7 @@ public class CVProcess {
 
     private final CameraValues cameraValues;
     private Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
-    private Size blur = new Size(2, 2);
+    private Size blur = new Size(3, 3);
     private Mat hsvImage = new Mat();
     private List<MatOfPoint> foundContours = new ArrayList<>();
     private Mat binaryMat = new Mat();
@@ -86,16 +86,17 @@ public class CVProcess {
         }
         return filteredContours;
     }
+
     List<MatOfPoint> rejectSpeckles(List<MatOfPoint> inputContours, Double minimumPercentOfAverage) {
         double averageArea = 0.0;
-        for(MatOfPoint c : inputContours) {
+        for (MatOfPoint c : inputContours) {
             averageArea += Imgproc.contourArea(c);
         }
         averageArea /= inputContours.size();
         var minimumAllowableArea = minimumPercentOfAverage / 100.0 * averageArea;
         speckleRejectedContours.clear();
-        for(MatOfPoint c : inputContours) {
-            if(Imgproc.contourArea(c) >= minimumAllowableArea) speckleRejectedContours.add(c);
+        for (MatOfPoint c : inputContours) {
+            if (Imgproc.contourArea(c) >= minimumAllowableArea) speckleRejectedContours.add(c);
         }
         return speckleRejectedContours;
     }
@@ -133,8 +134,9 @@ public class CVProcess {
 
     List<RotatedRect> groupTargets(List<MatOfPoint> inputContours, TargetIntersection intersectionPoint, TargetGroup targetGroup) {
         finalCountours.clear();
+        inputContours.sort(sortByMomentsX);
+        Collections.reverse(inputContours);
         if (targetGroup.equals(TargetGroup.Dual)) {
-//            inputContours.sort(sortByMomentsX);
             for (var i = 0; i < inputContours.size(); i++) {
                 List<Point> FinalContourList = new ArrayList<>(inputContours.get(i).toList());
                 try {
@@ -144,7 +146,7 @@ public class CVProcess {
                         FinalContourList.addAll(secondContour.toList());
                     } else {
                         FinalContourList.clear();
-                        break;
+                        continue;
                     }
                     firstContour.release();
                     secondContour.release();
@@ -156,7 +158,6 @@ public class CVProcess {
                     }
                 } catch (IndexOutOfBoundsException e) {
                     FinalContourList.clear();
-                    break;
                 }
             }
 
@@ -195,18 +196,24 @@ public class CVProcess {
             switch (intersectionPoint) {
                 case Up: {
                     if (intersectionY < massY) {
-                        return true;
+                        if (mA > 0 && mB < 0) {
+                            return true;
+                        }
                     }
                     break;
                 }
                 case Down: {
                     if (intersectionY > massY) {
-                        return true;
+                        if (mA < 0 && mB > 0) {
+                            return true;
+                        }
                     }
+
                     break;
                 }
                 case Left: {
                     if (intersectionX < massX) {
+
                         return true;
                     }
                     break;
