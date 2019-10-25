@@ -118,6 +118,10 @@ public class CameraManager {
 		SettingsManager.GeneralSettings.currentCamera = cameraName;
 		SettingsManager.updateCameraSetting(cameraName, getCurrentCamera().getCurrentPipelineIndex());
 	}
+	public static void setCurrentCamera(int cameraIndex) throws CameraException {
+		List<String> s =   new ArrayList<String>(AllCamerasByName.keySet());
+		setCurrentCamera(s.get(cameraIndex));
+	}
 
 	public static Pipeline getCurrentPipeline() throws CameraException {
 		return getCurrentCamera().getCurrentPipeline();

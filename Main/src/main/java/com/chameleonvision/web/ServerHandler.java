@@ -111,7 +111,7 @@ public class ServerHandler {
                         break;
                     }
                     case "currentCamera": {
-                        CameraManager.setCurrentCamera((String) entry.getValue());
+                        CameraManager.setCurrentCamera((Integer) entry.getValue());
                         sendFullSettings();
                         break;
                     }
