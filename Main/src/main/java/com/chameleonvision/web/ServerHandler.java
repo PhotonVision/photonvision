@@ -65,6 +65,7 @@ public class ServerHandler {
                     }
                     case "changeCameraName": {
                         CameraManager.getCurrentCamera().setNickname((String) entry.getValue());
+                        sendFullSettings();
                         break;
                     }
                     case "changePipelineName": {

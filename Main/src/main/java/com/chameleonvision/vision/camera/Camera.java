@@ -192,6 +192,10 @@ public class Camera {
     public HashMap<Integer, Pipeline> getPipelines() {
         return pipelines;
     }
+    public List<String> getPipelinesNickname(){
+        var pipelines = getPipelines();
+        return pipelines.values().stream().map(pipeline -> pipeline.nickname).collect(Collectors.toList());
+    }
 
     public CamVideoMode getVideoMode() {
         return camVideoMode;

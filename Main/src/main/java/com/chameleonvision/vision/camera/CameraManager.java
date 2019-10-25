@@ -45,6 +45,10 @@ public class CameraManager {
 	public static HashMap<String, Camera> getAllCamerasByName() {
 		return AllCamerasByName;
 	}
+	public static List<String> getAllCameraByNickname(){
+		var cameras = getAllCamerasByName();
+		return cameras.values().stream().map(Camera::getNickname).collect(Collectors.toList());
+	}
 
 	public static boolean initializeCameras() {
 		if (AllUsbCameraInfosByName.size() == 0) return false;
