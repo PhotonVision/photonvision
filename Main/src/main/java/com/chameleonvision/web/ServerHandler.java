@@ -70,6 +70,7 @@ public class ServerHandler {
                     }
                     case "changePipelineName": {
                         CameraManager.getCurrentPipeline().nickname = (String) entry.getValue();
+                        sendFullSettings();
                         break;
                     }
                     case "duplicatePipeline": {
@@ -95,7 +96,7 @@ public class ServerHandler {
                                 break;
                             case "deleteCurrentPipeline":
                                 int currentIndex = cam.getCurrentPipelineIndex();
-                                int nextIndex = 0;
+                                int nextIndex;
                                 if (currentIndex == cam.getPipelines().size() - 1){
                                     nextIndex = currentIndex - 1;
                                 } else {
@@ -111,13 +112,7 @@ public class ServerHandler {
                     }
                     case "currentCamera": {
                         CameraManager.setCurrentCamera((String) entry.getValue());
-                        var cam = CameraManager.getCurrentCamera();
-                        HashMap<String, Object> tmp = new HashMap<>();
-                        tmp.put("pipeline", cam.getCurrentPipeline());
-                        tmp.put("pipelineList", cam.getPipelinesNickname());
-                        tmp.put("port", cam.getStreamPort());
-                        tmp.put("resolutionList", cam.getResolutionList());
-                        broadcastMessage(tmp);
+                        sendFullSettings();
                         break;
                     }
                     case "currentPipeline": {
@@ -244,6 +239,8 @@ public class ServerHandler {
             fullSettings.put("pipelineList", currentCamera.getPipelinesNickname());
             fullSettings.put("resolutionList", currentCamera.getResolutionList());
             fullSettings.put("port", currentCamera.getStreamPort());
+            fullSettings.put("currentPipelineIndex",CameraManager.getCurrentCamera().getCurrentPipelineIndex());
+            fullSettings.put("currentCameraIndex", CameraManager.getCurrentCameraIndex());
         } catch (CameraException | IllegalAccessException e) {
             System.err.println("No camera found!");
         }

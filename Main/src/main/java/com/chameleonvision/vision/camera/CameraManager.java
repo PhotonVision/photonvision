@@ -1,5 +1,6 @@
 package com.chameleonvision.vision.camera;
 
+import com.chameleonvision.settings.GeneralSettings;
 import com.chameleonvision.util.FileHelper;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
@@ -13,10 +14,7 @@ import org.opencv.videoio.VideoCapture;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CameraManager {
@@ -102,6 +100,16 @@ public class CameraManager {
 		var curCam = AllCamerasByName.get(SettingsManager.GeneralSettings.currentCamera);
 		if (curCam == null) throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
 		return curCam;
+	}
+	public static Integer getCurrentCameraIndex() throws CameraException {
+		if (AllCamerasByName.size() == 0) throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
+		List<String> arr = new ArrayList<>(AllCamerasByName.keySet());
+		for (var i = 0; i < AllCamerasByName.size(); i++){
+			if (SettingsManager.GeneralSettings.currentCamera.equals(arr.get(i))){
+				return i;
+			}
+		}
+		return null;
 	}
 
 	public static void setCurrentCamera(String cameraName) throws CameraException {
