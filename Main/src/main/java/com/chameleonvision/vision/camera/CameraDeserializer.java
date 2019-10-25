@@ -2,13 +2,17 @@ package com.chameleonvision.vision.camera;
 
 import com.chameleonvision.vision.Pipeline;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.MapType;
+import com.fasterxml.jackson.databind.type.ArrayType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class CameraDeserializer implements JsonDeserializer<Camera> {
 	@Override
@@ -21,12 +25,12 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 		var divisor = StreamDivisor.values()[jsonObj.get("streamDivisor").getAsInt()];
 
 		var pipelines = jsonObj.get("pipelines");
-		HashMap<Integer, Pipeline> actualPipelines = new HashMap<>();
+		List<Pipeline> actualPipelines = new ArrayList<>();
 		ObjectMapper mapper = new ObjectMapper();
 		TypeFactory typeFactory = mapper.getTypeFactory();
-		MapType mapType = typeFactory.constructMapType(HashMap.class, Integer.class, Pipeline.class);
+		JavaType arrayType = typeFactory.constructCollectionType(List.class, Pipeline.class);
 		try {
-			actualPipelines = mapper.readValue(pipelines.toString(), mapType);
+			actualPipelines = mapper.readValue(pipelines.toString(), arrayType);
 		} catch (JsonProcessingException e) {
 			e.printStackTrace();
 		}

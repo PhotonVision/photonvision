@@ -116,8 +116,9 @@ public class CameraManager {
 	}
 
 	public static void setCurrentPipeline(int pipelineNumber) throws CameraException {
-		if (!getCurrentCamera().getPipelines().containsKey(pipelineNumber))
+		if (pipelineNumber >= getCurrentCamera().getPipelines().size()){
 			throw new CameraException(CameraException.CameraExceptionType.BAD_PIPELINE);
+		}
 		getCurrentCamera().setCurrentPipelineIndex(pipelineNumber);
 		SettingsManager.updatePipelineSetting(pipelineNumber);
 	}

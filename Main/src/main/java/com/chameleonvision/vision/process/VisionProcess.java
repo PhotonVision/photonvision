@@ -78,8 +78,9 @@ public class VisionProcess implements Runnable {
 
     private void pipelineListener(EntryNotification entryNotification) {
         var ntPipelineIndex = (int) entryNotification.value.getDouble();
-        if (camera.getPipelines().containsKey(ntPipelineIndex)) {
-//            camera.setEntryNotification.value.getString());
+        if (ntPipelineIndex >= camera.getPipelines().size()){
+            ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
+        } else{
             var pipeline = camera.getCurrentPipeline();
             camera.setCurrentPipelineIndex(ntPipelineIndex);
             try {
@@ -96,8 +97,6 @@ public class VisionProcess implements Runnable {
                 ServerHandler.sendFullSettings();
 
             }
-        } else {
-            ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
         }
     }
 

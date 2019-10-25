@@ -9,6 +9,8 @@ import edu.wpi.cscore.*;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.opencv.core.Mat;
 
+import java.nio.channels.Pipe;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -42,7 +44,7 @@ public class Camera {
     private CameraValues camVals;
     private CamVideoMode camVideoMode;
     private int currentPipelineIndex;
-    private HashMap<Integer, Pipeline> pipelines;
+    private List<Pipeline> pipelines;
 
     public Camera(String cameraName) {
         this(cameraName, DEFAULT_FOV);
@@ -57,18 +59,16 @@ public class Camera {
     }
 
     public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, StreamDivisor divisor) {
-        this(cameraName, usbCamInfo, fov, new HashMap<>(), 0, divisor);
+        this(cameraName, usbCamInfo, fov, new ArrayList<>(), 0, divisor);
     }
 
-    public Camera(String cameraName, double fov, int videoModeIndex, StreamDivisor divisor) {
-        this(cameraName, fov, new HashMap<>(), videoModeIndex, divisor);
-    }
-
-    public Camera(String cameraName, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor) {
+    public Camera(String cameraName, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor) {
         this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex, divisor);
     }
-
-    public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, HashMap<Integer, Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor) {
+    public Camera(String cameraName, double fov, int videoModeIndex, StreamDivisor divisor) {
+        this(cameraName, fov, new ArrayList<>(), videoModeIndex, divisor);
+    }
+    public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor) {
         FOV = fov;
         name = cameraName;
 
@@ -140,28 +140,20 @@ public class Camera {
             ServerHandler.sendFullSettings();
         }
     }
-
     public void addPipeline() {
-        addPipeline(pipelines.size());
+        Pipeline p = new Pipeline();
+        p.nickname = "New pipeline " + pipelines.size();
+        addPipeline(p);
+    }
+    public void addPipeline(Pipeline p){
+        this.pipelines.add(p);
     }
 
-    public void addPipeline(Pipeline pipeline) {
-        int newPipelineIndex = pipelines.size();
-        addPipeline(newPipelineIndex, pipeline);
+    public void deletePipeline(int index) {
+        pipelines.remove(index);
     }
-
-    private void addPipeline(int pipelineNumber) {
-        if (pipelines.containsKey(pipelineNumber)) return;
-        pipelines.put(pipelineNumber, new Pipeline());
-    }
-
-    private void addPipeline(int pipelineIndex, Pipeline pipeline) {
-        if (pipelines.containsKey(pipelineIndex)) return;
-        pipelines.put(pipelineIndex, pipeline);
-    }
-
-    public void deleteCurrentPipeline() {
-        pipelines.remove(getCurrentPipelineIndex());
+    public void deletePipeline() {
+        deletePipeline(getCurrentPipelineIndex());
     }
 
     public Pipeline getCurrentPipeline() {
@@ -189,12 +181,12 @@ public class Camera {
         streamDivisor = StreamDivisor.values()[divisor];
     }
 
-    public HashMap<Integer, Pipeline> getPipelines() {
+    public List<Pipeline> getPipelines() {
         return pipelines;
     }
     public List<String> getPipelinesNickname(){
         var pipelines = getPipelines();
-        return pipelines.values().stream().map(pipeline -> pipeline.nickname).collect(Collectors.toList());
+        return pipelines.stream().map(pipeline -> pipeline.nickname).collect(Collectors.toList());
     }
 
     public CamVideoMode getVideoMode() {

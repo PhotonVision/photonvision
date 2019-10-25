@@ -40,7 +40,7 @@
                                         <CVicon color="red darken-2" :right="true" text="delete" tooltip="Delete pipeline"></CVicon>
                                     </v-list-item-title>
                                 </v-list-item>
-                                <v-list-item @click="duplicateDialog = true">
+                                <v-list-item @click="openDuplicateDialog">
                                     <v-list-item-title>
                                         <CVicon color="#c5c5c5" :right="true" text="mdi-content-copy" tooltip="Duplicate pipeline"></CVicon>
                                     </v-list-item-title>
@@ -99,13 +99,13 @@
                 <v-card-actions>
                     <v-spacer></v-spacer>
                     <v-btn color="#4baf62" text @click="duplicatePipeline">Duplicate</v-btn>
-                    <v-btn color="error" text @click="closeDuplicateDialog">Discard</v-btn>
+                    <v-btn color="error" text @click="closeDuplicateDialog">Cancels</v-btn>
                 </v-card-actions>
         </v-card>
     </v-dialog>
     <!-- snack bar -->
     <v-snackbar :timeout="3000" v-model="snackbar" top color="error">
-            <span style="color:#000">Only one pipeline left</span>
+            <span style="color:#000">Can not remove the only pipeline!</span>
             <v-btn color="black" text @click="snackbar = false">Close</v-btn>
     </v-snackbar>
     </div>
@@ -167,6 +167,13 @@ import CVinput from '../components/cv-input'
                 this.handleInput("duplicatePipeline",this.pipelineDuplicate);
                 this.closeDuplicateDialog();
             },
+            openDuplicateDialog(){
+                this.pipelineDuplicate = {
+                    pipeline:this.currentPipelineIndex,
+                    camera:-1
+                }
+                this.duplicateDialog = true;
+            },
             closeDuplicateDialog(){
                 this.duplicateDialog = false;
                 this.pipelineDuplicate = {
@@ -176,7 +183,7 @@ import CVinput from '../components/cv-input'
             },
             deleteCurrentPipeline(){
                 if (this.pipelineList.length > 1) {
-                    this.andleInput('command','deleteCurrentPipeline');   
+                    this.handleInput('command','deleteCurrentPipeline');   
                 } else {
                     this.snackbar = true;
                 }

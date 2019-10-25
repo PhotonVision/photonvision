@@ -94,8 +94,15 @@ public class ServerHandler {
                                 sendFullSettings();
                                 break;
                             case "deleteCurrentPipeline":
-                                cam.deleteCurrentPipeline();
-                                cam.setCurrentPipelineIndex(cam.getCurrentPipelineIndex() - 1);
+                                int currentIndex = cam.getCurrentPipelineIndex();
+                                int nextIndex = 0;
+                                if (currentIndex == cam.getPipelines().size() - 1){
+                                    nextIndex = currentIndex - 1;
+                                } else {
+                                    nextIndex = currentIndex;
+                                }
+                                cam.deletePipeline();
+                                cam.setCurrentPipelineIndex(nextIndex);
                                 sendFullSettings();
                                 break;
                         }
@@ -107,17 +114,24 @@ public class ServerHandler {
                         var cam = CameraManager.getCurrentCamera();
                         HashMap<String, Object> tmp = new HashMap<>();
                         tmp.put("pipeline", cam.getCurrentPipeline());
-                        tmp.put("pipelineList", cam.getPipelines().keySet());
+                        tmp.put("pipelineList", cam.getPipelinesNickname());
                         tmp.put("port", cam.getStreamPort());
                         tmp.put("resolutionList", cam.getResolutionList());
                         broadcastMessage(tmp);
                         break;
                     }
                     case "currentPipeline": {
-                        CameraManager.getCurrentCamera().setCurrentPipelineIndex((Integer) entry.getValue());
+                        var cam = CameraManager.getCurrentCamera();
+                        cam.setCurrentPipelineIndex((Integer) entry.getValue());
                         HashMap<String, Object> tmp = new HashMap<>();
                         tmp.put("pipeline", getOrdinalPipeline());
                         broadcastMessage(tmp);
+                        try {
+                            cam.setBrightness(cam.getCurrentPipeline().brightness);
+                            cam.setExposure(cam.getCurrentPipeline().exposure);
+                        }catch (Exception e){
+                            continue;
+                        }
                         break;
                     }
                     default: {
