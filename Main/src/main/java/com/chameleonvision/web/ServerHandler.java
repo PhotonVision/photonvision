@@ -91,6 +91,7 @@ public class ServerHandler {
                         switch ((String) entry.getValue()) {
                             case "addNewPipeline":
                                 cam.addPipeline();
+                                sendFullSettings();
                                 break;
                             case "deleteCurrentPipeline":
                                 cam.deleteCurrentPipeline();
@@ -223,10 +224,10 @@ public class ServerHandler {
         try {
             fullSettings.put("settings", getOrdinalSettings());
             fullSettings.put("cameraSettings", getOrdinalCameraSettings());
-            fullSettings.put("cameraList", CameraManager.getAllCamerasByName().keySet());
+            fullSettings.put("cameraList", CameraManager.getAllCameraByNickname());
             var currentCamera = CameraManager.getCurrentCamera();
             fullSettings.put("pipeline", getOrdinalPipeline());
-            fullSettings.put("pipelineList", currentCamera.getPipelines().keySet());
+            fullSettings.put("pipelineList", currentCamera.getPipelinesNickname());
             fullSettings.put("resolutionList", currentCamera.getResolutionList());
             fullSettings.put("port", currentCamera.getStreamPort());
         } catch (CameraException | IllegalAccessException e) {
