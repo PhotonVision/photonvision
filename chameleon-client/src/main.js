@@ -1,20 +1,26 @@
-import Vue from 'vue';
-import App from './App.vue';
-import VueRouter from 'vue-router';
-import iView from 'iview';
-import router from "./routes";
-import '../theme/index.less';
+import Vue from 'vue'
+import App from './App.vue'
+import router from './router'
+import store from './store'
+import vuetify from './plugins/vuetify';
 import VueNativeSock from 'vue-native-websocket';
-import locale from 'iview/dist/locale/en-US';
-import {store} from './store';
+import msgPack from 'msgpack5';
 
-Vue.use(VueRouter);
-Vue.use(iView , { locale });
-Vue.use(VueNativeSock,'ws://'+location.hostname+':8888/websocket',{format:'JSON'});
 Vue.config.productionTip = false;
-
+// Vue.use(VueNativeSock,'ws://' + location.host + '/websocket',{format: 'json'});
+Vue.use(VueNativeSock,'ws://'+location.hostname+':8888/websocket');
+Vue.prototype.$msgPack = msgPack(true)
+Vue.mixin({
+  methods:{
+    handleInput(key,value){
+      let msg = this.$msgPack.encode({[key]:value})
+      this.$socket.send(msg);
+    }
+  }
+})
 new Vue({
   router,
   store,
+  vuetify,
   render: h => h(App)
 }).$mount('#app')

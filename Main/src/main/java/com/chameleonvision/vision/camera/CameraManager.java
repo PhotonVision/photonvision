@@ -1,5 +1,6 @@
 package com.chameleonvision.vision.camera;
 
+import com.chameleonvision.settings.GeneralSettings;
 import com.chameleonvision.util.FileHelper;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
@@ -13,16 +14,14 @@ import org.opencv.videoio.VideoCapture;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class CameraManager {
 
 	private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "cameras");
 
-	private static HashMap<String, Camera> AllCamerasByName = new HashMap<>();
+	private static LinkedHashMap<String, Camera> AllCamerasByName = new LinkedHashMap<>();
 	private static HashMap<String, VisionProcess> AllVisionProcessesByName = new HashMap<>();
 
 	static HashMap<String, UsbCameraInfo> AllUsbCameraInfosByName = new HashMap<>() {{
@@ -43,6 +42,10 @@ public class CameraManager {
 
 	public static HashMap<String, Camera> getAllCamerasByName() {
 		return AllCamerasByName;
+	}
+	public static List<String> getAllCameraByNickname(){
+		var cameras = getAllCamerasByName();
+		return cameras.values().stream().map(Camera::getNickname).collect(Collectors.toList());
 	}
 
 	public static boolean initializeCameras() {
@@ -79,9 +82,7 @@ public class CameraManager {
 
 	private static boolean addCamera(Camera camera, String cameraName) {
 		if (AllCamerasByName.containsKey(cameraName)) return false;
-		for (int i = 0; i < 10; i++){
-			camera.addPipeline(); // simple fix to create more pipelines for now
-		}
+		camera.addPipeline();
 		AllCamerasByName.put(cameraName, camera);
 		return true;
 	}
@@ -90,18 +91,36 @@ public class CameraManager {
 		return AllCamerasByName.get(cameraName);
 	}
 
+	public static Camera getCameraByIndex(int index) {
+		return AllCamerasByName.get( (AllCamerasByName.keySet().toArray())[ index ] );
+	}
+
 	public static Camera getCurrentCamera() throws CameraException {
 		if (AllCamerasByName.size() == 0) throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
-		var curCam = AllCamerasByName.get(SettingsManager.GeneralSettings.curr_camera);
+		var curCam = AllCamerasByName.get(SettingsManager.GeneralSettings.currentCamera);
 		if (curCam == null) throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
 		return curCam;
+	}
+	public static Integer getCurrentCameraIndex() throws CameraException {
+		if (AllCamerasByName.size() == 0) throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
+		List<String> arr = new ArrayList<>(AllCamerasByName.keySet());
+		for (var i = 0; i < AllCamerasByName.size(); i++){
+			if (SettingsManager.GeneralSettings.currentCamera.equals(arr.get(i))){
+				return i;
+			}
+		}
+		return null;
 	}
 
 	public static void setCurrentCamera(String cameraName) throws CameraException {
 		if (!AllCamerasByName.containsKey(cameraName))
 			throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
-		SettingsManager.GeneralSettings.curr_camera = cameraName;
+		SettingsManager.GeneralSettings.currentCamera = cameraName;
 		SettingsManager.updateCameraSetting(cameraName, getCurrentCamera().getCurrentPipelineIndex());
+	}
+	public static void setCurrentCamera(int cameraIndex) throws CameraException {
+		List<String> s =   new ArrayList<String>(AllCamerasByName.keySet());
+		setCurrentCamera(s.get(cameraIndex));
 	}
 
 	public static Pipeline getCurrentPipeline() throws CameraException {
@@ -109,22 +128,16 @@ public class CameraManager {
 	}
 
 	public static void setCurrentPipeline(int pipelineNumber) throws CameraException {
-		if (!getCurrentCamera().getPipelines().containsKey(pipelineNumber))
+		if (pipelineNumber >= getCurrentCamera().getPipelines().size()){
 			throw new CameraException(CameraException.CameraExceptionType.BAD_PIPELINE);
+		}
 		getCurrentCamera().setCurrentPipelineIndex(pipelineNumber);
 		SettingsManager.updatePipelineSetting(pipelineNumber);
 	}
 
-	public static List<String> getResolutionList() throws CameraException {
-		if (!SettingsManager.GeneralSettings.curr_camera.equals("")) {
-			return Arrays.stream(CameraManager.getCamera(SettingsManager.GeneralSettings.curr_camera).getAvailableVideoModes())
-					.map(res -> String.format("%s X %s at %s fps using %s ", res.width, res.height, res.fps, res.pixelFormat.toString())).collect(Collectors.toList());
-		}
-		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
-	}
-	public static VisionProcess getCurrentCameraProcess() throws CameraException{
-		if (!SettingsManager.GeneralSettings.curr_camera.equals("")){
-			return AllVisionProcessesByName.get(SettingsManager.GeneralSettings.curr_camera);
+	public static VisionProcess getCurrentCameraProcess() throws CameraException {
+		if (!SettingsManager.GeneralSettings.currentCamera.equals("")){
+			return AllVisionProcessesByName.get(SettingsManager.GeneralSettings.currentCamera);
 		}
 		throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
 	}

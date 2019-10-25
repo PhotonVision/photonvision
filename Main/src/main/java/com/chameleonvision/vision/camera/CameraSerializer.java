@@ -10,6 +10,8 @@ public class CameraSerializer implements JsonSerializer<Camera> {
         obj.addProperty("FOV", camera.getFOV());
         obj.addProperty("path", camera.path);
         obj.addProperty("name", camera.name);
+        obj.addProperty("nickname", camera.getNickname());
+        obj.addProperty("streamDivisor", camera.getStreamDivisor().ordinal());
 
         var pipelines = context.serialize(camera.getPipelines());
         obj.add("pipelines", pipelines);

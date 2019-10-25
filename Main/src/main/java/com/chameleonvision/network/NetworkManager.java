@@ -43,7 +43,7 @@ public class NetworkManager {
 			e.printStackTrace();
 		}
 
-        var teamBytes = NetworkManager.GetTeamNumberIPBytes(SettingsManager.GeneralSettings.team_number);
+        var teamBytes = NetworkManager.GetTeamNumberIPBytes(SettingsManager.GeneralSettings.teamNumber);
 
         if (interfaces.size() > 0) {
 			for (var inetface : interfaces) {
@@ -86,7 +86,7 @@ public class NetworkManager {
 		}
 
 		var genSettings = SettingsManager.GeneralSettings;
-		boolean isStatic = genSettings.connection_type.toLowerCase().equals("static");
+		boolean isStatic = genSettings.connectionType.equals(NetworkIPMode.STATIC);
 
 		if (isStatic) {
 			var splitIPAddr = genSettings.ip.split("\\.");

@@ -1,5 +1,5 @@
 # chameleon-client
-the front end project of chameleon vision 
+
 ## Project setup
 ```
 npm install
@@ -24,3 +24,6 @@ npm run test
 ```
 npm run lint
 ```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).

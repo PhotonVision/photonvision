@@ -1,181 +1,95 @@
-  <template>
-    <div id="app">
-      <div class="layout">
-          <Layout :style="{minHeight: '100vh'}">
-            <Layout>
-              <Sider id="main-nav" @on-collapse="onCollapse"  collapsible :collapsed-width="78" v-model="isCollapsed">
-                <img src="./assets/logo.png" style="width:60px;height:auto;transition: .2s ease;" :class="menuIconClass">
-                    <Menu ref="menu" @on-open-change="onOpenChange" :active-name="activeName" :open-names="openedNames" theme="dark"  width="auto" :class="menuitemClasses">
-                        <Submenu name="/vision">
-                          <template slot="title">
-                            <Icon type="ios-videocam"/>
-                            <span v-if="!isCollapsed">Vision</span>
-                          </template>
-                          <MenuItem name="/vision/input" to="/vision/input">Input</MenuItem>
-                          <MenuItem name="/vision/threshold" to="/vision/threshold">Threshold</MenuItem>
-                          <MenuItem name="/vision/contours" to="/vision/contours">Contours</MenuItem>
-                          <MenuItem name="/vision/output" to="/vision/output">Output</MenuItem>
-                        </Submenu>
-                        <Submenu name="/settings">
-                          <template slot="title">
-                            <Icon type="ios-settings"/>
-                            <span v-if="!isCollapsed">Settings</span>
-                          </template>
-                          <MenuItem name="/settings/system" to="/settings/system">System</MenuItem>
-                          <MenuItem name="/settings/camera" to="/settings/camera">Cameras</MenuItem>
-                        </Submenu>
-                    </Menu>
-                </Sider>
-                <router-view></router-view>
-            </Layout>
-        </Layout>
-    </div>
-  </div>
+<template>
+ <v-app>
+    <v-app-bar app dense clipped-left dark>
+      <img class="imgClass" src="./assets/logo.png">
+      <v-toolbar-title id="title">Chameleon Vision</v-toolbar-title>
+      <div class="flex-grow-1"></div>
+      <v-toolbar-items>
+      <v-tabs dark height="48" slider-color="#4baf62">
+        <v-tab to="vision">Vision</v-tab>
+        <v-tab to="settings">Settings</v-tab>
+    </v-tabs>
+      </v-toolbar-items>
+    </v-app-bar>
+    <v-content>
+      <v-container fluid fill-height>
+        <v-layout>
+          <v-flex>
+            <router-view></router-view>
+          </v-flex>
+        </v-layout>
+      </v-container>
+    </v-content>
+  </v-app>
 </template>
 
 <script>
-  import Vue from "vue"
+export default {
+  name: 'App',
 
-  import chselect from './components/ch-select.vue'
-  
-  export default {
-    name: 'app',
-    components:{
-      chselect,
+  components: {
 
-    },
-    data () {
-      return {
-          isCollapsed: false,
-          openedNames: ["/" + this.$route.path.split("/")[1]],
-          activeName: this.$route.path
-      };
-    },
-    methods: { 
-      onOpenChange(data) {
-        this.isCollapsed = false;
-        console.info('App currentRoute:', this.$router.currentRoute);
-      },
-      onCollapse() {
-        if (this.isCollapsed) {
-          this.openedNames = [''];
-        } else {
-          this.activeName = this.$refs.menu.currentActiveName;
-          this.openedNames = ["/" + this.activeName.split("/")[1]];
-        }
-        this.$nextTick(function() {
-          this.$refs.menu.updateOpened();
-          this.$refs.menu.updateActiveName();
-        })
-      },
-      isEquale(message,prop){
-        if(typeof (this.$store.state[prop]) == "object"){
-          for(var i = this.$store.state[prop].length; i--;) {
-            if(this.$store.state[prop][i] !== message[prop][i]){
-                return false;
-            }
-        }
-        } else{
-          if(this.$store.state[prop] != message[prop]){
-            return false
+  },
+  methods:{
+    handleMessage(key,value){
+      if(this.$store.state.hasOwnProperty(key)){
+        this.$store.commit(key,value);
+      } else if(this.$store.state.pipeline.hasOwnProperty(key)){
+        this.$store.commit('setPipeValues',{[key]:value});
+      }
+      else{
+        switch(key){
+          
+          default:{
+            console.log(key + " : " + value);
           }
         }
-        return true;
       }
-    },
-    computed: {
-      menuitemClasses: function () {
-          return [
-              'menu-item',
-              this.isCollapsed ? 'collapsed-menu' : ''
-          ]
-      },
-      menuIconClass(){
-        return this.isCollapsed ? '' :'icon' 
-      }
-    },
-    created () {
-    this.$options.sockets.onmessage = (data) => {
+    }
+  },
+  data: () => ({
+
+  }),
+  created(){
+    this.$options.sockets.onmessage = async (data) =>{
       try{
-        let message = JSON.parse(data.data);
-             for (var prop in message){
-        if(message.hasOwnProperty(prop)){
-            this.$store.state[prop] = message[prop];
-            // console.log(message);
-        
+        var buffer = await data.data.arrayBuffer();
+        let message = this.$msgPack.decode(buffer);
+        for(let prop in message){
+          if(message.hasOwnProperty(prop)){
+            this.handleMessage(prop, message[prop]);
+          }
         }
-
-       }      
       }
-      catch{
-        console.log("error" + data.data)
-      }
-    } // console writes recived data
+      catch(error){
+        console.error('error: ' + data.data+ " , "+ error);
+      }      
+    }
   }
-  }
+};
 </script>
+
 <style>
-
-  #app {
-    font-family: 'Avenir', Helvetica, Arial, sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    text-align: center;
-    /* color: #2c3e50; */
+  html{
+    overflow-y: hidden !important;
   }
-
-  #camera, #main-layout {
-    background-color: #272e35;
+  .imgClass{
+    width: auto;
+    height: 45px;
+    vertical-align: middle;
+    padding-right: 5px;
   }
-
-  #main-nav {
-    box-shadow: 2px 0px 10px black;
+  .tabClass{
+    color: #4baf62;
   }
-
-  #main-header {
-    box-shadow: 0px 2px 10px black;
-    text-align: left
+  .container{
+    background-color: #212121;
+    padding: 0!important;
   }
-
-  #main-content {
-    padding: 30px
+  #title{
+    color:#4baf62;
   }
-
-  .layout{
-      height: 100%;
-      width: 100%;
+  span{
+    color: white;
   }
-  .menu-item span{
-      display: inline-block;
-      overflow: hidden;
-      width: 69px;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      vertical-align: bottom;
-      transition: width .2s ease .2s;
-  }
-  .menu-item i{
-      transform: translateX(0px);
-      transition: font-size .2s ease, transform .2s ease;
-      vertical-align: middle;
-      font-size: 16px;
-  }
-  .collapsed-menu span{
-      width: 0px;
-      transition: width .2s ease;
-  }
-  .collapsed-menu .ivu-icon-ios-arrow-down{
-    display: none;
-  }
-  .collapsed-menu i{
-      transform: translateX(5px);
-      transition: font-size .2s ease .2s, transform .2s ease .2s;
-      vertical-align: middle;
-      font-size: 22px;
-  }
-  .icon{
-    width: 100px !important;
-    transition: .2s ease;
-  }
-
 </style>

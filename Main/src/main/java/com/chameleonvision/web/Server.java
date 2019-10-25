@@ -22,10 +22,11 @@ public class Server {
                 System.out.println("Socket Disconnected");
                 SettingsManager.saveSettings();
             });
-            ws.onMessage(ctx -> {
-                handler.onMessage(ctx);
+            ws.onBinaryMessage(ctx -> {
+                handler.onBinaryMessage(ctx);
             });
         });
+
         app.start(port);
     }
 }

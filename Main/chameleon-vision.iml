@@ -10,13 +10,6 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cameraserver:cameraserver-java:2019.4.1-176-ga5650b9" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-java:2019.4.1-176-ga5650b9" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:osxx86-64:2019.4.1-176-ga5650b9" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxraspbian:2019.4.1-176-ga5650b9" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxx86-64:2019.4.1-176-ga5650b9" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:windowsx86-64:2019.4.1-176-ga5650b9" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.wpiutil:wpiutil-java:2019.4.1-176-ga5650b9" level="project" />
     <orderEntry type="library" name="Maven: io.javalin:javalin:3.4.1" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.31" level="project" />
     <orderEntry type="library" name="Maven: org.jetbrains.kotlin:kotlin-stdlib:1.3.31" level="project" />
@@ -43,6 +36,8 @@
     <orderEntry type="library" name="Maven: org.slf4j:slf4j-simple:1.7.26" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-math3:3.6.1" level="project" />
     <orderEntry type="library" name="Maven: com.google.code.gson:gson:2.8.5" level="project" />
+    <orderEntry type="library" name="Maven: org.msgpack:msgpack-core:0.8.18" level="project" />
+    <orderEntry type="library" name="Maven: org.msgpack:jackson-dataformat-msgpack:0.8.18" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-beans:5.1.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-core:5.1.9.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-jcl:5.1.9.RELEASE" level="project" />
@@ -50,19 +45,19 @@
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.10.0.pr1" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.10.0.pr1" level="project" />
     <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.10.0.pr1" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-java:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxaarch64bionic:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxraspbian:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxx86-64:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:osxx86-64:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:windowsx86-64:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cameraserver:cameraserver-java:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-java:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:osxx86-64:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxraspbian:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxx86-64:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:windowsx86-64:2019.4.1-200-g2271570" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.wpiutil:wpiutil-java:2019.4.1-200-g2271570" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-java:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxaarch64bionic:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxraspbian:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxx86-64:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:osxx86-64:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:windowsx86-64:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.cameraserver:cameraserver-java:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-java:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:osxx86-64:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxraspbian:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxx86-64:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:windowsx86-64:2019.4.1-213-g56d782b" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.wpiutil:wpiutil-java:2019.4.1-213-g56d782b" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-java:3.4.7-1" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:linuxaarch64bionic:3.4.7-1" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:linuxraspbian:3.4.7-1" level="project" />

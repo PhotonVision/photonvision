@@ -1,12 +1,14 @@
 package com.chameleonvision.settings;
 
+import com.chameleonvision.network.NetworkIPMode;
+
 public class GeneralSettings {
-	public int team_number = 1577;
-	public String connection_type = "DHCP";
+	public int teamNumber = 1577;
+	public NetworkIPMode connectionType = NetworkIPMode.DHCP;
 	public String ip = "";
 	public String gateway = "";
 	public String netmask = "";
 	public String hostname = "Chameleon-vision";
-	public String curr_camera = "";
-	public Integer curr_pipeline = null;
+	public String currentCamera = "";
+	public Integer currentPipeline = null;
 }

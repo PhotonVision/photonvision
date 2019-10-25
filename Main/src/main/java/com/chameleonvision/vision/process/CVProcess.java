@@ -1,5 +1,8 @@
 package com.chameleonvision.vision.process;
 
+import com.chameleonvision.vision.SortMode;
+import com.chameleonvision.vision.TargetGroup;
+import com.chameleonvision.vision.TargetIntersection;
 import com.chameleonvision.vision.camera.CameraValues;
 import com.chameleonvision.util.MathHandler;
 import org.apache.commons.math3.util.FastMath;
@@ -14,20 +17,14 @@ import java.util.*;
 public class CVProcess {
 
     private final CameraValues cameraValues;
-    private HashMap<String, Integer> targetGrouping = new HashMap<>() {{
-        put("Single", 1);
-        put("Dual", 2);
-        put("Triple", 3);
-        put("Quadruple", 4);
-        put("Quintuple", 5);
-    }};
     private Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
-    private Size blur = new Size(1,1);
+    private Size blur = new Size(3, 3);
     private Mat hsvImage = new Mat();
     private List<MatOfPoint> foundContours = new ArrayList<>();
     private Mat binaryMat = new Mat();
     private List<MatOfPoint> filteredContours = new ArrayList<>();
     private Comparator<RotatedRect> sortByCentermostComparator = Comparator.comparingDouble(this::calcDistance);
+    private List<MatOfPoint> speckleRejectedContours = new ArrayList<>();
     private Comparator<MatOfPoint> sortByMomentsX = Comparator.comparingDouble(this::calcMomentsX);
     private List<RotatedRect> finalCountours = new ArrayList<>();
     private MatOfPoint2f intersectMatA = new MatOfPoint2f();
@@ -58,11 +55,11 @@ public class CVProcess {
         return foundContours;
     }
 
-    List<MatOfPoint> filterContours(List<MatOfPoint> inputContours, List<Integer> area, List<Double> ratio, List<Integer> extent) {
+    List<MatOfPoint> filterContours(List<MatOfPoint> inputContours, List<Number> area, List<Number> ratio, List<Number> extent) {
         for (MatOfPoint Contour : inputContours) {
             try {
                 double contourArea = Imgproc.contourArea(Contour);
-                double AreaRatio = (contourArea / cameraValues.ImageArea)*100;
+                double AreaRatio = (contourArea / cameraValues.ImageArea) * 100;
                 double minArea = (MathHandler.sigmoid(area.get(0)));
                 double maxArea = (MathHandler.sigmoid(area.get(1)));
                 if (AreaRatio < minArea || AreaRatio > maxArea) {
@@ -70,14 +67,15 @@ public class CVProcess {
                 }
                 var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
 
-                double minExtent = (extent.get(0) * rect.size.area()) / 100;
-                double maxExtent = (extent.get(1) * rect.size.area()) / 100;
-                if (contourArea <= minExtent || contourArea >= maxExtent) {
+                var targetFullness = contourArea;
+                double minExtent = (double) (extent.get(0).doubleValue() * rect.size.area()) / 100;
+                double maxExtent = (double) (extent.get(1).doubleValue() * rect.size.area()) / 100;
+                if (targetFullness <= minExtent || contourArea >= maxExtent) {
                     continue;
                 }
                 Rect bb = Imgproc.boundingRect(Contour);
-                double aspectRatio = ((double)bb.width / bb.height);
-                if (aspectRatio < ratio.get(0) || aspectRatio > ratio.get(1)) {
+                double aspectRatio = (bb.width / bb.height);
+                if (aspectRatio < ratio.get(0).doubleValue() || aspectRatio > ratio.get(1).doubleValue()) {
                     continue;
                 }
                 filteredContours.add(Contour);
@@ -89,67 +87,81 @@ public class CVProcess {
         return filteredContours;
     }
 
+    List<MatOfPoint> rejectSpeckles(List<MatOfPoint> inputContours, Double minimumPercentOfAverage) {
+        double averageArea = 0.0;
+        for (MatOfPoint c : inputContours) {
+            averageArea += Imgproc.contourArea(c);
+        }
+        averageArea /= inputContours.size();
+        var minimumAllowableArea = minimumPercentOfAverage / 100.0 * averageArea;
+        speckleRejectedContours.clear();
+        for (MatOfPoint c : inputContours) {
+            if (Imgproc.contourArea(c) >= minimumAllowableArea) speckleRejectedContours.add(c);
+        }
+        return speckleRejectedContours;
+    }
+
+
     private double calcDistance(RotatedRect rect) {
         return FastMath.sqrt(FastMath.pow(cameraValues.CenterX - rect.center.x, 2) + FastMath.pow(cameraValues.CenterY - rect.center.y, 2));
     }
-    private double calcMomentsX(MatOfPoint c){
+
+    private double calcMomentsX(MatOfPoint c) {
         Moments m = Imgproc.moments(c);
-        return (m.get_m10()/m.get_m00());
+        return (m.get_m10() / m.get_m00());
     }
-    RotatedRect sortTargetsToOne(List<RotatedRect> inputRects, String sortMode) {
+
+    RotatedRect sortTargetsToOne(List<RotatedRect> inputRects, SortMode sortMode) {
         switch (sortMode) {
-            case "Largest":
+            case Largest:
                 return Collections.max(inputRects, Comparator.comparing(rect -> rect.size.area()));
-            case "Smallest":
+            case Smallest:
                 return Collections.min(inputRects, Comparator.comparing(rect -> rect.size.area()));
-            case "Highest":
+            case Highest:
                 return Collections.min(inputRects, Comparator.comparing(rect -> rect.center.y));
-            case "Lowest":
+            case Lowest:
                 return Collections.max(inputRects, Comparator.comparing(rect -> rect.center.y));
-            case "Leftmost":
+            case Leftmost:
                 return Collections.min(inputRects, Comparator.comparing(rect -> rect.center.x));
-            case "Rightmost":
+            case Rightmost:
                 return Collections.max(inputRects, Comparator.comparing(rect -> rect.center.x));
-            case "Centermost":
+            case Centermost:
                 return Collections.min(inputRects, sortByCentermostComparator);
             default:
                 return inputRects.get(0); // default to whatever the first contour is, but this should never happen
         }
     }
 
-    List<RotatedRect> groupTargets(List<MatOfPoint> inputContours, String intersectionPoint, String targetGroup) {
+    List<RotatedRect> groupTargets(List<MatOfPoint> inputContours, TargetIntersection intersectionPoint, TargetGroup targetGroup) {
         finalCountours.clear();
-        if (!targetGroup.equals("Single")) {
-            inputContours.sort(sortByMomentsX);
+        inputContours.sort(sortByMomentsX);
+        Collections.reverse(inputContours);
+        if (targetGroup.equals(TargetGroup.Dual)) {
             for (var i = 0; i < inputContours.size(); i++) {
                 List<Point> FinalContourList = new ArrayList<>(inputContours.get(i).toList());
-                for (var c = 0; c < (targetGrouping.get(targetGroup) - 1); c++) {
-                    try {
-                        MatOfPoint firstContour = inputContours.get(i + c);
-                        MatOfPoint secondContour = inputContours.get(i + c + 1);
-                        if (isIntersecting(firstContour, secondContour, intersectionPoint)) {
-                            FinalContourList.addAll(secondContour.toList());
-                        }
-                        else{
-                            FinalContourList.clear();
-                            break;
-                        }
-                        firstContour.release();
-                        secondContour.release();
-                        MatOfPoint2f contour = new MatOfPoint2f();
-                        contour.fromList(FinalContourList);
-                        if (contour.cols() != 0 && contour.rows() != 0) {
-                            RotatedRect rect = Imgproc.minAreaRect(contour);
-                            finalCountours.add(rect);
-                        }
-                    } catch (IndexOutOfBoundsException e) {
+                try {
+                    MatOfPoint firstContour = inputContours.get(i);
+                    MatOfPoint secondContour = inputContours.get(i + 1);
+                    if (isIntersecting(firstContour, secondContour, intersectionPoint)) {
+                        FinalContourList.addAll(secondContour.toList());
+                    } else {
                         FinalContourList.clear();
-                        break;
+                        continue;
                     }
+                    firstContour.release();
+                    secondContour.release();
+                    MatOfPoint2f contour = new MatOfPoint2f();
+                    contour.fromList(FinalContourList);
+                    if (contour.cols() != 0 && contour.rows() != 0) {
+                        RotatedRect rect = Imgproc.minAreaRect(contour);
+                        finalCountours.add(rect);
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    FinalContourList.clear();
                 }
             }
 
-        } else {
+        } else if (targetGroup.equals(TargetGroup.Single)) {
             for (MatOfPoint inputContour : inputContours) {
                 MatOfPoint2f contour = new MatOfPoint2f();
                 contour.fromArray(inputContour.toArray());
@@ -162,8 +174,8 @@ public class CVProcess {
         return finalCountours;
     }
 
-    private boolean isIntersecting(MatOfPoint ContourOne, MatOfPoint ContourTwo, String IntersectionPoint) {
-        if (IntersectionPoint.equals("None")) {
+    private boolean isIntersecting(MatOfPoint ContourOne, MatOfPoint ContourTwo, TargetIntersection intersectionPoint) {
+        if (intersectionPoint.equals(TargetIntersection.None)) {
             return true;
         }
         try {
@@ -177,30 +189,36 @@ public class CVProcess {
             double y0A = a.center.y;
             double x0B = b.center.x;
             double y0B = b.center.y;
-            double intersectionX = ((mA * x0A) - y0A - (mB * x0B) + y0B )/ (mA - mB);
+            double intersectionX = ((mA * x0A) - y0A - (mB * x0B) + y0B) / (mA - mB);
             double intersectionY = (mA * (intersectionX - x0A)) + y0A;
             double massX = (x0A + x0B) / 2;
             double massY = (y0A + y0B) / 2;
-            switch (IntersectionPoint) {
-                case "Up": {
+            switch (intersectionPoint) {
+                case Up: {
                     if (intersectionY < massY) {
-                        return true;
+                        if (mA > 0 && mB < 0) {
+                            return true;
+                        }
                     }
                     break;
                 }
-                case "Down": {
+                case Down: {
                     if (intersectionY > massY) {
-                        return true;
+                        if (mA < 0 && mB > 0) {
+                            return true;
+                        }
                     }
+
                     break;
                 }
-                case "Left": {
+                case Left: {
                     if (intersectionX < massX) {
+
                         return true;
                     }
                     break;
                 }
-                case "Right": {
+                case Right: {
                     if (intersectionX > massX) {
                         return true;
                     }
