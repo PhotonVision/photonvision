@@ -53,6 +53,7 @@ public class ServerHandler {
                             setField(SettingsManager.GeneralSettings, e.getKey(), e.getValue());
                         }
                         SettingsManager.saveSettings();
+                        sendFullSettings();
                         break;
                     }
                     case "cameraSettings": {
@@ -61,6 +62,7 @@ public class ServerHandler {
                         CameraManager.getCurrentCamera().setStreamDivisor((Integer) camSettings.get("streamDivisor"));
                         CameraManager.getCurrentCamera().setCamVideoMode((Integer) camSettings.get("resolution"), true);
                         SettingsManager.saveSettings();
+                        sendFullSettings();
                         break;
                     }
                     case "changeCameraName": {
@@ -118,9 +120,7 @@ public class ServerHandler {
                     case "currentPipeline": {
                         var cam = CameraManager.getCurrentCamera();
                         cam.setCurrentPipelineIndex((Integer) entry.getValue());
-                        HashMap<String, Object> tmp = new HashMap<>();
-                        tmp.put("pipeline", getOrdinalPipeline());
-                        broadcastMessage(tmp);
+                        sendFullSettings();
                         try {
                             cam.setBrightness(cam.getCurrentPipeline().brightness);
                             cam.setExposure(cam.getCurrentPipeline().exposure);
