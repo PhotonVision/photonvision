@@ -22,6 +22,7 @@ public class Pipeline {
 	public TargetIntersection targetIntersection = TargetIntersection.Up;
 	public double m = 1;
 	public double b = 0;
-	public boolean isCalibrated = false;
+	public List<Number> point = Arrays.asList(0,0);
+	public CalibrationMode calibrationMode = CalibrationMode.None;
     public String nickname;
 }

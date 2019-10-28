@@ -5,7 +5,7 @@
                   @input="handleInput('sortMode',value.sortMode)"/>
         <span>Calibrate:</span>
         <v-divider dark color="white"/>
-        <CVselect name="Calibration Mode" v-model="value.calibrationMode" :list="['Single point','Dual point']"
+        <CVselect name="Calibration Mode" v-model="value.calibrationMode" :list="['None','Single point','Dual point']"
                   @input="handleInput('calibrationMode',value.calibrationMode)"/>
         <component :raw-point="rawPoint" :is="selectedComponent"/>
         <v-snackbar :timeout="3000" v-model="snackbar" top color="error">
@@ -41,8 +41,10 @@ import SingleCalibration from "./OutputViewes/SingleCalibration";
                 get(){
                     switch (this.value.calibrationMode) {
                         case 0:
-                            return "SingleCalibration";
+                            return "";
                         case 1:
+                            return "SingleCalibration";
+                        case 2:
                             return "DualCalibration"
                     }
                     return ""

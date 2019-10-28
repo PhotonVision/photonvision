@@ -11,6 +11,7 @@ public class Server {
         handler = new ServerHandler();
 
         Javalin app = Javalin.create();
+
         app.config.addStaticFiles("web");
         app.ws("/websocket", ws -> {
             ws.onConnect(ctx -> {

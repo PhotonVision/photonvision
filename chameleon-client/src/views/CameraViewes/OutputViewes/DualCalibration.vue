@@ -49,7 +49,6 @@
             sendSlope(m, b, valid) {
                 this.handleInput('m', m);
                 this.handleInput('b', b);
-                this.handleInput('isCalibrated', valid);
             },
             clearSlope() {
                 this.sendSlope(1, 0, false);

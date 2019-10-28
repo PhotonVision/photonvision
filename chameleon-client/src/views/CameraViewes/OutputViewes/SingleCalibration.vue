@@ -14,12 +14,13 @@
 <script>
     export default {
         name: "SingleCalibration",
+        props: ['rawPoint'],
         methods:{
             clearPoint(){
-
+                this.handleInput('point',[0,0]);
             },
             takePoint(){
-
+                this.handleInput('point',this.rawPoint);
             }
         }
     }
