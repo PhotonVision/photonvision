@@ -4,52 +4,63 @@
             <v-row align="center">
                 <v-col :cols="3" class="colsClass">
                     <div style="padding-left:30px">
-                        <CVselect v-if="isCameraNameEdit == false" name="Camera" v-model="currentCameraIndex" :list="cameraList" @input="handleInput('currentCamera',currentCameraIndex)"></CVselect>
-                        <CVinput v-else name="Camera" v-model="newCameraName" @Enter="saveCameraNameChange" :errorMessage="checkCameraName"></CVinput>
+                        <CVselect v-if="isCameraNameEdit === false" name="Camera" v-model="currentCameraIndex"
+                                  :list="cameraList" @input="handleInput('currentCamera',currentCameraIndex)"/>
+                        <CVinput v-else name="Camera" v-model="newCameraName" @Enter="saveCameraNameChange"
+                                 :errorMessage="checkCameraName"/>
                     </div>
                 </v-col>
                 <v-col :cols="1">
-                    <CVicon color="#c5c5c5" v-if="isCameraNameEdit == false" hover text="edit" @click="toCameraNameChange" tooltip="Edit camera name"></CVicon>
+                    <CVicon color="#c5c5c5" v-if="isCameraNameEdit === false" hover text="edit"
+                            @click="toCameraNameChange" tooltip="Edit camera name"/>
                     <div v-else>
-                        <CVicon color="#c5c5c5" style="display: inline-block;"  hover text="save" @click="saveCameraNameChange" tooltip="Save Camera Name"></CVicon>
-                        <CVicon color="error" style="display: inline-block;"  hover text="close" @click="discardCameraNameChange" tooltip="Discard Changes"></CVicon>
+                        <CVicon color="#c5c5c5" style="display: inline-block;" hover text="save"
+                                @click="saveCameraNameChange" tooltip="Save Camera Name"/>
+                        <CVicon color="error" style="display: inline-block;" hover text="close"
+                                @click="discardCameraNameChange" tooltip="Discard Changes"/>
                     </div>
                 </v-col>
                 <v-col :cols="3" class="colsClass">
-                    <CVselect v-if="isPipelineEdit == false" name="Pipeline" :list="pipelineList" v-model="currentPipelineIndex" @input="handleInput('currentPipeline',currentPipelineIndex)"></CVselect>
-                    <CVinput v-else name="Pipeline" v-model="newPipelineName" @Enter="savePipelineNameChange"></CVinput>
+                    <CVselect v-if="isPipelineEdit === false" name="Pipeline" :list="pipelineList"
+                              v-model="currentPipelineIndex"
+                              @input="handleInput('currentPipeline',currentPipelineIndex)"/>
+                    <CVinput v-else name="Pipeline" v-model="newPipelineName" @Enter="savePipelineNameChange"/>
                 </v-col>
                  <v-col :cols="1" class="colsClass">
-                        <v-menu v-if="isPipelineEdit == false" offset-y dark auto>
+                        <v-menu v-if="isPipelineEdit === false" offset-y dark auto>
                             <template v-slot:activator="{ on }">
                                 <v-icon color="white" v-on="on">menu</v-icon>
                             </template>
                             <v-list dense>
                                 <v-list-item @click="toPipelineNameChange">
                                     <v-list-item-title>
-                                        <CVicon color="#c5c5c5" :right="true" text="edit" tooltip="Edit pipeline name"></CVicon>
+                                        <CVicon color="#c5c5c5" :right="true" text="edit" tooltip="Edit pipeline name"/>
                                     </v-list-item-title>
                                 </v-list-item>
                                       <v-list-item @click="handleInput('command','addNewPipeline')">
                                     <v-list-item-title>
-                                        <CVicon color="#c5c5c5" :right="true" text="add" tooltip="Add new pipeline"></CVicon>
+                                        <CVicon color="#c5c5c5" :right="true" text="add" tooltip="Add new pipeline"/>
                                     </v-list-item-title>
                                 </v-list-item>
                                 <v-list-item @click="deleteCurrentPipeline">
                                     <v-list-item-title>
-                                        <CVicon color="red darken-2" :right="true" text="delete" tooltip="Delete pipeline"></CVicon>
+                                        <CVicon color="red darken-2" :right="true" text="delete"
+                                                tooltip="Delete pipeline"/>
                                     </v-list-item-title>
                                 </v-list-item>
                                 <v-list-item @click="openDuplicateDialog">
                                     <v-list-item-title>
-                                        <CVicon color="#c5c5c5" :right="true" text="mdi-content-copy" tooltip="Duplicate pipeline"></CVicon>
+                                        <CVicon color="#c5c5c5" :right="true" text="mdi-content-copy"
+                                                tooltip="Duplicate pipeline"/>
                                     </v-list-item-title>
                                 </v-list-item>
                             </v-list>
                         </v-menu>
                         <div v-else>
-                            <CVicon color="#c5c5c5" style="display: inline-block;"  hover text="save" @click="savePipelineNameChange" tooltip="Save Pipeline Name"></CVicon>
-                            <CVicon color="error" style="display: inline-block;"  hover text="close" @click="discardPipelineNameChange" tooltip="Discard Changes"></CVicon>
+                            <CVicon color="#c5c5c5" style="display: inline-block;" hover text="save"
+                                    @click="savePipelineNameChange" tooltip="Save Pipeline Name"/>
+                            <CVicon color="error" style="display: inline-block;" hover text="close"
+                                    @click="discardPipelineNameChange" tooltip="Discard Changes"/>
                         </div>
                 </v-col>
                 
@@ -66,7 +77,7 @@
                 </v-tabs>
                 <div style="padding-left:30px">
                     <!-- vision component -->
-                    <component v-model="pipeline" :is="selectedComponent"></component>
+                    <component v-model="pipeline" :is="selectedComponent"/>
                 </div>
             </v-col>
             <v-col cols="6" class="colsClass">
@@ -78,7 +89,7 @@
                     </v-tabs>
                     <!-- camera image stream -->
                     <div class="videoClass">
-                        <img v-if="cameraList.length > 0" :src="steamAdress">
+                        <img v-if="cameraList.length > 0" :src="streamAddress">
                         <span v-else>No Cameras Are connected</span>
                         <h5 id="Point">{{point}}</h5>
                     </div>
@@ -90,14 +101,15 @@
         <v-card dark>
             <v-card-title class="headline" primary-title>Duplicate Pipeline</v-card-title>
                 <v-card-text>
-                    <CVselect name="Pipeline" :list="pipelineList" v-model="pipelineDuplicate.pipeline"></CVselect>
-                    <v-checkbox v-if="cameraList.length > 1" dark :label="'To another camera'" v-model="anotherCamera"></v-checkbox>
-                    <CVselect v-if="anotherCamera === true" name="Camera" v-model="pipelineDuplicate.camera" :list="cameraList"></CVselect>
+                    <CVselect name="Pipeline" :list="pipelineList" v-model="pipelineDuplicate.pipeline"/>
+                    <v-checkbox v-if="cameraList.length > 1" dark :label="'To another camera'" v-model="anotherCamera"/>
+                    <CVselect v-if="anotherCamera === true" name="Camera" v-model="pipelineDuplicate.camera"
+                              :list="cameraList"/>
                 </v-card-text>
                 <v-divider>
                 </v-divider>
                 <v-card-actions>
-                    <v-spacer></v-spacer>
+                    <v-spacer/>
                     <v-btn color="#4baf62" text @click="duplicatePipeline">Duplicate</v-btn>
                     <v-btn color="error" text @click="closeDuplicateDialog">Cancels</v-btn>
                 </v-card-actions>
@@ -213,7 +225,7 @@ import CVinput from '../components/cv-input'
             checkCameraName(){
                 if(this.newCameraName !== this.cameraList[this.currentCameraIndex]){
                     for(let cam in this.cameraList){
-                        if(this.newCameraName == this.cameraList[cam]){
+                        if(this.newCameraName === this.cameraList[cam]){
                             return "Camera by that name already Exists"
                         }
                     }
@@ -285,7 +297,7 @@ import CVinput from '../components/cv-input'
                     return this.$store.state.pipeline;
                 }
             },
-            steamAdress: {
+            streamAddress: {
                 get: function(){
                     return "http://"+location.hostname + ":"+ this.$store.state.port +"/stream.mjpg";
                 }

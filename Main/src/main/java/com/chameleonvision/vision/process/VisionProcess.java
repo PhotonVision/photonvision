@@ -1,6 +1,7 @@
 package com.chameleonvision.vision.process;
 
 import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.vision.CalibrationMode;
 import com.chameleonvision.vision.Orientation;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
@@ -155,15 +156,24 @@ public class VisionProcess implements Runnable {
                     groupedContours = cvProcess.groupTargets(deSpeckledContours, currentPipeline.targetIntersection, currentPipeline.targetGroup);
                     if (groupedContours.size() > 0) {
                         var finalRect = cvProcess.sortTargetsToOne(groupedContours, currentPipeline.sortMode);
-                        //					System.out.printf("Largest Contour Area: %.2f\n", finalRect.size.area());
                         pipelineResult.RawPoint = finalRect;
                         pipelineResult.IsValid = true;
-                        if (!currentPipeline.isCalibrated) {
-                            pipelineResult.CalibratedX = camera.getCamVals().CenterX;
-                            pipelineResult.CalibratedY = camera.getCamVals().CenterY;
-                        } else {
-                            pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
-                            pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
+                            switch (currentPipeline.calibrationMode){
+                                case None:
+                                    ///use the center of the camera to find the pitch and yaw difference
+                                    pipelineResult.CalibratedX = camera.getCamVals().CenterX;
+                                    pipelineResult.CalibratedY = camera.getCamVals().CenterY;
+                                    break;
+                                case Single:
+                                    // use the static point as a calibration method instead of the center
+                                    pipelineResult.CalibratedX = currentPipeline.point.get(0).doubleValue();
+                                    pipelineResult.CalibratedY = currentPipeline.point.get(1).doubleValue();
+                                    break;
+                                case Dual:
+                                    // use the calculated line to find the difference in length between the point and the line
+                                    pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
+                                    pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
+                                    break;
                         }
                         pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
                         pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
