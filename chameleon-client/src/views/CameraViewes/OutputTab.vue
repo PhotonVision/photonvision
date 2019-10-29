@@ -17,8 +17,8 @@
 
 <script>
 import CVselect from '../../components/cv-select'
-import DualCalibration from "./OutputViewes/DualCalibration";
-import SingleCalibration from "./OutputViewes/SingleCalibration";
+import DualCalibration from "../../components/OutputTab/DualCalibration";
+import SingleCalibration from "../../components/OutputTab/SingleCalibration";
     export default {
         name: 'Output',
         props:['value'],
