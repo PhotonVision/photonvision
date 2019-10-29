@@ -1,34 +1,39 @@
 <template>
     <div>
-        <CVslider name="Exposure" v-model="value.exposure" :min="0" :max="100" @input="handleInput('exposure',value.exposure)"></CVslider>
-        <CVslider name="Brightness" v-model="value.brightness" :min="0" :max="100" @input="handleInput('brightness',value.brightness)"></CVslider>
-        <CVselect name="Orientation" v-model="value.orientation" :list="['Normal','Inverted']" @input="handleInput('orientation',value.orientation)"></CVselect>
+        <CVslider name="Exposure" v-model="value.exposure" :min="0" :max="100" @input="handleData('exposure')"/>
+        <CVslider name="Brightness" v-model="value.brightness" :min="0" :max="100" @input="handleData('brightness')"/>
+        <CVselect name="Orientation" v-model="value.orientation" :list="['Normal','Inverted']"
+                  @input="handleData('orientation')"/>
     </div>
 </template>
 
 <script>
-import CVslider from '../../components/cv-slider'
-import CVselect from '../../components/cv-select'
+    import CVslider from '../../components/cv-slider'
+    import CVselect from '../../components/cv-select'
+
     export default {
         name: 'Input',
-        props:['value'],
-        components:{
+        props: ['value'],
+        components: {
             CVslider,
             CVselect,
         },
-        data() {
-            return {
-                t:0,
-                a:1
+        methods: {
+            handleData(val) {
+                this.handleInput(val, this.value[val])
+                this.$emit('update')
             }
         },
-        methods:{
-
+        data() {
+            return {
+                t: 0,
+                a: 1
+            }
         },
-        computed:{}
+        computed: {}
     }
 </script>
 
 <style scoped>
-    
+
 </style>

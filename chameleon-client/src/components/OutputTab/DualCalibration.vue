@@ -49,6 +49,7 @@
             sendSlope(m, b, valid) {
                 this.handleInput('m', m);
                 this.handleInput('b', b);
+                this.$emit('update');
             },
             clearSlope() {
                 this.sendSlope(1, 0, false);

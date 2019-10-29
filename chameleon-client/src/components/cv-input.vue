@@ -5,7 +5,8 @@
                 <span>{{name}}</span>
             </v-col>
             <v-col :cols="9">
-                 <v-text-field @keydown="handleKeyboard" dark v-model="localValue" dense  :disabled="disabled" :error-messages="errorMessage"></v-text-field>
+                <v-text-field @keydown="handleKeyboard" dark v-model="localValue" dense :disabled="disabled"
+                              :error-messages="errorMessage"/>
             </v-col>
         </v-row>
     </div>
@@ -14,26 +15,24 @@
 <script>
     export default {
         name: 'Input',
-        props:['name','value','disabled','errorMessage'],
+        props: ['name', 'value', 'disabled', 'errorMessage'],
         data() {
-            return {
-                
-            }
+            return {}
         },
-        methods:{
-            handleKeyboard(event){
-                if(event.key == "Enter"){
+        methods: {
+            handleKeyboard(event) {
+                if (event.key == "Enter") {
                     this.$emit("Enter");
                 }
             }
         },
-        computed:{
-            localValue:{
-                get(){
+        computed: {
+            localValue: {
+                get() {
                     return this.value;
                 },
-                set(value){
-                    this.$emit('input',value);
+                set(value) {
+                    this.$emit('input', value);
                 }
             }
         }
@@ -41,5 +40,5 @@
 </script>
 
 <style lang="" scoped>
-    
+
 </style>

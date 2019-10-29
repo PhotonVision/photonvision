@@ -26,64 +26,75 @@
                               @input="handleInput('currentPipeline',currentPipelineIndex)"/>
                     <CVinput v-else name="Pipeline" v-model="newPipelineName" @Enter="savePipelineNameChange"/>
                 </v-col>
-                 <v-col :cols="1" class="colsClass">
-                        <v-menu v-if="isPipelineEdit === false" offset-y dark auto>
-                            <template v-slot:activator="{ on }">
-                                <v-icon color="white" v-on="on">menu</v-icon>
-                            </template>
-                            <v-list dense>
-                                <v-list-item @click="toPipelineNameChange">
-                                    <v-list-item-title>
-                                        <CVicon color="#c5c5c5" :right="true" text="edit" tooltip="Edit pipeline name"/>
-                                    </v-list-item-title>
-                                </v-list-item>
-                                      <v-list-item @click="handleInput('command','addNewPipeline')">
-                                    <v-list-item-title>
-                                        <CVicon color="#c5c5c5" :right="true" text="add" tooltip="Add new pipeline"/>
-                                    </v-list-item-title>
-                                </v-list-item>
-                                <v-list-item @click="deleteCurrentPipeline">
-                                    <v-list-item-title>
-                                        <CVicon color="red darken-2" :right="true" text="delete"
-                                                tooltip="Delete pipeline"/>
-                                    </v-list-item-title>
-                                </v-list-item>
-                                <v-list-item @click="openDuplicateDialog">
-                                    <v-list-item-title>
-                                        <CVicon color="#c5c5c5" :right="true" text="mdi-content-copy"
-                                                tooltip="Duplicate pipeline"/>
-                                    </v-list-item-title>
-                                </v-list-item>
-                            </v-list>
-                        </v-menu>
-                        <div v-else>
-                            <CVicon color="#c5c5c5" style="display: inline-block;" hover text="save"
-                                    @click="savePipelineNameChange" tooltip="Save Pipeline Name"/>
-                            <CVicon color="error" style="display: inline-block;" hover text="close"
-                                    @click="discardPipelineNameChange" tooltip="Discard Changes"/>
-                        </div>
+                <v-col :cols="1" class="colsClass" md="3">
+                    <v-menu v-if="isPipelineEdit === false" offset-y dark auto>
+                        <template v-slot:activator="{ on }">
+                            <v-icon color="white" v-on="on">menu</v-icon>
+                        </template>
+                        <v-list dense>
+                            <v-list-item @click="toPipelineNameChange">
+                                <v-list-item-title>
+                                    <CVicon color="#c5c5c5" :right="true" text="edit" tooltip="Edit pipeline name"/>
+                                </v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="handleInput('command','addNewPipeline')">
+                                <v-list-item-title>
+                                    <CVicon color="#c5c5c5" :right="true" text="add" tooltip="Add new pipeline"/>
+                                </v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="deleteCurrentPipeline">
+                                <v-list-item-title>
+                                    <CVicon color="red darken-2" :right="true" text="delete"
+                                            tooltip="Delete pipeline"/>
+                                </v-list-item-title>
+                            </v-list-item>
+                            <v-list-item @click="openDuplicateDialog">
+                                <v-list-item-title>
+                                    <CVicon color="#c5c5c5" :right="true" text="mdi-content-copy"
+                                            tooltip="Duplicate pipeline"/>
+                                </v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                    <div v-else>
+                        <CVicon color="#c5c5c5" style="display: inline-block;" hover text="save"
+                                @click="savePipelineNameChange" tooltip="Save Pipeline Name"/>
+                        <CVicon color="error" style="display: inline-block;" hover text="close"
+                                @click="discardPipelineNameChange" tooltip="Discard Changes"/>
+                    </div>
                 </v-col>
-                
+
+                <v-btn style="position: absolute; top:5px;right: 0;" tile color="#4baf62"
+                       @click="handleInput('command','save')">
+                    <v-icon>save</v-icon>
+                    Save
+                </v-btn>
+
             </v-row>
         </div>
         <v-row>
             <!-- vision tabs -->
             <v-col cols="6" class="colsClass">
-                <v-tabs fixed-tabs background-color="#212121" dark height="48" slider-color="#4baf62" v-model="selectedTab">
+                <v-tabs fixed-tabs background-color="#212121" dark height="48" slider-color="#4baf62"
+                        v-model="selectedTab">
                     <v-tab>Input</v-tab>
                     <v-tab>Threshold</v-tab>
                     <v-tab>Contours</v-tab>
                     <v-tab>Output</v-tab>
                 </v-tabs>
                 <div style="padding-left:30px">
-                    <!-- vision component -->
-                    <component v-model="pipeline" :is="selectedComponent"/>
+                    <keep-alive>
+                        <!-- vision component -->
+                        <component v-model="pipeline" :is="selectedComponent" @update="startTimer"/>
+                    </keep-alive>
                 </div>
             </v-col>
             <v-col cols="6" class="colsClass">
                 <div>
                     <!-- camera image tabs -->
-                    <v-tabs background-color="#212121" dark height="48" slider-color="#4baf62" centered style="padding-bottom:10px" v-model="isBinaryNumber" @change="handleInput('isBinary',pipeline.isBinary)">
+                    <v-tabs background-color="#212121" dark height="48" slider-color="#4baf62" centered
+                            style="padding-bottom:10px" v-model="isBinaryNumber"
+                            @change="handleInput('isBinary',pipeline.isBinary)">
                         <v-tab>Normal</v-tab>
                         <v-tab>Threshold</v-tab>
                     </v-tabs>
@@ -95,11 +106,11 @@
                     </div>
                 </div>
             </v-col>
-      </v-row>
-      <!-- pipeline duplicate dialog -->
-      <v-dialog dark v-model="duplicateDialog" width="500" height="357" >
-        <v-card dark>
-            <v-card-title class="headline" primary-title>Duplicate Pipeline</v-card-title>
+        </v-row>
+        <!-- pipeline duplicate dialog -->
+        <v-dialog dark v-model="duplicateDialog" width="500" height="357">
+            <v-card dark>
+                <v-card-title class="headline" primary-title>Duplicate Pipeline</v-card-title>
                 <v-card-text>
                     <CVselect name="Pipeline" :list="pipelineList" v-model="pipelineDuplicate.pipeline"/>
                     <v-checkbox v-if="cameraList.length > 1" dark :label="'To another camera'" v-model="anotherCamera"/>
@@ -113,27 +124,34 @@
                     <v-btn color="#4baf62" text @click="duplicatePipeline">Duplicate</v-btn>
                     <v-btn color="error" text @click="closeDuplicateDialog">Cancels</v-btn>
                 </v-card-actions>
-        </v-card>
-    </v-dialog>
-    <!-- snack bar -->
-    <v-snackbar :timeout="3000" v-model="snackbar" top color="error">
+            </v-card>
+        </v-dialog>
+        <!-- snack bar -->
+        <v-snackbar :timeout="3000" v-model="snackbar" top color="error">
             <span style="color:#000">Can not remove the only pipeline!</span>
             <v-btn color="black" text @click="snackbar = false">Close</v-btn>
-    </v-snackbar>
+        </v-snackbar>
+        <v-snackbar :timeout="1000" v-model="saveSnackbar" top color="#4baf62">
+            <div style="text-align: center;width: 100%;">
+                <h4>Saved All changes</h4>
+            </div>
+
+        </v-snackbar>
     </div>
 </template>
 
 <script>
-import InputTab from './CameraViewes/InputTab'
-import ThresholdTab from './CameraViewes/ThresholdTab'
-import ContoursTab from './CameraViewes/ContoursTab'
-import OutputTab from './CameraViewes/OutputTab'
-import CVselect from '../components/cv-select'
-import CVicon from '../components/cv-icon'
-import CVinput from '../components/cv-input'
+    import InputTab from './CameraViewes/InputTab'
+    import ThresholdTab from './CameraViewes/ThresholdTab'
+    import ContoursTab from './CameraViewes/ContoursTab'
+    import OutputTab from './CameraViewes/OutputTab'
+    import CVselect from '../components/cv-select'
+    import CVicon from '../components/cv-icon'
+    import CVinput from '../components/cv-input'
+
     export default {
         name: 'CameraTab',
-        components:{
+        components: {
             InputTab,
             ThresholdTab,
             ContoursTab,
@@ -142,107 +160,116 @@ import CVinput from '../components/cv-input'
             CVicon,
             CVinput
         },
-        methods:{
-            test(value){
-                console.log(value)
-            },
-            toCameraNameChange(){
+        methods: {
+            toCameraNameChange() {
                 this.newCameraName = this.cameraList[this.currentCameraIndex];
                 this.isCameraNameEdit = true;
             },
-            saveCameraNameChange(){
-                if(this.cameraNameError === ""){
-                    this.handleInput("changeCameraName",this.newCameraName);
-                    this.discardCameraNameChange();   
+            saveCameraNameChange() {
+                if (this.cameraNameError === "") {
+                    this.handleInput("changeCameraName", this.newCameraName);
+                    this.discardCameraNameChange();
                 }
             },
-            discardCameraNameChange(){
+            discardCameraNameChange() {
                 this.isCameraNameEdit = false;
                 this.newCameraName = "";
             },
-            toPipelineNameChange(){
+            toPipelineNameChange() {
                 this.newPipelineName = this.pipelineList[this.currentPipelineIndex];
                 this.isPipelineEdit = true;
             },
-            savePipelineNameChange(){
-                this.handleInput("changePipelineName",this.newPipelineName);
+            savePipelineNameChange() {
+                this.handleInput("changePipelineName", this.newPipelineName);
                 this.discardPipelineNameChange();
             },
-            discardPipelineNameChange(){
+            discardPipelineNameChange() {
                 this.isPipelineEdit = false;
                 this.newPipelineName = "";
             },
-            duplicatePipeline(){
-                if(!this.anotherCamera){
+            duplicatePipeline() {
+                if (!this.anotherCamera) {
                     this.pipelineDuplicate.camera = -1
                 }
-                this.handleInput("duplicatePipeline",this.pipelineDuplicate);
+                this.handleInput("duplicatePipeline", this.pipelineDuplicate);
                 this.closeDuplicateDialog();
             },
-            openDuplicateDialog(){
+            openDuplicateDialog() {
                 this.pipelineDuplicate = {
-                    pipeline:this.currentPipelineIndex,
-                    camera:-1
+                    pipeline: this.currentPipelineIndex,
+                    camera: -1
                 }
                 this.duplicateDialog = true;
             },
-            closeDuplicateDialog(){
+            closeDuplicateDialog() {
                 this.duplicateDialog = false;
                 this.pipelineDuplicate = {
-                    pipeline:undefined,
-                    camera:-1
+                    pipeline: undefined,
+                    camera: -1
                 }
             },
-            deleteCurrentPipeline(){
+            deleteCurrentPipeline() {
                 if (this.pipelineList.length > 1) {
-                    this.handleInput('command','deleteCurrentPipeline');   
+                    this.handleInput('command', 'deleteCurrentPipeline');
                 } else {
                     this.snackbar = true;
                 }
+            },
+            saveSettings() {
+                clearInterval(this.timer);
+                this.saveSnackbar = true;
+            },
+            startTimer() {
+                if (this.timer !== undefined) {
+                    clearInterval(this.timer);
+                }
+                this.timer = setInterval(this.saveSettings, 4000);
             }
         },
         data() {
             return {
-                selectedTab:0,
+                selectedTab: 1,
                 // camera edit variables
-                isCameraNameEdit:false,
-                newCameraName:"",
-                cameraNameError:"",
+                isCameraNameEdit: false,
+                newCameraName: "",
+                cameraNameError: "",
                 // pipeline edit variables
-                isPipelineEdit:false,
-                newPipelineName:"",
-                duplicateDialog:false,
-                anotherCamera:false,
-                pipelineDuplicate:{
-                    pipeline:undefined,
-                    camera:-1
+                isPipelineEdit: false,
+                newPipelineName: "",
+                duplicateDialog: false,
+                anotherCamera: false,
+                pipelineDuplicate: {
+                    pipeline: undefined,
+                    camera: -1
                 },
-                snackbar:false
+                snackbar: false,
+                saveSnackbar: false,
+                timer: undefined
 
             }
         },
-        computed:{
-            checkCameraName(){
-                if(this.newCameraName !== this.cameraList[this.currentCameraIndex]){
-                    for(let cam in this.cameraList){
-                        if(this.newCameraName === this.cameraList[cam]){
+        computed: {
+            checkCameraName() {
+                if (this.newCameraName !== this.cameraList[this.currentCameraIndex]) {
+                    for (let cam in this.cameraList) {
+                        if (this.newCameraName === this.cameraList[cam]) {
                             return "Camera by that name already Exists"
                         }
                     }
                 }
                 return ""
             },
-            isBinaryNumber:{
-                get(){
-                    return this.pipeline.isBinary ? 1:0
+            isBinaryNumber: {
+                get() {
+                    return this.pipeline.isBinary ? 1 : 0
                 },
-                set(value){
+                set(value) {
                     this.pipeline.isBinary = !!value;
                 }
             },
-            selectedComponent:{
-                get(){
-                    switch(this.selectedTab){
+            selectedComponent: {
+                get() {
+                    switch (this.selectedTab) {
                         case 0:
                             return "InputTab";
                         case 1:
@@ -255,51 +282,51 @@ import CVinput from '../components/cv-input'
                     return "";
                 }
             },
-            point:{
-                 get:function(){
+            point: {
+                get: function () {
                     let p = this.$store.state.point.calculated;
                     let fps = this.$store.state.point.fps;
-                    if(p !== undefined){
+                    if (p !== undefined) {
                         return ("Pitch: " + parseFloat(p['pitch']).toFixed(2) + " Yaw: " + parseFloat(p['yaw']).toFixed(2) + " FPS: " + fps.toFixed(2))
-                    } else{
+                    } else {
                         return undefined;
                     }
                 }
             },
-            currentCameraIndex:{
-                get(){
+            currentCameraIndex: {
+                get() {
                     return this.$store.state.currentCameraIndex;
                 },
-                set(value){
-                    this.$store.commit('currentCameraIndex',value);
+                set(value) {
+                    this.$store.commit('currentCameraIndex', value);
                 }
             },
-            currentPipelineIndex:{
-                get(){
+            currentPipelineIndex: {
+                get() {
                     return this.$store.state.currentPipelineIndex;
                 },
-                set(value){
-                    this.$store.commit('currentPipelineIndex',value);
+                set(value) {
+                    this.$store.commit('currentPipelineIndex', value);
                 }
             },
-            cameraList:{
-                get(){
+            cameraList: {
+                get() {
                     return this.$store.state.cameraList;
                 }
             },
-            pipelineList:{
-                get(){
+            pipelineList: {
+                get() {
                     return this.$store.state.pipelineList;
                 }
             },
-            pipeline:{
-                get(){
+            pipeline: {
+                get() {
                     return this.$store.state.pipeline;
                 }
             },
             streamAddress: {
-                get: function(){
-                    return "http://"+location.hostname + ":"+ this.$store.state.port +"/stream.mjpg";
+                get: function () {
+                    return "http://" + location.hostname + ":" + this.$store.state.port + "/stream.mjpg";
                 }
             },
         }
@@ -307,19 +334,22 @@ import CVinput from '../components/cv-input'
 </script>
 
 <style scoped>
-    .colsClass{
+    .colsClass {
         padding: 0 !important;
-        
+
     }
-    .videoClass{
+
+    .videoClass {
         text-align: center;
     }
-    .videoClass img{
+
+    .videoClass img {
         height: auto !important;
         width: 70%;
         vertical-align: middle;
     }
-    #Point{
+
+    #Point {
         padding-top: 5px;
         text-align: center;
         color: #f4f4f4;

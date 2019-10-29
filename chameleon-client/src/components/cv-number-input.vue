@@ -5,7 +5,8 @@
                 <span>{{name}}</span>
             </v-col>
             <v-col>
-                 <v-text-field dark v-model="localValue" class="mt-0 pt-0" hide-details single-line type="number" style="width: 70px"></v-text-field>
+                <v-text-field dark v-model="localValue" class="mt-0 pt-0" hide-details single-line type="number"
+                              style="width: 70px"/>
             </v-col>
         </v-row>
     </div>
@@ -14,18 +15,16 @@
 <script>
     export default {
         name: 'NumberInput',
-        props:['name','value'],
+        props: ['name', 'value'],
         data() {
-            return {
-                
-            }
+            return {}
         },
-        computed:{
-            localValue:{
-                get(){
+        computed: {
+            localValue: {
+                get() {
                     return this.value;
                 },
-                set(value){
+                set(value) {
                     this.$emit('input', parseInt(value));
                 }
             }
@@ -34,5 +33,5 @@
 </script>
 
 <style lang="" scoped>
-    
+
 </style>

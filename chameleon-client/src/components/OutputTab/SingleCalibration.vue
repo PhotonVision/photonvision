@@ -15,12 +15,14 @@
     export default {
         name: "SingleCalibration",
         props: ['rawPoint'],
-        methods:{
-            clearPoint(){
-                this.handleInput('point',[0,0]);
+        methods: {
+            clearPoint() {
+                this.handleInput('point', [0, 0]);
+                this.$emit('update');
             },
-            takePoint(){
-                this.handleInput('point',this.rawPoint);
+            takePoint() {
+                this.handleInput('point', this.rawPoint);
+                this.$emit('update');
             }
         }
     }
