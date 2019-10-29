@@ -68,11 +68,13 @@ public class ServerHandler {
                     case "changeCameraName": {
                         CameraManager.getCurrentCamera().setNickname((String) entry.getValue());
                         sendFullSettings();
+                        SettingsManager.saveSettings();
                         break;
                     }
                     case "changePipelineName": {
                         CameraManager.getCurrentPipeline().nickname = (String) entry.getValue();
                         sendFullSettings();
+                        SettingsManager.saveSettings();
                         break;
                     }
                     case "duplicatePipeline": {
@@ -87,6 +89,7 @@ public class ServerHandler {
                         } else {
                             CameraManager.getCurrentCamera().addPipeline(origPipeline);
                         }
+                        SettingsManager.saveSettings();
                         break;
                     }
                     case "command": {
@@ -95,6 +98,7 @@ public class ServerHandler {
                             case "addNewPipeline":
                                 cam.addPipeline();
                                 sendFullSettings();
+                                SettingsManager.saveSettings();
                                 break;
                             case "deleteCurrentPipeline":
                                 int currentIndex = cam.getCurrentPipelineIndex();
@@ -107,6 +111,10 @@ public class ServerHandler {
                                 cam.deletePipeline();
                                 cam.setCurrentPipelineIndex(nextIndex);
                                 sendFullSettings();
+                                SettingsManager.saveSettings();
+                                break;
+                            case "save":
+                                SettingsManager.saveSettings();
                                 break;
                         }
                         // used to define all incoming commands
