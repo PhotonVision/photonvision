@@ -22,6 +22,8 @@ public class VisionProcess implements Runnable {
     // NetworkTables
     public NetworkTableEntry ntPipelineEntry;
     public NetworkTableEntry ntDriverModeEntry;
+    private int ntDriveModeListenerID;
+    private int ntPipelineListenerID;
     private NetworkTableEntry ntYawEntry;
     private NetworkTableEntry ntPitchEntry;
     private NetworkTableEntry ntDistanceEntry;
@@ -47,18 +49,9 @@ public class VisionProcess implements Runnable {
         this.cameraName = camera.name;
 
         // NetworkTables
-        NetworkTable ntTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraName);
-        ntPipelineEntry = ntTable.getEntry("pipeline");
-        ntDriverModeEntry = ntTable.getEntry("driver_mode");
-        ntPitchEntry = ntTable.getEntry("pitch");
-        ntYawEntry = ntTable.getEntry("yaw");
-        ntDistanceEntry = ntTable.getEntry("distance");
-        ntTimeStampEntry = ntTable.getEntry("timestamp");
-        ntValidEntry = ntTable.getEntry("is_valid");
-        ntDriverModeEntry.addListener(this::driverModeListener, EntryListenerFlags.kUpdate);
-        ntPipelineEntry.addListener(this::pipelineListener, EntryListenerFlags.kUpdate);
-        ntDriverModeEntry.setBoolean(false);
-        ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
+//        NetworkTable ntTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraName);
+//        NetworkTable ntTable = camera.getNtTable();
+        initNT(NetworkTableInstance.getDefault().getTable("/chameleon-vision/"+processCam.getNickname()));
 
         // camera settings
         cvProcess = new CVProcess(camera.getCamVals());
@@ -78,9 +71,9 @@ public class VisionProcess implements Runnable {
 
     private void pipelineListener(EntryNotification entryNotification) {
         var ntPipelineIndex = (int) entryNotification.value.getDouble();
-        if (ntPipelineIndex >= camera.getPipelines().size()){
+        if (ntPipelineIndex >= camera.getPipelines().size()) {
             ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
-        } else{
+        } else {
             var pipeline = camera.getCurrentPipeline();
             camera.setCurrentPipelineIndex(ntPipelineIndex);
             try {
@@ -158,11 +151,11 @@ public class VisionProcess implements Runnable {
             filteredContours = cvProcess.filterContours(foundContours, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent);
             if (filteredContours.size() > 0) {
                 deSpeckledContours = cvProcess.rejectSpeckles(filteredContours, currentPipeline.speckle.doubleValue());
-                if (deSpeckledContours.size() > 0){
+                if (deSpeckledContours.size() > 0) {
                     groupedContours = cvProcess.groupTargets(deSpeckledContours, currentPipeline.targetIntersection, currentPipeline.targetGroup);
                     if (groupedContours.size() > 0) {
                         var finalRect = cvProcess.sortTargetsToOne(groupedContours, currentPipeline.sortMode);
-    //					System.out.printf("Largest Contour Area: %.2f\n", finalRect.size.area());
+                        //					System.out.printf("Largest Contour Area: %.2f\n", finalRect.size.area());
                         pipelineResult.RawPoint = finalRect;
                         pipelineResult.IsValid = true;
                         if (!currentPipeline.isCalibrated) {
@@ -261,5 +254,37 @@ public class VisionProcess implements Runnable {
                 //				System.out.printf("%s - Process time: %-5.2fms, FPS: %-5.2f, FoundContours: %d, FilteredContours: %d, GroupedContours: %d\n", cameraName, processTimeMs, fps, FoundContours.size(), FilteredContours.size(), GroupedContours.size());
             }
         }
+
+}
+    /**
+     *  Removes the old value change listeners
+     *  calls {@link #initNT}
+     * @param newTable passed to {@link #initNT}
+     *
+     */
+    public void resetNT(NetworkTable newTable)
+    {
+        ntDriverModeEntry.removeListener(ntDriveModeListenerID);
+        ntPipelineEntry.removeListener(ntPipelineListenerID);
+        initNT(newTable);
+    }
+
+    /**
+     *  Rebases the writing location for the vision process - pipeline output
+     * @param newTable the new writing location
+     */
+    private void initNT(NetworkTable newTable)
+    {
+        ntPipelineEntry = newTable.getEntry("pipeline");
+        ntDriverModeEntry = newTable.getEntry("driver_mode");
+        ntPitchEntry = newTable.getEntry("pitch");
+        ntYawEntry = newTable.getEntry("yaw");
+        ntDistanceEntry = newTable.getEntry("distance");
+        ntTimeStampEntry = newTable.getEntry("timestamp");
+        ntValidEntry = newTable.getEntry("is_valid");
+        ntDriveModeListenerID = ntDriverModeEntry.addListener(this::driverModeListener, EntryListenerFlags.kUpdate);
+        ntPipelineListenerID = ntPipelineEntry.addListener(this::pipelineListener, EntryListenerFlags.kUpdate);
+        ntDriverModeEntry.setBoolean(false);
+        ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
     }
 }

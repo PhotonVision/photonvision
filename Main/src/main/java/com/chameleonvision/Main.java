@@ -128,22 +128,22 @@ public class Main {
         try {
             CameraServerJNI.forceLoad();
             CameraServerCvJNI.forceLoad();
-        } catch (IOException e) {
+        } catch (UnsatisfiedLinkError | IOException e) {
+            if(Platform.getCurrentPlatform().isWindows())
+                System.err.println("Try to download the VC++ Redistributable, see announcements in discord");
             throw new RuntimeException("Failed to load JNI Libraries!");
         }
-
         if (CameraManager.initializeCameras()) {
             SettingsManager.initialize();
             NetworkManager.initialize(manageNetwork);
             CameraManager.initializeThreads();
-
             if (ntServerMode) {
                 System.out.println("Starting NT Server");
                 NetworkTableInstance.getDefault().startServer();
             } else {
                 NetworkTableInstance.getDefault().addLogger(new NTLogger(), 0, 255); // to hide error messages
                 if (ntClientModeServer != null) {
-                    NetworkTableInstance.getDefault().startClient(ntClientModeServer);
+                     NetworkTableInstance.getDefault().startClient(ntClientModeServer);
                 } else {
                     NetworkTableInstance.getDefault().startClientTeam(SettingsManager.GeneralSettings.teamNumber);
                 }

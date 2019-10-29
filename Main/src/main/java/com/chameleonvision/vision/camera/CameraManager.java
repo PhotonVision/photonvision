@@ -22,7 +22,7 @@ public class CameraManager {
 	private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "cameras");
 
 	private static LinkedHashMap<String, Camera> AllCamerasByName = new LinkedHashMap<>();
-	private static HashMap<String, VisionProcess> AllVisionProcessesByName = new HashMap<>();
+	public static HashMap<String, VisionProcess> AllVisionProcessesByName = new HashMap<>();
 
 	static HashMap<String, UsbCameraInfo> AllUsbCameraInfosByName = new HashMap<>() {{
 		var suffix = 0;
