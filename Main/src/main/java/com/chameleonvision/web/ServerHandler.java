@@ -103,7 +103,7 @@ public class ServerHandler {
                             case "deleteCurrentPipeline":
                                 int currentIndex = cam.getCurrentPipelineIndex();
                                 int nextIndex;
-                                if (currentIndex == cam.getPipelines().size() - 1){
+                                if (currentIndex == cam.getPipelines().size() - 1) {
                                     nextIndex = currentIndex - 1;
                                 } else {
                                     nextIndex = currentIndex;
@@ -132,7 +132,7 @@ public class ServerHandler {
                         try {
                             cam.setBrightness(cam.getCurrentPipeline().brightness);
                             cam.setExposure(cam.getCurrentPipeline().exposure);
-                        }catch (Exception e){
+                        } catch (Exception e) {
                             continue;
                         }
                         break;
@@ -141,11 +141,7 @@ public class ServerHandler {
                         setField(CameraManager.getCurrentCamera().getCurrentPipeline(), entry.getKey(), entry.getValue());
                         switch (entry.getKey()) {
                             case "exposure": {
-                                try {
-                                    CameraManager.getCurrentCamera().setExposure((Integer) entry.getValue());
-                                } catch (Exception e) {
-                                    System.err.println("Camera Does not support exposure change");
-                                }
+                                CameraManager.getCurrentCamera().setExposure((Integer) entry.getValue());
                             }
                             case "brightness": {
                                 CameraManager.getCurrentCamera().setBrightness((Integer) entry.getValue());
@@ -247,7 +243,7 @@ public class ServerHandler {
             fullSettings.put("pipelineList", currentCamera.getPipelinesNickname());
             fullSettings.put("resolutionList", currentCamera.getResolutionList());
             fullSettings.put("port", currentCamera.getStreamPort());
-            fullSettings.put("currentPipelineIndex",CameraManager.getCurrentCamera().getCurrentPipelineIndex());
+            fullSettings.put("currentPipelineIndex", CameraManager.getCurrentCamera().getCurrentPipelineIndex());
             fullSettings.put("currentCameraIndex", CameraManager.getCurrentCameraIndex());
         } catch (CameraException | IllegalAccessException e) {
             System.err.println("No camera found!");

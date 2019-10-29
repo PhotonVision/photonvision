@@ -7,6 +7,8 @@ import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.*;
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import org.opencv.core.Mat;
 
 import java.nio.channels.Pipe;
@@ -65,9 +67,11 @@ public class Camera {
     public Camera(String cameraName, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor) {
         this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex, divisor);
     }
+
     public Camera(String cameraName, double fov, int videoModeIndex, StreamDivisor divisor) {
         this(cameraName, fov, new ArrayList<>(), videoModeIndex, divisor);
     }
+
     public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor) {
         FOV = fov;
         name = cameraName;
@@ -140,18 +144,21 @@ public class Camera {
             ServerHandler.sendFullSettings();
         }
     }
+
     public void addPipeline() {
         Pipeline p = new Pipeline();
         p.nickname = "New pipeline " + pipelines.size();
         addPipeline(p);
     }
-    public void addPipeline(Pipeline p){
+
+    public void addPipeline(Pipeline p) {
         this.pipelines.add(p);
     }
 
     public void deletePipeline(int index) {
         pipelines.remove(index);
     }
+
     public void deletePipeline() {
         deletePipeline(getCurrentPipelineIndex());
     }
@@ -184,7 +191,8 @@ public class Camera {
     public List<Pipeline> getPipelines() {
         return pipelines;
     }
-    public List<String> getPipelinesNickname(){
+
+    public List<String> getPipelinesNickname() {
         var pipelines = getPipelines();
         return pipelines.stream().map(pipeline -> pipeline.nickname).collect(Collectors.toList());
     }
@@ -220,7 +228,13 @@ public class Camera {
 
     public void setExposure(int exposure) {
         getCurrentPipeline().exposure = exposure;
-        UsbCam.setExposureManual(exposure);
+        try {
+            UsbCam.setExposureManual(exposure);
+        }
+        catch (VideoException e)
+        {
+            System.err.println("Camera Does not support exposure change");
+        }
     }
 
     public long grabFrame(Mat image) {
@@ -244,10 +258,17 @@ public class Camera {
     }
 
     public void setNickname(String newNickname) {
+        //Deletes old camera nt table
+         NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + this.nickname).getInstance().deleteAllEntries();
         nickname = newNickname;
+        if (CameraManager.AllVisionProcessesByName.containsKey(this.name)) {
+            NetworkTable newNT = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + this.nickname);
+            CameraManager.AllVisionProcessesByName.get(this.name).resetNT(newNT);
+        }
     }
 
     public String getNickname() {
         return nickname == null ? name : nickname;
     }
+
 }

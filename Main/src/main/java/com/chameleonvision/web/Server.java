@@ -10,8 +10,7 @@ public class Server {
     public static void main(int port) {
         handler = new ServerHandler();
 
-        Javalin app = Javalin.create();
-
+        Javalin app = Javalin.create(javalinConfig -> javalinConfig.showJavalinBanner=false);
         app.config.addStaticFiles("web");
         app.ws("/websocket", ws -> {
             ws.onConnect(ctx -> {
