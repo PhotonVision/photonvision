@@ -228,7 +228,13 @@ public class Camera {
 
     public void setExposure(int exposure) {
         getCurrentPipeline().exposure = exposure;
-        UsbCam.setExposureManual(exposure);
+        try {
+            UsbCam.setExposureManual(exposure);
+        }
+        catch (VideoException e)
+        {
+            System.err.println("Camera Does not support exposure change");
+        }
     }
 
     public long grabFrame(Mat image) {
@@ -252,6 +258,8 @@ public class Camera {
     }
 
     public void setNickname(String newNickname) {
+        //Deletes old camera nt table
+         NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + this.nickname).getInstance().deleteAllEntries();
         nickname = newNickname;
         if (CameraManager.AllVisionProcessesByName.containsKey(this.name)) {
             NetworkTable newNT = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + this.nickname);
