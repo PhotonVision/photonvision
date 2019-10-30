@@ -5,7 +5,7 @@
                 <span>{{name}}</span>
             </v-col>
             <v-col>
-                <v-switch v-model="localValue" color="#4baf62"></v-switch>
+                <v-switch v-model="localValue" color="#4baf62"/>
             </v-col>
         </v-row>
     </div>
@@ -14,19 +14,17 @@
 <script>
     export default {
         name: 'CVSwitch',
-        props:['name','value'],
+        props: ['name', 'value'],
         data() {
-            return {
-                
-            }
+            return {}
         },
-        computed:{
-            localValue:{
-                get(){
+        computed: {
+            localValue: {
+                get() {
                     return this.value;
                 },
-                set(value){
-                    this.$emit('input',value)
+                set(value) {
+                    this.$emit('input', value)
                 }
             }
         }
@@ -34,5 +32,5 @@
 </script>
 
 <style lang="" scoped>
-    
+
 </style>

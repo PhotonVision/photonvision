@@ -12,6 +12,7 @@ public class CameraValues {
    public final double CenterX;
    public final double CenterY;
    public final double DiagonalView;
+   public final double DiagonalAspect;
    public final Fraction AspectFraction;
    public final int HorizontalRatio;
    public final int VerticalRatio;
@@ -35,8 +36,9 @@ public class CameraValues {
         AspectFraction = new Fraction(ImageWidth, ImageHeight);
         HorizontalRatio = AspectFraction.getNumerator();
         VerticalRatio = AspectFraction.getDenominator();
-        HorizontalView = FastMath.atan(FastMath.tan(DiagonalView / 2) * (HorizontalRatio / DiagonalView)) * 2;
-        VerticalView = FastMath.atan(FastMath.tan(DiagonalView/2) * (VerticalRatio / DiagonalView)) * 2;
+        DiagonalAspect = FastMath.hypot(HorizontalRatio, VerticalRatio);
+        HorizontalView = FastMath.atan(FastMath.tan(DiagonalView / 2) * (HorizontalRatio / DiagonalAspect)) * 2;
+        VerticalView = FastMath.atan(FastMath.tan(DiagonalView / 2) * (VerticalRatio / DiagonalAspect)) * 2;
         HorizontalFocalLength = ImageWidth / (2 * FastMath.tan(HorizontalView /2));
         VerticalFocalLength = ImageHeight / (2 * FastMath.tan(VerticalView /2));
     }

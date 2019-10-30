@@ -52,6 +52,7 @@ public class ServerHandler {
                             setField(SettingsManager.GeneralSettings, e.getKey(), e.getValue());
                         }
                         SettingsManager.saveSettings();
+                        sendFullSettings();
                         break;
                     }
                     case "cameraSettings": {
@@ -60,16 +61,19 @@ public class ServerHandler {
                         CameraManager.getCurrentCamera().setStreamDivisor((Integer) camSettings.get("streamDivisor"));
                         CameraManager.getCurrentCamera().setCamVideoMode((Integer) camSettings.get("resolution"), true);
                         SettingsManager.saveSettings();
+                        sendFullSettings();
                         break;
                     }
                     case "changeCameraName": {
                         CameraManager.getCurrentCamera().setNickname((String) entry.getValue());
                         sendFullSettings();
+                        SettingsManager.saveSettings();
                         break;
                     }
                     case "changePipelineName": {
                         CameraManager.getCurrentPipeline().nickname = (String) entry.getValue();
                         sendFullSettings();
+                        SettingsManager.saveSettings();
                         break;
                     }
                     case "duplicatePipeline": {
@@ -84,6 +88,7 @@ public class ServerHandler {
                         } else {
                             CameraManager.getCurrentCamera().addPipeline(origPipeline);
                         }
+                        SettingsManager.saveSettings();
                         break;
                     }
                     case "command": {
@@ -92,6 +97,7 @@ public class ServerHandler {
                             case "addNewPipeline":
                                 cam.addPipeline();
                                 sendFullSettings();
+                                SettingsManager.saveSettings();
                                 break;
                             case "deleteCurrentPipeline":
                                 int currentIndex = cam.getCurrentPipelineIndex();
@@ -104,6 +110,10 @@ public class ServerHandler {
                                 cam.deletePipeline();
                                 cam.setCurrentPipelineIndex(nextIndex);
                                 sendFullSettings();
+                                SettingsManager.saveSettings();
+                                break;
+                            case "save":
+                                SettingsManager.saveSettings();
                                 break;
                         }
                         // used to define all incoming commands
@@ -117,9 +127,7 @@ public class ServerHandler {
                     case "currentPipeline": {
                         var cam = CameraManager.getCurrentCamera();
                         cam.setCurrentPipelineIndex((Integer) entry.getValue());
-                        HashMap<String, Object> tmp = new HashMap<>();
-                        tmp.put("pipeline", getOrdinalPipeline());
-                        broadcastMessage(tmp);
+                        sendFullSettings();
                         try {
                             cam.setBrightness(cam.getCurrentPipeline().brightness);
                             cam.setExposure(cam.getCurrentPipeline().exposure);

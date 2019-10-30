@@ -33,7 +33,8 @@ export default new Vuex.Store({
       targetGrouping:0,
       targetIntersection:0,
       sortMode:0,
-      isBinary:0
+      isBinary:0,
+      calibrationMode:0
     },
     cameraSettings:{},
     resolutionList:[],
@@ -54,7 +55,12 @@ export default new Vuex.Store({
     currentPipelineIndex: set('currentPipelineIndex'),
     cameraList: set('cameraList'),
     pipelineList: set('pipelineList'),
-    point:set('point')
+    point:set('point'),
+    setPipeValues(state,obj){
+      for(let i in obj){
+        Vue.set(state.pipeline,i,obj[i]);
+      }
+    }
   },
   actions: {
     settings: state => state.settings,
@@ -67,10 +73,5 @@ export default new Vuex.Store({
     cameraList: state =>state.cameraList,
     pipelineList: state =>state.pipelineList,
     point: state =>state.point,
-    setPipeValues(state,obj){
-      for(let i in obj){
-        Vue.set(state.pipeline,i,obj[i]);
-      }
-    }
   }
 })

@@ -5,7 +5,8 @@
                 <span>{{name}}</span>
             </v-col>
             <v-col :cols="9">
-                <v-select v-model="localValue" :items="indexList" item-text="name" item-value="index" dark color="#4baf62" item-color="green"  :disabled="disabled"></v-select>
+                <v-select v-model="localValue" :items="indexList" item-text="name" item-value="index" dark
+                          color="#4baf62" item-color="green" :disabled="disabled"/>
             </v-col>
         </v-row>
     </div>
@@ -14,26 +15,26 @@
 <script>
     export default {
         name: 'Select',
-        props:['list','name','value','disabled'],
+        props: ['list', 'name', 'value', 'disabled'],
         data() {
-            return {
-            }
+            return {}
         },
-        computed:{
-            localValue:{
-                get(){
+        computed: {
+            localValue: {
+                get() {
                     return this.value;
                 },
-                set(value){
-                    this.$emit('input',value)
+                set(value) {
+                    this.$emit('input', value)
                 }
             },
-            indexList(){
+            indexList() {
                 let list = []
-                for(let i=0 ; i<this.list.length; i++){
+                for (let i = 0; i < this.list.length; i++) {
                     list.push({
-                        name:this.list[i],
-                        index:i});
+                        name: this.list[i],
+                        index: i
+                    });
                 }
                 return list;
             }
