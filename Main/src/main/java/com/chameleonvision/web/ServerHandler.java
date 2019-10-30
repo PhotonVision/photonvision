@@ -14,7 +14,6 @@ import io.javalin.websocket.*;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
-import org.springframework.beans.BeanUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -152,16 +151,10 @@ public class ServerHandler {
     private void setField(Object obj, String fieldName, Object value) {
         try {
             Field field = obj.getClass().getField(fieldName);
-            if (BeanUtils.isSimpleValueType(field.getType())) {
-                if (field.getType().isEnum()) {
-                    field.set(obj, field.getType().getEnumConstants()[(Integer) value]);
-                } else {
-                    field.set(obj, value);
-                }
-            } else if (field.getType() == List.class) {
-//                if(((ParameterizedType)field.getGenericType()).getActualTypeArguments()[0] == Double.class){
+            if (field.getType().isEnum())
+                field.set(obj, field.getType().getEnumConstants()[(Integer) value]);
+            else
                 field.set(obj, value);
-            }
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
