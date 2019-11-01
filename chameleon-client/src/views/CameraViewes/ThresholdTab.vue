@@ -27,7 +27,7 @@ import CVswitch from '../../components/cv-switch'
         },
         methods:{
             handleData(val){
-                this.handleInput(val,this.value[val])
+                this.handleInput(val,this.value[val]);
                 this.$emit('update')
             }
         }

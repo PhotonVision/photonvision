@@ -20,7 +20,7 @@
         },
         methods: {
             handleData(val) {
-                this.handleInput(val, this.value[val])
+                this.handleInput(val, this.value[val]);
                 this.$emit('update')
             }
         },

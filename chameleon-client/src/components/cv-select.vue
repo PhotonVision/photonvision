@@ -29,7 +29,7 @@
                 }
             },
             indexList() {
-                let list = []
+                let list = [];
                 for (let i = 0; i < this.list.length; i++) {
                     list.push({
                         name: this.list[i],

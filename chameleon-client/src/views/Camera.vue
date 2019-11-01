@@ -85,7 +85,7 @@
                 <div style="padding-left:30px">
                     <keep-alive>
                         <!-- vision component -->
-                        <component v-model="pipeline" :is="selectedComponent" @update="startTimer"/>
+                        <component v-model="pipeline" :is="selectedComponent" @update="$emit('save')"/>
                     </keep-alive>
                 </div>
             </v-col>
@@ -130,12 +130,6 @@
         <v-snackbar :timeout="3000" v-model="snackbar" top color="error">
             <span style="color:#000">Can not remove the only pipeline!</span>
             <v-btn color="black" text @click="snackbar = false">Close</v-btn>
-        </v-snackbar>
-        <v-snackbar :timeout="1000" v-model="saveSnackbar" top color="#4baf62">
-            <div style="text-align: center;width: 100%;">
-                <h4>Saved All changes</h4>
-            </div>
-
         </v-snackbar>
     </div>
 </template>
@@ -198,7 +192,7 @@
                 this.pipelineDuplicate = {
                     pipeline: this.currentPipelineIndex,
                     camera: -1
-                }
+                };
                 this.duplicateDialog = true;
             },
             closeDuplicateDialog() {
@@ -214,16 +208,6 @@
                 } else {
                     this.snackbar = true;
                 }
-            },
-            saveSettings() {
-                clearInterval(this.timer);
-                this.saveSnackbar = true;
-            },
-            startTimer() {
-                if (this.timer !== undefined) {
-                    clearInterval(this.timer);
-                }
-                this.timer = setInterval(this.saveSettings, 4000);
             }
         },
         data() {
@@ -243,8 +227,6 @@
                     camera: -1
                 },
                 snackbar: false,
-                saveSnackbar: false,
-                timer: undefined
 
             }
         },

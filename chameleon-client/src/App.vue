@@ -15,7 +15,12 @@
             <v-container fluid fill-height>
                 <v-layout>
                     <v-flex>
-                        <router-view/>
+                        <router-view @save="startTimer"/>
+                        <v-snackbar :timeout="1000" v-model="saveSnackbar" top color="#4baf62">
+                            <div style="text-align: center;width: 100%;">
+                                <h4>Saved All changes</h4>
+                            </div>
+                        </v-snackbar>
                     </v-flex>
                 </v-layout>
             </v-container>
@@ -42,9 +47,23 @@
                         }
                     }
                 }
+            },
+            saveSettings() {
+                clearInterval(this.timer);
+                this.saveSnackbar = true;
+                this.handleInput("command", "save");
+            },
+            startTimer() {
+                if (this.timer !== undefined) {
+                    clearInterval(this.timer);
+                }
+                this.timer = setInterval(this.saveSettings, 4000);
             }
         },
-        data: () => ({}),
+        data: () => ({
+            saveSnackbar: false,
+            timer: undefined
+        }),
         created() {
             this.$options.sockets.onmessage = async (data) => {
                 try {

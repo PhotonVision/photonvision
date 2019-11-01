@@ -1,19 +1,20 @@
 <template>
     <div>
         <v-row>
-            <v-col cols="6" class="colsClass">
-                <v-tabs fixed-tabs background-color="#212121" dark height="50" slider-color="#4baf62"
+            <v-col class="colsClass" cols="6">
+                <v-tabs background-color="#212121" dark fixed-tabs height="50" slider-color="#4baf62"
                         v-model="selectedTab">
                     <v-tab to="">General</v-tab>
                     <v-tab to="">Cameras</v-tab>
+                    <v-tab to="">Driver Mode</v-tab>
                 </v-tabs>
                 <div style="padding-left:30px">
-                    <component :is="selectedComponent"/>
+                    <component :is="selectedComponent" @update="$emit('save')"/>
                 </div>
             </v-col>
-            <v-col v-show="selectedTab === 1" class="colsClass">
+            <v-col class="colsClass" v-show="selectedTab === 1 || selectedTab === 2">
                 <div class="videoClass">
-                    <img :src="steamAdress">
+                    <img :src="steamAddress">
                 </div>
             </v-col>
         </v-row>
@@ -23,12 +24,14 @@
 <script>
     import General from './SettingsViewes/General'
     import Cameras from './SettingsViewes/Cameras'
+    import DriverMode from './SettingsViewes/DriverMode'
 
     export default {
         name: 'SettingsTab',
         components: {
             General,
             Cameras,
+            DriverMode
         },
         data() {
             return {
@@ -36,15 +39,20 @@
             }
         },
         computed: {
-            selectedComponent() {
-                switch (this.selectedTab) {
-                    case 0:
-                        return "General";
-                    case 1:
-                        return "Cameras";
+            selectedComponent: {
+                get() {
+                    switch (this.selectedTab) {
+                        case 0:
+                            return "General";
+                        case 1:
+                            return "Cameras";
+                        case 2:
+                            return "DriverMode";
+                    }
+                    return "";
                 }
             },
-            steamAdress: {
+            steamAddress: {
                 get: function () {
                     return "http://" + location.hostname + ":" + this.$store.state.port + "/stream.mjpg";
                 }

@@ -229,26 +229,26 @@ public class Camera {
     public void setDriverMode(boolean state)
     {
         Map<String,Integer> data = new HashMap<>();
-        isDriver=state;
-        if(isDriver){
-            UsbCam.setBrightness(driverBrightness);
-            UsbCam.setBrightness(driverBrightness);
-            try{UsbCam.setExposureManual(driverExposure);}
-            catch (VideoException e)
-            {
-                System.out.println("Exposure change isnt supported");
+            isDriver=state;
+            if(isDriver){
+                UsbCam.setBrightness(driverBrightness);
+                UsbCam.setBrightness(driverBrightness);
+                try{UsbCam.setExposureManual(driverExposure);}
+                catch (VideoException e)
+                {
+                    System.out.println("Exposure change isnt supported");
+                }
+                data.put("brightness",getBrightness());
+                data.put("exposure",driverExposure);
             }
-            data.put("brightness",getBrightness());
-            data.put("exposure",driverExposure);
-        }
-        else{
-            UsbCam.setBrightness(getCurrentPipeline().brightness);
-            UsbCam.setBrightness(getCurrentPipeline().brightness);
-            try{UsbCam.setExposureManual(getCurrentPipeline().exposure);}
-            catch (VideoException e)
-            {
-                System.out.println("Exposure change isnt supported");
-            }
+            else{
+                UsbCam.setBrightness(getCurrentPipeline().brightness);
+                UsbCam.setBrightness(getCurrentPipeline().brightness);
+                try{UsbCam.setExposureManual(getCurrentPipeline().exposure);}
+                catch (VideoException e)
+                {
+                    System.out.println("Exposure change isnt supported");
+                }
             data.put("brightness",getBrightness());
             data.put("exposure",getCurrentPipeline().exposure);
         }

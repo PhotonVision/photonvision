@@ -114,6 +114,7 @@ public class ServerHandler {
                                 break;
                             case "save":
                                 SettingsManager.saveSettings();
+                                System.out.println("saved Settings");
                                 break;
                         }
                         // used to define all incoming commands
