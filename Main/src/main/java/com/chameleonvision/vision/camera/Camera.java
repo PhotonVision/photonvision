@@ -52,7 +52,7 @@ public class Camera {
     //Driver mode camera settings
     public int driverExposure;
     public int driverBrightness;
-    public boolean isDriver;
+    private boolean isDriver;
 
     public Camera(String cameraName) {
         this(cameraName, DEFAULT_FOV);
@@ -67,18 +67,18 @@ public class Camera {
     }
 
     public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, StreamDivisor divisor) {
-        this(cameraName, usbCamInfo, fov, new ArrayList<>(), 0, divisor, DEFAULT_EXPOSURE, DEFAULT_BRIGHTNESS);
+        this(cameraName, usbCamInfo, fov, new ArrayList<>(), 0, divisor, DEFAULT_EXPOSURE, DEFAULT_BRIGHTNESS,false);
     }
 
-    public Camera(String cameraName, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, int driverExposure, int driverBrightness) {
-        this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex, divisor, driverExposure, driverBrightness);
+    public Camera(String cameraName, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, int driverExposure, int driverBrightness,boolean isDriver) {
+        this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex, divisor, driverExposure, driverBrightness, isDriver);
     }
 
-    public Camera(String cameraName, double fov, int videoModeIndex, StreamDivisor divisor, int driverExposure, int driverBrightness) {
-        this(cameraName, fov, new ArrayList<>(), videoModeIndex, divisor, driverExposure, driverBrightness);
+    public Camera(String cameraName, double fov, int videoModeIndex, StreamDivisor divisor, int driverExposure, int driverBrightness,boolean isDriver) {
+        this(cameraName, fov, new ArrayList<>(), videoModeIndex, divisor, driverExposure, driverBrightness,isDriver);
     }
 
-    public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, int driverExposure, int driverBrightness) {
+    public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, int driverExposure, int driverBrightness,boolean isDriver) {
         FOV = fov;
         name = cameraName;
 
@@ -121,7 +121,9 @@ public class Camera {
 
         cvSink = cs.getVideo(UsbCam);
         cvSource = cs.putVideo(name, camVals.ImageWidth, camVals.ImageHeight);
-        isDriver = false;
+
+        //Driver mode settings
+        this.isDriver = isDriver;
         this.driverBrightness=driverBrightness;
         this.driverExposure=driverExposure;
     }
@@ -228,36 +230,37 @@ public class Camera {
 
     public void setDriverMode(boolean state)
     {
-        Map<String,Integer> data = new HashMap<>();
-            isDriver=state;
-            if(isDriver){
-                UsbCam.setBrightness(driverBrightness);
-                UsbCam.setBrightness(driverBrightness);
-                try{UsbCam.setExposureManual(driverExposure);}
-                catch (VideoException e)
-                {
-                    System.out.println("Exposure change isnt supported");
-                }
-                data.put("brightness",getBrightness());
-                data.put("exposure",driverExposure);
+        isDriver=state;
+        if(isDriver){
+            UsbCam.setBrightness(driverBrightness);//We call setBrightness because it updates after 2 calls
+            UsbCam.setBrightness(driverBrightness);//Check it after we update to 2020 libraries
+            try{UsbCam.setExposureManual(driverExposure);}
+            catch (VideoException e)
+            {
+                System.out.println("Exposure change isn't supported");
             }
-            else{
-                UsbCam.setBrightness(getCurrentPipeline().brightness);
-                UsbCam.setBrightness(getCurrentPipeline().brightness);
-                try{UsbCam.setExposureManual(getCurrentPipeline().exposure);}
-                catch (VideoException e)
-                {
-                    System.out.println("Exposure change isnt supported");
-                }
-            data.put("brightness",getBrightness());
-            data.put("exposure",getCurrentPipeline().exposure);
         }
-        ServerHandler.broadcastMessage(data);
+        else{
+            UsbCam.setBrightness(getCurrentPipeline().brightness);
+            UsbCam.setBrightness(getCurrentPipeline().brightness);
+            try{UsbCam.setExposureManual(getCurrentPipeline().exposure);}
+            catch (VideoException e)
+            {
+                System.out.println("Exposure change isn't supported");
+            }
+        }
+    }
+
+    public boolean getDriverMode()
+    {
+        return isDriver;
     }
 
     public int getBrightness() {
         return UsbCam.getBrightness();
     }
+
+
 
     public void setBrightness(int brightness) {
         if (isDriver)
