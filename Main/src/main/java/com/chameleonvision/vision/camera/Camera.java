@@ -120,7 +120,7 @@ public class Camera {
         }
 
         cvSink = cs.getVideo(UsbCam);
-        cvSource = cs.putVideo(name, camVals.ImageWidth, camVals.ImageHeight);
+        cvSource = cs.putVideo(name, camVals.ImageWidth / streamDivisor.value , camVals.ImageHeight / streamDivisor.value);
 
         //Driver mode settings
         this.isDriver = isDriver;
