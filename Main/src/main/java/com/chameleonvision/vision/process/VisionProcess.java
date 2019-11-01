@@ -49,9 +49,6 @@ public class VisionProcess implements Runnable {
         camera = processCam;
         this.cameraName = camera.name;
 
-        // NetworkTables
-//        NetworkTable ntTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraName);
-//        NetworkTable ntTable = camera.getNtTable();
         initNT(NetworkTableInstance.getDefault().getTable("/chameleon-vision/"+processCam.getNickname()));
 
         // camera settings
@@ -60,14 +57,7 @@ public class VisionProcess implements Runnable {
     }
 
     private void driverModeListener(EntryNotification entryNotification) {
-        if (entryNotification.value.getBoolean()) {
-            camera.setExposure(25);
-            camera.setBrightness(15);
-        } else {
-            Pipeline pipeline = camera.getCurrentPipeline();
-            camera.setExposure(pipeline.exposure);
-            camera.setBrightness(pipeline.brightness);
-        }
+        camera.setDriverMode(entryNotification.value.getBoolean());
     }
 
     private void pipelineListener(EntryNotification entryNotification) {
@@ -158,22 +148,22 @@ public class VisionProcess implements Runnable {
                         var finalRect = cvProcess.sortTargetsToOne(groupedContours, currentPipeline.sortMode);
                         pipelineResult.RawPoint = finalRect;
                         pipelineResult.IsValid = true;
-                            switch (currentPipeline.calibrationMode){
-                                case None:
-                                    ///use the center of the camera to find the pitch and yaw difference
-                                    pipelineResult.CalibratedX = camera.getCamVals().CenterX;
-                                    pipelineResult.CalibratedY = camera.getCamVals().CenterY;
-                                    break;
-                                case Single:
-                                    // use the static point as a calibration method instead of the center
-                                    pipelineResult.CalibratedX = currentPipeline.point.get(0).doubleValue();
-                                    pipelineResult.CalibratedY = currentPipeline.point.get(1).doubleValue();
-                                    break;
-                                case Dual:
-                                    // use the calculated line to find the difference in length between the point and the line
-                                    pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
-                                    pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
-                                    break;
+                        switch (currentPipeline.calibrationMode) {
+                            case None:
+                                ///use the center of the camera to find the pitch and yaw difference
+                                pipelineResult.CalibratedX = camera.getCamVals().CenterX;
+                                pipelineResult.CalibratedY = camera.getCamVals().CenterY;
+                                break;
+                            case Single:
+                                // use the static point as a calibration method instead of the center
+                                pipelineResult.CalibratedX = currentPipeline.point.get(0).doubleValue();
+                                pipelineResult.CalibratedY = currentPipeline.point.get(1).doubleValue();
+                                break;
+                            case Dual:
+                                // use the calculated line to find the difference in length between the point and the line
+                                pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
+                                pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
+                                break;
                         }
                         pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
                         pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
@@ -248,7 +238,7 @@ public class VisionProcess implements Runnable {
                     point.put("calculated", calculated);
                     point.put("rawPoint", center);
                     WebSend.put("point", point);
-                    ServerHandler.broadcastMessage(WebSend);
+//                    ServerHandler.broadcastMessage(WebSend);
                 }
 
                 cameraProcess.updateFrame(streamOutputMat);
@@ -265,26 +255,26 @@ public class VisionProcess implements Runnable {
             }
         }
 
-}
+    }
+
     /**
-     *  Removes the old value change listeners
-     *  calls {@link #initNT}
-     * @param newTable passed to {@link #initNT}
+     * Removes the old value change listeners
+     * calls {@link #initNT}
      *
+     * @param newTable passed to {@link #initNT}
      */
-    public void resetNT(NetworkTable newTable)
-    {
+    public void resetNT(NetworkTable newTable) {
         ntDriverModeEntry.removeListener(ntDriveModeListenerID);
         ntPipelineEntry.removeListener(ntPipelineListenerID);
         initNT(newTable);
     }
 
     /**
-     *  Rebases the writing location for the vision process - pipeline output
+     * Rebases the writing location for the vision process - pipeline output
+     *
      * @param newTable the new writing location
      */
-    private void initNT(NetworkTable newTable)
-    {
+    private void initNT(NetworkTable newTable) {
         ntPipelineEntry = newTable.getEntry("pipeline");
         ntDriverModeEntry = newTable.getEntry("driver_mode");
         ntPitchEntry = newTable.getEntry("pitch");
