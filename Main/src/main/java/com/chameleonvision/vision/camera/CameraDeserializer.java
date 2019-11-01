@@ -23,6 +23,7 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 			var camName = jsonObj.get("name").getAsString();
 			var camNickname = jsonObj.get("nickname").getAsString();
 			var videoModeIndex = jsonObj.get("resolution").getAsInt();
+			var isDriver = jsonObj.get("isDriver").getAsBoolean();
 			var driverExposure = jsonObj.get("driverExposure").getAsInt();
 			var driverBrightness = jsonObj.get("driverBrightness").getAsInt();
 			var divisor = StreamDivisor.values()[jsonObj.get("streamDivisor").getAsInt()];
@@ -38,13 +39,13 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 				e.printStackTrace();
 			}
 
-			var newCamera = actualPipelines != null ? new Camera(camName, camFOV, actualPipelines, videoModeIndex, divisor, driverExposure, driverBrightness) : new Camera(camName, camFOV, videoModeIndex, divisor, driverExposure, driverBrightness);
+			var newCamera = actualPipelines != null ? new Camera(camName, camFOV, actualPipelines, videoModeIndex, divisor, driverExposure, driverBrightness,isDriver) : new Camera(camName, camFOV, videoModeIndex, divisor, driverExposure, driverBrightness,isDriver);
 			newCamera.setNickname(camNickname != null ? camNickname : "");
 			return newCamera;
 		}
 		catch (NullPointerException e)
 		{
-			System.err.println("Error while reading json, value doesnt exist!");
+			System.err.println("Error while reading json, value doesn't exist!");
 			System.err.println("Try to delete the camera settings in settings/cameras/YOURCAMERA.json");
 			e.printStackTrace();
 			return null;

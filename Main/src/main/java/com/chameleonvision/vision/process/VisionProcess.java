@@ -123,7 +123,7 @@ public class VisionProcess implements Runnable {
         if (currentPipeline.orientation.equals(Orientation.Inverted)) {
             Core.flip(inputImage, inputImage, -1);
         }
-        if (ntDriverModeEntry.getBoolean(false)) {
+        if (camera.getDriverMode()) {
             inputImage.copyTo(outputImage);
             return pipelineResult;
         }

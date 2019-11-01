@@ -55,6 +55,13 @@ public class ServerHandler {
                         sendFullSettings();
                         break;
                     }
+                    case "driverMode": {
+                        for (HashMap.Entry<String, Object> e : ((HashMap<String, Object>) entry.getValue()).entrySet()) {
+                            setField(CameraManager.getCurrentCamera(), e.getKey(), e.getValue());
+                        }
+                        CameraManager.saveCameras();
+                        break;
+                    }
                     case "cameraSettings": {
                         HashMap camSettings = (HashMap) entry.getValue();
                         CameraManager.getCurrentCamera().setFOV((Number) camSettings.get("fov"));
@@ -224,6 +231,19 @@ public class ServerHandler {
         return tmp;
     }
 
+    private static HashMap<String, Object> getOrdinalDriver() {
+        HashMap<String, Object> tmp = new HashMap<>();
+        try {
+            var currentCamera = CameraManager.getCurrentCamera();
+            tmp.put("isDriver", currentCamera.getDriverMode());
+            tmp.put("driverBrightness", currentCamera.driverBrightness);
+            tmp.put("driverExposure", currentCamera.driverExposure);
+        } catch (CameraException e) {
+            e.printStackTrace();
+        }
+        return tmp;
+    }
+
     public static void sendFullSettings() {
         //General settings
         Map<String, Object> fullSettings = new HashMap<>();
@@ -231,8 +251,9 @@ public class ServerHandler {
             fullSettings.put("settings", getOrdinalSettings());
             fullSettings.put("cameraSettings", getOrdinalCameraSettings());
             fullSettings.put("cameraList", CameraManager.getAllCameraByNickname());
-            var currentCamera = CameraManager.getCurrentCamera();
             fullSettings.put("pipeline", getOrdinalPipeline());
+            var currentCamera = CameraManager.getCurrentCamera();
+            fullSettings.put("driverMode",getOrdinalDriver());
             fullSettings.put("pipelineList", currentCamera.getPipelinesNickname());
             fullSettings.put("resolutionList", currentCamera.getResolutionList());
             fullSettings.put("port", currentCamera.getStreamPort());
