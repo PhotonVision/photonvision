@@ -36,10 +36,10 @@ export default new Vuex.Store({
             isBinary: 0,
             calibrationMode: 0
         },
-        driverState: {
-            startDriver: false,
-            exposure: 0,
-            brightness: 0
+        driverMode: {
+            isDriver: false,
+            driverExposure: 0,
+            driverBrightness: 0
         },
         cameraSettings: {},
         resolutionList: [],
@@ -66,7 +66,7 @@ export default new Vuex.Store({
                 Vue.set(state.pipeline, i, obj[i]);
             }
         },
-        driverState: set('driverState')
+        driverMode: set('driverMode')
     },
     actions: {
         settings: state => state.settings,
@@ -79,6 +79,6 @@ export default new Vuex.Store({
         cameraList: state => state.cameraList,
         pipelineList: state => state.pipelineList,
         point: state => state.point,
-        driverState: state => state.driverState
+        driverMode: state => state.driverMode
     }
 })

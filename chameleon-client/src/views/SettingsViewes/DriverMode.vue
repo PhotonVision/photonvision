@@ -1,9 +1,9 @@
 <template>
     <div>
         <CVselect name="Camera" :list="cameraList" v-model="currentCameraIndex"/>
-        <CVswitch v-model="driverState.startDriver" name="Driver Mode" @input="sendDriverMode"/>
-        <CVslider name="Exposure" v-model="driverState.exposure" :min="0" :max="100" @input="sendDriverMode"/>
-        <CVslider name="Brightness" v-model="driverState.brightness" :min="0" :max="100"
+        <CVswitch v-model="driverState.isDriver" name="Driver Mode" @input="sendDriverMode"/>
+        <CVslider name="Exposure" v-model="driverState.driverExposure" :min="0" :max="100" @input="sendDriverMode"/>
+        <CVslider name="Brightness" v-model="driverState.driverBrightness" :min="0" :max="100"
                   @input="sendDriverMode"/>
 
     </div>
@@ -23,7 +23,7 @@
         },
         methods: {
             sendDriverMode() {
-                this.handleInput('driverState', this.driverState);
+                this.handleInput('driverMode', this.driverState);
                 this.$emit("update");
             }
         },
@@ -47,10 +47,10 @@
             },
             driverState: {
                 get() {
-                    return this.$store.state.driverState;
+                    return this.$store.state.driverMode;
                 },
                 set(value) {
-                    this.$store.commit("driverState", value);
+                    this.$store.commit("driverMode", value);
                 }
             }
         }
