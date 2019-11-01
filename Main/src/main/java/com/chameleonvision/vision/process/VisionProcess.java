@@ -238,7 +238,7 @@ public class VisionProcess implements Runnable {
                     point.put("calculated", calculated);
                     point.put("rawPoint", center);
                     WebSend.put("point", point);
-//                    ServerHandler.broadcastMessage(WebSend);
+                    ServerHandler.broadcastMessage(WebSend);
                 }
 
                 cameraProcess.updateFrame(streamOutputMat);

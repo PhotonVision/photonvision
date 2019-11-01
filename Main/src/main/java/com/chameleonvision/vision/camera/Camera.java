@@ -52,7 +52,7 @@ public class Camera {
     //Driver mode camera settings
     public int driverExposure;
     public int driverBrightness;
-    private boolean isDriver;
+    public boolean isDriver;
 
     public Camera(String cameraName) {
         this(cameraName, DEFAULT_FOV);

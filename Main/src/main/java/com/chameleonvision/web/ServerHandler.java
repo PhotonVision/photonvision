@@ -59,6 +59,7 @@ public class ServerHandler {
                         for (HashMap.Entry<String, Object> e : ((HashMap<String, Object>) entry.getValue()).entrySet()) {
                             setField(CameraManager.getCurrentCamera(), e.getKey(), e.getValue());
                         }
+                        CameraManager.getCurrentCamera().setDriverMode((Boolean) ((HashMap<String, Object>) entry.getValue()).get("isDriver"));
                         CameraManager.saveCameras();
                         break;
                     }
