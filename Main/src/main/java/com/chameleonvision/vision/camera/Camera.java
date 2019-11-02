@@ -81,7 +81,7 @@ public class Camera {
             path = usbCamInfo.path;
         } else {
             var truePath = Arrays.stream(usbCamInfo.otherPaths).filter(x -> x.contains("/dev/v4l/by-path")).findFirst();
-            path = truePath.isPresent() ? truePath.toString() : null;
+            path = truePath.orElse(null);
         }
 
         streamDivisor = divisor;
