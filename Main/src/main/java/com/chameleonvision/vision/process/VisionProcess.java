@@ -38,8 +38,6 @@ public class VisionProcess implements Runnable {
     private Mat cameraInputMat = new Mat();
     private Mat hsvThreshMat = new Mat();
     private Mat streamOutputMat = new Mat();
-    private Scalar contourRectColor = new Scalar(255, 0, 0);
-    private Scalar BoxRectColor = new Scalar(0, 0, 233);
     private long timeStamp = 0;
 
     public VisionProcess(CameraProcess cameraProcess) {
@@ -81,19 +79,6 @@ public class VisionProcess implements Runnable {
         }
     }
 
-    private void drawContour(Mat inputMat, RotatedRect contourRect) {
-        if (contourRect == null) return;
-        List<MatOfPoint> drawnContour = new ArrayList<>();
-        Point[] vertices = new Point[4];
-        contourRect.points(vertices);
-        MatOfPoint contour = new MatOfPoint(vertices);
-        drawnContour.add(contour);
-        Rect box = Imgproc.boundingRect(contour);
-        Imgproc.drawContours(inputMat, drawnContour, 0, contourRectColor, 3);
-        Imgproc.circle(inputMat, contourRect.center, 3, contourRectColor);
-        Imgproc.rectangle(inputMat, new Point(box.x, box.y), new Point((box.x + box.width), (box.y + box.height)), BoxRectColor, 2);
-    }
-
     private void updateNetworkTables(PipelineResult pipelineResult) {
         if (pipelineResult.IsValid) {
             ntValidEntry.setBoolean(true);
@@ -112,74 +97,14 @@ public class VisionProcess implements Runnable {
     }
 
     private PipelineResult runVisionProcess(Mat inputImage, Mat outputImage) {
-        var pipelineResult = new PipelineResult();
-
-        if (currentPipeline == null) {
-            return pipelineResult;
-        }
-        if (currentPipeline.orientation.equals(Orientation.Inverted)) {
-            Core.flip(inputImage, inputImage, -1);
-        }
-        if (cameraProcess.getDriverMode()) {
-            inputImage.copyTo(outputImage);
-            return pipelineResult;
-        }
-        Scalar hsvLower = new Scalar(currentPipeline.hue.get(0).intValue(), currentPipeline.saturation.get(0).intValue(), currentPipeline.value.get(0).intValue());
-        Scalar hsvUpper = new Scalar(currentPipeline.hue.get(1).intValue(), currentPipeline.saturation.get(1).intValue(), currentPipeline.value.get(1).intValue());
-
-        cvProcess.hsvThreshold(inputImage, hsvThreshMat, hsvLower, hsvUpper, currentPipeline.erode, currentPipeline.dilate);
-
-        if (currentPipeline.isBinary) {
-            Imgproc.cvtColor(hsvThreshMat, outputImage, Imgproc.COLOR_GRAY2BGR, 3);
-        } else {
-            inputImage.copyTo(outputImage);
-        }
-        foundContours = cvProcess.findContours(hsvThreshMat);
-        if (foundContours.size() > 0) {
-            filteredContours = cvProcess.filterContours(foundContours, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent);
-            if (filteredContours.size() > 0) {
-                deSpeckledContours = cvProcess.rejectSpeckles(filteredContours, currentPipeline.speckle.doubleValue());
-                if (deSpeckledContours.size() > 0) {
-                    groupedContours = cvProcess.groupTargets(deSpeckledContours, currentPipeline.targetIntersection, currentPipeline.targetGroup);
-                    if (groupedContours.size() > 0) {
-                        var finalRect = cvProcess.sortTargetsToOne(groupedContours, currentPipeline.sortMode);
-                        pipelineResult.RawPoint = finalRect;
-                        pipelineResult.IsValid = true;
-                        switch (currentPipeline.calibrationMode) {
-                            case None:
-                                ///use the center of the USBCamera to find the pitch and yaw difference
-                                pipelineResult.CalibratedX = cameraProcess.getCamVals().CenterX;
-                                pipelineResult.CalibratedY = cameraProcess.getCamVals().CenterY;
-                                break;
-                            case Single:
-                                // use the static point as a calibration method instead of the center
-                                pipelineResult.CalibratedX = currentPipeline.point.get(0).doubleValue();
-                                pipelineResult.CalibratedY = currentPipeline.point.get(1).doubleValue();
-                                break;
-                            case Dual:
-                                // use the calculated line to find the difference in length between the point and the line
-                                pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
-                                pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
-                                break;
-                        }
-//                        var camVals = cameraProcess.getCamVals();
-//                        if (currentPipeline.isCalibrated) {
-//                            pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
-//                            pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
-//                        } else {
-//                            pipelineResult.CalibratedX = camVals.CenterX;
-//                            pipelineResult.CalibratedY = camVals.CenterY;
-//                        }
-                        pipelineResult.Pitch = cameraProcess.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
-                        pipelineResult.Yaw = cameraProcess.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
-                        pipelineResult.Area = finalRect.size.area();
-                        drawContour(outputImage, finalRect);
-                    }
-                }
-            }
-        }
-
-        return pipelineResult;
+        return cameraProcess.runPipeline(
+                currentPipeline,
+                inputImage,
+                outputImage,
+                cameraProcess.getCamVals(),
+                currentPipeline.orientation.equals(Orientation.Inverted),
+                cameraProcess.getDriverMode()
+        );
     }
 
     @Override

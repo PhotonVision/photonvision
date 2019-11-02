@@ -1,8 +1,6 @@
 package com.chameleonvision.vision.process;
 
-import com.chameleonvision.vision.SortMode;
-import com.chameleonvision.vision.TargetGroup;
-import com.chameleonvision.vision.TargetIntersection;
+import com.chameleonvision.vision.*;
 import com.chameleonvision.vision.camera.CameraValues;
 import com.chameleonvision.util.MathHandler;
 import org.apache.commons.math3.util.FastMath;
@@ -32,6 +30,101 @@ public class CVProcess {
 
     CVProcess(CameraValues cameraValues) {
         this.cameraValues = cameraValues;
+    }
+
+    private Mat cameraInputMat = new Mat();
+    private Mat hsvThreshMat = new Mat();
+    private Mat streamOutputMat = new Mat();
+
+    private List<MatOfPoint> foundContours_ = new ArrayList<>();
+    private List<MatOfPoint> filteredContours_ = new ArrayList<>();
+    private List<MatOfPoint> deSpeckledContours_ = new ArrayList<>();
+    private List<RotatedRect> groupedContours_ = new ArrayList<>();
+
+    private static final Scalar contourRectColor = new Scalar(255, 0, 0);
+    private static final Scalar BoxRectColor = new Scalar(0, 0, 233);
+
+    private void drawContour(Mat inputMat, RotatedRect contourRect) {
+        if (contourRect == null) return;
+        List<MatOfPoint> drawnContour = new ArrayList<>();
+        Point[] vertices = new Point[4];
+        contourRect.points(vertices);
+        MatOfPoint contour = new MatOfPoint(vertices);
+        drawnContour.add(contour);
+        Rect box = Imgproc.boundingRect(contour);
+        Imgproc.drawContours(inputMat, drawnContour, 0, contourRectColor, 3);
+        Imgproc.circle(inputMat, contourRect.center, 3, contourRectColor);
+        Imgproc.rectangle(inputMat, new Point(box.x, box.y), new Point((box.x + box.width), (box.y + box.height)), BoxRectColor, 2);
+    }
+
+    PipelineResult runPipeline(Pipeline currentPipeline, Mat inputImage, Mat outputImage, CameraValues cameraValues, boolean shouldFlip, boolean driverMode) {
+        var pipelineResult = new PipelineResult();
+
+        if (currentPipeline == null) {
+            return pipelineResult;
+        }
+        if (shouldFlip) {
+            Core.flip(inputImage, inputImage, -1);
+        }
+        if (driverMode) {
+            inputImage.copyTo(outputImage);
+            return pipelineResult;
+        }
+
+        foundContours_.clear();
+        filteredContours_.clear();
+        deSpeckledContours_.clear();
+        groupedContours_.clear();
+
+        Scalar hsvLower = new Scalar(currentPipeline.hue.get(0).intValue(), currentPipeline.saturation.get(0).intValue(), currentPipeline.value.get(0).intValue());
+        Scalar hsvUpper = new Scalar(currentPipeline.hue.get(1).intValue(), currentPipeline.saturation.get(1).intValue(), currentPipeline.value.get(1).intValue());
+
+        hsvThreshold(inputImage, hsvThreshMat, hsvLower, hsvUpper, currentPipeline.erode, currentPipeline.dilate);
+
+        if (currentPipeline.isBinary) {
+            Imgproc.cvtColor(hsvThreshMat, outputImage, Imgproc.COLOR_GRAY2BGR, 3);
+        } else {
+            inputImage.copyTo(outputImage);
+        }
+        foundContours_ = findContours(hsvThreshMat);
+        if (foundContours_.size() > 0) {
+            filteredContours_ = filterContours(foundContours_, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent);
+            if (filteredContours_.size() > 0) {
+                deSpeckledContours_ = rejectSpeckles(filteredContours_, currentPipeline.speckle.doubleValue());
+                if (deSpeckledContours_.size() > 0) {
+                    groupedContours_ = groupTargets(deSpeckledContours_, currentPipeline.targetIntersection, currentPipeline.targetGroup);
+                    if (groupedContours_.size() > 0) {
+                        var finalRect = sortTargetsToOne(groupedContours_, currentPipeline.sortMode);
+                        pipelineResult.RawPoint = finalRect;
+                        pipelineResult.IsValid = true;
+                        switch (currentPipeline.calibrationMode) {
+                            case None:
+                                ///use the center of the USBCamera to find the pitch and yaw difference
+                                pipelineResult.CalibratedX = cameraValues.CenterX;
+                                pipelineResult.CalibratedY = cameraValues.CenterY;
+                                break;
+                            case Single:
+                                // use the static point as a calibration method instead of the center
+                                pipelineResult.CalibratedX = currentPipeline.point.get(0).doubleValue();
+                                pipelineResult.CalibratedY = currentPipeline.point.get(1).doubleValue();
+                                break;
+                            case Dual:
+                                // use the calculated line to find the difference in length between the point and the line
+                                pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
+                                pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
+                                break;
+                        }
+                        
+                        pipelineResult.Pitch = cameraValues.CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
+                        pipelineResult.Yaw = cameraValues.CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
+                        pipelineResult.Area = finalRect.size.area();
+                        drawContour(outputImage, finalRect);
+                    }
+                }
+            }
+        }
+
+        return pipelineResult;
     }
 
     void hsvThreshold(Mat srcImage, Mat dst, @NotNull Scalar hsvLower, @NotNull Scalar hsvUpper, boolean shouldErode, boolean shouldDilate) {
