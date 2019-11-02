@@ -135,7 +135,11 @@ public class CameraManager {
 		SettingsManager.updatePipelineSetting(pipelineNumber);
 	}
 
-	public static VisionProcess getCurrentCameraProcess() throws CameraException {
+	public static VisionProcess getVisionProcessByCameraName(String cameraName)	{
+		return AllVisionProcessesByName.get(cameraName);
+	}
+
+	public static VisionProcess getCurrentVisionProcess() throws CameraException {
 		if (!SettingsManager.GeneralSettings.currentCamera.equals("")){
 			return AllVisionProcessesByName.get(SettingsManager.GeneralSettings.currentCamera);
 		}

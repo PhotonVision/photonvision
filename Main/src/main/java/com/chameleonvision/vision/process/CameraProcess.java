@@ -1,8 +1,11 @@
 package com.chameleonvision.vision.process;
 
 import com.chameleonvision.vision.camera.Camera;
+import com.chameleonvision.vision.camera.StreamDivisor;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 public class CameraProcess implements Runnable {
 
@@ -13,22 +16,24 @@ public class CameraProcess implements Runnable {
     private Mat inputFrame;
     private Mat outputFrame;
     private long timestamp;
+    private StreamDivisor divisor;
 
     CameraProcess(Camera camera) {
         this.camera = camera;
         maxFPS = camera.getVideoMode().fps;
-        var camVals = camera.getCamVals();
-        inputFrame = new Mat(camVals.ImageWidth, camVals.ImageHeight, CvType.CV_8UC3);
-        outputFrame = new Mat(camVals.ImageWidth, camVals.ImageHeight, CvType.CV_8UC3);
+        updateFrameSize();
     }
 
-    private void updateFrameSize() {
+    public void updateFrameSize() {
         var camVals = camera.getCamVals();
+        divisor = camera.getStreamDivisor();
+        var newWidth = camVals.ImageWidth / divisor.value;
+        var newHeight = camVals.ImageHeight / divisor.value;
         synchronized (inputFrameLock) {
-            inputFrame = new Mat(camVals.ImageWidth, camVals.ImageHeight, CvType.CV_8UC3);
+            inputFrame = new Mat(newWidth, newHeight, CvType.CV_8UC3);
         }
         synchronized (outputFrameLock) {
-            outputFrame = new Mat(camVals.ImageWidth, camVals.ImageHeight, CvType.CV_8UC3);
+            outputFrame = new Mat(newWidth, newHeight, CvType.CV_8UC3);
         }
     }
 
@@ -52,6 +57,13 @@ public class CameraProcess implements Runnable {
                 timestamp = camera.grabFrame(outputFrame);
             }
             synchronized (inputFrameLock) {
+                if (divisor.value != 1) {
+                    var camVals = camera.getCamVals();
+                    var newWidth = camVals.ImageWidth / divisor.value;
+                    var newHeight = camVals.ImageHeight / divisor.value;
+                    Size newSize = new Size(newWidth, newHeight);
+                    Imgproc.resize(inputFrame, inputFrame, newSize);
+                }
                 camera.putFrame(inputFrame);
             }
             var msToWait = (long) 1000 / maxFPS;
