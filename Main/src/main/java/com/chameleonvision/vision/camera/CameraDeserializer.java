@@ -23,10 +23,18 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 			var camName = jsonObj.get("name").getAsString();
 			var camNickname = jsonObj.get("nickname").getAsString();
 			var videoModeIndex = jsonObj.get("resolution").getAsInt();
-			var isDriver = jsonObj.get("isDriver").getAsBoolean();
-			var driverExposure = jsonObj.get("driverExposure").getAsInt();
-			var driverBrightness = jsonObj.get("driverBrightness").getAsInt();
-			var divisor = StreamDivisor.values()[jsonObj.get("streamDivisor").getAsInt()];
+
+			// new for 2.0
+			var isDriverObj = jsonObj.get("isDriver");
+			var driverExposureObj = jsonObj.get("driverExposure");
+			var driverBrightnessObj = jsonObj.get("driverBrightness");
+			var divisorObj = jsonObj.get("streamDivisor");
+
+			// always null-check new features
+			boolean isDriver = isDriverObj != null && isDriverObj.getAsBoolean();
+			int driverExposure = driverExposureObj == null ? Camera.DEFAULT_EXPOSURE : driverExposureObj.getAsInt();
+			int driverBrightness = driverBrightnessObj == null ? Camera.DEFAULT_BRIGHTNESS : driverBrightnessObj.getAsInt();
+			StreamDivisor divisor = divisorObj == null ? StreamDivisor.none : StreamDivisor.values()[divisorObj.getAsInt()];
 
 			var pipelines = jsonObj.get("pipelines");
 			List<Pipeline> actualPipelines = new ArrayList<>();
@@ -39,8 +47,10 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 				e.printStackTrace();
 			}
 
-			var newCamera = actualPipelines != null ? new Camera(camName, camFOV, actualPipelines, videoModeIndex, divisor, driverExposure, driverBrightness,isDriver) : new Camera(camName, camFOV, videoModeIndex, divisor, driverExposure, driverBrightness,isDriver);
+			var newCamera = actualPipelines != null ? new Camera(camName, camFOV, actualPipelines, videoModeIndex, divisor, isDriver) : new Camera(camName, camFOV, videoModeIndex, divisor, isDriver);
 			newCamera.setNickname(camNickname != null ? camNickname : "");
+			newCamera.setDriverExposure(driverExposure);
+			newCamera.setDriverBrightness(driverBrightness);
 			return newCamera;
 		}
 		catch (NullPointerException e)

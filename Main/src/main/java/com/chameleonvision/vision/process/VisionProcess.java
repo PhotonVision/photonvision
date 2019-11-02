@@ -19,7 +19,7 @@ public class VisionProcess implements Runnable {
 
     private final Camera camera;
     private final String cameraName;
-    private final CameraProcess cameraProcess;
+    public final CameraProcess cameraProcess;
     // NetworkTables
     public NetworkTableEntry ntPipelineEntry;
     public NetworkTableEntry ntDriverModeEntry;
@@ -165,6 +165,14 @@ public class VisionProcess implements Runnable {
                                 pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
                                 break;
                         }
+//                        var camVals = camera.getCamVals();
+//                        if (currentPipeline.isCalibrated) {
+//                            pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
+//                            pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
+//                        } else {
+//                            pipelineResult.CalibratedX = camVals.CenterX;
+//                            pipelineResult.CalibratedY = camVals.CenterY;
+//                        }
                         pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
                         pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
                         pipelineResult.Area = finalRect.size.area();

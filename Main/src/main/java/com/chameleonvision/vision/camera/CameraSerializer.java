@@ -17,8 +17,8 @@ public class CameraSerializer implements JsonSerializer<Camera> {
         obj.addProperty("resolution", camera.getVideoModeIndex());
         obj.add("camVideoMode", context.serialize(camera.getVideoMode()));
         obj.add("isDriver",context.serialize(camera.getDriverMode()));
-        obj.add("driverExposure",context.serialize(camera.driverExposure));
-        obj.add("driverBrightness",context.serialize(camera.driverBrightness));
+        obj.add("driverExposure",context.serialize(camera.getDriverExposure()));
+        obj.add("driverBrightness",context.serialize(camera.getDriverBrightness()));
         return obj;
     }
 }

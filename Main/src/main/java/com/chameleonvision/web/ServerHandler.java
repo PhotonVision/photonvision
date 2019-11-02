@@ -65,10 +65,25 @@ public class ServerHandler {
                     }
                     case "cameraSettings": {
                         HashMap camSettings = (HashMap) entry.getValue();
-                        CameraManager.getCurrentCamera().setFOV((Number) camSettings.get("fov"));
-                        CameraManager.getCurrentCamera().setStreamDivisor((Integer) camSettings.get("streamDivisor"));
-                        CameraManager.getCurrentCamera().setCamVideoMode((Integer) camSettings.get("resolution"), true);
-                        SettingsManager.saveSettings();
+                        var curCam = CameraManager.getCurrentCamera();
+
+                        Number newFOV = (Number) camSettings.get("fov");
+                        Integer newStreamDivisor = (Integer) camSettings.get("streamDivisor");
+                        Integer newResolution = (Integer) camSettings.get("resolution");
+
+                        curCam.setFOV(newFOV);
+
+                        var currentStreamDivisorOrdinal = curCam.getStreamDivisor().ordinal();
+                        if (currentStreamDivisorOrdinal != newStreamDivisor) {
+                            curCam.setStreamDivisor(newStreamDivisor, true);
+                        }
+
+                        var currentResolutionIndex = curCam.getVideoModeIndex();
+                        if (currentResolutionIndex != newResolution) {
+                            curCam.setCamVideoMode(newResolution, true);
+                        }
+
+                        CameraManager.saveCameras();
                         sendFullSettings();
                         break;
                     }
@@ -238,8 +253,8 @@ public class ServerHandler {
         try {
             var currentCamera = CameraManager.getCurrentCamera();
             tmp.put("isDriver", currentCamera.getDriverMode());
-            tmp.put("driverBrightness", currentCamera.driverBrightness);
-            tmp.put("driverExposure", currentCamera.driverExposure);
+            tmp.put("driverBrightness", currentCamera.getDriverBrightness());
+            tmp.put("driverExposure", currentCamera.getDriverExposure());
         } catch (CameraException e) {
             e.printStackTrace();
         }

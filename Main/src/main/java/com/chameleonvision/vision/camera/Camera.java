@@ -1,10 +1,7 @@
 package com.chameleonvision.vision.camera;
 
-import com.chameleonvision.Main;
 import com.chameleonvision.settings.Platform;
-import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Pipeline;
-import com.chameleonvision.web.Server;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.*;
 import edu.wpi.first.cameraserver.CameraServer;
@@ -12,7 +9,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import org.opencv.core.Mat;
 
-import java.nio.channels.Pipe;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -21,14 +17,13 @@ public class Camera {
 
     private static final double DEFAULT_FOV = 60.8;
     private static final StreamDivisor DEFAULT_STREAMDIVISOR = StreamDivisor.none;
-    private static final int DEFAULT_EXPOSURE = 50;
-    private static final int DEFAULT_BRIGHTNESS = 50;
+    public static final int DEFAULT_EXPOSURE = 50;
+    public static final int DEFAULT_BRIGHTNESS = 50;
     private static final int MINIMUM_FPS = 30;
     private static final int MINIMUM_WIDTH = 320;
     private static final int MINIMUM_HEIGHT = 200;
     private static final int MAX_INIT_MS = 1500;
     private static final List<VideoMode.PixelFormat> ALLOWED_PIXEL_FORMATS = Arrays.asList(VideoMode.PixelFormat.kYUYV, VideoMode.PixelFormat.kMJPEG);
-
 
     public final String name;
     public final String path;
@@ -50,9 +45,9 @@ public class Camera {
     private List<Pipeline> pipelines;
 
     //Driver mode camera settings
-    public int driverExposure;
-    public int driverBrightness;
-    public boolean isDriver;
+    private int driverExposure;
+    private int driverBrightness;
+    private boolean isDriver;
 
     public Camera(String cameraName) {
         this(cameraName, DEFAULT_FOV);
@@ -67,18 +62,18 @@ public class Camera {
     }
 
     public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, StreamDivisor divisor) {
-        this(cameraName, usbCamInfo, fov, new ArrayList<>(), 0, divisor, DEFAULT_EXPOSURE, DEFAULT_BRIGHTNESS,false);
+        this(cameraName, usbCamInfo, fov, new ArrayList<>(), 0, divisor, false);
     }
 
-    public Camera(String cameraName, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, int driverExposure, int driverBrightness,boolean isDriver) {
-        this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex, divisor, driverExposure, driverBrightness, isDriver);
+    public Camera(String cameraName, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, boolean isDriver) {
+        this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex, divisor, isDriver);
     }
 
-    public Camera(String cameraName, double fov, int videoModeIndex, StreamDivisor divisor, int driverExposure, int driverBrightness,boolean isDriver) {
-        this(cameraName, fov, new ArrayList<>(), videoModeIndex, divisor, driverExposure, driverBrightness,isDriver);
+    public Camera(String cameraName, double fov, int videoModeIndex, StreamDivisor divisor, boolean isDriver) {
+        this(cameraName, fov, new ArrayList<>(), videoModeIndex, divisor, isDriver);
     }
 
-    public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, int driverExposure, int driverBrightness,boolean isDriver) {
+    public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, boolean isDriver) {
         FOV = fov;
         name = cameraName;
 
@@ -121,11 +116,6 @@ public class Camera {
 
         cvSink = cs.getVideo(UsbCam);
         cvSource = cs.putVideo(name, camVals.ImageWidth / streamDivisor.value , camVals.ImageHeight / streamDivisor.value);
-
-        //Driver mode settings
-        this.isDriver = isDriver;
-        this.driverBrightness=driverBrightness;
-        this.driverExposure=driverExposure;
     }
 
     VideoMode[] getAvailableVideoModes() {
@@ -144,16 +134,26 @@ public class Camera {
     private void setCamVideoMode(CamVideoMode newVideoMode, boolean updateCvSource) {
         var prevVideoMode = this.camVideoMode;
         this.camVideoMode = newVideoMode;
-        UsbCam.setVideoMode(newVideoMode.getActualPixelFormat(), newVideoMode.width, newVideoMode.height, newVideoMode.fps);
 
         // update camera values
         camVals = new CameraValues(this);
-        if (prevVideoMode != null && !prevVideoMode.equals(newVideoMode) && updateCvSource) { //  if resolution changed
-            synchronized (cvSourceLock) {
-                cvSource = cs.putVideo(name, newVideoMode.width, newVideoMode.height);
+
+        if (prevVideoMode != null && !prevVideoMode.equals(newVideoMode)) { //  if resolution changed
+            UsbCam.setVideoMode(newVideoMode.getActualPixelFormat(), newVideoMode.width, newVideoMode.height, newVideoMode.fps);
+            if (updateCvSource) {
+                updateCvSource();
             }
-            ServerHandler.sendFullSettings();
         }
+    }
+
+    private void updateCvSource() {
+        synchronized (cvSourceLock) {
+            var newWidth = camVideoMode.width / streamDivisor.value;
+            var newHeight = camVideoMode.height / streamDivisor.value;
+            cvSource = cs.putVideo(name, newWidth, newHeight);
+        }
+        CameraManager.getVisionProcessByCameraName(name).cameraProcess.updateFrameSize();
+        ServerHandler.sendFullSettings();
     }
 
     public void addPipeline() {
@@ -195,8 +195,11 @@ public class Camera {
         return streamDivisor;
     }
 
-    public void setStreamDivisor(int divisor) {
+    public void setStreamDivisor(int divisor, boolean updateCvSource) {
         streamDivisor = StreamDivisor.values()[divisor];
+        if (updateCvSource) {
+            updateCvSource();
+        }
     }
 
     public List<Pipeline> getPipelines() {
@@ -230,15 +233,11 @@ public class Camera {
 
     public void setDriverMode(boolean state)
     {
-        isDriver=state;
-        if(isDriver){
-            UsbCam.setBrightness(driverBrightness);//We call setBrightness because it updates after 2 calls
-            UsbCam.setBrightness(driverBrightness);//Check it after we update to 2020 libraries
-            try{UsbCam.setExposureManual(driverExposure);}
-            catch (VideoException e)
-            {
-                System.out.println("Exposure change isn't supported");
-            }
+        isDriver = state;
+        if( isDriver ) {
+            setBrightness(driverBrightness); //We call setBrightness because it updates after 2 calls
+            setBrightness(driverBrightness); //Check it after we update to 2020 libraries
+            setExposure(driverExposure);
         }
         else{
             UsbCam.setBrightness(getCurrentPipeline().brightness);
@@ -263,18 +262,24 @@ public class Camera {
 
 
     public void setBrightness(int brightness) {
-        if (isDriver)
-            driverBrightness=brightness;
-        else
+        if (isDriver) {
+            driverBrightness = brightness;
+            UsbCam.setBrightness(brightness); // set twice to reduce timeout
+        }
+        else {
             getCurrentPipeline().brightness = brightness;
+        }
         UsbCam.setBrightness(brightness);
     }
 
     public void setExposure(int exposure) {
-        if (isDriver)
-            driverExposure=exposure;
-        else
+        if (isDriver) {
+            driverExposure = exposure;
+        }
+        else {
             getCurrentPipeline().exposure = exposure;
+        }
+
         try {
             UsbCam.setExposureManual(exposure);
         } catch (VideoException e) {
@@ -316,4 +321,27 @@ public class Camera {
         return nickname == null ? name : nickname;
     }
 
+    public void setDriverExposure(int exposure) {
+        driverExposure = exposure;
+
+        if (isDriver) {
+            setExposure(exposure);
+        }
+    }
+
+    public void setDriverBrightness(int brightness) {
+        driverBrightness = brightness;
+
+        if (isDriver) {
+            setBrightness(brightness);
+        }
+    }
+
+    public int getDriverExposure() {
+        return driverExposure;
+    }
+
+    public int getDriverBrightness() {
+        return driverBrightness;
+    }
 }
