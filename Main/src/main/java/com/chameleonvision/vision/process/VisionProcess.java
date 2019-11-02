@@ -7,7 +7,6 @@ import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.VideoException;
 import edu.wpi.first.networktables.*;
 import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,10 +30,10 @@ public class VisionProcess implements Runnable {
     private Pipeline currentPipeline;
     private CVProcess cvProcess;
     // pipeline process items
-    private List<MatOfPoint> foundContours = new ArrayList<>();
-    private List<MatOfPoint> filteredContours = new ArrayList<>();
-    private List<MatOfPoint> deSpeckledContours = new ArrayList<>();
-    private List<RotatedRect> groupedContours = new ArrayList<>();
+//    private List<MatOfPoint> foundContours = new ArrayList<>();
+//    private List<MatOfPoint> filteredContours = new ArrayList<>();
+//    private List<MatOfPoint> deSpeckledContours = new ArrayList<>();
+//    private List<RotatedRect> groupedContours = new ArrayList<>();
     private Mat cameraInputMat = new Mat();
     private Mat hsvThreshMat = new Mat();
     private Mat streamOutputMat = new Mat();
@@ -43,7 +42,7 @@ public class VisionProcess implements Runnable {
     public VisionProcess(CameraProcess cameraProcess) {
 
         // USBCamera settings
-        cvProcess = new CVProcess(cameraProcess.getCamVals());
+        cvProcess = new StandardCVProcess(cameraProcess.getCamVals());
         this.cameraProcess = cameraProcess; // new USBCameraProcess(cameraProcess);
 
         this.cameraName = cameraProcess.getCamName();
@@ -124,10 +123,10 @@ public class VisionProcess implements Runnable {
         while (!Thread.interrupted()) {
             startTime = System.nanoTime();
             if ((startTime - lastFrameEndNanosec) * 1e-6 >= 1000.0 / (maxFps + 3)) { // 3 additional fps to allow for overhead
-                foundContours.clear();
-                filteredContours.clear();
-                groupedContours.clear();
-                deSpeckledContours.clear();
+//                foundContours.clear();
+//                filteredContours.clear();
+//                groupedContours.clear();
+//                deSpeckledContours.clear();
 
                 // update FPS for ui only every 0.5 seconds
                 if ((startTime - fpsLastTime) * 1e-6 >= 500) {
