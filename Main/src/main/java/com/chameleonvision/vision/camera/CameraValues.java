@@ -21,8 +21,8 @@ public class CameraValues {
    public final double HorizontalFocalLength;
    public final double VerticalFocalLength;
 
-   public CameraValues(Camera camera) {
-       this(camera.getVideoMode().width, camera.getVideoMode().height, camera.getFOV());
+   public CameraValues(USBCamera USBCamera) {
+       this(USBCamera.getVideoMode().width, USBCamera.getVideoMode().height, USBCamera.getFOV());
    }
 
     public CameraValues(int imageWidth, int imageHeight, double fov) {

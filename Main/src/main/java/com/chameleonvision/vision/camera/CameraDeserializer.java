@@ -4,19 +4,16 @@ import com.chameleonvision.vision.Pipeline;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.type.MapType;
-import com.fasterxml.jackson.databind.type.ArrayType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.google.gson.*;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
-public class CameraDeserializer implements JsonDeserializer<Camera> {
+public class CameraDeserializer implements JsonDeserializer<USBCamera> {
 	@Override
-	public Camera deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) throws JsonParseException {
+	public USBCamera deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext context) throws JsonParseException {
 		try {
 			var jsonObj = jsonElement.getAsJsonObject();
 			var camFOV = jsonObj.get("FOV").getAsDouble();
@@ -32,8 +29,8 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 
 			// always null-check new features
 			boolean isDriver = isDriverObj != null && isDriverObj.getAsBoolean();
-			int driverExposure = driverExposureObj == null ? Camera.DEFAULT_EXPOSURE : driverExposureObj.getAsInt();
-			int driverBrightness = driverBrightnessObj == null ? Camera.DEFAULT_BRIGHTNESS : driverBrightnessObj.getAsInt();
+			int driverExposure = driverExposureObj == null ? USBCamera.DEFAULT_EXPOSURE : driverExposureObj.getAsInt();
+			int driverBrightness = driverBrightnessObj == null ? USBCamera.DEFAULT_BRIGHTNESS : driverBrightnessObj.getAsInt();
 			StreamDivisor divisor = divisorObj == null ? StreamDivisor.none : StreamDivisor.values()[divisorObj.getAsInt()];
 
 			var pipelines = jsonObj.get("pipelines");
@@ -47,7 +44,7 @@ public class CameraDeserializer implements JsonDeserializer<Camera> {
 				e.printStackTrace();
 			}
 
-			var newCamera = actualPipelines != null ? new Camera(camName, camFOV, actualPipelines, videoModeIndex, divisor, isDriver) : new Camera(camName, camFOV, videoModeIndex, divisor, isDriver);
+			var newCamera = actualPipelines != null ? new USBCamera(camName, camFOV, actualPipelines, videoModeIndex, divisor, isDriver) : new USBCamera(camName, camFOV, videoModeIndex, divisor, isDriver);
 			newCamera.setNickname(camNickname != null ? camNickname : "");
 			newCamera.setDriverExposure(driverExposure);
 			newCamera.setDriverBrightness(driverBrightness);

@@ -1,23 +1,19 @@
 package com.chameleonvision.web;
 
-import com.chameleonvision.settings.GeneralSettings;
 import com.chameleonvision.vision.*;
-import com.chameleonvision.vision.camera.Camera;
+import com.chameleonvision.vision.camera.USBCamera;
 import com.chameleonvision.vision.camera.CameraException;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.camera.CameraManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.cscore.VideoException;
 import io.javalin.websocket.*;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -49,7 +45,7 @@ public class ServerHandler {
                 switch (entry.getKey()) {
                     case "generalSettings": {
                         for (HashMap.Entry<String, Object> e : ((HashMap<String, Object>) entry.getValue()).entrySet()) {
-                            setField(SettingsManager.GeneralSettings, e.getKey(), e.getValue());
+                            setField(SettingsManager.generalSettings, e.getKey(), e.getValue());
                         }
                         SettingsManager.saveSettings();
                         sendFullSettings();
@@ -182,8 +178,8 @@ public class ServerHandler {
 
     private void setField(Object obj, String fieldName, Object value) {
         try {
-            if (obj instanceof Camera) {
-                var cam = (Camera)obj;
+            if (obj instanceof USBCamera) {
+                var cam = (USBCamera)obj;
                 if (fieldName.equals("driverBrightness")) {
                     cam.setDriverBrightness((Integer)value);
                 } else if (fieldName.equals("driverExposure")) {
@@ -234,12 +230,12 @@ public class ServerHandler {
 
     private static HashMap<String, Object> getOrdinalSettings() {
         HashMap<String, Object> tmp = new HashMap<>();
-        tmp.put("teamNumber", SettingsManager.GeneralSettings.teamNumber);
-        tmp.put("connectionType", SettingsManager.GeneralSettings.connectionType.ordinal());
-        tmp.put("ip", SettingsManager.GeneralSettings.ip);
-        tmp.put("gateway", SettingsManager.GeneralSettings.gateway);
-        tmp.put("netmask", SettingsManager.GeneralSettings.netmask);
-        tmp.put("hostname", SettingsManager.GeneralSettings.hostname);
+        tmp.put("teamNumber", SettingsManager.generalSettings.teamNumber);
+        tmp.put("connectionType", SettingsManager.generalSettings.connectionType.ordinal());
+        tmp.put("ip", SettingsManager.generalSettings.ip);
+        tmp.put("gateway", SettingsManager.generalSettings.gateway);
+        tmp.put("netmask", SettingsManager.generalSettings.netmask);
+        tmp.put("hostname", SettingsManager.generalSettings.hostname);
         return tmp;
     }
 

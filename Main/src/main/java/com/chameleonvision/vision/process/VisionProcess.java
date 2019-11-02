@@ -1,10 +1,8 @@
 package com.chameleonvision.vision.process;
 
 import com.chameleonvision.settings.SettingsManager;
-import com.chameleonvision.vision.CalibrationMode;
 import com.chameleonvision.vision.Orientation;
 import com.chameleonvision.vision.Pipeline;
-import com.chameleonvision.vision.camera.Camera;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.VideoException;
 import edu.wpi.first.networktables.*;
@@ -17,7 +15,6 @@ import java.util.List;
 
 public class VisionProcess implements Runnable {
 
-    private final Camera camera;
     private final String cameraName;
     public final CameraProcess cameraProcess;
     // NetworkTables
@@ -45,36 +42,36 @@ public class VisionProcess implements Runnable {
     private Scalar BoxRectColor = new Scalar(0, 0, 233);
     private long timeStamp = 0;
 
-    public VisionProcess(Camera processCam) {
-        camera = processCam;
-        this.cameraName = camera.name;
+    public VisionProcess(CameraProcess cameraProcess) {
 
-        initNT(NetworkTableInstance.getDefault().getTable("/chameleon-vision/"+processCam.getNickname()));
+        // USBCamera settings
+        cvProcess = new CVProcess(cameraProcess.getCamVals());
+        this.cameraProcess = cameraProcess; // new USBCameraProcess(cameraProcess);
 
-        // camera settings
-        cvProcess = new CVProcess(camera.getCamVals());
-        cameraProcess = new CameraProcess(camera);
+        this.cameraName = cameraProcess.getCamName();
+
+        initNT(NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraProcess.getNickname()));
     }
 
     private void driverModeListener(EntryNotification entryNotification) {
-        camera.setDriverMode(entryNotification.value.getBoolean());
+        cameraProcess.setDriverMode(entryNotification.value.getBoolean());
     }
 
     private void pipelineListener(EntryNotification entryNotification) {
         var ntPipelineIndex = (int) entryNotification.value.getDouble();
-        if (ntPipelineIndex >= camera.getPipelines().size()) {
-            ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
+        if (ntPipelineIndex >= cameraProcess.getPipelines().size()) {
+            ntPipelineEntry.setNumber(cameraProcess.getCurrentPipelineIndex());
         } else {
-            var pipeline = camera.getCurrentPipeline();
-            camera.setCurrentPipelineIndex(ntPipelineIndex);
+            var pipeline = cameraProcess.getCurrentPipeline();
+            cameraProcess.setCurrentPipelineIndex(ntPipelineIndex);
             try {
-                camera.setExposure(pipeline.exposure);
+                cameraProcess.setExposure(pipeline.exposure);
             } catch (VideoException e) {
                 System.err.println(e.toString());
             }
-            camera.setBrightness(pipeline.brightness);
-            if (SettingsManager.GeneralSettings.currentCamera.equals(cameraName)) {
-                SettingsManager.GeneralSettings.currentPipeline = ntPipelineIndex;
+            cameraProcess.setBrightness(pipeline.brightness);
+            if (SettingsManager.generalSettings.currentCamera.equals(cameraName)) {
+                SettingsManager.generalSettings.currentPipeline = ntPipelineIndex;
                 HashMap<String, Object> pipeChange = new HashMap<>();
                 pipeChange.put("currentPipeline", ntPipelineIndex);
                 ServerHandler.broadcastMessage(pipeChange);
@@ -123,7 +120,7 @@ public class VisionProcess implements Runnable {
         if (currentPipeline.orientation.equals(Orientation.Inverted)) {
             Core.flip(inputImage, inputImage, -1);
         }
-        if (camera.getDriverMode()) {
+        if (cameraProcess.getDriverMode()) {
             inputImage.copyTo(outputImage);
             return pipelineResult;
         }
@@ -150,9 +147,9 @@ public class VisionProcess implements Runnable {
                         pipelineResult.IsValid = true;
                         switch (currentPipeline.calibrationMode) {
                             case None:
-                                ///use the center of the camera to find the pitch and yaw difference
-                                pipelineResult.CalibratedX = camera.getCamVals().CenterX;
-                                pipelineResult.CalibratedY = camera.getCamVals().CenterY;
+                                ///use the center of the USBCamera to find the pitch and yaw difference
+                                pipelineResult.CalibratedX = cameraProcess.getCamVals().CenterX;
+                                pipelineResult.CalibratedY = cameraProcess.getCamVals().CenterY;
                                 break;
                             case Single:
                                 // use the static point as a calibration method instead of the center
@@ -165,7 +162,7 @@ public class VisionProcess implements Runnable {
                                 pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
                                 break;
                         }
-//                        var camVals = camera.getCamVals();
+//                        var camVals = cameraProcess.getCamVals();
 //                        if (currentPipeline.isCalibrated) {
 //                            pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
 //                            pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
@@ -173,8 +170,8 @@ public class VisionProcess implements Runnable {
 //                            pipelineResult.CalibratedX = camVals.CenterX;
 //                            pipelineResult.CalibratedY = camVals.CenterY;
 //                        }
-                        pipelineResult.Pitch = camera.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
-                        pipelineResult.Yaw = camera.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
+                        pipelineResult.Pitch = cameraProcess.getCamVals().CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
+                        pipelineResult.Yaw = cameraProcess.getCamVals().CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
                         pipelineResult.Area = finalRect.size.area();
                         drawContour(outputImage, finalRect);
                     }
@@ -193,7 +190,7 @@ public class VisionProcess implements Runnable {
         double processTimeMs;
         double fps = 0;
         double uiFps = 0;
-        int maxFps = camera.getVideoMode().fps;
+        int maxFps = cameraProcess.getVideoMode().fps;
 
         new Thread(cameraProcess).start();
 
@@ -201,10 +198,11 @@ public class VisionProcess implements Runnable {
 
         while (!Thread.interrupted()) {
             startTime = System.nanoTime();
-            if ((startTime - lastFrameEndNanosec) * 1e-6 >= 1000.0 / maxFps + 3) { // 3 additional fps to allow for overhead
+            if ((startTime - lastFrameEndNanosec) * 1e-6 >= 1000.0 / (maxFps + 3)) { // 3 additional fps to allow for overhead
                 foundContours.clear();
                 filteredContours.clear();
                 groupedContours.clear();
+                deSpeckledContours.clear();
 
                 // update FPS for ui only every 0.5 seconds
                 if ((startTime - fpsLastTime) * 1e-6 >= 500) {
@@ -216,7 +214,7 @@ public class VisionProcess implements Runnable {
                     fpsLastTime = System.nanoTime();
                 }
 
-                currentPipeline = camera.getCurrentPipeline();
+                currentPipeline = cameraProcess.getCurrentPipeline();
                 // start fps counter right before grabbing input frame
                 timeStamp = cameraProcess.getLatestFrame(cameraInputMat);
                 if (cameraInputMat.cols() == 0 && cameraInputMat.rows() == 0) {
@@ -226,7 +224,7 @@ public class VisionProcess implements Runnable {
                 // get vision data
                 var pipelineResult = runVisionProcess(cameraInputMat, streamOutputMat);
                 updateNetworkTables(pipelineResult);
-                if (cameraName.equals(SettingsManager.GeneralSettings.currentCamera)) {
+                if (cameraName.equals(SettingsManager.generalSettings.currentCamera)) {
                     HashMap<String, Object> WebSend = new HashMap<>();
                     HashMap<String, Object> point = new HashMap<>();
                     HashMap<String, Object> calculated = new HashMap<>();
@@ -293,6 +291,6 @@ public class VisionProcess implements Runnable {
         ntDriveModeListenerID = ntDriverModeEntry.addListener(this::driverModeListener, EntryListenerFlags.kUpdate);
         ntPipelineListenerID = ntPipelineEntry.addListener(this::pipelineListener, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
-        ntPipelineEntry.setNumber(camera.getCurrentPipelineIndex());
+        ntPipelineEntry.setNumber(cameraProcess.getCurrentPipelineIndex());
     }
 }

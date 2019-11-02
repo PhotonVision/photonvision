@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class Camera {
+public class USBCamera {
 
     private static final double DEFAULT_FOV = 60.8;
     private static final StreamDivisor DEFAULT_STREAMDIVISOR = StreamDivisor.none;
@@ -49,31 +49,31 @@ public class Camera {
     private int driverBrightness;
     private boolean isDriver;
 
-    public Camera(String cameraName) {
+    public USBCamera(String cameraName) {
         this(cameraName, DEFAULT_FOV);
     }
 
-    public Camera(String cameraName, double fov) {
-        this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov);
+    public USBCamera(String cameraName, double fov) {
+        this(cameraName, CameraManager.allUsbCameraInfosByName.get(cameraName), fov);
     }
 
-    public Camera(String cameraName, UsbCameraInfo usbCameraInfo, double fov) {
+    public USBCamera(String cameraName, UsbCameraInfo usbCameraInfo, double fov) {
         this(cameraName, usbCameraInfo, fov, DEFAULT_STREAMDIVISOR);
     }
 
-    public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, StreamDivisor divisor) {
+    public USBCamera(String cameraName, UsbCameraInfo usbCamInfo, double fov, StreamDivisor divisor) {
         this(cameraName, usbCamInfo, fov, new ArrayList<>(), 0, divisor, false);
     }
 
-    public Camera(String cameraName, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, boolean isDriver) {
-        this(cameraName, CameraManager.AllUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex, divisor, isDriver);
+    public USBCamera(String cameraName, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, boolean isDriver) {
+        this(cameraName, CameraManager.allUsbCameraInfosByName.get(cameraName), fov, pipelines, videoModeIndex, divisor, isDriver);
     }
 
-    public Camera(String cameraName, double fov, int videoModeIndex, StreamDivisor divisor, boolean isDriver) {
+    public USBCamera(String cameraName, double fov, int videoModeIndex, StreamDivisor divisor, boolean isDriver) {
         this(cameraName, fov, new ArrayList<>(), videoModeIndex, divisor, isDriver);
     }
 
-    public Camera(String cameraName, UsbCameraInfo usbCamInfo, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, boolean isDriver) {
+    public USBCamera(String cameraName, UsbCameraInfo usbCamInfo, double fov, List<Pipeline> pipelines, int videoModeIndex, StreamDivisor divisor, boolean isDriver) {
         FOV = fov;
         name = cameraName;
 
@@ -99,13 +99,13 @@ public class Camera {
                 }
             }
             var initTimeMs = (System.nanoTime() - initTimeout) / 1e6;
-            System.out.printf("Camera initialized in %.2fms\n", initTimeMs);
+            System.out.printf("USBCamera initialized in %.2fms\n", initTimeMs);
         }
         var trueVideoModes = UsbCam.enumerateVideoModes();
         availableVideoModes = Arrays.stream(trueVideoModes).filter(v ->
                 v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT && ALLOWED_PIXEL_FORMATS.contains(v.pixelFormat)).toArray(VideoMode[]::new);
         if (availableVideoModes.length == 0) {
-            System.err.println("Camera not supported!");
+            System.err.println("USBCamera not supported!");
             throw new RuntimeException(new CameraException(CameraException.CameraExceptionType.BAD_CAMERA));
         }
         if (videoModeIndex <= availableVideoModes.length - 1) {
@@ -283,7 +283,7 @@ public class Camera {
         try {
             UsbCam.setExposureManual(exposure);
         } catch (VideoException e) {
-            System.err.println("Camera Does not support exposure change");
+            System.err.println("USBCamera Does not support exposure change");
         }
     }
 
@@ -311,9 +311,9 @@ public class Camera {
         //Deletes old camera nt table
         NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + this.nickname).getInstance().deleteAllEntries();
         nickname = newNickname;
-        if (CameraManager.AllVisionProcessesByName.containsKey(this.name)) {
+        if (CameraManager.allVisionProcessesByName.containsKey(this.name)) {
             NetworkTable newNT = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + this.nickname);
-            CameraManager.AllVisionProcessesByName.get(this.name).resetNT(newNT);
+            CameraManager.allVisionProcessesByName.get(this.name).resetNT(newNT);
         }
     }
 
