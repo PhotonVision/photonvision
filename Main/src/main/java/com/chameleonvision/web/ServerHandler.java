@@ -184,17 +184,32 @@ public class ServerHandler {
         try {
             if (obj instanceof Camera) {
                 var cam = (Camera)obj;
-                if (fieldName.equals("driverBrightness")) {
-                    cam.setDriverBrightness((Integer)value);
-                } else if (fieldName.equals("driverExposure")) {
-                    cam.setDriverExposure((Integer)value);
+                switch (fieldName) {
+                    case "driverBrightness":
+                        cam.setDriverBrightness((Integer) value);
+                        break;
+                    case "driverExposure":
+                        cam.setDriverExposure((Integer) value);
+                        break;
+                    default:
+                        Field field = obj.getClass().getField(fieldName);
+                        if (field.getType().isEnum()) {
+                            field.set(obj, field.getType().getEnumConstants()[(Integer) value]);
+                        } else {
+                            field.set(obj, value);
+                        }
+                        break;
+                }
+            } else {
+                Field field = obj.getClass().getField(fieldName);
+                if (field.getType().isEnum()) {
+                    field.set(obj, field.getType().getEnumConstants()[(Integer) value]);
+                }
+                else {
+                    field.set(obj, value);
                 }
             }
-            Field field = obj.getClass().getField(fieldName);
-            if (field.getType().isEnum())
-                field.set(obj, field.getType().getEnumConstants()[(Integer) value]);
-            else
-                field.set(obj, value);
+
         } catch (NoSuchFieldException | IllegalAccessException ex) {
             ex.printStackTrace();
         }
