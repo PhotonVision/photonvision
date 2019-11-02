@@ -182,6 +182,14 @@ public class ServerHandler {
 
     private void setField(Object obj, String fieldName, Object value) {
         try {
+            if (obj instanceof Camera) {
+                var cam = (Camera)obj;
+                if (fieldName.equals("driverBrightness")) {
+                    cam.setDriverBrightness((Integer)value);
+                } else if (fieldName.equals("driverExposure")) {
+                    cam.setDriverExposure((Integer)value);
+                }
+            }
             Field field = obj.getClass().getField(fieldName);
             if (field.getType().isEnum())
                 field.set(obj, field.getType().getEnumConstants()[(Integer) value]);
