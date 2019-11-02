@@ -63,9 +63,13 @@ public class CVProcess {
         if (currentPipeline == null) {
             return pipelineResult;
         }
+
+        // flip the image
         if (shouldFlip) {
             Core.flip(inputImage, inputImage, -1);
         }
+
+        // if we're in driver mode don't do anything, and return a blank result
         if (driverMode) {
             inputImage.copyTo(outputImage);
             return pipelineResult;
@@ -76,53 +80,68 @@ public class CVProcess {
         deSpeckledContours_.clear();
         groupedContours_.clear();
 
+        // HSV threshold the image
         Scalar hsvLower = new Scalar(currentPipeline.hue.get(0).intValue(), currentPipeline.saturation.get(0).intValue(), currentPipeline.value.get(0).intValue());
         Scalar hsvUpper = new Scalar(currentPipeline.hue.get(1).intValue(), currentPipeline.saturation.get(1).intValue(), currentPipeline.value.get(1).intValue());
-
         hsvThreshold(inputImage, hsvThreshMat, hsvLower, hsvUpper, currentPipeline.erode, currentPipeline.dilate);
 
+        // Make sure we're BFR
         if (currentPipeline.isBinary) {
             Imgproc.cvtColor(hsvThreshMat, outputImage, Imgproc.COLOR_GRAY2BGR, 3);
         } else {
             inputImage.copyTo(outputImage);
         }
+
+        // search for contours
         foundContours_ = findContours(hsvThreshMat);
-        if (foundContours_.size() > 0) {
-            filteredContours_ = filterContours(foundContours_, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent);
-            if (filteredContours_.size() > 0) {
-                deSpeckledContours_ = rejectSpeckles(filteredContours_, currentPipeline.speckle.doubleValue());
-                if (deSpeckledContours_.size() > 0) {
-                    groupedContours_ = groupTargets(deSpeckledContours_, currentPipeline.targetIntersection, currentPipeline.targetGroup);
-                    if (groupedContours_.size() > 0) {
-                        var finalRect = sortTargetsToOne(groupedContours_, currentPipeline.sortMode);
-                        pipelineResult.RawPoint = finalRect;
-                        pipelineResult.IsValid = true;
-                        switch (currentPipeline.calibrationMode) {
-                            case None:
-                                ///use the center of the USBCamera to find the pitch and yaw difference
-                                pipelineResult.CalibratedX = cameraValues.CenterX;
-                                pipelineResult.CalibratedY = cameraValues.CenterY;
-                                break;
-                            case Single:
-                                // use the static point as a calibration method instead of the center
-                                pipelineResult.CalibratedX = currentPipeline.point.get(0).doubleValue();
-                                pipelineResult.CalibratedY = currentPipeline.point.get(1).doubleValue();
-                                break;
-                            case Dual:
-                                // use the calculated line to find the difference in length between the point and the line
-                                pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
-                                pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
-                                break;
-                        }
-                        
-                        pipelineResult.Pitch = cameraValues.CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
-                        pipelineResult.Yaw = cameraValues.CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
-                        pipelineResult.Area = finalRect.size.area();
-                        drawContour(outputImage, finalRect);
-                    }
-                }
-            }
+        if (foundContours_.size() < 1) {
+            return pipelineResult;
         }
+
+        // filter contours by area, ratio and extent
+        filteredContours_ = filterContours(foundContours_, currentPipeline.area, currentPipeline.ratio, currentPipeline.extent);
+        if (filteredContours_.size() < 1) {
+            return pipelineResult;
+        }
+
+        // reject "speckle" contours
+        deSpeckledContours_ = rejectSpeckles(filteredContours_, currentPipeline.speckle.doubleValue());
+        if (deSpeckledContours_.size() < 1) {
+            return pipelineResult;
+        }
+
+        // group targets
+        groupedContours_ = groupTargets(deSpeckledContours_, currentPipeline.targetIntersection, currentPipeline.targetGroup);
+        if (groupedContours_.size() < 1) {
+            return pipelineResult;
+        }
+
+        // sort targets down to our final target
+        var finalRect = sortTargetsToOne(groupedContours_, currentPipeline.sortMode);
+        pipelineResult.RawPoint = finalRect;
+        pipelineResult.IsValid = true;
+        switch (currentPipeline.calibrationMode) {
+            case None:
+                ///use the center of the USBCamera to find the pitch and yaw difference
+                pipelineResult.CalibratedX = cameraValues.CenterX;
+                pipelineResult.CalibratedY = cameraValues.CenterY;
+                break;
+            case Single:
+                // use the static point as a calibration method instead of the center
+                pipelineResult.CalibratedX = currentPipeline.point.get(0).doubleValue();
+                pipelineResult.CalibratedY = currentPipeline.point.get(1).doubleValue();
+                break;
+            case Dual:
+                // use the calculated line to find the difference in length between the point and the line
+                pipelineResult.CalibratedX = (finalRect.center.y - currentPipeline.b) / currentPipeline.m;
+                pipelineResult.CalibratedY = (finalRect.center.x * currentPipeline.m) + currentPipeline.b;
+                break;
+        }
+
+        pipelineResult.Pitch = cameraValues.CalculatePitch(finalRect.center.y, pipelineResult.CalibratedY);
+        pipelineResult.Yaw = cameraValues.CalculateYaw(finalRect.center.x, pipelineResult.CalibratedX);
+        pipelineResult.Area = finalRect.size.area();
+        drawContour(outputImage, finalRect);
 
         return pipelineResult;
     }
