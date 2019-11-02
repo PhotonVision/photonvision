@@ -97,7 +97,7 @@ public class VisionProcess implements Runnable {
     }
 
     private PipelineResult runVisionProcess(Mat inputImage, Mat outputImage) {
-        return cameraProcess.runPipeline(
+        return cvProcess.runPipeline(
                 currentPipeline,
                 inputImage,
                 outputImage,

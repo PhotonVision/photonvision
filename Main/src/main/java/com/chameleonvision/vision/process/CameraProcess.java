@@ -27,8 +27,4 @@ public interface CameraProcess extends Runnable {
     CamVideoMode getVideoMode();
     String getNickname();
     void setCurrentPipelineIndex(int ntPipelineIndex);
-
-    PipelineResult runPipeline(Pipeline currentPipeline, Mat inputImage, Mat outputImage,
-                               CameraValues cameraValues, boolean shouldFlip, boolean driverMode);
-
 }
