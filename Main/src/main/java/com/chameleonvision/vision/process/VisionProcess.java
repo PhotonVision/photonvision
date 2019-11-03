@@ -1,7 +1,6 @@
 package com.chameleonvision.vision.process;
 
 import com.chameleonvision.settings.SettingsManager;
-import com.chameleonvision.vision.CalibrationMode;
 import com.chameleonvision.vision.Orientation;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
@@ -218,7 +217,7 @@ public class VisionProcess implements Runnable {
 
                 currentPipeline = camera.getCurrentPipeline();
                 // start fps counter right before grabbing input frame
-                timeStamp = cameraProcess.getLatestFrame(cameraInputMat);
+                timeStamp = cameraProcess.getInputFrame(cameraInputMat);
                 if (cameraInputMat.cols() == 0 && cameraInputMat.rows() == 0) {
                     continue;
                 }
@@ -249,7 +248,7 @@ public class VisionProcess implements Runnable {
                     ServerHandler.broadcastMessage(WebSend);
                 }
 
-                cameraProcess.updateFrame(streamOutputMat);
+                cameraProcess.setOutputFrame(streamOutputMat);
 
                 cameraInputMat.release();
                 hsvThreshMat.release();

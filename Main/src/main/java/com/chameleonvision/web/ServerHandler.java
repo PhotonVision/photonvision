@@ -191,6 +191,9 @@ public class ServerHandler {
                     case "driverExposure":
                         cam.setDriverExposure((Integer) value);
                         break;
+                    case "isDriver":
+                        cam.setDriverMode((boolean)value);
+                        break;
                     default:
                         Field field = obj.getClass().getField(fieldName);
                         if (field.getType().isEnum()) {

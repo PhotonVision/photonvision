@@ -22,7 +22,7 @@ public class Main {
     private static final String NETWORK_MANAGE_KEY = "--unmanage-network"; // no args for this setting
     private static final String IGNORE_ROOT = "--ignore-root"; // no args for this setting
 
-    private static final int DEFAULT_PORT = 8888;
+    private static final int DEFAULT_PORT = 5800;
 
     private static boolean ntServerMode = false;
     private static boolean manageNetwork = true;

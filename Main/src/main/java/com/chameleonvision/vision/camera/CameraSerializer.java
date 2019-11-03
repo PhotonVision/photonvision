@@ -15,7 +15,7 @@ public class CameraSerializer implements JsonSerializer<Camera> {
         var pipelines = context.serialize(camera.getPipelines());
         obj.add("pipelines", pipelines);
         obj.addProperty("resolution", camera.getVideoModeIndex());
-        obj.add("camVideoMode", context.serialize(camera.getVideoMode()));
+//        obj.add("camVideoMode", context.serialize(camera.getVideoMode()));
         obj.add("isDriver",context.serialize(camera.getDriverMode()));
         obj.add("driverExposure",context.serialize(camera.getDriverExposure()));
         obj.add("driverBrightness",context.serialize(camera.getDriverBrightness()));

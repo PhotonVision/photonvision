@@ -147,12 +147,12 @@ public class Camera {
     }
 
     private void updateCvSource() {
+        CameraManager.getVisionProcessByCameraName(name).cameraProcess.updateFrameSize();
         synchronized (cvSourceLock) {
             var newWidth = camVideoMode.width / streamDivisor.value;
             var newHeight = camVideoMode.height / streamDivisor.value;
             cvSource = cs.putVideo(name, newWidth, newHeight);
         }
-        CameraManager.getVisionProcessByCameraName(name).cameraProcess.updateFrameSize();
         ServerHandler.sendFullSettings();
     }
 

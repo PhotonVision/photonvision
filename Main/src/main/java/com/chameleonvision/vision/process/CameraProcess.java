@@ -10,42 +10,40 @@ import org.opencv.imgproc.Imgproc;
 public class CameraProcess implements Runnable {
 
     private final Camera camera;
-    private final int maxFPS;
-    private final Object inputFrameLock = new Object();
+
     private final Object outputFrameLock = new Object();
-    private Mat inputFrame;
+    private final Object inputFrameLock = new Object();
+    private int maxFPS;
     private Mat outputFrame;
+    private Mat inputFrame;
     private long timestamp;
     private StreamDivisor divisor;
 
     CameraProcess(Camera camera) {
         this.camera = camera;
-        maxFPS = camera.getVideoMode().fps;
         updateFrameSize();
     }
 
     public void updateFrameSize() {
-        var camVals = camera.getCamVals();
+        maxFPS = camera.getVideoMode().fps;
         divisor = camera.getStreamDivisor();
-        var newWidth = camVals.ImageWidth / divisor.value;
-        var newHeight = camVals.ImageHeight / divisor.value;
-        synchronized (inputFrameLock) {
-            inputFrame = new Mat(newWidth, newHeight, CvType.CV_8UC3);
-        }
+        var camVidMode = camera.getVideoMode();
+        var newWidth = camVidMode.width / divisor.value;
+        var newHeight = camVidMode.height / divisor.value;
         synchronized (outputFrameLock) {
             outputFrame = new Mat(newWidth, newHeight, CvType.CV_8UC3);
         }
     }
 
-    void updateFrame(Mat inputFrame) {
-        synchronized (inputFrameLock) {
-            inputFrame.copyTo(this.inputFrame);
+    void setOutputFrame(Mat inputFrame) {
+        synchronized (outputFrameLock) {
+            inputFrame.copyTo(this.outputFrame);
         }
     }
 
-    long getLatestFrame(Mat outputFrame) {
-        synchronized (outputFrameLock) {
-            this.outputFrame.copyTo(outputFrame);
+    long getInputFrame(Mat inputFrame) {
+        synchronized (inputFrameLock) {
+            this.inputFrame.copyTo(inputFrame);
             return timestamp;
         }
     }
@@ -53,18 +51,18 @@ public class CameraProcess implements Runnable {
     @Override
     public void run() {
         while (!Thread.interrupted()) {
-            synchronized (outputFrameLock) {
-                timestamp = camera.grabFrame(outputFrame);
-            }
             synchronized (inputFrameLock) {
+                timestamp = camera.grabFrame(inputFrame);
+            }
+            synchronized (outputFrameLock) {
                 if (divisor.value != 1) {
-                    var camVals = camera.getCamVals();
-                    var newWidth = camVals.ImageWidth / divisor.value;
-                    var newHeight = camVals.ImageHeight / divisor.value;
+                    var camVidMode = camera.getVideoMode();
+                    var newWidth = camVidMode.width / divisor.value;
+                    var newHeight = camVidMode.height / divisor.value;
                     Size newSize = new Size(newWidth, newHeight);
-                    Imgproc.resize(inputFrame, inputFrame, newSize);
+                    Imgproc.resize(outputFrame, outputFrame, newSize);
                 }
-                camera.putFrame(inputFrame);
+                camera.putFrame(outputFrame);
             }
             var msToWait = (long) 1000 / maxFPS;
             try {
