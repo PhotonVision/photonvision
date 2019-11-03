@@ -33,6 +33,7 @@ public class CameraProcess implements Runnable {
         synchronized (outputFrameLock) {
             outputFrame = new Mat(newWidth, newHeight, CvType.CV_8UC3);
         }
+        inputFrame = new Mat(camVidMode.width, camVidMode.height, CvType.CV_8UC3);
     }
 
     void setOutputFrame(Mat inputFrame) {
