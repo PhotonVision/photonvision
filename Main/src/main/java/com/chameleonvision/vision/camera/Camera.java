@@ -138,7 +138,10 @@ public class Camera {
         // update camera values
         camVals = new CameraValues(this);
 
-        if (prevVideoMode != null && !prevVideoMode.equals(newVideoMode)) { //  if resolution changed
+        boolean hasPrevVideoMode = prevVideoMode != null;
+        boolean newVideoModeIsNew = hasPrevVideoMode && !prevVideoMode.equals(newVideoMode);
+
+        if (newVideoModeIsNew || !hasPrevVideoMode) {
             UsbCam.setVideoMode(newVideoMode.getActualPixelFormat(), newVideoMode.width, newVideoMode.height, newVideoMode.fps);
             if (updateCvSource) {
                 updateCvSource();
