@@ -43,7 +43,7 @@ public class CameraManager {
 	public static HashMap<String, USBCamera> getAllCamerasByName() {
 		return allCamerasByName;
 	}
-	public static List<String> getAllCameraByNickname(){
+	public static List<String> getAllCameraByNickname() {
 		var cameras = getAllCamerasByName();
 		return cameras.values().stream().map(USBCamera::getNickname).collect(Collectors.toList());
 	}
@@ -101,6 +101,7 @@ public class CameraManager {
 		if (curCam == null) throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
 		return curCam;
 	}
+
 	public static Integer getCurrentCameraIndex() throws CameraException {
 		if (allCamerasByName.size() == 0) throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
 		List<String> arr = new ArrayList<>(allCamerasByName.keySet());
@@ -118,6 +119,7 @@ public class CameraManager {
 		SettingsManager.generalSettings.currentCamera = cameraName;
 		SettingsManager.updateCameraSetting(cameraName, getCurrentCamera().getCurrentPipelineIndex());
 	}
+
 	public static void setCurrentCamera(int cameraIndex) throws CameraException {
 		List<String> s =   new ArrayList<String>(allCamerasByName.keySet());
 		setCurrentCamera(s.get(cameraIndex));
