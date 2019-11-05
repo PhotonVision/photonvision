@@ -9,6 +9,7 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import org.opencv.core.Mat;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -304,9 +305,14 @@ public class Camera {
         }
     }
 
-    public List<String> getResolutionList() {
+    public List<HashMap> getResolutionList() {
         return Arrays.stream(availableVideoModes)
-                .map(res -> String.format("%sx%s@%sFPS, %s", res.width, res.height, res.fps, res.pixelFormat.toString()))
+                .map(res -> new HashMap<String,Object>(){{
+                    put("width", res.width);
+                    put("height", res.height);
+                    put("fps", res.fps);
+                    put("pixelFormat", res.pixelFormat);
+                }})
                 .collect(Collectors.toList());
     }
 

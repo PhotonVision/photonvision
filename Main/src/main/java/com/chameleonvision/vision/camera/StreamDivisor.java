@@ -4,7 +4,7 @@ public enum StreamDivisor {
     none(1),
     half(2),
     quarter(4),
-    sixth(6);
+    eighth(8);
 
     public final Integer value;
 
