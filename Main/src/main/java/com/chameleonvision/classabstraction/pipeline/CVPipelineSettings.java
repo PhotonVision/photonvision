@@ -1,14 +1,13 @@
 package com.chameleonvision.classabstraction.pipeline;
 
-import com.chameleonvision.vision.CalibrationMode;
-import com.chameleonvision.vision.SortMode;
-import com.chameleonvision.vision.TargetGroup;
-import com.chameleonvision.vision.TargetIntersection;
+import com.chameleonvision.vision.*;
 
 import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings("ALL")
 public abstract class CVPipelineSettings {
+    ImageFlipMode flipMode = ImageFlipMode.NONE;
     List<Number> hue = Arrays.asList(50, 180);
     List<Number> saturation = Arrays.asList(50, 255);
     List<Number> value = Arrays.asList(50, 255);
@@ -22,9 +21,10 @@ public abstract class CVPipelineSettings {
     SortMode sortMode = SortMode.Largest;
     TargetGroup targetGroup = TargetGroup.Single;
     TargetIntersection targetIntersection = TargetIntersection.Up;
-    double m = 1;
-    double b = 0;
     List<Number> point = Arrays.asList(0,0);
     CalibrationMode calibrationMode = CalibrationMode.None;
+
     String nickname = "";
+    double exposure = 50.0;
+    double brightness = 50.0;
 }

@@ -7,7 +7,7 @@ import org.opencv.core.Mat;
  * @param <R> Pipeline result type
  */
 public abstract class CVPipeline<R> {
-    private CVPipelineSettings settings;
+    protected CVPipelineSettings settings;
     private Mat inputMat;
     protected Mat outputMat;
 

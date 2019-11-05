@@ -9,7 +9,7 @@ public class DriverVisionPipeline extends CVPipeline<Void> {
 
     @Override
     void initPipeline() {
-        // set exposure/brightness of camera?
+        // TODO set exposure/brightness of camera
     }
 
     @Override
