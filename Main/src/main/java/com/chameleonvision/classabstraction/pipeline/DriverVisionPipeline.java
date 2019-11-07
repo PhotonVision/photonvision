@@ -1,25 +1,29 @@
 package com.chameleonvision.classabstraction.pipeline;
 
+import com.chameleonvision.classabstraction.camera.USBCamera;
+import com.chameleonvision.vision.process.PipelineResult;
 import org.opencv.core.Mat;
 
-public class DriverVisionPipeline extends CVPipeline<Void> {
+public class DriverVisionPipeline extends CVPipeline<DriverVisionPipeline.DriverPipelineResult, CVPipelineSettings> {
     public DriverVisionPipeline(CVPipelineSettings settings) {
         super(settings);
     }
 
     @Override
-    void initPipeline() {
-        // TODO set exposure/brightness of camera
+    void initPipeline(USBCamera camera) {
+        // TODO: set camera to driver mode
     }
 
     @Override
-    Void runPipeline(Mat inputMat) {
-        this.outputMat = inputMat;
-        return null;
+    DriverPipelineResult runPipeline(Mat inputMat) {
+        return new DriverPipelineResult(inputMat);
     }
 
-    @Override
-    Mat getOutputMat() {
-        return this.outputMat;
+    public static class DriverPipelineResult extends CVPipelineResult<Void> {
+        public DriverPipelineResult(Mat outputMat) {
+            this.hasTarget = false;
+            this.targets = null;
+            outputMat.copyTo(this.outputMat);
+        }
     }
 }

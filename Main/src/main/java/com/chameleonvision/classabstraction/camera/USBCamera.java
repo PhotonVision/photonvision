@@ -5,7 +5,7 @@ import edu.wpi.cscore.VideoMode;
 
 public class USBCamera {
     private final UsbCamera baseCamera;
-    private final CameraProperties properties;
+    public final CameraProperties properties;
 
     public USBCamera(UsbCamera camera) {
         baseCamera = camera;

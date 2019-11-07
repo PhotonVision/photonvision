@@ -9,8 +9,8 @@ public class CameraStaticProperties {
     public final int ImageHeight;
     public final double FOV;
     public final double ImageArea;
-    public final double CenterX;
-    public final double CenterY;
+    public final double centerX;
+    public final double centerY;
     public final double HorizontalFocalLength;
     public final double VerticalFocalLength;
 
@@ -19,8 +19,8 @@ public class CameraStaticProperties {
         ImageHeight = imageHeight;
         FOV = fov;
         ImageArea = ImageWidth * ImageHeight;
-        CenterX = ((double) ImageWidth / 2) - 0.5;
-        CenterY = ((double) ImageHeight / 2) - 0.5;
+        centerX = ((double) ImageWidth / 2) - 0.5;
+        centerY = ((double) ImageHeight / 2) - 0.5;
 
         // pinhole model calculations
         double diagonalView = FastMath.toRadians(FOV);

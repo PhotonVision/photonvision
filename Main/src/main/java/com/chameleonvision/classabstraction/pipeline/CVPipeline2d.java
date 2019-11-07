@@ -1,191 +1,126 @@
 package com.chameleonvision.classabstraction.pipeline;
 
-import com.chameleonvision.util.MathHandler;
-import com.chameleonvision.vision.ImageFlipMode;
-import com.chameleonvision.vision.camera.CameraValues;
-import org.jetbrains.annotations.NotNull;
+import com.chameleonvision.classabstraction.camera.CameraStaticProperties;
+import com.chameleonvision.classabstraction.camera.USBCamera;
+import com.chameleonvision.classabstraction.pipeline.pipes.*;
+import com.chameleonvision.vision.ImageRotation;
+import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings("WeakerAccess")
-public class CVPipeline2d extends CVPipeline<CVPipeline2d.CVPipeline2dResult> {
+public class CVPipeline2d extends CVPipeline<CVPipeline2d.CVPipeline2dResult, CVPipeline2d.CVPipeline2dSettings> {
 
-    private List<MatOfPoint> foundContours_ = new ArrayList<>();
-    private List<MatOfPoint> filteredContours_ = new ArrayList<>();
-    private List<MatOfPoint> deSpeckledContours_ = new ArrayList<>();
-    private List<RotatedRect> groupedContours_ = new ArrayList<>();
+    private USBCamera camera;
 
-    public CVPipeline2d(CVPipelineSettings settings) {
+    private Mat rawCameraMat = new Mat();
+    private Mat hsvOutputMat = new Mat();
+
+    public CVPipeline2d(CVPipeline2dSettings settings) {
         super(settings);
     }
 
     @Override
-    void initPipeline() {
-
+    void initPipeline(USBCamera cam) {
+        camera = cam;
     }
 
     @Override
     CVPipeline2d.CVPipeline2dResult runPipeline(Mat inputMat) {
-        var shouldFlip = settings.flipMode.equals(ImageFlipMode.BOTH);
-        var result = new CVPipeline2dResult();
+        long totalProcessTimeNanos = 0;
+        StringBuilder procTimeStringBuilder = new StringBuilder();
 
-        // flip the image
-        if (shouldFlip) {
-            Core.flip(inputMat, inputMat, -1);
-        }
+        CameraStaticProperties camProps = camera.properties.staticProperties;
 
-        foundContours_.clear();
-        filteredContours_.clear();
-        deSpeckledContours_.clear();
-        groupedContours_.clear();
+        inputMat.copyTo(rawCameraMat);
 
-        // HSV threshold the image
+        // prepare pipes
+        RotateFlipPipe rotateFlipPipe = new RotateFlipPipe(ImageRotation.DEG_0, settings.flipMode);
+        BlurPipe blurPipe = new BlurPipe(5);
+        ErodeDilatePipe erodeDilatePipe = new ErodeDilatePipe(settings.erode, settings.dilate, 7);
+
         Scalar hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
         Scalar hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
-        hsvThreshold(inputImage, hsvThreshMat, settings.erode, settings.dilate);
 
-        // Make sure we're BFR
-        if (settings.isBinary) {
-            Imgproc.cvtColor(hsvThreshMat, outputImage, Imgproc.COLOR_GRAY2BGR, 3);
-        } else {
-            inputImage.copyTo(outputImage);
-        }
+        HsvPipe hsvPipe = new HsvPipe(hsvLower, hsvUpper);
 
-        // search for contours
-        foundContours_ = findContours(hsvThreshMat);
-        if (foundContours_.size() < 1) {
-            return result;
-        }
+        FindContoursPipe findContoursPipe = new FindContoursPipe();
+        FilterContoursPipe filterContoursPipe = new FilterContoursPipe(settings.area, settings.ratio, settings.extent, camProps);
+        SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe(settings.speckle.doubleValue());
+        GroupContoursPipe groupContoursPipe = new GroupContoursPipe(settings.targetGroup, settings.targetIntersection);
+        SortContoursPipe sortContoursPipe = new SortContoursPipe(settings.sortMode, camProps);
+        Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe(settings.calibrationMode, settings.point,
+                settings.dualTargetCalibrationM, settings.dualTargetCalibrationB, camProps);
 
-        // filter contours by area, ratio and extent
-        filteredContours_ = filterContours(foundContours_, settings.area, settings.ratio, settings.extent);
-        if (filteredContours_.size() < 1) {
-            return result;
-        }
+        OutputMatPipe outputMatPipe = new OutputMatPipe(settings.isBinary);
 
-        // reject "speckle" contours
-        deSpeckledContours_ = rejectSpeckles(filteredContours_, settings.speckle.doubleValue());
-        if (deSpeckledContours_.size() < 1) {
-            return result;
-        }
+        Draw2dContoursPipe.Draw2dContoursSettings draw2dContoursSettings = new Draw2dContoursPipe.Draw2dContoursSettings();
+        draw2dContoursSettings.showCentroid = false;
+        draw2dContoursSettings.showCrosshair = true;
+        draw2dContoursSettings.boxOutlineSize = 2;
+        draw2dContoursSettings.showRotatedBox = true;
+        draw2dContoursSettings.showMaximumBox = true;
 
-        // group targets
-        groupedContours_ = groupTargets(deSpeckledContours_, settings.targetIntersection, settings.targetGroup);
-        if (groupedContours_.size() < 1) {
-            return result;
-        }
+        Draw2dContoursPipe draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, camProps);
 
-        // sort targets down to our final target
-        var finalRect = sortTargetsToOne(groupedContours_, settings.sortMode);
-        result.RawPoint = finalRect;
-        result.IsValid = true;
-        switch (settings.calibrationMode) {
-            case None:
-                ///use the center of the USBCamera to find the pitch and yaw difference
-                result.CalibratedX = cameraValues.CenterX;
-                result.CalibratedY = cameraValues.CenterY;
-                break;
-            case Single:
-                // use the static point as a calibration method instead of the center
-                result.CalibratedX = settings.point.get(0).doubleValue();
-                result.CalibratedY = settings.point.get(1).doubleValue();
-                break;
-            case Dual:
-                // use the calculated line to find the difference in length between the point and the line
-                result.CalibratedX = (finalRect.center.y - settings.b) / settings.m;
-                result.CalibratedY = (finalRect.center.x * settings.m) + settings.b;
-                break;
-        }
+        // run pipes
+        Pair<Mat, Long> rotateFlipResult = rotateFlipPipe.run(inputMat);
+        totalProcessTimeNanos += rotateFlipResult.getRight();
+        procTimeStringBuilder.append(String.format("RotateFlip: %.2fms, ", rotateFlipResult.getRight() / 1000.0));
 
-        result.Pitch = cameraValues.CalculatePitch(finalRect.center.y, result.CalibratedY);
-        result.Yaw = cameraValues.CalculateYaw(finalRect.center.x, result.CalibratedX);
-        result.Area = finalRect.size.area();
-        drawContour(outputImage, finalRect);
+        Pair<Mat, Long> blurResult = blurPipe.run(rotateFlipResult.getLeft());
+        totalProcessTimeNanos += blurResult.getRight();
+        procTimeStringBuilder.append(String.format("Blur: %.2fms, ", blurResult.getRight() / 1000.0));
 
-        return result;
-    }
+        Pair<Mat, Long> erodeDilateResult = erodeDilatePipe.run(blurResult.getLeft());
+        totalProcessTimeNanos += erodeDilateResult.getRight();
+        procTimeStringBuilder.append(String.format("ErodeDilate: %.2fms, ", erodeDilateResult.getRight() / 1000.0));
 
-    /**
-     * HSV Threshold a given image. Copies the HSV Thresholded image to the [dst] matrix with the given
-     * hsv settings and blur settings. Can also erode and dilate the image
-     * @param srcImage the source image, which is not mutated
-     * @param dst the destination image, which is mutated to save the result
-     * @param hsvLower the lower bound for the HSV settings
-     * @param hsvUpper the upper bound for the HSV settings
-     * @param kernel the kernal used to erode/dilate the image
-     * @param blur the size of the blur image
-     * @param shouldErode if we should erode
-     * @param shouldDilate if we should dilate
-     */
-    public static void hsvThreshold(Mat srcImage, Mat dst, @NotNull Scalar hsvLower,
-                                    @NotNull Scalar hsvUpper, Mat kernel, Size blur,
-                                    boolean shouldErode, boolean shouldDilate) {
-        Imgproc.cvtColor(srcImage, dst, Imgproc.COLOR_RGB2HSV, 3);
-        Imgproc.blur(dst, dst, blur);
-        Core.inRange(dst, hsvLower, hsvUpper, dst);
-        if (shouldErode) {
-            Imgproc.erode(dst, dst, kernel);
-        }
-        if (shouldDilate) {
-            Imgproc.dilate(dst, dst, kernel);
-        }
-        dst.release();
-    }
+        Pair<Mat, Long> hsvResult = hsvPipe.run(erodeDilateResult.getLeft());
+        totalProcessTimeNanos += hsvResult.getRight();
+        Imgproc.cvtColor(hsvResult.getLeft(), hsvOutputMat, Imgproc.COLOR_GRAY2BGR, 3);
+        procTimeStringBuilder.append(String.format("HSV: %.2fms, ", hsvResult.getRight() / 1000.0));
 
-    /**
-     * Find contours from an image
-     * @param src the image we're looking at
-     * @param binaryMat a temporary image
-     * @param hierarchy the hierarchy of the image (just a new Mat();)
-     * @param emptyList a list to fill with stuff. Will be cleared
-     * @return the empty list, now full of contours
-     */
-    public static List<MatOfPoint> findContours(Mat src, Mat binaryMat, Mat hierarchy, List<MatOfPoint> emptyList) {
-        src.copyTo(binaryMat);
-        emptyList.clear();
-        Imgproc.findContours(binaryMat, emptyList, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
-        binaryMat.release();
-        return emptyList;
-    }
+        Pair<List<MatOfPoint>, Long> findContoursResult = findContoursPipe.run(hsvResult.getLeft());
+        totalProcessTimeNanos += findContoursResult.getRight();
+        procTimeStringBuilder.append(String.format("FindContours: %.2fms, ", findContoursResult.getRight() / 1000.0));
 
-    public static List<MatOfPoint> filterContours(List<MatOfPoint> inputContours, List<Number> area, List<Number> ratio, List<Number> extent, CameraValues cameraValues) {
-        for (MatOfPoint Contour : inputContours) {
-            try {
-                double contourArea = Imgproc.contourArea(Contour);
-                double AreaRatio = (contourArea / cameraValues.ImageArea) * 100;
-                double minArea = (MathHandler.sigmoid(area.get(0)));
-                double maxArea = (MathHandler.sigmoid(area.get(1)));
-                if (AreaRatio < minArea || AreaRatio > maxArea) {
-                    continue;
-                }
-                var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
+        Pair<List<MatOfPoint>, Long> filterContoursResult = filterContoursPipe.run(findContoursResult.getLeft());
+        totalProcessTimeNanos += filterContoursResult.getRight();
+        procTimeStringBuilder.append(String.format("FilterContours: %.2fms, ", filterContoursResult.getRight() / 1000.0));
 
-                var targetFullness = contourArea;
-                double minExtent = (double) (extent.get(0).doubleValue() * rect.size.area()) / 100;
-                double maxExtent = (double) (extent.get(1).doubleValue() * rect.size.area()) / 100;
-                if (targetFullness <= minExtent || contourArea >= maxExtent) {
-                    continue;
-                }
-                Rect bb = Imgproc.boundingRect(Contour);
-                double aspectRatio = (bb.width / bb.height);
-                if (aspectRatio < ratio.get(0).doubleValue() || aspectRatio > ratio.get(1).doubleValue()) {
-                    continue;
-                }
-                filteredContours.add(Contour);
-            } catch (Exception e) {
-                System.err.println("Error while filtering contours");
-                e.printStackTrace();
-            }
-        }
-        return filteredContours;
-    }
+        Pair<List<MatOfPoint>, Long> speckleRejectResult = speckleRejectPipe.run(filterContoursResult.getLeft());
+        totalProcessTimeNanos += speckleRejectResult.getRight();
+        procTimeStringBuilder.append(String.format("SpeckleReject: %.2fms, ", speckleRejectResult.getRight() / 1000.0));
 
-    @Override
-    Mat getOutputMat() {
-        return null;
+        Pair<List<RotatedRect>, Long> groupContoursResult = groupContoursPipe.run(speckleRejectResult.getLeft());
+        totalProcessTimeNanos += groupContoursResult.getRight();
+        procTimeStringBuilder.append(String.format("GroupContours: %.2fms, ", groupContoursResult.getRight() / 1000.0));
+
+        Pair<List<RotatedRect>, Long> sortContoursResult = sortContoursPipe.run(groupContoursResult.getLeft());
+        totalProcessTimeNanos += sortContoursResult.getRight();
+        procTimeStringBuilder.append(String.format("SortContours: %.2fms, ", sortContoursResult.getRight() / 1000.0));
+
+        Pair<List<Target>, Long> collect2dTargetsResult = collect2dTargetsPipe.run(sortContoursResult.getLeft());
+        totalProcessTimeNanos += collect2dTargetsResult.getRight();
+        procTimeStringBuilder.append(String.format("SortContours: %.2fms, ", sortContoursResult.getRight() / 1000.0));
+
+        // takes pair of (Mat of original camera image, Mat of HSV thresholded image)
+        Pair<Mat, Long> outputMatResult = outputMatPipe.run(Pair.of(rawCameraMat, hsvOutputMat));
+        totalProcessTimeNanos += outputMatResult.getRight();
+        procTimeStringBuilder.append(String.format("OutputMat: %.2fms, ", outputMatResult.getRight() / 1000.0));
+
+        // takes pair of (Mat to draw on, List<RotatedRect> of sorted contours)
+        Pair<Mat, Long> draw2dContoursResult = draw2dContoursPipe.run(Pair.of(outputMatResult.getLeft(), sortContoursResult.getLeft()));
+        totalProcessTimeNanos += draw2dContoursResult.getRight();
+        procTimeStringBuilder.append(String.format("Draw2dContours: %.2fms, ", draw2dContoursResult.getRight() / 1000.0));
+
+        System.out.println(procTimeStringBuilder.toString());
+        System.out.printf("Pipeline ran in %.3fms\n", totalProcessTimeNanos / 1000.0);
+
+        return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft());
     }
 
     public static class CVPipeline2dSettings extends CVPipelineSettings {
@@ -193,27 +128,20 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2d.CVPipeline2dResult> {
         double dualTargetCalibrationB = 0;
     }
 
-    public static class CVPipeline2dResult {
-        public boolean hasTarget = false;
-        public ArrayList<Target> targets = new ArrayList<>(); // targets sorted by likelihood
-
-        public CVPipeline2dResult(ArrayList<Target> targets, boolean hasTarget) {
+    public static class CVPipeline2dResult extends CVPipelineResult<Target> {
+        public CVPipeline2dResult(List<Target> targets, Mat outputMat) {
             this.targets = targets;
-            this.hasTarget = hasTarget;
-        }
-
-        public CVPipeline2dResult() {
+            this.hasTarget = !targets.isEmpty();
+            this.outputMat = outputMat;
         }
     }
 
     public static class Target {
-        public boolean isValid = false;
         public double calibratedX = 0.0;
         public double calibratedY = 0.0;
         public double pitch = 0.0;
         public double yaw = 0.0;
         public double area = 0.0;
-        RotatedRect rawPoint;
+        public RotatedRect rawPoint;
     }
-
 }
