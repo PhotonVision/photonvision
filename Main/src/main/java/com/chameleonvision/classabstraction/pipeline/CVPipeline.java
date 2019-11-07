@@ -1,6 +1,6 @@
 package com.chameleonvision.classabstraction.pipeline;
 
-import com.chameleonvision.classabstraction.camera.USBCamera;
+import com.chameleonvision.classabstraction.camera.CameraProcess;
 import org.opencv.core.Mat;
 
 /**
@@ -16,6 +16,6 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         this.settings = settings;
     }
 
-    abstract void initPipeline(USBCamera camera);
+    abstract void initPipeline(CameraProcess camera);
     abstract R runPipeline(Mat inputMat);
 }

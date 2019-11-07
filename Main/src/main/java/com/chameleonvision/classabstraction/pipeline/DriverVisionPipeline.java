@@ -1,7 +1,6 @@
 package com.chameleonvision.classabstraction.pipeline;
 
-import com.chameleonvision.classabstraction.camera.USBCamera;
-import com.chameleonvision.vision.process.PipelineResult;
+import com.chameleonvision.classabstraction.camera.CameraProcess;
 import org.opencv.core.Mat;
 
 public class DriverVisionPipeline extends CVPipeline<DriverVisionPipeline.DriverPipelineResult, CVPipelineSettings> {
@@ -10,7 +9,7 @@ public class DriverVisionPipeline extends CVPipeline<DriverVisionPipeline.Driver
     }
 
     @Override
-    void initPipeline(USBCamera camera) {
+    void initPipeline(CameraProcess camera) {
         // TODO: set camera to driver mode
     }
 

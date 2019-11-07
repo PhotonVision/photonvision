@@ -41,7 +41,7 @@ public class VisionProcess implements Runnable {
 
     public VisionProcess(CameraProcess cameraProcess) {
 
-        // USBCamera settings
+        // USBCameraProcess settings
         cvProcess = new StandardCVProcess(cameraProcess.getCamVals());
         this.cameraProcess = cameraProcess; // new USBCameraProcess(cameraProcess);
 

@@ -122,7 +122,7 @@ public class StandardCVProcess implements CVProcess {
         pipelineResult.IsValid = true;
         switch (currentPipeline.calibrationMode) {
             case None:
-                ///use the center of the USBCamera to find the pitch and yaw difference
+                ///use the center of the USBCameraProcess to find the pitch and yaw difference
                 pipelineResult.CalibratedX = cameraValues.CenterX;
                 pipelineResult.CalibratedY = cameraValues.CenterY;
                 break;

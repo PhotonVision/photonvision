@@ -99,13 +99,13 @@ public class USBCamera {
                 }
             }
             var initTimeMs = (System.nanoTime() - initTimeout) / 1e6;
-            System.out.printf("USBCamera initialized in %.2fms\n", initTimeMs);
+            System.out.printf("USBCameraProcess initialized in %.2fms\n", initTimeMs);
         }
         var trueVideoModes = UsbCam.enumerateVideoModes();
         availableVideoModes = Arrays.stream(trueVideoModes).filter(v ->
                 v.fps >= MINIMUM_FPS && v.width >= MINIMUM_WIDTH && v.height >= MINIMUM_HEIGHT && ALLOWED_PIXEL_FORMATS.contains(v.pixelFormat)).toArray(VideoMode[]::new);
         if (availableVideoModes.length == 0) {
-            System.err.println("USBCamera not supported!");
+            System.err.println("USBCameraProcess not supported!");
             throw new RuntimeException(new CameraException(CameraException.CameraExceptionType.BAD_CAMERA));
         }
         if (videoModeIndex <= availableVideoModes.length - 1) {
@@ -283,7 +283,7 @@ public class USBCamera {
         try {
             UsbCam.setExposureManual(exposure);
         } catch (VideoException e) {
-            System.err.println("USBCamera Does not support exposure change");
+            System.err.println("USBCameraProcess Does not support exposure change");
         }
     }
 

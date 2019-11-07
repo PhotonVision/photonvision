@@ -80,7 +80,7 @@ public class USBCameraProcess implements CameraProcess {
         }
     }
 
-    // USBCamera stuff
+    // USBCameraProcess stuff
 
     @Override
     public String getCamName() {

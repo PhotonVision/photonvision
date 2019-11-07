@@ -4,6 +4,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 
 public interface CameraProcess {
+    CameraProperties getProperties();
+
     Pair<Mat, Long> getFrame(Mat frame);
 
     void setExposure(int exposure);

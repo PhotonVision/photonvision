@@ -1,7 +1,7 @@
 package com.chameleonvision.classabstraction.pipeline;
 
+import com.chameleonvision.classabstraction.camera.CameraProcess;
 import com.chameleonvision.classabstraction.camera.CameraStaticProperties;
-import com.chameleonvision.classabstraction.camera.USBCamera;
 import com.chameleonvision.classabstraction.pipeline.pipes.*;
 import com.chameleonvision.vision.ImageRotation;
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,7 +13,7 @@ import java.util.List;
 @SuppressWarnings("WeakerAccess")
 public class CVPipeline2d extends CVPipeline<CVPipeline2d.CVPipeline2dResult, CVPipeline2d.CVPipeline2dSettings> {
 
-    private USBCamera camera;
+    private CameraProcess cameraProcess;
 
     private Mat rawCameraMat = new Mat();
     private Mat hsvOutputMat = new Mat();
@@ -23,8 +23,8 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2d.CVPipeline2dResult, CV
     }
 
     @Override
-    void initPipeline(USBCamera cam) {
-        camera = cam;
+    void initPipeline(CameraProcess cam) {
+        cameraProcess = cam;
     }
 
     @Override
@@ -32,7 +32,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2d.CVPipeline2dResult, CV
         long totalProcessTimeNanos = 0;
         StringBuilder procTimeStringBuilder = new StringBuilder();
 
-        CameraStaticProperties camProps = camera.properties.staticProperties;
+        CameraStaticProperties camProps = cameraProcess.getProperties().staticProperties;
 
         inputMat.copyTo(rawCameraMat);
 
