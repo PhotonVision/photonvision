@@ -11,7 +11,7 @@ build_ui:
         - npm run build
     artifacts:
         paths:
-            - dist/
+            - chameleon-client/dist
         
 build_jar:
     stage: build_jar
