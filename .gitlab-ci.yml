@@ -30,7 +30,7 @@ deploy:
     image: monachus/hugo:latest
     before_script:
         - apt-get update
-        - apt-get --yes --force-yes install git ssh rsync
+        - apt-get --yes install git ssh rsync
         - git submodule update --init --recursive
     script:
         - echo "${SSH_PRIVATE_KEY}" > id_rsa
