@@ -1,6 +1,7 @@
 stages:
     - build_ui
     - build_jar
+    - deploy
     
 build_ui:
     stage: build_ui
@@ -16,15 +17,22 @@ build_ui:
 build_jar:
     stage: build_jar
     image: maven:3.6.2-jdk-12
-    before_script:
-    - apk update && apk add openssh-client bash rsync
     script:
         - rm -r Main/src/main/resources/web/*
         - mv chameleon-client/dist/* Main/src/main/resources/web
         - cd Main 
         - mvn package
-        - eval $(ssh-agent -s)
-        - bash -c 'ssh-add <(echo "${SSH_PRIVATE_KEY}")'
-        - mkdir -p ~/.ssh
-        - echo "${SSH_HOST_KEY}" > ~/.ssh/known_hosts
-        - rsync -e ssh ./target/chameleon-vision-$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout) ${SSH_USER}@frs.sourceforge.net:/home/frs/project/ori-test/
+    artifacts:
+        paths:
+        - Main/target
+deploy:
+    stage: deploy
+    image: publysher/hugo
+    script:
+      - hugo
+      - echo "${SSH_PRIVATE_KEY}" > id_rsa
+      - chmod 700 id_rsa
+      - mkdir "${HOME}/.ssh"
+      - echo "${SSH_HOST_KEY}" > "${HOME}/.ssh/known_hosts"
+      - cd Main
+      - rsync -e 'ssh -i id_rsa' target/chameleon-vision-$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout) oriagranat9@frs.sourceforge.net:/home/frs/project/ori-test/
