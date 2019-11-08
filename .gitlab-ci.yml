@@ -1,13 +1,13 @@
 stages:
-    - install
-    - build
-    
-install:
-    stage: install
+    - build_ui
+    - build_jar
+build_ui:
+    image:node:latest
     script:
-        - echo "install"
-build:
-    stage: build
-    script:
-        - echo "build"
+        - cd chameleon-client
+        - npm install
+        - npm run build
+
+
+
 
