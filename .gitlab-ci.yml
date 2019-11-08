@@ -1,0 +1,13 @@
+stages:
+    - install
+    - build
+    
+install:
+    stage: install
+    script:
+        - echo "install"
+build:
+    stage: build
+    script:
+        - echo "build"
+
