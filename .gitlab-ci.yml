@@ -29,7 +29,6 @@ deploy:
     stage: deploy
     image: publysher/hugo
     script:
-      - hugo
       - echo "${SSH_PRIVATE_KEY}" > id_rsa
       - chmod 700 id_rsa
       - mkdir "${HOME}/.ssh"
