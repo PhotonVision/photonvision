@@ -34,4 +34,4 @@ deploy:
       - mkdir "${HOME}/.ssh"
       - echo "${SSH_HOST_KEY}" > "${HOME}/.ssh/known_hosts"
       - cd Main
-      - rsync -e 'ssh -i id_rsa' target/chameleon-vision-$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout) oriagranat9@frs.sourceforge.net:/home/frs/project/ori-test/
+      - rsync -e 'ssh -i id_rsa' target/* oriagranat9@frs.sourceforge.net:/home/frs/project/ori-test/
