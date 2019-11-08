@@ -27,11 +27,15 @@ build_jar:
         - Main/target
 deploy:
     stage: deploy
-    image: publysher/hugo
+    image: monachus/hugo:latest
+    before_script:
+        - apt-get update
+        - apt-get --yes --force-yes install git ssh rsync
+        - git submodule update --init --recursive
     script:
-      - echo "${SSH_PRIVATE_KEY}" > id_rsa
-      - chmod 700 id_rsa
-      - mkdir "${HOME}/.ssh"
-      - echo "${SSH_HOST_KEY}" > "${HOME}/.ssh/known_hosts"
-      - cd Main
-      - rsync -e 'ssh -i id_rsa' target/* oriagranat9@frs.sourceforge.net:/home/frs/project/ori-test/
+        - echo "${SSH_PRIVATE_KEY}" > id_rsa
+        - chmod 700 id_rsa
+        - mkdir "${HOME}/.ssh"
+        - echo "${SSH_HOST_KEY}" > "${HOME}/.ssh/known_hosts"
+        - cd Main
+        - rsync -e 'ssh -i id_rsa' target/* oriagranat9@frs.sourceforge.net:/home/frs/project/ori-test/
