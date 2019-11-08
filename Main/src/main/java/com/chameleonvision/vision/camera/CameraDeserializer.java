@@ -31,7 +31,7 @@ public class CameraDeserializer implements JsonDeserializer<USBCamera> {
 			boolean isDriver = isDriverObj != null && isDriverObj.getAsBoolean();
 			int driverExposure = driverExposureObj == null ? USBCamera.DEFAULT_EXPOSURE : driverExposureObj.getAsInt();
 			int driverBrightness = driverBrightnessObj == null ? USBCamera.DEFAULT_BRIGHTNESS : driverBrightnessObj.getAsInt();
-			StreamDivisor divisor = divisorObj == null ? StreamDivisor.none : StreamDivisor.values()[divisorObj.getAsInt()];
+			StreamDivisor divisor = divisorObj == null ? StreamDivisor.NONE : StreamDivisor.values()[divisorObj.getAsInt()];
 
 			var pipelines = jsonObj.get("pipelines");
 			List<Pipeline> actualPipelines = new ArrayList<>();

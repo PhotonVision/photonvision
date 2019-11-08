@@ -28,10 +28,12 @@ public class USBCameraProcess implements CameraProcess {
 
     @Override
     public Pair<Mat, Long> getFrame(Mat frame) {
-        var timestamp = System.nanoTime();
-        cvSink.grabFrame(imageBuffer);
-        imageBuffer.copyTo(frame);
-        return Pair.of(frame, timestamp - System.nanoTime());
+        Long deltaTime;
+        synchronized (cvSink) {
+            deltaTime = cvSink.grabFrame(imageBuffer) * 1000L;
+            imageBuffer.copyTo(frame);
+        }
+        return Pair.of(frame, deltaTime);
     }
 
     @Override

@@ -21,7 +21,7 @@ public class CameraProperties {
     private static final List<VideoMode.PixelFormat> ALLOWED_PIXEL_FORMATS = Arrays.asList(VideoMode.PixelFormat.kYUYV, VideoMode.PixelFormat.kMJPEG);
 
     private static final Predicate<VideoMode> kMinFPSPredicate = (videoMode -> videoMode.fps >= MINIMUM_FPS);
-    private static final Predicate<VideoMode> kMinSizePredicate = (videoMode -> videoMode.width >= MINIMUM_FPS && videoMode.height >= MINIMUM_FPS);
+    private static final Predicate<VideoMode> kMinSizePredicate = (videoMode -> videoMode.width >= MINIMUM_WIDTH && videoMode.height >= MINIMUM_HEIGHT);
     private static final Predicate<VideoMode> kPixelFormatPredicate = (videoMode -> ALLOWED_PIXEL_FORMATS.contains(videoMode.pixelFormat));
 
     public CameraStaticProperties staticProperties;
@@ -46,11 +46,11 @@ public class CameraProperties {
     }
 
     public double CalculatePitch(double PixelY, double centerY) {
-        double pitch = FastMath.toDegrees(FastMath.atan((PixelY - centerY) / staticProperties.VerticalFocalLength));
+        double pitch = FastMath.toDegrees(FastMath.atan((PixelY - centerY) / staticProperties.verticalFocalLength));
         return (pitch * -1);
     }
 
     public double CalculateYaw(double PixelX, double centerX) {
-        return FastMath.toDegrees(FastMath.atan((PixelX - centerX) / staticProperties.HorizontalFocalLength));
+        return FastMath.toDegrees(FastMath.atan((PixelX - centerX) / staticProperties.horizontalFocalLength));
     }
 }

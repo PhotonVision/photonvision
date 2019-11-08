@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
 public class USBCamera {
 
     private static final double DEFAULT_FOV = 60.8;
-    private static final StreamDivisor DEFAULT_STREAMDIVISOR = StreamDivisor.none;
+    private static final StreamDivisor DEFAULT_STREAMDIVISOR = StreamDivisor.NONE;
     public static final int DEFAULT_EXPOSURE = 50;
     public static final int DEFAULT_BRIGHTNESS = 50;
     private static final int MINIMUM_FPS = 30;

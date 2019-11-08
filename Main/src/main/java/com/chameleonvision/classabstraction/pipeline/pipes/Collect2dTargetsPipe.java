@@ -61,11 +61,11 @@ public class Collect2dTargetsPipe implements Pipe<List<RotatedRect>, List<CVPipe
     }
 
     private double calculatePitch(double pixelY, double centerY) {
-        double pitch = FastMath.toDegrees(FastMath.atan((pixelY - centerY) / camProps.VerticalFocalLength));
+        double pitch = FastMath.toDegrees(FastMath.atan((pixelY - centerY) / camProps.verticalFocalLength));
         return (pitch * -1);
     }
 
     private double calculateYaw(double pixelX, double centerX) {
-        return FastMath.toDegrees(FastMath.atan((pixelX - centerX) / camProps.HorizontalFocalLength));
+        return FastMath.toDegrees(FastMath.atan((pixelX - centerX) / camProps.horizontalFocalLength));
     }
 }

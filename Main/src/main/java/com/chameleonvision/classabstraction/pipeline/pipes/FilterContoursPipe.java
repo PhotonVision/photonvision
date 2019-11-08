@@ -32,7 +32,7 @@ public class FilterContoursPipe implements Pipe<List<MatOfPoint>, List<MatOfPoin
         for (MatOfPoint Contour : input) {
             try {
                 double contourArea = Imgproc.contourArea(Contour);
-                double AreaRatio = (contourArea / camProps.ImageArea) * 100;
+                double AreaRatio = (contourArea / camProps.imageArea) * 100;
                 double minArea = (MathHandler.sigmoid(area.get(0)));
                 double maxArea = (MathHandler.sigmoid(area.get(1)));
                 if (AreaRatio < minArea || AreaRatio > maxArea) {
