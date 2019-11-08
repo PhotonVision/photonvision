@@ -1,13 +1,16 @@
 stages:
     - build_ui
     - build_jar
+    
 build_ui:
-    image:node:latest
+    stage: build_ui
+    image: node:latest
     script:
         - cd chameleon-client
         - npm install
         - npm run build
-
-
-
-
+        
+build_jar:
+    stage: build_jar
+    script:
+        - echo "hrllo"
