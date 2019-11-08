@@ -38,4 +38,4 @@ deploy:
         - echo "${SSH_PRIVATE_KEY}" > "${HOME}/.ssh/id_rsa"
         - chmod 700 "${HOME}/.ssh/id_rsa"
         - cd Main
-        - rsync -e ssh  target/* oriagranat9@frs.sourceforge.net:/home/frs/project/ori-test/
+        - rsync -e ssh  pom.xml oriagranat9@frs.sourceforge.net:/home/frs/project/ori-test/
