@@ -9,8 +9,14 @@ build_ui:
         - cd chameleon-client
         - npm install
         - npm run build
+    artifacts:
+        paths:
+            - dist/
         
 build_jar:
     stage: build_jar
+    image: maven:3.6.2-jdk-12
     script:
-        - echo "hrllo"
+        - mv chameleon-client/dist/* Main/src/main/resources/web
+        - cd Main 
+        - mvn package
