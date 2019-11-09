@@ -2,14 +2,13 @@ package com.chameleonvision.vision.camera;
 
 import com.chameleonvision.settings.Platform;
 import com.chameleonvision.vision.Pipeline;
-import com.chameleonvision.web.ServerHandler;
+import com.chameleonvision.web.SocketHandler;
 import edu.wpi.cscore.*;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import org.opencv.core.Mat;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -157,7 +156,7 @@ public class Camera {
             var newHeight = camVideoMode.height / streamDivisor.value;
             cvSource = cs.putVideo(name, newWidth, newHeight);
         }
-        ServerHandler.sendFullSettings();
+        SocketHandler.sendFullSettings();
     }
 
     public void addPipeline() {

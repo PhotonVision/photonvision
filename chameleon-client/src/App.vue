@@ -61,7 +61,6 @@
             }
         },
         data: () => ({
-            saveSnackbar: false,
             timer: undefined
         }),
         created() {
@@ -76,6 +75,16 @@
                     }
                 } catch (error) {
                     console.error('error: ' + data.data + " , " + error);
+                }
+            }
+        },
+        computed: {
+            saveSnackbar: {
+                get() {
+                    return this.$store.state.saveBar;
+                },
+                set(value) {
+                    this.$store.commit("saveBar", value);
                 }
             }
         }

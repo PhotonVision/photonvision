@@ -24,7 +24,14 @@
         },
         methods: {
             sendCameraSettings() {
-                this.handleInput('cameraSettings', this.cameraSettings);
+                const self = this;
+                this.axios.post("http://" + this.$address + "/api/settings/camera", this.cameraSettings).then(
+                    function (response) {
+                        if (response.status === 200){
+                            self.$store.state.saveBar = true;
+                        }
+                    }
+                )
             },
 
         },
