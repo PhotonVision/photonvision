@@ -4,7 +4,7 @@ import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Orientation;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.vision.camera.Camera;
-import com.chameleonvision.web.ServerHandler;
+import com.chameleonvision.web.SocketHandler;
 import edu.wpi.cscore.VideoException;
 import edu.wpi.first.networktables.*;
 import org.opencv.core.*;
@@ -76,8 +76,8 @@ public class VisionProcess implements Runnable {
                 SettingsManager.GeneralSettings.currentPipeline = ntPipelineIndex;
                 HashMap<String, Object> pipeChange = new HashMap<>();
                 pipeChange.put("currentPipeline", ntPipelineIndex);
-                ServerHandler.broadcastMessage(pipeChange);
-                ServerHandler.sendFullSettings();
+                SocketHandler.broadcastMessage(pipeChange);
+                SocketHandler.sendFullSettings();
 
             }
         }
@@ -245,7 +245,7 @@ public class VisionProcess implements Runnable {
                     point.put("calculated", calculated);
                     point.put("rawPoint", center);
                     WebSend.put("point", point);
-                    ServerHandler.broadcastMessage(WebSend);
+                    SocketHandler.broadcastMessage(WebSend);
                 }
 
                 cameraProcess.setOutputFrame(streamOutputMat);

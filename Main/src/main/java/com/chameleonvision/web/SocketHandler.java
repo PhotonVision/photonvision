@@ -22,12 +22,12 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 
-public class ServerHandler {
+public class SocketHandler {
 
     private static List<WsContext> users;
     private static ObjectMapper objectMapper;
 
-    ServerHandler() {
+    SocketHandler() {
         users = new ArrayList<>();
         objectMapper = new ObjectMapper(new MessagePackFactory());
     }
@@ -47,44 +47,12 @@ public class ServerHandler {
         for (Map.Entry<String, Object> entry : deserialized.entrySet()) {
             try {
                 switch (entry.getKey()) {
-                    case "generalSettings": {
-                        for (HashMap.Entry<String, Object> e : ((HashMap<String, Object>) entry.getValue()).entrySet()) {
-                            setField(SettingsManager.GeneralSettings, e.getKey(), e.getValue());
-                        }
-                        SettingsManager.saveSettings();
-                        sendFullSettings();
-                        break;
-                    }
                     case "driverMode": {
                         for (HashMap.Entry<String, Object> e : ((HashMap<String, Object>) entry.getValue()).entrySet()) {
                             setField(CameraManager.getCurrentCamera(), e.getKey(), e.getValue());
                         }
                         CameraManager.getCurrentCamera().setDriverMode((Boolean) ((HashMap<String, Object>) entry.getValue()).get("isDriver"));
                         CameraManager.saveCameras();
-                        break;
-                    }
-                    case "cameraSettings": {
-                        HashMap camSettings = (HashMap) entry.getValue();
-                        var curCam = CameraManager.getCurrentCamera();
-
-                        Number newFOV = (Number) camSettings.get("fov");
-                        Integer newStreamDivisor = (Integer) camSettings.get("streamDivisor");
-                        Integer newResolution = (Integer) camSettings.get("resolution");
-
-                        curCam.setFOV(newFOV);
-
-                        var currentStreamDivisorOrdinal = curCam.getStreamDivisor().ordinal();
-                        if (currentStreamDivisorOrdinal != newStreamDivisor) {
-                            curCam.setStreamDivisor(newStreamDivisor, true);
-                        }
-
-                        var currentResolutionIndex = curCam.getVideoModeIndex();
-                        if (currentResolutionIndex != newResolution) {
-                            curCam.setCamVideoMode(newResolution, true);
-                        }
-
-                        CameraManager.saveCameras();
-                        sendFullSettings();
                         break;
                     }
                     case "changeCameraName": {
@@ -183,7 +151,7 @@ public class ServerHandler {
     private void setField(Object obj, String fieldName, Object value) {
         try {
             if (obj instanceof Camera) {
-                var cam = (Camera)obj;
+                var cam = (Camera) obj;
                 switch (fieldName) {
                     case "driverBrightness":
                         cam.setDriverBrightness((Integer) value);
@@ -192,7 +160,7 @@ public class ServerHandler {
                         cam.setDriverExposure((Integer) value);
                         break;
                     case "isDriver":
-                        cam.setDriverMode((boolean)value);
+                        cam.setDriverMode((boolean) value);
                         break;
                     default:
                         Field field = obj.getClass().getField(fieldName);
@@ -207,8 +175,7 @@ public class ServerHandler {
                 Field field = obj.getClass().getField(fieldName);
                 if (field.getType().isEnum()) {
                     field.set(obj, field.getType().getEnumConstants()[(Integer) value]);
-                }
-                else {
+                } else {
                     field.set(obj, value);
                 }
             }
@@ -296,7 +263,7 @@ public class ServerHandler {
             fullSettings.put("cameraList", CameraManager.getAllCameraByNickname());
             fullSettings.put("pipeline", getOrdinalPipeline());
             var currentCamera = CameraManager.getCurrentCamera();
-            fullSettings.put("driverMode",getOrdinalDriver());
+            fullSettings.put("driverMode", getOrdinalDriver());
             fullSettings.put("pipelineList", currentCamera.getPipelinesNickname());
             fullSettings.put("resolutionList", currentCamera.getResolutionList());
             fullSettings.put("port", currentCamera.getStreamPort());

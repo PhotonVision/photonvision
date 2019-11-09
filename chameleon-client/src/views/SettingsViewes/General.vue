@@ -29,7 +29,12 @@
         },
         methods: {
             sendGeneralSettings() {
-                this.handleInput('generalSettings', this.settings);
+                // this.handleInput('generalSettings', this.settings);
+                this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
+                    function (response) {
+                        console.log(response);
+                    }
+                )
             }
         },
         computed: {
