@@ -4,7 +4,7 @@ stages:
     - deploy
     
 build_ui:
-    stage: build ui
+    stage: build_ui
     image: node:latest
     only:
         refs:
@@ -18,7 +18,7 @@ build_ui:
             - chameleon-client/dist
         
 build_jar:
-    stage: build jar
+    stage: build_jar
     image: maven:3.6.2-jdk-12
     only:
         refs:
