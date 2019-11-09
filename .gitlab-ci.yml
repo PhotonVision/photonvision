@@ -27,7 +27,7 @@ build_jar:
         - Main/target
 deploy:
     stage: deploy
-    image: monachus/hugo:latest
+    image: ubuntu:latest
     before_script:
         - apt-get update
         - apt-get --yes install git ssh rsync
