@@ -29,10 +29,12 @@
         },
         methods: {
             sendGeneralSettings() {
-                // this.handleInput('generalSettings', this.settings);
+                const self = this;
                 this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
                     function (response) {
-                        console.log(response);
+                        if (response.status === 200){
+                            self.$store.state.saveBar = true;
+                        }
                     }
                 )
             }
