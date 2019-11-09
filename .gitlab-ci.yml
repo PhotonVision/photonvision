@@ -37,5 +37,5 @@ deploy:
         - echo "${SSH_HOST_KEY}" > "${HOME}/.ssh/known_hosts"
         - echo "${SSH_PRIVATE_KEY}" > "${HOME}/.ssh/id_rsa"
         - chmod 700 "${HOME}/.ssh/id_rsa"
-        - cd Main
-        - rsync -e "ssh -o StrictHostKeyChecking=no"  target/* oriagranat9@frs.sourceforge.net:/home/frs/project/ori-test/
+        - cd Main/target
+        - rsync -e "ssh -o StrictHostKeyChecking=no"  $(find . -name "chameleon-vision-*") "${SSH_HOST_ADRESS}"
