@@ -4,8 +4,11 @@ stages:
     - deploy
     
 build_ui:
-    stage: build_ui
+    stage: build ui
     image: node:latest
+    only:
+        refs:
+        - master
     script:
         - cd chameleon-client
         - npm install
@@ -15,8 +18,11 @@ build_ui:
             - chameleon-client/dist
         
 build_jar:
-    stage: build_jar
+    stage: build jar
     image: maven:3.6.2-jdk-12
+    only:
+        refs:
+        - master
     script:
         - rm -r Main/src/main/resources/web/*
         - mv chameleon-client/dist/* Main/src/main/resources/web
@@ -28,6 +34,9 @@ build_jar:
 deploy:
     stage: deploy
     image: ubuntu:latest
+    only:
+        refs:
+        - master
     before_script:
         - apt-get update
         - apt-get --yes install git ssh rsync
