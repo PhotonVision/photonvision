@@ -1,6 +1,5 @@
 package com.chameleonvision.classabstraction.pipeline;
 
-import com.chameleonvision.classabstraction.camera.CameraProcess;
 import com.chameleonvision.classabstraction.camera.CameraStaticProperties;
 import com.chameleonvision.classabstraction.pipeline.pipes.*;
 import com.chameleonvision.vision.ImageRotation;
@@ -9,29 +8,26 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
+import java.util.function.Supplier;
+
+import static com.chameleonvision.classabstraction.pipeline.CVPipeline2d.*;
 
 @SuppressWarnings("WeakerAccess")
-public class CVPipeline2d extends CVPipeline<CVPipeline2d.CVPipeline2dResult, CVPipeline2d.CVPipeline2dSettings> {
-
-    private CameraProcess cameraProcess;
+public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSettings> {
 
     private Mat rawCameraMat = new Mat();
     private Mat hsvOutputMat = new Mat();
 
-    public CVPipeline2d(CVPipeline2dSettings settings) {
-        super(settings);
+    public CVPipeline2d(Supplier<CVPipeline2dSettings> settingsSupplier) {
+        super(settingsSupplier);
     }
 
     @Override
-    void initPipeline(CameraProcess cam) {
-        cameraProcess = cam;
-    }
-
-    @Override
-    CVPipeline2d.CVPipeline2dResult runPipeline(Mat inputMat) {
+    public CVPipeline2dResult runPipeline(Mat inputMat) {
         long totalProcessTimeNanos = 0;
         StringBuilder procTimeStringBuilder = new StringBuilder();
 
+        var settings = settingsSupplier.get();
         CameraStaticProperties camProps = cameraProcess.getProperties().staticProperties;
 
         inputMat.copyTo(rawCameraMat);
@@ -123,16 +119,9 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2d.CVPipeline2dResult, CV
         return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft());
     }
 
-    public static class CVPipeline2dSettings extends CVPipelineSettings {
-        double dualTargetCalibrationM = 1;
-        double dualTargetCalibrationB = 0;
-    }
-
     public static class CVPipeline2dResult extends CVPipelineResult<Target> {
         public CVPipeline2dResult(List<Target> targets, Mat outputMat) {
-            this.targets = targets;
-            this.hasTarget = !targets.isEmpty();
-            this.outputMat = outputMat;
+            super(targets, outputMat);
         }
     }
 

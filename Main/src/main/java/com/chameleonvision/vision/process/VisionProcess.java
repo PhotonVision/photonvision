@@ -1,5 +1,7 @@
 package com.chameleonvision.vision.process;
 
+import com.chameleonvision.classabstraction.pipeline.CVPipeline2d;
+import com.chameleonvision.classabstraction.pipeline.DriverVisionPipeline;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Orientation;
 import com.chameleonvision.vision.Pipeline;
@@ -11,6 +13,8 @@ import org.opencv.core.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
+import static com.chameleonvision.classabstraction.pipeline.CVPipeline2d.*;
 
 public class VisionProcess implements Runnable {
 
@@ -29,6 +33,10 @@ public class VisionProcess implements Runnable {
     // chameleon specific
     private Pipeline currentPipeline;
     private CVProcess cvProcess;
+
+    private CVPipeline2d cvPipeline2d;
+    private DriverVisionPipeline driverVisionPipeline;
+
     // pipeline process items
 //    private List<MatOfPoint> foundContours = new ArrayList<>();
 //    private List<MatOfPoint> filteredContours = new ArrayList<>();
@@ -41,7 +49,6 @@ public class VisionProcess implements Runnable {
 
     public VisionProcess(CameraProcess cameraProcess) {
 
-        // USBCameraProcess settings
         cvProcess = new StandardCVProcess(cameraProcess.getCamVals());
         this.cameraProcess = cameraProcess; // new USBCameraProcess(cameraProcess);
 
@@ -95,15 +102,58 @@ public class VisionProcess implements Runnable {
         }
     }
 
+    private CVPipeline2dSettings pipelineTo2dSettings(Pipeline pipeline) {
+        CVPipeline2dSettings settings = new CVPipeline2dSettings();
+        settings.hue = pipeline.hue;
+        settings.saturation = pipeline.saturation;
+        settings.value = pipeline.value;
+        settings.erode = pipeline.erode;
+        settings.dilate = pipeline.dilate;
+        settings.area = pipeline.area;
+        settings.ratio = pipeline.ratio;
+        settings.extent = pipeline.extent;
+        settings.speckle = pipeline.speckle;
+        settings.isBinary = pipeline.isBinary;
+        settings.sortMode = pipeline.sortMode;
+        settings.targetGroup = pipeline.targetGroup;
+        settings.targetIntersection = pipeline.targetIntersection;
+        settings.point = pipeline.point;
+        settings.calibrationMode = pipeline.calibrationMode;
+        settings.nickname = pipeline.nickname;
+        settings.exposure = pipeline.exposure;
+        settings.brightness = pipeline.brightness;
+        settings.dualTargetCalibrationM = pipeline.m;
+        settings.dualTargetCalibrationB = pipeline.b;
+
+        return settings;
+    }
+
     private PipelineResult runVisionProcess(Mat inputImage, Mat outputImage) {
-        return cvProcess.runPipeline(
-                currentPipeline,
-                inputImage,
-                outputImage,
-                cameraProcess.getCamVals(),
-                currentPipeline.orientation.equals(Orientation.Inverted),
-                cameraProcess.getDriverMode()
-        );
+
+        if (cvPipeline2d == null) {
+            cvPipeline2d = new CVPipeline2d(() -> pipelineTo2dSettings(currentPipeline));
+        }
+        CVPipeline2dResult result = cvPipeline2d.runPipeline(inputImage);
+        result.outputMat.copyTo(outputImage);
+
+        PipelineResult pipeResult = new PipelineResult();
+        pipeResult.IsValid = result.hasTarget;
+        if (!pipeResult.IsValid) {
+            pipeResult.CalibratedX = 0;
+            pipeResult.CalibratedY = 0;
+            pipeResult.Pitch = 0;
+            pipeResult.Yaw = 0;
+            pipeResult.Area = 0;
+        } else {
+            Target t = result.targets.get(0);
+            pipeResult.CalibratedX = t.calibratedX;
+            pipeResult.CalibratedY = t.calibratedY;
+            pipeResult.Pitch = t.pitch;
+            pipeResult.Yaw = t.yaw;
+            pipeResult.Area = t.area;
+        }
+
+        return pipeResult;
     }
 
     @Override

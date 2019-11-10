@@ -3,26 +3,34 @@ package com.chameleonvision.classabstraction.pipeline;
 import com.chameleonvision.classabstraction.camera.CameraProcess;
 import org.opencv.core.Mat;
 
-public class DriverVisionPipeline extends CVPipeline<DriverVisionPipeline.DriverPipelineResult, CVPipelineSettings> {
-    public DriverVisionPipeline(CVPipelineSettings settings) {
-        super(settings);
+import java.util.List;
+import java.util.function.Supplier;
+
+import static com.chameleonvision.classabstraction.pipeline.DriverVisionPipeline.*;
+
+public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPipelineSettings> {
+
+    public DriverVisionPipeline(Supplier<CVPipelineSettings> settingsSupplier) {
+        super(settingsSupplier);
     }
 
     @Override
-    void initPipeline(CameraProcess camera) {
-        // TODO: set camera to driver mode
+    public void initPipeline(CameraProcess camera) {
+        camera.setBrightness((int) getSettings().brightness);
+        camera.setExposure((int) getSettings().exposure);
     }
 
     @Override
-    DriverPipelineResult runPipeline(Mat inputMat) {
-        return new DriverPipelineResult(inputMat);
+    public DriverPipelineResult runPipeline(Mat inputMat) {
+
+        inputMat.copyTo(outputMat);
+
+        return new DriverPipelineResult(null, inputMat);
     }
 
     public static class DriverPipelineResult extends CVPipelineResult<Void> {
-        public DriverPipelineResult(Mat outputMat) {
-            this.hasTarget = false;
-            this.targets = null;
-            outputMat.copyTo(this.outputMat);
+        public DriverPipelineResult(List<Void> targets, Mat outputMat) {
+            super(targets, outputMat);
         }
     }
 }

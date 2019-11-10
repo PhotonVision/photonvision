@@ -1,33 +1,33 @@
-//package com.chameleonvision.classabstraction.pipeline;
-//
-//import org.opencv.core.Mat;
-//
-//public class CVPipeline3d extends CVPipeline<CVPipeline3d.CVPipeline3dResult> {
-//
-//    public CVPipeline3d(CVPipelineSettings settings) {
-//        super(settings);
-//    }
-//
-//    @Override
-//    void initPipeline() {
-//
-//    }
-//
-//    @Override
-//    CVPipeline3d.CVPipeline3dResult runPipeline(Mat inputMat) {
-//        return null;
-//    }
-//
-//    @Override
-//    Mat getOutputMat() {
-//        return null;
-//    }
-//
-//    public static class CVPipeline3dSettings extends CVPipelineSettings {
-//    }
-//
-//    public static class CVPipeline3dResult {
-//
-//    }
-//
-//}
+package com.chameleonvision.classabstraction.pipeline;
+
+import com.chameleonvision.classabstraction.camera.CameraProcess;
+import org.opencv.core.Mat;
+
+import java.util.List;
+import java.util.function.Supplier;
+
+import static com.chameleonvision.classabstraction.pipeline.CVPipeline3d.*;
+
+public class CVPipeline3d extends CVPipeline<CVPipeline3dResult, CVPipeline3dSettings> {
+
+    public CVPipeline3d(Supplier<CVPipeline3dSettings> settingsSupplier) {
+        super(settingsSupplier);
+    }
+
+    @Override
+    public CVPipeline3dResult runPipeline(Mat inputMat) {
+        return null;
+    }
+
+
+    public static class CVPipeline3dResult extends CVPipelineResult<Target3d> {
+        public CVPipeline3dResult(List<Target3d> targets, Mat outputMat) {
+            super(targets, outputMat);
+        }
+    }
+
+    public static class Target3d {
+        // TODO: Define 3d-specific target data
+    }
+
+}

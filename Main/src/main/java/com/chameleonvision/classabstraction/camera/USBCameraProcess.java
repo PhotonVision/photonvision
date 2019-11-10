@@ -14,11 +14,11 @@ public class USBCameraProcess implements CameraProcess {
     private Mat imageBuffer = new Mat();
     public final CameraProperties properties;
 
-    public USBCameraProcess(UsbCamera camera, double fov) {
+    public USBCameraProcess(UsbCamera camera, CameraConfig config) {
         baseCamera = camera;
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
         VideoMode vidMode = new VideoMode(VideoMode.PixelFormat.kYUYV, 640, 480, 60);
-        properties = new CameraProperties(baseCamera, fov);
+        properties = new CameraProperties(baseCamera, config.FOV);
     }
 
     @Override
@@ -41,7 +41,7 @@ public class USBCameraProcess implements CameraProcess {
         try {
             baseCamera.setExposureManual(exposure);
         } catch (VideoException e) {
-            System.err.println("USBCameraProcess Does not support exposure change");
+            System.err.println("Current camera does not support exposure change");
         }
     }
 
@@ -50,7 +50,7 @@ public class USBCameraProcess implements CameraProcess {
         try {
             baseCamera.setBrightness(brightness);
         } catch (VideoException e) {
-            System.err.println("USBCameraProcess Does not support brightness change");
+            System.err.println("Current camera does not support brightness change");
         }
     }
 }
