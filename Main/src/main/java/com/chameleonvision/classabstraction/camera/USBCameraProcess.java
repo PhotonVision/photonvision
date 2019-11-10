@@ -1,5 +1,6 @@
 package com.chameleonvision.classabstraction.camera;
 
+import com.chameleonvision.classabstraction.config.CameraConfig;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoException;

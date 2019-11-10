@@ -47,9 +47,9 @@ public class VisionManager {
             Path cameraConfigPath = Paths.get(CamConfigPath.toString(), String.format("%s.json", cameraName));
             File cameraConfigFile = new File(cameraConfigPath.toString());
             if (cameraConfigFile.exists() && cameraConfigFile.length() != 0) {
-                try {
-                    Gson gson = new GsonBuilder()().registerTypeAdapter(USBCameraProcess.class, new CameraDeserializer())
-                }
+//                try {
+//                    Gson gson = new GsonBuilder().registerTypeAdapter(USBCameraProcess.class, new CameraDeserializer());
+//                }
             }
         })
 

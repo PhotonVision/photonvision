@@ -1,4 +1,4 @@
-package com.chameleonvision.classabstraction.camera;
+package com.chameleonvision.classabstraction.config;
 
 public class CameraConfig {
     public double FOV;
