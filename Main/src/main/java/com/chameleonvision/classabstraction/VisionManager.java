@@ -1,9 +1,11 @@
 package com.chameleonvision.classabstraction;
 
 import com.chameleonvision.classabstraction.camera.USBCameraProcess;
+import com.chameleonvision.classabstraction.pipeline.CVPipelineSettings;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.util.FileHelper;
 import com.chameleonvision.vision.camera.CameraDeserializer;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.wpi.cscore.UsbCamera;
@@ -11,9 +13,13 @@ import edu.wpi.cscore.UsbCameraInfo;
 import org.opencv.videoio.VideoCapture;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class VisionManager {
 
@@ -53,6 +59,19 @@ public class VisionManager {
             }
         })
 
+    }
+
+    public void PipelineSerializer(List<CVPipelineSettings> list, Path path) throws IOException {
+        File pipelineFile = new File(path.toString());
+        ObjectMapper objectMapper = new ObjectMapper().enableDefaultTyping();
+        objectMapper.writeValue(pipelineFile,list);
+    }
+
+    public List<CVPipelineSettings> PipelineDESerializer(Path path) throws IOException {
+        File pipelineFile = new File(path.toString());
+        ObjectMapper objectMapper = new ObjectMapper().enableDefaultTyping();
+        List<CVPipelineSettings> list = Arrays.asList(objectMapper.readValue(pipelineFile, CVPipelineSettings[].class));
+        return list;
     }
 
     public static void initializeProcesses() {
