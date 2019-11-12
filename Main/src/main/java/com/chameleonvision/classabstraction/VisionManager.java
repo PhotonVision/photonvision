@@ -57,22 +57,10 @@ public class VisionManager {
 //                    Gson gson = new GsonBuilder().registerTypeAdapter(USBCameraProcess.class, new CameraDeserializer());
 //                }
             }
-        })
-
+        });
+        return true;
     }
 
-    public void PipelineSerializer(List<CVPipelineSettings> list, Path path) throws IOException {
-        File pipelineFile = new File(path.toString());
-        ObjectMapper objectMapper = new ObjectMapper().enableDefaultTyping();
-        objectMapper.writeValue(pipelineFile,list);
-    }
-
-    public List<CVPipelineSettings> PipelineDESerializer(Path path) throws IOException {
-        File pipelineFile = new File(path.toString());
-        ObjectMapper objectMapper = new ObjectMapper().enableDefaultTyping();
-        List<CVPipelineSettings> list = Arrays.asList(objectMapper.readValue(pipelineFile, CVPipelineSettings[].class));
-        return list;
-    }
 
     public static void initializeProcesses() {
 
