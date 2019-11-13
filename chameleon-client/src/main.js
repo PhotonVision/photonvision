@@ -9,8 +9,13 @@ import axios from 'axios';
 import VueAxios from "vue-axios";
 
 Vue.config.productionTip = false;
-Vue.prototype.$address = location.hostname + ":5800";
-// Vue.prototype.$address = location.host;
+
+if (process.env.NODE_ENV === "production"){
+    Vue.prototype.$address = location.host;
+} else if (process.env.NODE_ENV === "development"){
+    Vue.prototype.$address = location.hostname + ":5800";
+}
+
 
 Vue.use(VueNativeSock, 'ws://' + Vue.prototype.$address + '/websocket');
 Vue.use(VueAxios, axios);
