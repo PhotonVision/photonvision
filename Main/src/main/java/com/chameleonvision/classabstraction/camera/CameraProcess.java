@@ -8,10 +8,9 @@ public interface CameraProcess {
 
     /**
      * Get the next camera frame
-     * @param frame the frame to copy the image into
      * @return a Pair of the captured image and how long it took to grab the frame (in uS)
      */
-    Pair<Mat, Long> getFrame(Mat frame);
+    Pair<Mat, Long> getFrame();
 
     /**
      * Set the exposure of the camera

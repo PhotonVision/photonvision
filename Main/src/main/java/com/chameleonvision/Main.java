@@ -16,18 +16,19 @@ import java.util.function.Consumer;
 
 public class Main {
 
-    private static final String PORT_KEY = "--port"; // expects integer
     private static final String NT_SERVERMODE_KEY = "--nt-servermode"; // no args for this setting
     private static final String NT_CLIENTMODESERVER_KEY = "--nt-client-server"; // expects String representing an IP address (hostnames will be rejected!)
     private static final String NETWORK_MANAGE_KEY = "--unmanage-network"; // no args for this setting
-    private static final String IGNORE_ROOT = "--ignore-root"; // no args for this setting
+    private static final String IGNORE_ROOT_KEY = "--ignore-root"; // no args for this setting
+    private static final String TEST_MODE_KEY = "--cv-development";
 
-    private static final int DEFAULT_PORT = 8888;
+    private static final int DEFAULT_PORT = 5800;
 
     private static boolean ntServerMode = false;
     private static boolean manageNetwork = true;
     private static boolean ignoreRoot = false;
     private static String ntClientModeServer = null;
+    private static boolean testMode = false;
 
     private static class NTLogger implements Consumer<LogMessage> {
 
@@ -51,7 +52,6 @@ public class Main {
 
             // this switch handles arguments with a value. Add any settings with a value here.
             switch (key) {
-                case PORT_KEY:
                 case NT_CLIENTMODESERVER_KEY:
                     var potentialValue = args[i + 1];
                     // ensures this "value" isnt null, blank, nor another argument
@@ -62,21 +62,14 @@ public class Main {
                     break;
                 case NT_SERVERMODE_KEY:
                 case NETWORK_MANAGE_KEY:
-                case IGNORE_ROOT:
+                case IGNORE_ROOT_KEY:
+                case TEST_MODE_KEY:
                     // nothing
+                    break;
             }
 
             // this switch actually handles the arguments.
             switch (key) {
-                case PORT_KEY:
-                    System.out.println("INFO - The \"--port\" argument is currently disabled.");
-//                    try {
-//                        if (value == null) throw new Exception("Bad or No argument value");
-//                        webserverPort = Integer.parseInt(value);
-//                    } catch (Exception ex) {
-//                        System.err.printf("Argument for port was invalid, starting server at port %d\n", DEFAULT_PORT);
-//                    }
-                    break;
                 case NT_SERVERMODE_KEY:
                     ntServerMode = true;
                     break;
@@ -97,8 +90,12 @@ public class Main {
                 case NETWORK_MANAGE_KEY:
                     manageNetwork = false;
                     break;
-                case IGNORE_ROOT:
+                case IGNORE_ROOT_KEY:
                     ignoreRoot = true;
+                    break;
+                case TEST_MODE_KEY:
+                    testMode = true;
+                    break;
             }
         }
     }
@@ -130,30 +127,34 @@ public class Main {
             CameraServerCvJNI.forceLoad();
         } catch (UnsatisfiedLinkError | IOException e) {
             if(Platform.getCurrentPlatform().isWindows())
-                System.err.println("Try to download the VC++ Redistributable, see announcements in discord");
+                System.err.println("Try to download the VC++ Redistributable, https://aka.ms/vs/16/release/vc_redist.x64.exe");
             throw new RuntimeException("Failed to load JNI Libraries!");
         }
-        if (CameraManager.initializeCameras()) {
-            SettingsManager.initialize();
-            NetworkManager.initialize(manageNetwork);
-            CameraManager.initializeThreads();
-            if (ntServerMode) {
-                System.out.println("Starting NT Server");
-                NetworkTableInstance.getDefault().startServer();
-            } else {
-                NetworkTableInstance.getDefault().addLogger(new NTLogger(), 0, 255); // to hide error messages
-                if (ntClientModeServer != null) {
-                     NetworkTableInstance.getDefault().startClient(ntClientModeServer);
-                } else {
-                    NetworkTableInstance.getDefault().startClientTeam(SettingsManager.generalSettings.teamNumber);
-                }
-            }
 
-            int webserverPort = DEFAULT_PORT;
-            System.out.printf("Starting Webserver at port %d\n", webserverPort);
-            Server.main(webserverPort);
+        if (testMode) {
+            // todo: boot in to the new classabstraction stuff
         } else {
-            System.err.println("No cameras connected!");
+            if (CameraManager.initializeCameras()) {
+                SettingsManager.initialize();
+                NetworkManager.initialize(manageNetwork);
+                CameraManager.initializeThreads();
+                if (ntServerMode) {
+                    System.out.println("Starting NT Server");
+                    NetworkTableInstance.getDefault().startServer();
+                } else {
+                    NetworkTableInstance.getDefault().addLogger(new NTLogger(), 0, 255); // to hide error messages
+                    if (ntClientModeServer != null) {
+                        NetworkTableInstance.getDefault().startClient(ntClientModeServer);
+                    } else {
+                        NetworkTableInstance.getDefault().startClientTeam(SettingsManager.generalSettings.teamNumber);
+                    }
+                }
+
+                System.out.printf("Starting Webserver at port %d\n", DEFAULT_PORT);
+                Server.main(DEFAULT_PORT);
+            } else {
+                System.err.println("No cameras connected!");
+            }
         }
     }
 }

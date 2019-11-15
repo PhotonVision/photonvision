@@ -1,6 +1,5 @@
 package com.chameleonvision.classabstraction.camera;
 
-import com.chameleonvision.vision.camera.CameraManager;
 import com.chameleonvision.vision.camera.StreamDivisor;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.CvSource;
@@ -11,7 +10,6 @@ import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 public class CameraStreamer {
-
     private final CameraProcess cameraProcess;
     private final String name;
     private StreamDivisor divisor = StreamDivisor.NONE;
@@ -27,7 +25,6 @@ public class CameraStreamer {
                 cameraProcess.getProperties().staticProperties.imageHeight / divisor.value);
     }
 
-
     public void setDivisor(StreamDivisor newDivisor) {
         this.divisor = newDivisor;
         var camValues = cameraProcess.getProperties();
@@ -42,9 +39,7 @@ public class CameraStreamer {
         ServerHandler.sendFullSettings();
     }
 
-    public void runStream() {
-        var newFrame = cameraProcess.getFrame(streamBuffer);
-        var image = newFrame.getLeft();
+    public void runStream(Mat image) {
         if (divisor.value != 1) {
             var camVal = cameraProcess.getProperties().staticProperties;
             var newWidth = camVal.imageWidth / divisor.value;

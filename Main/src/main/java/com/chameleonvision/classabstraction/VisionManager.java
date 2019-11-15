@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -27,7 +26,6 @@ public class VisionManager {
 
     public static final LinkedHashMap<String, UsbCameraInfo> UsbCameraInfosByCameraName = new LinkedHashMap<>();
     public static final LinkedHashMap<String, VisionProcess> VisionProcessesByCameraName = new LinkedHashMap<>();
-
 
     public static boolean initializeSources() {
         int suffix = 0;
@@ -48,17 +46,24 @@ public class VisionManager {
             return false;
         }
 
-        FileHelper.CheckPath(CamConfigPath);
-        UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
-            Path cameraConfigPath = Paths.get(CamConfigPath.toString(), String.format("%s.json", cameraName));
-            File cameraConfigFile = new File(cameraConfigPath.toString());
-            if (cameraConfigFile.exists() && cameraConfigFile.length() != 0) {
-//                try {
-//                    Gson gson = new GsonBuilder().registerTypeAdapter(USBCameraProcess.class, new CameraDeserializer());
-//                }
-            }
-        });
+//        FileHelper.CheckPath(CamConfigPath);
+//        UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
+//            Path cameraConfigPath = Paths.get(CamConfigPath.toString(), String.format("%s.json", cameraName));
+//            File cameraConfigFile = new File(cameraConfigPath.toString());
+//            if (cameraConfigFile.exists() && cameraConfigFile.length() != 0) {
+////                try {
+////                    Gson gson = new GsonBuilder().registerTypeAdapter(USBCameraProcess.class, new CameraDeserializer());
+////                }
+//            }
+//        })
+        // TODO: implement new camera JSON loads
         return true;
+    }
+
+    public void PipelineSerializer(List<CVPipelineSettings> list, Path path) throws IOException {
+        File pipelineFile = new File(path.toString());
+        ObjectMapper objectMapper = new ObjectMapper().enableDefaultTyping();
+        objectMapper.writeValue(pipelineFile,list);
     }
 
 

@@ -1,6 +1,7 @@
 package com.chameleonvision.vision.process;
 
 import com.chameleonvision.classabstraction.pipeline.CVPipeline2d;
+import com.chameleonvision.classabstraction.pipeline.CVPipeline2dSettings;
 import com.chameleonvision.classabstraction.pipeline.DriverVisionPipeline;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.vision.Orientation;

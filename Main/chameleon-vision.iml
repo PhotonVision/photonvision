@@ -41,9 +41,9 @@
     <orderEntry type="library" name="Maven: org.msgpack:msgpack-core:0.8.18" level="project" />
     <orderEntry type="library" name="Maven: org.msgpack:jackson-dataformat-msgpack:0.8.18" level="project" />
     <orderEntry type="library" name="Maven: org.apache.commons:commons-lang3:3.9" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.9.6" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.9.6" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.9.6" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.10.0" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.10.0" level="project" />
+    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.10.0" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-java:2019.4.1-213-g56d782b" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxaarch64bionic:2019.4.1-213-g56d782b" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxraspbian:2019.4.1-213-g56d782b" level="project" />
