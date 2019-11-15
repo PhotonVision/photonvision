@@ -40,14 +40,15 @@ public class CameraStreamer {
     }
 
     public void runStream(Mat image) {
+        image.copyTo(streamBuffer);
         if (divisor.value != 1) {
             var camVal = cameraProcess.getProperties().staticProperties;
             var newWidth = camVal.imageWidth / divisor.value;
             var newHeight = camVal.imageHeight / divisor.value;
             Size newSize = new Size(newWidth, newHeight);
-            Imgproc.resize(image, image, newSize);
+            Imgproc.resize(streamBuffer, streamBuffer, newSize);
         }
-        cvSource.putFrame(image);
+        cvSource.putFrame(streamBuffer);
     }
 
 }
