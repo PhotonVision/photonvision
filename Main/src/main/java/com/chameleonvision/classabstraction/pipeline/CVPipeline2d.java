@@ -116,12 +116,12 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         System.out.println(procTimeStringBuilder.toString());
         System.out.printf("Pipeline ran in %.3fms\n", totalProcessTimeNanos / 1000.0);
 
-        return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft());
+        return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft(), totalProcessTimeNanos / 1000);
     }
 
     public static class CVPipeline2dResult extends CVPipelineResult<Target> {
-        public CVPipeline2dResult(List<Target> targets, Mat outputMat) {
-            super(targets, outputMat);
+        public CVPipeline2dResult(List<Target> targets, Mat outputMat, long processTime) {
+            super(targets, outputMat, processTime);
         }
     }
 

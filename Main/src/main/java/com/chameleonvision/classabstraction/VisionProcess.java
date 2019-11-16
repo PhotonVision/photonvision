@@ -6,6 +6,7 @@ import com.chameleonvision.classabstraction.pipeline.CVPipeline;
 import com.chameleonvision.classabstraction.pipeline.CVPipelineResult;
 import com.chameleonvision.classabstraction.pipeline.CVPipelineSettings;
 import com.chameleonvision.classabstraction.pipeline.DriverVisionPipeline;
+import com.chameleonvision.classabstraction.util.LoopingRunnable;
 import edu.wpi.cscore.VideoMode;
 import org.opencv.core.Mat;
 
@@ -17,7 +18,7 @@ public class VisionProcess {
     private final CameraProcess cameraProcess;
     private final List<CVPipeline> pipelines = new ArrayList<>();
     private final CameraFrameRunnable cameraRunnable;
-    private final CameraStramerRunnable streamRunnable;
+    private final CameraStreamerRunnable streamRunnable;
     private final VisionProcessRunnable visionRunnable;
     private final CameraStreamer cameraStreamer;
     private CVPipeline currentPipeline;
@@ -31,7 +32,8 @@ public class VisionProcess {
         setPipeline(pipelines.get(0));
 
         // Thread to grab frames from the camera
-        this.cameraRunnable = new CameraFrameRunnable(cameraUpdateTimeMs) ;
+        // TODO: fix video modes!!!
+        this.cameraRunnable = new CameraFrameRunnable(cameraProcess.getProperties().videoModes.get(0).fps);
         new Thread(cameraRunnable).start();
 
         // Thread to put frames on the dashboard
@@ -78,11 +80,13 @@ public class VisionProcess {
 
         /**
          * CameraFrameRunnable grabs images from the cameraProcess
-         * at a specified loopTime
-         * @param loopTimeMs how often to grab frames at in ms
+         * at a specified framerate
+         * @param cameraFPS FPS of camera
          */
-        CameraFrameRunnable(Long loopTimeMs) {
-            super(loopTimeMs);
+        CameraFrameRunnable(int cameraFPS) {
+            // add 2 FPS to allow for a bit of overhead
+            // TODO: test the affect of this
+            super(1000L/(cameraFPS + 2));
         }
 
         @Override
@@ -127,52 +131,19 @@ public class VisionProcess {
         }
     }
 
-    private class CameraStramerRunnable extends LoopingRunnable {
+    private class CameraStreamerRunnable extends LoopingRunnable {
 
         private final CameraStreamer streamer;
         private Mat streamBuffer = new Mat();
 
-        private CameraStramerRunnable(Long loopTimeMs, CameraStreamer streamer) {
+        private CameraStreamerRunnable(Long loopTimeMs, CameraStreamer streamer) {
             super(loopTimeMs);
             this.streamer = streamer;
         }
 
         @Override
-        void process() {
+        protected void process() {
             streamer.runStream(cameraRunnable.getFrame(streamBuffer));
         }
     }
-
-    /**
-     * A thread that tries to run at a specified loop time
-     */
-    private static abstract class LoopingRunnable implements Runnable {
-        private final Long loopTimeMs;
-
-        abstract void process();
-
-        private LoopingRunnable(Long loopTimeMs) {
-            this.loopTimeMs = loopTimeMs;
-        }
-
-        @Override
-        public void run() {
-            while(!Thread.interrupted()) {
-                var now = System.currentTimeMillis();
-
-                // Do the thing
-                process();
-
-                // sleep for the remaining time
-                var timeElapsed = System.currentTimeMillis() - now;
-                var delta = loopTimeMs - timeElapsed;
-                if(delta > 0.0) {
-                    try {
-                        Thread.sleep(delta, 0);
-                    } catch (Exception ignored) {}
-                }
-            }
-        }
-    }
-
 }

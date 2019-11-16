@@ -1,5 +1,6 @@
 package com.chameleonvision;
 
+import com.chameleonvision.classabstraction.VisionManager;
 import com.chameleonvision.network.NetworkManager;
 import com.chameleonvision.settings.Platform;
 import com.chameleonvision.settings.SettingsManager;
@@ -133,28 +134,47 @@ public class Main {
 
         if (testMode) {
             // todo: boot in to the new classabstraction stuff
+            boolean visionSourcesOk = VisionManager.initializeSources();
+            if (!visionSourcesOk) {
+                System.out.println("No cameras connected!");
+                return;
+            }
+
+            NetworkManager.initialize(manageNetwork);
+
+            boolean visionProcessesOk = VisionManager.initializeProcesses();
+            if (!visionProcessesOk) {
+                System.err.println("shit");
+                return;
+            }
+
+            runServer();
         } else {
             if (CameraManager.initializeCameras()) {
                 SettingsManager.initialize();
                 NetworkManager.initialize(manageNetwork);
                 CameraManager.initializeThreads();
-                if (ntServerMode) {
-                    System.out.println("Starting NT Server");
-                    NetworkTableInstance.getDefault().startServer();
-                } else {
-                    NetworkTableInstance.getDefault().addLogger(new NTLogger(), 0, 255); // to hide error messages
-                    if (ntClientModeServer != null) {
-                        NetworkTableInstance.getDefault().startClient(ntClientModeServer);
-                    } else {
-                        NetworkTableInstance.getDefault().startClientTeam(SettingsManager.generalSettings.teamNumber);
-                    }
-                }
-
-                System.out.printf("Starting Webserver at port %d\n", DEFAULT_PORT);
-                Server.main(DEFAULT_PORT);
+                runServer();
             } else {
                 System.err.println("No cameras connected!");
             }
         }
+    }
+
+    private static void runServer() {
+        if (ntServerMode) {
+            System.out.println("Starting NT Server");
+            NetworkTableInstance.getDefault().startServer();
+        } else {
+            NetworkTableInstance.getDefault().addLogger(new NTLogger(), 0, 255); // to hide error messages
+            if (ntClientModeServer != null) {
+                NetworkTableInstance.getDefault().startClient(ntClientModeServer);
+            } else {
+                NetworkTableInstance.getDefault().startClientTeam(SettingsManager.generalSettings.teamNumber);
+            }
+        }
+
+        System.out.printf("Starting Webserver at port %d\n", DEFAULT_PORT);
+        Server.main(DEFAULT_PORT);
     }
 }

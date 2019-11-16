@@ -1,26 +1,20 @@
 package com.chameleonvision.classabstraction;
 
-import com.chameleonvision.classabstraction.camera.USBCameraProcess;
-import com.chameleonvision.classabstraction.pipeline.CVPipelineSettings;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.util.FileHelper;
-import com.chameleonvision.vision.camera.CameraDeserializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import org.opencv.videoio.VideoCapture;
 
 import java.io.File;
-import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 
 public class VisionManager {
+
+    private VisionManager() {}
 
     private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "cameras");
 
@@ -46,6 +40,20 @@ public class VisionManager {
             return false;
         }
 
+        FileHelper.CheckPath(CamConfigPath);
+
+        UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
+            Path cameraConfigFolder = Paths.get(CamConfigPath.toString(), String.format("%s\\", cameraName));
+            Path cameraConfigPath = Paths.get(cameraConfigFolder.toString(), String.format("%s.json", cameraName));
+
+            if (Files.exists(cameraConfigFolder)) {
+                if (Files.exists(cameraConfigPath)) {
+                    File cameraConfigFile = new File(cameraConfigPath.toString());
+
+                }
+            }
+        });
+
 //        FileHelper.CheckPath(CamConfigPath);
 //        UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
 //            Path cameraConfigPath = Paths.get(CamConfigPath.toString(), String.format("%s.json", cameraName));
@@ -60,14 +68,8 @@ public class VisionManager {
         return true;
     }
 
-    public void PipelineSerializer(List<CVPipelineSettings> list, Path path) throws IOException {
-        File pipelineFile = new File(path.toString());
-        ObjectMapper objectMapper = new ObjectMapper().enableDefaultTyping();
-        objectMapper.writeValue(pipelineFile,list);
-    }
+    public static boolean initializeProcesses() {
 
-
-    public static void initializeProcesses() {
-
+        return true;
     }
 }

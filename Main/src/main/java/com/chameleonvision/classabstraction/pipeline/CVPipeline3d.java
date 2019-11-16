@@ -21,8 +21,8 @@ public class CVPipeline3d extends CVPipeline<CVPipeline3dResult, CVPipeline3dSet
 
 
     public static class CVPipeline3dResult extends CVPipelineResult<Target3d> {
-        public CVPipeline3dResult(List<Target3d> targets, Mat outputMat) {
-            super(targets, outputMat);
+        public CVPipeline3dResult(List<Target3d> targets, Mat outputMat, long processTime) {
+            super(targets, outputMat, processTime);
         }
     }
 

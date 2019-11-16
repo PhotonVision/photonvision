@@ -25,12 +25,12 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
 
         inputMat.copyTo(outputMat);
 
-        return new DriverPipelineResult(null, inputMat);
+        return new DriverPipelineResult(null, inputMat, 0);
     }
 
     public static class DriverPipelineResult extends CVPipelineResult<Void> {
-        public DriverPipelineResult(List<Void> targets, Mat outputMat) {
-            super(targets, outputMat);
+        public DriverPipelineResult(List<Void> targets, Mat outputMat, long processTime) {
+            super(targets, outputMat, processTime);
         }
     }
 }
