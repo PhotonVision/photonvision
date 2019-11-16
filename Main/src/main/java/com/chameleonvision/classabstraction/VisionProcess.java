@@ -38,7 +38,7 @@ public class VisionProcess {
 
         // Thread to put frames on the dashboard
         this.cameraStreamer = new CameraStreamer(cameraProcess, name);
-        this.streamRunnable = new CameraStramerRunnable(streamTimeMs, cameraStreamer);
+        this.streamRunnable = new CameraStreamerRunnable(streamTimeMs, cameraStreamer);
         new Thread(streamRunnable).start();
 
         // Thread to process vision data
