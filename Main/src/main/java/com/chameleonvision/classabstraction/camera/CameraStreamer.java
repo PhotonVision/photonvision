@@ -3,6 +3,7 @@ package com.chameleonvision.classabstraction.camera;
 import com.chameleonvision.vision.camera.StreamDivisor;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.CvSource;
+import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -37,6 +38,12 @@ public class CameraStreamer {
                     cameraProcess.getProperties().staticProperties.imageHeight / divisor.value);
         }
         ServerHandler.sendFullSettings();
+    }
+
+    public void setNewVideoMode(VideoMode newVideoMode) {
+        // Trick to update cvSource and streamBuffer to the new resolution
+        // Must change the cameraProcess resolution first
+        setDivisor(divisor);
     }
 
     public void runStream(Mat image) {

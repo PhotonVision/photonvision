@@ -6,6 +6,7 @@ import com.chameleonvision.classabstraction.pipeline.CVPipeline;
 import com.chameleonvision.classabstraction.pipeline.CVPipelineResult;
 import com.chameleonvision.classabstraction.pipeline.CVPipelineSettings;
 import com.chameleonvision.classabstraction.pipeline.DriverVisionPipeline;
+import edu.wpi.cscore.VideoMode;
 import org.opencv.core.Mat;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public class VisionProcess {
     private final CameraFrameRunnable cameraRunnable;
     private final CameraStramerRunnable streamRunnable;
     private final VisionProcessRunnable visionRunnable;
+    private final CameraStreamer cameraStreamer;
     private CVPipeline currentPipeline;
 
     private final CVPipelineSettings driverVisionSettings = new CVPipelineSettings();
@@ -33,7 +35,8 @@ public class VisionProcess {
         new Thread(cameraRunnable).start();
 
         // Thread to put frames on the dashboard
-        this.streamRunnable = new CameraStramerRunnable(streamTimeMs, new CameraStreamer(cameraProcess, name));
+        this.cameraStreamer = new CameraStreamer(cameraProcess, name);
+        this.streamRunnable = new CameraStramerRunnable(streamTimeMs, cameraStreamer);
         new Thread(streamRunnable).start();
 
         // Thread to process vision data
@@ -41,7 +44,6 @@ public class VisionProcess {
         new Thread(visionRunnable).start();
 
     }
-
 
     public void setPipeline(int pipelineIndex) {
         CVPipeline newPipeline = pipelines.get(pipelineIndex);
@@ -53,6 +55,11 @@ public class VisionProcess {
     public void setPipeline(CVPipeline pipeline) {
         currentPipeline = pipeline;
         currentPipeline.initPipeline(cameraProcess);
+    }
+
+    public void setVideoMode(VideoMode newMode) {
+        cameraProcess.setVideoMode(newMode);
+        cameraStreamer.setNewVideoMode(newMode);
     }
 
     public CVPipeline getCurrentPipeline() {

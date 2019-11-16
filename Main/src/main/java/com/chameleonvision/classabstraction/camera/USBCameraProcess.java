@@ -13,7 +13,7 @@ public class USBCameraProcess implements CameraProcess {
     private final UsbCamera baseCamera;
     private final CvSink cvSink;
     private Mat imageBuffer = new Mat();
-    public final CameraProperties properties;
+    public CameraProperties properties;
 
     public USBCameraProcess(UsbCamera camera, CameraConfig config) {
         baseCamera = camera;
@@ -51,6 +51,16 @@ public class USBCameraProcess implements CameraProcess {
             baseCamera.setBrightness(brightness);
         } catch (VideoException e) {
             System.err.println("Current camera does not support brightness change");
+        }
+    }
+
+    @Override
+    public void setVideoMode(VideoMode mode) {
+        try {
+            baseCamera.setVideoMode(mode);
+            properties = new CameraProperties(baseCamera, properties.FOV);
+        } catch (VideoException e) {
+            System.err.println("Current camera does not support resolution change");
         }
     }
 }
