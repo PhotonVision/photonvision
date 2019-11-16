@@ -25,7 +25,7 @@ public class VisionProcess {
 
     private final CVPipelineSettings driverVisionSettings = new CVPipelineSettings();
 
-    public VisionProcess(CameraProcess cameraProcess, String name, Long streamTimeMs, Long cameraUpdateTimeMs) {
+    public VisionProcess(CameraProcess cameraProcess, String name, Long cameraUpdateTimeMs) {
         this.cameraProcess = cameraProcess;
 
         pipelines.add(new DriverVisionPipeline(() -> driverVisionSettings));
@@ -38,7 +38,7 @@ public class VisionProcess {
 
         // Thread to put frames on the dashboard
         this.cameraStreamer = new CameraStreamer(cameraProcess, name);
-        this.streamRunnable = new CameraStreamerRunnable(streamTimeMs, cameraStreamer);
+        this.streamRunnable = new CameraStreamerRunnable(1000L/32, cameraStreamer);
         new Thread(streamRunnable).start();
 
         // Thread to process vision data
