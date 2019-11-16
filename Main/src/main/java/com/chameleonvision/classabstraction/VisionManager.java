@@ -7,6 +7,7 @@ import edu.wpi.cscore.UsbCameraInfo;
 import org.opencv.videoio.VideoCapture;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -50,6 +51,12 @@ public class VisionManager {
                 if (Files.exists(cameraConfigPath)) {
                     File cameraConfigFile = new File(cameraConfigPath.toString());
 
+                }
+            } else {
+                try {
+                    Files.createDirectory(cameraConfigFolder);
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
         });

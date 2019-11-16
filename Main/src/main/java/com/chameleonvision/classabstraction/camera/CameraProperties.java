@@ -30,8 +30,6 @@ public class CameraProperties {
 
     public CameraProperties(UsbCamera baseCamera, double fov) {
         FOV = fov;
-
-        // TODO: determine how to set the initial videomode properly
         videoModes = filterVideoModes(baseCamera.enumerateVideoModes());
     }
 

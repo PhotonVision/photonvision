@@ -18,8 +18,9 @@ public class USBCameraProcess implements CameraProcess {
     public USBCameraProcess(UsbCamera camera, CameraConfig config) {
         baseCamera = camera;
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
-        VideoMode vidMode = new VideoMode(VideoMode.PixelFormat.kYUYV, 640, 480, 60);
         properties = new CameraProperties(baseCamera, config.FOV);
+
+        setVideoMode(properties.videoModes.get(0));
     }
 
     @Override
@@ -58,7 +59,7 @@ public class USBCameraProcess implements CameraProcess {
     public void setVideoMode(VideoMode mode) {
         try {
             baseCamera.setVideoMode(mode);
-            properties = new CameraProperties(baseCamera, properties.FOV);
+            properties.updateVideoMode(mode);
         } catch (VideoException e) {
             System.err.println("Current camera does not support resolution change");
         }
