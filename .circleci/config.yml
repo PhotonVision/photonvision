@@ -1,4 +1,4 @@
-version: 2.1
+version: 2
 jobs:
   build_ui:
     docker:
@@ -27,4 +27,16 @@ jobs:
           - run: mv chameleon-client/dist/* Main/src/main/resources/web
           - run: cd Main 
           - run: mvn package
+
+workflows:
+  version: 2
+  build_and_deploy:
+    jobs:
+      - build_ui
+      - build_java:
+          requires:
+            - build_ui
+          # filters:
+          #   branches:
+          #     only: master
           
