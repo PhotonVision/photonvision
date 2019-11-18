@@ -6,8 +6,8 @@ jobs:
     steps:
       - checkout
       - run:
-        name: changing directory
-        command: |
+          name: changing directory
+          command: |
             cd chameleon-client
       - run:
           name: installing dependencies
@@ -18,7 +18,7 @@ jobs:
             command: |
                 npm run build
       - store_artifacts:
-        path: chameleon-client/dist
+          path: chameleon-client/dist
     build_jar:
         docker:
           - image: maven:3.6.2-jdk-12
