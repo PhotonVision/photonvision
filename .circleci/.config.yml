@@ -1,0 +1,30 @@
+version: 2.1
+jobs:
+  build_ui:
+    docker:
+      - image: node:latest
+    steps:
+      - checkout
+      - run:
+        name: changing directory
+        command: |
+            cd chameleon-client
+      - run:
+          name: installing dependencies
+          command: |
+            npm install
+      - run:
+            name: building ui
+            command: |
+                npm run build
+      - store_artifacts:
+        path: chameleon-client/dist
+    build_jar:
+        docker:
+          - image: maven:3.6.2-jdk-12
+        steps:
+          - run: rm -r Main/src/main/resources/web/*
+          - run: mv chameleon-client/dist/* Main/src/main/resources/web
+          - run: cd Main 
+          - run: mvn package
+          
