@@ -1,0 +1,76 @@
+version: 2
+jobs:
+  build_ui:
+    working_directory: ~/project/chameleon-client
+    docker:
+      - image: node:latest
+
+    steps:
+      - checkout:
+          path: ~/project
+      
+      - run: npm install
+      - run: npm run build
+      
+      - persist_to_workspace:
+          root: .
+          paths:
+            - dist
+
+  
+  build_jar:
+    working_directory: ~/project/Main
+    docker:
+      - image: maven:3.6.2-jdk-12
+    steps:
+      - checkout:
+          path: ~/project
+      - attach_workspace:
+          at: /UI
+      
+      - run: rm -rf src/main/resources/web/*
+      - run: cp -r /UI/dist/. src/main/resources/web/
+      - run: mvn package
+      - store_artifacts: 
+          path: target/
+      - persist_to_workspace:
+          root: ./target
+          paths:
+            - .
+
+  deploy:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+            at: ./
+      - run:
+          name: Publish Release on GitHub"
+          command: |
+            VERSION=$(find . -name 'chameleon-vision-*.jar' | sed 's/.*chameleon-vision-//; s/.jar//' )
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./$(find . -name "chameleon-vision-*")
+        
+workflows:
+  version: 2
+  release:
+    jobs:
+      - build_ui:
+          filters:
+            branches:
+              only: 
+                - master
+                - dev
+      - build_jar:
+          requires:
+            - build_ui
+          filters:
+            branches:
+              only:
+                - master
+                - dev
+      - deploy:
+          requires:
+            - build_jar
+          filters:
+            branches:
+              only: master
