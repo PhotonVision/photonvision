@@ -27,7 +27,8 @@ jobs:
           path: ~/project
       - attach_workspace:
           at: /UI
-        
+      
+      - run: ls /UI/dist/*
       - run: rm -r src/main/resources/web/*
       - run: mv /UI/dist/* src/main/resources/web
       - run: mvn package
@@ -61,3 +62,6 @@ workflows:
       - deploy:
           requires:
             - build_jar
+          # filters:
+          #   branches:
+          #     only: master
