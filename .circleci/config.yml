@@ -30,7 +30,7 @@ jobs:
       
       - run: rm -rf src/main/resources/web/*
       # - run: mv -f /UI/dist/* src/main/resources/web
-      - run: cp /UI/dist/. src/main/resources/web/
+      - run: cp -r /UI/dist/. src/main/resources/web/
       - run: mvn package
       - store_artifacts: 
           path: target/
