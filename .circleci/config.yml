@@ -14,6 +14,11 @@ jobs:
       
       - store_artifacts: 
           path: dist/
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - dist/
+
   
   build_jar:
     working_directory: ~/project/Main
@@ -22,6 +27,9 @@ jobs:
     steps:
       - checkout:
           path: ~/project
+      - attach_workspace:
+          at: /project/chameleon-client
+        
       - run: rm -r src/main/resources/web/*
       - run: ../chameleon-client/dist/* Main/src/main/resources/web
       - run: mvn package
