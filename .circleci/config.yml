@@ -54,10 +54,20 @@ workflows:
   version: 2
   release:
     jobs:
-      - build_ui
+      - build_ui:
+          filters:
+            branches:
+              only: 
+                - master
+                - dev
       - build_jar:
           requires:
             - build_ui
+          filters:
+            branches:
+              only:
+                - master
+                - dev
       - deploy:
           requires:
             - build_jar
