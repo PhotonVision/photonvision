@@ -1,6 +1,7 @@
 version: 2
 jobs:
   build_ui:
+    working_directory: ~/ui
     docker:
       - image: node:latest
 
