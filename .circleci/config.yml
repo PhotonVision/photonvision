@@ -16,7 +16,7 @@ jobs:
           path: chameleon-client/dist/*
 
 workflows:
-  build:
+  version: 2
+  release:
     jobs:
       - build_ui
-      
