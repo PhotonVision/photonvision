@@ -31,7 +31,7 @@ jobs:
           at: /UI
         
       - run: rm -r src/main/resources/web/*
-      - run: /UI/dist/* Main/src/main/resources/web
+      - run: mv /UI/dist/* Main/src/main/resources/web
       - run: mvn package
       - store_artifacts: 
           path: target/
