@@ -6,7 +6,6 @@ jobs:
       - image: node:latest
 
     steps:
-
       - checkout:
           path: ~/project
       
@@ -15,9 +14,21 @@ jobs:
       
       - store_artifacts: 
           path: dist/
+  
+  build_jar:
+    working_directory: ~/project/Main
+    docker:
+      - image: maven:3.6.2-jdk-12
+    steps:
+      - run: rm -r src/main/resources/web/*
+      - run: ../chameleon-client/dist/* Main/src/main/resources/web
+      - run: mvn package
+      - store_artifacts: 
+          path: target/
 
 workflows:
   version: 2
   release:
     jobs:
       - build_ui
+      - build_jar
