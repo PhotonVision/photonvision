@@ -20,6 +20,8 @@ jobs:
     docker:
       - image: maven:3.6.2-jdk-12
     steps:
+      - checkout:
+          path: ~/project
       - run: rm -r src/main/resources/web/*
       - run: ../chameleon-client/dist/* Main/src/main/resources/web
       - run: mvn package
