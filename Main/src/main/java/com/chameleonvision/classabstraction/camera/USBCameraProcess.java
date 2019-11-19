@@ -18,7 +18,7 @@ public class USBCameraProcess implements CameraProcess {
     public USBCameraProcess(UsbCamera camera, CameraConfig config) {
         baseCamera = camera;
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
-        properties = new CameraProperties(baseCamera, config.FOV);
+        properties = new CameraProperties(baseCamera, config.fov);
 
         setVideoMode(properties.videoModes.get(0));
     }
