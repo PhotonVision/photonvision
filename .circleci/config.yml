@@ -28,8 +28,7 @@ jobs:
       - attach_workspace:
           at: /UI
       
-      - run: ls /UI/dist/*
-      - run: rm -r src/main/resources/web/*
+      - run: rm -rf src/main/resources/web/*
       - run: mv /UI/dist/* src/main/resources/web
       - run: mvn package
       - store_artifacts: 
