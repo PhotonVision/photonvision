@@ -28,10 +28,10 @@ jobs:
       - checkout:
           path: ~/project
       - attach_workspace:
-          at: /project/chameleon-client
+          at: /UI
         
       - run: rm -r src/main/resources/web/*
-      - run: ../chameleon-client/dist/* Main/src/main/resources/web
+      - run: /UI/dist/* Main/src/main/resources/web
       - run: mvn package
       - store_artifacts: 
           path: target/
