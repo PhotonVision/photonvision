@@ -1,20 +1,21 @@
 version: 2
 jobs:
   build_ui:
-    working_directory: ~/ui
+    working_directory: ~/project/chameleon-client
     docker:
       - image: node:latest
 
     steps:
 
-      - checkout
+      - checkout:
+          path: ~/project
       
       - run: cd chameleon-client
       - run: npm install
       - run: npm run build
       
       - store_artifacts: 
-          path: chameleon-client/dist/*
+          path: dist/
 
 workflows:
   version: 2
