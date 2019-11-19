@@ -10,7 +10,6 @@ jobs:
       - checkout:
           path: ~/project
       
-      - run: cd chameleon-client
       - run: npm install
       - run: npm run build
       
