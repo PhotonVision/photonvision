@@ -15,7 +15,7 @@ jobs:
       # - store_artifacts: 
       #     path: dist/
       - persist_to_workspace:
-          root: chameleon-client
+          root: .
           paths:
             - dist
 
