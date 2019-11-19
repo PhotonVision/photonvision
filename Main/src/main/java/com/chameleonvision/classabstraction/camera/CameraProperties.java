@@ -1,6 +1,9 @@
 package com.chameleonvision.classabstraction.camera;
 
+import com.chameleonvision.Main;
+import com.chameleonvision.settings.Platform;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.UsbCameraInfo;
 import edu.wpi.cscore.VideoMode;
 import org.apache.commons.math3.util.FastMath;
 
@@ -25,12 +28,36 @@ public class CameraProperties {
     private static final Predicate<VideoMode> kPixelFormatPredicate = (videoMode -> ALLOWED_PIXEL_FORMATS.contains(videoMode.pixelFormat));
 
     public CameraStaticProperties staticProperties;
+    public final String name;
+    public final String path;
     public final double FOV;
     public final List<VideoMode> videoModes;
+
+    private String nickname;
 
     public CameraProperties(UsbCamera baseCamera, double fov) {
         FOV = fov;
         videoModes = filterVideoModes(baseCamera.enumerateVideoModes());
+        name = baseCamera.getName();
+
+        UsbCameraInfo baseCamInfo = baseCamera.getInfo();
+
+        if (Platform.CurrentPlatform.isWindows()) {
+            path = baseCamInfo.path;
+        } else {
+            var truePath = Arrays.stream(baseCamInfo.otherPaths).filter(x -> x.contains("/dev/v4l/by-path")).findFirst();
+            path = truePath.orElse(baseCamInfo.path);
+        }
+
+        nickname = name;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public String getNickname() {
+        return nickname;
     }
 
     private List<VideoMode> filterVideoModes(VideoMode[] videoModes) {

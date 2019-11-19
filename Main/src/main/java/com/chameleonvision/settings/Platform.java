@@ -23,6 +23,7 @@ public enum Platform {
 
 	private static final String OS_NAME =  System.getProperty("os.name");
 	private static final String OS_ARCH = System.getProperty("os.arch");
+	public static final Platform CurrentPlatform = getCurrentPlatform();
 
 	public boolean isWindows() {
 		return this == WINDOWS_64;
@@ -70,7 +71,7 @@ public enum Platform {
 		}
 	}
 
-	public static Platform getCurrentPlatform() {
+	private static Platform getCurrentPlatform() {
 		if (OS_NAME.contains("Windows")) {
 			if (OS_ARCH.equals("amd64")) return Platform.WINDOWS_64;
 		}

@@ -77,11 +77,11 @@ public class USBCamera {
         FOV = fov;
         name = cameraName;
 
-        if (Platform.getCurrentPlatform().isWindows()) {
+        if (Platform.CurrentPlatform.isWindows()) {
             path = usbCamInfo.path;
         } else {
             var truePath = Arrays.stream(usbCamInfo.otherPaths).filter(x -> x.contains("/dev/v4l/by-path")).findFirst();
-            path = truePath.orElse(null);
+            path = truePath.orElse(usbCamInfo.path);
         }
 
         streamDivisor = divisor;
@@ -90,7 +90,7 @@ public class USBCamera {
         this.pipelines = pipelines;
 
         // set up video modes according to minimums
-        if (Platform.getCurrentPlatform() == Platform.WINDOWS_64 && !UsbCam.isConnected()) {
+        if (Platform.CurrentPlatform == Platform.WINDOWS_64 && !UsbCam.isConnected()) {
             System.out.print("Waiting on camera... ");
             long initTimeout = System.nanoTime();
             while (!UsbCam.isConnected()) {

@@ -15,6 +15,8 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import java.io.IOException;
 import java.util.function.Consumer;
 
+import static com.chameleonvision.settings.Platform.CurrentPlatform;
+
 public class Main {
 
     private static final String NT_SERVERMODE_KEY = "--nt-servermode"; // no args for this setting
@@ -43,8 +45,6 @@ public class Main {
             }
         }
     }
-
-    private static final Platform CurrentPlatform = Platform.getCurrentPlatform();
 
     private static void handleArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
@@ -127,13 +127,13 @@ public class Main {
             CameraServerJNI.forceLoad();
             CameraServerCvJNI.forceLoad();
         } catch (UnsatisfiedLinkError | IOException e) {
-            if(Platform.getCurrentPlatform().isWindows())
+            if(CurrentPlatform.isWindows()) {
                 System.err.println("Try to download the VC++ Redistributable, https://aka.ms/vs/16/release/vc_redist.x64.exe");
+            }
             throw new RuntimeException("Failed to load JNI Libraries!");
         }
 
         if (testMode) {
-            // todo: boot in to the new classabstraction stuff
             boolean visionSourcesOk = VisionManager.initializeSources();
             if (!visionSourcesOk) {
                 System.out.println("No cameras connected!");

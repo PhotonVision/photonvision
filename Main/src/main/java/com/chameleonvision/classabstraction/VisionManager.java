@@ -2,6 +2,8 @@ package com.chameleonvision.classabstraction;
 
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.util.FileHelper;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import org.opencv.videoio.VideoCapture;
@@ -46,19 +48,39 @@ public class VisionManager {
         UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
             Path cameraConfigFolder = Paths.get(CamConfigPath.toString(), String.format("%s\\", cameraName));
             Path cameraConfigPath = Paths.get(cameraConfigFolder.toString(), String.format("%s.json", cameraName));
+            Path cameraPipelinesPath = Paths.get(cameraConfigFolder.toString(), "pipelines.json");
+            Path cameraDrivermodePath = Paths.get(cameraConfigFolder.toString(), "drivermode.json");
 
-            if (Files.exists(cameraConfigFolder)) {
-                if (Files.exists(cameraConfigPath)) {
-                    File cameraConfigFile = new File(cameraConfigPath.toString());
+            try {
 
-                }
-            } else {
-                try {
+                boolean cameraFolderExists = Files.exists(cameraConfigFolder);
+
+                if (!cameraFolderExists) {
                     Files.createDirectory(cameraConfigFolder);
-                } catch (IOException e) {
-                    e.printStackTrace();
                 }
+                boolean cameraConfigExists = cameraFolderExists && Files.exists(cameraConfigPath);
+
+                if (Files.exists(cameraConfigFolder)) {
+                    if (Files.exists(cameraConfigPath)) {
+                        File cameraConfigFile = new File(cameraConfigPath.toString());
+                        if (cameraConfigFile.length() != 0) {
+                            try {
+                                Gson gson  = new GsonBuilder().create();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    } else {
+                        Files.createFile(cameraConfigPath);
+                    }
+                } else {
+                    Files.createDirectory(cameraConfigFolder);
+                }
+            } catch (IOException ex) {
+
             }
+
+
         });
 
 //        FileHelper.CheckPath(CamConfigPath);

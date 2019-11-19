@@ -5,6 +5,5 @@ public class CameraConfig {
     public String Path;
     public String Name;
     public String Nickname;
-    public com.chameleonvision.vision.camera.StreamDivisor StreamDivisor;
-//    public
+
 }

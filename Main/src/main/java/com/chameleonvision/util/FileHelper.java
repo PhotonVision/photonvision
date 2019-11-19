@@ -27,18 +27,16 @@ public class FileHelper {
             }
         }
     }
+
     public static void Serializer(Object object, Path path) throws IOException {
-        File file = new File(path.toString());
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build();
         ObjectMapper objectMapper = JsonMapper.builder().activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT).build();
-        objectMapper.writeValue(file,object);
+        objectMapper.writeValue(new File(path.toString()), object);
     }
 
-    public static Object DeSerializer(Path path,Class<?> ref) throws IOException {
-        File file = new File(path.toString());
+    public static <T> T DeSerializer(Path path, Class<T> ref) throws IOException {
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build();
         ObjectMapper objectMapper = JsonMapper.builder().activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT).build();
-        Object o = objectMapper.readValue(file, ref);
-        return o;
+        return objectMapper.readValue(new File(path.toString()), ref);
     }
 }

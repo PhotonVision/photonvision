@@ -13,7 +13,7 @@ public class USBCameraProcess implements CameraProcess {
     private final UsbCamera baseCamera;
     private final CvSink cvSink;
     private Mat imageBuffer = new Mat();
-    public CameraProperties properties;
+    private CameraProperties properties;
 
     public USBCameraProcess(UsbCamera camera, CameraConfig config) {
         baseCamera = camera;
