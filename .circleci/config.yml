@@ -12,8 +12,8 @@ jobs:
       - run: npm install
       - run: npm run build
       
-      - store_artifacts: 
-          path: dist/
+      # - store_artifacts: 
+      #     path: dist/
       - persist_to_workspace:
           root: ~/
           paths:
