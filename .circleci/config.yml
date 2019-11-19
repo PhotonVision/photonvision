@@ -33,6 +33,10 @@ jobs:
       - run: mvn package
       - store_artifacts: 
           path: target/
+      - persist_to_workspace:
+          root: ./target
+          paths:
+            - .
 
   deploy:
     docker:
