@@ -12,8 +12,6 @@ jobs:
       - run: npm install
       - run: npm run build
       
-      # - store_artifacts: 
-      #     path: dist/
       - persist_to_workspace:
           root: .
           paths:
@@ -36,6 +34,18 @@ jobs:
       - store_artifacts: 
           path: target/
 
+  deploy:
+    docker:
+      - image: cibuilds/github:0.10
+    steps:
+      - attach_workspace:
+            at: ./
+      - run:
+          name: Publish Release on GitHub"
+          command: |
+            VERSION=$(find . -name 'chameleon-vision-*.jar' | sed 's/.*chameleon-vision-//; s/.jar//' )
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${VERSION} ./$(find . -name "chameleon-vision-*")
+        
 workflows:
   version: 2
   release:
@@ -44,3 +54,6 @@ workflows:
       - build_jar:
           requires:
             - build_ui
+      - deploy:
+          requires:
+            - build_jar
