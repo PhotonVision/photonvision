@@ -1,10 +1,10 @@
 package com.chameleonvision.classabstraction.config;
 
 public class CameraConfig {
-    public double fov;
-    public String path;
-    public String name;
-    public String nickname;
+    public final double fov;
+    public final String path;
+    public final String name;
+    public final String nickname;
 
     public CameraConfig(double FOV,
                         String path, String name,
@@ -14,5 +14,4 @@ public class CameraConfig {
         this.name = name;
         this.nickname = nickname;
     }
-
 }

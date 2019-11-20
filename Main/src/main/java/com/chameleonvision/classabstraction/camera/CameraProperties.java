@@ -1,7 +1,9 @@
 package com.chameleonvision.classabstraction.camera;
 
 import com.chameleonvision.Main;
+import com.chameleonvision.classabstraction.config.CameraConfig;
 import com.chameleonvision.settings.Platform;
+import com.chameleonvision.vision.camera.USBCamera;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import edu.wpi.cscore.VideoMode;
@@ -33,23 +35,36 @@ public class CameraProperties {
     public final double FOV;
     public final List<VideoMode> videoModes;
 
+    private final UsbCamera baseCamera;
+
     private String nickname;
 
-    public CameraProperties(UsbCamera baseCamera, double fov) {
-        FOV = fov;
-        videoModes = filterVideoModes(baseCamera.enumerateVideoModes());
-        name = baseCamera.getName();
+    public final boolean hasGain;
 
-        UsbCameraInfo baseCamInfo = baseCamera.getInfo();
+    public CameraProperties(UsbCamera baseCamera, CameraConfig config) {
+        FOV = config.fov;
+        name = config.name;
+        path = config.path;
+        nickname = config.nickname;
+        this.baseCamera = baseCamera;
 
-        if (Platform.CurrentPlatform.isWindows()) {
-            path = baseCamInfo.path;
-        } else {
-            var truePath = Arrays.stream(baseCamInfo.otherPaths).filter(x -> x.contains("/dev/v4l/by-path")).findFirst();
-            path = truePath.orElse(baseCamInfo.path);
+        // wait for camera USB init on Windows, Windows USB is slow...
+        if (Platform.CurrentPlatform == Platform.WINDOWS_64 && !baseCamera.isConnected()) {
+            System.out.print("Waiting on camera... ");
+            long initTimeout = System.nanoTime();
+            while (!baseCamera.isConnected()) {
+                if (((System.nanoTime() - initTimeout) / 1e6) >= MAX_INIT_MS) {
+                    break;
+                }
+            }
+            var initTimeMs = (System.nanoTime() - initTimeout) / 1e6;
+            System.out.printf("USBCameraProcess initialized in %.2fms\n", initTimeMs);
         }
 
-        nickname = name;
+        hasGain = false;
+        var props = baseCamera.enumerateProperties();
+
+        videoModes = filterVideoModes(baseCamera.enumerateVideoModes());
     }
 
     public void setNickname(String nickname) {

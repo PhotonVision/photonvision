@@ -8,6 +8,8 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.chameleonvision.settings.Platform.CurrentPlatform;
+
 public class NetworkManager {
 	private NetworkManager() {}
 
@@ -20,11 +22,9 @@ public class NetworkManager {
 			return;
 		}
 
-		Platform platform = Platform.getCurrentPlatform();
-
-		if (platform.isLinux()) {
+		if (CurrentPlatform.isLinux()) {
 			networking = new LinuxNetworking();
-		} else if (platform.isWindows()) {
+		} else if (CurrentPlatform.isWindows()) {
 //			networking = new WindowsNetworking();
             System.out.println("Windows networking is not yet supported. Running unmanaged.");
             return;

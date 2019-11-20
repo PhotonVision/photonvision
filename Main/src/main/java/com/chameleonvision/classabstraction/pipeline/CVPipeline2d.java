@@ -24,6 +24,11 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
 
     @Override
     public CVPipeline2dResult runPipeline(Mat inputMat) {
+
+        if (cameraProcess == null) {
+            throw new RuntimeException("Pipeline was not initialized before being run!");
+        }
+
         long totalProcessTimeNanos = 0;
         StringBuilder procTimeStringBuilder = new StringBuilder();
 
