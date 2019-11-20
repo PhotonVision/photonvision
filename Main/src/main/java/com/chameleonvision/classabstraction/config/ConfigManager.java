@@ -67,12 +67,11 @@ public class ConfigManager {
 
         var configList = new ArrayList<CameraConfig>();
 
+
         // loop over all the camera names and try to create settings folders for it
         cameraNames.forEach((cameraName) -> {
             final Path cameraConfigFolder = Paths.get(cameraConfigPath.toString(), String.format("%s\\", cameraName));
             final Path cameraConfigPath = Paths.get(cameraConfigFolder.toString(), String.format("%s.json", cameraName));
-            final Path cameraPipelinesPath = Paths.get(cameraConfigFolder.toString(), "pipelines.json");
-            final Path cameraDrivermodePath = Paths.get(cameraConfigFolder.toString(), "drivermode.json");
 
             // check if the config folder exists, and if not, create it
             boolean cameraConfigFolderExists = Files.exists(cameraConfigFolder);
@@ -89,11 +88,9 @@ public class ConfigManager {
             var camJsonFile = new File(cameraConfigPath.toString());
             if(camJsonFile.exists() && camJsonFile.length() > 0) {
                 try {
-                    Gson gson = new GsonBuilder().registerTypeAdapter(USBCamera.class, new CameraDeserializer()).create();
-                    var camJsonFileReader = new FileReader(camJsonFile.toString());
-                    var gsonRead = gson.fromJson(camJsonFileReader, CameraConfig.class);
-                    configList.add(gsonRead);
-                } catch (FileNotFoundException e) {
+                    var config = FileHelper.DeSerializer(cameraConfigPath, CameraConfig.class);
+                    configList.add(config);
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
             } else {
