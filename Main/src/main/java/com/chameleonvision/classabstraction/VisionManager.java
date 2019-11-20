@@ -1,21 +1,19 @@
 package com.chameleonvision.classabstraction;
 
+import com.chameleonvision.classabstraction.camera.USBCameraProcess;
+import com.chameleonvision.classabstraction.config.CameraConfig;
 import com.chameleonvision.classabstraction.config.ConfigManager;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.util.FileHelper;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import org.opencv.videoio.VideoCapture;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class VisionManager {
 
@@ -48,7 +46,15 @@ public class VisionManager {
         FileHelper.CheckPath(CamConfigPath);
 
         // load the config
-        var loadedConfigs = ConfigManager.initializeCameraConfig(new ArrayList<>(UsbCameraInfosByCameraName.keySet()));
+        List<CameraConfig> loadedConfigs = ConfigManager.initializeCameraConfig(new ArrayList<>(UsbCameraInfosByCameraName.keySet()));
+        loadedConfigs.forEach(config -> {
+            var camera = new USBCameraProcess(
+                    new edu.wpi.cscore.UsbCamera(config.name, config.path),
+                    config
+            );
+            VisionProcessesByCameraName.put(config.name, new VisionProcess(camera, config.name));
+        });
+
 
 //        UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
 //            Path cameraConfigFolder = Paths.get(CamConfigPath.toString(), String.format("%s\\", cameraName));

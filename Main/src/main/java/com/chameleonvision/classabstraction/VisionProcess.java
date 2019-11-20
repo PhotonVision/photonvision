@@ -25,7 +25,7 @@ public class VisionProcess {
 
     private final CVPipelineSettings driverVisionSettings = new CVPipelineSettings();
 
-    public VisionProcess(CameraProcess cameraProcess, String name, Long cameraUpdateTimeMs) {
+    public VisionProcess(CameraProcess cameraProcess, String name) {
         this.cameraProcess = cameraProcess;
 
         pipelines.add(new DriverVisionPipeline(() -> driverVisionSettings));
