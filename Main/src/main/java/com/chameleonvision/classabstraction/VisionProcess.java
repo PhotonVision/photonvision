@@ -34,17 +34,29 @@ public class VisionProcess {
         // Thread to grab frames from the camera
         // TODO: fix video modes!!!
         this.cameraRunnable = new CameraFrameRunnable(cameraProcess.getProperties().videoModes.get(0).fps);
-        new Thread(cameraRunnable).start();
 
         // Thread to put frames on the dashboard
         this.cameraStreamer = new CameraStreamer(cameraProcess, name);
         this.streamRunnable = new CameraStreamerRunnable(1000L/32, cameraStreamer);
-        new Thread(streamRunnable).start();
 
         // Thread to process vision data
         this.visionRunnable = new VisionProcessRunnable();
-        new Thread(visionRunnable).start();
+    }
 
+    public void start() {
+        System.out.println("Starting camera thread.");
+        new Thread(cameraRunnable).start();
+        while (cameraRunnable.cameraFrame == null) {
+            try {
+                if (cameraRunnable.cameraFrame.cols() > 0) break;
+            } catch (Exception e) {
+//                e.printStackTrace();
+            }
+        }
+        System.out.println("Starting vision thread.");
+        new Thread(visionRunnable).start();
+        System.out.println("Starting stream thread.");
+        new Thread(streamRunnable).start();
     }
 
     public void setPipeline(int pipelineIndex) {
@@ -73,7 +85,7 @@ public class VisionProcess {
      * at a specified loopTime
      */
     protected class CameraFrameRunnable extends LoopingRunnable {
-        private Mat cameraFrame = new Mat();
+        private Mat cameraFrame;
         private long timestampMicros;
 
         private final Object frameLock = new Object();
@@ -95,18 +107,23 @@ public class VisionProcess {
 
                 // Grab camera frames
                 var camData = cameraProcess.getFrame();
-                synchronized (frameLock) {
-                    cameraFrame = camData.getLeft();
+                if (camData.getLeft().cols() > 0) {
+//                    System.out.println("grabbing frame");
+//                    synchronized (frameLock) {
+                        cameraFrame = camData.getLeft();
+//                    }
+                    timestampMicros = camData.getRight();
                 }
-                timestampMicros = camData.getRight();
             }
         }
 
         public Mat getFrame(Mat dst) {
-            synchronized (frameLock) {
-                cameraFrame.copyTo(dst);
-                return dst;
+            if (cameraFrame != null) {
+                dst = cameraFrame;
+            } else {
+                System.out.println("no frame");
             }
+            return dst;
         }
 
         public long getTimestampMicros() {
@@ -125,7 +142,12 @@ public class VisionProcess {
         @Override
         public void run() {
             while(!Thread.interrupted()) {
-                result = currentPipeline.runPipeline(cameraRunnable.getFrame(streamBuffer));
+                streamBuffer = cameraRunnable.getFrame(streamBuffer);
+                if (streamBuffer.cols() > 0 && streamBuffer.rows() > 0) {
+                    result = currentPipeline.runPipeline(streamBuffer);
+                } else {
+//                    System.err.println("Bad streambuffer mat");
+                }
                 // TODO do something with the result
             }
         }
@@ -143,7 +165,16 @@ public class VisionProcess {
 
         @Override
         protected void process() {
-            streamer.runStream(cameraRunnable.getFrame(streamBuffer));
+            CVPipelineResult latestResult = visionRunnable.result;
+            if (latestResult != null) {
+                Mat toStreamMat = visionRunnable.result.outputMat;
+                streamBuffer = toStreamMat;
+                streamer.runStream(toStreamMat);
+//                if (toStreamMat != null && toStreamMat.cols() > 0) {
+//                } else {
+//                    System.out.println("fuuuuck");
+//                }
+            }
         }
     }
 }

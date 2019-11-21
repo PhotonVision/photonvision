@@ -15,11 +15,10 @@ public class USBCameraProcess implements CameraProcess {
     private Mat imageBuffer = new Mat();
     private CameraProperties properties;
 
-    public USBCameraProcess(UsbCamera camera, CameraConfig config) {
-        baseCamera = camera;
-
+    public USBCameraProcess(CameraConfig config) {
+        baseCamera = new UsbCamera(config.name, config.path);
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
-        properties = new CameraProperties(baseCamera, config.fov);
+        properties = new CameraProperties(baseCamera, config);
 
         setVideoMode(properties.videoModes.get(0));
     }

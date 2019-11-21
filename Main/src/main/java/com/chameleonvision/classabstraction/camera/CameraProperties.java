@@ -1,11 +1,8 @@
 package com.chameleonvision.classabstraction.camera;
 
-import com.chameleonvision.Main;
 import com.chameleonvision.classabstraction.config.CameraConfig;
 import com.chameleonvision.settings.Platform;
-import com.chameleonvision.vision.camera.USBCamera;
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.cscore.UsbCameraInfo;
 import edu.wpi.cscore.VideoMode;
 import org.apache.commons.math3.util.FastMath;
 
@@ -16,7 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class CameraProperties {
-    private static final double DEFAULT_FOV = 70;
+    public static final double DEFAULT_FOV = 70;
     private static final int DEFAULT_EXPOSURE = 50;
     private static final int DEFAULT_BRIGHTNESS = 50;
     private static final int MINIMUM_FPS = 30;
@@ -61,8 +58,16 @@ public class CameraProperties {
             System.out.printf("USBCameraProcess initialized in %.2fms\n", initTimeMs);
         }
 
+        // TODO: find way to determine if camera is a PS3Eye
         hasGain = false;
-        var props = baseCamera.enumerateProperties();
+//        var props = baseCamera.enumerateProperties();
+//        for (var prop : props) {
+//            var name = prop.getName();
+//            var min = prop.getMin();
+//            var max = prop.getMax();
+//            var _default = prop.getDefault();
+//            var kind = prop.getKind();
+//        }
 
         videoModes = filterVideoModes(baseCamera.enumerateVideoModes());
     }
@@ -85,12 +90,12 @@ public class CameraProperties {
         staticProperties = new CameraStaticProperties(videoMode.width, videoMode.height, FOV);
     }
 
-    public double CalculatePitch(double PixelY, double centerY) {
+    public double calculatePitch(double PixelY, double centerY) {
         double pitch = FastMath.toDegrees(FastMath.atan((PixelY - centerY) / staticProperties.verticalFocalLength));
         return (pitch * -1);
     }
 
-    public double CalculateYaw(double PixelX, double centerX) {
+    public double calculateYaw(double PixelX, double centerX) {
         return FastMath.toDegrees(FastMath.atan((PixelX - centerX) / staticProperties.horizontalFocalLength));
     }
 }

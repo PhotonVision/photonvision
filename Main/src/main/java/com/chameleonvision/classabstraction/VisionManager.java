@@ -3,6 +3,7 @@ package com.chameleonvision.classabstraction;
 import com.chameleonvision.classabstraction.camera.USBCameraProcess;
 import com.chameleonvision.classabstraction.config.CameraConfig;
 import com.chameleonvision.classabstraction.config.ConfigManager;
+import com.chameleonvision.settings.Platform;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.util.FileHelper;
 import edu.wpi.cscore.UsbCamera;
@@ -11,9 +12,7 @@ import org.opencv.videoio.VideoCapture;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
+import java.util.*;
 
 public class VisionManager {
 
@@ -22,6 +21,7 @@ public class VisionManager {
     private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "cameras");
 
     public static final LinkedHashMap<String, UsbCameraInfo> UsbCameraInfosByCameraName = new LinkedHashMap<>();
+    private static final LinkedList<CameraConfig> LoadedCameraConfigs = new LinkedList<>();
     public static final LinkedHashMap<String, VisionProcess> VisionProcessesByCameraName = new LinkedHashMap<>();
 
     public static boolean initializeSources() {
@@ -46,70 +46,41 @@ public class VisionManager {
         FileHelper.CheckPath(CamConfigPath);
 
         // load the config
-        List<CameraConfig> loadedConfigs = ConfigManager.initializeCameraConfig(new ArrayList<>(UsbCameraInfosByCameraName.keySet()));
-        loadedConfigs.forEach(config -> {
-            var camera = new USBCameraProcess(
-                    new edu.wpi.cscore.UsbCamera(config.name, config.path),
-                    config
-            );
-            VisionProcessesByCameraName.put(config.name, new VisionProcess(camera, config.name));
+        List<CameraConfig> preliminaryConfigs = new ArrayList<>();
+
+        UsbCameraInfosByCameraName.values().forEach((cameraInfo) -> {
+            String truePath;
+
+            if (Platform.CurrentPlatform.isWindows()) {
+                truePath = cameraInfo.path;
+            } else {
+                truePath = Arrays.stream(cameraInfo.otherPaths).filter(x -> x.contains("/dev/v4l/by-path")).findFirst().orElse(cameraInfo.path);
+            }
+
+           preliminaryConfigs.add(new CameraConfig(truePath, cameraInfo.name));
         });
 
-
+        LoadedCameraConfigs.addAll(ConfigManager.initializeCameraConfig(preliminaryConfigs));
 //        UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
 //            Path cameraConfigFolder = Paths.get(CamConfigPath.toString(), String.format("%s\\", cameraName));
 //            Path cameraConfigPath = Paths.get(cameraConfigFolder.toString(), String.format("%s.json", cameraName));
 //            Path cameraPipelinesPath = Paths.get(cameraConfigFolder.toString(), "pipelines.json");
 //            Path cameraDrivermodePath = Paths.get(cameraConfigFolder.toString(), "drivermode.json");
-//
-//            try {
-//
-//                boolean cameraFolderExists = Files.exists(cameraConfigFolder);
-//
-//                if (!cameraFolderExists) {
-//                    Files.createDirectory(cameraConfigFolder);
-//                }
-//                boolean cameraConfigExists = cameraFolderExists && Files.exists(cameraConfigPath);
-//
-//                if (Files.exists(cameraConfigFolder)) {
-//                    if (Files.exists(cameraConfigPath)) {
-//                        File cameraConfigFile = new File(cameraConfigPath.toString());
-//                        if (cameraConfigFile.length() != 0) {
-//                            try {
-//                                Gson gson  = new GsonBuilder().create();
-//                            } catch (Exception e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//                    } else {
-//                        Files.createFile(cameraConfigPath);
-//                    }
-//                } else {
-//                    Files.createDirectory(cameraConfigFolder);
-//                }
-//            } catch (IOException ex) {
-//
-//            }
-//
-//
-//        });
 
-//        FileHelper.CheckPath(CamConfigPath);
-//        UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
-//            Path cameraConfigPath = Paths.get(CamConfigPath.toString(), String.format("%s.json", cameraName));
-//            File cameraConfigFile = new File(cameraConfigPath.toString());
-//            if (cameraConfigFile.exists() && cameraConfigFile.length() != 0) {
-////                try {
-////                    Gson gson = new GsonBuilder().registerTypeAdapter(USBCameraProcess.class, new CameraDeserializer());
-////                }
-//            }
-//        })
-        // TODO: implement new camera JSON loads
         return true;
     }
 
     public static boolean initializeProcesses() {
-
+        LoadedCameraConfigs.forEach(config -> {
+            var camera = new USBCameraProcess(config);
+            VisionProcessesByCameraName.put(config.name, new VisionProcess(camera, config.name));
+        });
         return true;
+    }
+
+    public static void startProcesses() {
+        VisionProcessesByCameraName.forEach((name, process) -> {
+            process.start();
+        });
     }
 }

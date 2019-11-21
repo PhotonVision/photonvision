@@ -1,14 +1,11 @@
 package com.chameleonvision.classabstraction.camera;
 
 import com.chameleonvision.vision.camera.StreamDivisor;
-import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 
 public class CameraStreamer {
     private final CameraProcess cameraProcess;
@@ -24,6 +21,7 @@ public class CameraStreamer {
         this.cvSource = CameraServer.getInstance().putVideo(name,
                 cameraProcess.getProperties().staticProperties.imageWidth / divisor.value,
                 cameraProcess.getProperties().staticProperties.imageHeight / divisor.value);
+        setDivisor(divisor);
     }
 
     public void setDivisor(StreamDivisor newDivisor) {
@@ -37,7 +35,7 @@ public class CameraStreamer {
                     cameraProcess.getProperties().staticProperties.imageWidth / divisor.value,
                     cameraProcess.getProperties().staticProperties.imageHeight / divisor.value);
         }
-        ServerHandler.sendFullSettings();
+//        ServerHandler.sendFullSettings();
     }
 
     public void setNewVideoMode(VideoMode newVideoMode) {
@@ -47,14 +45,16 @@ public class CameraStreamer {
     }
 
     public void runStream(Mat image) {
-        image.copyTo(streamBuffer);
-        if (divisor.value != 1) {
-            var camVal = cameraProcess.getProperties().staticProperties;
-            var newWidth = camVal.imageWidth / divisor.value;
-            var newHeight = camVal.imageHeight / divisor.value;
-            Size newSize = new Size(newWidth, newHeight);
-            Imgproc.resize(streamBuffer, streamBuffer, newSize);
+        synchronized (streamBufferLock) {
+            streamBuffer = image;
         }
+//        if (divisor.value != 1) {
+//            var camVal = cameraProcess.getProperties().staticProperties;
+//            var newWidth = camVal.imageWidth / divisor.value;
+//            var newHeight = camVal.imageHeight / divisor.value;
+//            Size newSize = new Size(newWidth, newHeight);
+//            Imgproc.resize(streamBuffer, streamBuffer, newSize);
+//        }
         cvSource.putFrame(streamBuffer);
     }
 

@@ -1,7 +1,9 @@
 package com.chameleonvision;
 
 import com.chameleonvision.classabstraction.VisionManager;
+import com.chameleonvision.classabstraction.config.ConfigManager;
 import com.chameleonvision.network.NetworkManager;
+import com.chameleonvision.settings.GeneralSettings;
 import com.chameleonvision.settings.Platform;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.util.Utilities;
@@ -134,13 +136,15 @@ public class Main {
         }
 
         if (testMode) {
+            ConfigManager.initializeSettings();
+            NetworkManager.initialize(manageNetwork);
+            NetworkTableInstance.getDefault().startServer();
+
             boolean visionSourcesOk = VisionManager.initializeSources();
             if (!visionSourcesOk) {
                 System.out.println("No cameras connected!");
                 return;
             }
-
-            NetworkManager.initialize(manageNetwork);
 
             boolean visionProcessesOk = VisionManager.initializeProcesses();
             if (!visionProcessesOk) {
@@ -148,20 +152,24 @@ public class Main {
                 return;
             }
 
-            runServer();
+            VisionManager.startProcesses();
+
+//            runServer(true);
         } else {
             if (CameraManager.initializeCameras()) {
                 SettingsManager.initialize();
                 NetworkManager.initialize(manageNetwork);
                 CameraManager.initializeThreads();
-                runServer();
+                runServer(false);
             } else {
                 System.err.println("No cameras connected!");
             }
         }
     }
 
-    private static void runServer() {
+    private static void runServer(boolean test) {
+        GeneralSettings settings = test ? ConfigManager.settings : SettingsManager.generalSettings;
+
         if (ntServerMode) {
             System.out.println("Starting NT Server");
             NetworkTableInstance.getDefault().startServer();
@@ -170,7 +178,7 @@ public class Main {
             if (ntClientModeServer != null) {
                 NetworkTableInstance.getDefault().startClient(ntClientModeServer);
             } else {
-                NetworkTableInstance.getDefault().startClientTeam(SettingsManager.generalSettings.teamNumber);
+                NetworkTableInstance.getDefault().startClientTeam(settings.teamNumber);
             }
         }
 

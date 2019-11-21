@@ -35,7 +35,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         var settings = settingsSupplier.get();
         CameraStaticProperties camProps = cameraProcess.getProperties().staticProperties;
 
-        inputMat.copyTo(rawCameraMat);
+		rawCameraMat = inputMat;
 
         // prepare pipes
         RotateFlipPipe rotateFlipPipe = new RotateFlipPipe(ImageRotation.DEG_0, settings.flipMode);

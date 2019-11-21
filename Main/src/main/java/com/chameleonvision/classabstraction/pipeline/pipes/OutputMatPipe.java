@@ -17,11 +17,7 @@ public class OutputMatPipe implements Pipe<Pair<Mat, Mat>, Mat> {
     public Pair<Mat, Long> run(Pair<Mat, Mat> input) {
         long processStartNanos = System.nanoTime();
 
-        if (showThresholded) {
-            input.getRight().copyTo(outputMat);
-        } else {
-            input.getLeft().copyTo(outputMat);
-        }
+		outputMat = showThresholded ? input.getRight() : input.getLeft();
 
         long processTime = processStartNanos - System.nanoTime();
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);

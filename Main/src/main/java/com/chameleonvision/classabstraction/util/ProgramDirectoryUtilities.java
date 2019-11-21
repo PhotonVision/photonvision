@@ -27,7 +27,8 @@ public class ProgramDirectoryUtilities
             return getCurrentJARDirectory();
         } else
         {
-            return getCurrentProjectDirectory();
+            return System.getProperty("user.dir");
+//            return getCurrentProjectDirectory();
         }
     }
 

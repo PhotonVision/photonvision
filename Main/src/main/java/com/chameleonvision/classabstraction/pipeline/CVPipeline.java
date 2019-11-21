@@ -10,7 +10,7 @@ import java.util.function.Supplier;
  * @param <R> Pipeline result type
  */
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
-    protected Mat outputMat;
+    protected Mat outputMat = new Mat();
     CameraProcess cameraProcess;
     final Supplier<S> settingsSupplier;
 
