@@ -25,6 +25,10 @@ public class VisionProcess {
 
     private final CVPipelineSettings driverVisionSettings = new CVPipelineSettings();
 
+    // shitty stuff
+    private volatile Mat lastCmameraFrame = new Mat();
+    private volatile CVPipelineResult lastPipelineResult;
+
     public VisionProcess(CameraProcess cameraProcess, String name) {
         this.cameraProcess = cameraProcess;
 
@@ -34,6 +38,10 @@ public class VisionProcess {
         // Thread to grab frames from the camera
         // TODO: fix video modes!!!
         this.cameraRunnable = new CameraFrameRunnable(cameraProcess.getProperties().videoModes.get(0).fps);
+
+        lastPipelineResult = new DriverVisionPipeline.DriverPipelineResult(
+                null, cameraRunnable.getFrame(new Mat()), 0
+        );
 
         // Thread to put frames on the dashboard
         this.cameraStreamer = new CameraStreamer(cameraProcess, name);
@@ -110,9 +118,10 @@ public class VisionProcess {
                 if (camData.getLeft().cols() > 0) {
 //                    System.out.println("grabbing frame");
 //                    synchronized (frameLock) {
-                        cameraFrame = camData.getLeft();
+//                        cameraFrame = camData.getLeft();
 //                    }
                     timestampMicros = camData.getRight();
+                    camData.getLeft().copyTo(lastCmameraFrame);
                 }
             }
         }
@@ -126,9 +135,6 @@ public class VisionProcess {
             return dst;
         }
 
-        public long getTimestampMicros() {
-            return timestampMicros;
-        }
     }
 
     /**
@@ -142,9 +148,10 @@ public class VisionProcess {
         @Override
         public void run() {
             while(!Thread.interrupted()) {
-                streamBuffer = cameraRunnable.getFrame(streamBuffer);
+                lastCmameraFrame.copyTo(streamBuffer); // = //cameraRunnable.getFrame(streamBuffer);
                 if (streamBuffer.cols() > 0 && streamBuffer.rows() > 0) {
                     result = currentPipeline.runPipeline(streamBuffer);
+                    lastPipelineResult = result;
                 } else {
 //                    System.err.println("Bad streambuffer mat");
                 }
@@ -165,11 +172,11 @@ public class VisionProcess {
 
         @Override
         protected void process() {
-            CVPipelineResult latestResult = visionRunnable.result;
+            CVPipelineResult latestResult = lastPipelineResult; //visionRunnable.result;
             if (latestResult != null) {
                 Mat toStreamMat = visionRunnable.result.outputMat;
-                streamBuffer = toStreamMat;
-                streamer.runStream(toStreamMat);
+                toStreamMat.copyTo(streamBuffer);
+                streamer.runStream(streamBuffer);
 //                if (toStreamMat != null && toStreamMat.cols() > 0) {
 //                } else {
 //                    System.out.println("fuuuuck");

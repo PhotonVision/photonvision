@@ -33,7 +33,7 @@ public class Main {
     private static boolean manageNetwork = true;
     private static boolean ignoreRoot = false;
     private static String ntClientModeServer = null;
-    private static boolean testMode = false;
+    private static boolean testMode = true;
 
     private static class NTLogger implements Consumer<LogMessage> {
 
