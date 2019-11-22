@@ -19,7 +19,7 @@ public class CameraException extends Exception {
         }
     }
 
-    CameraException(CameraExceptionType camExceptionType) {
+    public CameraException(CameraExceptionType camExceptionType) {
         super(camExceptionType.toString());
     }
 }

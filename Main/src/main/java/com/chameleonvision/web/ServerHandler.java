@@ -1,10 +1,11 @@
 package com.chameleonvision.web;
 
+import com.chameleonvision.classabstraction.VisionManager;
+import com.chameleonvision.classabstraction.config.ConfigManager;
 import com.chameleonvision.vision.*;
 import com.chameleonvision.vision.camera.USBCamera;
 import com.chameleonvision.vision.camera.CameraException;
 import com.chameleonvision.settings.SettingsManager;
-import com.chameleonvision.vision.camera.CameraManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -45,7 +46,7 @@ public class ServerHandler {
                 switch (entry.getKey()) {
                     case "generalSettings": {
                         for (HashMap.Entry<String, Object> e : ((HashMap<String, Object>) entry.getValue()).entrySet()) {
-                            setField(SettingsManager.generalSettings, e.getKey(), e.getValue());
+                            setField(ConfigManager.settings, e.getKey(), e.getValue());
                         }
                         SettingsManager.saveSettings();
                         sendFullSettings();
@@ -53,15 +54,15 @@ public class ServerHandler {
                     }
                     case "driverMode": {
                         for (HashMap.Entry<String, Object> e : ((HashMap<String, Object>) entry.getValue()).entrySet()) {
-                            setField(CameraManager.getCurrentCamera(), e.getKey(), e.getValue());
+                            setField(VisionManager.getCurrentCamera(), e.getKey(), e.getValue());
                         }
-                        CameraManager.getCurrentCamera().setDriverMode((Boolean) ((HashMap<String, Object>) entry.getValue()).get("isDriver"));
-                        CameraManager.saveCameras();
+                        VisionManager.getCurrentCamera().setDriverMode((Boolean) ((HashMap<String, Object>) entry.getValue()).get("isDriver"));
+                        VisionManager.saveCameras();
                         break;
                     }
                     case "cameraSettings": {
                         HashMap camSettings = (HashMap) entry.getValue();
-                        var curCam = CameraManager.getCurrentCamera();
+                        var curCam = VisionManager.getCurrentCamera();
 
                         Number newFOV = (Number) camSettings.get("fov");
                         Integer newStreamDivisor = (Integer) camSettings.get("streamDivisor");
@@ -79,18 +80,18 @@ public class ServerHandler {
                             curCam.setCamVideoMode(newResolution, true);
                         }
 
-                        CameraManager.saveCameras();
+                        VisionManager.saveCameras();
                         sendFullSettings();
                         break;
                     }
                     case "changeCameraName": {
-                        CameraManager.getCurrentCamera().setNickname((String) entry.getValue());
+                        VisionManager.getCurrentCamera().setNickname((String) entry.getValue());
                         sendFullSettings();
                         SettingsManager.saveSettings();
                         break;
                     }
                     case "changePipelineName": {
-                        CameraManager.getCurrentPipeline().nickname = (String) entry.getValue();
+                        VisionManager.getCurrentPipeline().nickname = (String) entry.getValue();
                         sendFullSettings();
                         SettingsManager.saveSettings();
                         break;
@@ -100,18 +101,18 @@ public class ServerHandler {
                         int pipelineIndex = (int) pipelineVals.get("pipeline");
                         int cameraIndex = (int) pipelineVals.get("camera");
 
-                        Pipeline origPipeline = CameraManager.getCurrentCamera().getPipelineByIndex(pipelineIndex);
+                        Pipeline origPipeline = VisionManager.getCurrentCamera().getPipelineByIndex(pipelineIndex);
 
                         if (cameraIndex != -1) {
-                            CameraManager.getCameraByIndex(cameraIndex).addPipeline(origPipeline);
+                            VisionManager.getCameraByIndex(cameraIndex).addPipeline(origPipeline);
                         } else {
-                            CameraManager.getCurrentCamera().addPipeline(origPipeline);
+                            VisionManager.getCurrentCamera().addPipeline(origPipeline);
                         }
                         SettingsManager.saveSettings();
                         break;
                     }
                     case "command": {
-                        var cam = CameraManager.getCurrentCamera();
+                        var cam = VisionManager.getCurrentCamera();
                         switch ((String) entry.getValue()) {
                             case "addNewPipeline":
                                 cam.addPipeline();
@@ -140,12 +141,12 @@ public class ServerHandler {
                         break;
                     }
                     case "currentCamera": {
-                        CameraManager.setCurrentCamera((Integer) entry.getValue());
+                        VisionManager.setCurrentCamera((Integer) entry.getValue());
                         sendFullSettings();
                         break;
                     }
                     case "currentPipeline": {
-                        var cam = CameraManager.getCurrentCamera();
+                        var cam = VisionManager.getCurrentCamera();
                         cam.setCurrentPipelineIndex((Integer) entry.getValue());
                         sendFullSettings();
                         try {
@@ -157,13 +158,13 @@ public class ServerHandler {
                         break;
                     }
                     default: {
-                        setField(CameraManager.getCurrentCamera().getCurrentPipeline(), entry.getKey(), entry.getValue());
+                        setField(VisionManager.getCurrentCamera().getCurrentPipeline(), entry.getKey(), entry.getValue());
                         switch (entry.getKey()) {
                             case "exposure": {
-                                CameraManager.getCurrentCamera().setExposure((Integer) entry.getValue());
+                                VisionManager.getCurrentCamera().setExposure((Integer) entry.getValue());
                             }
                             case "brightness": {
-                                CameraManager.getCurrentCamera().setBrightness((Integer) entry.getValue());
+                                VisionManager.getCurrentCamera().setBrightness((Integer) entry.getValue());
                             }
                         }
                         break;
@@ -219,9 +220,9 @@ public class ServerHandler {
         HashMap<String, Object> tmp = new HashMap<>();
         for (Field f : Pipeline.class.getFields()) {
             if (!f.getType().isEnum()) {
-                tmp.put(f.getName(), f.get(CameraManager.getCurrentCamera().getCurrentPipeline()));
+                tmp.put(f.getName(), f.get(VisionManager.getCurrentCamera().getCurrentPipeline()));
             } else {
-                var i = (Enum) f.get(CameraManager.getCurrentCamera().getCurrentPipeline());
+                var i = (Enum) f.get(VisionManager.getCurrentCamera().getCurrentPipeline());
                 tmp.put(f.getName(), i.ordinal());
             }
         }
@@ -230,19 +231,19 @@ public class ServerHandler {
 
     private static HashMap<String, Object> getOrdinalSettings() {
         HashMap<String, Object> tmp = new HashMap<>();
-        tmp.put("teamNumber", SettingsManager.generalSettings.teamNumber);
-        tmp.put("connectionType", SettingsManager.generalSettings.connectionType.ordinal());
-        tmp.put("ip", SettingsManager.generalSettings.ip);
-        tmp.put("gateway", SettingsManager.generalSettings.gateway);
-        tmp.put("netmask", SettingsManager.generalSettings.netmask);
-        tmp.put("hostname", SettingsManager.generalSettings.hostname);
+        tmp.put("teamNumber", ConfigManager.settings.teamNumber);
+        tmp.put("connectionType", ConfigManager.settings.connectionType.ordinal());
+        tmp.put("ip", ConfigManager.settings.ip);
+        tmp.put("gateway", ConfigManager.settings.gateway);
+        tmp.put("netmask", ConfigManager.settings.netmask);
+        tmp.put("hostname", ConfigManager.settings.hostname);
         return tmp;
     }
 
     private static HashMap<String, Object> getOrdinalCameraSettings() {
         HashMap<String, Object> tmp = new HashMap<>();
         try {
-            var currentCamera = CameraManager.getCurrentCamera();
+            var currentCamera = VisionManager.getCurrentCamera();
             tmp.put("fov", currentCamera.getFOV());
             tmp.put("streamDivisor", currentCamera.getStreamDivisor().ordinal());
             tmp.put("resolution", currentCamera.getVideoModeIndex());
@@ -255,7 +256,7 @@ public class ServerHandler {
     private static HashMap<String, Object> getOrdinalDriver() {
         HashMap<String, Object> tmp = new HashMap<>();
         try {
-            var currentCamera = CameraManager.getCurrentCamera();
+            var currentCamera = VisionManager.getCurrentCamera();
             tmp.put("isDriver", currentCamera.getDriverMode());
             tmp.put("driverBrightness", currentCamera.getDriverBrightness());
             tmp.put("driverExposure", currentCamera.getDriverExposure());
@@ -271,15 +272,15 @@ public class ServerHandler {
         try {
             fullSettings.put("settings", getOrdinalSettings());
             fullSettings.put("cameraSettings", getOrdinalCameraSettings());
-            fullSettings.put("cameraList", CameraManager.getAllCameraByNickname());
+            fullSettings.put("cameraList", VisionManager.getAllCameraByNickname());
             fullSettings.put("pipeline", getOrdinalPipeline());
-            var currentCamera = CameraManager.getCurrentCamera();
+            var currentCamera = VisionManager.getCurrentCamera();
             fullSettings.put("driverMode",getOrdinalDriver());
             fullSettings.put("pipelineList", currentCamera.getPipelinesNickname());
             fullSettings.put("resolutionList", currentCamera.getResolutionList());
             fullSettings.put("port", currentCamera.getStreamPort());
-            fullSettings.put("currentPipelineIndex", CameraManager.getCurrentCamera().getCurrentPipelineIndex());
-            fullSettings.put("currentCameraIndex", CameraManager.getCurrentCameraIndex());
+            fullSettings.put("currentPipelineIndex", VisionManager.getCurrentCamera().getCurrentPipelineIndex());
+            fullSettings.put("currentCameraIndex", VisionManager.getCurrentCameraIndex());
         } catch (CameraException | IllegalAccessException e) {
             System.err.println("No camera found!");
         }

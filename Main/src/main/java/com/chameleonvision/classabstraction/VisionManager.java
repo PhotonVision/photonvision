@@ -6,6 +6,7 @@ import com.chameleonvision.classabstraction.config.ConfigManager;
 import com.chameleonvision.settings.Platform;
 import com.chameleonvision.settings.SettingsManager;
 import com.chameleonvision.util.FileHelper;
+import com.chameleonvision.vision.camera.CameraException;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import org.opencv.videoio.VideoCapture;
@@ -82,5 +83,12 @@ public class VisionManager {
         VisionProcessesByCameraName.forEach((name, process) -> {
             process.start();
         });
+    }
+
+    public static VisionProcess getCurrentCamera() throws CameraException {
+        if (VisionProcessesByCameraName.size() == 0) throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
+        var curCam = VisionProcessesByCameraName.get(SettingsManager.generalSettings.currentCamera);
+        if (curCam == null) throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
+        return curCam;
     }
 }
