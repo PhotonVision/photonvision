@@ -190,10 +190,9 @@ public class VisionProcess {
         @Override
         protected void process() {
             System.out.println("running camera streamer");
-            CVPipelineResult latestResult = lastPipelineResult; //visionRunnable.result;
-            if (latestResult != null) {
-                Mat toStreamMat = visionRunnable.result.outputMat;
-                toStreamMat.copyTo(streamBuffer);
+            Mat latestMat = lastPipelineResult.outputMat; //visionRunnable.result;
+            if (latestMat != null && latestMat.cols() > 0) {
+                latestMat.copyTo(streamBuffer);
                 streamer.runStream(streamBuffer);
 //                if (toStreamMat != null && toStreamMat.cols() > 0) {
 //                } else {
