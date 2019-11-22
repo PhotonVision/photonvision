@@ -38,6 +38,7 @@ public class VisionProcess {
 
         // Thread to grab frames from the camera
         // TODO: fix video modes!!!
+        // TODO: FIX FPS!!!!!!!
         this.cameraRunnable = new CameraFrameRunnable(cameraProcess.getProperties().videoModes.get(0).fps);
 
         lastPipelineResult = new DriverVisionPipeline.DriverPipelineResult(
@@ -46,7 +47,7 @@ public class VisionProcess {
 
         // Thread to put frames on the dashboard
         this.cameraStreamer = new CameraStreamer(cameraProcess, name);
-        this.streamRunnable = new CameraStreamerRunnable(1000L/32, cameraStreamer);
+        this.streamRunnable = new CameraStreamerRunnable(30, cameraStreamer);
 
         // Thread to process vision data
         this.visionRunnable = new VisionProcessRunnable();
@@ -179,8 +180,10 @@ public class VisionProcess {
         private final CameraStreamer streamer;
         private Mat streamBuffer = new Mat();
 
-        private CameraStreamerRunnable(Long loopTimeMs, CameraStreamer streamer) {
-            super(loopTimeMs);
+        private CameraStreamerRunnable(int cameraFPS, CameraStreamer streamer) {
+            // add 2 FPS to allow for a bit of overhead
+            // TODO: test the affect of this
+            super(1000L/(cameraFPS + 2));
             this.streamer = streamer;
         }
 
