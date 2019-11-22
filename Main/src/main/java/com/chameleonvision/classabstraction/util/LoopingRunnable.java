@@ -23,11 +23,15 @@ public abstract class LoopingRunnable implements Runnable {
             // sleep for the remaining time
             var timeElapsed = System.currentTimeMillis() - now;
             var delta = loopTimeMs - timeElapsed;
-            if(delta > 0.0) {
-                try {
+            try {
+                if(delta > 0.0) {
+
                     Thread.sleep(delta, 0);
-                } catch (Exception ignored) {}
-            }
+
+                } else {
+                    Thread.sleep(1);
+                }
+            } catch (Exception ignored) {}
         }
     }
 }
