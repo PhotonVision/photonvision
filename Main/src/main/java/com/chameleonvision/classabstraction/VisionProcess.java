@@ -26,7 +26,7 @@ public class VisionProcess {
     private final CVPipelineSettings driverVisionSettings = new CVPipelineSettings();
 
     // shitty stuff
-    private volatile Mat lastCmameraFrame = new Mat();
+    private volatile Mat lastCameraFrame = new Mat();
     private volatile CVPipelineResult lastPipelineResult;
 
     public VisionProcess(CameraProcess cameraProcess, String name) {
@@ -121,7 +121,7 @@ public class VisionProcess {
 //                        cameraFrame = camData.getLeft();
 //                    }
                     timestampMicros = camData.getRight();
-                    camData.getLeft().copyTo(lastCmameraFrame);
+                    camData.getLeft().copyTo(lastCameraFrame);
                 }
             }
         }
@@ -148,7 +148,7 @@ public class VisionProcess {
         @Override
         public void run() {
             while(!Thread.interrupted()) {
-                lastCmameraFrame.copyTo(streamBuffer); // = //cameraRunnable.getFrame(streamBuffer);
+                lastCameraFrame.copyTo(streamBuffer); // = //cameraRunnable.getFrame(streamBuffer);
                 if (streamBuffer.cols() > 0 && streamBuffer.rows() > 0) {
                     result = currentPipeline.runPipeline(streamBuffer);
                     lastPipelineResult = result;
