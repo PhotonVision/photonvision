@@ -27,6 +27,7 @@ public class VisionProcess {
 
     // shitty stuff
     private volatile Mat lastCameraFrame = new Mat();
+    private volatile boolean hasUnprocessedFrame = true;
     private volatile CVPipelineResult lastPipelineResult;
 
     public VisionProcess(CameraProcess cameraProcess, String name) {
@@ -56,7 +57,7 @@ public class VisionProcess {
         new Thread(cameraRunnable).start();
         while (cameraRunnable.cameraFrame == null) {
             try {
-                if (cameraRunnable.cameraFrame.cols() > 0) break;
+                if (lastCameraFrame.cols() > 0) break;
             } catch (Exception e) {
 //                e.printStackTrace();
             }
@@ -111,19 +112,20 @@ public class VisionProcess {
 
         @Override
         public void process() {
-            while(!Thread.interrupted()) {
+            System.out.println("running camera grabber process");
 
-                // Grab camera frames
-                var camData = cameraProcess.getFrame();
-                if (camData.getLeft().cols() > 0) {
+            // Grab camera frames
+            var camData = cameraProcess.getFrame();
+            if (camData.getLeft().cols() > 0) {
 //                    System.out.println("grabbing frame");
 //                    synchronized (frameLock) {
 //                        cameraFrame = camData.getLeft();
 //                    }
-                    timestampMicros = camData.getRight();
-                    camData.getLeft().copyTo(lastCameraFrame);
+                timestampMicros = camData.getRight();
+                camData.getLeft().copyTo(lastCameraFrame);
+                hasUnprocessedFrame = true;
+
                 }
-            }
         }
 
         public Mat getFrame(Mat dst) {
@@ -148,7 +150,19 @@ public class VisionProcess {
         @Override
         public void run() {
             while(!Thread.interrupted()) {
+                System.out.println("running vision process");
+
+                while(!hasUnprocessedFrame) {
+                    try {
+                        Thread.sleep(3);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
                 lastCameraFrame.copyTo(streamBuffer); // = //cameraRunnable.getFrame(streamBuffer);
+                hasUnprocessedFrame = false;
+
                 if (streamBuffer.cols() > 0 && streamBuffer.rows() > 0) {
                     result = currentPipeline.runPipeline(streamBuffer);
                     lastPipelineResult = result;
@@ -172,6 +186,7 @@ public class VisionProcess {
 
         @Override
         protected void process() {
+            System.out.println("running camera streamer");
             CVPipelineResult latestResult = lastPipelineResult; //visionRunnable.result;
             if (latestResult != null) {
                 Mat toStreamMat = visionRunnable.result.outputMat;
