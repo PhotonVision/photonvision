@@ -81,7 +81,6 @@ public class VisionProcess implements Runnable {
                 pipeChange.put("currentPipeline", ntPipelineIndex);
                 ServerHandler.broadcastMessage(pipeChange);
                 ServerHandler.sendFullSettings();
-
             }
         }
     }
