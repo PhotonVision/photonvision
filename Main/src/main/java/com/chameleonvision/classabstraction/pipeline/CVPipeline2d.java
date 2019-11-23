@@ -8,7 +8,6 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
-import java.util.function.Supplier;
 
 import static com.chameleonvision.classabstraction.pipeline.CVPipeline2d.*;
 
@@ -18,8 +17,16 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
     private Mat rawCameraMat = new Mat();
     private Mat hsvOutputMat = new Mat();
 
-    public CVPipeline2d(Supplier<CVPipeline2dSettings> settingsSupplier) {
-        super(settingsSupplier);
+    public CVPipeline2d() {
+        super(new CVPipeline2dSettings());
+    }
+
+    public CVPipeline2d(String name) {
+        super(name, new CVPipeline2dSettings());
+    }
+
+    public CVPipeline2d(CVPipeline2dSettings settings) {
+        super(settings);
     }
 
     @Override
@@ -32,7 +39,6 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         long totalProcessTimeNanos = 0;
         StringBuilder procTimeStringBuilder = new StringBuilder();
 
-        var settings = settingsSupplier.get();
         CameraStaticProperties camProps = cameraProcess.getProperties().staticProperties;
 
 		rawCameraMat = inputMat;
@@ -104,7 +110,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         totalProcessTimeNanos += sortContoursResult.getRight();
         procTimeStringBuilder.append(String.format("SortContours: %.2fms, ", sortContoursResult.getRight() / 1000.0));
 
-        Pair<List<Target>, Long> collect2dTargetsResult = collect2dTargetsPipe.run(sortContoursResult.getLeft());
+        Pair<List<Target2d>, Long> collect2dTargetsResult = collect2dTargetsPipe.run(sortContoursResult.getLeft());
         totalProcessTimeNanos += collect2dTargetsResult.getRight();
         procTimeStringBuilder.append(String.format("SortContours: %.2fms, ", sortContoursResult.getRight() / 1000.0));
 
@@ -124,13 +130,13 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft(), totalProcessTimeNanos / 1000);
     }
 
-    public static class     CVPipeline2dResult extends CVPipelineResult<Target> {
-        public CVPipeline2dResult(List<Target> targets, Mat outputMat, long processTime) {
+    public static class     CVPipeline2dResult extends CVPipelineResult<Target2d> {
+        public CVPipeline2dResult(List<Target2d> targets, Mat outputMat, long processTime) {
             super(targets, outputMat, processTime);
         }
     }
 
-    public static class Target {
+    public static class Target2d {
         public double calibratedX = 0.0;
         public double calibratedY = 0.0;
         public double pitch = 0.0;

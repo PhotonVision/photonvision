@@ -11,8 +11,8 @@ import static com.chameleonvision.classabstraction.pipeline.DriverVisionPipeline
 
 public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPipelineSettings> {
 
-    public DriverVisionPipeline(Supplier<CVPipelineSettings> settingsSupplier) {
-        super(settingsSupplier);
+    public DriverVisionPipeline(CVPipelineSettings settings) {
+        super(settings);
     }
 
     @Override

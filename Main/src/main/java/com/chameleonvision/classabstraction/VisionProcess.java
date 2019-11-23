@@ -5,6 +5,7 @@ import com.chameleonvision.classabstraction.camera.CameraStreamer;
 import com.chameleonvision.classabstraction.config.ConfigManager;
 import com.chameleonvision.classabstraction.pipeline.*;
 import com.chameleonvision.classabstraction.util.LoopingRunnable;
+import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.web.ServerHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -26,11 +27,13 @@ public class VisionProcess {
     private final CameraFrameRunnable cameraRunnable;
     private final CameraStreamerRunnable streamRunnable;
     private final VisionProcessRunnable visionRunnable;
-    private final CameraStreamer cameraStreamer;
+    public final CameraStreamer cameraStreamer;
+
     private CVPipeline currentPipeline;
     private int currentPipelineIndex = 0;
 
-    private final CVPipelineSettings driverVisionSettings = new CVPipelineSettings();
+    private final CVPipelineSettings driverModeSettings = new CVPipelineSettings();
+    private CVPipeline driverModePipeline = new DriverVisionPipeline(driverModeSettings);
 
     // shitty stuff
     private volatile Mat lastCameraFrame = new Mat();
@@ -38,27 +41,27 @@ public class VisionProcess {
     private volatile CVPipelineResult lastPipelineResult;
 
     // network table stuff
-    public NetworkTableEntry ntPipelineEntry;
-    public NetworkTableEntry ntDriverModeEntry;
+    private NetworkTableEntry ntPipelineEntry;
+    private NetworkTableEntry ntDriverModeEntry;
     private int ntDriveModeListenerID;
     private int ntPipelineListenerID;
     private NetworkTableEntry ntYawEntry;
     private NetworkTableEntry ntPitchEntry;
     private NetworkTableEntry ntAuxListEntry;
-    private NetworkTableEntry ntDistanceEntry;
+    private NetworkTableEntry ntAreaEntry;
     private NetworkTableEntry ntTimeStampEntry;
     private NetworkTableEntry ntValidEntry;
-    Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public VisionProcess(CameraProcess cameraProcess, String name) {
+    VisionProcess(CameraProcess cameraProcess, String name) {
         this.cameraProcess = cameraProcess;
 
-        pipelines.add(new DriverVisionPipeline(() -> driverVisionSettings));
+        pipelines.add(new CVPipeline2d("New Pipeline"));
         setPipeline(0);
 
         // Thread to grab frames from the camera
-        // TODO: fix video modes!!!
-        // TODO: FIX FPS!!!!!!!
+        // TODO: (HIGH) fix video modes!!!
+        // TODO: (HIGH) FIX FPS!!!!!!!
         this.cameraRunnable = new CameraFrameRunnable(cameraProcess.getProperties().videoModes.get(0).fps);
 
         lastPipelineResult = new DriverVisionPipeline.DriverPipelineResult(
@@ -106,7 +109,7 @@ public class VisionProcess {
         ntDriverModeEntry = newTable.getEntry("driver_mode");
         ntPitchEntry = newTable.getEntry("pitch");
         ntYawEntry = newTable.getEntry("yaw");
-        ntDistanceEntry = newTable.getEntry("distance");
+        ntAreaEntry = newTable.getEntry("area");
         ntTimeStampEntry = newTable.getEntry("timestamp");
         ntValidEntry = newTable.getEntry("is_valid");
         ntDriveModeListenerID = ntDriverModeEntry.addListener(this::setDriverMode, EntryListenerFlags.kUpdate);
@@ -115,8 +118,16 @@ public class VisionProcess {
         ntPipelineEntry.setNumber(0);
     }
 
-    private void setDriverMode(EntryNotification ignored) {
-        setPipeline(0);
+    private void setDriverMode(EntryNotification driverModeEntryNotification) {
+        setDriverMode(driverModeEntryNotification.value.getBoolean());
+    }
+
+    public void setDriverMode(boolean driverMode) {
+        if (driverMode) {
+            setPipelineInternal(driverModePipeline);
+        } else {
+            setPipeline(currentPipelineIndex);
+        }
     }
 
     /**
@@ -135,25 +146,23 @@ public class VisionProcess {
     }
 
     public void setPipeline(int pipelineIndex) {
-
         CVPipeline newPipeline = pipelines.get(pipelineIndex);
         if (newPipeline != null) {
             setPipelineInternal(newPipeline);
-        }
+            currentPipelineIndex = pipelineIndex;
 
-        // update the configManager
-        if(ConfigManager.settings.currentCamera.equals(cameraProcess.getProperties().name)) {
-            ConfigManager.settings.currentPipeline = pipelineIndex;
-            HashMap<String, Object> pipeChange = new HashMap<>();
-            pipeChange.put("currentPipeline", pipelineIndex);
-            ServerHandler.broadcastMessage(pipeChange);
-            ServerHandler.sendFullSettings();
+            // update the configManager
+            if(ConfigManager.settings.currentCamera.equals(cameraProcess.getProperties().name)) {
+                ConfigManager.settings.currentPipeline = pipelineIndex;
+                HashMap<String, Object> pipeChange = new HashMap<>();
+                pipeChange.put("currentPipeline", pipelineIndex);
+                ServerHandler.broadcastMessage(pipeChange);
+                ServerHandler.sendFullSettings();
+            }
         }
-
     }
 
     private void setPipelineInternal(CVPipeline pipeline) {
-        pipelines.add(pipeline);
         currentPipeline = pipeline;
         currentPipeline.initPipeline(cameraProcess);
     }
@@ -165,14 +174,15 @@ public class VisionProcess {
             HashMap<String, Object> calculated = new HashMap<>();
             List<Double> center = new ArrayList<>();
             if (data.hasTarget) {
-
                 if(data instanceof CVPipeline2d.CVPipeline2dResult) {
                     CVPipeline2d.CVPipeline2dResult result = (CVPipeline2d.CVPipeline2dResult) data;
-                    CVPipeline2d.Target bestTarget = result.targets.get(0);
+                    CVPipeline2d.Target2d bestTarget = result.targets.get(0);
                     center.add(bestTarget.rawPoint.center.x);
                     center.add(bestTarget.rawPoint.center.y);
                     calculated.put("pitch", bestTarget.pitch);
                     calculated.put("yaw", bestTarget.yaw);
+                } else if (data instanceof CVPipeline3d.CVPipeline3dResult) {
+                    // TODO: (2.1) 3d stuff in UI
                 } else {
                     center.add(0.0);
                     center.add(0.0);
@@ -200,19 +210,19 @@ public class VisionProcess {
                 ntTimeStampEntry.setDouble(data.processTime);
 
                 //noinspection unchecked
-                List<CVPipeline2d.Target> targets = (List<CVPipeline2d.Target>) data.targets;
+                List<CVPipeline2d.Target2d> targets = (List<CVPipeline2d.Target2d>) data.targets;
                 ntPitchEntry.setDouble(targets.get(0).pitch);
                 ntYawEntry.setDouble(targets.get(0).yaw);
-                ntDistanceEntry.setDouble(targets.get(0).area);
+                ntAreaEntry.setDouble(targets.get(0).area);
                 ntAuxListEntry.setString(gson.toJson(targets));
 
-            } else if(data instanceof CVPipeline3d.CVPipeline3dResult) {
-                // TODO implement
+            } else if (data instanceof CVPipeline3d.CVPipeline3dResult) {
+                // TODO: (2.1) 3d stuff...
             }
         } else {
             ntPitchEntry.setDouble(0.0);
             ntYawEntry.setDouble(0.0);
-            ntDistanceEntry.setDouble(0.0);
+            ntAreaEntry.setDouble(0.0);
             ntTimeStampEntry.setDouble(0.0);
         }
     }
@@ -222,8 +232,41 @@ public class VisionProcess {
         cameraStreamer.setNewVideoMode(newMode);
     }
 
+    public List<CVPipeline> getPipelines() {
+        return pipelines;
+    }
+
     public CVPipeline getCurrentPipeline() {
         return currentPipeline;
+    }
+
+    public int getCurrentPipelineIndex() {
+        return currentPipelineIndex;
+    }
+
+    public void addPipeline() {
+        // TODO: (2.1) add to UI option between 2d and 3d pipeline
+        pipelines.add(new CVPipeline2d());
+    }
+
+    public void addPipeline(CVPipeline pipeline) {
+        pipelines.add(pipeline);
+    }
+
+    public CameraProcess getCamera() {
+        return cameraProcess;
+    }
+
+    public boolean getDriverMode() {
+        return (currentPipeline == driverModePipeline);
+    }
+
+    public CVPipelineSettings getDriverModeSettings() {
+        return driverModePipeline.settings;
+    }
+
+    public CVPipeline getPipelineByIndex(int pipelineIndex) {
+        return pipelines.get(pipelineIndex);
     }
 
     /**
@@ -243,7 +286,7 @@ public class VisionProcess {
          */
         CameraFrameRunnable(int cameraFPS) {
             // add 2 FPS to allow for a bit of overhead
-            // TODO: test the affect of this
+            // TODO: (low) test the effect of this
             super(1000L/(cameraFPS + 2));
         }
 
@@ -281,7 +324,7 @@ public class VisionProcess {
      */
     private class VisionProcessRunnable implements Runnable {
 
-        public Double fps = 0.0; // TODO update or average or something
+        public Double fps = 0.0; // TODO: (HIGH) update or average or something
         private CVPipelineResult result;
         private Mat streamBuffer = new Mat();
 
@@ -311,19 +354,19 @@ public class VisionProcess {
                 } else {
 //                    System.err.println("Bad streambuffer mat");
                 }
-                // TODO do something with the result
+                // TODO: (HIGH) do something with the result
             }
         }
     }
 
     private class CameraStreamerRunnable extends LoopingRunnable {
 
-        private final CameraStreamer streamer;
+        public final CameraStreamer streamer;
         private Mat streamBuffer = new Mat();
 
         private CameraStreamerRunnable(int cameraFPS, CameraStreamer streamer) {
             // add 2 FPS to allow for a bit of overhead
-            // TODO: test the affect of this
+            // TODO: (low) test the effect of this
             super(1000L/(cameraFPS + 2));
             this.streamer = streamer;
         }

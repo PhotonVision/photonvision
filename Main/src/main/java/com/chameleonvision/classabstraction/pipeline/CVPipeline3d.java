@@ -10,8 +10,9 @@ import static com.chameleonvision.classabstraction.pipeline.CVPipeline3d.*;
 
 public class CVPipeline3d extends CVPipeline<CVPipeline3dResult, CVPipeline3dSettings> {
 
-    public CVPipeline3d(Supplier<CVPipeline3dSettings> settingsSupplier) {
-        super(settingsSupplier);
+
+    protected CVPipeline3d(CVPipeline3dSettings settings) {
+        super(settings);
     }
 
     @Override
@@ -27,7 +28,6 @@ public class CVPipeline3d extends CVPipeline<CVPipeline3dResult, CVPipeline3dSet
     }
 
     public static class Target3d {
-        // TODO: Define 3d-specific target data
+        // TODO: (2.1) Define 3d-specific target data
     }
-
 }

@@ -5,7 +5,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 
 public interface CameraProcess {
-    CameraProperties getProperties();
+    USBCameraProperties getProperties();
 
     /**
      * Get the next camera frame

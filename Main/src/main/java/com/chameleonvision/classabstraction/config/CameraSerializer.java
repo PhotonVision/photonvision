@@ -1,6 +1,6 @@
 package com.chameleonvision.classabstraction.config;
 
-import com.chameleonvision.classabstraction.camera.CameraProperties;
+import com.chameleonvision.classabstraction.camera.USBCameraProperties;
 import com.chameleonvision.classabstraction.camera.USBCameraProcess;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -16,7 +16,7 @@ public class CameraSerializer extends StdSerializer<USBCameraProcess> {
     @Override
     public void serialize(USBCameraProcess value, JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        CameraProperties camProps = value.getProperties();
+        USBCameraProperties camProps = value.getProperties();
         gen.writeNumberField("FOV", camProps.FOV);
         gen.writeStringField("Name", camProps.name);
         gen.writeStringField("Path", camProps.path);

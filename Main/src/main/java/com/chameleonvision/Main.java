@@ -115,7 +115,6 @@ public class Main {
 
         if (!CurrentPlatform.isRoot()) {
             if (ignoreRoot) {
-                // TODO: should we do this?
                 // manageNetwork = false;
                 System.out.println("Ignoring root, network will not be managed!");
             } else {

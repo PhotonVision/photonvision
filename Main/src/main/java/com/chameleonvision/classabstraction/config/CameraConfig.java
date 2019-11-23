@@ -1,6 +1,6 @@
 package com.chameleonvision.classabstraction.config;
 
-import com.chameleonvision.classabstraction.camera.CameraProperties;
+import com.chameleonvision.classabstraction.camera.USBCameraProperties;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -23,7 +23,7 @@ public class CameraConfig {
     }
 
     public CameraConfig(String path, String name) {
-        this.fov = CameraProperties.DEFAULT_FOV;
+        this.fov = USBCameraProperties.DEFAULT_FOV;
         this.path = path;
         this.name = name;
         this.nickname = name;

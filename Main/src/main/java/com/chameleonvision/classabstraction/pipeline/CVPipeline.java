@@ -3,6 +3,7 @@ package com.chameleonvision.classabstraction.pipeline;
 import com.chameleonvision.classabstraction.camera.CameraProcess;
 import org.opencv.core.Mat;
 
+import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
 /**
@@ -12,20 +13,21 @@ import java.util.function.Supplier;
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
     protected Mat outputMat = new Mat();
     CameraProcess cameraProcess;
-    final Supplier<S> settingsSupplier;
+    public final S settings;
 
-    public CVPipeline(Supplier<S> settingsSupplier) {
-        this.settingsSupplier = settingsSupplier;
+    protected CVPipeline(S settings) {
+        this.settings = settings;
     }
 
-    public S getSettings() {
-      return settingsSupplier.get();
+    protected CVPipeline(String pipelineName, S settings) {
+        this.settings = settings;
+        settings.nickname = pipelineName;
     }
 
     public void initPipeline(CameraProcess camera) {
         cameraProcess = camera;
-        cameraProcess.setExposure((int) getSettings().exposure);
-        cameraProcess.setBrightness((int) getSettings().brightness);
+        cameraProcess.setExposure((int) settings.exposure);
+        cameraProcess.setBrightness((int) settings.brightness);
     }
     abstract public R runPipeline(Mat inputMat);
 }

@@ -1,6 +1,7 @@
 package com.chameleonvision.classabstraction.camera;
 
 import com.chameleonvision.vision.camera.StreamDivisor;
+import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
@@ -35,7 +36,11 @@ public class CameraStreamer {
                     cameraProcess.getProperties().staticProperties.imageWidth / divisor.value,
                     cameraProcess.getProperties().staticProperties.imageHeight / divisor.value);
         }
-//        ServerHandler.sendFullSettings();
+        ServerHandler.sendFullSettings();
+    }
+
+    public StreamDivisor getDivisor() {
+        return divisor;
     }
 
     public void setNewVideoMode(VideoMode newVideoMode) {
@@ -57,5 +62,4 @@ public class CameraStreamer {
 //        }
         cvSource.putFrame(streamBuffer);
     }
-
 }

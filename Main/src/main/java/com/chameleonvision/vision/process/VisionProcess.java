@@ -4,7 +4,6 @@ import com.chameleonvision.classabstraction.pipeline.CVPipeline2d;
 import com.chameleonvision.classabstraction.pipeline.CVPipeline2dSettings;
 import com.chameleonvision.classabstraction.pipeline.DriverVisionPipeline;
 import com.chameleonvision.settings.SettingsManager;
-import com.chameleonvision.vision.Orientation;
 import com.chameleonvision.vision.Pipeline;
 import com.chameleonvision.web.ServerHandler;
 import edu.wpi.cscore.VideoException;
@@ -131,7 +130,7 @@ public class VisionProcess implements Runnable {
     private PipelineResult runVisionProcess(Mat inputImage, Mat outputImage) {
 
         if (cvPipeline2d == null) {
-            cvPipeline2d = new CVPipeline2d(() -> pipelineTo2dSettings(currentPipeline));
+            cvPipeline2d = new CVPipeline2d(pipelineTo2dSettings(currentPipeline));
         }
         CVPipeline2dResult result = cvPipeline2d.runPipeline(inputImage);
         result.outputMat.copyTo(outputImage);
@@ -145,7 +144,7 @@ public class VisionProcess implements Runnable {
             pipeResult.Yaw = 0;
             pipeResult.Area = 0;
         } else {
-            Target t = result.targets.get(0);
+            Target2d t = result.targets.get(0);
             pipeResult.CalibratedX = t.calibratedX;
             pipeResult.CalibratedY = t.calibratedY;
             pipeResult.Pitch = t.pitch;

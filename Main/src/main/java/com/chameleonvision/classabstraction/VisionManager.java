@@ -1,29 +1,27 @@
 package com.chameleonvision.classabstraction;
 
+import com.chameleonvision.classabstraction.camera.CameraProcess;
 import com.chameleonvision.classabstraction.camera.USBCameraProcess;
 import com.chameleonvision.classabstraction.config.CameraConfig;
 import com.chameleonvision.classabstraction.config.ConfigManager;
 import com.chameleonvision.settings.Platform;
-import com.chameleonvision.settings.SettingsManager;
-import com.chameleonvision.util.FileHelper;
-import com.chameleonvision.vision.camera.CameraException;
+import com.chameleonvision.vision.camera.USBCamera;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
+import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.videoio.VideoCapture;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class VisionManager {
-
     private VisionManager() {}
 
-    private static final Path CamConfigPath = Paths.get(SettingsManager.SettingsPath.toString(), "cameras");
-
-    public static final LinkedHashMap<String, UsbCameraInfo> UsbCameraInfosByCameraName = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, UsbCameraInfo> UsbCameraInfosByCameraName = new LinkedHashMap<>();
     private static final LinkedList<CameraConfig> LoadedCameraConfigs = new LinkedList<>();
-    public static final LinkedHashMap<String, VisionProcess> VisionProcessesByCameraName = new LinkedHashMap<>();
+    private static final LinkedHashMap<Integer, Pair<VisionProcess, String>> VisionProcessesByIndex = new LinkedHashMap<>();
+
+    private static VisionProcess currentUIVisionProcess;
 
     public static boolean initializeSources() {
         int suffix = 0;
@@ -44,8 +42,6 @@ public class VisionManager {
             return false;
         }
 
-        FileHelper.CheckPath(CamConfigPath);
-
         // load the config
         List<CameraConfig> preliminaryConfigs = new ArrayList<>();
 
@@ -62,6 +58,8 @@ public class VisionManager {
         });
 
         LoadedCameraConfigs.addAll(ConfigManager.initializeCameraConfig(preliminaryConfigs));
+
+        // TODO: (HIGH) Load pipelines from json
 //        UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
 //            Path cameraConfigFolder = Paths.get(CamConfigPath.toString(), String.format("%s\\", cameraName));
 //            Path cameraConfigPath = Paths.get(cameraConfigFolder.toString(), String.format("%s.json", cameraName));
@@ -72,23 +70,43 @@ public class VisionManager {
     }
 
     public static boolean initializeProcesses() {
-        LoadedCameraConfigs.forEach(config -> {
-            var camera = new USBCameraProcess(config);
-            VisionProcessesByCameraName.put(config.name, new VisionProcess(camera, config.name));
-        });
+        for (int i = 0; i < LoadedCameraConfigs.size(); i++) {
+            CameraConfig config = LoadedCameraConfigs.get(i);
+            CameraProcess camera = new USBCameraProcess(config);
+            VisionProcess process = new VisionProcess(camera, config.name);
+            VisionProcessesByIndex.put(i, Pair.of(process, config.name));
+        }
+        currentUIVisionProcess = VisionProcessesByIndex.get(0).getLeft();
         return true;
     }
 
     public static void startProcesses() {
-        VisionProcessesByCameraName.forEach((name, process) -> {
-            process.start();
+        VisionProcessesByIndex.forEach((index, processNamePair) -> {
+            processNamePair.getLeft().start();
         });
     }
 
-    public static VisionProcess getCurrentCamera() throws CameraException {
-        if (VisionProcessesByCameraName.size() == 0) throw new CameraException(CameraException.CameraExceptionType.NO_CAMERA);
-        var curCam = VisionProcessesByCameraName.get(SettingsManager.generalSettings.currentCamera);
-        if (curCam == null) throw new CameraException(CameraException.CameraExceptionType.BAD_CAMERA);
-        return curCam;
+    public static VisionProcess getCurrentUIVisionProcess() {
+        return currentUIVisionProcess;
+    }
+
+    public static void setCurrentProcessByIndex(int processIndex) {
+        if (processIndex > VisionProcessesByIndex.size() - 1) {
+            return;
+        }
+
+        currentUIVisionProcess = VisionProcessesByIndex.get(processIndex).getLeft();
+    }
+
+    public static VisionProcess getVisionProcessByIndex(int processIndex) {
+        if (processIndex > VisionProcessesByIndex.size() - 1) {
+            return null;
+        }
+
+        return VisionProcessesByIndex.get(0).getLeft();
+    }
+
+    public static List<String> getAllCameraNicknames() {
+        return VisionProcessesByIndex.values().stream().map(processNamePair -> processNamePair.getLeft().getCamera().getProperties().getNickname()).collect(Collectors.toList());
     }
 }
