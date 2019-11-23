@@ -1,16 +1,12 @@
 package com.chameleonvision.web;
 
-import com.chameleonvision.classabstraction.VisionManager;
-import com.chameleonvision.classabstraction.VisionProcess;
-import com.chameleonvision.classabstraction.camera.CameraProcess;
-import com.chameleonvision.classabstraction.config.ConfigManager;
-import com.chameleonvision.classabstraction.pipeline.CVPipeline;
-import com.chameleonvision.classabstraction.pipeline.CVPipelineSettings;
-import com.chameleonvision.vision.*;
-import com.chameleonvision.vision.camera.StreamDivisor;
-import com.chameleonvision.vision.camera.USBCamera;
-import com.chameleonvision.vision.camera.CameraException;
-import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.vision.VisionManager;
+import com.chameleonvision.vision.VisionProcess;
+import com.chameleonvision.vision.camera.CameraProcess;
+import com.chameleonvision.config.ConfigManager;
+import com.chameleonvision.vision.pipeline.CVPipeline;
+import com.chameleonvision.vision.pipeline.CVPipelineSettings;
+import com.chameleonvision.vision.enums.StreamDivisor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,7 +54,7 @@ public class ServerHandler {
                         for (HashMap.Entry<String, Object> e : data.entrySet()) {
                             setField(ConfigManager.settings, e.getKey(), e.getValue());
                         }
-                        SettingsManager.saveSettings();
+                        ConfigManager.saveSettings();
                         sendFullSettings();
                         break;
                     }
@@ -99,13 +95,13 @@ public class ServerHandler {
                     case "changeCameraName": {
                         currentCamera.getProperties().setNickname((String) entry.getValue());
                         sendFullSettings();
-                        SettingsManager.saveSettings();
+                        ConfigManager.saveSettings();
                         break;
                     }
                     case "changePipelineName": {
                         currentPipeline.settings.nickname = ((String) entry.getValue());
                         sendFullSettings();
-                        SettingsManager.saveSettings();
+                        ConfigManager.saveSettings();
                         break;
                     }
                     case "duplicatePipeline": {
@@ -124,7 +120,7 @@ public class ServerHandler {
                             currentProcess.addPipeline(origPipeline);
                         }
                         // TODO: (HIGH) switch to ConfigManager
-                        SettingsManager.saveSettings();
+                        ConfigManager.saveSettings();
                         break;
                     }
                     case "command": {
@@ -133,7 +129,7 @@ public class ServerHandler {
                                 currentProcess.addPipeline();
                                 sendFullSettings();
                                 // TODO: (HIGH) switch to ConfigManager
-                                SettingsManager.saveSettings();
+                                ConfigManager.saveSettings();
                                 break;
                             // TODO: (HIGH) this never worked before, re-visit now that VisionProcess is written sanely
                             case "deleteCurrentPipeline":
@@ -147,11 +143,11 @@ public class ServerHandler {
 //                                cam.deletePipeline();
 //                                cam.setCurrentPipelineIndex(nextIndex);
 //                                sendFullSettings();
-//                                SettingsManager.saveSettings();
+//                                ConfigManager.saveSettings();
                                 break;
                             case "save":
                                 // TODO: (HIGH) switch to ConfigManager
-                                SettingsManager.saveSettings();
+                                ConfigManager.saveSettings();
                                 System.out.println("saved Settings");
                                 break;
                         }
@@ -237,9 +233,9 @@ public class ServerHandler {
         broadcastMessage(obj, null);//Broadcasts the message to every user
     }
 
-    private static HashMap<String, Object> getOrdinalPipeline() throws CameraException, IllegalAccessException {
+    private static HashMap<String, Object> getOrdinalPipeline() throws IllegalAccessException {
         HashMap<String, Object> tmp = new HashMap<>();
-        for (Field f : Pipeline.class.getFields()) {
+        for (Field f : CVPipelineSettings.class.getFields()) {
             if (!f.getType().isEnum()) {
                 tmp.put(f.getName(), f.get(VisionManager.getCurrentUIVisionProcess().getCurrentPipeline()));
             } else {

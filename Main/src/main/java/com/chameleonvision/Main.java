@@ -1,13 +1,10 @@
 package com.chameleonvision;
 
-import com.chameleonvision.classabstraction.VisionManager;
-import com.chameleonvision.classabstraction.config.ConfigManager;
+import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.network.NetworkManager;
-import com.chameleonvision.settings.GeneralSettings;
-import com.chameleonvision.settings.Platform;
-import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.util.Platform;
 import com.chameleonvision.util.Utilities;
-import com.chameleonvision.vision.camera.CameraManager;
+import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.web.Server;
 import edu.wpi.cscore.CameraServerCvJNI;
 import edu.wpi.cscore.CameraServerJNI;
@@ -17,7 +14,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import java.io.IOException;
 import java.util.function.Consumer;
 
-import static com.chameleonvision.settings.Platform.CurrentPlatform;
+import static com.chameleonvision.util.Platform.CurrentPlatform;
 
 public class Main {
 
@@ -134,40 +131,8 @@ public class Main {
             throw new RuntimeException("Failed to load JNI Libraries!");
         }
 
-        if (testMode) {
-            ConfigManager.initializeSettings();
-            NetworkManager.initialize(manageNetwork);
-            NetworkTableInstance.getDefault().startServer();
-
-            boolean visionSourcesOk = VisionManager.initializeSources();
-            if (!visionSourcesOk) {
-                System.out.println("No cameras connected!");
-                return;
-            }
-
-            boolean visionProcessesOk = VisionManager.initializeProcesses();
-            if (!visionProcessesOk) {
-                System.err.println("shit");
-                return;
-            }
-
-            VisionManager.startProcesses();
-
-//            runServer(true);
-        } else {
-            if (CameraManager.initializeCameras()) {
-                SettingsManager.initialize();
-                NetworkManager.initialize(manageNetwork);
-                CameraManager.initializeThreads();
-                runServer(false);
-            } else {
-                System.err.println("No cameras connected!");
-            }
-        }
-    }
-
-    private static void runServer(boolean test) {
-        GeneralSettings settings = test ? ConfigManager.settings : SettingsManager.generalSettings;
+        ConfigManager.initializeSettings();
+        NetworkManager.initialize(manageNetwork);
 
         if (ntServerMode) {
             System.out.println("Starting NT Server");
@@ -177,9 +142,23 @@ public class Main {
             if (ntClientModeServer != null) {
                 NetworkTableInstance.getDefault().startClient(ntClientModeServer);
             } else {
-                NetworkTableInstance.getDefault().startClientTeam(settings.teamNumber);
+                NetworkTableInstance.getDefault().startClientTeam(ConfigManager.settings.teamNumber);
             }
         }
+
+        boolean visionSourcesOk = VisionManager.initializeSources();
+        if (!visionSourcesOk) {
+            System.out.println("No cameras connected!");
+            return;
+        }
+
+        boolean visionProcessesOk = VisionManager.initializeProcesses();
+        if (!visionProcessesOk) {
+            System.err.println("shit");
+            return;
+        }
+
+        VisionManager.startProcesses();
 
         System.out.printf("Starting Webserver at port %d\n", DEFAULT_PORT);
         Server.main(DEFAULT_PORT);

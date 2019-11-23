@@ -1,7 +1,7 @@
 package com.chameleonvision.network;
 
 
-import com.chameleonvision.settings.Platform;
+import com.chameleonvision.util.Platform;
 import com.chameleonvision.settings.SettingsManager;
 
 import java.net.SocketException;
