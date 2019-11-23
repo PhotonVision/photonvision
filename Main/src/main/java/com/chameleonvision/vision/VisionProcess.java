@@ -61,8 +61,7 @@ public class VisionProcess {
 
         // Thread to grab frames from the camera
         // TODO: (HIGH) fix video modes!!!
-        // TODO: (HIGH) FIX FPS!!!!!!!
-        this.cameraRunnable = new CameraFrameRunnable(cameraProcess.getProperties().videoModes.get(0).fps);
+        this.cameraRunnable = new CameraFrameRunnable(cameraProcess.getProperties().videoModes.get(0).f ps);
 
         lastPipelineResult = new DriverVisionPipeline.DriverPipelineResult(
                 null, cameraRunnable.getFrame(new Mat()), 0
@@ -229,6 +228,7 @@ public class VisionProcess {
 
     public void setVideoMode(VideoMode newMode) {
         cameraProcess.setVideoMode(newMode);
+        cameraRunnable.updateCameraFPS(newMode.fps);
         cameraStreamer.setNewVideoMode(newMode);
     }
 
@@ -288,6 +288,10 @@ public class VisionProcess {
             // add 2 FPS to allow for a bit of overhead
             // TODO: (low) test the effect of this
             super(1000L/(cameraFPS + 2));
+        }
+
+        void updateCameraFPS(int newFPS) {
+            super.loopTimeMs = 1000L / (newFPS + 2);
         }
 
         @Override

@@ -4,7 +4,7 @@ package com.chameleonvision.util;
  * A thread that tries to run at a specified loop time
  */
 public abstract class LoopingRunnable implements Runnable {
-    private final Long loopTimeMs;
+    protected volatile Long loopTimeMs;
 
     protected abstract void process();
 
