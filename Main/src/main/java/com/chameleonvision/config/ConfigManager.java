@@ -15,22 +15,25 @@ public class ConfigManager {
 
     private static final Path SettingsPath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "settings");
     private static final Path cameraConfigPath = Paths.get(SettingsPath.toString(), "cameras");
+    private static final Path settingsFilePath = Paths.get(SettingsPath.toString(), "settings.json");
 
     public static GeneralSettings settings = new GeneralSettings();
 
-    public static void initializeSettings() {
-        if (Files.notExists(SettingsPath)) {
+    private static boolean settingsFolderExists() { return Files.exists(SettingsPath); }
+    private static boolean settingsFileExists() { return settingsFolderExists() && Files.exists(settingsFilePath); }
+
+    private static void checkSettingsFolder() {
+        if (!settingsFolderExists()) {
             try {
                 Files.createDirectory(SettingsPath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+    }
 
-        // try to load the settings file and deserialize it
-        Path settingsFilePath = Paths.get(SettingsPath.toString(), "settings.json");
-
-        if (Files.notExists(settingsFilePath)) {
+    private static void checkSettingsFile() {
+        if (!settingsFileExists()) {
             try {
                 FileHelper.Serializer(settingsFilePath, settings);
             } catch (IOException e) {
@@ -45,6 +48,57 @@ public class ConfigManager {
         }
     }
 
+    public static void initializeSettings() {
+        checkSettingsFolder();
+        checkSettingsFile();
+    }
+
+    private static void saveSettingsFile() {
+        try {
+            FileHelper.Serializer(settingsFilePath, settings);
+        } catch (IOException e) {
+            System.err.println("Failed to save settings.json!");
+        }
+    }
+
+    public static void saveSettings() {
+        checkSettingsFolder();
+        saveSettingsFile();
+    }
+
+    private static Path getCameraSpecificFolderPath(String cameraName) {
+        return Paths.get(cameraConfigPath.toString(), cameraName);
+    }
+
+    private static Path getCameraSpecificConfigPath(String cameraName) {
+        return Paths.get(getCameraSpecificFolderPath(cameraName).toString(), "camera.json");
+    }
+
+    private static Path getCameraSpecificPipelinesPath(String cameraName) {
+        return Paths.get(getCameraSpecificFolderPath(cameraName).toString(), "pipelines.json");
+    }
+
+    private static Path getCameraSpecificDriverModePath(String cameraName) {
+        return Paths.get(getCameraSpecificFolderPath(cameraName).toString(), "drivermode.json");
+    }
+
+    private static boolean cameraFolderExists(String cameraName) {
+        return Files.exists(getCameraSpecificFolderPath(cameraName));
+    }
+
+    private static boolean cameraConfigExists(String cameraName) {
+        return cameraFolderExists(cameraName) && Files.exists(getCameraSpecificConfigPath(cameraName));
+    }
+
+    private static boolean cameraPipelinesExists(String cameraName) {
+        return cameraFolderExists(cameraName) && Files.exists(getCameraSpecificPipelinesPath(cameraName));
+    }
+
+    private static boolean cameraDriverModeExists(String cameraName) {
+        return cameraFolderExists(cameraName) && Files.exists(getCameraSpecificDriverModePath(cameraName));
+    }
+
+    // TODO: (HIGH) cleanup!
     public static List<CameraConfig> initializeCameraConfig(List<CameraConfig> preliminaryConfigs) {
         var configList = new ArrayList<CameraConfig>();
 
