@@ -4,6 +4,7 @@ import com.chameleonvision.classabstraction.camera.CameraProcess;
 import com.chameleonvision.classabstraction.camera.USBCameraProcess;
 import com.chameleonvision.classabstraction.config.CameraConfig;
 import com.chameleonvision.classabstraction.config.ConfigManager;
+import com.chameleonvision.classabstraction.pipeline.CVPipelineSettings;
 import com.chameleonvision.settings.Platform;
 import com.chameleonvision.vision.camera.USBCamera;
 import edu.wpi.cscore.UsbCamera;
@@ -15,7 +16,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class VisionManager {
-    private VisionManager() {}
+    private VisionManager() {
+    }
 
     private static final LinkedHashMap<String, UsbCameraInfo> UsbCameraInfosByCameraName = new LinkedHashMap<>();
     private static final LinkedList<CameraConfig> LoadedCameraConfigs = new LinkedList<>();
@@ -54,7 +56,7 @@ public class VisionManager {
                 truePath = Arrays.stream(cameraInfo.otherPaths).filter(x -> x.contains("/dev/v4l/by-path")).findFirst().orElse(cameraInfo.path);
             }
 
-           preliminaryConfigs.add(new CameraConfig(truePath, cameraInfo.name));
+            preliminaryConfigs.add(new CameraConfig(truePath, cameraInfo.name));
         });
 
         LoadedCameraConfigs.addAll(ConfigManager.initializeCameraConfig(preliminaryConfigs));
@@ -108,5 +110,15 @@ public class VisionManager {
 
     public static List<String> getAllCameraNicknames() {
         return VisionProcessesByIndex.values().stream().map(processNamePair -> processNamePair.getLeft().getCamera().getProperties().getNickname()).collect(Collectors.toList());
+    }
+
+    public static void saveCameras() {
+        VisionProcessesByIndex.forEach((index, process) -> {
+            VisionProcess p = process.getLeft();
+            String name = process.getRight();
+            List<CVPipelineSettings> pipelines = p.getPipelines().stream().map(cvPipeline -> cvPipeline.settings).collect(Collectors.toList());
+            CVPipelineSettings driverMode = p.getDriverModeSettings();
+            //TODO: get camera config and serialize into folder with camera name 
+        });
     }
 }
