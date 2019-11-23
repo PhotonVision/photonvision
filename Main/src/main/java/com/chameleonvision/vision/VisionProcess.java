@@ -61,7 +61,7 @@ public class VisionProcess {
 
         // Thread to grab frames from the camera
         // TODO: (HIGH) fix video modes!!!
-        this.cameraRunnable = new CameraFrameRunnable(cameraProcess.getProperties().videoModes.get(0).f ps);
+        this.cameraRunnable = new CameraFrameRunnable(cameraProcess.getProperties().videoModes.get(0).fps);
 
         lastPipelineResult = new DriverVisionPipeline.DriverPipelineResult(
                 null, cameraRunnable.getFrame(new Mat()), 0
