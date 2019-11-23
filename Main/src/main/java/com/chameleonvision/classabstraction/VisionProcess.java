@@ -325,8 +325,9 @@ public class VisionProcess {
      */
     private class VisionProcessRunnable implements Runnable {
 
-        public Double fps = 0.0; // TODO: (HIGH) update or average or something
+        volatile Double fps = 0.0;
         private CircularBuffer fpsAveragingBuffer = new CircularBuffer(7);
+        @SuppressWarnings("FieldCanBeLocal")
         private CVPipelineResult result;
         private Mat streamBuffer = new Mat();
 
