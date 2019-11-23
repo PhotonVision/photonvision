@@ -14,6 +14,7 @@ import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpiutil.CircularBuffer;
 import org.opencv.core.Mat;
 
 import java.util.ArrayList;
@@ -324,12 +325,15 @@ public class VisionProcess {
      */
     private class VisionProcessRunnable implements Runnable {
 
-        public Double fps = 0.0; // TODO: (HIGH) update or average or something
+        volatile Double fps = 0.0;
+        private CircularBuffer fpsAveragingBuffer = new CircularBuffer(7);
+        @SuppressWarnings("FieldCanBeLocal")
         private CVPipelineResult result;
         private Mat streamBuffer = new Mat();
 
         @Override
         public void run() {
+            var lastUpdateTimeNanos = System.nanoTime();
             while(!Thread.interrupted()) {
                 System.out.println("running vision process");
 
@@ -354,9 +358,25 @@ public class VisionProcess {
                 } else {
 //                    System.err.println("Bad streambuffer mat");
                 }
+
+                var deltaTimeNanos = lastUpdateTimeNanos - System.nanoTime();
+                fpsAveragingBuffer.addFirst(1.0 / (deltaTimeNanos * 1E-09));
+                lastUpdateTimeNanos = System.nanoTime();
+                fps = getAverageFPS();
+
                 // TODO: (HIGH) do something with the result
             }
         }
+
+        public double getAverageFPS() {
+            var temp = 0.0;
+            for(int i = 0; i < 7; i++) {
+                temp += fpsAveragingBuffer.get(i);
+            }
+            temp /= 7.0;
+            return temp;
+        }
+
     }
 
     private class CameraStreamerRunnable extends LoopingRunnable {
