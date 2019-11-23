@@ -11,6 +11,7 @@ import edu.wpi.cscore.UsbCameraInfo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.videoio.VideoCapture;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -114,10 +115,17 @@ public class VisionManager {
     public static void saveCameras() {
         VisionProcessesByIndex.forEach((index, process) -> {
             VisionProcess p = process.getLeft();
-            String name = process.getRight();
+            String cameraName = process.getRight();
             List<CVPipelineSettings> pipelines = p.getPipelines().stream().map(cvPipeline -> cvPipeline.settings).collect(Collectors.toList());
             CVPipelineSettings driverMode = p.getDriverModeSettings();
-            //TODO: get camera config and serialize into folder with camera name 
+            CameraConfig config = CameraConfig.fromUSBCameraProcess((USBCameraProcess) p.getCamera());
+            try {
+                ConfigManager.saveCameraPipelines(cameraName, pipelines);
+                ConfigManager.saveCameraDriverMode(cameraName, driverMode);
+                ConfigManager.saveCameraConfig(cameraName, config);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         });
     }
 }

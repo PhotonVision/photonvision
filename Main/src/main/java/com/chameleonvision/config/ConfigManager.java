@@ -2,6 +2,7 @@ package com.chameleonvision.config;
 
 import com.chameleonvision.util.ProgramDirectoryUtilities;
 import com.chameleonvision.util.FileHelper;
+import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -81,5 +82,23 @@ public class ConfigManager {
         });
 
         return configList;
+    }
+    public static void saveCameraPipelines(String cameraName, List<CVPipelineSettings> pipelines) throws IOException {
+        Path cameraFolder = Paths.get(cameraConfigPath.toString(), cameraName);
+        Path filePath = Paths.get(cameraFolder.toString(), cameraName,"pipelines.json");
+        FileHelper.CheckPath(cameraFolder);
+        FileHelper.Serializer(filePath, pipelines);
+    }
+    public static void saveCameraDriverMode(String cameraName, CVPipelineSettings driverMode) throws IOException {
+        Path cameraFolder = Paths.get(cameraConfigPath.toString(), cameraName);
+        Path filePath = Paths.get(cameraFolder.toString(), cameraName,"driverMode.json");
+        FileHelper.CheckPath(cameraFolder);
+        FileHelper.Serializer(filePath, driverMode);
+    }
+    public static void saveCameraConfig(String cameraName, CameraConfig config) throws IOException {
+        Path cameraFolder = Paths.get(cameraConfigPath.toString(), cameraName);
+        Path filePath = Paths.get(cameraFolder.toString(), cameraName,"driverMode.json");
+        FileHelper.CheckPath(cameraFolder);
+        FileHelper.Serializer(filePath, config);
     }
 }
