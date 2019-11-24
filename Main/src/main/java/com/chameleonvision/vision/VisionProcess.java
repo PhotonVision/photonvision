@@ -57,7 +57,7 @@ public class VisionProcess {
         this.cameraProcess = cameraProcess;
 
         pipelines.add(new CVPipeline2d("New Pipeline"));
-        setPipeline(0);
+        setPipeline(0, false);
 
         // Thread to grab frames from the camera
         // TODO: (HIGH) fix video modes!!!
@@ -125,7 +125,7 @@ public class VisionProcess {
         if (driverMode) {
             setPipelineInternal(driverModePipeline);
         } else {
-            setPipeline(currentPipelineIndex);
+            setPipeline(currentPipelineIndex, true);
         }
     }
 
@@ -140,11 +140,11 @@ public class VisionProcess {
             ntPipelineEntry.setNumber(currentPipelineIndex);
         } else {
             currentPipelineIndex = wantedPipelineIndex;
-            setPipeline(wantedPipelineIndex);
+            setPipeline(wantedPipelineIndex, true);
         }
     }
 
-    public void setPipeline(int pipelineIndex) {
+    public void setPipeline(int pipelineIndex, boolean updateUI) {
         CVPipeline newPipeline = pipelines.get(pipelineIndex);
         if (newPipeline != null) {
             setPipelineInternal(newPipeline);
@@ -153,10 +153,13 @@ public class VisionProcess {
             // update the configManager
             if(ConfigManager.settings.currentCamera.equals(cameraProcess.getProperties().name)) {
                 ConfigManager.settings.currentPipeline = pipelineIndex;
-                HashMap<String, Object> pipeChange = new HashMap<>();
-                pipeChange.put("currentPipeline", pipelineIndex);
-                ServerHandler.broadcastMessage(pipeChange);
-                ServerHandler.sendFullSettings();
+
+                if (updateUI) {
+                    HashMap<String, Object> pipeChange = new HashMap<>();
+                    pipeChange.put("currentPipeline", pipelineIndex);
+                    ServerHandler.broadcastMessage(pipeChange);
+                    ServerHandler.sendFullSettings();
+                }
             }
         }
     }

@@ -98,4 +98,8 @@ public class USBCameraProperties {
     public double calculateYaw(double PixelX, double centerX) {
         return FastMath.toDegrees(FastMath.atan((PixelX - centerX) / staticProperties.horizontalFocalLength));
     }
+
+    public List<VideoMode> getVideoModes() {
+        return videoModes;
+    }
 }

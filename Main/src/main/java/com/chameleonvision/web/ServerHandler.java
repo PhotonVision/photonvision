@@ -59,13 +59,11 @@ public class ServerHandler {
                         break;
                     }
                     case "driverMode": {
-                        for (HashMap.Entry<String, Object> e : data.entrySet()) {
-                            setField(VisionManager.getCurrentUIVisionProcess(), e.getKey(), e.getValue());
-                        }
-                        VisionManager.getCurrentUIVisionProcess().setDriverMode((Boolean) data.get("isDriver"));
+                        currentProcess.getDriverModeSettings().exposure = (Integer) data.get("exposure");
+                        currentProcess.getDriverModeSettings().brightness = (Integer) data.get("brightness");
+                        currentProcess.setDriverMode((Boolean) data.get("isDriver"));
 
-                        // TODO: (HIGH) create saveCameras() function in VisionManager
-//                        VisionManager.saveCameras();
+                        VisionManager.saveCameras();
                         break;
                     }
                     case "cameraSettings": {
@@ -78,7 +76,7 @@ public class ServerHandler {
                         currentCamera.getProperties().FOV = (double) newFOV;
 
                         if (currentProcess.cameraStreamer.getDivisor() != newStreamDivisor) {
-                            currentProcess.cameraStreamer.setDivisor(newStreamDivisor);
+                            currentProcess.cameraStreamer.setDivisor(newStreamDivisor, false);
                         }
 
                         // TODO (HIGH) get and set video modes!
@@ -87,8 +85,7 @@ public class ServerHandler {
 //                            currentCamera.getProperties().setCamVideoMode(newResolution, true);
 //                        }
 
-                        // TODO: (HIGH) create saveCameras() function in VisionManager
-//                        VisionManager.saveCameras();
+                        VisionManager.saveCameras();
                         sendFullSettings();
                         break;
                     }
@@ -161,7 +158,7 @@ public class ServerHandler {
                         break;
                     }
                     case "currentPipeline": {
-                        currentProcess.setPipeline((Integer) entry.getValue());
+                        currentProcess.setPipeline((Integer) entry.getValue(), true);
                         sendFullSettings();
                         try {
                             currentCamera.setBrightness((int) currentPipeline.settings.brightness);
@@ -194,16 +191,6 @@ public class ServerHandler {
 
     private void setField(Object obj, String fieldName, Object value) {
         try {
-            if (obj instanceof USBCamera) {
-                // TODO: (HIGH) FIXXX!!!! this won't work anymore
-                // the UI should instead understand that DriverMode is a pipeline (?)
-                USBCamera cam = (USBCamera)obj;
-                if (fieldName.equals("driverBrightness")) {
-                    cam.setDriverBrightness((Integer)value);
-                } else if (fieldName.equals("driverExposure")) {
-                    cam.setDriverExposure((Integer)value);
-                }
-            }
             Field field = obj.getClass().getField(fieldName);
             if (field.getType().isEnum())
                 field.set(obj, field.getType().getEnumConstants()[(Integer) value]);
@@ -281,20 +268,24 @@ public class ServerHandler {
     public static void sendFullSettings() {
         //General settings
         Map<String, Object> fullSettings = new HashMap<>();
+
+        VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
+        CameraProcess currentCamera = currentProcess.getCamera();
+        CVPipeline currentPipeline = currentProcess.getCurrentPipeline();
+
         try {
             fullSettings.put("settings", getOrdinalSettings());
             fullSettings.put("cameraSettings", getOrdinalCameraSettings());
             fullSettings.put("cameraList", VisionManager.getAllCameraNicknames());
             fullSettings.put("pipeline", getOrdinalPipeline());
-            var currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
-            fullSettings.put("driverMode",getOrdinalDriver());
+            fullSettings.put("driverMode", getOrdinalDriver());
             // TODO (HIGH) all of these settings!
-//            fullSettings.put("pipelineList", currentVisionProcess.getPipelinesNickname());
-//            fullSettings.put("resolutionList", currentVisionProcess.getResolutionList());
-//            fullSettings.put("port", currentVisionProcess.getStreamPort());
+            fullSettings.put("pipelineList", VisionManager.getCurrentCameraPipelineNicknames());
+            fullSettings.put("resolutionList", VisionManager.getCurrentCameraResolutionList());
+            fullSettings.put("port", currentProcess.cameraStreamer.getStreamPort());
             fullSettings.put("currentPipelineIndex", VisionManager.getCurrentUIVisionProcess().getCurrentPipelineIndex());
-//            fullSettings.put("currentCameraIndex", VisionManager.getCurrentCameraIndex());
-        } catch (CameraException | IllegalAccessException e) {
+            fullSettings.put("currentCameraIndex", VisionManager.getCurrentUIVisionProcessIndex());
+        } catch (IllegalAccessException e) {
             System.err.println("No camera found!");
         }
         broadcastMessage(fullSettings);

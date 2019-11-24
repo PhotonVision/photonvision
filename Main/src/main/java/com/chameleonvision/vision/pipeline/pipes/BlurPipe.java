@@ -2,8 +2,6 @@ package com.chameleonvision.vision.pipeline.pipes;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 
 public class BlurPipe implements Pipe<Mat, Mat> {
 
@@ -19,9 +17,9 @@ public class BlurPipe implements Pipe<Mat, Mat> {
     public Pair<Mat, Long> run(Mat input) {
         long processStartNanos = System.nanoTime();
 
-        if (blurSize > 0) {
-            Imgproc.blur(outputMat, outputMat, new Size(blurSize, blurSize));
-        }
+//        if (blurSize > 0) {
+//            Imgproc.blur(outputMat, outputMat, new Size(blurSize, blurSize));
+//        }
 
         long processTime = processStartNanos - System.nanoTime();
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);
