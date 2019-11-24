@@ -99,7 +99,6 @@ public class VisionManager {
         VisionProcesses.forEach((vpm) -> {
             vpm.visionProcess.start();
         });
-        ServerHandler.sendFullSettings();
     }
 
     public static VisionProcess getCurrentUIVisionProcess() {
