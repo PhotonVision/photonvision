@@ -6,7 +6,7 @@
             </v-col>
             <v-col :cols="10">
                 <v-range-slider :value="localValue" @input="handleInput" :max="max" :min="min" hide-details
-                                class="align-center" dark color="#4baf62" :step="step">
+                                class="align-center" dark color="#4baf62" :step="step" :disabled="disabled">
                     <template v-slot:prepend>
                         <v-text-field :value="localValue[0]" :max="max" :min="min" @input="handleChange"
                                       @focus="prependFocused = true" @blur="prependFocused = false" class="mt-0 pt-0"
@@ -27,7 +27,7 @@
 <script>
     export default {
         name: 'RangeSlider',
-        props: ['name', 'min', 'max', 'value', 'step'],
+        props: ['name', 'min', 'max', 'value', 'step','disabled'],
         data() {
             return {
                 prependFocused: false,

@@ -1,17 +1,16 @@
 <template>
     <div>        
         <CVswitch v-model="value.isColorPick" name="Colorpick Calibration"/>
-        <v-divider color="white"/>
+        <v-divider color="darkgray "/>
         <CVrangeSlider v-model="value.hue" name="Hue" :min="0" :max="180" @input="handleData('hue')" :disabled="isAutomaticHSV"/>
-        <CVrangeSlider v-model="value.saturation" name="Saturation" :min="0" :max="255"
-                       @input="handleData('saturation')"/>
-        <CVrangeSlider v-model="value.value" name="Value" :min="0" :max="255" @input="handleData('value')"/>
-        <v-divider color="white"/>
+        <CVrangeSlider v-model="value.saturation" name="Saturation" :min="0" :max="255" @input="handleData('saturation')" :disabled="isAutomaticHSV"/>
+        <CVrangeSlider v-model="value.value" name="Value" :min="0" :max="255" @input="handleData('value')" :disabled="isAutomaticHSV"/>
+        <v-divider color="darkgray "/>
         <v-btn style="margin: 20px;" tile color="#4baf62" :disabled="isManualHSV">
-                    <v-icon>C</v-icon>
+                    <v-icon>colorize</v-icon>
                     Colorpick Calibration
                 </v-btn>
-        <v-divider color="white"/>
+        <v-divider color="darkgray "/>
         <CVswitch v-model="value.erode" name="Erode" @input="handleData('erode')"/>
         <CVswitch v-model="value.dilate" name="Dilate" @input="handleData('dilate')"/>
     </div>
