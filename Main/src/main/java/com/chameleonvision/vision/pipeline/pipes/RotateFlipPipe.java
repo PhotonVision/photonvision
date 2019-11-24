@@ -11,6 +11,7 @@ public class RotateFlipPipe implements Pipe<Mat, Mat> {
     private final ImageRotation rotation;
     private final ImageFlipMode flip;
 
+    private Mat processBuffer = new Mat();
     private Mat outputMat = new Mat();
 
     public RotateFlipPipe(ImageRotation rotation, ImageFlipMode flip) {
@@ -22,12 +23,13 @@ public class RotateFlipPipe implements Pipe<Mat, Mat> {
     public Pair<Mat, Long> run(Mat input) {
         long processStartNanos = System.nanoTime();
 
-        Core.flip(input, outputMat, flip.value);
-        Core.rotate(outputMat, outputMat, rotation.value);
+        Core.flip(input, processBuffer, flip.value);
+        Core.rotate(processBuffer, processBuffer, rotation.value);
 
         long processTime = processStartNanos - System.nanoTime();
+        processBuffer.copyTo(outputMat);
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);
-        outputMat.release();
+        processBuffer.release();
         return output;
     }
 }

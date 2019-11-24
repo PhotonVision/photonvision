@@ -7,6 +7,7 @@ public class BlurPipe implements Pipe<Mat, Mat> {
 
     private final int blurSize;
 
+    private Mat processBuffer = new Mat();
     private Mat outputMat = new Mat();
 
     public BlurPipe(int blurSize) {
@@ -17,13 +18,18 @@ public class BlurPipe implements Pipe<Mat, Mat> {
     public Pair<Mat, Long> run(Mat input) {
         long processStartNanos = System.nanoTime();
 
+        // TODO (HIGH) make this blur
+        input.copyTo(processBuffer);
 //        if (blurSize > 0) {
 //            Imgproc.blur(outputMat, outputMat, new Size(blurSize, blurSize));
 //        }
 
+        processBuffer.copyTo(outputMat);
+
         long processTime = processStartNanos - System.nanoTime();
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);
-        outputMat.release();
+        processBuffer.release();
+
         return output;
     }
 }

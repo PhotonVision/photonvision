@@ -10,6 +10,7 @@ public class HsvPipe implements Pipe<Mat, Mat> {
 
     private final Scalar hsvLower, hsvUpper;
 
+    private Mat processBuffer = new Mat();
     private Mat outputMat = new Mat();
 
     public HsvPipe(Scalar hsvLower, Scalar hsvUpper) {
@@ -21,13 +22,18 @@ public class HsvPipe implements Pipe<Mat, Mat> {
     public Pair<Mat, Long> run(Mat input) {
         long processStartNanos = System.nanoTime();
 
-        Imgproc.cvtColor(input, outputMat, Imgproc.COLOR_RGB2HSV, 3);
+        // convert from rgb to hsv
+        if(input.empty()) {
+            throw new RuntimeException("HSV input cannot be empty!");
+        }
+        Imgproc.cvtColor(input, processBuffer, Imgproc.COLOR_RGB2HSV, 3);
 
-        Core.inRange(outputMat, hsvLower, hsvUpper, outputMat);
+        Core.inRange(processBuffer, hsvLower, hsvUpper, processBuffer);
 
         long processTime = processStartNanos - System.nanoTime();
+        processBuffer.copyTo(outputMat);
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);
-        outputMat.release();
+        processBuffer.release();
         return output;
     }
 }

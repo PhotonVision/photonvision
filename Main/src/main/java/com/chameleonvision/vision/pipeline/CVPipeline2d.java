@@ -35,6 +35,9 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         if (cameraProcess == null) {
             throw new RuntimeException("Pipeline was not initialized before being run!");
         }
+        if(inputMat.cols() <= 1) {
+            throw new RuntimeException("uwu uwu ");
+        }
 
         long totalProcessTimeNanos = 0;
         StringBuilder procTimeStringBuilder = new StringBuilder();

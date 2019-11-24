@@ -10,6 +10,7 @@ public class ErodeDilatePipe implements Pipe<Mat, Mat> {
     private final boolean erode, dilate;
     private final Mat kernel;
 
+    private Mat processBuffer = new Mat();
     private Mat outputMat = new Mat();
 
     public ErodeDilatePipe(boolean erode, boolean dilate, int kernelSize) {
@@ -23,16 +24,22 @@ public class ErodeDilatePipe implements Pipe<Mat, Mat> {
         long processStartNanos = System.nanoTime();
 
         if (erode) {
-            Imgproc.erode(outputMat, outputMat, kernel);
+            Imgproc.erode(input, processBuffer, kernel);
         }
 
         if (dilate) {
-            Imgproc.erode(outputMat, outputMat, kernel);
+            Imgproc.erode(processBuffer, processBuffer, kernel);
+        }
+
+        if(!erode && !dilate) {
+            input.copyTo(processBuffer);
         }
 
         long processTime = processStartNanos - System.nanoTime();
+        processBuffer.copyTo(outputMat);
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);
-        outputMat.release();
+
+        processBuffer.release();
         return output;
     }
 }
