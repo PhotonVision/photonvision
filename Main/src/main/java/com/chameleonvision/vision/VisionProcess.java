@@ -299,7 +299,7 @@ public class VisionProcess {
 
         @Override
         public void process() {
-            System.out.println("running camera grabber process");
+//            System.out.println("running camera grabber process");
 
             // Grab camera frames
             var camData = cameraProcess.getFrame();
@@ -341,7 +341,7 @@ public class VisionProcess {
         public void run() {
             var lastUpdateTimeNanos = System.nanoTime();
             while(!Thread.interrupted()) {
-                System.out.println("running vision process");
+//                System.out.println("running vision process");
 
                 while(!hasUnprocessedFrame) {
                     try {
@@ -399,7 +399,7 @@ public class VisionProcess {
 
         @Override
         protected void process() {
-            System.out.println("running camera streamer");
+//            System.out.println("running camera streamer");
             Mat latestMat = lastPipelineResult.outputMat; //visionRunnable.result;
             if (latestMat != null && latestMat.cols() > 0) {
                 latestMat.copyTo(streamBuffer);
