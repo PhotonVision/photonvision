@@ -21,6 +21,7 @@ export default new Vuex.Store({
             exposure: 0,
             brightness: 0,
             orientation: 0,
+            isColorPick: false,
             hue: [0, 15],
             saturation: [0, 15],
             value: [0, 25],
