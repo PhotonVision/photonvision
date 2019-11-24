@@ -136,37 +136,37 @@
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-java</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
         </dependency>
         <!--frc cscore interface libs-->
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
             <classifier>linuxaarch64bionic</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
             <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
