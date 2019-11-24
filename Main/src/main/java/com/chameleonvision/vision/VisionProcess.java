@@ -9,10 +9,7 @@ import com.chameleonvision.web.ServerHandler;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import edu.wpi.cscore.VideoMode;
-import edu.wpi.first.networktables.EntryListenerFlags;
-import edu.wpi.first.networktables.EntryNotification;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpiutil.CircularBuffer;
 import org.opencv.core.Mat;
 
@@ -41,6 +38,7 @@ public class VisionProcess {
     private volatile CVPipelineResult lastPipelineResult;
 
     // network table stuff
+    private NetworkTable defaultTable;
     private NetworkTableEntry ntPipelineEntry;
     private NetworkTableEntry ntDriverModeEntry;
     private int ntDriveModeListenerID;
@@ -73,9 +71,15 @@ public class VisionProcess {
 
         // Thread to process vision data
         this.visionRunnable = new VisionProcessRunnable();
+
+        // network table
+        defaultTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraProcess.getProperties().name);
     }
 
     public void start() {
+        System.out.println("Starting NetworkTables");
+        initNT(defaultTable);
+        
         System.out.println("Starting camera thread.");
         new Thread(cameraRunnable).start();
         while (cameraRunnable.cameraFrame == null) {
@@ -357,6 +361,8 @@ public class VisionProcess {
                 if (streamBuffer.cols() > 0 && streamBuffer.rows() > 0) {
                     result = currentPipeline.runPipeline(streamBuffer);
                     lastPipelineResult = result;
+
+                    var yes = lastPipelineResult==null;
 
                     updateNetworkTableData(lastPipelineResult);
                     updateUI(lastPipelineResult);
