@@ -222,12 +222,16 @@ public class ServerHandler {
 
     private static HashMap<String, Object> getOrdinalPipeline() throws IllegalAccessException {
         HashMap<String, Object> tmp = new HashMap<>();
-        for (Field f : CVPipelineSettings.class.getFields()) {
-            if (!f.getType().isEnum()) {
-                tmp.put(f.getName(), f.get(VisionManager.getCurrentUIVisionProcess().getCurrentPipeline()));
-            } else {
-                var i = (Enum) f.get(VisionManager.getCurrentUIVisionProcess().getCurrentPipeline());
-                tmp.put(f.getName(), i.ordinal());
+        for (Field field : CVPipelineSettings.class.getFields()) { // iterate over every field in CVPipelineSettings
+            try {
+                if (!field.getType().isEnum()) { // if the field is not an enum, get it based on the current pipeline
+                    tmp.put(field.getName(), field.get(VisionManager.getCurrentUIVisionProcess().getCurrentPipeline().settings));
+                } else {
+                    var ordinal = (Enum) field.get(VisionManager.getCurrentUIVisionProcess().getCurrentPipeline().settings);
+                    tmp.put(field.getName(), ordinal.ordinal());
+                }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
             }
         }
         return tmp;
