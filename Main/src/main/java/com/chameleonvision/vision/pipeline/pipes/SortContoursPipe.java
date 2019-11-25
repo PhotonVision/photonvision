@@ -64,7 +64,7 @@ public class SortContoursPipe implements Pipe<List<RotatedRect>, List<RotatedRec
                 break;
         }
 
-        long processTime = processStartNanos - System.nanoTime();
+        long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(sortedContours, processTime);
     }
 

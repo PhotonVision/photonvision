@@ -20,7 +20,7 @@ public class FindContoursPipe implements Pipe<Mat, List<MatOfPoint>> {
 
         Imgproc.findContours(input, foundContours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_TC89_L1);
 
-        long processTime = processStartNanos - System.nanoTime();
+        long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(foundContours, processTime);
     }
 }

@@ -1,7 +1,10 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.CvException;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 public class BlurPipe implements Pipe<Mat, Mat> {
 
@@ -18,15 +21,15 @@ public class BlurPipe implements Pipe<Mat, Mat> {
     public Pair<Mat, Long> run(Mat input) {
         long processStartNanos = System.nanoTime();
 
-        // TODO (HIGH) make this blur
-        input.copyTo(processBuffer);
-//        if (blurSize > 0) {
-//            Imgproc.blur(outputMat, outputMat, new Size(blurSize, blurSize));
-//        }
+        try {
+            if (blurSize > 0) {
+                Imgproc.blur(outputMat, outputMat, new Size(blurSize, blurSize));
+            }
+        } catch (CvException e) {
+            System.err.println("(BlurPipe) Exception thrown by OpenCV: \n" + e.getMessage());
+        }
 
-        processBuffer.copyTo(outputMat);
-
-        long processTime = processStartNanos - System.nanoTime();
+        long processTime = System.nanoTime() - processStartNanos;
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);
         processBuffer.release();
 

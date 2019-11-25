@@ -56,7 +56,7 @@ public class FilterContoursPipe implements Pipe<List<MatOfPoint>, List<MatOfPoin
             }
         }
 
-        long processTime = processStartNanos - System.nanoTime();
+        long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(filteredContours, processTime);
     }
 }

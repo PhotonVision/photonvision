@@ -65,7 +65,7 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
             }
         }
 
-        long processTime = processStartNanos - System.nanoTime();
+        long processTime = System.nanoTime() - processStartNanos;
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);
         outputMat.release();
         return output;

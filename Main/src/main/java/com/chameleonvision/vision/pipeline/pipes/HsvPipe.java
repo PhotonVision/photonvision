@@ -2,6 +2,7 @@ package com.chameleonvision.vision.pipeline.pipes;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Core;
+import org.opencv.core.CvException;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
@@ -22,16 +23,14 @@ public class HsvPipe implements Pipe<Mat, Mat> {
     public Pair<Mat, Long> run(Mat input) {
         long processStartNanos = System.nanoTime();
 
-        // convert from rgb to hsv
-        if(input.empty()) {
-            throw new RuntimeException("HSV input cannot be empty!");
+        try {
+            Imgproc.cvtColor(input, outputMat, Imgproc.COLOR_RGB2HSV, 3);
+            Core.inRange(outputMat, hsvLower, hsvUpper, outputMat);
+        } catch (CvException e) {
+            System.err.println("(HsvPipe) Exception thrown by OpenCV: \n" + e.getMessage());
         }
-        Imgproc.cvtColor(input, processBuffer, Imgproc.COLOR_RGB2HSV, 3);
 
-        Core.inRange(processBuffer, hsvLower, hsvUpper, processBuffer);
-
-        long processTime = processStartNanos - System.nanoTime();
-        processBuffer.copyTo(outputMat);
+        long processTime = System.nanoTime() - processStartNanos;
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);
         processBuffer.release();
         return output;

@@ -26,8 +26,7 @@ public class RotateFlipPipe implements Pipe<Mat, Mat> {
         Core.flip(input, processBuffer, flip.value);
         Core.rotate(processBuffer, processBuffer, rotation.value);
 
-        long processTime = processStartNanos - System.nanoTime();
-        processBuffer.copyTo(outputMat);
+        long processTime = System.nanoTime() - processStartNanos;
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);
         processBuffer.release();
         return output;

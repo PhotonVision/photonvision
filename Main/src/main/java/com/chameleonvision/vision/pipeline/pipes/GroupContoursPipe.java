@@ -85,7 +85,7 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
             }
         }
 
-        long processTime = processStartNanos - System.nanoTime();
+        long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(groupedContours, processTime);
     }
 

@@ -56,7 +56,7 @@ public class Collect2dTargetsPipe implements Pipe<List<RotatedRect>, List<CVPipe
             targets.add(t);
         });
 
-        long processTime = processStartNanos - System.nanoTime();
+        long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(targets, processTime);
     }
 

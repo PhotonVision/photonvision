@@ -362,13 +362,11 @@ public class VisionProcess {
                     result = currentPipeline.runPipeline(streamBuffer);
                     lastPipelineResult = result;
 
-                    var yes = lastPipelineResult==null;
+                    if (result != null) {
+                        updateNetworkTableData(lastPipelineResult);
+                        updateUI(lastPipelineResult);
+                    }
 
-                    updateNetworkTableData(lastPipelineResult);
-                    updateUI(lastPipelineResult);
-
-                } else {
-//                    System.err.println("Bad streambuffer mat");
                 }
 
                 var deltaTimeNanos = lastUpdateTimeNanos - System.nanoTime();

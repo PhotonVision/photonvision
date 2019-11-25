@@ -37,7 +37,7 @@ public class SpeckleRejectPipe implements Pipe<List<MatOfPoint>, List<MatOfPoint
             }
         }
 
-        long processTime = processStartNanos - System.nanoTime();
+        long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(despeckledContours, processTime);
     }
 }
