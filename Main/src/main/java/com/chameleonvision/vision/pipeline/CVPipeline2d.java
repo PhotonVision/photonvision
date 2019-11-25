@@ -44,9 +44,9 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
     public void initPipeline(CameraProcess process) {
         super.initPipeline(process);
 
-        var camProps = cameraProcess.getProperties().staticProperties;
-        var hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
-        var hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
+        CameraStaticProperties camProps = cameraProcess.getProperties().staticProperties;
+        Scalar hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
+        Scalar hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
 
         rotateFlipPipe = new RotateFlipPipe(ImageRotation.DEG_0, settings.flipMode);
         blurPipe = new BlurPipe(5);
@@ -70,7 +70,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
             throw new RuntimeException("Pipeline was not initialized before being run!");
         }
         if(inputMat.cols() <= 1) {
-            throw new RuntimeException("uwu uwu ");
+            throw new RuntimeException("Input Mat is empty!");
         }
 
         StringBuilder procTimeStringBuilder = new StringBuilder();
@@ -79,10 +79,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
 
         inputMat.copyTo(rawCameraMat);
 
-//		rawCameraMat = inputMat;
-
         // prepare pipes
-
         Scalar hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
         Scalar hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
 

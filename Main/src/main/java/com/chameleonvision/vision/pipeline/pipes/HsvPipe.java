@@ -29,14 +29,17 @@ public class HsvPipe implements Pipe<Mat, Mat> {
     public Pair<Mat, Long> run(Mat input) {
         long processStartNanos = System.nanoTime();
 
+        input.copyTo(processBuffer);
+
         try {
-            Imgproc.cvtColor(input, outputMat, Imgproc.COLOR_RGB2HSV, 3);
-            Core.inRange(outputMat, hsvLower, hsvUpper, outputMat);
+            Imgproc.cvtColor(processBuffer, processBuffer, Imgproc.COLOR_RGB2HSV, 3);
+            Core.inRange(processBuffer, hsvLower, hsvUpper, processBuffer);
         } catch (CvException e) {
             System.err.println("(HsvPipe) Exception thrown by OpenCV: \n" + e.getMessage());
         }
 
         long processTime = System.nanoTime() - processStartNanos;
+        processBuffer.copyTo(outputMat);
         Pair<Mat, Long> output = Pair.of(outputMat, processTime);
         processBuffer.release();
         return output;
