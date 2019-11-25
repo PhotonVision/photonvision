@@ -1,6 +1,6 @@
 package com.chameleonvision.vision.pipeline;
 
-import com.chameleonvision.vision.camera.CameraProcess;
+import com.chameleonvision.vision.camera.CameraCapture;
 import org.opencv.core.Mat;
 
 /**
@@ -9,7 +9,7 @@ import org.opencv.core.Mat;
  */
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
     protected Mat outputMat = new Mat();
-    CameraProcess cameraProcess;
+    CameraCapture cameraCapture;
     public final S settings;
 
     protected CVPipeline(S settings) {
@@ -21,10 +21,10 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         settings.nickname = pipelineName;
     }
 
-    public void initPipeline(CameraProcess camera) {
-        cameraProcess = camera;
-        cameraProcess.setExposure((int) settings.exposure);
-        cameraProcess.setBrightness((int) settings.brightness);
+    public void initPipeline(CameraCapture camera) {
+        cameraCapture = camera;
+        cameraCapture.setExposure((int) settings.exposure);
+        cameraCapture.setBrightness((int) settings.brightness);
     }
     abstract public R runPipeline(Mat inputMat);
 }

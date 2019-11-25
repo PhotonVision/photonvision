@@ -1,6 +1,6 @@
 package com.chameleonvision.config;
 
-import com.chameleonvision.vision.camera.USBCameraProcess;
+import com.chameleonvision.vision.camera.USBCameraCapture;
 import com.chameleonvision.vision.camera.USBCameraProperties;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,7 +30,7 @@ public class CameraConfig {
         this.nickname = name;
     }
 
-    public static CameraConfig fromUSBCameraProcess(USBCameraProcess process) {
+    public static CameraConfig fromUSBCameraProcess(USBCameraCapture process) {
         USBCameraProperties camProps = process.getProperties();
         return new CameraConfig(camProps.FOV, camProps.name, camProps.path, camProps.getNickname());
     }

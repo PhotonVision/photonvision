@@ -1,7 +1,7 @@
 package com.chameleonvision.vision.pipeline;
 
-import com.chameleonvision.vision.camera.CameraProcess;
-import com.chameleonvision.vision.camera.CameraStaticProperties;
+import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.pipeline.pipes.*;
 import com.chameleonvision.vision.enums.ImageRotation;
 import org.apache.commons.lang3.tuple.Pair;
@@ -41,10 +41,10 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
     }
 
     @Override
-    public void initPipeline(CameraProcess process) {
+    public void initPipeline(CameraCapture process) {
         super.initPipeline(process);
 
-        CameraStaticProperties camProps = cameraProcess.getProperties().staticProperties;
+        CaptureStaticProperties camProps = cameraCapture.getProperties().getStaticProperties();
         Scalar hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
         Scalar hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
 
@@ -66,7 +66,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         long totalProcessTimeNanos = 0;
         long processStartTimeNanos = System.nanoTime();
 
-        if (cameraProcess == null) {
+        if (cameraCapture == null) {
             throw new RuntimeException("Pipeline was not initialized before being run!");
         }
         if(inputMat.cols() <= 1) {
@@ -75,7 +75,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
 
         StringBuilder procTimeStringBuilder = new StringBuilder();
 
-        CameraStaticProperties camProps = cameraProcess.getProperties().staticProperties;
+        CaptureStaticProperties camProps = cameraCapture.getProperties().getStaticProperties();
 
         inputMat.copyTo(rawCameraMat);
 
@@ -84,7 +84,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         Scalar hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
 
         rotateFlipPipe.setConfig(ImageRotation.DEG_0, settings.flipMode);
-        blurPipe.setConfig(5);
+        blurPipe.setConfig(0);
         erodeDilatePipe.setConfig(settings.erode, settings.dilate, 7);
         hsvPipe.setConfig(hsvLower, hsvUpper);
         filterContoursPipe.setConfig(settings.area, settings.ratio, settings.extent, camProps);

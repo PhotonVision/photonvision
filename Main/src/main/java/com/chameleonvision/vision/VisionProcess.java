@@ -2,7 +2,7 @@ package com.chameleonvision.vision;
 
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.util.LoopingRunnable;
-import com.chameleonvision.vision.camera.CameraProcess;
+import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.CameraStreamer;
 import com.chameleonvision.vision.pipeline.*;
 import com.chameleonvision.web.ServerHandler;
@@ -19,7 +19,7 @@ import java.util.List;
 
 public class VisionProcess {
 
-    private final CameraProcess cameraProcess;
+    private final CameraCapture cameraCapture;
     private final List<CVPipeline> pipelines = new ArrayList<>();
     private final CameraFrameRunnable cameraRunnable;
     private final CameraStreamerRunnable streamRunnable;
@@ -51,29 +51,29 @@ public class VisionProcess {
     private NetworkTableEntry ntValidEntry;
     private Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    VisionProcess(CameraProcess cameraProcess, String name) {
-        this.cameraProcess = cameraProcess;
+    VisionProcess(CameraCapture cameraCapture, String name) {
+        this.cameraCapture = cameraCapture;
 
         pipelines.add(new CVPipeline2d("New Pipeline"));
         setPipeline(0, false);
 
         // Thread to grab frames from the camera
         // TODO: (HIGH) fix video modes!!!
-        this.cameraRunnable = new CameraFrameRunnable(cameraProcess.getProperties().videoModes.get(0).fps);
+        this.cameraRunnable = new CameraFrameRunnable(cameraCapture.getProperties().videoModes.get(0).fps);
 
         lastPipelineResult = new DriverVisionPipeline.DriverPipelineResult(
                 null, cameraRunnable.getFrame(new Mat()), 0
         );
 
         // Thread to put frames on the dashboard
-        this.cameraStreamer = new CameraStreamer(cameraProcess, name);
+        this.cameraStreamer = new CameraStreamer(cameraCapture, name);
         this.streamRunnable = new CameraStreamerRunnable(30, cameraStreamer);
 
         // Thread to process vision data
         this.visionRunnable = new VisionProcessRunnable();
 
         // network table
-        defaultTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraProcess.getProperties().name);
+        defaultTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraCapture.getProperties().name);
     }
 
     public void start() {
@@ -156,7 +156,7 @@ public class VisionProcess {
             currentPipelineIndex = pipelineIndex;
 
             // update the configManager
-            if(ConfigManager.settings.currentCamera.equals(cameraProcess.getProperties().name)) {
+            if(ConfigManager.settings.currentCamera.equals(cameraCapture.getProperties().name)) {
                 ConfigManager.settings.currentPipeline = pipelineIndex;
 
                 if (updateUI) {
@@ -171,11 +171,11 @@ public class VisionProcess {
 
     private void setPipelineInternal(CVPipeline pipeline) {
         currentPipeline = pipeline;
-        currentPipeline.initPipeline(cameraProcess);
+        currentPipeline.initPipeline(cameraCapture);
     }
 
     private void updateUI(CVPipelineResult data) {
-        if(cameraProcess.getProperties().name.equals(ConfigManager.settings.currentCamera)) {
+        if(cameraCapture.getProperties().name.equals(ConfigManager.settings.currentCamera)) {
             HashMap<String, Object> WebSend = new HashMap<>();
             HashMap<String, Object> point = new HashMap<>();
             HashMap<String, Object> calculated = new HashMap<>();
@@ -235,7 +235,7 @@ public class VisionProcess {
     }
 
     public void setVideoMode(VideoMode newMode) {
-        cameraProcess.setVideoMode(newMode);
+        cameraCapture.setVideoMode(newMode);
         cameraRunnable.updateCameraFPS(newMode.fps);
         cameraStreamer.setNewVideoMode(newMode);
     }
@@ -261,8 +261,8 @@ public class VisionProcess {
         pipelines.add(pipeline);
     }
 
-    public CameraProcess getCamera() {
-        return cameraProcess;
+    public CameraCapture getCamera() {
+        return cameraCapture;
     }
 
     public boolean getDriverMode() {
@@ -304,10 +304,9 @@ public class VisionProcess {
 
         @Override
         public void process() {
-//            System.out.println("running camera grabber process");
 
             // Grab camera frames
-            var camData = cameraProcess.getFrame();
+            var camData = cameraCapture.getFrame();
             if (camData.getLeft().cols() > 0) {
 //                    System.out.println("grabbing frame");
 //                    synchronized (frameLock) {

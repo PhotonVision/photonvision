@@ -1,6 +1,6 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
-import com.chameleonvision.vision.camera.CameraStaticProperties;
+import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.util.Helpers;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
@@ -14,11 +14,11 @@ import java.util.List;
 public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Mat> {
 
     private final Draw2dContoursSettings settings;
-    private final CameraStaticProperties camProps;
+    private final CaptureStaticProperties camProps;
 
     private Mat outputMat = new Mat();
 
-    public Draw2dContoursPipe(Draw2dContoursSettings settings, CameraStaticProperties camProps) {
+    public Draw2dContoursPipe(Draw2dContoursSettings settings, CaptureStaticProperties camProps) {
         this.settings = settings;
         this.camProps = camProps;
     }

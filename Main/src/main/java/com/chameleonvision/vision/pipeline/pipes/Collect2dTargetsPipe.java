@@ -1,6 +1,6 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
-import com.chameleonvision.vision.camera.CameraStaticProperties;
+import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.pipeline.CVPipeline2d;
 import com.chameleonvision.vision.enums.CalibrationMode;
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,14 +13,14 @@ import java.util.List;
 public class Collect2dTargetsPipe implements Pipe<List<RotatedRect>, List<CVPipeline2d.Target2d>> {
 
     private CalibrationMode calibrationMode;
-    private CameraStaticProperties camProps;
+    private CaptureStaticProperties camProps;
     private List<Number> calibrationPoint;
     private double calibrationM, calibrationB;
 
     private List<CVPipeline2d.Target2d> targets = new ArrayList<>();
 
     public Collect2dTargetsPipe(CalibrationMode calibrationMode, List<Number> calibrationPoint,
-                                double calibrationM, double calibrationB, CameraStaticProperties camProps) {
+                                double calibrationM, double calibrationB, CaptureStaticProperties camProps) {
         this.calibrationMode = calibrationMode;
         this.camProps = camProps;
         this.calibrationPoint = calibrationPoint;
@@ -29,7 +29,7 @@ public class Collect2dTargetsPipe implements Pipe<List<RotatedRect>, List<CVPipe
     }
 
     public void setConfig(CalibrationMode calibrationMode, List<Number> calibrationPoint,
-                          double calibrationM, double calibrationB, CameraStaticProperties camProps) {
+                          double calibrationM, double calibrationB, CaptureStaticProperties camProps) {
         this.calibrationMode = calibrationMode;
         this.camProps = camProps;
         this.calibrationPoint = calibrationPoint;

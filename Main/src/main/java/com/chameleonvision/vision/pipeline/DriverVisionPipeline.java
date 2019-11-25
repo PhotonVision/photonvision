@@ -19,7 +19,7 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
 
         outputMat = inputMat;
 
-        var camProps = cameraProcess.getProperties().staticProperties;
+        var camProps = cameraCapture.getProperties().getStaticProperties();
 
         Draw2dContoursPipe.Draw2dContoursSettings draw2dContoursSettings = new Draw2dContoursPipe.Draw2dContoursSettings();
         draw2dContoursSettings.showCrosshair = true;

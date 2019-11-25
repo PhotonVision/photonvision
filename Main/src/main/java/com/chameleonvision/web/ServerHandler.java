@@ -3,7 +3,7 @@ package com.chameleonvision.web;
 import com.chameleonvision.config.GeneralSettings;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
-import com.chameleonvision.vision.camera.CameraProcess;
+import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.enums.CalibrationMode;
 import com.chameleonvision.vision.pipeline.CVPipeline;
@@ -38,22 +38,23 @@ public class ServerHandler {
         sendFullSettings();
     }
 
-    public void onClose(WsCloseContext context) {
+    void onClose(WsCloseContext context) {
         users.remove(context);
     }
 
+    @SuppressWarnings("unchecked")
     void onBinaryMessage(WsBinaryMessageContext context) throws Exception {
-        Map<String, Object> deserialized = objectMapper.readValue(ArrayUtils.toPrimitive(context.data()), new TypeReference<Map<String, Object>>() {
+        Map<String, Object> deserialized = objectMapper.readValue(ArrayUtils.toPrimitive(context.data()), new TypeReference<>() {
         });
         for (Map.Entry<String, Object> entry : deserialized.entrySet()) {
             try {
-                var data = (HashMap<String, Object>) entry.getValue();
                 VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
-                CameraProcess currentCamera = currentProcess.getCamera();
+                CameraCapture currentCamera = currentProcess.getCamera();
                 CVPipeline currentPipeline = currentProcess.getCurrentPipeline();
 
                 switch (entry.getKey()) {
                     case "generalSettings": {
+                        HashMap<String, Object> data = (HashMap<String, Object>) entry.getValue();
                         for (HashMap.Entry<String, Object> e : data.entrySet()) {
                             setField(ConfigManager.settings, e.getKey(), e.getValue());
                         }
@@ -62,6 +63,7 @@ public class ServerHandler {
                         break;
                     }
                     case "driverMode": {
+                        HashMap<String, Object> data = (HashMap<String, Object>) entry.getValue();
                         currentProcess.getDriverModeSettings().exposure = (Integer) data.get("exposure");
                         currentProcess.getDriverModeSettings().brightness = (Integer) data.get("brightness");
                         currentProcess.setDriverMode((Boolean) data.get("isDriver"));
@@ -74,7 +76,7 @@ public class ServerHandler {
 
                         Number newFOV = (Number) camSettings.get("fov");
                         StreamDivisor newStreamDivisor = StreamDivisor.values()[(Integer) camSettings.get("streamDivisor")];
-                        Integer newResolution = (Integer) camSettings.get("resolution");
+//                        Integer newResolution = (Integer) camSettings.get("resolution");
 
                         currentCamera.getProperties().FOV = (double) newFOV;
 
@@ -119,7 +121,6 @@ public class ServerHandler {
                         } else {
                             currentProcess.addPipeline(origPipeline);
                         }
-                        // TODO: (HIGH) switch to ConfigManager
                         ConfigManager.saveSettings();
                         break;
                     }
@@ -128,7 +129,6 @@ public class ServerHandler {
                             case "addNewPipeline":
                                 currentProcess.addPipeline();
                                 sendFullSettings();
-                                // TODO: (HIGH) switch to ConfigManager
                                 ConfigManager.saveSettings();
                                 break;
                             // TODO: (HIGH) this never worked before, re-visit now that VisionProcess is written sanely
@@ -146,7 +146,6 @@ public class ServerHandler {
 //                                ConfigManager.saveSettings();
                                 break;
                             case "save":
-                                // TODO: (HIGH) switch to ConfigManager
                                 ConfigManager.saveSettings();
                                 System.out.println("saved Settings");
                                 break;
@@ -155,7 +154,6 @@ public class ServerHandler {
                         break;
                     }
                     case "currentCamera": {
-                        // TODO: (HIGH) find way to map cameras to indexes
                         VisionManager.setCurrentProcessByIndex((Integer) entry.getValue());
                         sendFullSettings();
                         break;
@@ -254,7 +252,7 @@ public class ServerHandler {
     private static HashMap<String, Object> getOrdinalCameraSettings() {
         HashMap<String, Object> tmp = new HashMap<>();
         VisionProcess currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
-        CameraProcess currentCamera = VisionManager.getCurrentUIVisionProcess().getCamera();
+        CameraCapture currentCamera = VisionManager.getCurrentUIVisionProcess().getCamera();
         tmp.put("fov", currentCamera.getProperties().FOV);
         tmp.put("streamDivisor", currentVisionProcess.cameraStreamer.getDivisor().ordinal());
         // TODO: (HIGH) get videomode index!
@@ -316,7 +314,7 @@ public class ServerHandler {
         Map<String, Object> fullSettings = new HashMap<>();
 
         VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
-        CameraProcess currentCamera = currentProcess.getCamera();
+        CameraCapture currentCamera = currentProcess.getCamera();
         CVPipeline currentPipeline = currentProcess.getCurrentPipeline();
 
         try {
@@ -327,7 +325,6 @@ public class ServerHandler {
             fullSettings.put("cameraList", VisionManager.getAllCameraNicknames());
             fullSettings.put("pipeline", getOrdinalPipeline());
             fullSettings.put("driverMode", getOrdinalDriver());
-            // TODO (HIGH) all of these settings!
             fullSettings.put("pipelineList", VisionManager.getCurrentCameraPipelineNicknames());
             fullSettings.put("resolutionList", VisionManager.getCurrentCameraResolutionList());
             fullSettings.put("FOV", currentCamera.getProperties().FOV);

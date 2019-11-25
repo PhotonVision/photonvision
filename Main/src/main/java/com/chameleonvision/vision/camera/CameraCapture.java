@@ -1,17 +1,10 @@
 package com.chameleonvision.vision.camera;
 
+import com.chameleonvision.vision.image.ImageCapture;
 import edu.wpi.cscore.VideoMode;
-import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.Mat;
 
-public interface CameraProcess {
+public interface CameraCapture extends ImageCapture {
     USBCameraProperties getProperties();
-
-    /**
-     * Get the next camera frame
-     * @return a Pair of the captured image and how long it took to grab the frame (in uS)
-     */
-    Pair<Mat, Long> getFrame();
 
     /**
      * Set the exposure of the camera

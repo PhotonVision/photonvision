@@ -1,6 +1,6 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
-import com.chameleonvision.vision.camera.CameraStaticProperties;
+import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.enums.SortMode;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
@@ -25,16 +25,16 @@ public class SortContoursPipe implements Pipe<List<RotatedRect>, List<RotatedRec
 
 
     private SortMode sort;
-    private CameraStaticProperties camProps;
+    private CaptureStaticProperties camProps;
 
     private List<RotatedRect> sortedContours = new ArrayList<>();
 
-    public SortContoursPipe(SortMode sort, CameraStaticProperties camProps) {
+    public SortContoursPipe(SortMode sort, CaptureStaticProperties camProps) {
         this.sort = sort;
         this.camProps = camProps;
     }
 
-    public void setConfig(SortMode sort, CameraStaticProperties camProps) {
+    public void setConfig(SortMode sort, CaptureStaticProperties camProps) {
         this.sort = sort;
         this.camProps = camProps;
     }

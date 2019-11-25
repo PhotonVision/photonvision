@@ -3,7 +3,7 @@ package com.chameleonvision.vision.camera;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.util.FastMath;
 
-public class CameraStaticProperties {
+public class CaptureStaticProperties {
 
     public final int imageWidth;
     public final int imageHeight;
@@ -14,7 +14,7 @@ public class CameraStaticProperties {
     public final double horizontalFocalLength;
     public final double verticalFocalLength;
 
-    public CameraStaticProperties(int imageWidth, int imageHeight, double fov) {
+    public CaptureStaticProperties(int imageWidth, int imageHeight, double fov) {
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
         this.fov = fov;

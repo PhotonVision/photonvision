@@ -10,32 +10,32 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
 public class CameraStreamer {
-    private final CameraProcess cameraProcess;
+    private final CameraCapture cameraCapture;
     private final String name;
     private StreamDivisor divisor = StreamDivisor.NONE;
     private CvSource cvSource;
     private final Object streamBufferLock = new Object();
     private Mat streamBuffer = new Mat();
 
-    public CameraStreamer(CameraProcess cameraProcess, String name) {
-        this.cameraProcess = cameraProcess;
+    public CameraStreamer(CameraCapture cameraCapture, String name) {
+        this.cameraCapture = cameraCapture;
         this.name = name;
         this.cvSource = CameraServer.getInstance().putVideo(name,
-                cameraProcess.getProperties().staticProperties.imageWidth / divisor.value,
-                cameraProcess.getProperties().staticProperties.imageHeight / divisor.value);
+                cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
+                cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value);
         setDivisor(divisor, false);
     }
 
     public void setDivisor(StreamDivisor newDivisor, boolean updateUI) {
         this.divisor = newDivisor;
-        var camValues = cameraProcess.getProperties();
-        var newWidth = camValues.staticProperties.imageWidth / newDivisor.value;
-        var newHeight = camValues.staticProperties.imageHeight / newDivisor.value;
+        var camValues = cameraCapture.getProperties();
+        var newWidth = camValues.getStaticProperties().imageWidth / newDivisor.value;
+        var newHeight = camValues.getStaticProperties().imageHeight / newDivisor.value;
         synchronized (streamBufferLock) {
             this.streamBuffer = new Mat(newWidth, newHeight, CvType.CV_8UC3);
             this.cvSource = CameraServer.getInstance().putVideo(this.name,
-                    cameraProcess.getProperties().staticProperties.imageWidth / divisor.value,
-                    cameraProcess.getProperties().staticProperties.imageHeight / divisor.value);
+                    cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
+                    cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value);
         }
         if (updateUI) {
             ServerHandler.sendFullSettings();

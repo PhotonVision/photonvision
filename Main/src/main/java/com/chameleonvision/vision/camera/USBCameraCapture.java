@@ -9,13 +9,13 @@ import edu.wpi.first.cameraserver.CameraServer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 
-public class USBCameraProcess implements CameraProcess {
+public class USBCameraCapture implements CameraCapture {
     private final UsbCamera baseCamera;
     private final CvSink cvSink;
     private Mat imageBuffer = new Mat();
     private USBCameraProperties properties;
 
-    public USBCameraProcess(CameraConfig config) {
+    public USBCameraCapture(CameraConfig config) {
         baseCamera = new UsbCamera(config.name, config.path);
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
         properties = new USBCameraProperties(baseCamera, config);

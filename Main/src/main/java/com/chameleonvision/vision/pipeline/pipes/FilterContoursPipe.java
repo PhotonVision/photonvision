@@ -1,6 +1,6 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
-import com.chameleonvision.vision.camera.CameraStaticProperties;
+import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.util.MathHandler;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.MatOfPoint;
@@ -16,18 +16,18 @@ public class FilterContoursPipe implements Pipe<List<MatOfPoint>, List<MatOfPoin
     private List<Number> area;
     private List<Number> ratio;
     private List<Number> extent;
-    private CameraStaticProperties camProps;
+    private CaptureStaticProperties camProps;
 
     private List<MatOfPoint> filteredContours = new ArrayList<>();
 
-    public FilterContoursPipe(List<Number> area, List<Number> ratio, List<Number> extent, CameraStaticProperties camProps) {
+    public FilterContoursPipe(List<Number> area, List<Number> ratio, List<Number> extent, CaptureStaticProperties camProps) {
         this.area = area;
         this.ratio = ratio;
         this.extent = extent;
         this.camProps = camProps;
     }
 
-    public void setConfig(List<Number> area, List<Number> ratio, List<Number> extent, CameraStaticProperties camProps) {
+    public void setConfig(List<Number> area, List<Number> ratio, List<Number> extent, CaptureStaticProperties camProps) {
         this.area = area;
         this.ratio = ratio;
         this.extent = extent;

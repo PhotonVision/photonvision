@@ -4,8 +4,8 @@ import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.util.Helpers;
 import com.chameleonvision.util.Platform;
-import com.chameleonvision.vision.camera.CameraProcess;
-import com.chameleonvision.vision.camera.USBCameraProcess;
+import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.camera.USBCameraCapture;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
@@ -86,7 +86,7 @@ public class VisionManager {
     public static boolean initializeProcesses() {
         for (int i = 0; i < loadedCameraConfigs.size(); i++) {
             CameraConfig config = loadedCameraConfigs.get(i);
-            CameraProcess camera = new USBCameraProcess(config);
+            CameraCapture camera = new USBCameraCapture(config);
             VisionProcess process = new VisionProcess(camera, config.name);
             visionProcesses.add(new VisionProcessManageable(i, config.name, process));
         }
@@ -136,7 +136,7 @@ public class VisionManager {
             String cameraName = process.getCamera().getProperties().name;
             List<CVPipelineSettings> pipelines = process.getPipelines().stream().map(cvPipeline -> cvPipeline.settings).collect(Collectors.toList());
             CVPipelineSettings driverMode = process.getDriverModeSettings();
-            CameraConfig config = CameraConfig.fromUSBCameraProcess((USBCameraProcess) process.getCamera());
+            CameraConfig config = CameraConfig.fromUSBCameraProcess((USBCameraCapture) process.getCamera());
             try {
                 ConfigManager.saveCameraPipelines(cameraName, pipelines);
                 ConfigManager.saveCameraDriverMode(cameraName, driverMode);

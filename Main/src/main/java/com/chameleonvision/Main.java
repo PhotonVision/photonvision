@@ -24,7 +24,7 @@ public class Main {
     private static final String IGNORE_ROOT_KEY = "--ignore-root"; // no args for this setting
     private static final String TEST_MODE_KEY = "--cv-development";
 
-    private static final int DEFAULT_PORT = 5800;
+    private static final int DEFAULT_PORT = 8888;
 
     private static boolean ntServerMode = false;
     private static boolean manageNetwork = true;

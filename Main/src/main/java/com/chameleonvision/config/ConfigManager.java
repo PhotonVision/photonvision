@@ -4,6 +4,7 @@ import com.chameleonvision.util.ProgramDirectoryUtilities;
 import com.chameleonvision.util.FileHelper;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +35,8 @@ public class ConfigManager {
     }
 
     private static void checkSettingsFile() {
-        if (!settingsFileExists()) {
+        boolean settingsFileEmpty = settingsFileExists() && new File(settingsFilePath.toString()).length() == 0;
+        if (settingsFileEmpty || !settingsFileExists()) {
             try {
                 FileHelper.Serializer(settingsFilePath, settings);
             } catch (IOException e) {

@@ -12,24 +12,13 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-java:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxaarch64bionic:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxraspbian:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxx86-64:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:osxx86-64:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:windowsx86-64:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: org.slf4j:slf4j-nop:1.7.26" level="project" />
-    <orderEntry type="library" name="Maven: org.msgpack:msgpack-core:0.8.18" level="project" />
-    <orderEntry type="library" name="Maven: org.msgpack:jackson-dataformat-msgpack:0.8.18" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-core:2.10.1" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-annotations:2.10.1" level="project" />
-    <orderEntry type="library" name="Maven: com.fasterxml.jackson.core:jackson-databind:2.10.1" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-java:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxaarch64bionic:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxraspbian:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:linuxx86-64:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:osxx86-64:2020.1.1-beta-2-98-gb058dcf" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.cscore:cscore-jni:windowsx86-64:2020.1.1-beta-2-98-gb058dcf" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.cameraserver:cameraserver-java:2020.1.1-beta-2-98-gb058dcf" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-java:2020.1.1-beta-2-98-gb058dcf" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:osxx86-64:2020.1.1-beta-2-98-gb058dcf" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxraspbian:2020.1.1-beta-2-98-gb058dcf" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxx86-64:2020.1.1-beta-2-98-gb058dcf" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:windowsx86-64:2020.1.1-beta-2-98-gb058dcf" level="project" />
+    <orderEntry type="library" name="Maven: edu.wpi.first.wpiutil:wpiutil-java:2020.1.1-beta-2-98-gb058dcf" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.cameraserver:cameraserver-java:2020.1.1-beta-2-98-gb058dcf" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-java:2020.1.1-beta-2-98-gb058dcf" level="project" />
     <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:osxx86-64:2020.1.1-beta-2-98-gb058dcf" level="project" />

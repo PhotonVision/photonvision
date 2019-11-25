@@ -2,9 +2,9 @@ package com.chameleonvision.vision.camera;
 
 import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.util.Platform;
+import com.chameleonvision.vision.image.CaptureProperties;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
-import org.apache.commons.math3.util.FastMath;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class USBCameraProperties {
+public class USBCameraProperties extends CaptureProperties {
     public static final double DEFAULT_FOV = 70;
     private static final int DEFAULT_EXPOSURE = 50;
     private static final int DEFAULT_BRIGHTNESS = 50;
@@ -26,19 +26,18 @@ public class USBCameraProperties {
     private static final Predicate<VideoMode> kMinSizePredicate = (videoMode -> videoMode.width >= MINIMUM_WIDTH && videoMode.height >= MINIMUM_HEIGHT);
     private static final Predicate<VideoMode> kPixelFormatPredicate = (videoMode -> ALLOWED_PIXEL_FORMATS.contains(videoMode.pixelFormat));
 
-    public CameraStaticProperties staticProperties;
     public final String name;
     public final String path;
     public final List<VideoMode> videoModes;
 
     private final UsbCamera baseCamera;
+    private final boolean hasGain;
 
     private String nickname;
     public double FOV;
 
-    public final boolean hasGain;
 
-    public USBCameraProperties(UsbCamera baseCamera, CameraConfig config) {
+    USBCameraProperties(UsbCamera baseCamera, CameraConfig config) {
         FOV = config.fov;
         name = config.name;
         path = config.path;
@@ -86,17 +85,8 @@ public class USBCameraProperties {
         return validModes.collect(Collectors.toList());
     }
 
-    public void updateVideoMode(VideoMode videoMode) {
-        staticProperties = new CameraStaticProperties(videoMode.width, videoMode.height, FOV);
-    }
-
-    public double calculatePitch(double PixelY, double centerY) {
-        double pitch = FastMath.toDegrees(FastMath.atan((PixelY - centerY) / staticProperties.verticalFocalLength));
-        return (pitch * -1);
-    }
-
-    public double calculateYaw(double PixelX, double centerX) {
-        return FastMath.toDegrees(FastMath.atan((PixelX - centerX) / staticProperties.horizontalFocalLength));
+    void updateVideoMode(VideoMode videoMode) {
+        staticProperties = new CaptureStaticProperties(videoMode.width, videoMode.height, FOV);
     }
 
     public List<VideoMode> getVideoModes() {
