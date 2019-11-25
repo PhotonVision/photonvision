@@ -7,13 +7,20 @@ import org.opencv.imgproc.Imgproc;
 
 public class ErodeDilatePipe implements Pipe<Mat, Mat> {
 
-    private final boolean erode, dilate;
-    private final Mat kernel;
+    private boolean erode;
+    private boolean dilate;
+    private Mat kernel;
 
     private Mat processBuffer = new Mat();
     private Mat outputMat = new Mat();
 
     public ErodeDilatePipe(boolean erode, boolean dilate, int kernelSize) {
+        this.erode = erode;
+        this.dilate = dilate;
+        kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(kernelSize, kernelSize));
+    }
+
+    public void setConfig(boolean erode, boolean dilate, int kernelSize) {
         this.erode = erode;
         this.dilate = dilate;
         kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(kernelSize, kernelSize));

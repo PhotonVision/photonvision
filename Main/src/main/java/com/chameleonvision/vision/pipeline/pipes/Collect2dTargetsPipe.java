@@ -12,14 +12,24 @@ import java.util.List;
 
 public class Collect2dTargetsPipe implements Pipe<List<RotatedRect>, List<CVPipeline2d.Target2d>> {
 
-    private final CalibrationMode calibrationMode;
-    private final CameraStaticProperties camProps;
-    private final List<Number> calibrationPoint;
-    private final double calibrationM, calibrationB;
+    private CalibrationMode calibrationMode;
+    private CameraStaticProperties camProps;
+    private List<Number> calibrationPoint;
+    private double calibrationM, calibrationB;
 
     private List<CVPipeline2d.Target2d> targets = new ArrayList<>();
 
-    public Collect2dTargetsPipe(CalibrationMode calibrationMode, List<Number> calibrationPoint, double calibrationM, double calibrationB, CameraStaticProperties camProps) {
+    public Collect2dTargetsPipe(CalibrationMode calibrationMode, List<Number> calibrationPoint,
+                                double calibrationM, double calibrationB, CameraStaticProperties camProps) {
+        this.calibrationMode = calibrationMode;
+        this.camProps = camProps;
+        this.calibrationPoint = calibrationPoint;
+        this.calibrationM = calibrationM;
+        this.calibrationB = calibrationB;
+    }
+
+    public void setConfig(CalibrationMode calibrationMode, List<Number> calibrationPoint,
+                          double calibrationM, double calibrationB, CameraStaticProperties camProps) {
         this.calibrationMode = calibrationMode;
         this.camProps = camProps;
         this.calibrationPoint = calibrationPoint;

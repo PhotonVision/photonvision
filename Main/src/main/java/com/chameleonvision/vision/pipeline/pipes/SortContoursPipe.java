@@ -24,12 +24,17 @@ public class SortContoursPipe implements Pipe<List<RotatedRect>, List<RotatedRec
     private static final Comparator<RotatedRect> SortByRightmostComparator = SortByLeftmostComparator.reversed();
 
 
-    private final SortMode sort;
-    private final CameraStaticProperties camProps;
+    private SortMode sort;
+    private CameraStaticProperties camProps;
 
     private List<RotatedRect> sortedContours = new ArrayList<>();
 
     public SortContoursPipe(SortMode sort, CameraStaticProperties camProps) {
+        this.sort = sort;
+        this.camProps = camProps;
+    }
+
+    public void setConfig(SortMode sort, CameraStaticProperties camProps) {
         this.sort = sort;
         this.camProps = camProps;
     }

@@ -8,12 +8,16 @@ import org.opencv.imgproc.Imgproc;
 
 public class BlurPipe implements Pipe<Mat, Mat> {
 
-    private final int blurSize;
+    private int blurSize;
 
     private Mat processBuffer = new Mat();
     private Mat outputMat = new Mat();
 
     public BlurPipe(int blurSize) {
+        this.blurSize = blurSize;
+    }
+
+    public void setConfig(int blurSize) {
         this.blurSize = blurSize;
     }
 

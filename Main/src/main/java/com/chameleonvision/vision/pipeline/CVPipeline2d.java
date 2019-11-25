@@ -1,5 +1,6 @@
 package com.chameleonvision.vision.pipeline;
 
+import com.chameleonvision.vision.camera.CameraProcess;
 import com.chameleonvision.vision.camera.CameraStaticProperties;
 import com.chameleonvision.vision.pipeline.pipes.*;
 import com.chameleonvision.vision.enums.ImageRotation;
@@ -16,6 +17,16 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
 
     private Mat rawCameraMat = new Mat();
     private Mat hsvOutputMat = new Mat();
+    private RotateFlipPipe rotateFlipPipe;
+    private BlurPipe blurPipe;
+    private ErodeDilatePipe erodeDilatePipe;
+    private HsvPipe hsvPipe;
+    private FindContoursPipe findContoursPipe;
+    private FilterContoursPipe filterContoursPipe;
+    private SpeckleRejectPipe speckleRejectPipe;
+    private GroupContoursPipe groupContoursPipe;
+    private SortContoursPipe sortContoursPipe;
+    private Collect2dTargetsPipe collect2dTargetsPipe;
 
     public CVPipeline2d() {
         super(new CVPipeline2dSettings());
@@ -27,6 +38,27 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
 
     public CVPipeline2d(CVPipeline2dSettings settings) {
         super(settings);
+    }
+
+    @Override
+    public void initPipeline(CameraProcess process) {
+        super.initPipeline(process);
+
+        var camProps = cameraProcess.getProperties().staticProperties;
+        var hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
+        var hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
+
+        rotateFlipPipe = new RotateFlipPipe(ImageRotation.DEG_0, settings.flipMode);
+        blurPipe = new BlurPipe(5);
+        erodeDilatePipe = new ErodeDilatePipe(settings.erode, settings.dilate, 7);
+        hsvPipe = new HsvPipe(hsvLower, hsvUpper);
+        findContoursPipe = new FindContoursPipe();
+        filterContoursPipe = new FilterContoursPipe(settings.area, settings.ratio, settings.extent, camProps);
+        speckleRejectPipe = new SpeckleRejectPipe(settings.speckle.doubleValue());
+        groupContoursPipe = new GroupContoursPipe(settings.targetGroup, settings.targetIntersection);
+        sortContoursPipe = new SortContoursPipe(settings.sortMode, camProps);
+        collect2dTargetsPipe = new Collect2dTargetsPipe(settings.calibrationMode, settings.point,
+                settings.dualTargetCalibrationM, settings.dualTargetCalibrationB, camProps);
     }
 
     @Override
@@ -50,21 +82,19 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
 //		rawCameraMat = inputMat;
 
         // prepare pipes
-        RotateFlipPipe rotateFlipPipe = new RotateFlipPipe(ImageRotation.DEG_0, settings.flipMode);
-        BlurPipe blurPipe = new BlurPipe(5);
-        ErodeDilatePipe erodeDilatePipe = new ErodeDilatePipe(settings.erode, settings.dilate, 7);
 
         Scalar hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
         Scalar hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
 
-        HsvPipe hsvPipe = new HsvPipe(hsvLower, hsvUpper);
-
-        FindContoursPipe findContoursPipe = new FindContoursPipe();
-        FilterContoursPipe filterContoursPipe = new FilterContoursPipe(settings.area, settings.ratio, settings.extent, camProps);
-        SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe(settings.speckle.doubleValue());
-        GroupContoursPipe groupContoursPipe = new GroupContoursPipe(settings.targetGroup, settings.targetIntersection);
-        SortContoursPipe sortContoursPipe = new SortContoursPipe(settings.sortMode, camProps);
-        Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe(settings.calibrationMode, settings.point,
+        rotateFlipPipe.setConfig(ImageRotation.DEG_0, settings.flipMode);
+        blurPipe.setConfig(5);
+        erodeDilatePipe.setConfig(settings.erode, settings.dilate, 7);
+        hsvPipe.setConfig(hsvLower, hsvUpper);
+        filterContoursPipe.setConfig(settings.area, settings.ratio, settings.extent, camProps);
+        speckleRejectPipe.setConfig(settings.speckle.doubleValue());
+        groupContoursPipe.setConfig(settings.targetGroup, settings.targetIntersection);
+        sortContoursPipe.setConfig(settings.sortMode, camProps);
+        collect2dTargetsPipe.setConfig(settings.calibrationMode, settings.point,
                 settings.dualTargetCalibrationM, settings.dualTargetCalibrationB, camProps);
 
         OutputMatPipe outputMatPipe = new OutputMatPipe(settings.isBinary);

@@ -13,12 +13,21 @@ import java.util.List;
 
 public class FilterContoursPipe implements Pipe<List<MatOfPoint>, List<MatOfPoint>> {
 
-    private final List<Number> area, ratio, extent;
-    private final CameraStaticProperties camProps;
+    private List<Number> area;
+    private List<Number> ratio;
+    private List<Number> extent;
+    private CameraStaticProperties camProps;
 
     private List<MatOfPoint> filteredContours = new ArrayList<>();
 
     public FilterContoursPipe(List<Number> area, List<Number> ratio, List<Number> extent, CameraStaticProperties camProps) {
+        this.area = area;
+        this.ratio = ratio;
+        this.extent = extent;
+        this.camProps = camProps;
+    }
+
+    public void setConfig(List<Number> area, List<Number> ratio, List<Number> extent, CameraStaticProperties camProps) {
         this.area = area;
         this.ratio = ratio;
         this.extent = extent;

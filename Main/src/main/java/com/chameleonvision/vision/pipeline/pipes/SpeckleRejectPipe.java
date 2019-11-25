@@ -9,11 +9,15 @@ import java.util.List;
 
 public class SpeckleRejectPipe implements Pipe<List<MatOfPoint>, List<MatOfPoint>> {
 
-    private final double minPercentOfAvg;
+    private double minPercentOfAvg;
 
     private List<MatOfPoint> despeckledContours = new ArrayList<>();
 
     public SpeckleRejectPipe(double minPercentOfAvg) {
+        this.minPercentOfAvg = minPercentOfAvg;
+    }
+
+    public void setConfig(double minPercentOfAvg) {
         this.minPercentOfAvg = minPercentOfAvg;
     }
 

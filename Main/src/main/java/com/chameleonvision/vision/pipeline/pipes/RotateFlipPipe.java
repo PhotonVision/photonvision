@@ -8,13 +8,18 @@ import org.opencv.core.Mat;
 
 public class RotateFlipPipe implements Pipe<Mat, Mat> {
 
-    private final ImageRotation rotation;
-    private final ImageFlipMode flip;
+    private ImageRotation rotation;
+    private ImageFlipMode flip;
 
     private Mat processBuffer = new Mat();
     private Mat outputMat = new Mat();
 
     public RotateFlipPipe(ImageRotation rotation, ImageFlipMode flip) {
+        this.rotation = rotation;
+        this.flip = flip;
+    }
+
+    public void setConfig(ImageRotation rotation, ImageFlipMode flip) {
         this.rotation = rotation;
         this.flip = flip;
     }

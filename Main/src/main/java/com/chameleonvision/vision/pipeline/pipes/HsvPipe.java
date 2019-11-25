@@ -9,12 +9,18 @@ import org.opencv.imgproc.Imgproc;
 
 public class HsvPipe implements Pipe<Mat, Mat> {
 
-    private final Scalar hsvLower, hsvUpper;
+    private Scalar hsvLower;
+    private Scalar hsvUpper;
 
     private Mat processBuffer = new Mat();
     private Mat outputMat = new Mat();
 
     public HsvPipe(Scalar hsvLower, Scalar hsvUpper) {
+        this.hsvLower = hsvLower;
+        this.hsvUpper = hsvUpper;
+    }
+
+    public void setConfig(Scalar hsvLower, Scalar hsvUpper) {
         this.hsvLower = hsvLower;
         this.hsvUpper = hsvUpper;
     }

@@ -18,14 +18,19 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
     private static final Comparator<MatOfPoint> sortByMomentsX =
             Comparator.comparingDouble(GroupContoursPipe::calcMomentsX);
 
-    private final TargetGroup group;
-    private final TargetIntersection intersection;
+    private TargetGroup group;
+    private TargetIntersection intersection;
 
     private List<RotatedRect> groupedContours = new ArrayList<>();
     private MatOfPoint2f intersectMatA = new MatOfPoint2f();
     private MatOfPoint2f intersectMatB = new MatOfPoint2f();
 
     public GroupContoursPipe(TargetGroup group, TargetIntersection intersection) {
+        this.group = group;
+        this.intersection = intersection;
+    }
+
+    public void setConfig(TargetGroup group, TargetIntersection intersection) {
         this.group = group;
         this.intersection = intersection;
     }
