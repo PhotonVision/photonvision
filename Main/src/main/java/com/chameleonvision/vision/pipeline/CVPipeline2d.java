@@ -63,8 +63,8 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
 
     @Override
     public CVPipeline2dResult runPipeline(Mat inputMat) {
-        long totalProcessTimeNanos = 0;
-        long processStartTimeNanos = System.nanoTime();
+        long totalPipelineTimeNanos = 0;
+        long pipelineStartTimeNanos = System.nanoTime();
 
         if (cameraCapture == null) {
             throw new RuntimeException("Pipeline was not initialized before being run!");
@@ -73,7 +73,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
             throw new RuntimeException("Input Mat is empty!");
         }
 
-        StringBuilder procTimeStringBuilder = new StringBuilder();
+        StringBuilder pipelineTimeStringBuilder = new StringBuilder();
 
         CaptureStaticProperties camProps = cameraCapture.getProperties().getStaticProperties();
 
@@ -105,25 +105,25 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
 
         Draw2dContoursPipe draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, camProps);
 
-        long pipeInitTimeNanos = System.nanoTime() - processStartTimeNanos;
-        totalProcessTimeNanos += pipeInitTimeNanos;
-        procTimeStringBuilder.append(String.format("PipeInit: %.2fms, ", pipeInitTimeNanos / 1000000.0));
+        long pipeInitTimeNanos = System.nanoTime() - pipelineStartTimeNanos;
+        totalPipelineTimeNanos += pipeInitTimeNanos;
+        pipelineTimeStringBuilder.append(String.format("PipeInit: %.2fms, ", pipeInitTimeNanos / 1000000.0));
 
         // run pipes
         Pair<Mat, Long> rotateFlipResult = rotateFlipPipe.run(inputMat);
-        totalProcessTimeNanos += rotateFlipResult.getRight();
-        procTimeStringBuilder.append(String.format("RotateFlip: %.2fms, ", rotateFlipResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += rotateFlipResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("RotateFlip: %.2fms, ", rotateFlipResult.getRight() / 1000000.0));
 
         Pair<Mat, Long> blurResult = blurPipe.run(rotateFlipResult.getLeft());
-        totalProcessTimeNanos += blurResult.getRight();
-        procTimeStringBuilder.append(String.format("Blur: %.2fms, ", blurResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += blurResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("Blur: %.2fms, ", blurResult.getRight() / 1000000.0));
 
         Pair<Mat, Long> erodeDilateResult = erodeDilatePipe.run(blurResult.getLeft());
-        totalProcessTimeNanos += erodeDilateResult.getRight();
-        procTimeStringBuilder.append(String.format("ErodeDilate: %.2fms, ", erodeDilateResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += erodeDilateResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("ErodeDilate: %.2fms, ", erodeDilateResult.getRight() / 1000000.0));
 
         Pair<Mat, Long> hsvResult = hsvPipe.run(erodeDilateResult.getLeft());
-        totalProcessTimeNanos += hsvResult.getRight();
+        totalPipelineTimeNanos += hsvResult.getRight();
 
         try {
             Imgproc.cvtColor(hsvResult.getLeft(), hsvOutputMat, Imgproc.COLOR_GRAY2BGR, 3);
@@ -131,46 +131,51 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
             System.err.println("(CVPipeline2d) Exception thrown by OpenCV: \n" + e.getMessage());
         }
 
-        procTimeStringBuilder.append(String.format("HSV: %.2fms, ", hsvResult.getRight() / 1000000.0));
+        pipelineTimeStringBuilder.append(String.format("HSV: %.2fms, ", hsvResult.getRight() / 1000000.0));
 
         Pair<List<MatOfPoint>, Long> findContoursResult = findContoursPipe.run(hsvResult.getLeft());
-        totalProcessTimeNanos += findContoursResult.getRight();
-        procTimeStringBuilder.append(String.format("FindContours: %.2fms, ", findContoursResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += findContoursResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("FindContours: %.2fms, ", findContoursResult.getRight() / 1000000.0));
 
         Pair<List<MatOfPoint>, Long> filterContoursResult = filterContoursPipe.run(findContoursResult.getLeft());
-        totalProcessTimeNanos += filterContoursResult.getRight();
-        procTimeStringBuilder.append(String.format("FilterContours: %.2fms, ", filterContoursResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += filterContoursResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("FilterContours: %.2fms, ", filterContoursResult.getRight() / 1000000.0));
 
         Pair<List<MatOfPoint>, Long> speckleRejectResult = speckleRejectPipe.run(filterContoursResult.getLeft());
-        totalProcessTimeNanos += speckleRejectResult.getRight();
-        procTimeStringBuilder.append(String.format("SpeckleReject: %.2fms, ", speckleRejectResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += speckleRejectResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("SpeckleReject: %.2fms, ", speckleRejectResult.getRight() / 1000000.0));
 
         Pair<List<RotatedRect>, Long> groupContoursResult = groupContoursPipe.run(speckleRejectResult.getLeft());
-        totalProcessTimeNanos += groupContoursResult.getRight();
-        procTimeStringBuilder.append(String.format("GroupContours: %.2fms, ", groupContoursResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += groupContoursResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("GroupContours: %.2fms, ", groupContoursResult.getRight() / 1000000.0));
 
         Pair<List<RotatedRect>, Long> sortContoursResult = sortContoursPipe.run(groupContoursResult.getLeft());
-        totalProcessTimeNanos += sortContoursResult.getRight();
-        procTimeStringBuilder.append(String.format("SortContours: %.2fms, ", sortContoursResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += sortContoursResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("SortContours: %.2fms, ", sortContoursResult.getRight() / 1000000.0));
 
         Pair<List<Target2d>, Long> collect2dTargetsResult = collect2dTargetsPipe.run(sortContoursResult.getLeft());
-        totalProcessTimeNanos += collect2dTargetsResult.getRight();
-        procTimeStringBuilder.append(String.format("SortContours: %.2fms, ", sortContoursResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += collect2dTargetsResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("SortContours: %.2fms, ", sortContoursResult.getRight() / 1000000.0));
 
         // takes pair of (Mat of original camera image, Mat of HSV thresholded image)
         Pair<Mat, Long> outputMatResult = outputMatPipe.run(Pair.of(rawCameraMat, hsvOutputMat));
-        totalProcessTimeNanos += outputMatResult.getRight();
-        procTimeStringBuilder.append(String.format("OutputMat: %.2fms, ", outputMatResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += outputMatResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("OutputMat: %.2fms, ", outputMatResult.getRight() / 1000000.0));
 
         // takes pair of (Mat to draw on, List<RotatedRect> of sorted contours)
         Pair<Mat, Long> draw2dContoursResult = draw2dContoursPipe.run(Pair.of(outputMatResult.getLeft(), sortContoursResult.getLeft()));
-        totalProcessTimeNanos += draw2dContoursResult.getRight();
-        procTimeStringBuilder.append(String.format("Draw2dContours: %.2fms, ", draw2dContoursResult.getRight() / 1000000.0));
+        totalPipelineTimeNanos += draw2dContoursResult.getRight();
+        pipelineTimeStringBuilder.append(String.format("Draw2dContours: %.2fms, ", draw2dContoursResult.getRight() / 1000000.0));
 
-        System.out.println(procTimeStringBuilder.toString());
-        System.out.printf("Pipeline ran in %.3fms\n", totalProcessTimeNanos / 1000000.0);
+        System.out.println(pipelineTimeStringBuilder.toString());
+        double totalPipelineTimeMillis = totalPipelineTimeNanos / 1000000.0;
+        double totalPipelineTimeFPS = 1.0 / (totalPipelineTimeMillis / 1000.0);
+        double truePipelineTimeMillis = (System.nanoTime() - pipelineStartTimeNanos) / 1000000.0;
+        double truePipelineFPS = 1.0 / (truePipelineTimeMillis / 1000.0);
+        System.out.printf("Pipeline processed in %.3fms (%.2fFPS), ", totalPipelineTimeMillis, totalPipelineTimeFPS);
+        System.out.printf("full pipeline run time was %.3fms (%.2fFPS)\n", truePipelineTimeMillis, truePipelineFPS);
 
-        return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft(), totalProcessTimeNanos);
+        return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft(), totalPipelineTimeNanos);
     }
 
     public static class CVPipeline2dResult extends CVPipelineResult<Target2d> {
