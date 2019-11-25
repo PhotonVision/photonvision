@@ -115,6 +115,7 @@ public class VisionProcess {
         ntAreaEntry = newTable.getEntry("area");
         ntTimeStampEntry = newTable.getEntry("timestamp");
         ntValidEntry = newTable.getEntry("is_valid");
+        ntAuxListEntry = newTable.getEntry("aux_targets");
         ntDriveModeListenerID = ntDriverModeEntry.addListener(this::setDriverMode, EntryListenerFlags.kUpdate);
         ntPipelineListenerID = ntPipelineEntry.addListener(this::setPipeline, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
@@ -408,6 +409,7 @@ public class VisionProcess {
             if (latestMat != null && latestMat.cols() > 0) {
                 latestMat.copyTo(streamBuffer);
                 streamer.runStream(streamBuffer);
+                streamBuffer.release();
 //                if (toStreamMat != null && toStreamMat.cols() > 0) {
 //                } else {
 //                    System.out.println("fuuuuck");
