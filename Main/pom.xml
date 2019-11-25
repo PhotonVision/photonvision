@@ -174,39 +174,39 @@
         <dependency>
             <groupId>edu.wpi.first.cameraserver</groupId>
             <artifactId>cameraserver-java</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
         </dependency>
 
         <!--frc network table java libs-->
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-java</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
         </dependency>
 
         <!--frc network tables interface libs-->
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
             <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
@@ -214,7 +214,7 @@
         <dependency>
             <groupId>edu.wpi.first.wpiutil</groupId>
             <artifactId>wpiutil-java</artifactId>
-            <version>2019.4.1-213-g56d782b</version>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
         </dependency>
 
         <!-- WPI OpenCV for all supported platforms -->
