@@ -13,6 +13,10 @@ public class OutputMatPipe implements Pipe<Pair<Mat, Mat>, Mat> {
         this.showThresholded = showThresholded;
     }
 
+    public void setConfig(boolean showThresholded) {
+        this.showThresholded = showThresholded;
+    }
+
     @Override
     public Pair<Mat, Long> run(Pair<Mat, Mat> input) {
         long processStartNanos = System.nanoTime();
