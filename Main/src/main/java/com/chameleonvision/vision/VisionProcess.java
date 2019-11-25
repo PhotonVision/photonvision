@@ -214,10 +214,10 @@ public class VisionProcess {
         ntValidEntry.setBoolean(data.hasTarget);
         if(data.hasTarget && !(data instanceof DriverVisionPipeline.DriverPipelineResult)) {
             if(data instanceof CVPipeline2d.CVPipeline2dResult) {
-                ntTimeStampEntry.setDouble(data.processTime);
 
                 //noinspection unchecked
                 List<CVPipeline2d.Target2d> targets = (List<CVPipeline2d.Target2d>) data.targets;
+                ntTimeStampEntry.setDouble(data.processTime);
                 ntPitchEntry.setDouble(targets.get(0).pitch);
                 ntYawEntry.setDouble(targets.get(0).yaw);
                 ntAreaEntry.setDouble(targets.get(0).area);

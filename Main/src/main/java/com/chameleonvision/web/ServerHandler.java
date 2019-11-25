@@ -1,10 +1,13 @@
 package com.chameleonvision.web;
 
+import com.chameleonvision.config.GeneralSettings;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraProcess;
 import com.chameleonvision.config.ConfigManager;
+import com.chameleonvision.vision.enums.CalibrationMode;
 import com.chameleonvision.vision.pipeline.CVPipeline;
+import com.chameleonvision.vision.pipeline.CVPipeline2dSettings;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision.vision.enums.StreamDivisor;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -269,19 +272,45 @@ public class ServerHandler {
         return tmp;
     }
 
-    private static Map<String, Object> allFieldsToMap(Object obj) {
+    private static Map<String, Object> settingsToMap(GeneralSettings settings) {
         Map<String, Object> map = new HashMap<>();
-        try {
-            Field[] fields = obj.getClass().getFields();
-            for (Field field : fields) {
-                map.put(field.getName(), field.get(obj));
-            }
-        } catch (IllegalAccessException e) {
-            System.err.println("Illegal Access error:" + Arrays.toString(e.getStackTrace()));
-        }
+        map.put("team_number", settings.teamNumber);
+        map.put("connection_type", settings.connectionType);
+        map.put("ip", settings.ip);
+        map.put("gateway", settings.gateway);
+        map.put("netmask", settings.netmask);
+        map.put("hostname", settings.hostname);
+        map.put("curr_camera", settings.currentCamera);
+        map.put("curr_pipeline", settings.currentPipeline);
+
         return map;
     }
 
+    private static Map<String, Object> pipelineToMap(CVPipelineSettings s) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("exposure", s.exposure);
+        map.put("brightness", s.brightness);
+        if(s instanceof CVPipeline2dSettings) {
+            var s_ = (CVPipeline2dSettings) s;
+            map.put("orientation", s.flipMode.name());
+            map.put("hue", s_.hue);
+            map.put("saturation", s_.saturation);
+            map.put("value", s_.value);
+            map.put("erode", s_.erode);
+            map.put("dilate", s_.dilate);
+            map.put("area", s_.area);
+            map.put("ratio", s_.ratio);
+            map.put("extent", s_.extent);
+            map.put("is_binary", s_.isBinary);
+            map.put("sort_mode", s_.sortMode.name());
+            map.put("target_group", s_.targetGroup.name());
+            map.put("target_intersection", s_.targetIntersection.name());
+            map.put("M", s_.dualTargetCalibrationM);
+            map.put("B", s_.dualTargetCalibrationB);
+            map.put("is_calibrated", !s_.calibrationMode.equals(CalibrationMode.None));
+        }
+        return map;
+    }
     public static void sendFullSettings() {
         //General settings
         Map<String, Object> fullSettings = new HashMap<>();
@@ -291,8 +320,8 @@ public class ServerHandler {
         CVPipeline currentPipeline = currentProcess.getCurrentPipeline();
 
         try {
-            fullSettings.putAll(allFieldsToMap(ConfigManager.settings));
-            fullSettings.putAll(allFieldsToMap(currentPipeline));
+            fullSettings.putAll(settingsToMap(ConfigManager.settings));
+            fullSettings.putAll(pipelineToMap(currentPipeline.settings));
             fullSettings.put("settings", getOrdinalSettings());
             fullSettings.put("cameraSettings", getOrdinalCameraSettings());
             fullSettings.put("cameraList", VisionManager.getAllCameraNicknames());
