@@ -173,7 +173,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft(), totalProcessTimeNanos);
     }
 
-    public static class     CVPipeline2dResult extends CVPipelineResult<Target2d> {
+    public static class CVPipeline2dResult extends CVPipelineResult<Target2d> {
         public CVPipeline2dResult(List<Target2d> targets, Mat outputMat, long processTimeNanos) {
             super(targets, outputMat, processTimeNanos);
         }

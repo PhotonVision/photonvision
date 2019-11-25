@@ -72,7 +72,9 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
                             finalContourList.clear();
                             continue;
                         }
-
+                        
+                        intersectMatA.release();
+                        intersectMatB.release();
                         firstContour.release();
                         secondContour.release();
 
