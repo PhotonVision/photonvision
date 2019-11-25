@@ -39,6 +39,8 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
     public Pair<List<RotatedRect>, Long> run(List<MatOfPoint> input) {
         long processStartNanos = System.nanoTime();
 
+        groupedContours.clear();
+
         List<MatOfPoint> sorted = new ArrayList<>(input);
         sorted.sort(sortByMomentsX);
 

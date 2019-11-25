@@ -43,27 +43,30 @@ public class SortContoursPipe implements Pipe<List<RotatedRect>, List<RotatedRec
     public Pair<List<RotatedRect>, Long> run(List<RotatedRect> input) {
         long processStartNanos = System.nanoTime();
 
+        sortedContours.clear();
+        sortedContours.addAll(input);
+
         switch (sort) {
             case Largest:
-                input.sort(SortByLargestComparator);
+                sortedContours.sort(SortByLargestComparator);
                 break;
             case Smallest:
-                input.sort(SortBySmallestComparator);
+                sortedContours.sort(SortBySmallestComparator);
                 break;
             case Highest:
-                input.sort(SortByHighestComparator);
+                sortedContours.sort(SortByHighestComparator);
                 break;
             case Lowest:
-                input.sort(SortByLowestComparator);
+                sortedContours.sort(SortByLowestComparator);
                 break;
             case Leftmost:
-                input.sort(SortByLeftmostComparator);
+                sortedContours.sort(SortByLeftmostComparator);
                 break;
             case Rightmost:
-                input.sort(SortByRightmostComparator);
+                sortedContours.sort(SortByRightmostComparator);
                 break;
             case Centermost:
-                input.sort(SortByCentermostComparator);
+                sortedContours.sort(SortByCentermostComparator);
                 break;
             default:
                 break;

@@ -38,6 +38,8 @@ public class FilterContoursPipe implements Pipe<List<MatOfPoint>, List<MatOfPoin
     public Pair<List<MatOfPoint>, Long> run(List<MatOfPoint> input) {
         long processStartNanos = System.nanoTime();
 
+        filteredContours.clear();
+
         for (MatOfPoint Contour : input) {
             try {
                 double contourArea = Imgproc.contourArea(Contour);

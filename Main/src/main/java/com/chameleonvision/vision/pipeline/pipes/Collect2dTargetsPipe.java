@@ -41,6 +41,8 @@ public class Collect2dTargetsPipe implements Pipe<List<RotatedRect>, List<CVPipe
     public Pair<List<CVPipeline2d.Target2d>, Long> run(List<RotatedRect> input) {
         long processStartNanos = System.nanoTime();
 
+        targets.clear();
+
         input.forEach(r -> {
             CVPipeline2d.Target2d t = new CVPipeline2d.Target2d();
             t.rawPoint = r;

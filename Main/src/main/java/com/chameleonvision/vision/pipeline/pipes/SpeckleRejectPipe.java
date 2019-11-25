@@ -25,6 +25,8 @@ public class SpeckleRejectPipe implements Pipe<List<MatOfPoint>, List<MatOfPoint
     public Pair<List<MatOfPoint>, Long> run(List<MatOfPoint> input) {
         long processStartNanos = System.nanoTime();
 
+        despeckledContours.clear();
+
         double averageArea = 0.0;
 
         for (MatOfPoint c : input) {
