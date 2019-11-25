@@ -6,7 +6,7 @@
         <CVrangeSlider v-model="value.saturation" name="Saturation" :min="0" :max="255" @input="handleData('saturation')" :disabled="isAutomaticHSV"/>
         <CVrangeSlider v-model="value.value" name="Value" :min="0" :max="255" @input="handleData('value')" :disabled="isAutomaticHSV"/>
         <v-divider color="darkgray "/>
-        <v-btn style="margin: 20px;" tile color="#4baf62" :disabled="isManualHSV">
+        <v-btn style="margin: 20px;" tile color="#4baf62" :disabled="isManualHSV" @click="openPickerTab">
                     <v-icon>colorize</v-icon>
                     Colorpick Calibration
                 </v-btn>
@@ -19,6 +19,7 @@
 <script>
 import CVrangeSlider from '../../components/cv-range-slider'
 import CVswitch from '../../components/cv-switch'
+
     export default {
         name: 'Threshold',
         props:['value'],
@@ -49,6 +50,11 @@ import CVswitch from '../../components/cv-switch'
             },
         },
         methods:{  
+            openPickerTab()
+            {
+                console.log("opening picker tab");
+                this.$router.push("picker");
+            },
             handleData(val){
                 this.handleInput(val,this.value[val]);
                 this.$emit('update')
