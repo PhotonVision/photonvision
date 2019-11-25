@@ -269,6 +269,19 @@ public class ServerHandler {
         return tmp;
     }
 
+    private static Map<String, Object> allFieldsToMap(Object obj) {
+        Map<String, Object> map = new HashMap<>();
+        try {
+            Field[] fields = obj.getClass().getFields();
+            for (Field field : fields) {
+                map.put(field.getName(), field.get(obj));
+            }
+        } catch (IllegalAccessException e) {
+            System.err.println("Illegal Access error:" + Arrays.toString(e.getStackTrace()));
+        }
+        return map;
+    }
+
     public static void sendFullSettings() {
         //General settings
         Map<String, Object> fullSettings = new HashMap<>();
@@ -278,6 +291,8 @@ public class ServerHandler {
         CVPipeline currentPipeline = currentProcess.getCurrentPipeline();
 
         try {
+            fullSettings.putAll(allFieldsToMap(ConfigManager.settings));
+            fullSettings.putAll(allFieldsToMap(currentPipeline));
             fullSettings.put("settings", getOrdinalSettings());
             fullSettings.put("cameraSettings", getOrdinalCameraSettings());
             fullSettings.put("cameraList", VisionManager.getAllCameraNicknames());
@@ -286,6 +301,7 @@ public class ServerHandler {
             // TODO (HIGH) all of these settings!
             fullSettings.put("pipelineList", VisionManager.getCurrentCameraPipelineNicknames());
             fullSettings.put("resolutionList", VisionManager.getCurrentCameraResolutionList());
+            fullSettings.put("FOV", currentCamera.getProperties().FOV);
             fullSettings.put("port", currentProcess.cameraStreamer.getStreamPort());
             fullSettings.put("currentPipelineIndex", VisionManager.getCurrentUIVisionProcess().getCurrentPipelineIndex());
             fullSettings.put("currentCameraIndex", VisionManager.getCurrentUIVisionProcessIndex());
