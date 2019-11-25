@@ -103,22 +103,27 @@ public class ConfigManager {
     public static List<CameraConfig> initializeCameraConfig(List<CameraConfig> preliminaryConfigs) {
         var configList = new ArrayList<CameraConfig>();
 
+        checkSettingsFolder();
+
         // loop over all the camera names and try to create settings folders for it
         preliminaryConfigs.forEach((preliminaryConfig) -> {
+            String cameraName = preliminaryConfig.name;
 
-            final Path cameraConfigFolderPath = Paths.get(cameraConfigPath.toString(), String.format("%s\\", preliminaryConfig.name));
-            final Path cameraConfigPath = Paths.get(cameraConfigFolderPath.toString(), "camera.json");
+            final Path cameraConfigFolderPath = getCameraSpecificFolderPath(cameraName);
+            final Path cameraConfigPath = getCameraSpecificConfigPath(cameraName);
 
             // check if the config folder exists, and if not, create it
-            if (Files.notExists(cameraConfigFolderPath)) {
+            if (!cameraFolderExists(cameraName)) {
                 try {
                     Files.createDirectory(cameraConfigFolderPath);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    System.err.println("Failed to create camera config folder!");
                 }
             } else {
                 CameraConfig config = preliminaryConfig;
-                if(!Files.exists(cameraConfigPath)) {
+
+                // check if the config exists, and if not, create it
+                if(!cameraConfigExists(cameraName)) {
                     try {
                         FileHelper.Serializer(cameraConfigPath, preliminaryConfig);
                     } catch (IOException e) {
