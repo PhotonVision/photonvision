@@ -20,6 +20,10 @@ public class USBCameraProperties extends CaptureProperties {
     private static final int MINIMUM_WIDTH = 320;
     private static final int MINIMUM_HEIGHT = 200;
     private static final int MAX_INIT_MS = 1500;
+
+    private static final int PS3EYE_VID = 1415;
+    private static final int PS3EYE_PID = 2000;
+
     private static final List<VideoMode.PixelFormat> ALLOWED_PIXEL_FORMATS = Arrays.asList(VideoMode.PixelFormat.kYUYV, VideoMode.PixelFormat.kMJPEG);
 
     private static final Predicate<VideoMode> kMinFPSPredicate = (videoMode -> videoMode.fps >= MINIMUM_FPS);
@@ -31,11 +35,10 @@ public class USBCameraProperties extends CaptureProperties {
     public final List<VideoMode> videoModes;
 
     private final UsbCamera baseCamera;
-    private final boolean hasGain;
+    public final boolean isPS3Eye;
 
     private String nickname;
     public double FOV;
-
 
     USBCameraProperties(UsbCamera baseCamera, CameraConfig config) {
         FOV = config.fov;
@@ -43,6 +46,9 @@ public class USBCameraProperties extends CaptureProperties {
         path = config.path;
         nickname = config.nickname;
         this.baseCamera = baseCamera;
+
+        int usbVID = baseCamera.getInfo().vendorId;
+        int usbPID = baseCamera.getInfo().productId;
 
         // wait for camera USB init on Windows, Windows USB is slow...
         if (Platform.CurrentPlatform == Platform.WINDOWS_64 && !baseCamera.isConnected()) {
@@ -57,17 +63,7 @@ public class USBCameraProperties extends CaptureProperties {
             System.out.printf("USBCameraProcess initialized in %.2fms\n", initTimeMs);
         }
 
-        // TODO: (low) find way to determine if camera is a PS3Eye
-        hasGain = false;
-//        var props = baseCamera.enumerateProperties();
-//        for (var prop : props) {
-//            var name = prop.getName();
-//            var min = prop.getMin();
-//            var max = prop.getMax();
-//            var _default = prop.getDefault();
-//            var kind = prop.getKind();
-//        }
-
+        isPS3Eye = (usbVID == PS3EYE_VID && usbPID == PS3EYE_PID);
         videoModes = filterVideoModes(baseCamera.enumerateVideoModes());
     }
 
