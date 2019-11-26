@@ -13,7 +13,7 @@ public interface CameraCapture extends ImageCapture {
     void setExposure(int exposure);
 
     /**
-     * Set the exposure of the camera
+     * Set the brightness of the camera
      * @param brightness the new brightness to set the camera to
      */
     void setBrightness(int brightness);
@@ -23,4 +23,11 @@ public interface CameraCapture extends ImageCapture {
      * @param mode the wanted mode
      */
     void setVideoMode(VideoMode mode);
+
+    /**
+     * Set the gain of the camera
+     * NOTE - Not all cameras support this.
+     * @param gain the new gain to set the camera to
+     */
+    void setGain(int gain);
 }

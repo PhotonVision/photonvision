@@ -42,7 +42,7 @@ public class USBCameraCapture implements CameraCapture {
         try {
             baseCamera.setExposureManual(exposure);
         } catch (VideoException e) {
-            System.err.println("Current camera does not support exposure change");
+            System.err.println("Failed to change camera exposure!");
         }
     }
 
@@ -51,7 +51,7 @@ public class USBCameraCapture implements CameraCapture {
         try {
             baseCamera.setBrightness(brightness);
         } catch (VideoException e) {
-            System.err.println("Current camera does not support brightness change");
+            System.err.println("Failed to change camera brightness!");
         }
     }
 
@@ -61,7 +61,19 @@ public class USBCameraCapture implements CameraCapture {
             baseCamera.setVideoMode(mode);
             properties.updateVideoMode(mode);
         } catch (VideoException e) {
-            System.err.println("Current camera does not support resolution change");
+            System.err.println("Failed to change camera video mode!");
+        }
+    }
+
+    @Override
+    public void setGain(int gain) {
+        if (properties.isPS3Eye) {
+            try {
+                baseCamera.getProperty("gain_automatic").set(0);
+                baseCamera.getProperty("gain").set(gain);
+            } catch (Exception e) {
+                System.err.println("Failed to change camera gain!");
+            }
         }
     }
 }
