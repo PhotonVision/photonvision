@@ -1,6 +1,6 @@
 package com.chameleonvision.vision.camera;
 
-import com.chameleonvision.config.CameraConfig;
+import com.chameleonvision.config.CameraJsonConfig;
 import com.chameleonvision.util.Platform;
 import com.chameleonvision.vision.image.CaptureProperties;
 import edu.wpi.cscore.UsbCamera;
@@ -40,7 +40,7 @@ public class USBCameraProperties extends CaptureProperties {
     private String nickname;
     public double FOV;
 
-    USBCameraProperties(UsbCamera baseCamera, CameraConfig config) {
+    USBCameraProperties(UsbCamera baseCamera, CameraJsonConfig config) {
         FOV = config.fov;
         name = config.name;
         path = config.path;

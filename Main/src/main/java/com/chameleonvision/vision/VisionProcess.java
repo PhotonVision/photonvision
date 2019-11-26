@@ -17,6 +17,8 @@ import org.opencv.core.Mat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 
 public class VisionProcess {
 
@@ -29,10 +31,11 @@ public class VisionProcess {
     private CVPipeline currentPipeline;
     private int currentPipelineIndex = 0;
 
-    private final CVPipelineSettings driverModeSettings = new CVPipelineSettings();
-    private CVPipeline driverModePipeline = new DriverVisionPipeline(driverModeSettings);
+    private CVPipeline driverModePipeline = new DriverVisionPipeline(new CVPipelineSettings());
 
     private volatile CVPipelineResult lastPipelineResult;
+
+    BlockingQueue<Mat> streamFrameQueue = new LinkedBlockingDeque<>(1);
 
     // network table stuff
     private final NetworkTable defaultTable;
@@ -240,12 +243,23 @@ public class VisionProcess {
         pipelines.add(pipeline);
     }
 
+    public void addPipeline(CVPipelineSettings settings) {
+        if (settings instanceof CVPipeline2dSettings) {
+            pipelines.add(new CVPipeline2d((CVPipeline2dSettings) settings));
+        }
+    }
+
     public CameraCapture getCamera() {
         return cameraCapture;
     }
 
     public boolean getDriverMode() {
         return (currentPipeline == driverModePipeline);
+    }
+
+    public void setDriverModeSettings(CVPipelineSettings settings) {
+
+        driverModePipeline.settings = settings;
     }
 
     public CVPipelineSettings getDriverModeSettings() {
@@ -285,6 +299,12 @@ public class VisionProcess {
                     }
                 }
 
+                try {
+                    streamFrameQueue.add(lastPipelineResult.outputMat);
+                } catch (Exception e) {
+                    System.out.println("Vision running faster than stream");
+                }
+
                 var deltaTimeNanos = lastUpdateTimeNanos - System.nanoTime();
                 fpsAveragingBuffer.addFirst(1.0 / (deltaTimeNanos * 1E-09));
                 lastUpdateTimeNanos = System.nanoTime();
@@ -310,25 +330,13 @@ public class VisionProcess {
 
         private CameraStreamerRunnable(int cameraFPS, CameraStreamer streamer) {
             // add 2 FPS to allow for a bit of overhead
-            // TODO: (low) test the effect of this
-//            super(1000L/(cameraFPS + 2));
-            super(10L);
+            super(1000L/(cameraFPS + 2));
             this.streamer = streamer;
         }
 
         @Override
         protected void process() {
-//            System.out.println("running camera streamer");
-//            Mat latestMat = lastPipelineResult.outputMat; //visionRunnable.result;
-//            if (latestMat != null && latestMat.cols() > 0) {
-//                latestMat.copyTo(streamBuffer);
-//                streamer.runStream(streamBuffer);
-//                streamBuffer.release();
-//                if (toStreamMat != null && toStreamMat.cols() > 0) {
-//                } else {
-//                    System.out.println("fuuuuck");
-//                }
-//            }
+
         }
     }
 }

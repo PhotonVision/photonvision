@@ -1,7 +1,8 @@
 package com.chameleonvision.vision;
 
-import com.chameleonvision.config.CameraConfig;
+import com.chameleonvision.config.CameraJsonConfig;
 import com.chameleonvision.config.ConfigManager;
+import com.chameleonvision.config.FullCameraConfiguration;
 import com.chameleonvision.util.Helpers;
 import com.chameleonvision.util.Platform;
 import com.chameleonvision.vision.camera.CameraCapture;
@@ -20,7 +21,7 @@ public class VisionManager {
     }
 
     private static final LinkedHashMap<String, UsbCameraInfo> usbCameraInfosByCameraName = new LinkedHashMap<>();
-    private static final LinkedList<CameraConfig> loadedCameraConfigs = new LinkedList<>();
+    private static final LinkedList<FullCameraConfiguration> loadedCameraConfigs = new LinkedList<>();
     private static final LinkedList<VisionProcessManageable> visionProcesses = new LinkedList<>();
 
     private static class VisionProcessManageable {
@@ -57,7 +58,7 @@ public class VisionManager {
         }
 
         // load the config
-        List<CameraConfig> preliminaryConfigs = new ArrayList<>();
+        List<CameraJsonConfig> preliminaryConfigs = new ArrayList<>();
 
         usbCameraInfosByCameraName.values().forEach((cameraInfo) -> {
             String truePath;
@@ -68,10 +69,10 @@ public class VisionManager {
                 truePath = Arrays.stream(cameraInfo.otherPaths).filter(x -> x.contains("/dev/v4l/by-path")).findFirst().orElse(cameraInfo.path);
             }
 
-            preliminaryConfigs.add(new CameraConfig(truePath, cameraInfo.name));
+            preliminaryConfigs.add(new CameraJsonConfig(truePath, cameraInfo.name));
         });
 
-        loadedCameraConfigs.addAll(ConfigManager.initializeCameraConfig(preliminaryConfigs));
+        loadedCameraConfigs.addAll(ConfigManager.initializeCameras(preliminaryConfigs));
 
         // TODO: (HIGH) Load pipelines from json
 //        UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
@@ -85,10 +86,15 @@ public class VisionManager {
 
     public static boolean initializeProcesses() {
         for (int i = 0; i < loadedCameraConfigs.size(); i++) {
-            CameraConfig config = loadedCameraConfigs.get(i);
-            CameraCapture camera = new USBCameraCapture(config);
-            VisionProcess process = new VisionProcess(camera, config.name);
-            visionProcesses.add(new VisionProcessManageable(i, config.name, process));
+            FullCameraConfiguration config = loadedCameraConfigs.get(i);
+
+            CameraJsonConfig cameraJsonConfig = config.cameraConfig;
+
+            CameraCapture camera = new USBCameraCapture(cameraJsonConfig);
+            VisionProcess process = new VisionProcess(camera, cameraJsonConfig.name);
+            config.pipelines.forEach(process::addPipeline);
+            process.setDriverModeSettings(config.drivermode);
+            visionProcesses.add(new VisionProcessManageable(i, cameraJsonConfig.name, process));
         }
         currentUIVisionProcess = getVisionProcessByIndex(0);
         return true;
@@ -136,14 +142,10 @@ public class VisionManager {
             String cameraName = process.getCamera().getProperties().name;
             List<CVPipelineSettings> pipelines = process.getPipelines().stream().map(cvPipeline -> cvPipeline.settings).collect(Collectors.toList());
             CVPipelineSettings driverMode = process.getDriverModeSettings();
-            CameraConfig config = CameraConfig.fromUSBCameraProcess((USBCameraCapture) process.getCamera());
-            try {
-                ConfigManager.saveCameraPipelines(cameraName, pipelines);
-                ConfigManager.saveCameraDriverMode(cameraName, driverMode);
-                ConfigManager.saveCameraConfig(cameraName, config);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            CameraJsonConfig config = CameraJsonConfig.fromUSBCameraProcess((USBCameraCapture) process.getCamera());
+            ConfigManager.saveCameraPipelines(cameraName, pipelines);
+            ConfigManager.saveCameraDriverMode(cameraName, driverMode);
+            ConfigManager.saveCameraConfig(cameraName, config);
         });
     }
 
