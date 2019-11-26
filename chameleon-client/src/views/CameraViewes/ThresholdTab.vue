@@ -33,9 +33,7 @@ import CVswitch from '../../components/cv-switch'
         },
         computed: {            
             isAutomaticHSV() {
-                if (typeof this.pipeline.isColorPick === "boolean") {
-                    return this.pipeline.isColorPick;
-                }
+                return this.pipeline.isColorPick;
             },
             pipeline: {
                 get() {
@@ -44,9 +42,7 @@ import CVswitch from '../../components/cv-switch'
             },
             isManualHSV()
             {
-                if (typeof this.pipeline.isColorPick === "boolean") {
-                    return !this.pipeline.isColorPick;
-                }
+                return !this.pipeline.isColorPick;
             },
         },
         methods:{  
