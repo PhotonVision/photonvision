@@ -207,6 +207,12 @@
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
             <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <classifier>linuxaarch64bionic</classifier>
+        </dependency>
+        <dependency>
+            <groupId>edu.wpi.first.ntcore</groupId>
+            <artifactId>ntcore-jni</artifactId>
+            <version>2020.1.1-beta-2-98-gb058dcf</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
