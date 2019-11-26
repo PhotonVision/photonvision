@@ -41,56 +41,59 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
 
         groupedContours.clear();
 
-        List<MatOfPoint> sorted = new ArrayList<>(input);
-        sorted.sort(sortByMomentsX);
+        if (input.size() > 0) {
 
-        Collections.reverse(sorted);
+            List<MatOfPoint> sorted = new ArrayList<>(input);
+            sorted.sort(sortByMomentsX);
 
-        switch (group) {
-            case Single: {
-                input.forEach(c -> {
-                    MatOfPoint2f contour = new MatOfPoint2f();
-                    contour.fromArray(c.toArray());
-                    if (contour.cols() != 0 && contour.rows() != 0) {
-                        RotatedRect rect = Imgproc.minAreaRect(contour);
-                        groupedContours.add(rect);
-                    }
-                });
-                break;
-            }
-            case Dual: {
-                for (var i = 0; i < input.size(); i++) {
-                    List<Point> finalContourList = new ArrayList<>(input.get(i).toList());
+            Collections.reverse(sorted);
 
-                    try {
-                        MatOfPoint firstContour = input.get(i);
-                        MatOfPoint secondContour = input.get(i + 1);
-
-                        if (isIntersecting(firstContour, secondContour)) {
-                            finalContourList.addAll(secondContour.toList());
-                        } else {
-                            finalContourList.clear();
-                            continue;
-                        }
-                        
-                        intersectMatA.release();
-                        intersectMatB.release();
-                        firstContour.release();
-                        secondContour.release();
-
+            switch (group) {
+                case Single: {
+                    input.forEach(c -> {
                         MatOfPoint2f contour = new MatOfPoint2f();
-                        contour.fromList(finalContourList);
-
+                        contour.fromArray(c.toArray());
                         if (contour.cols() != 0 && contour.rows() != 0) {
                             RotatedRect rect = Imgproc.minAreaRect(contour);
                             groupedContours.add(rect);
                         }
-                    } catch (IndexOutOfBoundsException e) {
-                        System.err.println("GroupContours: WTF");
-                        finalContourList.clear();
-                    }
+                    });
+                    break;
                 }
-                break;
+                case Dual: {
+                    for (var i = 0; i < input.size(); i++) {
+                        List<Point> finalContourList = new ArrayList<>(input.get(i).toList());
+
+                        try {
+                            MatOfPoint firstContour = input.get(i);
+                            MatOfPoint secondContour = input.get(i + 1);
+
+                            if (isIntersecting(firstContour, secondContour)) {
+                                finalContourList.addAll(secondContour.toList());
+                            } else {
+                                finalContourList.clear();
+                                continue;
+                            }
+
+                            intersectMatA.release();
+                            intersectMatB.release();
+                            firstContour.release();
+                            secondContour.release();
+
+                            MatOfPoint2f contour = new MatOfPoint2f();
+                            contour.fromList(finalContourList);
+
+                            if (contour.cols() != 0 && contour.rows() != 0) {
+                                RotatedRect rect = Imgproc.minAreaRect(contour);
+                                groupedContours.add(rect);
+                            }
+                        } catch (IndexOutOfBoundsException e) {
+                            System.err.println("GroupContours: WTF");
+                            finalContourList.clear();
+                        }
+                    }
+                    break;
+                }
             }
         }
 

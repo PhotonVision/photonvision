@@ -40,30 +40,32 @@ public class FilterContoursPipe implements Pipe<List<MatOfPoint>, List<MatOfPoin
 
         filteredContours.clear();
 
-        for (MatOfPoint Contour : input) {
-            try {
-                double contourArea = Imgproc.contourArea(Contour);
-                double AreaRatio = (contourArea / camProps.imageArea) * 100;
-                double minArea = (MathHandler.sigmoid(area.get(0)));
-                double maxArea = (MathHandler.sigmoid(area.get(1)));
-                if (AreaRatio < minArea || AreaRatio > maxArea) {
-                    continue;
+        if (input.size() > 0) {
+            for (MatOfPoint Contour : input) {
+                try {
+                    double contourArea = Imgproc.contourArea(Contour);
+                    double AreaRatio = (contourArea / camProps.imageArea) * 100;
+                    double minArea = (MathHandler.sigmoid(area.get(0)));
+                    double maxArea = (MathHandler.sigmoid(area.get(1)));
+                    if (AreaRatio < minArea || AreaRatio > maxArea) {
+                        continue;
+                    }
+                    var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
+                    double minExtent = (extent.get(0).doubleValue() * rect.size.area()) / 100;
+                    double maxExtent = (extent.get(1).doubleValue() * rect.size.area()) / 100;
+                    if (contourArea <= minExtent || contourArea >= maxExtent) {
+                        continue;
+                    }
+                    Rect bb = Imgproc.boundingRect(Contour);
+                    double aspectRatio = ((double)bb.width / bb.height);
+                    if (aspectRatio < ratio.get(0).doubleValue() || aspectRatio > ratio.get(1).doubleValue()) {
+                        continue;
+                    }
+                    filteredContours.add(Contour);
+                } catch (Exception e) {
+                    System.err.println("Error while filtering contours");
+                    e.printStackTrace();
                 }
-                var rect = Imgproc.minAreaRect(new MatOfPoint2f(Contour.toArray()));
-                double minExtent = (extent.get(0).doubleValue() * rect.size.area()) / 100;
-                double maxExtent = (extent.get(1).doubleValue() * rect.size.area()) / 100;
-                if (contourArea <= minExtent || contourArea >= maxExtent) {
-                    continue;
-                }
-                Rect bb = Imgproc.boundingRect(Contour);
-                double aspectRatio = ((double)bb.width / bb.height);
-                if (aspectRatio < ratio.get(0).doubleValue() || aspectRatio > ratio.get(1).doubleValue()) {
-                    continue;
-                }
-                filteredContours.add(Contour);
-            } catch (Exception e) {
-                System.err.println("Error while filtering contours");
-                e.printStackTrace();
             }
         }
 

@@ -9,11 +9,16 @@ public abstract class CVPipelineResult<T> {
     public final boolean hasTarget;
     public final Mat outputMat;
     public final long processTime;
+    public long imageTimestamp = 0;
 
     public CVPipelineResult(List<T> targets, Mat outputMat, long processTime) {
         this.targets = targets;
         hasTarget = targets != null && !targets.isEmpty();
         this.outputMat = outputMat;
         this.processTime = processTime;
+    }
+
+    public void setTimestamp(long timestamp) {
+        imageTimestamp = timestamp;
     }
 }

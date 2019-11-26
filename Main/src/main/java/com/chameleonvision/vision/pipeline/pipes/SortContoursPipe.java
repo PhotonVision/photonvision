@@ -44,32 +44,35 @@ public class SortContoursPipe implements Pipe<List<RotatedRect>, List<RotatedRec
         long processStartNanos = System.nanoTime();
 
         sortedContours.clear();
-        sortedContours.addAll(input);
 
-        switch (sort) {
-            case Largest:
-                sortedContours.sort(SortByLargestComparator);
-                break;
-            case Smallest:
-                sortedContours.sort(SortBySmallestComparator);
-                break;
-            case Highest:
-                sortedContours.sort(SortByHighestComparator);
-                break;
-            case Lowest:
-                sortedContours.sort(SortByLowestComparator);
-                break;
-            case Leftmost:
-                sortedContours.sort(SortByLeftmostComparator);
-                break;
-            case Rightmost:
-                sortedContours.sort(SortByRightmostComparator);
-                break;
-            case Centermost:
-                sortedContours.sort(SortByCentermostComparator);
-                break;
-            default:
-                break;
+        if (input.size() > 0) {
+            sortedContours.addAll(input);
+
+            switch (sort) {
+                case Largest:
+                    sortedContours.sort(SortByLargestComparator);
+                    break;
+                case Smallest:
+                    sortedContours.sort(SortBySmallestComparator);
+                    break;
+                case Highest:
+                    sortedContours.sort(SortByHighestComparator);
+                    break;
+                case Lowest:
+                    sortedContours.sort(SortByLowestComparator);
+                    break;
+                case Leftmost:
+                    sortedContours.sort(SortByLeftmostComparator);
+                    break;
+                case Rightmost:
+                    sortedContours.sort(SortByRightmostComparator);
+                    break;
+                case Centermost:
+                    sortedContours.sort(SortByCentermostComparator);
+                    break;
+                default:
+                    break;
+            }
         }
 
         long processTime = System.nanoTime() - processStartNanos;

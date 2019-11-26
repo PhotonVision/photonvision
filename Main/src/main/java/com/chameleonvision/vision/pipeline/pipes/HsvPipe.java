@@ -38,11 +38,11 @@ public class HsvPipe implements Pipe<Mat, Mat> {
             System.err.println("(HsvPipe) Exception thrown by OpenCV: \n" + e.getMessage());
         }
 
-        long processTime = System.nanoTime() - processStartNanos;
         processBuffer.copyTo(outputMat);
-        Pair<Mat, Long> output = Pair.of(outputMat, processTime);
         processBuffer.release();
-        return output;
+
+        long processTime = System.nanoTime() - processStartNanos;
+        return Pair.of(outputMat, processTime);
     }
 }
 

@@ -20,7 +20,6 @@ public class Server {
             ws.onClose(ctx -> {
                 handler.onClose(ctx);
                 System.out.println("Socket Disconnected");
-                // TODO: (HIGH) add generalSettingsSave
                 ConfigManager.saveSettings();
             });
             ws.onBinaryMessage(ctx -> {

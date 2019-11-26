@@ -31,9 +31,8 @@ public class USBCameraCapture implements CameraCapture {
     @Override
     public Pair<Mat, Long> getFrame() {
         Long deltaTime;
-        synchronized (cvSink) {
-            deltaTime = cvSink.grabFrame(imageBuffer) * 1000L;
-        }
+        // TODO: Why multiply by 1000 here?
+        deltaTime = cvSink.grabFrame(imageBuffer) * 1000L;
         return Pair.of(imageBuffer, deltaTime);
     }
 

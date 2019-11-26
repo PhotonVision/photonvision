@@ -43,30 +43,32 @@ public class Collect2dTargetsPipe implements Pipe<List<RotatedRect>, List<CVPipe
 
         targets.clear();
 
-        input.forEach(r -> {
-            CVPipeline2d.Target2d t = new CVPipeline2d.Target2d();
-            t.rawPoint = r;
-            switch (calibrationMode) {
-                case None:
-                    t.calibratedX = camProps.centerX;
-                    t.calibratedY = camProps.centerY;
-                    break;
-                case Single:
-                    t.calibratedX = calibrationPoint.get(0).doubleValue();
-                    t.calibratedY = calibrationPoint.get(1).doubleValue();
-                    break;
-                case Dual:
-                    t.calibratedX = (r.center.y - calibrationB) / calibrationM;
-                    t.calibratedY = (r.center.x * calibrationM) + calibrationB;
-                    break;
+        if (input.size() > 0) {
+            for (RotatedRect r : input) {
+                CVPipeline2d.Target2d t = new CVPipeline2d.Target2d();
+                t.rawPoint = r;
+                switch (calibrationMode) {
+                    case None:
+                        t.calibratedX = camProps.centerX;
+                        t.calibratedY = camProps.centerY;
+                        break;
+                    case Single:
+                        t.calibratedX = calibrationPoint.get(0).doubleValue();
+                        t.calibratedY = calibrationPoint.get(1).doubleValue();
+                        break;
+                    case Dual:
+                        t.calibratedX = (r.center.y - calibrationB) / calibrationM;
+                        t.calibratedY = (r.center.x * calibrationM) + calibrationB;
+                        break;
+                }
+
+                t.pitch = calculatePitch(r.center.y, t.calibratedY);
+                t.yaw = calculateYaw(r.center.x, t.calibratedX);
+                t.area = r.size.area();
+
+                targets.add(t);
             }
-
-            t.pitch = calculatePitch(r.center.y, t.calibratedY);
-            t.yaw = calculateYaw(r.center.x, t.calibratedX);
-            t.area = r.size.area();
-
-            targets.add(t);
-        });
+        }
 
         long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(targets, processTime);

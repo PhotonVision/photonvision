@@ -30,20 +30,24 @@ public class ErodeDilatePipe implements Pipe<Mat, Mat> {
     public Pair<Mat, Long> run(Mat input) {
         long processStartNanos = System.nanoTime();
 
-        input.copyTo(processBuffer);
+        if (erode || dilate) {
+            input.copyTo(processBuffer);
 
-        if (erode) {
-            Imgproc.erode(processBuffer, processBuffer, kernel);
-        }
+            if (erode) {
+                Imgproc.erode(processBuffer, processBuffer, kernel);
+            }
 
-        if (dilate) {
-            Imgproc.erode(processBuffer, processBuffer, kernel);
+            if (dilate) {
+                Imgproc.erode(processBuffer, processBuffer, kernel);
+            }
+
+            processBuffer.copyTo(outputMat);
+            processBuffer.release();
+        } else {
+            input.copyTo(outputMat);
         }
 
         long processTime = System.nanoTime() - processStartNanos;
-        processBuffer.copyTo(outputMat);
-        Pair<Mat, Long> output = Pair.of(outputMat, processTime);
-        processBuffer.release();
-        return output;
+        return Pair.of(outputMat, processTime);
     }
 }

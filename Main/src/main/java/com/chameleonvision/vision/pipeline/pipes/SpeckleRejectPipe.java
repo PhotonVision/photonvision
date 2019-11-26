@@ -27,19 +27,21 @@ public class SpeckleRejectPipe implements Pipe<List<MatOfPoint>, List<MatOfPoint
 
         despeckledContours.clear();
 
-        double averageArea = 0.0;
+        if (input.size() > 0) {
+            double averageArea = 0.0;
 
-        for (MatOfPoint c : input) {
-            averageArea += Imgproc.contourArea(c);
-        }
+            for (MatOfPoint c : input) {
+                averageArea += Imgproc.contourArea(c);
+            }
 
-        averageArea /= input.size();
+            averageArea /= input.size();
 
-        double minAllowedArea = minPercentOfAvg / 100.0 * averageArea;
+            double minAllowedArea = minPercentOfAvg / 100.0 * averageArea;
 
-        for (MatOfPoint c : input) {
-            if (Imgproc.contourArea(c) >= minAllowedArea) {
-                despeckledContours.add(c);
+            for (MatOfPoint c : input) {
+                if (Imgproc.contourArea(c) >= minAllowedArea) {
+                    despeckledContours.add(c);
+                }
             }
         }
 
