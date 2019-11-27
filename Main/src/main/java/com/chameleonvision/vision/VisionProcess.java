@@ -6,8 +6,8 @@ import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.CameraStreamer;
 import com.chameleonvision.vision.pipeline.*;
 import com.chameleonvision.web.ServerHandler;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpiutil.CircularBuffer;
@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
-import static java.lang.Math.min;
 
 public class VisionProcess {
 
@@ -51,7 +50,7 @@ public class VisionProcess {
     private NetworkTableEntry ntAreaEntry;
     private NetworkTableEntry ntTimeStampEntry;
     private NetworkTableEntry ntValidEntry;
-    private Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private ObjectMapper objectMapper;
 
     VisionProcess(CameraCapture cameraCapture, String name) {
         this.cameraCapture = cameraCapture;
@@ -172,6 +171,7 @@ public class VisionProcess {
                     center.add(bestTarget.rawPoint.center.y);
                     calculated.put("pitch", bestTarget.pitch);
                     calculated.put("yaw", bestTarget.yaw);
+                    calculated.put("area", bestTarget.area);
                 } else if (data instanceof CVPipeline3d.CVPipeline3dResult) {
                     // TODO: (2.1) 3d stuff in UI
                 } else {
@@ -205,8 +205,11 @@ public class VisionProcess {
                 ntPitchEntry.setDouble(targets.get(0).pitch);
                 ntYawEntry.setDouble(targets.get(0).yaw);
                 ntAreaEntry.setDouble(targets.get(0).area);
-                ntAuxListEntry.setString(gson.toJson(targets.subList(0, min(targets.size(), 5))));
-
+                try {
+                    ntAreaEntry.setString(objectMapper.writeValueAsString(targets));
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
             } else if (data instanceof CVPipeline3d.CVPipeline3dResult) {
                 // TODO: (2.1) 3d stuff...
             }

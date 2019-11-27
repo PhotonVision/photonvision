@@ -2,7 +2,7 @@
     <div>
         <CVslider name="Exposure" v-model="value.exposure" :min="0" :max="100" @input="handleData('exposure')"/>
         <CVslider name="Brightness" v-model="value.brightness" :min="0" :max="100" @input="handleData('brightness')"/>
-        <CVselect name="Orientation" v-model="value.orientation" :list="['Normal','Inverted']"
+        <CVselect name="Orientation" v-model="value.flipMode" :list="['Normal','Inverted']"
                   @input="handleData('orientation')"/>
     </div>
 </template>
