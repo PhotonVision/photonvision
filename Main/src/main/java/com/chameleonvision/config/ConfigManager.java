@@ -29,6 +29,7 @@ public class ConfigManager {
     private static void checkSettingsFolder() {
         if (!settingsFolderExists()) {
             try {
+                new File(SettingsPath.toUri()).mkdirs();
                 Files.createDirectory(SettingsPath);
             } catch (IOException e) {
                 e.printStackTrace();
