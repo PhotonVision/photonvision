@@ -35,7 +35,7 @@ public class CVProcess {
     }
 
     void hsvThreshold(Mat srcImage, Mat dst, @NotNull Scalar hsvLower, @NotNull Scalar hsvUpper, boolean shouldErode, boolean shouldDilate) {
-        Imgproc.cvtColor(srcImage, hsvImage, Imgproc.COLOR_RGB2HSV, 3);
+        Imgproc.cvtColor(srcImage, hsvImage, Imgproc.COLOR_BGR2HSV, 3);
         Imgproc.blur(hsvImage, hsvImage, blur);
         Core.inRange(hsvImage, hsvLower, hsvUpper, dst);
         if (shouldErode) {
