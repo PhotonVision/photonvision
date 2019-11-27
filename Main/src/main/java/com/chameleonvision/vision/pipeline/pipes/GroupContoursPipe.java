@@ -88,7 +88,6 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
                                 groupedContours.add(rect);
                             }
                         } catch (IndexOutOfBoundsException e) {
-                            System.err.println("GroupContours: WTF");
                             finalContourList.clear();
                         }
                     }
