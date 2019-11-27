@@ -27,18 +27,20 @@ public class CameraStreamer {
     }
 
     public void setDivisor(StreamDivisor newDivisor, boolean updateUI) {
-        this.divisor = newDivisor;
-        var camValues = cameraCapture.getProperties();
-        var newWidth = camValues.getStaticProperties().imageWidth / newDivisor.value;
-        var newHeight = camValues.getStaticProperties().imageHeight / newDivisor.value;
-        synchronized (streamBufferLock) {
-            this.streamBuffer = new Mat(newWidth, newHeight, CvType.CV_8UC3);
-            this.cvSource = CameraServer.getInstance().putVideo(this.name,
-                    cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
-                    cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value);
-        }
-        if (updateUI) {
-            SocketHandler.sendFullSettings();
+        if (divisor != newDivisor) {
+            this.divisor = newDivisor;
+            var camValues = cameraCapture.getProperties();
+            var newWidth = camValues.getStaticProperties().imageWidth / newDivisor.value;
+            var newHeight = camValues.getStaticProperties().imageHeight / newDivisor.value;
+            synchronized (streamBufferLock) {
+                this.streamBuffer = new Mat(newWidth, newHeight, CvType.CV_8UC3);
+                this.cvSource = CameraServer.getInstance().putVideo(this.name,
+                        cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
+                        cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value);
+            }
+            if (updateUI) {
+                SocketHandler.sendFullSettings();
+            }
         }
     }
 
