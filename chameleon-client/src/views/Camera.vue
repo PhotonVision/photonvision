@@ -100,7 +100,7 @@
                     </v-tabs>
                     <!-- camera image stream -->
                     <div class="videoClass">
-                        <img v-if="cameraList.length > 0" :src="streamAddress">
+                        <img id="CameraStream" v-if="cameraList.length > 0" :src="streamAddress" crossorigin="Anonymous"/>
                         <span v-else>No Cameras Are connected</span>
                         <h5 id="Point">{{point}}</h5>
                     </div>
