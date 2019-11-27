@@ -23,20 +23,22 @@ public class SortContoursPipe implements Pipe<List<RotatedRect>, List<RotatedRec
     private static final Comparator<RotatedRect> SortByLeftmostComparator = Comparator.comparingDouble(rect -> rect.center.x);
     private static final Comparator<RotatedRect> SortByRightmostComparator = SortByLeftmostComparator.reversed();
 
-
     private SortMode sort;
     private CaptureStaticProperties camProps;
+    private int maxTargets;
 
     private List<RotatedRect> sortedContours = new ArrayList<>();
 
-    public SortContoursPipe(SortMode sort, CaptureStaticProperties camProps) {
+    public SortContoursPipe(SortMode sort, CaptureStaticProperties camProps, int maxTargets) {
         this.sort = sort;
         this.camProps = camProps;
+        this.maxTargets = maxTargets;
     }
 
-    public void setConfig(SortMode sort, CaptureStaticProperties camProps) {
+    public void setConfig(SortMode sort, CaptureStaticProperties camProps, int maxTargets) {
         this.sort = sort;
         this.camProps = camProps;
+        this.maxTargets = maxTargets;
     }
 
     @Override
@@ -46,7 +48,7 @@ public class SortContoursPipe implements Pipe<List<RotatedRect>, List<RotatedRec
         sortedContours.clear();
 
         if (input.size() > 0) {
-            sortedContours.addAll(input);
+            sortedContours.addAll(input.subList(0, Math.min(input.size(), maxTargets - 1)));
 
             switch (sort) {
                 case Largest:

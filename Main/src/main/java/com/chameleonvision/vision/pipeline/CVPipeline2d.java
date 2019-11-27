@@ -1,12 +1,12 @@
 package com.chameleonvision.vision.pipeline;
 
+import com.chameleonvision.Main;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.pipeline.pipes.*;
-import com.chameleonvision.vision.enums.ImageRotation;
+import com.chameleonvision.vision.enums.ImageRotationMode;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
 
 import java.util.List;
 
@@ -55,7 +55,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
         hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
 
-        rotateFlipPipe = new RotateFlipPipe(ImageRotation.DEG_0, settings.flipMode);
+        rotateFlipPipe = new RotateFlipPipe(ImageRotationMode.DEG_0, settings.flipMode);
         blurPipe = new BlurPipe(5);
         erodeDilatePipe = new ErodeDilatePipe(settings.erode, settings.dilate, 7);
         hsvPipe = new HsvPipe(hsvLower, hsvUpper);
@@ -63,7 +63,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         filterContoursPipe = new FilterContoursPipe(settings.area, settings.ratio, settings.extent, camProps);
         speckleRejectPipe = new SpeckleRejectPipe(settings.speckle.doubleValue());
         groupContoursPipe = new GroupContoursPipe(settings.targetGroup, settings.targetIntersection);
-        sortContoursPipe = new SortContoursPipe(settings.sortMode, camProps);
+        sortContoursPipe = new SortContoursPipe(settings.sortMode, camProps, 5);
         collect2dTargetsPipe = new Collect2dTargetsPipe(settings.calibrationMode, settings.point,
                 settings.dualTargetCalibrationM, settings.dualTargetCalibrationB, camProps);
         draw2dContoursSettings = new Draw2dContoursPipe.Draw2dContoursSettings();
@@ -96,14 +96,14 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         // prepare pipes
         hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
         hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
-        rotateFlipPipe.setConfig(ImageRotation.DEG_0, settings.flipMode);
+        rotateFlipPipe.setConfig(ImageRotationMode.DEG_0, settings.flipMode);
         blurPipe.setConfig(0);
         erodeDilatePipe.setConfig(settings.erode, settings.dilate, 7);
         hsvPipe.setConfig(hsvLower, hsvUpper);
         filterContoursPipe.setConfig(settings.area, settings.ratio, settings.extent, camProps);
         speckleRejectPipe.setConfig(settings.speckle.doubleValue());
         groupContoursPipe.setConfig(settings.targetGroup, settings.targetIntersection);
-        sortContoursPipe.setConfig(settings.sortMode, camProps);
+        sortContoursPipe.setConfig(settings.sortMode, camProps, 5);
         collect2dTargetsPipe.setConfig(settings.calibrationMode, settings.point,
                 settings.dualTargetCalibrationM, settings.dualTargetCalibrationB, camProps);
         draw2dContoursPipe.setConfig(camProps);
@@ -164,7 +164,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         pipelineTimeStringBuilder.append(String.format("OutputMat: %.2fms, ", outputMatResult.getRight() / 1000000.0));
         pipelineTimeStringBuilder.append(String.format("Draw2dContours: %.2fms, ", draw2dContoursResult.getRight() / 1000000.0));
 
-        if (true) {
+        if (Main.testMode) {
             System.out.println(pipelineTimeStringBuilder.toString());
             double totalPipelineTimeMillis = totalPipelineTimeNanos / 1000000.0;
             double totalPipelineTimeFPS = 1.0 / (totalPipelineTimeMillis / 1000.0);

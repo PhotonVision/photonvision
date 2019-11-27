@@ -29,10 +29,12 @@ public class ConfigManager {
     private static void checkSettingsFolder() {
         if (!settingsFolderExists()) {
             try {
-                new File(SettingsPath.toUri()).mkdirs();
+                if( !(new File(SettingsPath.toUri()).mkdirs()) ) {
+                    System.err.println("Failed to create settings folder: " + SettingsPath.toString());
+                }
                 Files.createDirectory(SettingsPath);
             } catch (IOException e) {
-                if(!(e instanceof java.nio.file.FileAlreadyExistsException || e instanceof java.nio.file.FileAlreadyExistsException))
+                if(!(e instanceof java.nio.file.FileAlreadyExistsException))
                     e.printStackTrace();
             }
         }
@@ -74,7 +76,6 @@ public class ConfigManager {
         saveSettingsFile();
     }
 
-    // TODO: (HIGH) cleanup!
     public static List<FullCameraConfiguration> initializeCameras(List<CameraJsonConfig> preliminaryConfigs) {
         List<FullCameraConfiguration> configList = new ArrayList<>();
 
@@ -96,14 +97,17 @@ public class ConfigManager {
     }
 
     public static void saveCameraConfig(String cameraName, CameraJsonConfig config) {
-        cameraConfigs.get(cameraName).saveConfig(config);
+        var camConf = cameraConfigs.get(cameraName);
+        camConf.saveConfig(config);
     }
 
     public static void saveCameraPipelines(String cameraName, List<CVPipelineSettings> pipelines) {
-        cameraConfigs.get(cameraName).savePipelines(pipelines);
+        var camConf = cameraConfigs.get(cameraName);
+        camConf.savePipelines(pipelines);
     }
 
     public static void saveCameraDriverMode(String cameraName, CVPipelineSettings driverMode) {
-        cameraConfigs.get(cameraName).saveDriverMode(driverMode);
+        var camConf = cameraConfigs.get(cameraName);
+        camConf.saveDriverMode(driverMode);
     }
 }

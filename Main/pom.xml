@@ -119,6 +119,12 @@
             <version>2.10.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.5.2</version>
+        </dependency>
+
         <!-- supported platforms for wpilib JNI classifiers
             linuxaarch64bionic
             linuxraspbian
@@ -221,36 +227,36 @@
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-java</artifactId>
-            <version>3.4.7-1</version>
+            <version>3.4.7-2</version>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
-            <version>3.4.7-1</version>
+            <version>3.4.7-2</version>
             <classifier>linuxaarch64bionic</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
-            <version>3.4.7-1</version>
+            <version>3.4.7-2</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
-            <version>3.4.7-1</version>
+            <version>3.4.7-2</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
-            <version>3.4.7-1</version>
+            <version>3.4.7-2</version>
             <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
-            <version>3.4.7-1</version>
+            <version>3.4.7-2</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
     </dependencies>

@@ -147,7 +147,8 @@ public class ServerHandler {
                                 break;
                             case "save":
                                 ConfigManager.saveGeneralSettings();
-                                System.out.println("saved Settings");
+                                VisionManager.saveAllCameras();
+                                System.out.println("Saved Settings");
                                 break;
                         }
                         // used to define all incoming commands
@@ -168,9 +169,11 @@ public class ServerHandler {
                         switch (entry.getKey()) {
                             case "exposure": {
                                 currentCamera.setExposure((Integer) entry.getValue());
+                                VisionManager.saveCurrentCameraPipelines();
                             }
                             case "brightness": {
                                 currentCamera.setBrightness((Integer) entry.getValue());
+                                VisionManager.saveCurrentCameraPipelines();
                             }
                         }
                         break;

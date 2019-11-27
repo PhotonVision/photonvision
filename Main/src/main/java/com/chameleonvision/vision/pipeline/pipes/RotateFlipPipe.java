@@ -1,25 +1,25 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
 import com.chameleonvision.vision.enums.ImageFlipMode;
-import com.chameleonvision.vision.enums.ImageRotation;
+import com.chameleonvision.vision.enums.ImageRotationMode;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 
 public class RotateFlipPipe implements Pipe<Mat, Mat> {
 
-    private ImageRotation rotation;
+    private ImageRotationMode rotation;
     private ImageFlipMode flip;
 
     private Mat processBuffer = new Mat();
     private Mat outputMat = new Mat();
 
-    public RotateFlipPipe(ImageRotation rotation, ImageFlipMode flip) {
+    public RotateFlipPipe(ImageRotationMode rotation, ImageFlipMode flip) {
         this.rotation = rotation;
         this.flip = flip;
     }
 
-    public void setConfig(ImageRotation rotation, ImageFlipMode flip) {
+    public void setConfig(ImageRotationMode rotation, ImageFlipMode flip) {
         this.rotation = rotation;
         this.flip = flip;
     }
@@ -29,7 +29,7 @@ public class RotateFlipPipe implements Pipe<Mat, Mat> {
         long processStartNanos = System.nanoTime();
 
         boolean shouldFlip = !flip.equals(ImageFlipMode.NONE);
-        boolean shouldRotate = !rotation.equals(ImageRotation.DEG_0);
+        boolean shouldRotate = !rotation.equals(ImageRotationMode.DEG_0);
 
         if (shouldFlip || shouldRotate) {
             input.copyTo(processBuffer);

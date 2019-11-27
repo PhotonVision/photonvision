@@ -138,7 +138,7 @@ public class VisionManager {
     }
 
 
-    public static void saveCameras() {
+    public static void saveAllCameras() {
         visionProcesses.forEach((vpm) -> {
             VisionProcess process = vpm.visionProcess;
             String cameraName = process.getCamera().getProperties().name;

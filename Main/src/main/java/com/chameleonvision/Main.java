@@ -30,7 +30,7 @@ public class Main {
     private static boolean manageNetwork = true;
     private static boolean ignoreRoot = false;
     private static String ntClientModeServer = null;
-    private static boolean testMode = false;
+    public static boolean testMode = false;
 
     private static class NTLogger implements Consumer<LogMessage> {
 
@@ -77,12 +77,12 @@ public class Main {
                     if (value != null) {
                         if (value.equals("localhost")) {
                             ntClientModeServer = "127.0.0.1";
-                            return;
+                            continue;
                         }
 
                         if (Utilities.isValidIPV4(value)) {
                             ntClientModeServer = value;
-                            return;
+                            continue;
                         }
                     }
                     System.err.println("Argument for NT Server Host was invalid, defaulting to team number host");

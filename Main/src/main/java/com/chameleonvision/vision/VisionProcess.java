@@ -1,5 +1,7 @@
 package com.chameleonvision.vision;
 
+import com.chameleonvision.Debug;
+import com.chameleonvision.Main;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.util.LoopingRunnable;
 import com.chameleonvision.vision.camera.CameraCapture;
@@ -263,7 +265,6 @@ public class VisionProcess {
     }
 
     public void setDriverModeSettings(CVPipelineSettings settings) {
-
         driverModePipeline.settings = settings;
     }
 
@@ -282,7 +283,6 @@ public class VisionProcess {
 
         volatile Double fps = 0.0;
         private CircularBuffer fpsAveragingBuffer = new CircularBuffer(7);
-        private Mat streamBuffer = new Mat();
 
         @Override
         public void run() {
@@ -305,9 +305,10 @@ public class VisionProcess {
                 }
 
                 try {
+                    streamFrameQueue.clear();
                     streamFrameQueue.add(lastPipelineResult.outputMat);
                 } catch (Exception e) {
-                    System.out.println("Vision running faster than stream");
+                    Debug.printInfo("Vision running faster than stream.");
                 }
 
                 var deltaTimeNanos = lastUpdateTimeNanos - System.nanoTime();
@@ -340,17 +341,12 @@ public class VisionProcess {
 
         @Override
         protected void process() {
-            try {
-                if (!streamFrameQueue.isEmpty()) {
-                    Mat latestMat = streamFrameQueue.take();
-                    if (!latestMat.empty()) {
-                        streamer.runStream(latestMat);
-                    } else {
-                        System.out.println("stream mat empty");
-                    }
+            if (!streamFrameQueue.isEmpty()) {
+                try {
+                    streamer.runStream(streamFrameQueue.take());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
     }

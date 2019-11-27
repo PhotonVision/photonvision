@@ -31,7 +31,6 @@ public class CameraConfig {
         checkPipelines();
         checkDriverMode();
 
-        // todo: add pipelines and drivermode loads
         return loadConfig();
     }
 
