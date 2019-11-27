@@ -18,6 +18,7 @@ public class RequestHandler {
         ObjectMapper objectMapper = new ObjectMapper();
         try {
             Map map = objectMapper.readValue(ctx.body(), Map.class);
+
             // TODO: change to function, to restart NetworkTables
             ConfigManager.settings.teamNumber = (int) map.get("teamNumber");
 

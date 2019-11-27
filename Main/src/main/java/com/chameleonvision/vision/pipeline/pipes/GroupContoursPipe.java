@@ -41,7 +41,7 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
 
         groupedContours.clear();
 
-        if (input.size() > 0) {
+        if (input.size() > (group.equals(TargetGroup.Single) ? 0 : 1)) {
 
             List<MatOfPoint> sorted = new ArrayList<>(input);
             sorted.sort(sortByMomentsX);
