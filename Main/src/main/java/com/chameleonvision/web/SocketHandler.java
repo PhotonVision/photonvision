@@ -23,12 +23,12 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 
-public class ServerHandler {
+public class SocketHandler {
 
     private static List<WsContext> users;
     private static ObjectMapper objectMapper;
 
-    ServerHandler() {
+    SocketHandler() {
         users = new ArrayList<>();
         objectMapper = new ObjectMapper(new MessagePackFactory());
     }
@@ -53,15 +53,6 @@ public class ServerHandler {
                 CVPipeline currentPipeline = currentProcess.getCurrentPipeline();
 
                 switch (entry.getKey()) {
-                    case "generalSettings": {
-                        HashMap<String, Object> data = (HashMap<String, Object>) entry.getValue();
-                        for (HashMap.Entry<String, Object> e : data.entrySet()) {
-                            setField(ConfigManager.settings, e.getKey(), e.getValue());
-                        }
-                        ConfigManager.saveGeneralSettings();
-                        sendFullSettings();
-                        break;
-                    }
                     case "driverMode": {
                         HashMap<String, Object> data = (HashMap<String, Object>) entry.getValue();
                         currentProcess.getDriverModeSettings().exposure = (Integer) data.get("exposure");
@@ -69,29 +60,6 @@ public class ServerHandler {
                         currentProcess.setDriverMode((Boolean) data.get("isDriver"));
 
                         VisionManager.saveCurrentCameraDriverMode();
-                        break;
-                    }
-                    case "cameraSettings": {
-                        HashMap camSettings = (HashMap) entry.getValue();
-
-                        Number newFOV = (Number) camSettings.get("fov");
-                        StreamDivisor newStreamDivisor = StreamDivisor.values()[(Integer) camSettings.get("streamDivisor")];
-//                        Integer newResolution = (Integer) camSettings.get("resolution");
-
-                        currentCamera.getProperties().FOV = (double) newFOV;
-
-                        if (currentProcess.cameraStreamer.getDivisor() != newStreamDivisor) {
-                            currentProcess.cameraStreamer.setDivisor(newStreamDivisor, false);
-                        }
-
-                        // TODO (HIGH) get and set video modes!
-//                        var currentResolutionIndex = currentPipeline.getVideoModeIndex();
-//                        if (currentResolutionIndex != newResolution) {
-//                            currentCamera.getProperties().setCamVideoMode(newResolution, true);
-//                        }
-
-                        VisionManager.saveCurrentCameraSettings();
-                        sendFullSettings();
                         break;
                     }
                     case "changeCameraName": {

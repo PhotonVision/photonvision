@@ -3,7 +3,7 @@
         <CVselect name="Camera" :list="cameraList" v-model="currentCameraIndex"/>
         <CVselect name="Resolution" v-model="cameraSettings.resolution" :list="resolutionList"/>
         <CVselect name="Stream Resolution" v-model="cameraSettings.streamDivisor"
-                  :list="['1:1','1:2','1:4','1:6']"/>
+                  :list="streamResolutionList"/>
         <CVnumberinput name="Diagonal FOV" v-model="cameraSettings.fov"/>
         <v-btn style="margin-top:10px" small color="#4baf62" @click="sendCameraSettings">Save Camera Settings</v-btn>
     </div>
@@ -24,12 +24,18 @@
         },
         methods: {
             sendCameraSettings() {
-                this.handleInput('cameraSettings', this.cameraSettings);
+                const self = this;
+                this.axios.post("http://" + this.$address + "/api/settings/camera", this.cameraSettings).then(
+                    function (response) {
+                        if (response.status === 200){
+                            self.$store.state.saveBar = true;
+                        }
+                    }
+                )
             },
 
         },
         computed: {
-
             currentCameraIndex: {
                 get() {
                     return this.$store.state.currentCameraIndex;
@@ -48,7 +54,23 @@
             },
             resolutionList: {
                 get() {
-                    return this.$store.state.resolutionList;
+                    let tmp_list = [];
+                    for (let i of this.$store.state.resolutionList){
+                        tmp_list.push(`${i['width']} X ${i['height']} at ${i['fps']} FPS, ${i['pixelFormat']}`)
+                    }
+                    return tmp_list;
+                }
+            },
+            streamResolutionList:{
+                get(){
+                    let cam_res = this.$store.state.resolutionList[this.cameraSettings.resolution];
+                    let tmp_list = [];
+                    let x = 1;
+                    for (let i = 0; i < 4; i++){
+                        tmp_list.push(`${cam_res['width']/x} X ${cam_res['height']/x}`);
+                        x *= 2;
+                    }
+                    return tmp_list;
                 }
             },
             cameraSettings: {

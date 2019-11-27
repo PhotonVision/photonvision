@@ -48,7 +48,8 @@ export default new Vuex.Store({
         currentPipelineIndex: 0,
         cameraList: [],
         pipelineList: [],
-        point: {}
+        point: {},
+        saveBar: false
     },
     mutations: {
         settings: set('settings'),
@@ -66,7 +67,8 @@ export default new Vuex.Store({
                 Vue.set(state.pipeline, i, obj[i]);
             }
         },
-        driverMode: set('driverMode')
+        driverMode: set('driverMode'),
+        saveBar: set("saveBar")
     },
     actions: {
         settings: state => state.settings,
@@ -79,6 +81,7 @@ export default new Vuex.Store({
         cameraList: state => state.cameraList,
         pipelineList: state => state.pipelineList,
         point: state => state.point,
-        driverMode: state => state.driverMode
+        driverMode: state => state.driverMode,
+        saveBar: state => state.saveBar
     }
 })

@@ -5,11 +5,22 @@ import store from './store'
 import vuetify from './plugins/vuetify';
 import VueNativeSock from 'vue-native-websocket';
 import msgPack from 'msgpack5';
+import axios from 'axios';
+import VueAxios from "vue-axios";
 
 Vue.config.productionTip = false;
-// Vue.use(VueNativeSock,'ws://' + location.host + '/websocket',{format: 'json'});
-Vue.use(VueNativeSock, 'ws://' + location.hostname + ':8888/websocket');
+
+if (process.env.NODE_ENV === "production"){
+    Vue.prototype.$address = location.host;
+} else if (process.env.NODE_ENV === "development"){
+    Vue.prototype.$address = location.hostname + ":5800";
+}
+
+
+Vue.use(VueNativeSock, 'ws://' + Vue.prototype.$address + '/websocket');
+Vue.use(VueAxios, axios);
 Vue.prototype.$msgPack = msgPack(true);
+
 Vue.mixin({
     methods: {
         handleInput(key, value) {
