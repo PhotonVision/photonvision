@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
+import static java.lang.Math.min;
+
 public class VisionProcess {
 
     private final CameraCapture cameraCapture;
@@ -203,7 +205,7 @@ public class VisionProcess {
                 ntPitchEntry.setDouble(targets.get(0).pitch);
                 ntYawEntry.setDouble(targets.get(0).yaw);
                 ntAreaEntry.setDouble(targets.get(0).area);
-                ntAuxListEntry.setString(gson.toJson(targets));
+                ntAuxListEntry.setString(gson.toJson(targets.subList(0, min(targets.size(), 5))));
 
             } else if (data instanceof CVPipeline3d.CVPipeline3dResult) {
                 // TODO: (2.1) 3d stuff...
