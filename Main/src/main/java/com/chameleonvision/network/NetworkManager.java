@@ -1,8 +1,8 @@
 package com.chameleonvision.network;
 
 
-import com.chameleonvision.settings.Platform;
-import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.config.ConfigManager;
+import com.chameleonvision.util.Platform;
 
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -43,7 +43,7 @@ public class NetworkManager {
 			e.printStackTrace();
 		}
 
-        var teamBytes = NetworkManager.GetTeamNumberIPBytes(SettingsManager.GeneralSettings.teamNumber);
+        var teamBytes = NetworkManager.GetTeamNumberIPBytes(ConfigManager.settings.teamNumber);
 
         if (interfaces.size() > 0) {
 			for (var inetface : interfaces) {
@@ -85,7 +85,7 @@ public class NetworkManager {
 			return true;
 		}
 
-		var genSettings = SettingsManager.GeneralSettings;
+		var genSettings = ConfigManager.settings;
 		boolean isStatic = genSettings.connectionType.equals(NetworkIPMode.STATIC);
 
 		if (isStatic) {

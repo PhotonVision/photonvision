@@ -19,7 +19,7 @@ public class NetworkInterface {
 		IPAddress = inetAddress.getHostAddress();
         Netmask = getIPv4LocalNetMask(ifaceAddress);
 
-        // TODO: hack to "get" gateway, this is gross and bad, pls fix
+        // TODO: (low) hack to "get" gateway, this is gross and bad, pls fix
         var splitIPAddr = IPAddress.split("\\.");
         splitIPAddr[3] = "1";
         Gateway = String.join(".", splitIPAddr);

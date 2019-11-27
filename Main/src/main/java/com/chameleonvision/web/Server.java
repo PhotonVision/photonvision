@@ -1,6 +1,6 @@
 package com.chameleonvision.web;
 
-import com.chameleonvision.settings.SettingsManager;
+import com.chameleonvision.config.ConfigManager;
 import io.javalin.Javalin;
 
 public class Server {
@@ -22,7 +22,7 @@ public class Server {
             ws.onClose(ctx -> {
                 socketHandler.onClose(ctx);
                 System.out.println("Socket Disconnected");
-                SettingsManager.saveSettings();
+                ConfigManager.saveGeneralSettings();
             });
             ws.onBinaryMessage(ctx -> {
                 socketHandler.onBinaryMessage(ctx);
