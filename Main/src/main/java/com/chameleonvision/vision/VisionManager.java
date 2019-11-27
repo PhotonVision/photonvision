@@ -7,6 +7,7 @@ import com.chameleonvision.util.Helpers;
 import com.chameleonvision.util.Platform;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.USBCameraCapture;
+import com.chameleonvision.vision.pipeline.CVPipeline;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
@@ -136,6 +137,7 @@ public class VisionManager {
         return currentUIVisionProcess.getPipelines().stream().map(cvPipeline -> cvPipeline.settings.nickname).collect(Collectors.toList());
     }
 
+
     public static void saveCameras() {
         visionProcesses.forEach((vpm) -> {
             VisionProcess process = vpm.visionProcess;
@@ -147,6 +149,25 @@ public class VisionManager {
             ConfigManager.saveCameraDriverMode(cameraName, driverMode);
             ConfigManager.saveCameraConfig(cameraName, config);
         });
+    }
+
+    private static String getCurrentCameraName() {
+        return currentUIVisionProcess.getCamera().getProperties().name;
+    }
+
+    public static void saveCurrentCameraSettings() {
+        CameraJsonConfig config = CameraJsonConfig.fromUSBCameraProcess((USBCameraCapture) currentUIVisionProcess.getCamera());
+        ConfigManager.saveCameraConfig(getCurrentCameraName(), config);
+    }
+
+    public static void saveCurrentCameraPipelines() {
+        List<CVPipelineSettings> pipelineSettings = currentUIVisionProcess.getPipelines().stream().map(pipeline -> pipeline.settings).collect(Collectors.toList());
+        ConfigManager.saveCameraPipelines(getCurrentCameraName(), pipelineSettings);
+    }
+
+    public static void saveCurrentCameraDriverMode() {
+        CVPipelineSettings driverModeSettings = currentUIVisionProcess.getDriverModeSettings();
+        ConfigManager.saveCameraDriverMode(getCurrentCameraName(), driverModeSettings);
     }
 
     public static List<String> getCurrentCameraResolutionList() {

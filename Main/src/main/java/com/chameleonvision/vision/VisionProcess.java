@@ -35,7 +35,7 @@ public class VisionProcess {
 
     private volatile CVPipelineResult lastPipelineResult;
 
-    BlockingQueue<Mat> streamFrameQueue = new LinkedBlockingDeque<>(1);
+    private BlockingQueue<Mat> streamFrameQueue = new LinkedBlockingDeque<>(1);
 
     // network table stuff
     private final NetworkTable defaultTable;
@@ -323,10 +323,9 @@ public class VisionProcess {
 
     }
 
-    private static class CameraStreamerRunnable extends LoopingRunnable {
+    private class CameraStreamerRunnable extends LoopingRunnable {
 
         final CameraStreamer streamer;
-        private Mat streamBuffer = new Mat();
 
         private CameraStreamerRunnable(int cameraFPS, CameraStreamer streamer) {
             // add 2 FPS to allow for a bit of overhead
@@ -336,7 +335,18 @@ public class VisionProcess {
 
         @Override
         protected void process() {
-
+            try {
+                if (!streamFrameQueue.isEmpty()) {
+                    Mat latestMat = streamFrameQueue.take();
+                    if (!latestMat.empty()) {
+                        streamer.runStream(latestMat);
+                    } else {
+                        System.out.println("stream mat empty");
+                    }
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     }
 }

@@ -16,7 +16,6 @@ import static com.chameleonvision.vision.pipeline.CVPipeline2d.*;
 public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSettings> {
 
     private Mat rawCameraMat = new Mat();
-    private Mat hsvOutputMat = new Mat();
 
     private RotateFlipPipe rotateFlipPipe;
     private BlurPipe blurPipe;
@@ -32,12 +31,9 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
     private Draw2dContoursPipe draw2dContoursPipe;
     private OutputMatPipe outputMatPipe;
 
-
     private StringBuilder pipelineTimeStringBuilder = new StringBuilder();
     private CaptureStaticProperties camProps;
     private Scalar hsvLower, hsvUpper;
-
-
 
     public CVPipeline2d() {
         super(new CVPipeline2dSettings());
@@ -128,13 +124,6 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         Pair<Mat, Long> hsvResult = hsvPipe.run(erodeDilateResult.getLeft());
         totalPipelineTimeNanos += hsvResult.getRight();
 
-        // Todo: move to a pipe
-        try {
-            Imgproc.cvtColor(hsvResult.getLeft(), hsvOutputMat, Imgproc.COLOR_GRAY2BGR, 3);
-        } catch (CvException e) {
-            System.err.println("(CVPipeline2d) Exception thrown by OpenCV: \n" + e.getMessage());
-        }
-
         Pair<List<MatOfPoint>, Long> findContoursResult = findContoursPipe.run(hsvResult.getLeft());
         totalPipelineTimeNanos += findContoursResult.getRight();
 
@@ -153,8 +142,8 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         Pair<List<Target2d>, Long> collect2dTargetsResult = collect2dTargetsPipe.run(sortContoursResult.getLeft());
         totalPipelineTimeNanos += collect2dTargetsResult.getRight();
 
-        // takes pair of (Mat of original camera image, Mat of HSV thresholded image)
-        Pair<Mat, Long> outputMatResult = outputMatPipe.run(Pair.of(rawCameraMat, hsvOutputMat));
+        // takes pair of (Mat of original camera image (8UC3), Mat of HSV thresholded image(8UC1))
+        Pair<Mat, Long> outputMatResult = outputMatPipe.run(Pair.of(rawCameraMat, hsvResult.getLeft()));
         totalPipelineTimeNanos += outputMatResult.getRight();
 
         // takes pair of (Mat to draw on, List<RotatedRect> of sorted contours)
@@ -175,13 +164,15 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         pipelineTimeStringBuilder.append(String.format("OutputMat: %.2fms, ", outputMatResult.getRight() / 1000000.0));
         pipelineTimeStringBuilder.append(String.format("Draw2dContours: %.2fms, ", draw2dContoursResult.getRight() / 1000000.0));
 
-        System.out.println(pipelineTimeStringBuilder.toString());
-        double totalPipelineTimeMillis = totalPipelineTimeNanos / 1000000.0;
-        double totalPipelineTimeFPS = 1.0 / (totalPipelineTimeMillis / 1000.0);
-        double truePipelineTimeMillis = (System.nanoTime() - pipelineStartTimeNanos) / 1000000.0;
-        double truePipelineFPS = 1.0 / (truePipelineTimeMillis / 1000.0);
-        System.out.printf("Pipeline processed in %.3fms (%.2fFPS), ", totalPipelineTimeMillis, totalPipelineTimeFPS);
-        System.out.printf("full pipeline run time was %.3fms (%.2fFPS)\n", truePipelineTimeMillis, truePipelineFPS);
+        if (true) {
+            System.out.println(pipelineTimeStringBuilder.toString());
+            double totalPipelineTimeMillis = totalPipelineTimeNanos / 1000000.0;
+            double totalPipelineTimeFPS = 1.0 / (totalPipelineTimeMillis / 1000.0);
+            double truePipelineTimeMillis = (System.nanoTime() - pipelineStartTimeNanos) / 1000000.0;
+            double truePipelineFPS = 1.0 / (truePipelineTimeMillis / 1000.0);
+            System.out.printf("Pipeline processed in %.3fms (%.2fFPS), ", totalPipelineTimeMillis, totalPipelineTimeFPS);
+            System.out.printf("full pipeline run time was %.3fms (%.2fFPS)\n", truePipelineTimeMillis, truePipelineFPS);
+        }
 
         return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft(), totalPipelineTimeNanos);
     }

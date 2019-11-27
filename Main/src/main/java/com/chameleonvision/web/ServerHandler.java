@@ -58,7 +58,7 @@ public class ServerHandler {
                         for (HashMap.Entry<String, Object> e : data.entrySet()) {
                             setField(ConfigManager.settings, e.getKey(), e.getValue());
                         }
-                        ConfigManager.saveSettings();
+                        ConfigManager.saveGeneralSettings();
                         sendFullSettings();
                         break;
                     }
@@ -68,7 +68,7 @@ public class ServerHandler {
                         currentProcess.getDriverModeSettings().brightness = (Integer) data.get("brightness");
                         currentProcess.setDriverMode((Boolean) data.get("isDriver"));
 
-                        VisionManager.saveCameras();
+                        VisionManager.saveCurrentCameraDriverMode();
                         break;
                     }
                     case "cameraSettings": {
@@ -90,20 +90,20 @@ public class ServerHandler {
 //                            currentCamera.getProperties().setCamVideoMode(newResolution, true);
 //                        }
 
-                        VisionManager.saveCameras();
+                        VisionManager.saveCurrentCameraSettings();
                         sendFullSettings();
                         break;
                     }
                     case "changeCameraName": {
                         currentCamera.getProperties().setNickname((String) entry.getValue());
                         sendFullSettings();
-                        ConfigManager.saveSettings();
+                        VisionManager.saveCurrentCameraSettings();
                         break;
                     }
                     case "changePipelineName": {
                         currentPipeline.settings.nickname = ((String) entry.getValue());
                         sendFullSettings();
-                        ConfigManager.saveSettings();
+                        VisionManager.saveCurrentCameraPipelines();
                         break;
                     }
                     case "duplicatePipeline": {
@@ -121,7 +121,7 @@ public class ServerHandler {
                         } else {
                             currentProcess.addPipeline(origPipeline);
                         }
-                        ConfigManager.saveSettings();
+                        VisionManager.saveCurrentCameraPipelines();
                         break;
                     }
                     case "command": {
@@ -129,7 +129,7 @@ public class ServerHandler {
                             case "addNewPipeline":
                                 currentProcess.addPipeline();
                                 sendFullSettings();
-                                ConfigManager.saveSettings();
+                                VisionManager.saveCurrentCameraPipelines();
                                 break;
                             // TODO: (HIGH) this never worked before, re-visit now that VisionProcess is written sanely
                             case "deleteCurrentPipeline":
@@ -143,10 +143,10 @@ public class ServerHandler {
 //                                cam.deletePipeline();
 //                                cam.setCurrentPipelineIndex(nextIndex);
 //                                sendFullSettings();
-//                                ConfigManager.saveSettings();
+//                                VisionManager.saveCurrentCameraPipelines();
                                 break;
                             case "save":
-                                ConfigManager.saveSettings();
+                                ConfigManager.saveGeneralSettings();
                                 System.out.println("saved Settings");
                                 break;
                         }
@@ -161,17 +161,10 @@ public class ServerHandler {
                     case "currentPipeline": {
                         currentProcess.setPipeline((Integer) entry.getValue(), true);
                         sendFullSettings();
-                        try {
-                            currentCamera.setBrightness((int) currentPipeline.settings.brightness);
-                            currentCamera.setExposure((int) currentPipeline.settings.exposure);
-                        } catch (Exception e) {
-                            continue;
-                        }
                         break;
                     }
                     default: {
                         setField(currentPipeline.settings, entry.getKey(), entry.getValue());
-
                         switch (entry.getKey()) {
                             case "exposure": {
                                 currentCamera.setExposure((Integer) entry.getValue());

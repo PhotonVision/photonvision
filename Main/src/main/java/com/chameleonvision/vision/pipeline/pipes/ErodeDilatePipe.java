@@ -38,7 +38,7 @@ public class ErodeDilatePipe implements Pipe<Mat, Mat> {
             }
 
             if (dilate) {
-                Imgproc.erode(processBuffer, processBuffer, kernel);
+                Imgproc.dilate(processBuffer, processBuffer, kernel);
             }
 
             processBuffer.copyTo(outputMat);

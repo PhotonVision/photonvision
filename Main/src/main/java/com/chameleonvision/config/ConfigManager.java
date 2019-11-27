@@ -67,7 +67,7 @@ public class ConfigManager {
         }
     }
 
-    public static void saveSettings() {
+    public static void saveGeneralSettings() {
         checkSettingsFolder();
         saveSettingsFile();
     }
