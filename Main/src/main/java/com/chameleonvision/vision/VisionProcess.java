@@ -312,7 +312,7 @@ public class VisionProcess {
                     Debug.printInfo("Vision running faster than stream.");
                 }
 
-                var deltaTimeNanos = lastUpdateTimeNanos - System.nanoTime();
+                var deltaTimeNanos = System.nanoTime() - lastUpdateTimeNanos;
                 fpsAveragingBuffer.addFirst(1.0 / (deltaTimeNanos * 1E-09));
                 lastUpdateTimeNanos = System.nanoTime();
                 fps = getAverageFPS();
