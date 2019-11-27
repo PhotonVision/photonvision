@@ -94,10 +94,7 @@ public class CameraConfig {
 
     private void checkFolder() {
         if (!folderExists()) {
-            try {
-                new File(getFolderPath().toUri()).mkdirs();
-                Files.createDirectory(getFolderPath());
-            } catch (IOException e) {
+            if (!(new File(getFolderPath().toUri()).mkdirs())) {
                 System.err.println("Failed to create camera config folder: " + getFolderPath().toString());
             }
         }
