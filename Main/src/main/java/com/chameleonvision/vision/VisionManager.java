@@ -98,6 +98,7 @@ public class VisionManager {
             visionProcesses.add(new VisionProcessManageable(i, cameraJsonConfig.name, process));
         }
         currentUIVisionProcess = getVisionProcessByIndex(0);
+        ConfigManager.settings.currentCamera = visionProcesses.get(0).name;
         return true;
     }
 
@@ -116,7 +117,8 @@ public class VisionManager {
             return;
         }
 
-        currentUIVisionProcess = getVisionProcessByIndex(0);
+        currentUIVisionProcess = getVisionProcessByIndex(processIndex);
+        ConfigManager.settings.currentCamera = visionProcesses.get(processIndex).name;
     }
 
     public static VisionProcess getVisionProcessByIndex(int processIndex) {
