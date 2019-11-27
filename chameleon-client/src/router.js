@@ -23,10 +23,5 @@ export default new Router({
       name: 'Settings',
       component: lazyLoad('Settings')
     },
-    {
-      path: '/picker',
-      name: 'Picker',
-      component: lazyLoad('ColorPicker')
-    }
   ]
 })
