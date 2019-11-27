@@ -55,7 +55,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
         hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
 
-        rotateFlipPipe = new RotateFlipPipe(ImageRotationMode.DEG_0, settings.flipMode);
+        rotateFlipPipe = new RotateFlipPipe(settings.rotationMode, settings.flipMode);
         blurPipe = new BlurPipe(5);
         erodeDilatePipe = new ErodeDilatePipe(settings.erode, settings.dilate, 7);
         hsvPipe = new HsvPipe(hsvLower, hsvUpper);
@@ -96,7 +96,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         // prepare pipes
         hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
         hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
-        rotateFlipPipe.setConfig(ImageRotationMode.DEG_0, settings.flipMode);
+        rotateFlipPipe.setConfig(settings.rotationMode, settings.flipMode);
         blurPipe.setConfig(0);
         erodeDilatePipe.setConfig(settings.erode, settings.dilate, 7);
         hsvPipe.setConfig(hsvLower, hsvUpper);
