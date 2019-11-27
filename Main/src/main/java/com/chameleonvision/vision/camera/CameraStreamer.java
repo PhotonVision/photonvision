@@ -1,7 +1,7 @@
 package com.chameleonvision.vision.camera;
 
 import com.chameleonvision.vision.enums.StreamDivisor;
-import com.chameleonvision.web.ServerHandler;
+import com.chameleonvision.web.SocketHandler;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.VideoMode;
@@ -38,7 +38,7 @@ public class CameraStreamer {
                     cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value);
         }
         if (updateUI) {
-            ServerHandler.sendFullSettings();
+            SocketHandler.sendFullSettings();
         }
     }
 

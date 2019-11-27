@@ -7,7 +7,7 @@ import com.chameleonvision.util.LoopingRunnable;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.CameraStreamer;
 import com.chameleonvision.vision.pipeline.*;
-import com.chameleonvision.web.ServerHandler;
+import com.chameleonvision.web.SocketHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.cscore.VideoMode;
@@ -16,6 +16,7 @@ import edu.wpi.first.wpiutil.CircularBuffer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -147,8 +148,8 @@ public class VisionProcess {
                 if (updateUI) {
                     HashMap<String, Object> pipeChange = new HashMap<>();
                     pipeChange.put("currentPipeline", pipelineIndex);
-                    ServerHandler.broadcastMessage(pipeChange);
-                    ServerHandler.sendFullSettings();
+                    SocketHandler.broadcastMessage(pipeChange);
+                    SocketHandler.sendFullSettings();
                 }
             }
         }
@@ -192,7 +193,7 @@ public class VisionProcess {
             point.put("calculated", calculated);
             point.put("rawPoint", center);
             WebSend.put("point", point);
-            ServerHandler.broadcastMessage(WebSend);
+            SocketHandler.broadcastMessage(WebSend);
         }
     }
 
