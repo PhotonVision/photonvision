@@ -32,7 +32,8 @@ public class ConfigManager {
                 new File(SettingsPath.toUri()).mkdirs();
                 Files.createDirectory(SettingsPath);
             } catch (IOException e) {
-                e.printStackTrace();
+                if(!(e instanceof java.nio.file.FileAlreadyExistsException || e instanceof java.nio.file.FileAlreadyExistsException))
+                    e.printStackTrace();
             }
         }
     }

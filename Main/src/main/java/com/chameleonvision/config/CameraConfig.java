@@ -4,6 +4,7 @@ import com.chameleonvision.util.JacksonHelper;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -94,8 +95,13 @@ public class CameraConfig {
 
     private void checkFolder() {
         if (!folderExists()) {
-            if (!(new File(getFolderPath().toUri()).mkdirs())) {
-                System.err.println("Failed to create camera config folder: " + getFolderPath().toString());
+            try {
+                if (!(new File(getFolderPath().toUri()).mkdirs())) {
+                    System.err.println("Failed to create camera config folder: " + getFolderPath().toString());
+                }
+            } catch(Exception e) {
+                if(!(e instanceof java.nio.file.FileAlreadyExistsException || e instanceof java.nio.file.FileAlreadyExistsException))
+                    System.err.println("Failed to create camera config folder: " + getFolderPath().toString());
             }
         }
     }
