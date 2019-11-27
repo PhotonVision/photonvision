@@ -52,7 +52,7 @@ public class VisionProcess {
     private NetworkTableEntry ntAreaEntry;
     private NetworkTableEntry ntTimeStampEntry;
     private NetworkTableEntry ntValidEntry;
-    private ObjectMapper objectMapper;
+    private ObjectMapper objectMapper = new ObjectMapper();
 
     VisionProcess(CameraCapture cameraCapture, String name) {
         this.cameraCapture = cameraCapture;

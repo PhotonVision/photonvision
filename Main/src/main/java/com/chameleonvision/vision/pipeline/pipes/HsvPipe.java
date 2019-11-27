@@ -32,7 +32,7 @@ public class HsvPipe implements Pipe<Mat, Mat> {
         input.copyTo(processBuffer);
 
         try {
-            Imgproc.cvtColor(processBuffer, processBuffer, Imgproc.COLOR_RGB2HSV, 3);
+            Imgproc.cvtColor(processBuffer, processBuffer, Imgproc.COLOR_BGR2HSV, 3);
             Core.inRange(processBuffer, hsvLower, hsvUpper, processBuffer);
         } catch (CvException e) {
             System.err.println("(HsvPipe) Exception thrown by OpenCV: \n" + e.getMessage());
