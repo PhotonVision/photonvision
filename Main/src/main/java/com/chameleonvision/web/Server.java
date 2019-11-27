@@ -28,8 +28,8 @@ public class Server {
                 socketHandler.onBinaryMessage(ctx);
             });
         });
-        app.post("/api/settings/general", Requesthandler::onGeneralSettings);
-        app.post("/api/settings/camera", Requesthandler::onCameraSettings);
+        app.post("/api/settings/general", RequestHandler::onGeneralSettings);
+        app.post("/api/settings/camera", RequestHandler::onCameraSettings);
         app.start(port);
     }
 }

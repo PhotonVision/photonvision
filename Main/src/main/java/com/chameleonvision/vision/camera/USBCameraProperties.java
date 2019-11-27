@@ -38,7 +38,7 @@ public class USBCameraProperties extends CaptureProperties {
     public final boolean isPS3Eye;
 
     private String nickname;
-    public double FOV;
+    private double FOV;
 
     USBCameraProperties(UsbCamera baseCamera, CameraJsonConfig config) {
         FOV = config.fov;
@@ -65,6 +65,15 @@ public class USBCameraProperties extends CaptureProperties {
 
         isPS3Eye = (usbVID == PS3EYE_VID && usbPID == PS3EYE_PID);
         videoModes = filterVideoModes(baseCamera.enumerateVideoModes());
+    }
+
+    public void setFOV(double FOV) {
+        this.FOV = FOV;
+        staticProperties = new CaptureStaticProperties(staticProperties.imageWidth, staticProperties.imageHeight, FOV);
+    }
+
+    public double getFOV() {
+        return FOV;
     }
 
     public void setNickname(String nickname) {

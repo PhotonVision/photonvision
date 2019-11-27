@@ -217,7 +217,7 @@ public class SocketHandler {
         HashMap<String, Object> tmp = new HashMap<>();
         VisionProcess currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
         CameraCapture currentCamera = VisionManager.getCurrentUIVisionProcess().getCamera();
-        tmp.put("fov", currentCamera.getProperties().FOV);
+        tmp.put("fov", currentCamera.getProperties().getFOV());
         tmp.put("streamDivisor", currentVisionProcess.cameraStreamer.getDivisor().ordinal());
         // TODO: (HIGH) get videomode index!
 //            tmp.put("resolution", currentCamera.getVideoModeIndex());

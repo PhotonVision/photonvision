@@ -32,6 +32,6 @@ public class CameraJsonConfig {
 
     public static CameraJsonConfig fromUSBCameraProcess(USBCameraCapture process) {
         USBCameraProperties camProps = process.getProperties();
-        return new CameraJsonConfig(camProps.FOV, camProps.name, camProps.path, camProps.getNickname());
+        return new CameraJsonConfig(camProps.getFOV(), camProps.name, camProps.path, camProps.getNickname());
     }
 }
