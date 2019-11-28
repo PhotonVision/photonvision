@@ -5,6 +5,7 @@ import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.pipeline.CVPipeline;
+import com.chameleonvision.vision.pipeline.CVPipeline2dSettings;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -14,6 +15,7 @@ import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.SerializationUtils;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 
 import java.lang.reflect.Field;
@@ -75,22 +77,25 @@ public class SocketHandler {
                         VisionManager.saveCurrentCameraPipelines();
                         break;
                     }
-                    case "duplicatePipeline": { // TODO doesn't work (HIGH)
+                    case "duplicatePipeline": {
                         HashMap pipelineVals = (HashMap) entry.getValue();
                         int pipelineIndex = (int) pipelineVals.get("pipeline");
                         int cameraIndex = (int) pipelineVals.get("camera");
-
-                        CVPipeline origPipeline = currentProcess.getPipelineByIndex(pipelineIndex);
-
+                        ObjectMapper mapper = new ObjectMapper();
+                        CVPipelineSettings origPipeline = currentProcess.getPipelineByIndex(pipelineIndex).settings;
+                        String val = mapper.writeValueAsString(origPipeline);
+                        CVPipelineSettings newPipeline = mapper.readValue(val, origPipeline.getClass());
+                        newPipeline.nickname += "(Copy)";
                         if (cameraIndex != -1) {
                             VisionProcess newProcess = VisionManager.getVisionProcessByIndex(cameraIndex);
-                            if(newProcess != null) {
-                                newProcess.addPipeline(origPipeline);
+                            if (newProcess != null) {
+                                newProcess.addPipeline(newPipeline);
                             }
                         } else {
-                            currentProcess.addPipeline(origPipeline);
+                            currentProcess.addPipeline(newPipeline);
                         }
                         VisionManager.saveCurrentCameraPipelines();
+                        sendFullSettings();
                         break;
                     }
                     case "command": {
@@ -188,7 +193,7 @@ public class SocketHandler {
 
     private static HashMap<String, Object> getOrdinalPipeline(Class cvClass) throws IllegalAccessException {
         HashMap<String, Object> tmp = new HashMap<>();
-        for (Field field :cvClass.getFields()) { // iterate over every field in CVPipelineSettings
+        for (Field field : cvClass.getFields()) { // iterate over every field in CVPipelineSettings
             try {
                 if (!field.getType().isEnum()) { // if the field is not an enum, get it based on the current pipeline
                     tmp.put(field.getName(), field.get(VisionManager.getCurrentUIVisionProcess().getCurrentPipeline().settings));
