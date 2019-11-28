@@ -214,7 +214,7 @@ public class VisionProcess {
                 ntYawEntry.setDouble(targets.get(0).yaw);
                 ntAreaEntry.setDouble(targets.get(0).area);
                 try {
-                    ntAreaEntry.setString(objectMapper.writeValueAsString(targets));
+                    ntAuxListEntry.setString(objectMapper.writeValueAsString(targets));
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
