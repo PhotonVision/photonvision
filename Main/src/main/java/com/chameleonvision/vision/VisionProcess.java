@@ -269,6 +269,9 @@ public class VisionProcess {
             addPipeline(new CVPipeline2d((CVPipeline2dSettings) settings));
         }
     }
+    public void deletePipeline(int index){
+        pipelines.remove(index);
+    }
 
     public CameraCapture getCamera() {
         return cameraCapture;

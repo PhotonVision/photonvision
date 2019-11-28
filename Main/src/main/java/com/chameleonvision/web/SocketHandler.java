@@ -105,19 +105,15 @@ public class SocketHandler {
                                 sendFullSettings();
                                 VisionManager.saveCurrentCameraPipelines();
                                 break;
-                            // TODO: (HIGH) this never worked before, re-visit now that VisionProcess is written sanely
                             case "deleteCurrentPipeline":
-//                                int currentIndex = currentProcess.getCurrentPipelineIndex();
-//                                int nextIndex;
-//                                if (currentIndex == currentProcess.getPipelines().size() - 1) {
-//                                    nextIndex = currentIndex - 1;
-//                                } else {
-//                                    nextIndex = currentIndex;
-//                                }
-//                                cam.deletePipeline();
-//                                cam.setCurrentPipelineIndex(nextIndex);
-//                                sendFullSettings();
-//                                VisionManager.saveCurrentCameraPipelines();
+                                int currentIndex = currentProcess.getCurrentPipelineIndex();
+                                if (currentIndex == currentProcess.getPipelines().size() - 1) {
+                                    currentProcess.setPipeline(currentIndex -1, false);
+                                }
+                                currentProcess.deletePipeline(currentIndex);
+                                sendFullSettings();
+                                VisionManager.saveCurrentCameraPipelines();
+//                                TODO remove pipeline file after deleting 
                                 break;
                             case "save":
                                 ConfigManager.saveGeneralSettings();
