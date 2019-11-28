@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CameraConfig {
@@ -45,19 +44,7 @@ public class CameraConfig {
         return config;
     }
 
-    List<CVPipelineSettings> loadPipelines() {
-//        List<CVPipelineSettings> pipelines = new ArrayList<>();
-//        try {
-//            var pipelineArray = JacksonHelper.deserializer(getPipelinesPath(), CVPipelineSettings[].class);
-////            pipelines = Arrays.asList(pipelineArray);
-//        } catch (Exception e) {
-//            System.err.println("Failed to load camera pipelines: " + getPipelinesPath().toString());
-//        }
-//        return pipelines;
-        return pipelineConfig.load();
-    }
-
-    CVPipelineSettings loadDriverMode() {
+    private CVPipelineSettings loadDriverMode() {
         CVPipelineSettings driverMode = new CVPipelineSettings();
         driverMode.nickname = "DRIVERMODE";
         try {
@@ -77,11 +64,6 @@ public class CameraConfig {
     }
 
     void savePipelines(List<CVPipelineSettings> pipelines) {
-//        try {
-//            JacksonHelper.serializer(getPipelinesPath(), pipelines.toArray());
-//        } catch (IOException e) {
-//            System.err.println("Failed to save camera pipelines file: " + getConfigPath().toString());
-//        }
         pipelineConfig.save(pipelines);
     }
 
@@ -115,8 +97,6 @@ public class CameraConfig {
         }
     }
 
-
-
     private void checkDriverMode() {
         if (!driverModeExists()) {
             try {
@@ -129,7 +109,7 @@ public class CameraConfig {
         }
     }
 
-    Path getConfigFolderPath() {
+    private Path getConfigFolderPath() {
         return Paths.get(camerasConfigFolderPath.toString(), cameraConfigName);
     }
 
@@ -141,7 +121,7 @@ public class CameraConfig {
         return Paths.get(getConfigFolderPath().toString(), "drivermode.json");
     }
 
-    boolean getConfigFolderExists() {
+    private boolean getConfigFolderExists() {
         return Files.exists(getConfigFolderPath());
     }
 

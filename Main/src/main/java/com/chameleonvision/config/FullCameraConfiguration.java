@@ -9,8 +9,7 @@ public class FullCameraConfiguration {
     public final List<CVPipelineSettings> pipelines;
     public final CVPipelineSettings drivermode;
 
-
-    public FullCameraConfiguration(CameraJsonConfig cameraConfig, List<CVPipelineSettings> pipelines, CVPipelineSettings drivermode) {
+    FullCameraConfiguration(CameraJsonConfig cameraConfig, List<CVPipelineSettings> pipelines, CVPipelineSettings drivermode) {
         this.cameraConfig = cameraConfig;
         this.pipelines = pipelines;
         this.drivermode = drivermode;
