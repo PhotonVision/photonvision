@@ -135,15 +135,6 @@ public class SocketHandler {
                         sendFullSettings();
                         break;
                     }
-                    case "generalSettings": {
-                        var array = (HashMap<String, Object>) entry.getValue();
-                        array.forEach((key, value) -> {
-                            setField(ConfigManager.settings, key, value);
-                        });
-                        sendFullSettings();
-                        ConfigManager.saveGeneralSettings();
-                        break;
-                    }
                     default: {
                         // TODO fix this hack
                         String key;
