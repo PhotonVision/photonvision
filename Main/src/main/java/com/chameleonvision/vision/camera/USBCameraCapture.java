@@ -29,6 +29,11 @@ public class USBCameraCapture implements CameraCapture {
     }
 
     @Override
+    public VideoMode getCurrentVideoMode() {
+        return baseCamera.getVideoMode();
+    }
+
+    @Override
     public Pair<Mat, Long> getFrame() {
         Long deltaTime;
         // TODO: Why multiply by 1000 here?

@@ -69,7 +69,7 @@ public class USBCameraProperties extends CaptureProperties {
 
     public void setFOV(double FOV) {
         this.FOV = FOV;
-        staticProperties = new CaptureStaticProperties(staticProperties.imageWidth, staticProperties.imageHeight, FOV);
+        staticProperties = new CaptureStaticProperties(staticProperties.mode, staticProperties.imageWidth, staticProperties.imageHeight, FOV);
     }
 
     public double getFOV() {
@@ -91,7 +91,7 @@ public class USBCameraProperties extends CaptureProperties {
     }
 
     void updateVideoMode(VideoMode videoMode) {
-        staticProperties = new CaptureStaticProperties(videoMode.width, videoMode.height, FOV);
+        staticProperties = new CaptureStaticProperties(videoMode, videoMode.width, videoMode.height, FOV);
     }
 
     public List<VideoMode> getVideoModes() {

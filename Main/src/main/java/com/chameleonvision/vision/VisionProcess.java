@@ -1,7 +1,6 @@
 package com.chameleonvision.vision;
 
 import com.chameleonvision.Debug;
-import com.chameleonvision.Main;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.util.LoopingRunnable;
 import com.chameleonvision.vision.camera.CameraCapture;
@@ -16,7 +15,6 @@ import edu.wpi.first.wpiutil.CircularBuffer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -235,6 +233,14 @@ public class VisionProcess {
     public void setVideoMode(VideoMode newMode) {
         cameraCapture.setVideoMode(newMode);
         cameraStreamer.setNewVideoMode(newMode);
+    }
+
+    public VideoMode getCurrentVideoMode() {
+        return cameraCapture.getCurrentVideoMode();
+    }
+
+    public List<VideoMode> getPossibleVideoModes() {
+        return cameraCapture.getProperties().videoModes;
     }
 
     public List<CVPipeline> getPipelines() {

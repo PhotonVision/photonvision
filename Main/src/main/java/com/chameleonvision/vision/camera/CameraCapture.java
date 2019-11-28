@@ -6,6 +6,8 @@ import edu.wpi.cscore.VideoMode;
 public interface CameraCapture extends ImageCapture {
     USBCameraProperties getProperties();
 
+    public VideoMode getCurrentVideoMode();
+
     /**
      * Set the exposure of the camera
      * @param exposure the new exposure to set the camera to

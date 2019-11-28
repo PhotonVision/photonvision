@@ -221,7 +221,7 @@ public class SocketHandler {
         tmp.put("fov", currentCamera.getProperties().getFOV());
         tmp.put("streamDivisor", currentVisionProcess.cameraStreamer.getDivisor().ordinal());
         // TODO: (HIGH) get videomode index!
-//            tmp.put("resolution", currentCamera.getVideoModeIndex());
+//        tmp.put("resolution", currentCamera.getVideoModeIndex());
         return tmp;
     }
 

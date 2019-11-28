@@ -1,5 +1,6 @@
 package com.chameleonvision.vision.camera;
 
+import edu.wpi.cscore.VideoMode;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.util.FastMath;
 
@@ -13,8 +14,10 @@ public class CaptureStaticProperties {
     public final double centerY;
     public final double horizontalFocalLength;
     public final double verticalFocalLength;
+    public final VideoMode mode;
 
-    public CaptureStaticProperties(int imageWidth, int imageHeight, double fov) {
+    public CaptureStaticProperties(VideoMode mode, int imageWidth, int imageHeight, double fov) {
+        this.mode = mode;
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
         this.fov = fov;
