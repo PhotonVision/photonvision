@@ -15,7 +15,6 @@ public class PipelineConfig {
 
     public static final String CVPipeline2DPrefix = "CV2D";
     public static final String CVPipeline3DPrefix = "CV3D";
-    private final Path pipelineFolderPath;
 
     private final CameraConfig cameraConfig;
 
@@ -25,7 +24,6 @@ public class PipelineConfig {
      */
     public PipelineConfig(CameraConfig cameraConfig) {
         this.cameraConfig = cameraConfig;
-        pipelineFolderPath = Paths.get(cameraConfig.getConfigFolderPath().toString(), "pipelines");
     }
 
     void check() {
@@ -38,8 +36,9 @@ public class PipelineConfig {
 
     private boolean pipelinesExists() {
         cameraConfig.checkFolder();
-        (new File(pipelineFolderPath.toUri())).mkdirs();
-        var folderContents = new File(pipelineFolderPath.toUri()).listFiles();
+        //noinspection ResultOfMethodCallIgnored
+        (new File(cameraConfig.getPipelineFolderPath().toUri())).mkdirs();
+        var folderContents = new File(cameraConfig.getPipelineFolderPath().toUri()).listFiles();
         if(folderContents == null) return false;
         return cameraConfig.getConfigFolderExists() && folderContents.length > 0;
     }
@@ -47,7 +46,7 @@ public class PipelineConfig {
     private void save(CVPipelineSettings settings) {
 
         if (settings instanceof CVPipeline3dSettings) {
-            Path settingJsonPath = Paths.get(pipelineFolderPath.toString(),
+            Path settingJsonPath = Paths.get(cameraConfig.getPipelineFolderPath().toString(),
                     CVPipeline3DPrefix + settings.nickname.replace(' ', '_') + ".json");
             try {
                 JacksonHelper.serializer(settingJsonPath, settings);
@@ -55,7 +54,7 @@ public class PipelineConfig {
                 e.printStackTrace();
             }
         } else if (settings instanceof CVPipeline2dSettings) {
-            Path settingJsonPath = Paths.get(pipelineFolderPath.toString(),
+            Path settingJsonPath = Paths.get(cameraConfig.getPipelineFolderPath().toString(),
                     CVPipeline2DPrefix + settings.nickname.replace(' ', '_') + ".json");
             try {
                 JacksonHelper.serializer(settingJsonPath, settings);
@@ -75,7 +74,7 @@ public class PipelineConfig {
 
     public List<CVPipelineSettings> load() {
         check();
-        var pipelineDir = new File(pipelineFolderPath.toUri());
+        var pipelineDir = new File(cameraConfig.getPipelineFolderPath().toUri());
 
         File[] files = pipelineDir.listFiles();
         List<CVPipelineSettings> deserializedList = new ArrayList<>();

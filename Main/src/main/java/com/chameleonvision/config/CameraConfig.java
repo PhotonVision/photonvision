@@ -145,6 +145,10 @@ public class CameraConfig {
         return Files.exists(getConfigFolderPath());
     }
 
+    Path getPipelineFolderPath() {
+        return Paths.get(getConfigFolderPath().toString(), "pipelines");
+    }
+
     private boolean configExists() {
         return getConfigFolderExists() && Files.exists(getConfigPath());
     }
