@@ -1,7 +1,7 @@
 # Chameleon-Vision
 
-![CircleCI](https://img.shields.io/circleci/build/github/Chameleon-Vision/chameleon-vision/dev?label=dev&logo=name)
-![CircleCI](https://img.shields.io/circleci/build/github/Chameleon-Vision/chameleon-vision/master?label=master&logo=name)
+[![CircleCI](https://img.shields.io/circleci/build/github/Chameleon-Vision/chameleon-vision/dev?label=dev&logo=name)](https://circleci.com/gh/Chameleon-Vision/workflows/chameleon-vision/tree/dev)
+[![CircleCI](https://img.shields.io/circleci/build/github/Chameleon-Vision/chameleon-vision/master?label=master&logo=name)](https://circleci.com/gh/Chameleon-Vision/workflows/chameleon-vision/tree/master)
 
 Chameleon Vision is free open-source software for FRC teams to use for vision proccesing on their robots.
 
