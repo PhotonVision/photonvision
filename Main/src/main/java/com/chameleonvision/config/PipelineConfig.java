@@ -38,21 +38,25 @@ public class PipelineConfig {
 
     private boolean pipelinesExists() {
         cameraConfig.checkFolder();
-        return cameraConfig.getConfigFolderExists()
-                && Objects.requireNonNull(new File(pipelineFolderPath.toUri()).listFiles()).length > 0;
+        (new File(pipelineFolderPath.toUri())).mkdirs();
+        var folderContents = new File(pipelineFolderPath.toUri()).listFiles();
+        if(folderContents == null) return false;
+        return cameraConfig.getConfigFolderExists() && folderContents.length > 0;
     }
 
     private void save(CVPipelineSettings settings) {
 
         if (settings instanceof CVPipeline3dSettings) {
-            Path settingJsonPath = Paths.get(pipelineFolderPath.toString(), CVPipeline3DPrefix + settings.nickname);
+            Path settingJsonPath = Paths.get(pipelineFolderPath.toString(),
+                    CVPipeline3DPrefix + settings.nickname.replace(' ', '_') + ".json");
             try {
                 JacksonHelper.serializer(settingJsonPath, settings);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else if (settings instanceof CVPipeline2dSettings) {
-            Path settingJsonPath = Paths.get(pipelineFolderPath.toString(), CVPipeline2DPrefix + settings.nickname);
+            Path settingJsonPath = Paths.get(pipelineFolderPath.toString(),
+                    CVPipeline2DPrefix + settings.nickname.replace(' ', '_') + ".json");
             try {
                 JacksonHelper.serializer(settingJsonPath, settings);
             } catch (IOException e) {
