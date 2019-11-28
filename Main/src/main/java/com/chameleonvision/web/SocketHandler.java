@@ -4,7 +4,6 @@ import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
-import com.chameleonvision.vision.enums.StreamDivisor;
 import com.chameleonvision.vision.pipeline.CVPipeline;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -76,7 +75,7 @@ public class SocketHandler {
                         VisionManager.saveCurrentCameraPipelines();
                         break;
                     }
-                    case "duplicatePipeline": {
+                    case "duplicatePipeline": { // TODO doesn't work (HIGH)
                         HashMap pipelineVals = (HashMap) entry.getValue();
                         int pipelineIndex = (int) pipelineVals.get("pipeline");
                         int cameraIndex = (int) pipelineVals.get("camera");
@@ -97,7 +96,7 @@ public class SocketHandler {
                     case "command": {
                         switch ((String) entry.getValue()) {
                             case "addNewPipeline":
-                                currentProcess.addPipeline();
+                                currentProcess.addBlankPipeline();
                                 sendFullSettings();
                                 VisionManager.saveCurrentCameraPipelines();
                                 break;

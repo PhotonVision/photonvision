@@ -249,9 +249,9 @@ public class VisionProcess {
         return currentPipelineIndex;
     }
 
-    public void addPipeline() {
+    public void addBlankPipeline() {
         // TODO: (2.1) add to UI option between 2d and 3d pipeline
-        pipelines.add(new CVPipeline2d());
+        addPipeline(new CVPipeline2d());
     }
 
     public void addPipeline(CVPipeline pipeline) {
@@ -260,7 +260,7 @@ public class VisionProcess {
 
     public void addPipeline(CVPipelineSettings settings) {
         if (settings instanceof CVPipeline2dSettings) {
-            pipelines.add(new CVPipeline2d((CVPipeline2dSettings) settings));
+            addPipeline(new CVPipeline2d((CVPipeline2dSettings) settings));
         }
     }
 

@@ -139,11 +139,12 @@ public class Main {
             NetworkTableInstance.getDefault().startServer();
         } else {
             NetworkTableInstance.getDefault().addLogger(new NTLogger(), 0, 255); // to hide error messages
-            if (ntClientModeServer != null) {
-                NetworkTableInstance.getDefault().startClient(ntClientModeServer);
-            } else {
-                NetworkTableInstance.getDefault().startClientTeam(ConfigManager.settings.teamNumber);
-            }
+//            if (ntClientModeServer != null) {
+//                NetworkTableInstance.getDefault().startClient(ntClientModeServer);
+//            } else {
+//                NetworkTableInstance.getDefault().startClientTeam(ConfigManager.settings.teamNumber);
+//            }
+            NetworkTableInstance.getDefault().startClient("localhost");
         }
 
         boolean visionSourcesOk = VisionManager.initializeSources();
