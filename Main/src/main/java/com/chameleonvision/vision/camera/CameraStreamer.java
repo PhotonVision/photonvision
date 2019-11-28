@@ -8,6 +8,8 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
 
 public class CameraStreamer {
     private final CameraCapture cameraCapture;
@@ -16,6 +18,7 @@ public class CameraStreamer {
     private CvSource cvSource;
     private final Object streamBufferLock = new Object();
     private Mat streamBuffer = new Mat();
+    private Size size;
 
     public CameraStreamer(CameraCapture cameraCapture, String name) {
         this.cameraCapture = cameraCapture;
@@ -23,6 +26,11 @@ public class CameraStreamer {
         this.cvSource = CameraServer.getInstance().putVideo(name,
                 cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
                 cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value);
+        //noinspection IntegerDivisionInFloatingPointContext
+        this.size = new Size(
+                cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
+                cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value
+        );
         setDivisor(divisor, false);
     }
 
@@ -32,6 +40,7 @@ public class CameraStreamer {
             var camValues = cameraCapture.getProperties();
             var newWidth = camValues.getStaticProperties().imageWidth / newDivisor.value;
             var newHeight = camValues.getStaticProperties().imageHeight / newDivisor.value;
+            this.size = new Size(newWidth, newHeight);
             synchronized (streamBufferLock) {
                 this.streamBuffer = new Mat(newWidth, newHeight, CvType.CV_8UC3);
                 this.cvSource = CameraServer.getInstance().putVideo(this.name,
@@ -61,15 +70,16 @@ public class CameraStreamer {
 
     public void runStream(Mat image) {
         synchronized (streamBufferLock) {
-            streamBuffer = image;
+            image.copyTo(streamBuffer);
         }
-//        if (divisor.value != 1) {
+
+        if (divisor.value != 1) {
 //            var camVal = cameraProcess.getProperties().staticProperties;
 //            var newWidth = camVal.imageWidth / divisor.value;
 //            var newHeight = camVal.imageHeight / divisor.value;
 //            Size newSize = new Size(newWidth, newHeight);
-//            Imgproc.resize(streamBuffer, streamBuffer, newSize);
-//        }
+             Imgproc.resize(streamBuffer, streamBuffer, this.size);
+        }
         cvSource.putFrame(streamBuffer);
     }
 }
