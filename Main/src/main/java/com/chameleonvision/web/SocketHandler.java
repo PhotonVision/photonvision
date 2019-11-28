@@ -4,6 +4,7 @@ import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.enums.ImageRotationMode;
 import com.chameleonvision.vision.pipeline.CVPipeline;
 import com.chameleonvision.vision.pipeline.CVPipeline2dSettings;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
@@ -135,7 +136,21 @@ public class SocketHandler {
                         break;
                     }
                     default: {
-                        setField(currentPipeline.settings, entry.getKey(), entry.getValue());
+                        // TODO fix this hack
+                        String key;
+                        Object value;
+                        if(entry.getKey().equals("orientation")) { // FIXME the field is now called rotationMode
+                            value = entry.getValue();
+                            var int_ = (Integer) value;
+                            if (int_ == 1) {
+                                currentPipeline.settings.rotationMode = ImageRotationMode.DEG_180;
+                            } else {
+                                currentPipeline.settings.rotationMode = ImageRotationMode.DEG_0;
+                            }
+                        } else {
+                            setField(currentPipeline.settings, entry.getKey(), entry.getValue());
+                        }
+
                         switch (entry.getKey()) {
                             case "exposure": {
                                 currentCamera.setExposure((Integer) entry.getValue());

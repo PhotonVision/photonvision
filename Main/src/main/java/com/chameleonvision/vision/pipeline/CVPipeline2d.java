@@ -4,7 +4,6 @@ import com.chameleonvision.Main;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.pipeline.pipes.*;
-import com.chameleonvision.vision.enums.ImageRotationMode;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
 
