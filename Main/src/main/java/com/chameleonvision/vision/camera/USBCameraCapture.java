@@ -68,6 +68,14 @@ public class USBCameraCapture implements CameraCapture {
             System.err.println("Failed to change camera video mode!");
         }
     }
+    public void setVideoMode(int index){
+        VideoMode mode = properties.getVideoModes().get(index);
+        setVideoMode(mode);
+    }
+    public int getVideoModeIndex(){
+        return properties.getVideoModes().indexOf(properties.getStaticProperties().mode);
+    }
+
 
     @Override
     public void setGain(int gain) {
