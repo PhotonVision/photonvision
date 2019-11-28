@@ -94,6 +94,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         inputMat.copyTo(rawCameraMat);
 
         // prepare pipes
+        camProps = cameraCapture.getProperties().getStaticProperties();
         hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
         hsvUpper = new Scalar(settings.hue.get(1).intValue(), settings.saturation.get(1).intValue(), settings.value.get(1).intValue());
         rotateFlipPipe.setConfig(settings.rotationMode, settings.flipMode);
@@ -139,7 +140,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         Pair<List<RotatedRect>, Long> sortContoursResult = sortContoursPipe.run(groupContoursResult.getLeft());
         totalPipelineTimeNanos += sortContoursResult.getRight();
 
-        Pair<List<Target2d>, Long> collect2dTargetsResult = collect2dTargetsPipe.run(sortContoursResult.getLeft());
+        Pair<List<Target2d>, Long> collect2dTargetsResult = collect2dTargetsPipe.run(Pair.of(sortContoursResult.getLeft(), camProps));
         totalPipelineTimeNanos += collect2dTargetsResult.getRight();
 
         // takes pair of (Mat of original camera image (8UC3), Mat of HSV thresholded image(8UC1))

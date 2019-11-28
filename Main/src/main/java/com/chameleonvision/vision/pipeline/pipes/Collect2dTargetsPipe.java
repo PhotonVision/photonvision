@@ -5,12 +5,13 @@ import com.chameleonvision.vision.pipeline.CVPipeline2d;
 import com.chameleonvision.vision.enums.CalibrationMode;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
+import org.opencv.core.Mat;
 import org.opencv.core.RotatedRect;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Collect2dTargetsPipe implements Pipe<List<RotatedRect>, List<CVPipeline2d.Target2d>> {
+public class Collect2dTargetsPipe implements Pipe<Pair<List<RotatedRect>, CaptureStaticProperties>, List<CVPipeline2d.Target2d>> {
 
     private CalibrationMode calibrationMode;
     private CaptureStaticProperties camProps;
@@ -38,10 +39,12 @@ public class Collect2dTargetsPipe implements Pipe<List<RotatedRect>, List<CVPipe
     }
 
     @Override
-    public Pair<List<CVPipeline2d.Target2d>, Long> run(List<RotatedRect> input) {
+    public Pair<List<CVPipeline2d.Target2d>, Long> run(Pair<List<RotatedRect>, CaptureStaticProperties> inputPair) {
         long processStartNanos = System.nanoTime();
 
         targets.clear();
+        var input = inputPair.getLeft();
+        var imageArea = inputPair.getRight().imageArea;
 
         if (input.size() > 0) {
             for (RotatedRect r : input) {
@@ -64,7 +67,7 @@ public class Collect2dTargetsPipe implements Pipe<List<RotatedRect>, List<CVPipe
 
                 t.pitch = calculatePitch(r.center.y, t.calibratedY);
                 t.yaw = calculateYaw(r.center.x, t.calibratedX);
-                t.area = r.size.area();
+                t.area = r.size.area() / imageArea;
 
                 targets.add(t);
             }
