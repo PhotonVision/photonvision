@@ -1,17 +1,14 @@
 package com.chameleonvision.config;
 
 import com.chameleonvision.util.JacksonHelper;
-import com.chameleonvision.vision.pipeline.CVPipeline2dSettings;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class CameraConfig {
@@ -49,14 +46,15 @@ public class CameraConfig {
     }
 
     List<CVPipelineSettings> loadPipelines() {
-        List<CVPipelineSettings> pipelines = new ArrayList<>();
-        try {
-            var pipelineArray = JacksonHelper.deserializer(getPipelinesPath(), CVPipelineSettings[].class);
-//            pipelines = Arrays.asList(pipelineArray);
-        } catch (Exception e) {
-            System.err.println("Failed to load camera pipelines: " + getPipelinesPath().toString());
-        }
-        return pipelines;
+//        List<CVPipelineSettings> pipelines = new ArrayList<>();
+//        try {
+//            var pipelineArray = JacksonHelper.deserializer(getPipelinesPath(), CVPipelineSettings[].class);
+////            pipelines = Arrays.asList(pipelineArray);
+//        } catch (Exception e) {
+//            System.err.println("Failed to load camera pipelines: " + getPipelinesPath().toString());
+//        }
+//        return pipelines;
+        return pipelineConfig.load();
     }
 
     CVPipelineSettings loadDriverMode() {
@@ -79,11 +77,12 @@ public class CameraConfig {
     }
 
     void savePipelines(List<CVPipelineSettings> pipelines) {
-        try {
-            JacksonHelper.serializer(getPipelinesPath(), pipelines.toArray());
-        } catch (IOException e) {
-            System.err.println("Failed to save camera pipelines file: " + getConfigPath().toString());
-        }
+//        try {
+//            JacksonHelper.serializer(getPipelinesPath(), pipelines.toArray());
+//        } catch (IOException e) {
+//            System.err.println("Failed to save camera pipelines file: " + getConfigPath().toString());
+//        }
+        pipelineConfig.save(pipelines);
     }
 
     void saveDriverMode(CVPipelineSettings driverMode) {
@@ -94,14 +93,14 @@ public class CameraConfig {
         }
     }
 
-    private void checkFolder() {
-        if (!folderExists()) {
+    void checkFolder() {
+        if (!getConfigFolderExists()) {
             try {
-                if (!(new File(getFolderPath().toUri()).mkdirs())) {
-                    System.err.println("Failed to create camera config folder: " + getFolderPath().toString());
+                if (!(new File(getConfigFolderPath().toUri()).mkdirs())) {
+                    System.err.println("Failed to create camera config folder: " + getConfigFolderPath().toString());
                 }
             } catch(Exception e) {
-                System.err.println("Failed to create camera config folder: " + getFolderPath().toString());
+                System.err.println("Failed to create camera config folder: " + getConfigFolderPath().toString());
             }
         }
     }
@@ -130,35 +129,27 @@ public class CameraConfig {
         }
     }
 
-    private Path getFolderPath() {
+    Path getConfigFolderPath() {
         return Paths.get(camerasConfigFolderPath.toString(), cameraConfigName);
     }
 
     private Path getConfigPath() {
-        return Paths.get(getFolderPath().toString(), "camera.json");
-    }
-
-    Path getPipelinesPath() {
-        return Paths.get(getFolderPath().toString(), "pipelines.json");
+        return Paths.get(getConfigFolderPath().toString(), "camera.json");
     }
 
     private Path getDriverModePath() {
-        return Paths.get(getFolderPath().toString(), "drivermode.json");
+        return Paths.get(getConfigFolderPath().toString(), "drivermode.json");
     }
 
-    boolean folderExists() {
-        return Files.exists(getFolderPath());
+    boolean getConfigFolderExists() {
+        return Files.exists(getConfigFolderPath());
     }
 
     private boolean configExists() {
-        return folderExists() && Files.exists(getConfigPath());
+        return getConfigFolderExists() && Files.exists(getConfigPath());
     }
 
     private boolean driverModeExists() {
-        return folderExists() && Files.exists(getDriverModePath());
-    }
-
-    boolean pipelinesExists() {
-        return folderExists() && Files.exists(getPipelinesPath());
+        return getConfigFolderExists() && Files.exists(getDriverModePath());
     }
 }

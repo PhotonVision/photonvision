@@ -86,11 +86,9 @@ public class ConfigManager {
             CameraConfig cameraConfiguration = new CameraConfig(preliminaryConfig);
             cameraConfigs.put(preliminaryConfig.name, cameraConfiguration);
 
-            CameraJsonConfig camJsonConfig = cameraConfiguration.load();
-            List<CVPipelineSettings> pipelines = cameraConfiguration.loadPipelines();
-            CVPipelineSettings driverMode = cameraConfiguration.loadDriverMode();
+            FullCameraConfiguration camJsonConfig = cameraConfiguration.load();
 
-            configList.add(new FullCameraConfiguration(camJsonConfig, pipelines, driverMode));
+            configList.add(camJsonConfig);
         }
 
         return configList;
