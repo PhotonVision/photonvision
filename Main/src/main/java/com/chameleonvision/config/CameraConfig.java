@@ -1,6 +1,7 @@
 package com.chameleonvision.config;
 
 import com.chameleonvision.util.JacksonHelper;
+import com.chameleonvision.vision.pipeline.CVPipeline2dSettings;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 
 import java.io.File;
@@ -38,6 +39,11 @@ public class CameraConfig {
         CameraJsonConfig config = preliminaryConfig;
         try {
             config = JacksonHelper.deserializer(getConfigPath(), CameraJsonConfig.class);
+//            if (config != null) {
+//                 TODO: fix for multicamera
+//                boolean pathsDifferent = !(config.path != preliminaryConfig.path);
+//                config = new CameraJsonConfig(config.fov, preliminaryConfig.path, config.name, config.nickname);
+//            }
         } catch (IOException e) {
             System.err.printf("Failed to load camera config: %s - using default.\n", getConfigPath().toString());
         }
@@ -48,10 +54,8 @@ public class CameraConfig {
         List<CVPipelineSettings> pipelines = new ArrayList<>();
         try {
             var pipelineArray = JacksonHelper.deserializer(getPipelinesPath(), CVPipelineSettings[].class);
-            if (pipelineArray != null) {
-                pipelines = Arrays.asList(pipelineArray);
-            }
-        } catch (IOException e) {
+//            pipelines = Arrays.asList(pipelineArray);
+        } catch (Exception e) {
             System.err.println("Failed to load camera pipelines: " + getPipelinesPath().toString());
         }
         return pipelines;
@@ -78,7 +82,7 @@ public class CameraConfig {
 
     void savePipelines(List<CVPipelineSettings> pipelines) {
         try {
-            JacksonHelper.serializer(getPipelinesPath(), pipelines);
+            JacksonHelper.serializer(getPipelinesPath(), pipelines.toArray());
         } catch (IOException e) {
             System.err.println("Failed to save camera pipelines file: " + getConfigPath().toString());
         }
@@ -99,8 +103,7 @@ public class CameraConfig {
                     System.err.println("Failed to create camera config folder: " + getFolderPath().toString());
                 }
             } catch(Exception e) {
-                if(!(e instanceof java.nio.file.FileAlreadyExistsException || e instanceof java.nio.file.FileAlreadyExistsException))
-                    System.err.println("Failed to create camera config folder: " + getFolderPath().toString());
+                System.err.println("Failed to create camera config folder: " + getFolderPath().toString());
             }
         }
     }
@@ -118,7 +121,8 @@ public class CameraConfig {
     private void checkPipelines() {
         if (!pipelinesExists()) {
             try {
-                Files.createFile(getPipelinesPath());
+                var sanePipeline = List.of(new CVPipeline2dSettings()).toArray();
+                JacksonHelper.serializer(getPipelinesPath(), List.of(new CVPipeline2dSettings()).toArray());
             } catch (IOException e) {
                 System.err.println("Failed to create camera pipelines file: " + getPipelinesPath().toString());
             }

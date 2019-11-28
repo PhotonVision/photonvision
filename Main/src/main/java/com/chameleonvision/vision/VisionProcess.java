@@ -55,11 +55,18 @@ public class VisionProcess {
     private NetworkTableEntry ntValidEntry;
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    VisionProcess(CameraCapture cameraCapture, String name) {
+    VisionProcess(CameraCapture cameraCapture, String name, List<CVPipelineSettings> loadedPipelineSettings) {
         this.cameraCapture = cameraCapture;
 
-        pipelines.add(new CVPipeline2d("New Pipeline"));
-        setPipeline(0, false);
+        if (loadedPipelineSettings == null || loadedPipelineSettings.size() == 0) {
+            pipelines.add(new CVPipeline2d("New Pipeline"));
+        } else {
+            for (CVPipelineSettings setting : loadedPipelineSettings) {
+                addPipeline(setting);
+            }
+            setPipeline(0, false);
+        }
+
 
         // Thread to put frames on the dashboard
         this.cameraStreamer = new CameraStreamer(cameraCapture, name);

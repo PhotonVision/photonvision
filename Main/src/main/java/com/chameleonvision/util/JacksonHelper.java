@@ -12,15 +12,15 @@ import java.nio.file.Path;
 public class JacksonHelper {
     private JacksonHelper() {} // no construction, utility class
 
-    public static void serializer(Path path, Object object) throws IOException {
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build();
+    public static <T> void serializer(Path path, T object) throws IOException {
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
         ObjectMapper objectMapper = JsonMapper.builder().activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT).build();
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(path.toString()), object);
     }
 
     public static <T> T deserializer(Path path, Class<T> ref) throws IOException {
         PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
-        ObjectMapper objectMapper = JsonMapper.builder().activateDefaultTyping(ptv).build();
+        ObjectMapper objectMapper = JsonMapper.builder().activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT).build();
         File jsonFile = new File(path.toString());
         if (jsonFile.exists() && jsonFile.length() > 0) {
             return objectMapper.readValue(jsonFile, ref);

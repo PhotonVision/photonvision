@@ -1,26 +1,28 @@
 package com.chameleonvision.web;
 
-import com.chameleonvision.config.GeneralSettings;
+import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
-import com.chameleonvision.config.ConfigManager;
-import com.chameleonvision.vision.enums.CalibrationMode;
-import com.chameleonvision.vision.pipeline.CVPipeline;
-import com.chameleonvision.vision.pipeline.CVPipeline2dSettings;
-import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision.vision.enums.StreamDivisor;
+import com.chameleonvision.vision.pipeline.CVPipeline;
+import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.javalin.websocket.*;
-
+import io.javalin.websocket.WsBinaryMessageContext;
+import io.javalin.websocket.WsCloseContext;
+import io.javalin.websocket.WsConnectContext;
+import io.javalin.websocket.WsContext;
 import org.apache.commons.lang3.ArrayUtils;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class SocketHandler {
@@ -137,13 +139,13 @@ public class SocketHandler {
                         switch (entry.getKey()) {
                             case "exposure": {
                                 currentCamera.setExposure((Integer) entry.getValue());
-                                VisionManager.saveCurrentCameraPipelines();
                             }
                             case "brightness": {
                                 currentCamera.setBrightness((Integer) entry.getValue());
-                                VisionManager.saveCurrentCameraPipelines();
                             }
                         }
+
+                        VisionManager.saveCurrentCameraPipelines();
                         break;
                     }
                 }
