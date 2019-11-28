@@ -21,29 +21,27 @@ public class CameraConfig {
     private final String cameraConfigName;
     private final CameraJsonConfig preliminaryConfig;
 
+    private final PipelineConfig pipelineConfig;
+
     CameraConfig(CameraJsonConfig config) {
         preliminaryConfig = config;
         cameraConfigName = preliminaryConfig.name.replace(' ', '_');
+        pipelineConfig = new PipelineConfig(this);
     }
 
-    public CameraJsonConfig load() {
+    public FullCameraConfiguration load() {
         checkFolder();
         checkConfig();
-        checkPipelines();
         checkDriverMode();
+        pipelineConfig.check();
 
-        return loadConfig();
+        return new FullCameraConfiguration(loadConfig(), pipelineConfig.load(), loadDriverMode());
     }
 
     private CameraJsonConfig loadConfig() {
         CameraJsonConfig config = preliminaryConfig;
         try {
             config = JacksonHelper.deserializer(getConfigPath(), CameraJsonConfig.class);
-//            if (config != null) {
-//                 TODO: fix for multicamera
-//                boolean pathsDifferent = !(config.path != preliminaryConfig.path);
-//                config = new CameraJsonConfig(config.fov, preliminaryConfig.path, config.name, config.nickname);
-//            }
         } catch (IOException e) {
             System.err.printf("Failed to load camera config: %s - using default.\n", getConfigPath().toString());
         }
@@ -118,16 +116,7 @@ public class CameraConfig {
         }
     }
 
-    private void checkPipelines() {
-        if (!pipelinesExists()) {
-            try {
-                var sanePipeline = List.of(new CVPipeline2dSettings()).toArray();
-                JacksonHelper.serializer(getPipelinesPath(), List.of(new CVPipeline2dSettings()).toArray());
-            } catch (IOException e) {
-                System.err.println("Failed to create camera pipelines file: " + getPipelinesPath().toString());
-            }
-        }
-    }
+
 
     private void checkDriverMode() {
         if (!driverModeExists()) {
@@ -149,7 +138,7 @@ public class CameraConfig {
         return Paths.get(getFolderPath().toString(), "camera.json");
     }
 
-    private Path getPipelinesPath() {
+    Path getPipelinesPath() {
         return Paths.get(getFolderPath().toString(), "pipelines.json");
     }
 
@@ -157,7 +146,7 @@ public class CameraConfig {
         return Paths.get(getFolderPath().toString(), "drivermode.json");
     }
 
-    private boolean folderExists() {
+    boolean folderExists() {
         return Files.exists(getFolderPath());
     }
 
@@ -165,11 +154,11 @@ public class CameraConfig {
         return folderExists() && Files.exists(getConfigPath());
     }
 
-    private boolean pipelinesExists() {
-        return folderExists() && Files.exists(getPipelinesPath());
-    }
-
     private boolean driverModeExists() {
         return folderExists() && Files.exists(getDriverModePath());
+    }
+
+    boolean pipelinesExists() {
+        return folderExists() && Files.exists(getPipelinesPath());
     }
 }
