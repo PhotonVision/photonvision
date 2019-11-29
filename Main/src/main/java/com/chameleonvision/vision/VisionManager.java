@@ -171,11 +171,11 @@ public class VisionManager {
         ConfigManager.saveCameraDriverMode(getCurrentCameraName(), driverModeSettings);
     }
 
-    public static List<String> getCameraResolutionList(CameraCapture capture) {
-        return capture.getProperties().getVideoModes().stream().map(Helpers::VideoModeToString).collect(Collectors.toList());
+    public static List<HashMap> getCameraResolutionList(CameraCapture capture) {
+        return capture.getProperties().getVideoModes().stream().map(object -> Helpers.VideoModeToHashMap(object)).collect(Collectors.toList());
     }
 
-    public static List<String> getCurrentCameraResolutionList() {
+    public static List<HashMap> getCurrentCameraResolutionList() {
         return getCameraResolutionList(currentUIVisionProcess.getCamera());
     }
 

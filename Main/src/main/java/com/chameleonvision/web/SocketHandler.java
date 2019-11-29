@@ -240,7 +240,6 @@ public class SocketHandler {
         tmp.put("fov", currentCamera.getProperties().getFOV());
         tmp.put("streamDivisor", currentVisionProcess.cameraStreamer.getDivisor().ordinal());
         // TODO: (HIGH) get videomode index!
-//        tmp.put("resolution", currentCamera.getVideoModeIndex());
         return tmp;
     }
 
@@ -263,8 +262,6 @@ public class SocketHandler {
         CVPipeline currentPipeline = currentProcess.getCurrentPipeline();
 
         try {
-//            fullSettings.putAll(settingsToMap(ConfigManager.settings));
-//            fullSettings.putAll(pipelineToMap(currentPipeline.settings));
             fullSettings.put("settings", getOrdinalSettings());
             fullSettings.put("cameraSettings", getOrdinalCameraSettings());
             fullSettings.put("cameraList", VisionManager.getAllCameraNicknames());

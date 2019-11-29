@@ -212,7 +212,7 @@
         },
         data() {
             return {
-                selectedTab: 1,
+                selectedTab: 0,
                 // camera edit variables
                 isCameraNameEdit: false,
                 newCameraName: "",
