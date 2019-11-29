@@ -4,7 +4,6 @@ import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
-import com.chameleonvision.vision.enums.ImageRotationMode;
 import com.chameleonvision.vision.pipeline.CVPipeline;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -105,6 +104,7 @@ public class SocketHandler {
                     case "command": {
                         switch ((String) entry.getValue()) {
                             case "addNewPipeline":
+
                                 currentProcess.addBlankPipeline();
                                 sendFullSettings();
                                 VisionManager.saveCurrentCameraPipelines();
@@ -117,7 +117,6 @@ public class SocketHandler {
                                 currentProcess.deletePipeline(currentIndex);
                                 sendFullSettings();
                                 VisionManager.saveCurrentCameraPipelines();
-//                                TODO remove pipeline file after deleting 
                                 break;
                             case "save":
                                 ConfigManager.saveGeneralSettings();
@@ -225,7 +224,7 @@ public class SocketHandler {
         CameraCapture currentCamera = VisionManager.getCurrentUIVisionProcess().getCamera();
         tmp.put("fov", currentCamera.getProperties().getFOV());
         tmp.put("streamDivisor", currentVisionProcess.cameraStreamer.getDivisor().ordinal());
-        // TODO: (HIGH) get videomode index!
+        tmp.put("resolution", currentVisionProcess.getCamera().getProperties().getCurrentVideoModeIndex());
         return tmp;
     }
 

@@ -257,6 +257,8 @@ public class VisionProcess {
 
     public void addBlankPipeline() {
         // TODO: (2.1) add to UI option between 2d and 3d pipeline
+        var newPipeline = new CVPipeline2d();
+//        if (pipelines.stream().filter(x -> x.settings.nickname.equals(newPipeline.settings.nickname));
         addPipeline(new CVPipeline2d());
     }
 
@@ -269,7 +271,7 @@ public class VisionProcess {
             addPipeline(new CVPipeline2d((CVPipeline2dSettings) settings));
         }
     }
-    public void deletePipeline(int index){
+    public void deletePipeline(int index) {
         pipelines.remove(index);
     }
 

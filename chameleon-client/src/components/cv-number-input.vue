@@ -25,7 +25,7 @@
                     return this.value;
                 },
                 set(value) {
-                    this.$emit('input', parseInt(value));
+                    this.$emit('input', parseFloat(value));
                 }
             }
         }

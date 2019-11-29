@@ -43,21 +43,17 @@ public class RequestHandler {
             VisionProcess currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
             CameraCapture currentCamera = currentVisionProcess.getCamera();
 
-            Number newFOV = (Number) camSettings.get("fov");
+            Double newFOV = (Double) camSettings.get("fov");
             Integer newStreamDivisor = (Integer) camSettings.get("streamDivisor");
             Integer newResolution = (Integer) camSettings.get("resolution");
 
-            currentCamera.getProperties().setFOV((double) newFOV);
+            currentCamera.getProperties().setFOV(newFOV);
 
             currentVisionProcess.cameraStreamer.setDivisor(StreamDivisor.values()[newStreamDivisor], true);
 
-            // TODO: Video Mode Index!!!!
-//            var currentResolutionIndex = curCam.getVideoModeIndex();
-//            if (currentResolutionIndex != newResolution) {
-//                curCam.setCamVideoMode(newResolution, true);
-//            }
+            currentCamera.setVideoMode(newResolution);
 
-            VisionManager.saveAllCameras();
+            VisionManager.saveCurrentCameraSettings();
             SocketHandler.sendFullSettings();
             ctx.status(200);
         } catch (JsonProcessingException e) {

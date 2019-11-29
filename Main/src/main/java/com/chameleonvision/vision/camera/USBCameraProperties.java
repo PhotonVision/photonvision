@@ -68,8 +68,10 @@ public class USBCameraProperties extends CaptureProperties {
     }
 
     public void setFOV(double FOV) {
-        this.FOV = FOV;
-        staticProperties = new CaptureStaticProperties(staticProperties.mode, staticProperties.imageWidth, staticProperties.imageHeight, FOV);
+        if (this.FOV != FOV) {
+            this.FOV = FOV;
+            staticProperties = new CaptureStaticProperties(staticProperties.mode, staticProperties.imageWidth, staticProperties.imageHeight, FOV);
+        }
     }
 
     public double getFOV() {
@@ -97,4 +99,11 @@ public class USBCameraProperties extends CaptureProperties {
     public List<VideoMode> getVideoModes() {
         return videoModes;
     }
+
+    public VideoMode getCurrentVideoMode() { return staticProperties.mode; }
+
+    public int getCurrentVideoModeIndex(){
+        return getVideoModes().indexOf(getCurrentVideoMode());
+    }
+
 }

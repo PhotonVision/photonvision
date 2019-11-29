@@ -14,7 +14,7 @@
             </v-col>
             <v-col class="colsClass" v-show="selectedTab === 1 || selectedTab === 2">
                 <div class="videoClass">
-                    <img :src="steamAddress">
+                    <img :src="streamAddress" alt="Camera Stream">
                 </div>
             </v-col>
         </v-row>
@@ -52,7 +52,7 @@
                     return "";
                 }
             },
-            steamAddress: {
+            streamAddress: {
                 get: function () {
                     return "http://" + location.hostname + ":" + this.$store.state.port + "/stream.mjpg";
                 }
