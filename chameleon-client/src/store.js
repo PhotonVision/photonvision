@@ -15,12 +15,12 @@ export default new Vuex.Store({
             ip: "",
             gateway: "",
             netmask: "",
-            hostname: "Chameleon-vision"
+            hostname: "chameleon-vision"
         },
         pipeline: {
             exposure: 0,
             brightness: 0,
-            flipMode: 0,
+            rotationMode: 0,
             hue: [0, 15],
             saturation: [0, 15],
             value: [0, 25],

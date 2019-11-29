@@ -1,5 +1,6 @@
 package com.chameleonvision.vision;
 
+import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.config.CameraJsonConfig;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.config.FullCameraConfiguration;
@@ -7,13 +8,11 @@ import com.chameleonvision.util.Helpers;
 import com.chameleonvision.util.Platform;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.USBCameraCapture;
-import com.chameleonvision.vision.pipeline.CVPipeline;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import org.opencv.videoio.VideoCapture;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -75,13 +74,6 @@ public class VisionManager {
 
         loadedCameraConfigs.addAll(ConfigManager.initializeCameras(preliminaryConfigs));
 
-        // TODO: (HIGH) Load pipelines from json
-//        UsbCameraInfosByCameraName.forEach((cameraName, cameraInfo) -> {
-//            Path cameraConfigFolder = Paths.get(CamConfigPath.toString(), String.format("%s\\", cameraName));
-//            Path cameraConfigPath = Paths.get(cameraConfigFolder.toString(), String.format("%s.json", cameraName));
-//            Path cameraPipelinesPath = Paths.get(cameraConfigFolder.toString(), "pipelines.json");
-//            Path cameraDrivermodePath = Paths.get(cameraConfigFolder.toString(), "drivermode.json");
-
         return true;
     }
 
@@ -102,13 +94,21 @@ public class VisionManager {
     }
 
     public static void startProcesses() {
-        visionProcesses.forEach((vpm) -> {
-            vpm.visionProcess.start();
-        });
+        visionProcesses.forEach((vpm) -> vpm.visionProcess.start());
     }
 
     public static VisionProcess getCurrentUIVisionProcess() {
         return currentUIVisionProcess;
+    }
+
+    private static CameraConfig getCameraConfig(VisionProcess process) {
+        String cameraName = process.getCamera().getProperties().name;
+        return Objects.requireNonNull(loadedCameraConfigs.stream().filter(x -> x.cameraConfig.name.equals(cameraName)).findFirst().orElse(null)).fileConfig;
+    }
+
+    public static void addPipelineToCamera(CVPipelineSettings newPipeline, VisionProcess process) {
+        getCameraConfig(process).pipelineConfig.save(newPipeline);
+        process.addPipeline(newPipeline);
     }
 
     public static void setCurrentProcessByIndex(int processIndex) {

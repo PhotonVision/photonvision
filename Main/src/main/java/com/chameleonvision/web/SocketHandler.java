@@ -6,7 +6,6 @@ import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.enums.ImageRotationMode;
 import com.chameleonvision.vision.pipeline.CVPipeline;
-import com.chameleonvision.vision.pipeline.CVPipeline2dSettings;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -16,7 +15,6 @@ import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.SerializationUtils;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 
 import java.lang.reflect.Field;
@@ -86,15 +84,20 @@ public class SocketHandler {
                         CVPipelineSettings origPipeline = currentProcess.getPipelineByIndex(pipelineIndex).settings;
                         String val = mapper.writeValueAsString(origPipeline);
                         CVPipelineSettings newPipeline = mapper.readValue(val, origPipeline.getClass());
+
                         newPipeline.nickname += "(Copy)";
+
                         if (cameraIndex != -1) {
                             VisionProcess newProcess = VisionManager.getVisionProcessByIndex(cameraIndex);
                             if (newProcess != null) {
+                                VisionManager.addPipelineToCamera(newPipeline, newProcess);
                                 newProcess.addPipeline(newPipeline);
                             }
                         } else {
+                            VisionManager.addPipelineToCamera(newPipeline, currentProcess);
                             currentProcess.addPipeline(newPipeline);
                         }
+
                         VisionManager.saveCurrentCameraPipelines();
                         sendFullSettings();
                         break;

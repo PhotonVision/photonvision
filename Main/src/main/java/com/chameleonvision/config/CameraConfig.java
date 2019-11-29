@@ -17,7 +17,7 @@ public class CameraConfig {
     private final String cameraConfigName;
     private final CameraJsonConfig preliminaryConfig;
 
-    private final PipelineConfig pipelineConfig;
+    public final PipelineConfig pipelineConfig;
 
     CameraConfig(CameraJsonConfig config) {
         preliminaryConfig = config;
@@ -31,7 +31,7 @@ public class CameraConfig {
         checkDriverMode();
         pipelineConfig.check();
 
-        return new FullCameraConfiguration(loadConfig(), pipelineConfig.load(), loadDriverMode());
+        return new FullCameraConfiguration(loadConfig(), pipelineConfig.load(), loadDriverMode(), this);
     }
 
     private CameraJsonConfig loadConfig() {

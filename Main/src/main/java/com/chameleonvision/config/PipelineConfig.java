@@ -64,7 +64,7 @@ public class PipelineConfig {
         return Files.exists(getPipelinePath(setting));
     }
 
-    private void save(CVPipelineSettings settings) {
+    public void save(CVPipelineSettings settings) {
 
         var path = getPipelinePath(settings);
 
