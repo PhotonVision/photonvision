@@ -269,7 +269,11 @@
                     let p = this.$store.state.point.calculated;
                     let fps = this.$store.state.point.fps;
                     if (p !== undefined) {
-                        return `Pitch: ${parseFloat(p['pitch']).toFixed(2)}, Yaw: ${parseFloat(p['yaw']).toFixed(2)}, Area: ${p['area'].toFixed(2)}, FPS: ${fps.toFixed(2)}`
+                        try {
+                            return `Pitch: ${parseFloat(p['pitch']).toFixed(2)}, Yaw: ${parseFloat(p['yaw']).toFixed(2)}, Area: ${p['area'].toFixed(2)}, FPS: ${fps.toFixed(2)}`
+                        } catch (e) {
+                            return  ""
+                        }
                     } else {
                         return undefined;
                     }

@@ -25,7 +25,8 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
         this.camProps = camProps;
     }
 
-    public void setConfig(CaptureStaticProperties captureProps) {
+    public void setConfig(boolean showMultiple,CaptureStaticProperties captureProps) {
+        settings.showMultiple = showMultiple;
         camProps = captureProps;
     }
 
@@ -37,7 +38,11 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
             input.getLeft().copyTo(processBuffer);
 
             if (input.getRight().size() > 0) {
-                for (RotatedRect r : input.getRight()) {
+                for (int i = 0; i < input.getRight().size() - 1; i++) {
+                    if (i != 0 && !settings.showMultiple){
+                        break;
+                    }
+                    RotatedRect r = input.getRight().get(i);
                     if (r == null) continue;
 
                     List<MatOfPoint> drawnContour = new ArrayList<>();
@@ -79,10 +84,10 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
         long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(outputMat, processTime);
     }
-
     public static class Draw2dContoursSettings {
         public boolean showCentroid = false;
         public boolean showCrosshair = false;
+        public boolean showMultiple = false;
         public int boxOutlineSize = 0;
         public boolean showRotatedBox = false;
         public boolean showMaximumBox = false;

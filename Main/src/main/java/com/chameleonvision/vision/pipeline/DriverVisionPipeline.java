@@ -29,7 +29,7 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
         if(draw2dContoursPipe == null) {
             draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, camProps);
         } else {
-            draw2dContoursPipe.setConfig(camProps);
+            draw2dContoursPipe.setConfig(false,camProps);
         }
 
         draw2dContoursPipe.run(Pair.of(outputMat, blankList)).getLeft().copyTo(outputMat);

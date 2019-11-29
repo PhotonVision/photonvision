@@ -33,6 +33,7 @@ export default new Vuex.Store({
             targetGrouping: 0,
             targetIntersection: 0,
             sortMode: 0,
+            multiple:false,
             isBinary: 0,
             calibrationMode: 0
         },

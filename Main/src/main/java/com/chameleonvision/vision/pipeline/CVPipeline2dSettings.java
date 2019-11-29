@@ -20,6 +20,7 @@ public class CVPipeline2dSettings extends CVPipelineSettings {
     public Number speckle = 5;
     public boolean isBinary = false;
     public SortMode sortMode = SortMode.Largest;
+    public boolean multiple = false;
     public TargetGroup targetGroup = TargetGroup.Single;
     public TargetIntersection targetIntersection = TargetIntersection.Up;
     public List<Number> point = Arrays.asList(0, 0);

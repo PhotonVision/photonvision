@@ -3,6 +3,7 @@
         <CVselect name="SortMode" v-model="value.sortMode"
                   :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
                   @input="handleData('sortMode')"/>
+        <CVswitch name="Output multiple" v-model="value.multiple" @input="handleData('multiple')"></CVswitch>
         <span>Calibrate:</span>
         <v-divider dark color="white"/>
         <CVselect name="Calibration Mode" v-model="value.calibrationMode" :list="['None','Single point','Dual point']"
@@ -17,14 +18,17 @@
 
 <script>
     import CVselect from '../../components/cv-select'
+    import CVswitch from '../../components/cv-switch'
     import DualCalibration from "../../components/OutputTab/DualCalibration";
     import SingleCalibration from "../../components/OutputTab/SingleCalibration";
+
 
     export default {
         name: 'Output',
         props: ['value'],
         components: {
             CVselect,
+            CVswitch,
             SingleCalibration,
             DualCalibration,
 

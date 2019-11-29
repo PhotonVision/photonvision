@@ -72,6 +72,8 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         draw2dContoursSettings.boxOutlineSize = 2;
         draw2dContoursSettings.showRotatedBox = true;
         draw2dContoursSettings.showMaximumBox = true;
+        draw2dContoursSettings.showMultiple = settings.multiple;
+
         draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, camProps);
         outputMatPipe = new OutputMatPipe(settings.isBinary);
     }
@@ -106,7 +108,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         sortContoursPipe.setConfig(settings.sortMode, camProps, 5);
         collect2dTargetsPipe.setConfig(settings.calibrationMode, settings.point,
                 settings.dualTargetCalibrationM, settings.dualTargetCalibrationB, camProps);
-        draw2dContoursPipe.setConfig(camProps);
+        draw2dContoursPipe.setConfig(settings.multiple, camProps);
         outputMatPipe.setConfig(settings.isBinary);
 
         long pipeInitTimeNanos = System.nanoTime() - pipelineStartTimeNanos;
