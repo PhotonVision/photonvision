@@ -112,7 +112,7 @@ public class SocketHandler {
                             case "deleteCurrentPipeline":
                                 int currentIndex = currentProcess.getCurrentPipelineIndex();
                                 if (currentIndex == currentProcess.getPipelines().size() - 1) {
-                                    currentProcess.setPipeline(currentIndex -1, false);
+                                    currentProcess.setPipeline(currentIndex - 1, false);
                                 }
                                 currentProcess.deletePipeline(currentIndex);
                                 sendFullSettings();
@@ -139,21 +139,7 @@ public class SocketHandler {
                         break;
                     }
                     default: {
-                        // TODO fix this hack
-                        String key;
-                        Object value;
-                        if(entry.getKey().equals("orientation")) { // FIXME the field is now called rotationMode
-                            value = entry.getValue();
-                            var int_ = (Integer) value;
-                            if (int_ == 1) {
-                                currentPipeline.settings.rotationMode = ImageRotationMode.DEG_180;
-                            } else {
-                                currentPipeline.settings.rotationMode = ImageRotationMode.DEG_0;
-                            }
-                        } else {
-                            setField(currentPipeline.settings, entry.getKey(), entry.getValue());
-                        }
-
+                        setField(currentPipeline.settings, entry.getKey(), entry.getValue());
                         switch (entry.getKey()) {
                             case "exposure": {
                                 currentCamera.setExposure((Integer) entry.getValue());
