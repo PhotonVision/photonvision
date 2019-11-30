@@ -20,7 +20,8 @@ public class USBCameraCapture implements CameraCapture {
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
         properties = new USBCameraProperties(baseCamera, config);
 
-        setVideoMode(properties.videoModes.get(0));
+        int videoMode = properties.videoModes.size() - 1 <= config.videomode ? config.videomode : 0;
+        setVideoMode(videoMode);
     }
 
     @Override
