@@ -67,12 +67,13 @@ public class SocketHandler {
                     }
                     case "changeCameraName": {
                         currentCamera.getProperties().setNickname((String) entry.getValue());
+                        currentProcess.setCameraName((String) entry.getValue());
                         sendFullSettings();
                         VisionManager.saveCurrentCameraSettings();
                         break;
                     }
                     case "changePipelineName": {
-                        currentProcess.setCameraName((String) entry.getValue());
+                        currentProcess.pipelineManager.renameCurrentPipeline((String) entry.getValue());
                         sendFullSettings();
                         VisionManager.saveCurrentCameraPipelines();
                         break;
