@@ -56,8 +56,8 @@ public class SocketHandler {
                 switch (entry.getKey()) {
                     case "driverMode": {
                         HashMap<String, Object> data = (HashMap<String, Object>) entry.getValue();
-                        currentProcess.getDriverModeSettings().exposure = (Integer) data.get("exposure");
-                        currentProcess.getDriverModeSettings().brightness = (Integer) data.get("brightness");
+                        currentProcess.getDriverModeSettings().exposure = (Integer) data.get("driverExposure");
+                        currentProcess.getDriverModeSettings().brightness = (Integer) data.get("driverBrightness");
                         currentProcess.setDriverMode((Boolean) data.get("isDriver"));
 
                         VisionManager.saveCurrentCameraDriverMode();

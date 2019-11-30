@@ -31,10 +31,10 @@ public class VisionProcess {
     public final CameraStreamer cameraStreamer;
     public final PipelineManager pipelineManager;
 
-    private CVPipeline currentPipeline;
-    private int currentPipelineIndex = 0;
+//    private CVPipeline currentPipeline;
+//    private int currentPipelineIndex = 0;
 
-    private CVPipeline driverModePipeline = new DriverVisionPipeline(new CVPipelineSettings());
+//    private CVPipeline driverModePipeline = new DriverVisionPipeline(new CVPipelineSettings());
 
     private volatile CVPipelineResult lastPipelineResult;
 

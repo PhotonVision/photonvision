@@ -31,6 +31,7 @@ public class PipelineManager {
                 addInternalPipeline(setting);
             }
         }
+        driverModePipeline.initPipeline(visionProcess.getCamera());
         setCurrentPipeline(0);
     }
 
@@ -89,7 +90,11 @@ public class PipelineManager {
     }
 
     public CVPipeline getCurrentPipeline() {
-        return driverMode ? driverModePipeline : pipelines.get(currentPipelineIndex);
+        if (driverMode) {
+            return driverModePipeline;
+        } else {
+            return pipelines.get(currentPipelineIndex);
+        }
     }
 
     public void setCurrentPipeline(int index) {
