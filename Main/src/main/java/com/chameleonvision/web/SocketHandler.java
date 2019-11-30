@@ -70,7 +70,7 @@ public class SocketHandler {
                         break;
                     }
                     case "changePipelineName": {
-                        currentPipeline.settings.nickname = ((String) entry.getValue());
+                        currentProcess.pipelineManager.renameCurrentPipeline((String) entry.getValue());
                         sendFullSettings();
                         VisionManager.saveCurrentCameraPipelines();
                         break;

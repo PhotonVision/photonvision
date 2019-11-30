@@ -15,13 +15,15 @@ import java.util.List;
 @SuppressWarnings("WeakerAccess")
 public class PipelineManager {
 
+    private static final int DRIVERMODE_INDEX = -1;
+
     public final LinkedList<CVPipeline> pipelines = new LinkedList<>();
 
     public final CVPipeline driverModePipeline = new DriverVisionPipeline(new CVPipelineSettings());
 
     private final VisionProcess parentProcess;
+    private int lastPipelineIndex;
     private int currentPipelineIndex;
-    private boolean driverMode;
     public NetworkTableEntry ntIndexEntry;
 
     public PipelineManager(VisionProcess visionProcess, List<CVPipelineSettings> loadedPipelineSettings) {
@@ -80,11 +82,15 @@ public class PipelineManager {
     }
 
     public void setDriverMode(boolean driverMode) {
-        this.driverMode = driverMode;
+        if (driverMode) {
+            setCurrentPipeline(DRIVERMODE_INDEX);
+        } else {
+            setCurrentPipeline(lastPipelineIndex);
+        }
     }
 
     public boolean getDriverMode() {
-        return driverMode;
+        return currentPipelineIndex == DRIVERMODE_INDEX;
     }
 
     public int getCurrentPipelineIndex() {
@@ -92,12 +98,18 @@ public class PipelineManager {
     }
 
     public CVPipeline getCurrentPipeline() {
-        return driverMode ? driverModePipeline : pipelines.get(currentPipelineIndex);
+        return pipelines.get(currentPipelineIndex);
     }
 
     public void setCurrentPipeline(int index) {
-        CVPipeline newPipeline = pipelines.get(index);
+        CVPipeline newPipeline;
+        if (index == DRIVERMODE_INDEX) {
+            newPipeline = driverModePipeline;
+        } else {
+            newPipeline = pipelines.get(index);
+        }
         if (newPipeline != null) {
+            lastPipelineIndex = currentPipelineIndex;
             currentPipelineIndex = index;
             getCurrentPipeline().initPipeline(parentProcess.getCamera());
 
@@ -154,6 +166,12 @@ public class PipelineManager {
         pipeline.index = destinationProcess.pipelineManager.pipelines.size();
         pipeline.nickname += "(Copy)";
         destinationProcess.pipelineManager.addPipeline(pipeline);
+    }
+
+    public void renameCurrentPipeline(String newName) {
+        CVPipelineSettings settings = getCurrentPipeline().settings;
+        settings.nickname = newName;
+        renamePipelineConfig(settings, newName);
     }
 
     public void deleteCurrentPipeline() {
