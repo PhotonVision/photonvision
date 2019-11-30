@@ -4,6 +4,7 @@ import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.enums.StreamDivisor;
 import com.chameleonvision.vision.pipeline.CVPipeline;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -148,6 +149,13 @@ public class SocketHandler {
                             case "brightness": {
                                 currentCamera.setBrightness((Integer) entry.getValue());
                             }
+                            case "videoMode":{
+                                currentCamera.setVideoMode((Integer) entry.getValue());
+                            }
+                            case "streamDivisor":{
+                                VisionProcess currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
+                                currentVisionProcess.cameraStreamer.setDivisor(StreamDivisor.values()[(Integer) entry.getValue()], true);
+                            }
                         }
 
                         VisionManager.saveCurrentCameraPipelines();
@@ -230,16 +238,6 @@ public class SocketHandler {
         return tmp;
     }
 
-    private static HashMap<String, Object> getOrdinalDriver() {
-        HashMap<String, Object> tmp = new HashMap<>();
-        VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
-        CVPipelineSettings driverModeSettings = currentProcess.pipelineManager.driverModePipeline.settings;
-        tmp.put("isDriver", currentProcess.pipelineManager.getDriverMode());
-        tmp.put("driverBrightness", driverModeSettings.brightness);
-        tmp.put("driverExposure", driverModeSettings.exposure);
-        return tmp;
-    }
-
     public static void sendFullSettings() {
         //General settings
         Map<String, Object> fullSettings = new HashMap<>();
@@ -252,7 +250,6 @@ public class SocketHandler {
             fullSettings.put("cameraSettings", getOrdinalCameraSettings());
             fullSettings.put("cameraList", VisionManager.getAllCameraNicknames());
             fullSettings.put("pipeline", getOrdinalPipeline(currentPipeline.settings.getClass()));
-            fullSettings.put("driverMode", getOrdinalDriver());
             fullSettings.put("pipelineList", VisionManager.getCurrentCameraPipelineNicknames());
             fullSettings.put("resolutionList", VisionManager.getCurrentCameraResolutionList());
             fullSettings.put("port", currentProcess.cameraStreamer.getStreamPort());

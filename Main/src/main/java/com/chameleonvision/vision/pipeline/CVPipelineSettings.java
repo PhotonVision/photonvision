@@ -2,6 +2,7 @@ package com.chameleonvision.vision.pipeline;
 
 import com.chameleonvision.vision.enums.ImageFlipMode;
 import com.chameleonvision.vision.enums.ImageRotationMode;
+import com.chameleonvision.vision.enums.StreamDivisor;
 
 @SuppressWarnings("ALL")
 public class CVPipelineSettings {
@@ -12,4 +13,6 @@ public class CVPipelineSettings {
     public double exposure = 50.0;
     public double brightness = 50.0;
     public double gain = 0;
+    public int VideoModeIndex = 0;
+    public StreamDivisor streamDivisor = StreamDivisor.NONE;
 }

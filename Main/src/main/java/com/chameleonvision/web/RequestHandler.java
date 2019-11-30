@@ -49,13 +49,7 @@ public class RequestHandler {
             } catch (Exception ignored) {
                 newFOV = (Integer) camSettings.get("fov");
             }
-            Integer newStreamDivisor = (Integer) camSettings.get("streamDivisor");
-            Integer newResolution = (Integer) camSettings.get("resolution");
-
             currentCamera.getProperties().setFOV(newFOV);
-            currentVisionProcess.cameraStreamer.setDivisor(StreamDivisor.values()[newStreamDivisor], true);
-            currentCamera.setVideoMode(newResolution);
-
             VisionManager.saveCurrentCameraSettings();
             SocketHandler.sendFullSettings();
             ctx.status(200);

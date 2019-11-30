@@ -6,7 +6,6 @@
                         v-model="selectedTab">
                     <v-tab to="">General</v-tab>
                     <v-tab to="">Cameras</v-tab>
-                    <v-tab to="">Driver Mode</v-tab>
                 </v-tabs>
                 <div style="padding-left:30px">
                     <component :is="selectedComponent" @update="$emit('save')"/>
@@ -24,14 +23,13 @@
 <script>
     import General from './SettingsViewes/General'
     import Cameras from './SettingsViewes/Cameras'
-    import DriverMode from './SettingsViewes/DriverMode'
+
 
     export default {
         name: 'SettingsTab',
         components: {
             General,
             Cameras,
-            DriverMode
         },
         data() {
             return {
@@ -46,8 +44,6 @@
                             return "General";
                         case 1:
                             return "Cameras";
-                        case 2:
-                            return "DriverMode";
                     }
                     return "";
                 }

@@ -23,7 +23,7 @@
                 <v-col :cols="3" class="colsClass">
                     <CVselect v-if="isPipelineEdit === false" name="Pipeline" :list="pipelineList"
                               v-model="currentPipelineIndex"
-                              @input="handleInput('currentPipeline',currentPipelineIndex)"/>
+                              @input="handleInput('currentPipeline',currentPipelineIndex - 1)"/>
                     <CVinput v-else name="Pipeline" v-model="newPipelineName" @Enter="savePipelineNameChange"/>
                 </v-col>
                 <v-col :cols="1" class="colsClass" md="3">
@@ -76,12 +76,13 @@
             <!-- vision tabs -->
             <v-col cols="6" class="colsClass">
                 <v-tabs fixed-tabs background-color="#212121" dark height="48" slider-color="#4baf62"
-                        v-model="selectedTab">
+                        v-model="selectedTab" v-if="currentPipelineIndex !== 0">
                     <v-tab>Input</v-tab>
                     <v-tab>Threshold</v-tab>
                     <v-tab>Contours</v-tab>
                     <v-tab>Output</v-tab>
                 </v-tabs>
+                <div v-else style="height: 48px"></div>
                 <div style="padding-left:30px">
                     <keep-alive>
                         <!-- vision component -->
@@ -251,6 +252,9 @@
             },
             selectedComponent: {
                 get() {
+                    if (this.currentPipelineIndex === 0){
+                        return "InputTab"
+                    }
                     switch (this.selectedTab) {
                         case 0:
                             return "InputTab";
@@ -272,7 +276,7 @@
                         try {
                             return `Pitch: ${parseFloat(p['pitch']).toFixed(2)}, Yaw: ${parseFloat(p['yaw']).toFixed(2)}, Area: ${p['area'].toFixed(2)}, FPS: ${fps.toFixed(2)}`
                         } catch (e) {
-                            return  ""
+                            return ""
                         }
                     } else {
                         return undefined;
@@ -289,10 +293,10 @@
             },
             currentPipelineIndex: {
                 get() {
-                    return this.$store.state.currentPipelineIndex;
+                    return this.$store.state.currentPipelineIndex + 1;
                 },
                 set(value) {
-                    this.$store.commit('currentPipelineIndex', value);
+                    this.$store.commit('currentPipelineIndex', value - 1);
                 }
             },
             cameraList: {
@@ -302,7 +306,10 @@
             },
             pipelineList: {
                 get() {
-                    return this.$store.state.pipelineList;
+                    let tmp = ["Driver Mode"];
+                    let pipelineList = this.$store.state.pipelineList;
+                    tmp = tmp.concat(pipelineList);
+                    return tmp;
                 }
             },
             pipeline: {

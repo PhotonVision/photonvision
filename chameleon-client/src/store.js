@@ -35,12 +35,9 @@ export default new Vuex.Store({
             sortMode: 0,
             multiple:false,
             isBinary: 0,
-            calibrationMode: 0
-        },
-        driverMode: {
-            isDriver: false,
-            driverExposure: 0,
-            driverBrightness: 0
+            calibrationMode: 0,
+            VideoModeIndex:0,
+            streamDivisor:0
         },
         cameraSettings: {},
         resolutionList: [],
