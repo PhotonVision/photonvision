@@ -224,6 +224,10 @@ public class VisionProcess {
         return pipelineManager.driverModePipeline.settings;
     }
 
+    public boolean getIsDriverMode() {
+        return pipelineManager.getDriverMode();
+    }
+
     /**
      * VisionProcessRunnable will process images as quickly as possible
      */

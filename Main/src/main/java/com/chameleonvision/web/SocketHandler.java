@@ -136,6 +136,10 @@ public class SocketHandler {
                         break;
                     }
                     default: {
+
+                        // TODO handle not setting binary stuff on driver mode
+                        if(currentProcess.getIsDriverMode()) break;
+
                         setField(currentPipeline.settings, entry.getKey(), entry.getValue());
                         switch (entry.getKey()) {
                             case "exposure": {
