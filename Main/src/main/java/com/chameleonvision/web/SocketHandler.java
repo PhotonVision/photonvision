@@ -138,7 +138,7 @@ public class SocketHandler {
                     default: {
 
                         // TODO handle not setting binary stuff on driver mode
-                        if(currentProcess.getIsDriverMode()) break;
+                        if(currentProcess.pipelineManager.getDriverMode()) break;
 
                         setField(currentPipeline.settings, entry.getKey(), entry.getValue());
                         switch (entry.getKey()) {

@@ -25,16 +25,10 @@ import java.util.concurrent.LinkedBlockingDeque;
 public class VisionProcess {
 
     private final CameraCapture cameraCapture;
-    private final List<CVPipeline> pipelines = new ArrayList<>();
     private final CameraStreamerRunnable streamRunnable;
     private final VisionProcessRunnable visionRunnable;
     public final CameraStreamer cameraStreamer;
-    public final PipelineManager pipelineManager;
-
-//    private CVPipeline currentPipeline;
-//    private int currentPipelineIndex = 0;
-
-//    private CVPipeline driverModePipeline = new DriverVisionPipeline(new CVPipelineSettings());
+    public PipelineManager pipelineManager;
 
     private volatile CVPipelineResult lastPipelineResult;
 
@@ -110,6 +104,7 @@ public class VisionProcess {
         ntPipelineListenerID = ntPipelineEntry.addListener(this::setPipeline, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
         ntPipelineEntry.setNumber(pipelineManager.getCurrentPipelineIndex());
+        pipelineManager.ntIndexEntry = ntPipelineEntry;
     }
 
     private void setDriverMode(EntryNotification driverModeEntryNotification) {
@@ -126,12 +121,7 @@ public class VisionProcess {
      */
     private void setPipeline(EntryNotification notification) {
         var wantedPipelineIndex = (int) notification.value.getDouble();
-
-        if (wantedPipelineIndex >= pipelines.size()) {
-            ntPipelineEntry.setNumber(pipelineManager.getCurrentPipelineIndex());
-        } else {
-            pipelineManager.setCurrentPipeline(wantedPipelineIndex);
-        }
+        pipelineManager.setCurrentPipeline(wantedPipelineIndex);
     }
 
     private void updateUI(CVPipelineResult data) {
@@ -216,16 +206,8 @@ public class VisionProcess {
         return cameraCapture;
     }
 
-    public void setDriverModeSettings(CVPipelineSettings settings) {
-        pipelineManager.driverModePipeline.settings = settings;
-    }
-
     public CVPipelineSettings getDriverModeSettings() {
         return pipelineManager.driverModePipeline.settings;
-    }
-
-    public boolean getIsDriverMode() {
-        return pipelineManager.getDriverMode();
     }
 
     /**

@@ -43,15 +43,17 @@ public class RequestHandler {
             VisionProcess currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
             CameraCapture currentCamera = currentVisionProcess.getCamera();
 
-            Integer newFOV = (Integer) camSettings.get("fov");
-
+            double newFOV;
+            try {
+                newFOV = (Double) camSettings.get("fov");
+            } catch (Exception ignored) {
+                newFOV = (Integer) camSettings.get("fov");
+            }
             Integer newStreamDivisor = (Integer) camSettings.get("streamDivisor");
             Integer newResolution = (Integer) camSettings.get("resolution");
 
             currentCamera.getProperties().setFOV(newFOV);
-
             currentVisionProcess.cameraStreamer.setDivisor(StreamDivisor.values()[newStreamDivisor], true);
-
             currentCamera.setVideoMode(newResolution);
 
             VisionManager.saveCurrentCameraSettings();
