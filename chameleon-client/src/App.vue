@@ -64,10 +64,11 @@
             timer: undefined
         }),
         created() {
-            this.$options.sockets.onmessage = async (data) => {
+            this.$options.sockets.onmessage = (data) => {
                 try {
-                    var buffer = await data.data.arrayBuffer();
-                    let message = this.$msgPack.decode(buffer);
+
+                    let message = this.$msgPack.decode(data.data);
+
                     for (let prop in message) {
                         if (message.hasOwnProperty(prop)) {
                             this.handleMessage(prop, message[prop]);

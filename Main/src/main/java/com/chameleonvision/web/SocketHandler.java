@@ -145,16 +145,20 @@ public class SocketHandler {
                         switch (entry.getKey()) {
                             case "exposure": {
                                 currentCamera.setExposure((Integer) entry.getValue());
+                                break;
                             }
                             case "brightness": {
                                 currentCamera.setBrightness((Integer) entry.getValue());
+                                break;
                             }
                             case "videoMode":{
                                 currentCamera.setVideoMode((Integer) entry.getValue());
+                                break;
                             }
                             case "streamDivisor":{
                                 VisionProcess currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
                                 currentVisionProcess.cameraStreamer.setDivisor(StreamDivisor.values()[(Integer) entry.getValue()], true);
+                                break;
                             }
                         }
 
