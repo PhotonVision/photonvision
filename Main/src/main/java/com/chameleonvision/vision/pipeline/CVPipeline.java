@@ -25,6 +25,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         cameraCapture = camera;
         cameraCapture.setExposure((int) settings.exposure);
         cameraCapture.setBrightness((int) settings.brightness);
+        cameraCapture.setGain((int) settings.gain);
     }
     abstract public R runPipeline(Mat inputMat);
 

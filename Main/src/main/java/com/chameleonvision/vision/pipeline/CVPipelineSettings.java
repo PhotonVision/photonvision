@@ -11,4 +11,5 @@ public class CVPipelineSettings {
     public String nickname = "New Pipeline";
     public double exposure = 50.0;
     public double brightness = 50.0;
+    public double gain = 0;
 }
