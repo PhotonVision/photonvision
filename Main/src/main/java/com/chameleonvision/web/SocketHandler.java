@@ -153,7 +153,7 @@ public class SocketHandler {
                                 currentCamera.setBrightness((Integer) entry.getValue());
                                 break;
                             }
-                            case "videoMode":{
+                            case "videoModeIndex":{
                                 currentCamera.setVideoMode((Integer) entry.getValue());
                                 break;
                             }

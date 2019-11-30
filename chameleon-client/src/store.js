@@ -36,7 +36,7 @@ export default new Vuex.Store({
             multiple:false,
             isBinary: 0,
             calibrationMode: 0,
-            VideoModeIndex:0,
+            videoModeIndex:0,
             streamDivisor:0
         },
         cameraSettings: {},

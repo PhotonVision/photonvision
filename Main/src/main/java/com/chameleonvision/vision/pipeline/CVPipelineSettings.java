@@ -13,6 +13,6 @@ public class CVPipelineSettings {
     public double exposure = 50.0;
     public double brightness = 50.0;
     public double gain = 0;
-    public int VideoModeIndex = 0;
+    public int videoModeIndex = 0;
     public StreamDivisor streamDivisor = StreamDivisor.NONE;
 }

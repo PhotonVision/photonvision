@@ -4,7 +4,7 @@
         <CVslider name="Brightness" v-model="value.brightness" :min="0" :max="100" @input="handleData('brightness')"/>
         <CVselect name="Orientation" v-model="value.rotationMode" :list="['Normal','90° CW','180°','90° CCW']"
                   @input="handleData('rotationMode')"/>
-        <CVselect name="Resolution" v-model="value.VideoModeIndex" :list="resolutionList" @input="handleData('VideoModeIndex')"/>
+        <CVselect name="Resolution" v-model="value.videoModeIndex" :list="resolutionList" @input="handleData('videoModeIndex')"/>
         <CVselect name="Stream Resolution" v-model="value.streamDivisor"
                   :list="streamResolutionList" @input="handleData('streamDivisor')"/>
     </div>
@@ -45,7 +45,7 @@
             },
             streamResolutionList: {
                 get() {
-                    let cam_res = this.$store.state.resolutionList[this.value.VideoModeIndex];
+                    let cam_res = this.$store.state.resolutionList[this.value.videoModeIndex];
                     let tmp_list = [];
                     let x = 1;
                     for (let i = 0; i < 4; i++) {
