@@ -47,8 +47,8 @@
                 }
             },
             sendSlope(m, b, valid) {
-                this.handleInput('m', m);
-                this.handleInput('b', b);
+                this.handleInput('dualTargetCalibrationM', m);
+                this.handleInput('dualTargetCalibrationB', b);
                 this.$emit('update');
             },
             clearSlope() {
