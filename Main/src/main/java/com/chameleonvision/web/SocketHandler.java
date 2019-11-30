@@ -51,7 +51,7 @@ public class SocketHandler {
             try {
                 VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
                 CameraCapture currentCamera = currentProcess.getCamera();
-                CVPipeline currentPipeline = currentProcess.getCurrentPipeline();
+                CVPipeline currentPipeline = currentProcess.pipelineManager.getCurrentPipeline();
 
                 switch (entry.getKey()) {
                     case "driverMode": {
@@ -80,21 +80,22 @@ public class SocketHandler {
                         int pipelineIndex = (int) pipelineVals.get("pipeline");
                         int cameraIndex = (int) pipelineVals.get("camera");
                         ObjectMapper mapper = new ObjectMapper();
-                        CVPipelineSettings origPipeline = currentProcess.getPipelineByIndex(pipelineIndex).settings;
+                        CVPipelineSettings origPipeline = currentProcess.pipelineManager.getPipeline(pipelineIndex).settings;
                         String val = mapper.writeValueAsString(origPipeline);
                         CVPipelineSettings newPipeline = mapper.readValue(val, origPipeline.getClass());
 
+                        // TODO: move to PipelineManager
                         newPipeline.nickname += "(Copy)";
 
                         if (cameraIndex != -1) {
                             VisionProcess newProcess = VisionManager.getVisionProcessByIndex(cameraIndex);
                             if (newProcess != null) {
-                                VisionManager.addPipelineToCamera(newPipeline, newProcess);
-                                newProcess.addPipeline(newPipeline);
+                                currentProcess.pipelineManager.duplicatePipeline(newPipeline, newProcess);
+                            } else {
+                                System.err.println("Failed to get new camera for pipeline duplication!");
                             }
                         } else {
-                            VisionManager.addPipelineToCamera(newPipeline, currentProcess);
-                            currentProcess.addPipeline(newPipeline);
+                            currentProcess.pipelineManager.duplicatePipeline(newPipeline);
                         }
 
                         VisionManager.saveCurrentCameraPipelines();
@@ -104,17 +105,14 @@ public class SocketHandler {
                     case "command": {
                         switch ((String) entry.getValue()) {
                             case "addNewPipeline":
-
-                                currentProcess.addBlankPipeline();
+                                // TODO: add to UI selection for new 2d/3d
+                                boolean is3d = false;
+                                currentProcess.pipelineManager.addNewPipeline(is3d);
                                 sendFullSettings();
                                 VisionManager.saveCurrentCameraPipelines();
                                 break;
                             case "deleteCurrentPipeline":
-                                int currentIndex = currentProcess.getCurrentPipelineIndex();
-                                if (currentIndex == currentProcess.getPipelines().size() - 1) {
-                                    currentProcess.setPipeline(currentIndex - 1, false);
-                                }
-                                currentProcess.deletePipeline(currentIndex);
+                                currentProcess.pipelineManager.deleteCurrentPipeline();
                                 sendFullSettings();
                                 VisionManager.saveCurrentCameraPipelines();
                                 break;
@@ -133,7 +131,7 @@ public class SocketHandler {
                         break;
                     }
                     case "currentPipeline": {
-                        currentProcess.setPipeline((Integer) entry.getValue(), true);
+                        currentProcess.pipelineManager.setCurrentPipeline((Integer) entry.getValue());
                         sendFullSettings();
                         break;
                     }
@@ -195,9 +193,9 @@ public class SocketHandler {
         for (Field field : cvClass.getFields()) { // iterate over every field in CVPipelineSettings
             try {
                 if (!field.getType().isEnum()) { // if the field is not an enum, get it based on the current pipeline
-                    tmp.put(field.getName(), field.get(VisionManager.getCurrentUIVisionProcess().getCurrentPipeline().settings));
+                    tmp.put(field.getName(), field.get(VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings));
                 } else {
-                    var ordinal = (Enum) field.get(VisionManager.getCurrentUIVisionProcess().getCurrentPipeline().settings);
+                    var ordinal = (Enum) field.get(VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings);
                     tmp.put(field.getName(), ordinal.ordinal());
                 }
             } catch (IllegalArgumentException e) {
@@ -231,8 +229,8 @@ public class SocketHandler {
     private static HashMap<String, Object> getOrdinalDriver() {
         HashMap<String, Object> tmp = new HashMap<>();
         VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
-        CVPipelineSettings driverModeSettings = currentProcess.getDriverModeSettings();
-        tmp.put("isDriver", currentProcess.getDriverMode());
+        CVPipelineSettings driverModeSettings = currentProcess.pipelineManager.driverModePipeline.settings;
+        tmp.put("isDriver", currentProcess.pipelineManager.getDriverMode());
         tmp.put("driverBrightness", driverModeSettings.brightness);
         tmp.put("driverExposure", driverModeSettings.exposure);
         return tmp;
@@ -243,8 +241,7 @@ public class SocketHandler {
         Map<String, Object> fullSettings = new HashMap<>();
 
         VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
-        CameraCapture currentCamera = currentProcess.getCamera();
-        CVPipeline currentPipeline = currentProcess.getCurrentPipeline();
+        CVPipeline currentPipeline = currentProcess.pipelineManager.getCurrentPipeline();
 
         try {
             fullSettings.put("settings", getOrdinalSettings());
@@ -255,7 +252,7 @@ public class SocketHandler {
             fullSettings.put("pipelineList", VisionManager.getCurrentCameraPipelineNicknames());
             fullSettings.put("resolutionList", VisionManager.getCurrentCameraResolutionList());
             fullSettings.put("port", currentProcess.cameraStreamer.getStreamPort());
-            fullSettings.put("currentPipelineIndex", VisionManager.getCurrentUIVisionProcess().getCurrentPipelineIndex());
+            fullSettings.put("currentPipelineIndex", VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipelineIndex());
             fullSettings.put("currentCameraIndex", VisionManager.getCurrentUIVisionProcessIndex());
         } catch (IllegalAccessException e) {
             System.err.println("No camera found!");

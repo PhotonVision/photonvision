@@ -29,6 +29,7 @@ public class VisionProcess {
     private final CameraStreamerRunnable streamRunnable;
     private final VisionProcessRunnable visionRunnable;
     public final CameraStreamer cameraStreamer;
+    public final PipelineManager pipelineManager;
 
     private CVPipeline currentPipeline;
     private int currentPipelineIndex = 0;
@@ -56,15 +57,7 @@ public class VisionProcess {
     VisionProcess(CameraCapture cameraCapture, String name, List<CVPipelineSettings> loadedPipelineSettings) {
         this.cameraCapture = cameraCapture;
 
-        if (loadedPipelineSettings == null || loadedPipelineSettings.size() == 0) {
-            pipelines.add(new CVPipeline2d("New Pipeline"));
-        } else {
-            for (CVPipelineSettings setting : loadedPipelineSettings) {
-                addPipeline(setting);
-            }
-            setPipeline(0, false);
-        }
-
+        pipelineManager = new PipelineManager(this, loadedPipelineSettings);
 
         // Thread to put frames on the dashboard
         this.cameraStreamer = new CameraStreamer(cameraCapture, name);
@@ -80,10 +73,16 @@ public class VisionProcess {
     public void start() {
         System.out.println("Starting NetworkTables.");
         initNT(defaultTable);
+
         System.out.println("Starting vision thread.");
-        new Thread(visionRunnable).start();
+        var visionThread = new Thread(visionRunnable);
+        visionThread.setName(getCamera().getProperties().name + " - Vision Thread");
+        visionThread.start();
+
         System.out.println("Starting stream thread.");
-        new Thread(streamRunnable).start();
+        var streamThread = new Thread(streamRunnable);
+        streamThread.setName(getCamera().getProperties().name + " - Stream Thread");
+        streamThread.start();
     }
 
     /**
@@ -110,7 +109,7 @@ public class VisionProcess {
         ntDriveModeListenerID = ntDriverModeEntry.addListener(this::setDriverMode, EntryListenerFlags.kUpdate);
         ntPipelineListenerID = ntPipelineEntry.addListener(this::setPipeline, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
-        ntPipelineEntry.setNumber(0);
+        ntPipelineEntry.setNumber(pipelineManager.getCurrentPipelineIndex());
     }
 
     private void setDriverMode(EntryNotification driverModeEntryNotification) {
@@ -118,11 +117,7 @@ public class VisionProcess {
     }
 
     public void setDriverMode(boolean driverMode) {
-        if (driverMode) {
-            setPipelineInternal(driverModePipeline);
-        } else {
-            setPipeline(currentPipelineIndex, true);
-        }
+        pipelineManager.setDriverMode(driverMode);
     }
 
     /**
@@ -133,36 +128,10 @@ public class VisionProcess {
         var wantedPipelineIndex = (int) notification.value.getDouble();
 
         if (wantedPipelineIndex >= pipelines.size()) {
-            ntPipelineEntry.setNumber(currentPipelineIndex);
+            ntPipelineEntry.setNumber(pipelineManager.getCurrentPipelineIndex());
         } else {
-            currentPipelineIndex = wantedPipelineIndex;
-            setPipeline(wantedPipelineIndex, true);
+            pipelineManager.setCurrentPipeline(wantedPipelineIndex);
         }
-    }
-
-    public void setPipeline(int pipelineIndex, boolean updateUI) {
-        CVPipeline newPipeline = pipelines.get(pipelineIndex);
-        if (newPipeline != null) {
-            setPipelineInternal(newPipeline);
-            currentPipelineIndex = pipelineIndex;
-
-            // update the configManager
-            if(ConfigManager.settings.currentCamera.equals(cameraCapture.getProperties().name)) {
-                ConfigManager.settings.currentPipeline = pipelineIndex;
-
-                if (updateUI) {
-                    HashMap<String, Object> pipeChange = new HashMap<>();
-                    pipeChange.put("currentPipeline", pipelineIndex);
-                    SocketHandler.broadcastMessage(pipeChange);
-                    SocketHandler.sendFullSettings();
-                }
-            }
-        }
-    }
-
-    private void setPipelineInternal(CVPipeline pipeline) {
-        currentPipeline = pipeline;
-        currentPipeline.initPipeline(cameraCapture);
     }
 
     private void updateUI(CVPipelineResult data) {
@@ -243,56 +212,16 @@ public class VisionProcess {
         return cameraCapture.getProperties().videoModes;
     }
 
-    public List<CVPipeline> getPipelines() {
-        return pipelines;
-    }
-
-    public CVPipeline getCurrentPipeline() {
-        return currentPipeline;
-    }
-
-    public int getCurrentPipelineIndex() {
-        return currentPipelineIndex;
-    }
-
-    public void addBlankPipeline() {
-        // TODO: (2.1) add to UI option between 2d and 3d pipeline
-        var newPipeline = new CVPipeline2d();
-//        if (pipelines.stream().filter(x -> x.settings.nickname.equals(newPipeline.settings.nickname));
-        addPipeline(new CVPipeline2d());
-    }
-
-    public void addPipeline(CVPipeline pipeline) {
-        pipelines.add(pipeline);
-    }
-
-    public void addPipeline(CVPipelineSettings settings) {
-        if (settings instanceof CVPipeline2dSettings) {
-            addPipeline(new CVPipeline2d((CVPipeline2dSettings) settings));
-        }
-    }
-    public void deletePipeline(int index) {
-        pipelines.remove(index);
-    }
-
     public CameraCapture getCamera() {
         return cameraCapture;
     }
 
-    public boolean getDriverMode() {
-        return (currentPipeline == driverModePipeline);
-    }
-
     public void setDriverModeSettings(CVPipelineSettings settings) {
-        driverModePipeline.settings = settings;
+        pipelineManager.driverModePipeline.settings = settings;
     }
 
     public CVPipelineSettings getDriverModeSettings() {
-        return driverModePipeline.settings;
-    }
-
-    public CVPipeline getPipelineByIndex(int pipelineIndex) {
-        return pipelines.get(pipelineIndex);
+        return pipelineManager.driverModePipeline.settings;
     }
 
     /**
@@ -313,7 +242,7 @@ public class VisionProcess {
 
                 Mat camFrame = camData.getLeft();
                 if (camFrame.cols() > 0 && camFrame.rows() > 0) {
-                    CVPipelineResult result = currentPipeline.runPipeline(camFrame);
+                    CVPipelineResult result = pipelineManager.getCurrentPipeline().runPipeline(camFrame);
 
                     if (result != null) {
                         result.setTimestamp(camData.getRight());

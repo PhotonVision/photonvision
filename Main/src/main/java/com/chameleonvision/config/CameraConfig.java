@@ -67,7 +67,7 @@ public class CameraConfig {
         pipelineConfig.save(pipelines);
     }
 
-    void saveDriverMode(CVPipelineSettings driverMode) {
+    public void saveDriverMode(CVPipelineSettings driverMode) {
         try {
             JacksonHelper.serializer(getDriverModePath(), driverMode);
         } catch (IOException e) {

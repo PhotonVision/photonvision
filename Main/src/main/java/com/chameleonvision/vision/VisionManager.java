@@ -24,6 +24,7 @@ public class VisionManager {
     private static final LinkedList<FullCameraConfiguration> loadedCameraConfigs = new LinkedList<>();
     private static final LinkedList<VisionProcessManageable> visionProcesses = new LinkedList<>();
 
+    @SuppressWarnings("WeakerAccess")
     private static class VisionProcessManageable {
         public final int index;
         public final String name;
@@ -85,7 +86,7 @@ public class VisionManager {
 
             CameraCapture camera = new USBCameraCapture(cameraJsonConfig);
             VisionProcess process = new VisionProcess(camera, cameraJsonConfig.name, config.pipelines);
-            process.setDriverModeSettings(config.drivermode);
+            process.pipelineManager.driverModePipeline.settings = config.drivermode;
             visionProcesses.add(new VisionProcessManageable(i, cameraJsonConfig.name, process));
         }
         currentUIVisionProcess = getVisionProcessByIndex(0);
@@ -101,14 +102,9 @@ public class VisionManager {
         return currentUIVisionProcess;
     }
 
-    private static CameraConfig getCameraConfig(VisionProcess process) {
+    public static CameraConfig getCameraConfig(VisionProcess process) {
         String cameraName = process.getCamera().getProperties().name;
         return Objects.requireNonNull(loadedCameraConfigs.stream().filter(x -> x.cameraConfig.name.equals(cameraName)).findFirst().orElse(null)).fileConfig;
-    }
-
-    public static void addPipelineToCamera(CVPipelineSettings newPipeline, VisionProcess process) {
-        getCameraConfig(process).pipelineConfig.save(newPipeline);
-        process.addPipeline(newPipeline);
     }
 
     public static void setCurrentProcessByIndex(int processIndex) {
@@ -135,7 +131,7 @@ public class VisionManager {
     }
 
     public static List<String> getCurrentCameraPipelineNicknames() {
-        return currentUIVisionProcess.getPipelines().stream().map(cvPipeline -> cvPipeline.settings.nickname).collect(Collectors.toList());
+        return currentUIVisionProcess.pipelineManager.pipelines.stream().map(cvPipeline -> cvPipeline.settings.nickname).collect(Collectors.toList());
     }
 
 
@@ -143,7 +139,7 @@ public class VisionManager {
         visionProcesses.forEach((vpm) -> {
             VisionProcess process = vpm.visionProcess;
             String cameraName = process.getCamera().getProperties().name;
-            List<CVPipelineSettings> pipelines = process.getPipelines().stream().map(cvPipeline -> cvPipeline.settings).collect(Collectors.toList());
+            List<CVPipelineSettings> pipelines = process.pipelineManager.pipelines.stream().map(cvPipeline -> cvPipeline.settings).collect(Collectors.toList());
             CVPipelineSettings driverMode = process.getDriverModeSettings();
             CameraJsonConfig config = CameraJsonConfig.fromVisionProcess(process);
             ConfigManager.saveCameraPipelines(cameraName, pipelines);
@@ -162,16 +158,14 @@ public class VisionManager {
     }
 
     public static void saveCurrentCameraPipelines() {
-        List<CVPipelineSettings> pipelineSettings = currentUIVisionProcess.getPipelines().stream().map(pipeline -> pipeline.settings).collect(Collectors.toList());
-        ConfigManager.saveCameraPipelines(getCurrentCameraName(), pipelineSettings);
+        currentUIVisionProcess.pipelineManager.saveAllPipelines();
     }
 
     public static void saveCurrentCameraDriverMode() {
-        CVPipelineSettings driverModeSettings = currentUIVisionProcess.getDriverModeSettings();
-        ConfigManager.saveCameraDriverMode(getCurrentCameraName(), driverModeSettings);
+        currentUIVisionProcess.pipelineManager.saveDriverModeConfig();
     }
 
-    public static List<HashMap> getCameraResolutionList(CameraCapture capture) {
+    private static List<HashMap> getCameraResolutionList(CameraCapture capture) {
         return capture.getProperties().getVideoModes().stream().map(Helpers::VideoModeToHashMap).collect(Collectors.toList());
     }
 

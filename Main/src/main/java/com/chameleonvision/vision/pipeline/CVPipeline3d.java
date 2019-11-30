@@ -13,6 +13,10 @@ public class CVPipeline3d extends CVPipeline<CVPipeline3dResult, CVPipeline3dSet
         super(settings);
     }
 
+    CVPipeline3d() {
+        super(new CVPipeline3dSettings());
+    }
+
     @Override
     public CVPipeline3dResult runPipeline(Mat inputMat) {
         return null;
@@ -25,7 +29,7 @@ public class CVPipeline3d extends CVPipeline<CVPipeline3dResult, CVPipeline3dSet
         }
     }
 
-    public static class Target3d {
+    public static class Target3d extends CVPipeline2d.Target2d {
         // TODO: (2.1) Define 3d-specific target data
     }
 }

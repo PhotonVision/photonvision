@@ -27,4 +27,8 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         cameraCapture.setBrightness((int) settings.brightness);
     }
     abstract public R runPipeline(Mat inputMat);
+
+    public boolean is3D() {
+        return (this instanceof CVPipeline3d);
+    }
 }
