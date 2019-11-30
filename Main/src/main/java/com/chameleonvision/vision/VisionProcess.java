@@ -61,7 +61,7 @@ public class VisionProcess {
         this.visionRunnable = new VisionProcessRunnable();
 
         // network table
-        defaultTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraCapture.getProperties().name);
+        defaultTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraCapture.getProperties().getNickname());
     }
 
     public void start() {
