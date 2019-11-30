@@ -5,6 +5,7 @@ import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.web.SocketHandler;
+import edu.wpi.first.networktables.NetworkTableEntry;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -21,6 +22,7 @@ public class PipelineManager {
     private final VisionProcess parentProcess;
     private int currentPipelineIndex;
     private boolean driverMode;
+    public NetworkTableEntry ntIndexEntry;
 
     public PipelineManager(VisionProcess visionProcess, List<CVPipelineSettings> loadedPipelineSettings) {
         parentProcess = visionProcess;
@@ -90,11 +92,7 @@ public class PipelineManager {
     }
 
     public CVPipeline getCurrentPipeline() {
-        if (driverMode) {
-            return driverModePipeline;
-        } else {
-            return pipelines.get(currentPipelineIndex);
-        }
+        return driverMode ? driverModePipeline : pipelines.get(currentPipelineIndex);
     }
 
     public void setCurrentPipeline(int index) {
@@ -116,6 +114,9 @@ public class PipelineManager {
                 }
             }
             newPipeline.initPipeline(parentProcess.getCamera());
+            if(ntIndexEntry != null) {
+                ntIndexEntry.setDouble(index);
+            }
         }
     }
 
