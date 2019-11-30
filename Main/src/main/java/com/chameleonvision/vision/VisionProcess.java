@@ -91,6 +91,13 @@ public class VisionProcess {
         initNT(newTable);
     }
 
+    public void setCameraName(String newName) {
+        var newTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + newName);
+        resetNT(newTable);
+        pipelineManager.renameCurrentPipeline(newName);
+        pipelineManager.ntIndexEntry = ntPipelineEntry;
+    }
+
     private void initNT(NetworkTable newTable) {
         ntPipelineEntry = newTable.getEntry("pipeline");
         ntDriverModeEntry = newTable.getEntry("driver_mode");

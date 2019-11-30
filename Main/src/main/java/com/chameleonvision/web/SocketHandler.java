@@ -10,6 +10,7 @@ import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.first.networktables.NetworkTable;
 import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
@@ -71,7 +72,7 @@ public class SocketHandler {
                         break;
                     }
                     case "changePipelineName": {
-                        currentProcess.pipelineManager.renameCurrentPipeline((String) entry.getValue());
+                        currentProcess.setCameraName((String) entry.getValue());
                         sendFullSettings();
                         VisionManager.saveCurrentCameraPipelines();
                         break;
