@@ -38,7 +38,7 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
             input.getLeft().copyTo(processBuffer);
 
             if (input.getRight().size() > 0) {
-                for (int i = 0; i < input.getRight().size() - 1; i++) {
+                for (int i = 0; i < input.getRight().size(); i++) {
                     if (i != 0 && !settings.showMultiple){
                         break;
                     }
