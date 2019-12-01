@@ -21,12 +21,12 @@
                     </div>
                 </v-col>
                 <v-col :cols="3" class="colsClass">
-                    <CVselect v-if="isPipelineEdit === false" name="Pipeline" :list="pipelineList"
+                    <CVselect v-if="isPipelineEdit === false" name="Pipeline" :list="['Driver Mode'].concat(pipelineList)"
                               v-model="currentPipelineIndex"
                               @input="handleInput('currentPipeline',currentPipelineIndex - 1)"/>
                     <CVinput v-else name="Pipeline" v-model="newPipelineName" @Enter="savePipelineNameChange"/>
                 </v-col>
-                <v-col :cols="1" class="colsClass" md="3">
+                <v-col :cols="1" class="colsClass" md="3" v-if="currentPipelineIndex !== 0">
                     <v-menu v-if="isPipelineEdit === false" offset-y dark auto>
                         <template v-slot:activator="{ on }">
                             <v-icon color="white" v-on="on">menu</v-icon>
@@ -191,7 +191,7 @@
             },
             openDuplicateDialog() {
                 this.pipelineDuplicate = {
-                    pipeline: this.currentPipelineIndex,
+                    pipeline: this.currentPipelineIndex - 1,
                     camera: -1
                 };
                 this.duplicateDialog = true;
@@ -306,10 +306,7 @@
             },
             pipelineList: {
                 get() {
-                    let tmp = ["Driver Mode"];
-                    let pipelineList = this.$store.state.pipelineList;
-                    tmp = tmp.concat(pipelineList);
-                    return tmp;
+                    return this.$store.state.pipelineList;
                 }
             },
             pipeline: {
