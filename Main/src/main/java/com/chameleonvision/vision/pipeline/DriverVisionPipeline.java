@@ -1,5 +1,6 @@
 package com.chameleonvision.vision.pipeline;
 
+import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.pipeline.pipes.Draw2dContoursPipe;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
@@ -11,12 +12,17 @@ import static com.chameleonvision.vision.pipeline.DriverVisionPipeline.DriverPip
 
 public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPipelineSettings> {
 
-    private Draw2dContoursPipe draw2dContoursPipe = null;
+    private Draw2dContoursPipe draw2dContoursPipe;
     private Draw2dContoursPipe.Draw2dContoursSettings draw2dContoursSettings = new Draw2dContoursPipe.Draw2dContoursSettings();
     private final List<RotatedRect> blankList = List.of();
 
     public DriverVisionPipeline(CVPipelineSettings settings) {
         super(settings);
+    }
+
+    @Override
+    public void initPipeline(CameraCapture capture) {
+        super.initPipeline(capture);
         draw2dContoursSettings.showCrosshair = true;
         draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, cameraCapture.getProperties().getStaticProperties());
     }
