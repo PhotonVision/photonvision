@@ -19,6 +19,12 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
     private Mat processBuffer = new Mat();
     private Mat outputMat = new Mat();
 
+    private Point[] vertices = new Point[4];
+    private List<MatOfPoint> drawnContours = new ArrayList<>();
+    @SuppressWarnings("FieldCanBeLocal")
+    private Point xMax = new Point(), xMin = new Point(), yMax = new Point(), yMin = new Point();
+
+
     public Draw2dContoursPipe(Draw2dContoursSettings settings, CaptureStaticProperties camProps) {
         this.settings = settings;
         this.camProps = camProps;
@@ -28,9 +34,6 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
         settings.showMultiple = showMultiple;
         camProps = captureProps;
     }
-
-    private Point[] vertices = new Point[4];
-    private List<MatOfPoint> drawnContours = new ArrayList<>();
 
     @Override
     public Pair<Mat, Long> run(Pair<Mat, List<RotatedRect>> input) {
@@ -87,9 +90,6 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
         long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(outputMat, processTime);
     }
-
-    @SuppressWarnings("FieldCanBeLocal")
-    private Point xMax = new Point(), xMin = new Point(), yMax = new Point(), yMin = new Point();
 
     public static class Draw2dContoursSettings {
         public boolean showCentroid = false;
