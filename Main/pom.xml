@@ -136,37 +136,37 @@
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-java</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
         </dependency>
         <!--frc cscore interface libs-->
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
             <classifier>linuxaarch64bionic</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
             <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
@@ -174,45 +174,45 @@
         <dependency>
             <groupId>edu.wpi.first.cameraserver</groupId>
             <artifactId>cameraserver-java</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
         </dependency>
 
         <!--frc network table java libs-->
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-java</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
         </dependency>
 
         <!--frc network tables interface libs-->
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
             <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
             <classifier>linuxaarch64bionic</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
@@ -220,7 +220,7 @@
         <dependency>
             <groupId>edu.wpi.first.wpiutil</groupId>
             <artifactId>wpiutil-java</artifactId>
-            <version>2020.1.1-beta-2-98-gb058dcf</version>
+            <version>2020.1.1-beta-3-12-gb8c1024</version>
         </dependency>
 
         <!-- WPI OpenCV for all supported platforms -->
