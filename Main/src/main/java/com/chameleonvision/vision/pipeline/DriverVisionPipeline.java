@@ -18,6 +18,7 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
     public DriverVisionPipeline(CVPipelineSettings settings) {
         super(settings);
         draw2dContoursSettings.showCrosshair = true;
+        draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, cameraCapture.getProperties().getStaticProperties());
     }
 
     @Override
@@ -25,13 +26,7 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
 
         inputMat.copyTo(outputMat);
 
-        var camProps = cameraCapture.getProperties().getStaticProperties();
-        if(draw2dContoursPipe == null) {
-            draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, camProps);
-        } else {
-            draw2dContoursPipe.setConfig(false,camProps);
-        }
-
+        draw2dContoursPipe.setConfig(false, cameraCapture.getProperties().getStaticProperties());
         draw2dContoursPipe.run(Pair.of(outputMat, blankList)).getLeft().copyTo(outputMat);
 
         return new DriverPipelineResult(null, outputMat, 0);

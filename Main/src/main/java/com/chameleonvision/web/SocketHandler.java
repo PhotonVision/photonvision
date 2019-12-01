@@ -10,7 +10,6 @@ import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.networktables.NetworkTable;
 import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
@@ -66,8 +65,7 @@ public class SocketHandler {
                         break;
                     }
                     case "changeCameraName": {
-                        currentCamera.getProperties().setNickname((String) entry.getValue());
-                        currentProcess.setCameraName((String) entry.getValue());
+                        currentProcess.setCameraNickname((String) entry.getValue());
                         sendFullSettings();
                         VisionManager.saveCurrentCameraSettings();
                         break;
@@ -87,15 +85,12 @@ public class SocketHandler {
                         String val = mapper.writeValueAsString(origPipeline);
                         CVPipelineSettings newPipeline = mapper.readValue(val, origPipeline.getClass());
 
-                        // TODO: move to PipelineManager
-                        newPipeline.nickname += "(Copy)";
-
                         if (cameraIndex != -1) {
                             VisionProcess newProcess = VisionManager.getVisionProcessByIndex(cameraIndex);
                             if (newProcess != null) {
                                 currentProcess.pipelineManager.duplicatePipeline(newPipeline, newProcess);
                             } else {
-                                System.err.println("Failed to get new camera for pipeline duplication!");
+                                System.err.println("Failed to get destination camera for pipeline duplication!");
                             }
                         } else {
                             currentProcess.pipelineManager.duplicatePipeline(newPipeline);
@@ -141,9 +136,12 @@ public class SocketHandler {
                     default: {
 
                         // only change settings when we aren't in driver mode
-                        if(currentProcess.pipelineManager.getDriverMode()) break;
+                        if(currentProcess.pipelineManager.getDriverMode()) {
+                            setField(currentProcess.pipelineManager.driverModePipeline.settings, entry.getKey(), entry.getValue());
+                        } else {
+                            setField(currentPipeline.settings, entry.getKey(), entry.getValue());
+                        }
 
-                        setField(currentPipeline.settings, entry.getKey(), entry.getValue());
                         switch (entry.getKey()) {
                             case "exposure": {
                                 currentCamera.setExposure((Integer) entry.getValue());
@@ -158,8 +156,7 @@ public class SocketHandler {
                                 break;
                             }
                             case "streamDivisor":{
-                                VisionProcess currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
-                                currentVisionProcess.cameraStreamer.setDivisor(StreamDivisor.values()[(Integer) entry.getValue()], true);
+                                currentProcess.cameraStreamer.setDivisor(StreamDivisor.values()[(Integer) entry.getValue()], true);
                                 break;
                             }
                         }

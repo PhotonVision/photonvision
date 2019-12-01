@@ -98,7 +98,11 @@ public class PipelineManager {
     }
 
     public CVPipeline getCurrentPipeline() {
-        return pipelines.get(currentPipelineIndex);
+        if (currentPipelineIndex <= DRIVERMODE_INDEX) {
+            return driverModePipeline;
+        } else {
+            return pipelines.get(currentPipelineIndex);
+        }
     }
 
     public void setCurrentPipeline(int index) {
