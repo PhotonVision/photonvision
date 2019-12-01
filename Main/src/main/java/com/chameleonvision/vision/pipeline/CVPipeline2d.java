@@ -86,6 +86,11 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         if (cameraCapture == null) {
             throw new RuntimeException("Pipeline was not initialized before being run!");
         }
+
+        // TODO (HIGH) find the source of the random NPE
+        if (settings == null) {
+            throw new RuntimeException("settings was not initialized!");
+        }
         if (inputMat.cols() <= 1) {
             throw new RuntimeException("Input Mat is empty!");
         }
