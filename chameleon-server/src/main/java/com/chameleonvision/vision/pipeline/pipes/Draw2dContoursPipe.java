@@ -21,6 +21,7 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
 
     private Point[] vertices = new Point[4];
     private List<MatOfPoint> drawnContours = new ArrayList<>();
+    private MatOfPoint contour = new MatOfPoint();
     @SuppressWarnings("FieldCanBeLocal")
     private Point xMax = new Point(), xMin = new Point(), yMax = new Point(), yMin = new Point();
 
@@ -41,7 +42,7 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
 
         if (settings.showCrosshair || settings.showCentroid || settings.showMaximumBox || settings.showRotatedBox) {
 //            input.getLeft().copyTo(processBuffer);
-            processBuffer = input.getLeft();
+//            processBuffer = input.getLeft();
 
             if (input.getRight().size() > 0) {
                 for (int i = 0; i < input.getRight().size(); i++) {
@@ -55,21 +56,24 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
                     drawnContours.clear();
 
                     r.points(vertices);
-                    MatOfPoint contour = new MatOfPoint(vertices);
+                    contour.fromArray(vertices);
+//                    MatOfPoint contour = new MatOfPoint(vertices);
                     drawnContours.add(contour);
 
                     if (settings.showCentroid) {
-                        Imgproc.circle(processBuffer, r.center, 3, Helpers.colorToScalar(settings.centroidColor));
+                        Imgproc.circle(input.getLeft(), r.center, 3, Helpers.colorToScalar(settings.centroidColor));
                     }
 
                     if (settings.showRotatedBox) {
-                        Imgproc.drawContours(processBuffer, drawnContours, 0, Helpers.colorToScalar(settings.rotatedBoxColor), settings.boxOutlineSize);
+                        Imgproc.drawContours(input.getLeft(), drawnContours, 0, Helpers.colorToScalar(settings.rotatedBoxColor), settings.boxOutlineSize);
                     }
 
                     if (settings.showMaximumBox) {
                         Rect box = Imgproc.boundingRect(contour);
-                        Imgproc.rectangle(processBuffer, new Point(box.x, box.y), new Point((box.x + box.width), (box.y + box.height)), Helpers.colorToScalar(settings.maximumBoxColor), settings.boxOutlineSize);
+                        Imgproc.rectangle(input.getLeft(), new Point(box.x, box.y), new Point((box.x + box.width), (box.y + box.height)), Helpers.colorToScalar(settings.maximumBoxColor), settings.boxOutlineSize);
                     }
+
+//                    contour.release();
                 }
             }
 
@@ -78,8 +82,8 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
                 xMin.set(new double[] {camProps.centerX - 10, camProps.centerY});
                 yMax.set(new double[] {camProps.centerX, camProps.centerY + 10});
                 yMin.set(new double[] {camProps.centerX, camProps.centerY - 10});
-                Imgproc.line(processBuffer, xMax, xMin, Helpers.colorToScalar(settings.crosshairColor), 2);
-                Imgproc.line(processBuffer, yMax, yMin, Helpers.colorToScalar(settings.crosshairColor), 2);
+                Imgproc.line(input.getLeft(), xMax, xMin, Helpers.colorToScalar(settings.crosshairColor), 2);
+                Imgproc.line(input.getLeft(), yMax, yMin, Helpers.colorToScalar(settings.crosshairColor), 2);
             }
 
 //            processBuffer.copyTo(outputMat);
@@ -89,7 +93,7 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
         }
 
         long processTime = System.nanoTime() - processStartNanos;
-        return Pair.of(processBuffer, processTime);
+        return Pair.of(input.getLeft(), processTime);
     }
 
     public static class Draw2dContoursSettings {

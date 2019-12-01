@@ -1,6 +1,5 @@
 package com.chameleonvision.vision.pipeline;
 
-import com.chameleonvision.Main;
 import com.chameleonvision.util.MemoryManager;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.pipeline.pipes.Draw2dContoursPipe;
@@ -20,7 +19,7 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
     private Draw2dContoursPipe.Draw2dContoursSettings draw2dContoursSettings = new Draw2dContoursPipe.Draw2dContoursSettings();
     private final List<RotatedRect> blankList = List.of();
 
-    private final MemoryManager memoryManager = new MemoryManager(50);
+    private final MemoryManager memoryManager = new MemoryManager(200, 20000);
 
     public DriverVisionPipeline(CVPipelineSettings settings) {
         super(settings);
@@ -38,15 +37,13 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
     @Override
     public DriverPipelineResult runPipeline(Mat inputMat) {
 
-//        inputMat.copyTo(outputMat);
-
         rotateFlipPipe.setConfig(settings.rotationMode, settings.flipMode);
         draw2dContoursPipe.setConfig(false, cameraCapture.getProperties().getStaticProperties());
 
         Pair<Mat, Long> rotateFlipResult = rotateFlipPipe.run(inputMat);
         Pair<Mat, Long> draw2dContoursResult = draw2dContoursPipe.run(Pair.of(rotateFlipResult.getLeft(), blankList));
 
-        memoryManager.run(Main.testMode);
+        memoryManager.run();
 
         return new DriverPipelineResult(null, draw2dContoursResult.getLeft(), 0);
     }

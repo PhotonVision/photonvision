@@ -79,7 +79,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         outputMatPipe = new OutputMatPipe(settings.isBinary);
     }
 
-    private final MemoryManager memManager = new MemoryManager(120);
+    private final MemoryManager memManager = new MemoryManager(120, 20000);
 
     @Override
     public CVPipeline2dResult runPipeline(Mat inputMat) {
@@ -125,10 +125,10 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         Pair<Mat, Long> rotateFlipResult = rotateFlipPipe.run(inputMat);
         totalPipelineTimeNanos += rotateFlipResult.getRight();
 
-        Pair<Mat, Long> blurResult = blurPipe.run(rotateFlipResult.getLeft());
-        totalPipelineTimeNanos += blurResult.getRight();
+//        Pair<Mat, Long> blurResult = blurPipe.run(rotateFlipResult.getLeft());
+//        totalPipelineTimeNanos += blurResult.getRight();
 
-        Pair<Mat, Long> erodeDilateResult = erodeDilatePipe.run(blurResult.getLeft());
+        Pair<Mat, Long> erodeDilateResult = erodeDilatePipe.run(rotateFlipResult.getLeft());
         totalPipelineTimeNanos += erodeDilateResult.getRight();
 
         Pair<Mat, Long> hsvResult = hsvPipe.run(erodeDilateResult.getLeft());
@@ -163,7 +163,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         if (Main.testMode) {
             pipelineTimeString += String.format("PipeInit: %.2fms, ", pipeInitTimeNanos / 1000000.0);
             pipelineTimeString += String.format("RotateFlip: %.2fms, ", rotateFlipResult.getRight() / 1000000.0);
-            pipelineTimeString += String.format("Blur: %.2fms, ", blurResult.getRight() / 1000000.0);
+//            pipelineTimeString += String.format("Blur: %.2fms, ", blurResult.getRight() / 1000000.0);
             pipelineTimeString += String.format("ErodeDilate: %.2fms, ", erodeDilateResult.getRight() / 1000000.0);
             pipelineTimeString += String.format("HSV: %.2fms, ", hsvResult.getRight() / 1000000.0);
             pipelineTimeString += String.format("FindContours: %.2fms, ", findContoursResult.getRight() / 1000000.0);
@@ -184,7 +184,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
             System.out.printf("full pipeline run time was %.3fms (%.2fFPS)\n", truePipelineTimeMillis, truePipelineFPS);
         }
 
-        memManager.run(Main.testMode);
+        memManager.run();
 
         return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft(), totalPipelineTimeNanos);
     }

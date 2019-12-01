@@ -159,16 +159,18 @@ public class VisionProcess {
                 } else if (data instanceof CVPipeline3d.CVPipeline3dResult) {
                     // TODO: (2.1) 3d stuff in UI
                 } else {
-                    center.add(0.0);
-                    center.add(0.0);
-                    calculated.put("pitch", 0);
-                    calculated.put("yaw", 0);
+                    center.add(null);
+                    center.add(null);
+                    calculated.put("pitch", null);
+                    calculated.put("yaw", null);
+                    calculated.put("area", null);
                 }
             } else {
-                center.add(0.0);
-                center.add(0.0);
-                calculated.put("pitch", 0);
-                calculated.put("yaw", 0);
+                center.add(null);
+                center.add(null);
+                calculated.put("pitch", null);
+                calculated.put("yaw", null);
+                calculated.put("area", null);
             }
             point.put("fps", visionRunnable.fps);
             point.put("calculated", calculated);
@@ -246,6 +248,7 @@ public class VisionProcess {
                 Mat camFrame = camData.getLeft();
                 if (camFrame.cols() > 0 && camFrame.rows() > 0) {
                     CVPipelineResult result = pipelineManager.getCurrentPipeline().runPipeline(camFrame);
+                    camFrame.release();
 
                     if (result != null) {
                         result.setTimestamp(camData.getRight());
@@ -258,7 +261,6 @@ public class VisionProcess {
                 try {
                     streamFrameQueue.clear();
                     streamFrameQueue.add(lastPipelineResult.outputMat);
-                    camFrame.release();
                 } catch (Exception e) {
                     Debug.printInfo("Vision running faster than stream.");
                 }
@@ -284,6 +286,7 @@ public class VisionProcess {
     private class CameraStreamerRunnable extends LoopingRunnable {
 
         final CameraStreamer streamer;
+        private Mat bufferMat = new Mat();
 
         private CameraStreamerRunnable(int cameraFPS, CameraStreamer streamer) {
             // add 2 FPS to allow for a bit of overhead
@@ -295,7 +298,16 @@ public class VisionProcess {
         protected void process() {
             if (!streamFrameQueue.isEmpty()) {
                 try {
-                    streamer.runStream(streamFrameQueue.take());
+
+                    bufferMat = streamFrameQueue.take();
+
+                    try {
+                        streamer.runStream(bufferMat);
+                        bufferMat.release();
+                    } catch (Exception e) {
+                        // do nothing
+                    }
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
