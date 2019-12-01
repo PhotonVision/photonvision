@@ -159,16 +159,18 @@ public class VisionProcess {
                 } else if (data instanceof CVPipeline3d.CVPipeline3dResult) {
                     // TODO: (2.1) 3d stuff in UI
                 } else {
-                    center.add(0.0);
-                    center.add(0.0);
-                    calculated.put("pitch", 0);
-                    calculated.put("yaw", 0);
+                    center.add(null);
+                    center.add(null);
+                    calculated.put("pitch", null);
+                    calculated.put("yaw", null);
+                    calculated.put("area", null);
                 }
             } else {
-                center.add(0.0);
-                center.add(0.0);
-                calculated.put("pitch", 0);
-                calculated.put("yaw", 0);
+                center.add(null);
+                center.add(null);
+                calculated.put("pitch", null);
+                calculated.put("yaw", null);
+                calculated.put("area", null);
             }
             point.put("fps", visionRunnable.fps);
             point.put("calculated", calculated);
