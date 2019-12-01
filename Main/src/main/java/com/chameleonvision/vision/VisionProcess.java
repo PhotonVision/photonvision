@@ -119,6 +119,7 @@ public class VisionProcess {
 
     public void setDriverMode(boolean driverMode) {
         pipelineManager.setDriverMode(driverMode);
+        SocketHandler.sendFullSettings();
     }
 
     /**
