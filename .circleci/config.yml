@@ -19,7 +19,7 @@ jobs:
 
   
   build_jar:
-    working_directory: ~/project/Main
+    working_directory: ~/project/chameleon-server
     docker:
       - image: maven:3.6.2-jdk-12
     steps:
