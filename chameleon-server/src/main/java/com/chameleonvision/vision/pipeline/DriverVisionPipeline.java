@@ -20,7 +20,7 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
     private Draw2dContoursPipe.Draw2dContoursSettings draw2dContoursSettings = new Draw2dContoursPipe.Draw2dContoursSettings();
     private final List<RotatedRect> blankList = List.of();
 
-    private final MemoryManager memoryManager = new MemoryManager(50);
+    private final MemoryManager memoryManager = new MemoryManager(200, 20000);
 
     public DriverVisionPipeline(CVPipelineSettings settings) {
         super(settings);
@@ -46,7 +46,7 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
         Pair<Mat, Long> rotateFlipResult = rotateFlipPipe.run(inputMat);
         Pair<Mat, Long> draw2dContoursResult = draw2dContoursPipe.run(Pair.of(rotateFlipResult.getLeft(), blankList));
 
-        memoryManager.run(Main.testMode);
+        memoryManager.run();
 
         return new DriverPipelineResult(null, draw2dContoursResult.getLeft(), 0);
     }

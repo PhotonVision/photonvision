@@ -246,6 +246,7 @@ public class VisionProcess {
                 Mat camFrame = camData.getLeft();
                 if (camFrame.cols() > 0 && camFrame.rows() > 0) {
                     CVPipelineResult result = pipelineManager.getCurrentPipeline().runPipeline(camFrame);
+                    camFrame.release();
 
                     if (result != null) {
                         result.setTimestamp(camData.getRight());
@@ -258,7 +259,6 @@ public class VisionProcess {
                 try {
                     streamFrameQueue.clear();
                     streamFrameQueue.add(lastPipelineResult.outputMat);
-                    camFrame.release();
                 } catch (Exception e) {
                     Debug.printInfo("Vision running faster than stream.");
                 }
@@ -295,7 +295,12 @@ public class VisionProcess {
         protected void process() {
             if (!streamFrameQueue.isEmpty()) {
                 try {
-                    streamer.runStream(streamFrameQueue.take());
+                    Mat tempMat = new Mat();
+                    Mat tempMat2 = streamFrameQueue.take();
+                    tempMat2.copyTo(tempMat);
+                    tempMat2.release();
+                    streamer.runStream(tempMat);
+                    tempMat.release();
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

@@ -40,7 +40,10 @@ public class USBCameraCapture implements CameraCapture {
     public Pair<Mat, Long> getFrame() {
         Long deltaTime;
         // TODO: Why multiply by 1000 here?
-        deltaTime = cvSink.grabFrame(imageBuffer) * 1000L;
+        Mat tempMat = new Mat();
+        deltaTime = cvSink.grabFrame(tempMat) * 1000L;
+        tempMat.copyTo(imageBuffer);
+        tempMat.release();
         return Pair.of(imageBuffer, deltaTime);
     }
 
