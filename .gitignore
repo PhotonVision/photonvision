@@ -104,16 +104,15 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
-Main/Settings/
-Main/.gradle
-Main/target
 
-New client/chameleon-client/node_modules/
-Main/dependency-reduced-pom.xml
-Main/src/main/java/META-INF
-Main/.settings/org.eclipse.jdt.core.prefs
-Main/.classpath
-Main/.project
+chameleon-server/.gradle
+chameleon-server/target
+chameleon-server/src/main/java/META-INF
+chameleon-server/.settings
+chameleon-server/.classpath
+chameleon-server/.project
+chameleon-server/settings
+chameleon-server/dependency-reduced-pom.xml
+
 *.prefs
-
 *.jfr
