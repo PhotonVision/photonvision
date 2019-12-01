@@ -109,8 +109,14 @@ public class PipelineManager {
         CVPipeline newPipeline;
         if (index == DRIVERMODE_INDEX) {
             newPipeline = driverModePipeline;
+
+            // if we're changing into driver mode, try to set the nt entry to frue
+            parentProcess.setDriverModeEntry(true);
         } else {
             newPipeline = pipelines.get(index);
+
+            // if we're switching out of driver mode, try to set the nt entry to false
+            parentProcess.setDriverModeEntry(false);
         }
         if (newPipeline != null) {
             lastPipelineIndex = currentPipelineIndex;

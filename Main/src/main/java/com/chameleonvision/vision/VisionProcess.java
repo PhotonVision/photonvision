@@ -37,7 +37,7 @@ public class VisionProcess {
     // network table stuff
     private final NetworkTable defaultTable;
     private NetworkTableEntry ntPipelineEntry;
-    private NetworkTableEntry ntDriverModeEntry;
+    public NetworkTableEntry ntDriverModeEntry;
     private int ntDriveModeListenerID;
     private int ntPipelineListenerID;
     private NetworkTableEntry ntYawEntry;
@@ -129,6 +129,15 @@ public class VisionProcess {
     private void setPipeline(EntryNotification notification) {
         var wantedPipelineIndex = (int) notification.value.getDouble();
         pipelineManager.setCurrentPipeline(wantedPipelineIndex);
+    }
+
+    public void setDriverModeEntry(boolean isDriverMode) {
+
+        // if it's null, we haven't even started the program yet, so just return
+        // otherwise, set it.
+        if(ntDriverModeEntry != null) {
+            ntDriverModeEntry.setBoolean(isDriverMode);
+        }
     }
 
     private void updateUI(CVPipelineResult data) {
