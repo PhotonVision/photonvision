@@ -2,45 +2,65 @@ package com.chameleonvision.util;
 
 public class MemoryManager {
 
-	private static final long MEGABYTE_FACTOR = 1024L * 1024L;
+    private static final long MEGABYTE_FACTOR = 1024L * 1024L;
 
-	private int collectionThreshold;
-	private int lastUsedMb = 0;
+    private int collectionThreshold;
+    private long collectionPeriodMillis = -1;
 
-	public MemoryManager(int collectionThreshold) {
-		this.collectionThreshold = collectionThreshold;
-	}
+    private double lastUsedMb = 0;
+    private long lastCollectionMillis = 0;
 
-	public void setCollectionThreshold(int collectionThreshold) {
-		this.collectionThreshold = collectionThreshold;
-	}
+    public MemoryManager(int collectionThreshold) {
+        this.collectionThreshold = collectionThreshold;
+    }
 
-	public static long getUsedMemory() {
-		return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-	}
+    public MemoryManager(int collectionThreshold, long collectionPeriodMillis) {
+        this.collectionThreshold = collectionThreshold;
+        this.collectionPeriodMillis = collectionPeriodMillis;
+    }
 
-	public static int getUsedMemoryMB() {
-		return (int) (getUsedMemory() / MEGABYTE_FACTOR);
-	}
+    public void setCollectionThreshold(int collectionThreshold) {
+        this.collectionThreshold = collectionThreshold;
+    }
 
-	private static void collect() {
-		System.gc();
-		System.runFinalization();
-	}
+    public void setCollectionPeriodMillis(long collectionPeriodMillis) {
+        this.collectionPeriodMillis = collectionPeriodMillis;
+    }
 
-	public void run() { run(false); }
+    private static long getUsedMemory() {
+        return Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+    }
 
-	public void run(boolean print) {
-		var usedMem = getUsedMemoryMB();
+    private static double getUsedMemoryMB() {
+        return ((double) getUsedMemory() / MEGABYTE_FACTOR);
+    }
 
-		if (usedMem != lastUsedMb) {
-			lastUsedMb = usedMem;
-			if (print) System.out.printf("Memory usage: %dMB\n", usedMem);
-		}
+    private void collect() {
+        System.gc();
+        System.runFinalization();
+    }
 
-		if (usedMem >= collectionThreshold) {
-			collect();
-			if (print) System.out.printf("Garbage collected at %dMB\n", usedMem);
-		}
-	}
+    public void run() {
+        run(false);
+    }
+
+    public void run(boolean print) {
+        var usedMem = getUsedMemoryMB();
+
+        if (usedMem != lastUsedMb) {
+            lastUsedMb = usedMem;
+            if (print) System.out.printf("Memory usage: %.2fMB\n", usedMem);
+        }
+
+        boolean collectionThresholdPassed = usedMem >= collectionThreshold;
+        boolean collectionPeriodPassed = collectionPeriodMillis != -1 && (System.currentTimeMillis() - lastCollectionMillis >= collectionPeriodMillis);
+
+        if (collectionThresholdPassed || collectionPeriodPassed) {
+            collect();
+            lastCollectionMillis = System.currentTimeMillis();
+            if (print) {
+                System.out.printf("Garbage collected at %.2fMB\n", usedMem);
+            }
+        }
+    }
 }
