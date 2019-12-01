@@ -1,6 +1,5 @@
 package com.chameleonvision.vision.pipeline;
 
-import com.chameleonvision.Main;
 import com.chameleonvision.util.MemoryManager;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.pipeline.pipes.Draw2dContoursPipe;
@@ -37,8 +36,6 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
 
     @Override
     public DriverPipelineResult runPipeline(Mat inputMat) {
-
-//        inputMat.copyTo(outputMat);
 
         rotateFlipPipe.setConfig(settings.rotationMode, settings.flipMode);
         draw2dContoursPipe.setConfig(false, cameraCapture.getProperties().getStaticProperties());

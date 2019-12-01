@@ -284,6 +284,7 @@ public class VisionProcess {
     private class CameraStreamerRunnable extends LoopingRunnable {
 
         final CameraStreamer streamer;
+        private Mat bufferMat = new Mat();
 
         private CameraStreamerRunnable(int cameraFPS, CameraStreamer streamer) {
             // add 2 FPS to allow for a bit of overhead
@@ -295,12 +296,16 @@ public class VisionProcess {
         protected void process() {
             if (!streamFrameQueue.isEmpty()) {
                 try {
-                    Mat tempMat = new Mat();
-                    Mat tempMat2 = streamFrameQueue.take();
-                    tempMat2.copyTo(tempMat);
-                    tempMat2.release();
-                    streamer.runStream(tempMat);
-                    tempMat.release();
+
+                    bufferMat = streamFrameQueue.take();
+
+                    try {
+                        streamer.runStream(bufferMat);
+                        bufferMat.release();
+                    } catch (Exception e) {
+                        // do nothing
+                    }
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
