@@ -61,13 +61,13 @@ We recommend the use of [Intellij Idea](https://www.jetbrains.com/idea/) for run
 
 *  **Sagi Frimer** - *initial work* - websocket, settings manager, UI
 
-*  **Ori Agranat** - *main coder* - vision loop, UI, websocket, networktables
+*  **Ori Agranat** - *main coder* - project manager, vision loop, UI, websocket, networktables
 
-*  **Omer Zipory** - *developer* - vision loop, websocket, networking
+*  **Omer Zipory** - *developer* - vision loop, websocket, networking, documentation, UI
 
-*  **Banks Troutman** - *developer* - vision loop, websocket, networking
+*  **Banks Troutman** - *developer* - vision loop, websocket, networking, project structue
 
-*  **Matt Morley** - *developer* - documentation
+*  **Matt Morley** - *developer* - vision loop, project structue, documentation, solvePNP
 
 
 ## Acknowledgments
