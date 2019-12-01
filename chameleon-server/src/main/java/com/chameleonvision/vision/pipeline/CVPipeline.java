@@ -23,6 +23,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
 
     public void initPipeline(CameraCapture camera) {
         cameraCapture = camera;
+        cameraCapture.setVideoMode(settings.videoModeIndex);
         cameraCapture.setExposure((int) settings.exposure);
         cameraCapture.setBrightness((int) settings.brightness);
         cameraCapture.setGain((int) settings.gain);

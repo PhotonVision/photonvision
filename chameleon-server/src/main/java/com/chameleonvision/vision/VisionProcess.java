@@ -258,6 +258,7 @@ public class VisionProcess {
                 try {
                     streamFrameQueue.clear();
                     streamFrameQueue.add(lastPipelineResult.outputMat);
+                    camFrame.release();
                 } catch (Exception e) {
                     Debug.printInfo("Vision running faster than stream.");
                 }
