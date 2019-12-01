@@ -1,6 +1,7 @@
 package com.chameleonvision.vision.camera;
 
 import com.chameleonvision.config.CameraJsonConfig;
+import com.chameleonvision.vision.image.CaptureProperties;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoException;
@@ -13,19 +14,20 @@ public class USBCameraCapture implements CameraCapture {
     private final UsbCamera baseCamera;
     private final CvSink cvSink;
     private Mat imageBuffer = new Mat();
-    private USBCameraProperties properties;
+    private USBCaptureProperties properties;
 
     public USBCameraCapture(CameraJsonConfig config) {
         baseCamera = new UsbCamera(config.name, config.path);
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
-        properties = new USBCameraProperties(baseCamera, config);
+        properties = new USBCaptureProperties(baseCamera, config);
 
         int videoMode = properties.videoModes.size() - 1 <= config.videomode ? config.videomode : 0;
         setVideoMode(videoMode);
     }
 
+
     @Override
-    public USBCameraProperties getProperties() {
+    public USBCaptureProperties getProperties() {
         return properties;
     }
 

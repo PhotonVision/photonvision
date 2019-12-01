@@ -16,10 +16,10 @@ public class CaptureStaticProperties {
     public final double verticalFocalLength;
     public final VideoMode mode;
 
-    public CaptureStaticProperties(VideoMode mode, int imageWidth, int imageHeight, double fov) {
+    public CaptureStaticProperties(VideoMode mode, double fov) {
         this.mode = mode;
-        this.imageWidth = imageWidth;
-        this.imageHeight = imageHeight;
+        this.imageWidth = mode.width;
+        this.imageHeight = mode.height;
         this.fov = fov;
         imageArea = this.imageWidth * this.imageHeight;
         centerX = ((double) this.imageWidth / 2) - 0.5;

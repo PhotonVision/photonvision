@@ -84,7 +84,7 @@ public class VisionManager {
 
             CameraJsonConfig cameraJsonConfig = config.cameraConfig;
 
-            CameraCapture camera = new USBCameraCapture(cameraJsonConfig);
+            USBCameraCapture camera = new USBCameraCapture(cameraJsonConfig);
             VisionProcess process = new VisionProcess(camera, cameraJsonConfig.name, config.pipelines);
             process.pipelineManager.driverModePipeline.settings = config.drivermode;
             visionProcesses.add(new VisionProcessManageable(i, cameraJsonConfig.name, process));
@@ -165,7 +165,7 @@ public class VisionManager {
         currentUIVisionProcess.pipelineManager.saveDriverModeConfig();
     }
 
-    private static List<HashMap> getCameraResolutionList(CameraCapture capture) {
+    private static List<HashMap> getCameraResolutionList(USBCameraCapture capture) {
         return capture.getProperties().getVideoModes().stream().map(Helpers::VideoModeToHashMap).collect(Collectors.toList());
     }
 

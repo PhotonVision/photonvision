@@ -32,23 +32,23 @@ public class RotateFlipPipe implements Pipe<Mat, Mat> {
         boolean shouldRotate = !rotation.equals(ImageRotationMode.DEG_0);
 
         if (shouldFlip || shouldRotate) {
-            input.copyTo(processBuffer);
+//            input.copyTo(processBuffer);
 
             if (shouldFlip) {
-                Core.flip(processBuffer, processBuffer, flip.value);
+                Core.flip(input, input, flip.value);
             }
 
             if (shouldRotate) {
-                Core.rotate(processBuffer, processBuffer, rotation.value);
+                Core.rotate(input, input, rotation.value);
             }
 
-            processBuffer.copyTo(outputMat);
-            processBuffer.release();
+//            processBuffer.copyTo(outputMat);
+//            processBuffer.release();
         } else {
-            input.copyTo(outputMat);
+//            input.copyTo(outputMat);
         }
 
         long processTime = System.nanoTime() - processStartNanos;
-        return Pair.of(outputMat, processTime);
+        return Pair.of(input, processTime);
     }
 }

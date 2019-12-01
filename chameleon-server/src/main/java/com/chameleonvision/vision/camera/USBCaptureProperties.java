@@ -12,7 +12,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class USBCameraProperties extends CaptureProperties {
+public class USBCaptureProperties extends com.chameleonvision.vision.image.CaptureProperties {
     public static final double DEFAULT_FOV = 70;
     private static final int DEFAULT_EXPOSURE = 50;
     private static final int DEFAULT_BRIGHTNESS = 50;
@@ -40,7 +40,7 @@ public class USBCameraProperties extends CaptureProperties {
     private String nickname;
     private double FOV;
 
-    USBCameraProperties(UsbCamera baseCamera, CameraJsonConfig config) {
+    USBCaptureProperties(UsbCamera baseCamera, CameraJsonConfig config) {
         FOV = config.fov;
         name = config.name;
         path = config.path;
@@ -70,7 +70,7 @@ public class USBCameraProperties extends CaptureProperties {
     public void setFOV(double FOV) {
         if (this.FOV != FOV) {
             this.FOV = FOV;
-            staticProperties = new CaptureStaticProperties(staticProperties.mode, staticProperties.imageWidth, staticProperties.imageHeight, FOV);
+            staticProperties = new CaptureStaticProperties(staticProperties.mode, FOV);
         }
     }
 
@@ -93,7 +93,7 @@ public class USBCameraProperties extends CaptureProperties {
     }
 
     void updateVideoMode(VideoMode videoMode) {
-        staticProperties = new CaptureStaticProperties(videoMode, videoMode.width, videoMode.height, FOV);
+        staticProperties = new CaptureStaticProperties(videoMode, FOV);
     }
 
     public List<VideoMode> getVideoModes() {

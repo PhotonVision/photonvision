@@ -1,6 +1,7 @@
 package com.chameleonvision.vision.pipeline;
 
 import com.chameleonvision.Main;
+import com.chameleonvision.util.MemoryManager;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.pipeline.pipes.*;
@@ -77,6 +78,8 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, camProps);
         outputMatPipe = new OutputMatPipe(settings.isBinary);
     }
+
+    private final MemoryManager memManager = new MemoryManager(120);
 
     @Override
     public CVPipeline2dResult runPipeline(Mat inputMat) {
@@ -180,6 +183,8 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
             System.out.printf("Pipeline processed in %.3fms (%.2fFPS), ", totalPipelineTimeMillis, totalPipelineTimeFPS);
             System.out.printf("full pipeline run time was %.3fms (%.2fFPS)\n", truePipelineTimeMillis, truePipelineFPS);
         }
+
+        memManager.run(Main.testMode);
 
         return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft(), totalPipelineTimeNanos);
     }

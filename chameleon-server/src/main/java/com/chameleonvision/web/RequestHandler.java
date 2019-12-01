@@ -5,6 +5,7 @@ import com.chameleonvision.network.NetworkIPMode;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.camera.USBCameraCapture;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
@@ -40,7 +41,7 @@ public class RequestHandler {
             Map camSettings = objectMapper.readValue(ctx.body(), Map.class);
 
             VisionProcess currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
-            CameraCapture currentCamera = currentVisionProcess.getCamera();
+            USBCameraCapture currentCamera = currentVisionProcess.getCamera();
 
             double newFOV;
             try {

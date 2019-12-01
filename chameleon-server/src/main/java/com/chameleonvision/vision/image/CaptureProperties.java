@@ -11,8 +11,8 @@ public class CaptureProperties {
     protected CaptureProperties() {
     }
 
-    public CaptureProperties(Mat staticImage, double fov) {
-        staticProperties = new CaptureStaticProperties(new VideoMode(0, staticImage.cols(), staticImage.rows(), 99999), staticImage.cols(), staticImage.rows(), fov);
+    public CaptureProperties(VideoMode videoMode, double fov) {
+        staticProperties = new CaptureStaticProperties(videoMode, fov);
     }
 
     public CaptureStaticProperties getStaticProperties() {

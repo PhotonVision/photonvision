@@ -5,6 +5,7 @@ import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.util.LoopingRunnable;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.CameraStreamer;
+import com.chameleonvision.vision.camera.USBCameraCapture;
 import com.chameleonvision.vision.pipeline.*;
 import com.chameleonvision.web.SocketHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,7 +25,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class VisionProcess {
 
-    private final CameraCapture cameraCapture;
+    private final USBCameraCapture cameraCapture;
     private final CameraStreamerRunnable streamRunnable;
     private final VisionProcessRunnable visionRunnable;
     public final CameraStreamer cameraStreamer;
@@ -48,7 +49,7 @@ public class VisionProcess {
     private NetworkTableEntry ntValidEntry;
     private ObjectMapper objectMapper = new ObjectMapper();
 
-    VisionProcess(CameraCapture cameraCapture, String name, List<CVPipelineSettings> loadedPipelineSettings) {
+    VisionProcess(USBCameraCapture cameraCapture, String name, List<CVPipelineSettings> loadedPipelineSettings) {
         this.cameraCapture = cameraCapture;
 
         pipelineManager = new PipelineManager(this, loadedPipelineSettings);
@@ -218,7 +219,7 @@ public class VisionProcess {
         return cameraCapture.getProperties().videoModes;
     }
 
-    public CameraCapture getCamera() {
+    public USBCameraCapture getCamera() {
         return cameraCapture;
     }
 

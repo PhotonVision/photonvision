@@ -40,7 +40,8 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
         long processStartNanos = System.nanoTime();
 
         if (settings.showCrosshair || settings.showCentroid || settings.showMaximumBox || settings.showRotatedBox) {
-            input.getLeft().copyTo(processBuffer);
+//            input.getLeft().copyTo(processBuffer);
+            processBuffer = input.getLeft();
 
             if (input.getRight().size() > 0) {
                 for (int i = 0; i < input.getRight().size(); i++) {
@@ -81,14 +82,14 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
                 Imgproc.line(processBuffer, yMax, yMin, Helpers.colorToScalar(settings.crosshairColor), 2);
             }
 
-            processBuffer.copyTo(outputMat);
-            processBuffer.release();
+//            processBuffer.copyTo(outputMat);
+//            processBuffer.release();
         } else {
-            input.getLeft().copyTo(outputMat);
+//            input.getLeft().copyTo(outputMat);
         }
 
         long processTime = System.nanoTime() - processStartNanos;
-        return Pair.of(outputMat, processTime);
+        return Pair.of(processBuffer, processTime);
     }
 
     public static class Draw2dContoursSettings {

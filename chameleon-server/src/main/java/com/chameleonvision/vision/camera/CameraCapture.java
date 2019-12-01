@@ -1,10 +1,11 @@
 package com.chameleonvision.vision.camera;
 
+import com.chameleonvision.vision.image.CaptureProperties;
 import com.chameleonvision.vision.image.ImageCapture;
 import edu.wpi.cscore.VideoMode;
 
 public interface CameraCapture extends ImageCapture {
-    USBCameraProperties getProperties();
+    CaptureProperties getProperties();
 
     VideoMode getCurrentVideoMode();
 

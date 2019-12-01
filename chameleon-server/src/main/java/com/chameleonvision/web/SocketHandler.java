@@ -4,6 +4,7 @@ import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.camera.USBCameraCapture;
 import com.chameleonvision.vision.enums.StreamDivisor;
 import com.chameleonvision.vision.pipeline.CVPipeline;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
@@ -234,7 +235,7 @@ public class SocketHandler {
     private static HashMap<String, Object> getOrdinalCameraSettings() {
         HashMap<String, Object> tmp = new HashMap<>();
         VisionProcess currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
-        CameraCapture currentCamera = VisionManager.getCurrentUIVisionProcess().getCamera();
+        USBCameraCapture currentCamera = VisionManager.getCurrentUIVisionProcess().getCamera();
         tmp.put("fov", currentCamera.getProperties().getFOV());
         tmp.put("streamDivisor", currentVisionProcess.cameraStreamer.getDivisor().ordinal());
         tmp.put("resolution", currentVisionProcess.getCamera().getProperties().getCurrentVideoModeIndex());
