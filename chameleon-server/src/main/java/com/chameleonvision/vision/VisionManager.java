@@ -61,7 +61,7 @@ public class VisionManager {
         // load the config
         List<CameraJsonConfig> preliminaryConfigs = new ArrayList<>();
 
-        usbCameraInfosByCameraName.values().forEach((cameraInfo) -> {
+        usbCameraInfosByCameraName.forEach((suffixedName, cameraInfo) -> {
             String truePath;
 
             if (Platform.CurrentPlatform.isWindows()) {
@@ -70,7 +70,7 @@ public class VisionManager {
                 truePath = Arrays.stream(cameraInfo.otherPaths).filter(x -> x.contains("/dev/v4l/by-path")).findFirst().orElse(cameraInfo.path);
             }
 
-            preliminaryConfigs.add(new CameraJsonConfig(truePath, cameraInfo.name));
+            preliminaryConfigs.add(new CameraJsonConfig(truePath, suffixedName));
         });
 
         loadedCameraConfigs.addAll(ConfigManager.initializeCameras(preliminaryConfigs));
