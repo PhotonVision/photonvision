@@ -2,7 +2,6 @@ package com.chameleonvision.vision.pipeline.pipes;
 
 import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.util.Helpers;
-import com.chameleonvision.vision.image.CaptureProperties;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
 import org.opencv.core.*;
@@ -30,6 +29,9 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
         camProps = captureProps;
     }
 
+    private Point[] vertices = new Point[4];
+    private List<MatOfPoint> drawnContours = new ArrayList<>();
+
     @Override
     public Pair<Mat, Long> run(Pair<Mat, List<RotatedRect>> input) {
         long processStartNanos = System.nanoTime();
@@ -45,18 +47,19 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
                     RotatedRect r = input.getRight().get(i);
                     if (r == null) continue;
 
-                    List<MatOfPoint> drawnContour = new ArrayList<>();
-                    Point[] vertices = new Point[4];
+                    drawnContours.forEach(Mat::release);
+                    drawnContours.clear();
+
                     r.points(vertices);
                     MatOfPoint contour = new MatOfPoint(vertices);
-                    drawnContour.add(contour);
+                    drawnContours.add(contour);
 
                     if (settings.showCentroid) {
                         Imgproc.circle(processBuffer, r.center, 3, Helpers.colorToScalar(settings.centroidColor));
                     }
 
                     if (settings.showRotatedBox) {
-                        Imgproc.drawContours(processBuffer, drawnContour, 0, Helpers.colorToScalar(settings.rotatedBoxColor), settings.boxOutlineSize);
+                        Imgproc.drawContours(processBuffer, drawnContours, 0, Helpers.colorToScalar(settings.rotatedBoxColor), settings.boxOutlineSize);
                     }
 
                     if (settings.showMaximumBox) {
@@ -67,10 +70,10 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
             }
 
             if (settings.showCrosshair) {
-                Point xMax = new Point(camProps.centerX + 10, camProps.centerY);
-                Point xMin = new Point(camProps.centerX - 10, camProps.centerY);
-                Point yMax = new Point(camProps.centerX, camProps.centerY + 10);
-                Point yMin = new Point(camProps.centerX, camProps.centerY - 10);
+                xMax.set(new double[] {camProps.centerX + 10, camProps.centerY});
+                xMin.set(new double[] {camProps.centerX - 10, camProps.centerY});
+                yMax.set(new double[] {camProps.centerX, camProps.centerY + 10});
+                yMin.set(new double[] {camProps.centerX, camProps.centerY - 10});
                 Imgproc.line(processBuffer, xMax, xMin, Helpers.colorToScalar(settings.crosshairColor), 2);
                 Imgproc.line(processBuffer, yMax, yMin, Helpers.colorToScalar(settings.crosshairColor), 2);
             }
@@ -84,6 +87,10 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
         long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(outputMat, processTime);
     }
+
+    @SuppressWarnings("FieldCanBeLocal")
+    private Point xMax = new Point(), xMin = new Point(), yMax = new Point(), yMin = new Point();
+
     public static class Draw2dContoursSettings {
         public boolean showCentroid = false;
         public boolean showCrosshair = false;
