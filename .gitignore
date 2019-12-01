@@ -114,5 +114,7 @@ chameleon-server/.project
 chameleon-server/settings
 chameleon-server/dependency-reduced-pom.xml
 
+New client/chameleon-client/*
+
 *.prefs
 *.jfr
