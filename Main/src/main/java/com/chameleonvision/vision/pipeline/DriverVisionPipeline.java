@@ -18,6 +18,7 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
 
     public DriverVisionPipeline(CVPipelineSettings settings) {
         super(settings);
+        settings.index = -1;
     }
 
     @Override

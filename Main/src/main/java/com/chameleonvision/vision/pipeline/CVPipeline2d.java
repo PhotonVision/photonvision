@@ -30,7 +30,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
     private Draw2dContoursPipe draw2dContoursPipe;
     private OutputMatPipe outputMatPipe;
 
-    private StringBuilder pipelineTimeStringBuilder = new StringBuilder();
+    private String pipelineTimeString = "";
     private CaptureStaticProperties camProps;
     private Scalar hsvLower, hsvUpper;
 
@@ -95,7 +95,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
             throw new RuntimeException("Input Mat is empty!");
         }
 
-        pipelineTimeStringBuilder = new StringBuilder();
+        pipelineTimeString = "";
 
         inputMat.copyTo(rawCameraMat);
 
@@ -157,22 +157,22 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         Pair<Mat, Long> draw2dContoursResult = draw2dContoursPipe.run(Pair.of(outputMatResult.getLeft(), sortContoursResult.getLeft()));
         totalPipelineTimeNanos += draw2dContoursResult.getRight();
 
-        pipelineTimeStringBuilder.append(String.format("PipeInit: %.2fms, ", pipeInitTimeNanos / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("RotateFlip: %.2fms, ", rotateFlipResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("Blur: %.2fms, ", blurResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("ErodeDilate: %.2fms, ", erodeDilateResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("HSV: %.2fms, ", hsvResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("FindContours: %.2fms, ", findContoursResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("FilterContours: %.2fms, ", filterContoursResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("SpeckleReject: %.2fms, ", speckleRejectResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("GroupContours: %.2fms, ", groupContoursResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("SortContours: %.2fms, ", sortContoursResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("Collect2dTargets: %.2fms, ", collect2dTargetsResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("OutputMat: %.2fms, ", outputMatResult.getRight() / 1000000.0));
-        pipelineTimeStringBuilder.append(String.format("Draw2dContours: %.2fms, ", draw2dContoursResult.getRight() / 1000000.0));
-
         if (Main.testMode) {
-            System.out.println(pipelineTimeStringBuilder.toString());
+            pipelineTimeString += String.format("PipeInit: %.2fms, ", pipeInitTimeNanos / 1000000.0);
+            pipelineTimeString += String.format("RotateFlip: %.2fms, ", rotateFlipResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("Blur: %.2fms, ", blurResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("ErodeDilate: %.2fms, ", erodeDilateResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("HSV: %.2fms, ", hsvResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("FindContours: %.2fms, ", findContoursResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("FilterContours: %.2fms, ", filterContoursResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("SpeckleReject: %.2fms, ", speckleRejectResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("GroupContours: %.2fms, ", groupContoursResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("SortContours: %.2fms, ", sortContoursResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("Collect2dTargets: %.2fms, ", collect2dTargetsResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("OutputMat: %.2fms, ", outputMatResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("Draw2dContours: %.2fms, ", draw2dContoursResult.getRight() / 1000000.0);
+
+            System.out.println(pipelineTimeString);
             double totalPipelineTimeMillis = totalPipelineTimeNanos / 1000000.0;
             double totalPipelineTimeFPS = 1.0 / (totalPipelineTimeMillis / 1000.0);
             double truePipelineTimeMillis = (System.nanoTime() - pipelineStartTimeNanos) / 1000000.0;
