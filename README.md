@@ -14,6 +14,7 @@ To run the program normally (from a build .jar file), take a look at our ReadThe
 
 
 These instruction are for the Chameleon Vision's backend/server in Java
+
 To run the UI's sourcecode (optional) see the UI's [readme](https://github.com/Chameleon-Vision/chameleon-vision/blob/master/chameleon-client/README.md)
 
 ## Hardware
@@ -43,8 +44,6 @@ Download and install [this](https://aka.ms/vs/16/release/vc_redist.x64.exe)
 We recommend the use of [Intellij Idea](https://www.jetbrains.com/idea/) for running the source-code
 
 1. Import Project 
-
-![](https://i.vgy.me/wbALKm.png)
 
 2. Choose the path to `chameleon-server` inside the copy of Chameleon-Vision that you cloned or downloaded
 
