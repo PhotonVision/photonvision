@@ -21,6 +21,8 @@ To run the UI's sourcecode (optional) see the UI's [readme](https://github.com/C
 Currently any 64-Bit devices (Windows, Linux and Mac OS) are supported.  
 32 Bit devices are not supported.
 
+At least one USB camera ([supported](https://chameleon-vision.readthedocs.io/en/latest/hardware/supported-hardware.html#supported-cameras) one is recommended)
+
 ## Development setup
 
 ### Prerequisites
