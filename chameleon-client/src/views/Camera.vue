@@ -21,7 +21,8 @@
                     </div>
                 </v-col>
                 <v-col :cols="3" class="colsClass">
-                    <CVselect v-if="isPipelineEdit === false" name="Pipeline" :list="['Driver Mode'].concat(pipelineList)"
+                    <CVselect v-if="isPipelineEdit === false" name="Pipeline"
+                              :list="['Driver Mode'].concat(pipelineList)"
                               v-model="currentPipelineIndex"
                               @input="handleInput('currentPipeline',currentPipelineIndex - 1)"/>
                     <CVinput v-else name="Pipeline" v-model="newPipelineName" @Enter="savePipelineNameChange"/>
@@ -252,7 +253,7 @@
             },
             selectedComponent: {
                 get() {
-                    if (this.currentPipelineIndex === 0){
+                    if (this.currentPipelineIndex === 0) {
                         return "InputTab"
                     }
                     switch (this.selectedTab) {
@@ -273,11 +274,7 @@
                     let p = this.$store.state.point.calculated;
                     let fps = this.$store.state.point.fps;
                     if (p !== undefined) {
-                        try {
-                            return `Pitch: ${parseFloat(p['pitch']).toFixed(2)}, Yaw: ${parseFloat(p['yaw']).toFixed(2)}, Area: ${p['area'].toFixed(2)}, FPS: ${fps.toFixed(2)}`
-                        } catch (e) {
-                            return ""
-                        }
+                        return `Pitch: ${parseFloat(p['pitch']).toFixed(2)}, Yaw: ${parseFloat(p['yaw']).toFixed(2)}, Area: ${parseFloat(p['area']).toFixed(2)}, FPS: ${parseFloat(fps).toFixed(2)}`
                     } else {
                         return undefined;
                     }

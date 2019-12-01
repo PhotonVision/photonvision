@@ -128,17 +128,13 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
             switch (intersection) {
                 case Up: {
                     if (intersectionY < massY) {
-                        if (mA > 0 && mB < 0) {
                             return true;
-                        }
                     }
                     break;
                 }
                 case Down: {
                     if (intersectionY > massY) {
-                        if (mA < 0 && mB > 0) {
                             return true;
-                        }
                     }
 
                     break;
