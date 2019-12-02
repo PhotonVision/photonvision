@@ -156,7 +156,9 @@
         },
         methods: {
             onImageClick(event){
-                this.$refs.component.onClick(event);
+                if(this.selectedTab ===1){
+                    this.$refs.component.onClick(event);
+                }
             },
             toCameraNameChange() {
                 this.newCameraName = this.cameraList[this.currentCameraIndex];
