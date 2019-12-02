@@ -1,10 +1,12 @@
 package com.chameleonvision.config;
 
 import com.chameleonvision.util.ProgramDirectoryUtilities;
+import com.chameleonvision.vision.camera.CameraStreamer;
 import com.chameleonvision.vision.image.StaticImageCapture;
 import com.chameleonvision.vision.pipeline.CVPipeline2d;
 import edu.wpi.cscore.CameraServerCvJNI;
 import edu.wpi.cscore.CameraServerJNI;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -55,12 +57,23 @@ class StaticCaptureTest {
     }
 
     @Test
-    void ImageProcessTest() {
+    void ImageProcessTest() throws InterruptedException {
         ImageLoadTest();
         CVPipeline2d testPipeline = new CVPipeline2d();
         String testImage1 = "CargoSideStraightDark36in";
         StaticImageCapture testCapture1 = loadedImages.get(testImage1);
 
         testPipeline.initPipeline(testCapture1);
+
+        var streamer = new CameraStreamer(testCapture1, "CargoSideStraightDark36in");
+
+        NetworkTableInstance.getDefault().startClient("localhost");
+
+        while(true) {
+            var result = testPipeline.runPipeline(testCapture1.getFrame().getKey());
+            streamer.runStream(result.outputMat);
+            Thread.sleep(20);
+        }
+
     }
 }
