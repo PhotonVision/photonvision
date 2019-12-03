@@ -58,21 +58,23 @@
         },
         methods: {
             onClick(event) {
-                let hsvArray = this.colorPicker.colorPickerClick(event, this.currentFunction,
-                    [[this.value.hue[0], this.value.saturation[0], this.value.value[0]], [this.value.hue[1], this.value.saturation[1], this.value.value[1]]]);
-                this.currentFunction = undefined;
-                this.value.hue = [hsvArray[0][0], hsvArray[1][0]];
-                this.value.saturation = [hsvArray[0][1], hsvArray[1][1]];
-                this.value.value = [hsvArray[0][2], hsvArray[1][2]];
-                this.value.isBinary = this.currentBinaryState;
-                let msg = this.$msgPack.encode({
-                    'hue': this.value.hue,
-                    'saturation': this.value.saturation,
-                    'value': this.value.value,
-                    'isBinary': this.value.isBinary
-                });
-                this.$socket.send(msg);
-                this.$emit('update');
+                if (this.currentFunction !== undefined) {
+                    let hsvArray = this.colorPicker.colorPickerClick(event, this.currentFunction,
+                        [[this.value.hue[0], this.value.saturation[0], this.value.value[0]], [this.value.hue[1], this.value.saturation[1], this.value.value[1]]]);
+                    this.currentFunction = undefined;
+                    this.value.hue = [hsvArray[0][0], hsvArray[1][0]];
+                    this.value.saturation = [hsvArray[0][1], hsvArray[1][1]];
+                    this.value.value = [hsvArray[0][2], hsvArray[1][2]];
+                    this.value.isBinary = this.currentBinaryState;
+                    let msg = this.$msgPack.encode({
+                        'hue': this.value.hue,
+                        'saturation': this.value.saturation,
+                        'value': this.value.value,
+                        'isBinary': this.value.isBinary
+                    });
+                    this.$socket.send(msg);
+                    this.$emit('update');
+                }
             },
             setFunction(index) {
                 this.currentBinaryState = this.value.isBinary;
@@ -103,9 +105,9 @@
         mounted: function () {
             const self = this;
             this.colorPicker = require('../../plugins/ColorPicker').default;
-            window.addEventListener('load', function () {
+            this.$nextTick(() => {
                 self.colorPicker.initColorPicker();
-            })
+            });
         }
     }
 
