@@ -100,8 +100,6 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
 
         pipelineTimeString = "";
 
-        inputMat.copyTo(rawCameraMat);
-
         // prepare pipes
         camProps = cameraCapture.getProperties().getStaticProperties();
         hsvLower = new Scalar(settings.hue.get(0).intValue(), settings.saturation.get(0).intValue(), settings.value.get(0).intValue());
@@ -124,6 +122,8 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         // run pipes
         Pair<Mat, Long> rotateFlipResult = rotateFlipPipe.run(inputMat);
         totalPipelineTimeNanos += rotateFlipResult.getRight();
+		
+        inputMat.copyTo(rawCameraMat);
 
 //        Pair<Mat, Long> blurResult = blurPipe.run(rotateFlipResult.getLeft());
 //        totalPipelineTimeNanos += blurResult.getRight();
@@ -153,7 +153,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         totalPipelineTimeNanos += collect2dTargetsResult.getRight();
 
         // takes pair of (Mat of original camera image (8UC3), Mat of HSV thresholded image(8UC1))
-        Pair<Mat, Long> outputMatResult = outputMatPipe.run(Pair.of(rotateFlipResult.getLeft(), hsvResult.getLeft()));
+        Pair<Mat, Long> outputMatResult = outputMatPipe.run(Pair.of(rawCameraMat, hsvResult.getLeft()));
         totalPipelineTimeNanos += outputMatResult.getRight();
 
         // takes pair of (Mat to draw on, List<RotatedRect> of sorted contours)
