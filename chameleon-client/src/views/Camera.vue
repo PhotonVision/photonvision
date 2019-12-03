@@ -87,7 +87,7 @@
                 <div style="padding-left:30px">
                     <keep-alive>
                         <!-- vision component -->
-                        <component v-model="pipeline" :is="selectedComponent" @update="$emit('save')"/>
+                        <component v-model="pipeline" :is="selectedComponent" ref="component" @update="$emit('save')"/>
                     </keep-alive>
                 </div>
             </v-col>
@@ -102,7 +102,7 @@
                     </v-tabs>
                     <!-- camera image stream -->
                     <div class="videoClass">
-                        <img v-if="cameraList.length > 0" :src="streamAddress">
+                        <img id="CameraStream" v-if="cameraList.length > 0" :src="streamAddress" @click="onImageClick" crossorigin="Anonymous"/>
                         <span v-else>No Cameras Are connected</span>
                         <h5 id="Point">{{point}}</h5>
                     </div>
@@ -157,6 +157,11 @@
             CVinput
         },
         methods: {
+            onImageClick(event){
+                if(this.selectedTab ===1){
+                    this.$refs.component.onClick(event);
+                }
+            },
             toCameraNameChange() {
                 this.newCameraName = this.cameraList[this.currentCameraIndex];
                 this.isCameraNameEdit = true;

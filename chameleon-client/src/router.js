@@ -22,6 +22,6 @@ export default new Router({
       path: '/settings',
       name: 'Settings',
       component: lazyLoad('Settings')
-    }
+    },
   ]
 })
