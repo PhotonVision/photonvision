@@ -4,6 +4,7 @@ import com.chameleonvision.Main;
 import com.chameleonvision.util.MemoryManager;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.CaptureStaticProperties;
+import com.chameleonvision.vision.enums.CalibrationMode;
 import com.chameleonvision.vision.pipeline.pipes.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
@@ -66,19 +67,18 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         speckleRejectPipe = new SpeckleRejectPipe(settings.speckle.doubleValue());
         groupContoursPipe = new GroupContoursPipe(settings.targetGroup, settings.targetIntersection);
         sortContoursPipe = new SortContoursPipe(settings.sortMode, camProps, 5);
-        collect2dTargetsPipe = new Collect2dTargetsPipe(settings.calibrationMode, settings.point,
-                settings.dualTargetCalibrationM, settings.dualTargetCalibrationB, camProps);
+        collect2dTargetsPipe = new Collect2dTargetsPipe(settings.calibrationSettings, camProps);
         draw2dContoursSettings = new Draw2dContoursPipe.Draw2dContoursSettings();
+        draw2dCrosshairPipeSettings = new Draw2dCrosshairPipe.Draw2dCrosshairPipeSettings();
         // TODO: make settable from UI? config?
         draw2dContoursSettings.showCentroid = false;
         draw2dContoursSettings.boxOutlineSize = 2;
         draw2dContoursSettings.showRotatedBox = true;
         draw2dContoursSettings.showMaximumBox = true;
         draw2dContoursSettings.showMultiple = settings.multiple;
-        draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, camProps);
-        draw2dCrosshairPipeSettings = new Draw2dCrosshairPipe.Draw2dCrosshairPipeSettings();
         draw2dCrosshairPipeSettings.showCrosshair=true;
-        draw2dCrosshairPipe=new Draw2dCrosshairPipe(draw2dCrosshairPipeSettings);
+        draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, camProps);
+        draw2dCrosshairPipe=new Draw2dCrosshairPipe(draw2dCrosshairPipeSettings,settings.calibrationSettings);
         outputMatPipe = new OutputMatPipe(settings.isBinary);
     }
 
@@ -115,9 +115,9 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         speckleRejectPipe.setConfig(settings.speckle.doubleValue());
         groupContoursPipe.setConfig(settings.targetGroup, settings.targetIntersection);
         sortContoursPipe.setConfig(settings.sortMode, camProps, 5);
-        collect2dTargetsPipe.setConfig(settings.calibrationMode, settings.point,
-                settings.dualTargetCalibrationM, settings.dualTargetCalibrationB, camProps);
+        collect2dTargetsPipe.setConfig(settings.calibrationSettings, camProps);
         draw2dContoursPipe.setConfig(settings.multiple, camProps);
+        draw2dCrosshairPipe.setConfig(true,settings.calibrationSettings);
         outputMatPipe.setConfig(settings.isBinary);
 
         long pipeInitTimeNanos = System.nanoTime() - pipelineStartTimeNanos;
@@ -211,4 +211,6 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         public double area = 0.0;
         public RotatedRect rawPoint;
     }
+
+
 }
