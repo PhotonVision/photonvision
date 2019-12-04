@@ -77,16 +77,6 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
                 }
             }
 
-            //Moved to Draw2dCrosshair
-//            if (settings.showCrosshair) {
-//                xMax.set(new double[] {camProps.centerX + 10, camProps.centerY});
-//                xMin.set(new double[] {camProps.centerX - 10, camProps.centerY});
-//                yMax.set(new double[] {camProps.centerX, camProps.centerY + 10});
-//                yMin.set(new double[] {camProps.centerX, camProps.centerY - 10});
-//                Imgproc.line(input.getLeft(), xMax, xMin, Helpers.colorToScalar(settings.crosshairColor), 2);
-//                Imgproc.line(input.getLeft(), yMax, yMin, Helpers.colorToScalar(settings.crosshairColor), 2);
-//            }
-
 //            processBuffer.copyTo(outputMat);
 //            processBuffer.release();
         } else {
