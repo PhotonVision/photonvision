@@ -29,6 +29,8 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
     private Collect2dTargetsPipe collect2dTargetsPipe;
     private Draw2dContoursPipe.Draw2dContoursSettings draw2dContoursSettings;
     private Draw2dContoursPipe draw2dContoursPipe;
+    private Draw2dCrosshairPipe draw2dCrosshairPipe;
+    private Draw2dCrosshairPipe.Draw2dCrosshairPipeSettings draw2dCrosshairPipeSettings;
     private OutputMatPipe outputMatPipe;
 
     private String pipelineTimeString = "";
@@ -69,13 +71,14 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         draw2dContoursSettings = new Draw2dContoursPipe.Draw2dContoursSettings();
         // TODO: make settable from UI? config?
         draw2dContoursSettings.showCentroid = false;
-        draw2dContoursSettings.showCrosshair = true;
         draw2dContoursSettings.boxOutlineSize = 2;
         draw2dContoursSettings.showRotatedBox = true;
         draw2dContoursSettings.showMaximumBox = true;
         draw2dContoursSettings.showMultiple = settings.multiple;
-
         draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, camProps);
+        draw2dCrosshairPipeSettings = new Draw2dCrosshairPipe.Draw2dCrosshairPipeSettings();
+        draw2dCrosshairPipeSettings.showCrosshair=true;
+        draw2dCrosshairPipe=new Draw2dCrosshairPipe(draw2dCrosshairPipeSettings);
         outputMatPipe = new OutputMatPipe(settings.isBinary);
     }
 
@@ -160,6 +163,10 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         Pair<Mat, Long> draw2dContoursResult = draw2dContoursPipe.run(Pair.of(outputMatResult.getLeft(), sortContoursResult.getLeft()));
         totalPipelineTimeNanos += draw2dContoursResult.getRight();
 
+        // takes pair of (Mat to draw on, List<RotatedRect> of sorted contours)
+        Pair<Mat, Long> draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(draw2dContoursResult.getLeft(),collect2dTargetsResult.getLeft()));
+        totalPipelineTimeNanos += draw2dCrosshairResult.getRight();
+
         if (Main.testMode) {
             pipelineTimeString += String.format("PipeInit: %.2fms, ", pipeInitTimeNanos / 1000000.0);
             pipelineTimeString += String.format("RotateFlip: %.2fms, ", rotateFlipResult.getRight() / 1000000.0);
@@ -174,6 +181,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
             pipelineTimeString += String.format("Collect2dTargets: %.2fms, ", collect2dTargetsResult.getRight() / 1000000.0);
             pipelineTimeString += String.format("OutputMat: %.2fms, ", outputMatResult.getRight() / 1000000.0);
             pipelineTimeString += String.format("Draw2dContours: %.2fms, ", draw2dContoursResult.getRight() / 1000000.0);
+            pipelineTimeString += String.format("Draw2dCrosshair: %.2fms, ", draw2dCrosshairResult.getRight() / 1000000.0);
 
             System.out.println(pipelineTimeString);
             double totalPipelineTimeMillis = totalPipelineTimeNanos / 1000000.0;
@@ -186,7 +194,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
 
         memManager.run();
 
-        return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dContoursResult.getLeft(), totalPipelineTimeNanos);
+        return new CVPipeline2dResult(collect2dTargetsResult.getLeft(), draw2dCrosshairResult.getLeft(), totalPipelineTimeNanos);
     }
 
     public static class CVPipeline2dResult extends CVPipelineResult<Target2d> {
