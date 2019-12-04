@@ -54,7 +54,7 @@ public class SocketHandler {
                 VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
                 CameraCapture currentCamera = currentProcess.getCamera();
                 CVPipeline currentPipeline = currentProcess.pipelineManager.getCurrentPipeline();
-
+//                System.out.println("entry.getKey()+entry.getValue()= " + entry.getKey() + entry.getValue());
                 switch (entry.getKey()) {
                     case "driverMode": {
                         HashMap<String, Object> data = (HashMap<String, Object>) entry.getValue();
