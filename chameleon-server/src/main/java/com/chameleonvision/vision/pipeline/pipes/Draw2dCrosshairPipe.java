@@ -57,12 +57,12 @@ public class Draw2dCrosshairPipe implements Pipe<Pair<Mat, List<CVPipeline2d.Tar
                     y = this.calibrationPoint.get(1).intValue();
                     break;
                 case Dual:
-                    if (targets != null && !targets.isEmpty()) {
-                        x = targets.get(0).calibratedX;
-                        y = targets.get(0).calibratedY;
-                        //TODO dual point calibration crosshair checks
-                    } else
-                        break drawCrosshair;
+//                    if (targets != null && !targets.isEmpty()) {
+//                        x = targets.get(0).calibratedX;
+//                        y = targets.get(0).calibratedY;
+//                        //TODO dual point calibration crosshair checks
+//                    } else
+//                        break drawCrosshair;
                     break;
             }
             xMax.set(new double[]{x + scale, y});
