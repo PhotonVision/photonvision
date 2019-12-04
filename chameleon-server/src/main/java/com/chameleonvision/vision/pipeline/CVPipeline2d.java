@@ -67,7 +67,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         speckleRejectPipe = new SpeckleRejectPipe(settings.speckle.doubleValue());
         groupContoursPipe = new GroupContoursPipe(settings.targetGroup, settings.targetIntersection);
         sortContoursPipe = new SortContoursPipe(settings.sortMode, camProps, 5);
-        collect2dTargetsPipe = new Collect2dTargetsPipe(settings.calibrationSettings, camProps);
+        collect2dTargetsPipe = new Collect2dTargetsPipe(settings.calibrationMode,settings.point,settings.dualTargetCalibrationM,settings.dualTargetCalibrationB, camProps);
         draw2dContoursSettings = new Draw2dContoursPipe.Draw2dContoursSettings();
         draw2dCrosshairPipeSettings = new Draw2dCrosshairPipe.Draw2dCrosshairPipeSettings();
         // TODO: make settable from UI? config?
@@ -78,7 +78,7 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         draw2dContoursSettings.showMultiple = settings.multiple;
         draw2dCrosshairPipeSettings.showCrosshair=true;
         draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, camProps);
-        draw2dCrosshairPipe=new Draw2dCrosshairPipe(draw2dCrosshairPipeSettings,settings.calibrationSettings);
+        draw2dCrosshairPipe=new Draw2dCrosshairPipe(draw2dCrosshairPipeSettings,settings.calibrationMode,settings.point,settings.dualTargetCalibrationM,settings.dualTargetCalibrationB);
         outputMatPipe = new OutputMatPipe(settings.isBinary);
     }
 
@@ -115,9 +115,9 @@ public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSet
         speckleRejectPipe.setConfig(settings.speckle.doubleValue());
         groupContoursPipe.setConfig(settings.targetGroup, settings.targetIntersection);
         sortContoursPipe.setConfig(settings.sortMode, camProps, 5);
-        collect2dTargetsPipe.setConfig(settings.calibrationSettings, camProps);
+        collect2dTargetsPipe = new Collect2dTargetsPipe(settings.calibrationMode,settings.point,settings.dualTargetCalibrationM,settings.dualTargetCalibrationB, camProps);
         draw2dContoursPipe.setConfig(settings.multiple, camProps);
-        draw2dCrosshairPipe.setConfig(true,settings.calibrationSettings);
+        draw2dCrosshairPipe.setConfig(draw2dCrosshairPipeSettings,settings.calibrationMode,settings.point,settings.dualTargetCalibrationM,settings.dualTargetCalibrationB);
         outputMatPipe.setConfig(settings.isBinary);
 
         long pipeInitTimeNanos = System.nanoTime() - pipelineStartTimeNanos;

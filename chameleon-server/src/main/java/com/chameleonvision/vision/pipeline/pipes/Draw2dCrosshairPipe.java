@@ -2,6 +2,7 @@ package com.chameleonvision.vision.pipeline.pipes;
 
 import com.chameleonvision.util.Helpers;
 import com.chameleonvision.vision.camera.CaptureStaticProperties;
+import com.chameleonvision.vision.enums.CalibrationMode;
 import com.chameleonvision.vision.pipeline.CVPipeline2d;
 import com.chameleonvision.vision.pipeline.CVPipeline2dSettings;
 import org.apache.commons.lang3.tuple.Pair;
@@ -16,19 +17,23 @@ public class Draw2dCrosshairPipe implements Pipe<Pair<Mat, List<CVPipeline2d.Tar
 
     //Settings
     private Draw2dCrosshairPipeSettings crosshairSettings;
-    private CVPipeline2dSettings.Calibration calibrationSettings;
+    private CalibrationMode calibrationMode;
+    private List<Number> calibrationPoint;
+    private double calibrationM, calibrationB;
 
 
     private Point xMax = new Point(), xMin = new Point(), yMax = new Point(), yMin = new Point();
 
-    public Draw2dCrosshairPipe(Draw2dCrosshairPipeSettings crosshairSettings, CVPipeline2dSettings.Calibration calibrationSettings) {
-        this.crosshairSettings = crosshairSettings;
-        this.calibrationSettings = calibrationSettings;
+    public Draw2dCrosshairPipe(Draw2dCrosshairPipeSettings crosshairSettings, CalibrationMode calibrationMode, List<Number> calibrationPoint, double calibrationM, double calibrationB) {
+        setConfig(crosshairSettings, calibrationMode, calibrationPoint, calibrationM, calibrationB);
     }
 
-    public void setConfig(boolean showCrosshair, CVPipeline2dSettings.Calibration calibrationSettings) {
-        this.crosshairSettings.showCrosshair = showCrosshair;
-        this.calibrationSettings = calibrationSettings;
+    public void setConfig(Draw2dCrosshairPipeSettings crosshairSettings, CalibrationMode calibrationMode, List<Number> calibrationPoint, double calibrationM, double calibrationB) {
+        this.crosshairSettings = crosshairSettings;
+        this.calibrationMode = calibrationMode;
+        this.calibrationPoint = calibrationPoint;
+        this.calibrationM = calibrationM;
+        this.calibrationB = calibrationB;
     }
 
     @Override
@@ -40,23 +45,24 @@ public class Draw2dCrosshairPipe implements Pipe<Pair<Mat, List<CVPipeline2d.Tar
 
         drawCrosshair:
         if (this.crosshairSettings.showCrosshair) {
-            switch (calibrationSettings.calibrationMode) {
-                case None:
-                    x = image.rows() / 2;
-                    y = image.cols() / 2;
-                    break;
+            x = image.cols() / 2;
+            y = image.rows() / 2;
+            switch (this.calibrationMode) {
                 case Single:
-                    x = targets.get(0).calibratedX;
-                    y = targets.get(0).calibratedY;
+                    if (this.calibrationPoint.get(0) == null)
+                        this.calibrationPoint.set(0, image.cols()/2);
+                    if (this.calibrationPoint.get(1) == null)
+                        this.calibrationPoint.set(1, image.rows()/2);
+                    x = this.calibrationPoint.get(0).intValue();
+                    y = this.calibrationPoint.get(1).intValue();
                     break;
                 case Dual:
                     if (targets != null && !targets.isEmpty()) {
                         x = targets.get(0).calibratedX;
                         y = targets.get(0).calibratedY;
                         //TODO dual point calibration crosshair checks
-                    } else {
+                    } else
                         break drawCrosshair;
-                    }
                     break;
             }
             xMax.set(new double[]{x + scale, y});

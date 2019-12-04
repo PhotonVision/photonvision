@@ -16,15 +16,20 @@ public class Collect2dTargetsPipe implements Pipe<Pair<List<RotatedRect>, Captur
 
 
     private CaptureStaticProperties camProps;
-    private CVPipeline2dSettings.Calibration calibrationSettings;
+    private CalibrationMode calibrationMode;
+    private List<Number> calibrationPoint;
+    private double calibrationM, calibrationB;
     private List<CVPipeline2d.Target2d> targets = new ArrayList<>();
 
-    public Collect2dTargetsPipe(CVPipeline2dSettings.Calibration calibrationSettings, CaptureStaticProperties camProps) {
-        setConfig(calibrationSettings,camProps);
+    public Collect2dTargetsPipe(CalibrationMode calibrationMode, List<Number> calibrationPoint, double calibrationM, double calibrationB, CaptureStaticProperties camProps) {
+        setConfig(calibrationMode, calibrationPoint, calibrationM, calibrationB, camProps);
     }
 
-    public void setConfig(CVPipeline2dSettings.Calibration calibrationSettings, CaptureStaticProperties camProps) {
-        this.calibrationSettings = calibrationSettings;
+    public void setConfig(CalibrationMode calibrationMode, List<Number> calibrationPoint, double calibrationM, double calibrationB, CaptureStaticProperties camProps) {
+        this.calibrationMode = calibrationMode;
+        this.calibrationPoint = calibrationPoint;
+        this.calibrationM = calibrationM;
+        this.calibrationB = calibrationB;
         this.camProps = camProps;
     }
 
@@ -40,18 +45,22 @@ public class Collect2dTargetsPipe implements Pipe<Pair<List<RotatedRect>, Captur
             for (RotatedRect r : input) {
                 CVPipeline2d.Target2d t = new CVPipeline2d.Target2d();
                 t.rawPoint = r;
-                switch (calibrationSettings.calibrationMode) {
+                switch (this.calibrationMode) {
+                    case Single:
+                        if (this.calibrationPoint.get(0) == null)
+                            this.calibrationPoint.set(0, camProps.centerX);
+                        if (this.calibrationPoint.get(1) == null)
+                            this.calibrationPoint.set(1, camProps.centerY);
+                        t.calibratedX = this.calibrationPoint.get(0).doubleValue();
+                        t.calibratedY = this.calibrationPoint.get(1).doubleValue();
+                        break;
                     case None:
                         t.calibratedX = camProps.centerX;
                         t.calibratedY = camProps.centerY;
                         break;
-                    case Single:
-                        t.calibratedX = calibrationSettings.calibrationPoint.get(0).doubleValue();
-                        t.calibratedY = calibrationSettings.calibrationPoint.get(1).doubleValue();
-                        break;
                     case Dual:
-                        t.calibratedX = (r.center.y - calibrationSettings.calibrationB) / calibrationSettings.calibrationM;
-                        t.calibratedY = (r.center.x * calibrationSettings.calibrationM) + calibrationSettings.calibrationB;
+                        t.calibratedX = (r.center.y - this.calibrationB) / this.calibrationM;
+                        t.calibratedY = (r.center.x * this.calibrationM) + this.calibrationB;
                         break;
                 }
 

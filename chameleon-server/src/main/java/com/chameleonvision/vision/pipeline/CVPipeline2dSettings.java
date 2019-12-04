@@ -23,16 +23,8 @@ public class CVPipeline2dSettings extends CVPipelineSettings {
     public boolean multiple = false;
     public TargetGroup targetGroup = TargetGroup.Single;
     public TargetIntersection targetIntersection = TargetIntersection.Up;
-//    public List<Number> point = Arrays.asList(0, 0);
-//    public CalibrationMode calibrationMode = CalibrationMode.None;
-//    public double dualTargetCalibrationM = 1;
-//    public double dualTargetCalibrationB = 0;
-    public Calibration calibrationSettings = new Calibration();
-    public static class Calibration
-    {
-        public CalibrationMode calibrationMode=CalibrationMode.None;
-        public List<Number> calibrationPoint= Arrays.asList(0,0);
-        public double calibrationM=1;
-        public double calibrationB=0;
-    }
+    public List<Number> point = Arrays.asList(0, 0);
+    public CalibrationMode calibrationMode = CalibrationMode.None;
+    public double dualTargetCalibrationM = 1;
+    public double dualTargetCalibrationB = 0;
 }
