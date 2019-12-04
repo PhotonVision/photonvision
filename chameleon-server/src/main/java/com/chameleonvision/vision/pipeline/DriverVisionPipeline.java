@@ -30,8 +30,8 @@ public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPip
     public void initPipeline(CameraCapture capture) {
         super.initPipeline(capture);
         rotateFlipPipe = new RotateFlipPipe(settings.rotationMode, settings.flipMode);
-        draw2dContoursSettings.showCrosshair = true;
-        draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, cameraCapture.getProperties().getStaticProperties());
+//        draw2dContoursSettings.showCrosshair = true;
+//        draw2dContoursPipe = new Draw2dContoursPipe(draw2dContoursSettings, cameraCapture.getProperties().getStaticProperties());
     }
 
     @Override
