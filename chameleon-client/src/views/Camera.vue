@@ -336,8 +336,9 @@
     }
 
     .videoClass img {
-        height: auto !important;
-        width: 70%;
+        max-height: 70vh !important;
+        max-width: 80%;
+        width:auto;
         vertical-align: middle;
     }
 
