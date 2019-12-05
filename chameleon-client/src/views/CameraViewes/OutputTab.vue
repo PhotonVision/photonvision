@@ -8,9 +8,9 @@
         <v-divider dark color="white"/>
         <CVselect name="Calibration Mode" v-model="value.calibrationMode" :list="['None','Single point','Dual point']"
                   @input="handleData('calibrationMode')"/>
-        <component :raw-point="rawPoint" :is="selectedComponent" @update="doUpdate"/>
+        <component :raw-point="rawPoint" :is="selectedComponent" @update="doUpdate" @snackbar="snackbar=true"/>
         <v-snackbar :timeout="3000" v-model="snackbar" top color="error">
-            <span style="color:#000">Points are too close</span>
+            <span style="color:#000">{{getErrorMsg()}}</span>
             <v-btn color="black" text @click="snackbar = false">Close</v-btn>
         </v-snackbar>
     </div>
@@ -40,6 +40,15 @@
             },
             doUpdate() {
                 this.$emit('update')
+            },
+            getErrorMsg()
+            {
+                switch (this.value.calibrationMode) {
+                        case 1:
+                            return "No target found";
+                        case 2:
+                            return "Points are too close"
+                    }
             }
         },
 

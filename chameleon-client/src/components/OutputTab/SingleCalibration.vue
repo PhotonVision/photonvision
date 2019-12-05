@@ -21,8 +21,21 @@
                 this.$emit('update');
             },
             takePoint() {
-                this.handleInput('point', this.rawPoint);
-                this.$emit('update');
+                let hasNaN = false;
+                console.log(this.rawPoint);
+                for (let i = 0; i < this.rawPoint.length&&!hasNaN; i++) {
+                    hasNaN = !(this.rawPoint[i]||this.rawPoint[i]===0);
+                }
+                if(!hasNaN){//if array doesnt have undefined values
+                    console.log("sending points");
+                    this.handleInput('point', this.rawPoint);
+                    this.$emit('update');
+                }
+                else
+                {
+                    console.log("sending error");
+                    this.$emit('snackbar');
+                }
             }
         }
     }
