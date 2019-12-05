@@ -12,7 +12,7 @@ import java.util.List;
 
 public class SortContoursPipe implements Pipe<List<RotatedRect>, List<RotatedRect>> {
 
-    private final Comparator<RotatedRect> SortByCentermostComparator = Comparator.comparingDouble(this::calcCenterDistance);
+    private final Comparator<RotatedRect> SortByCentermostComparator = Comparator.comparingDouble(this::calcSquareCenterDistance);
 
     private static final Comparator<RotatedRect> SortByLargestComparator = (rect1, rect2) -> Double.compare(rect2.size.area(), rect1.size.area());
     private static final Comparator<RotatedRect> SortBySmallestComparator = SortByLargestComparator.reversed();
@@ -81,7 +81,7 @@ public class SortContoursPipe implements Pipe<List<RotatedRect>, List<RotatedRec
         return Pair.of(sortedContours, processTime);
     }
 
-    private double calcCenterDistance(RotatedRect rect) {
+    private double calcSquareCenterDistance(RotatedRect rect) {
         return FastMath.sqrt(FastMath.pow(camProps.centerX - rect.center.x, 2) + FastMath.pow(camProps.centerY - rect.center.y, 2));
     }
 }
