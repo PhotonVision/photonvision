@@ -17,7 +17,7 @@
         props: ['rawPoint'],
         methods: {
             clearPoint() {
-                this.handleInput('point', [0, 0]);
+                this.handleInput('point', []);
                 this.$emit('update');
             },
             takePoint() {

@@ -47,6 +47,11 @@ public class Collect2dTargetsPipe implements Pipe<Pair<List<RotatedRect>, Captur
                 t.rawPoint = r;
                 switch (this.calibrationMode) {
                     case Single:
+                        if(this.calibrationPoint.isEmpty())
+                        {
+                            this.calibrationPoint.add(camProps.centerX);
+                            this.calibrationPoint.add(camProps.centerY);
+                        }
                         t.calibratedX = this.calibrationPoint.get(0).doubleValue();
                         t.calibratedY = this.calibrationPoint.get(1).doubleValue();
                         break;

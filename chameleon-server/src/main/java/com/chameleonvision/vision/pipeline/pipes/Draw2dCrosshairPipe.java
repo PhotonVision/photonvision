@@ -49,6 +49,11 @@ public class Draw2dCrosshairPipe implements Pipe<Pair<Mat, List<CVPipeline2d.Tar
             y = image.rows() / 2;
             switch (this.calibrationMode) {
                 case Single:
+                    if(this.calibrationPoint.isEmpty())
+                    {
+                        this.calibrationPoint.add(x);
+                        this.calibrationPoint.add(y);
+                    }
                     x = this.calibrationPoint.get(0).intValue();
                     y = this.calibrationPoint.get(1).intValue();
                     break;
