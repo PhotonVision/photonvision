@@ -1,6 +1,7 @@
 package com.chameleonvision.vision.pipeline;
 
 import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.pipeline.impl.CVPipeline3d;
 import org.opencv.core.Mat;
 
 /**

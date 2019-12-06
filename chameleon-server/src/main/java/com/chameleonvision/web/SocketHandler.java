@@ -9,7 +9,7 @@ import com.chameleonvision.vision.camera.USBCameraCapture;
 import com.chameleonvision.vision.enums.ImageRotationMode;
 import com.chameleonvision.vision.enums.StreamDivisor;
 import com.chameleonvision.vision.pipeline.CVPipeline;
-import com.chameleonvision.vision.pipeline.CVPipeline2d;
+import com.chameleonvision.vision.pipeline.impl.CVPipeline2d;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -164,6 +164,7 @@ public class SocketHandler {
                                 break;
                             }
                             case "rotationMode": {//Create new CaptureStaticProperties with new width and height, reset crosshair calib
+
                                 ImageRotationMode rotationMode = currentPipeline.settings.rotationMode;
                                 CaptureStaticProperties prop = currentCamera.getProperties().getStaticProperties();
                                 int width, height;

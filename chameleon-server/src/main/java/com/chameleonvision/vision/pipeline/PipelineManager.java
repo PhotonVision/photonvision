@@ -4,6 +4,7 @@ import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
+import com.chameleonvision.vision.pipeline.impl.*;
 import com.chameleonvision.web.SocketHandler;
 import edu.wpi.first.networktables.NetworkTableEntry;
 

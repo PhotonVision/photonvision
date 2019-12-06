@@ -1,17 +1,18 @@
-package com.chameleonvision.vision.pipeline;
+package com.chameleonvision.vision.pipeline.impl;
 
 import com.chameleonvision.Main;
 import com.chameleonvision.util.MemoryManager;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.CaptureStaticProperties;
-import com.chameleonvision.vision.enums.CalibrationMode;
+import com.chameleonvision.vision.pipeline.CVPipeline;
+import com.chameleonvision.vision.pipeline.CVPipelineResult;
 import com.chameleonvision.vision.pipeline.pipes.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
 
 import java.util.List;
 
-import static com.chameleonvision.vision.pipeline.CVPipeline2d.*;
+import static com.chameleonvision.vision.pipeline.impl.CVPipeline2d.*;
 
 @SuppressWarnings("WeakerAccess")
 public class CVPipeline2d extends CVPipeline<CVPipeline2dResult, CVPipeline2dSettings> {

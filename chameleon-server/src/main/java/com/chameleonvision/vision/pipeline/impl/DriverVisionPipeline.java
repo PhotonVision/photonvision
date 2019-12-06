@@ -1,9 +1,11 @@
-package com.chameleonvision.vision.pipeline;
+package com.chameleonvision.vision.pipeline.impl;
 
 import com.chameleonvision.util.MemoryManager;
 import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.enums.CalibrationMode;
-import com.chameleonvision.vision.pipeline.pipes.Draw2dContoursPipe;
+import com.chameleonvision.vision.pipeline.CVPipeline;
+import com.chameleonvision.vision.pipeline.CVPipelineResult;
+import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision.vision.pipeline.pipes.Draw2dCrosshairPipe;
 import com.chameleonvision.vision.pipeline.pipes.RotateFlipPipe;
 import org.apache.commons.lang3.tuple.Pair;
@@ -12,7 +14,7 @@ import org.opencv.core.RotatedRect;
 
 import java.util.List;
 
-import static com.chameleonvision.vision.pipeline.DriverVisionPipeline.DriverPipelineResult;
+import static com.chameleonvision.vision.pipeline.impl.DriverVisionPipeline.DriverPipelineResult;
 
 public class DriverVisionPipeline extends CVPipeline<DriverPipelineResult, CVPipelineSettings> {
 

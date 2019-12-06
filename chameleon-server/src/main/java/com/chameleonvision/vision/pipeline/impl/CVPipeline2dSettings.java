@@ -1,9 +1,10 @@
-package com.chameleonvision.vision.pipeline;
+package com.chameleonvision.vision.pipeline.impl;
 
 import com.chameleonvision.vision.enums.CalibrationMode;
 import com.chameleonvision.vision.enums.SortMode;
 import com.chameleonvision.vision.enums.TargetGroup;
 import com.chameleonvision.vision.enums.TargetIntersection;
+import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 
 import java.util.Arrays;
 import java.util.List;
