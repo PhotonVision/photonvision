@@ -25,6 +25,7 @@ import org.msgpack.jackson.dataformat.MessagePackFactory;
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.List;
 
 
 public class SocketHandler {
@@ -137,13 +138,35 @@ public class SocketHandler {
                     }
                     default: {
 
-                        // only change settings when we aren't in driver mode
+                        switch (entry.getKey()) {//Pre field value set
+                            case "rotationMode": {//Create new CaptureStaticProperties with new width and height, reset crosshair calib
+                                ImageRotationMode oldRot = currentPipeline.settings.rotationMode;
+                                ImageRotationMode newRot = ImageRotationMode.class.getEnumConstants()[(Integer)entry.getValue()];
+                                CaptureStaticProperties prop = currentCamera.getProperties().getStaticProperties();
+                                int width, height;
+                                if(oldRot.isRotated()!=newRot.isRotated()){
+                                    width = prop.mode.height;
+                                    height = prop.mode.width;
+                                    //Creates new video mode with new width and height to create new CaptureStaticProperties and applies it
+                                    currentCamera.getProperties().setStaticProperties(new CaptureStaticProperties(
+                                            new VideoMode(prop.mode.pixelFormat, width, height, prop.mode.fps), prop.fov));
+                                }
+                                prop = currentCamera.getProperties().getStaticProperties();
+                                if (currentPipeline instanceof CVPipeline2d)
+                                    ((CVPipeline2d) currentPipeline).settings.point = Arrays.asList(prop.mode.width / 2, prop.mode.height / 2);//Reset Crosshair in single point calib
+                                break;
+                            }
+
+                        }
+
+
                         if (currentProcess.pipelineManager.getDriverMode()) {
                             setField(currentProcess.pipelineManager.driverModePipeline.settings, entry.getKey(), entry.getValue());
                         } else {
                             setField(currentPipeline.settings, entry.getKey(), entry.getValue());
                         }
 
+                        //Post field value set
                         switch (entry.getKey()) {
                             case "exposure": {
                                 currentCamera.setExposure((Integer) entry.getValue());
@@ -161,25 +184,6 @@ public class SocketHandler {
                             }
                             case "streamDivisor": {
                                 currentProcess.cameraStreamer.setDivisor(StreamDivisor.values()[(Integer) entry.getValue()], true);
-                                break;
-                            }
-                            case "rotationMode": {//Create new CaptureStaticProperties with new width and height, reset crosshair calib
-
-                                ImageRotationMode rotationMode = currentPipeline.settings.rotationMode;
-                                CaptureStaticProperties prop = currentCamera.getProperties().getStaticProperties();
-                                int width, height;
-                                if (rotationMode == ImageRotationMode.DEG_90 || rotationMode == ImageRotationMode.DEG_270) {
-                                    width = prop.mode.height;
-                                    height = prop.mode.width;
-                                } else {
-                                    width = prop.mode.width;
-                                    height = prop.mode.height;
-                                }
-                                //Creates new video mode with new width and height to create new CaptureStaticProperties and applies it
-                                currentCamera.getProperties().setStaticProperties(new CaptureStaticProperties(new VideoMode(prop.mode.pixelFormat, width, height, prop.mode.fps), prop.fov));
-
-                                if (currentPipeline instanceof CVPipeline2d)
-                                    ((CVPipeline2d) currentPipeline).settings.point = Arrays.asList(width/2,height/2);//Reset Crosshair in single point calib
                                 break;
                             }
                         }
