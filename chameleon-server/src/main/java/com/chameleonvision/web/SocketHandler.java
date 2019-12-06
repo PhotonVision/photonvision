@@ -4,13 +4,17 @@ import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.camera.USBCameraCapture;
+import com.chameleonvision.vision.enums.ImageRotationMode;
 import com.chameleonvision.vision.enums.StreamDivisor;
 import com.chameleonvision.vision.pipeline.CVPipeline;
+import com.chameleonvision.vision.pipeline.CVPipeline2d;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.cscore.VideoMode;
 import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
@@ -20,10 +24,7 @@ import org.msgpack.jackson.dataformat.MessagePackFactory;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class SocketHandler {
@@ -137,7 +138,7 @@ public class SocketHandler {
                     default: {
 
                         // only change settings when we aren't in driver mode
-                        if(currentProcess.pipelineManager.getDriverMode()) {
+                        if (currentProcess.pipelineManager.getDriverMode()) {
                             setField(currentProcess.pipelineManager.driverModePipeline.settings, entry.getKey(), entry.getValue());
                         } else {
                             setField(currentPipeline.settings, entry.getKey(), entry.getValue());
@@ -152,12 +153,32 @@ public class SocketHandler {
                                 currentCamera.setBrightness((Integer) entry.getValue());
                                 break;
                             }
-                            case "videoModeIndex":{
+                            case "videoModeIndex": {
+                                if (currentPipeline instanceof CVPipeline2d)
+                                    ((CVPipeline2d) currentPipeline).settings.point = new ArrayList<>();//This will reset the calibration
                                 currentCamera.setVideoMode((Integer) entry.getValue());
                                 break;
                             }
-                            case "streamDivisor":{
+                            case "streamDivisor": {
                                 currentProcess.cameraStreamer.setDivisor(StreamDivisor.values()[(Integer) entry.getValue()], true);
+                                break;
+                            }
+                            case "rotationMode": {//Create new CaptureStaticProperties with new width and height, reset crosshair calib
+                                ImageRotationMode rotationMode = currentPipeline.settings.rotationMode;
+                                CaptureStaticProperties prop = currentCamera.getProperties().getStaticProperties();
+                                int width, height;
+                                if (rotationMode == ImageRotationMode.DEG_90 || rotationMode == ImageRotationMode.DEG_270) {
+                                    width = prop.mode.height;
+                                    height = prop.mode.width;
+                                } else {
+                                    width = prop.mode.width;
+                                    height = prop.mode.height;
+                                }
+                                //Creates new video mode with new width and height to create new CaptureStaticProperties and applies it
+                                currentCamera.getProperties().setStaticProperties(new CaptureStaticProperties(new VideoMode(prop.mode.pixelFormat, width, height, prop.mode.fps), prop.fov));
+
+                                if (currentPipeline instanceof CVPipeline2d)
+                                    ((CVPipeline2d) currentPipeline).settings.point = Arrays.asList(width/2,height/2);//Reset Crosshair in single point calib
                                 break;
                             }
                         }
