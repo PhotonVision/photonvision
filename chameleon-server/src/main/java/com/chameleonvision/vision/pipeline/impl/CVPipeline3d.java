@@ -11,11 +11,11 @@ import static com.chameleonvision.vision.pipeline.impl.CVPipeline3d.*;
 public class CVPipeline3d extends CVPipeline<CVPipeline3dResult, CVPipeline3dSettings> {
 
 
-    protected CVPipeline3d(CVPipeline3dSettings settings) {
+    public CVPipeline3d(CVPipeline3dSettings settings) {
         super(settings);
     }
 
-    CVPipeline3d() {
+    public CVPipeline3d() {
         super(new CVPipeline3dSettings());
     }
 

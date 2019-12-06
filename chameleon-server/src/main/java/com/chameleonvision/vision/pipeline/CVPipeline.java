@@ -10,7 +10,7 @@ import org.opencv.core.Mat;
  */
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
     protected Mat outputMat = new Mat();
-    CameraCapture cameraCapture;
+    protected CameraCapture cameraCapture;
     public S settings;
 
     protected CVPipeline(S settings) {
