@@ -1,19 +1,21 @@
-package com.chameleonvision.vision.pipeline;
+package com.chameleonvision.vision.pipeline.impl;
 
+import com.chameleonvision.vision.pipeline.CVPipeline;
+import com.chameleonvision.vision.pipeline.CVPipelineResult;
 import org.opencv.core.Mat;
 
 import java.util.List;
 
-import static com.chameleonvision.vision.pipeline.CVPipeline3d.*;
+import static com.chameleonvision.vision.pipeline.impl.CVPipeline3d.*;
 
 public class CVPipeline3d extends CVPipeline<CVPipeline3dResult, CVPipeline3dSettings> {
 
 
-    protected CVPipeline3d(CVPipeline3dSettings settings) {
+    public CVPipeline3d(CVPipeline3dSettings settings) {
         super(settings);
     }
 
-    CVPipeline3d() {
+    public CVPipeline3d() {
         super(new CVPipeline3dSettings());
     }
 

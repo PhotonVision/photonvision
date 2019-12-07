@@ -2,6 +2,8 @@ package com.chameleonvision.config;
 
 import com.chameleonvision.util.JacksonHelper;
 import com.chameleonvision.vision.pipeline.*;
+import com.chameleonvision.vision.pipeline.impl.CVPipeline2dSettings;
+import com.chameleonvision.vision.pipeline.impl.CVPipeline3dSettings;
 
 import java.io.File;
 import java.io.IOException;

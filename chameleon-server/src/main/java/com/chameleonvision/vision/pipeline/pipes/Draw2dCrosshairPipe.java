@@ -1,10 +1,8 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
 import com.chameleonvision.util.Helpers;
-import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.enums.CalibrationMode;
-import com.chameleonvision.vision.pipeline.CVPipeline2d;
-import com.chameleonvision.vision.pipeline.CVPipeline2dSettings;
+import com.chameleonvision.vision.pipeline.impl.CVPipeline2d;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;

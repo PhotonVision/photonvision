@@ -3,7 +3,7 @@ package com.chameleonvision.config;
 import com.chameleonvision.util.ProgramDirectoryUtilities;
 import com.chameleonvision.vision.camera.CameraStreamer;
 import com.chameleonvision.vision.image.StaticImageCapture;
-import com.chameleonvision.vision.pipeline.CVPipeline2d;
+import com.chameleonvision.vision.pipeline.impl.CVPipeline2d;
 import edu.wpi.cscore.CameraServerCvJNI;
 import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 

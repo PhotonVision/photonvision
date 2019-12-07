@@ -13,4 +13,6 @@ public enum ImageRotationMode {
     ImageRotationMode(int value) {
         this.value = value;
     }
+
+    public boolean isRotated(){return this.value==DEG_90.value||this.value==DEG_270.value;}
 }

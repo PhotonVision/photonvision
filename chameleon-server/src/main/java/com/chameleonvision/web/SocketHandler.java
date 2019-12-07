@@ -4,13 +4,17 @@ import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.camera.USBCameraCapture;
+import com.chameleonvision.vision.enums.ImageRotationMode;
 import com.chameleonvision.vision.enums.StreamDivisor;
 import com.chameleonvision.vision.pipeline.CVPipeline;
+import com.chameleonvision.vision.pipeline.impl.CVPipeline2d;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.cscore.VideoMode;
 import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
@@ -20,10 +24,8 @@ import org.msgpack.jackson.dataformat.MessagePackFactory;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 
 public class SocketHandler {
@@ -136,13 +138,35 @@ public class SocketHandler {
                     }
                     default: {
 
-                        // only change settings when we aren't in driver mode
-                        if(currentProcess.pipelineManager.getDriverMode()) {
+                        switch (entry.getKey()) {//Pre field value set
+                            case "rotationMode": {//Create new CaptureStaticProperties with new width and height, reset crosshair calib
+                                ImageRotationMode oldRot = currentPipeline.settings.rotationMode;
+                                ImageRotationMode newRot = ImageRotationMode.class.getEnumConstants()[(Integer)entry.getValue()];
+                                CaptureStaticProperties prop = currentCamera.getProperties().getStaticProperties();
+                                int width, height;
+                                if(oldRot.isRotated()!=newRot.isRotated()){
+                                    width = prop.mode.height;
+                                    height = prop.mode.width;
+                                    //Creates new video mode with new width and height to create new CaptureStaticProperties and applies it
+                                    currentCamera.getProperties().setStaticProperties(new CaptureStaticProperties(
+                                            new VideoMode(prop.mode.pixelFormat, width, height, prop.mode.fps), prop.fov));
+                                }
+                                prop = currentCamera.getProperties().getStaticProperties();
+                                if (currentPipeline instanceof CVPipeline2d)
+                                    ((CVPipeline2d) currentPipeline).settings.point = Arrays.asList(prop.mode.width / 2, prop.mode.height / 2);//Reset Crosshair in single point calib
+                                break;
+                            }
+
+                        }
+
+
+                        if (currentProcess.pipelineManager.getDriverMode()) {
                             setField(currentProcess.pipelineManager.driverModePipeline.settings, entry.getKey(), entry.getValue());
                         } else {
                             setField(currentPipeline.settings, entry.getKey(), entry.getValue());
                         }
 
+                        //Post field value set
                         switch (entry.getKey()) {
                             case "exposure": {
                                 currentCamera.setExposure((Integer) entry.getValue());
@@ -152,11 +176,13 @@ public class SocketHandler {
                                 currentCamera.setBrightness((Integer) entry.getValue());
                                 break;
                             }
-                            case "videoModeIndex":{
+                            case "videoModeIndex": {
+                                if (currentPipeline instanceof CVPipeline2d)
+                                    ((CVPipeline2d) currentPipeline).settings.point = new ArrayList<>();//This will reset the calibration
                                 currentCamera.setVideoMode((Integer) entry.getValue());
                                 break;
                             }
-                            case "streamDivisor":{
+                            case "streamDivisor": {
                                 currentProcess.cameraStreamer.setDivisor(StreamDivisor.values()[(Integer) entry.getValue()], true);
                                 break;
                             }

@@ -1,6 +1,7 @@
 package com.chameleonvision.vision.pipeline;
 
 import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.pipeline.impl.CVPipeline3d;
 import org.opencv.core.Mat;
 
 /**
@@ -9,7 +10,7 @@ import org.opencv.core.Mat;
  */
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
     protected Mat outputMat = new Mat();
-    CameraCapture cameraCapture;
+    protected CameraCapture cameraCapture;
     public S settings;
 
     protected CVPipeline(S settings) {
