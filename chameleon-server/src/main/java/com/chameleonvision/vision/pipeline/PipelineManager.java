@@ -137,6 +137,8 @@ public class PipelineManager {
                 }
             }
             newPipeline.initPipeline(parentProcess.getCamera());
+            if(parentProcess.cameraStreamer!=null)
+                parentProcess.cameraStreamer.setDivisor(newPipeline.settings.streamDivisor,true);
             if(ntIndexEntry != null) {
                 ntIndexEntry.setDouble(index);
             }

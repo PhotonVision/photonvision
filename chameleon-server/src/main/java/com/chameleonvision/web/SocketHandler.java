@@ -180,6 +180,7 @@ public class SocketHandler {
                                 if (currentPipeline instanceof CVPipeline2d)
                                     ((CVPipeline2d) currentPipeline).settings.point = new ArrayList<>();//This will reset the calibration
                                 currentCamera.setVideoMode((Integer) entry.getValue());
+                                currentProcess.cameraStreamer.recalculateDivision();
                                 break;
                             }
                             case "streamDivisor": {

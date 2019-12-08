@@ -57,7 +57,7 @@ public class VisionProcess {
         pipelineManager = new PipelineManager(this, loadedPipelineSettings);
 
         // Thread to put frames on the dashboard
-        this.cameraStreamer = new CameraStreamer(cameraCapture, name);
+        this.cameraStreamer = new CameraStreamer(cameraCapture, name,pipelineManager.getCurrentPipeline().settings.streamDivisor);
         this.streamRunnable = new CameraStreamerRunnable(30, cameraStreamer);
 
         // Thread to process vision data
