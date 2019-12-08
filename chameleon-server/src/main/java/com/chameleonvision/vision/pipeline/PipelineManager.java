@@ -111,7 +111,7 @@ public class PipelineManager {
         if (index == DRIVERMODE_INDEX) {
             newPipeline = driverModePipeline;
 
-            // if we're changing into driver mode, try to set the nt entry to frue
+            // if we're changing into driver mode, try to set the nt entry to true
             parentProcess.setDriverModeEntry(true);
         } else {
             newPipeline = pipelines.get(index);
