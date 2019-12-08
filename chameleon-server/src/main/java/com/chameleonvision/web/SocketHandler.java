@@ -152,6 +152,7 @@ public class SocketHandler {
                                             new VideoMode(prop.mode.pixelFormat, width, height, prop.mode.fps), prop.fov));
                                 }
                                 prop = currentCamera.getProperties().getStaticProperties();
+                                currentProcess.cameraStreamer.recalculateDivision();
                                 if (currentPipeline instanceof CVPipeline2d)
                                     ((CVPipeline2d) currentPipeline).settings.point = Arrays.asList(prop.mode.width / 2, prop.mode.height / 2);//Reset Crosshair in single point calib
                                 break;
