@@ -96,13 +96,15 @@
                     <!-- camera image tabs -->
                     <v-tabs background-color="#212121" dark height="48" slider-color="#4baf62" centered
                             style="padding-bottom:10px" v-model="isBinaryNumber"
-                            @change="handleInput('isBinary',pipeline.isBinary)">
+                            @change="handleInput('isBinary',pipeline.isBinary)" v-if="currentPipelineIndex !== 0">
                         <v-tab>Normal</v-tab>
                         <v-tab>Threshold</v-tab>
                     </v-tabs>
+                    <div v-else style="height: 58px"></div>
                     <!-- camera image stream -->
                     <div class="videoClass">
-                        <img id="CameraStream" v-if="cameraList.length > 0" :src="streamAddress" @click="onImageClick" crossorigin="Anonymous"/>
+                        <img id="CameraStream" v-if="cameraList.length > 0" :src="streamAddress" @click="onImageClick"
+                             crossorigin="Anonymous"/>
                         <span v-else>No Cameras Are connected</span>
                         <h5 id="Point">{{point}}</h5>
                     </div>
@@ -157,8 +159,8 @@
             CVinput
         },
         methods: {
-            onImageClick(event){
-                if(this.selectedTab ===1){
+            onImageClick(event) {
+                if (this.selectedTab === 1) {
                     this.$refs.component.onClick(event);
                 }
             },
@@ -337,7 +339,7 @@
 
     .videoClass img {
         max-height: 70vh;
-        max-width:70%;
+        max-width: 70%;
         width: 70%;
         object-fit: cover;
         vertical-align: middle;
