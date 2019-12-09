@@ -47,9 +47,9 @@
                 get() {
                     let cam_res = this.$store.state.resolutionList[this.value.videoModeIndex];
                     let tmp_list = [];                    
-                    tmp_list.push(`${cam_res['width']} X ${cam_res['height']}`);
+                    tmp_list.push(`${Math.floor(cam_res['width'])} X ${Math.floor(cam_res['height'])}`);
                     for (let x = 2; x <= 6; x+=2) {
-                        tmp_list.push(`${cam_res['width'] / x} X ${cam_res['height'] / x}`);
+                        tmp_list.push(`${Math.floor(cam_res['width'] / x)} X ${Math.floor(cam_res['height'] / x)}`);
                     }
                     return tmp_list;
                 }
