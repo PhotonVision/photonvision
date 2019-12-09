@@ -125,8 +125,8 @@
                 </v-divider>
                 <v-card-actions>
                     <v-spacer/>
-                    <v-btn color="#4baf62" text @click="duplicatePipeline">Duplicate</v-btn>
-                    <v-btn color="error" text @click="closeDuplicateDialog">Cancels</v-btn>
+                    <v-btn color="#4baf62" outlined @click="duplicatePipeline">Duplicate</v-btn>
+                    <v-btn color="error" outlined @click="closeDuplicateDialog">Cancel</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
