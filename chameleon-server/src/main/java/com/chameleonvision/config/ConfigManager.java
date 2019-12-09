@@ -1,7 +1,10 @@
 package com.chameleonvision.config;
 
+import com.chameleonvision.Main;
+import com.chameleonvision.util.Platform;
 import com.chameleonvision.util.ProgramDirectoryUtilities;
 import com.chameleonvision.util.JacksonHelper;
+import com.chameleonvision.util.ShellExec;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 
 import java.io.File;
@@ -16,7 +19,7 @@ import java.util.List;
 public class ConfigManager {
     private ConfigManager() {}
 
-    static final Path SettingsPath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "settings");
+    public static final Path SettingsPath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "settings");
     private static final Path settingsFilePath = Paths.get(SettingsPath.toString(), "settings.json");
 
     private static final LinkedHashMap<String, CameraConfig> cameraConfigs = new LinkedHashMap<>();
@@ -33,6 +36,9 @@ public class ConfigManager {
                     System.err.println("Failed to create settings folder: " + SettingsPath.toString());
                 }
                 Files.createDirectory(SettingsPath);
+                if (!Platform.getCurrentPlatform().isWindows()) {
+                    new ShellExec().executeBashCommand("sudo chmod -R 0777 " + SettingsPath.toString());
+                }
             } catch (IOException e) {
                 if(!(e instanceof java.nio.file.FileAlreadyExistsException))
                     e.printStackTrace();

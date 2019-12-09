@@ -3,6 +3,7 @@ package com.chameleonvision;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.network.NetworkManager;
 import com.chameleonvision.util.Platform;
+import com.chameleonvision.util.ShellExec;
 import com.chameleonvision.util.Utilities;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.web.Server;
@@ -22,6 +23,7 @@ public class Main {
     private static final String NT_CLIENTMODESERVER_KEY = "--nt-client-server"; // expects String representing an IP address (hostnames will be rejected!)
     private static final String NETWORK_MANAGE_KEY = "--unmanage-network"; // no args for this setting
     private static final String IGNORE_ROOT_KEY = "--ignore-root"; // no args for this setting
+    private static final String UPDATE_FILE_PERMISSIONS = "--update-perms"; // no args for this setting, exits program after running
     private static final String TEST_MODE_KEY = "--cv-development";
 
     private static final int DEFAULT_PORT = 5800;
@@ -63,6 +65,7 @@ public class Main {
                 case NT_SERVERMODE_KEY:
                 case NETWORK_MANAGE_KEY:
                 case IGNORE_ROOT_KEY:
+                case UPDATE_FILE_PERMISSIONS:
                 case TEST_MODE_KEY:
                     // nothing
                     break;
@@ -93,6 +96,19 @@ public class Main {
                 case IGNORE_ROOT_KEY:
                     ignoreRoot = true;
                     break;
+                case UPDATE_FILE_PERMISSIONS:
+                    if (!Platform.getCurrentPlatform().isWindows()) {
+                        System.out.print("Fixing file permissions...");
+                        try {
+                            new ShellExec().executeBashCommand("sudo chmod -R 0777 " + ConfigManager.SettingsPath.toString());
+                            System.out.println("Done. Exiting.");
+                        } catch (IOException e) {
+                            System.err.println("Failed to fix file permissions, exiting.");
+                        }
+                        System.exit(0);
+                    } else {
+                        System.out.println("Cannot change file permissions on windows, exiting.");
+                    }
                 case TEST_MODE_KEY:
                     testMode = true;
                     break;
