@@ -190,7 +190,6 @@ public class PipelineManager {
 
     public void renameCurrentPipeline(String newName) {
         CVPipelineSettings settings = getCurrentPipeline().settings;
-        settings.nickname = newName;
         renamePipelineConfig(settings, newName);
     }
 
