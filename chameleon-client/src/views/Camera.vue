@@ -128,14 +128,16 @@
             <v-card dark>
                 <v-card-title class="headline" primary-title>Pipeline Name</v-card-title>
                 <v-card-text>
-                    <CVinput name="Pipeline" v-model="newPipelineName" @Enter="savePipelineNameChange"/>
+                    <CVinput name="Pipeline" :error-message="checkPipelineName" v-model="newPipelineName"
+                             @Enter="savePipelineNameChange"/>
                 </v-card-text>
                 <v-divider>
                 </v-divider>
                 <v-card-actions>
                     <v-spacer/>
-                    <v-btn color="#4baf62"  @click="savePipelineNameChange">Save</v-btn>
-                    <v-btn color="error"  @click="discardPipelineNameChange">Cancel</v-btn>
+                    <v-btn color="#4baf62" @click="savePipelineNameChange" :disabled="checkPipelineName !==''">Save
+                    </v-btn>
+                    <v-btn color="error" @click="discardPipelineNameChange">Cancel</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -178,7 +180,7 @@
                 this.isCameraNameEdit = true;
             },
             saveCameraNameChange() {
-                if (this.cameraNameError === "") {
+                if (this.checkCameraName === "") {
                     this.handleInput("changeCameraName", this.newCameraName);
                     this.discardCameraNameChange();
                 }
@@ -198,12 +200,14 @@
                 this.namingDialog = true;
             },
             savePipelineNameChange() {
-                if (this.isPipelineNameEdit) {
-                    this.handleInput("changePipelineName", this.newPipelineName);
-                } else {
-                    this.handleInput("addNewPipeline", this.newPipelineName);
+                if (this.checkPipelineName === "") {
+                    if (this.isPipelineNameEdit) {
+                        this.handleInput("changePipelineName", this.newPipelineName);
+                    } else {
+                        this.handleInput("addNewPipeline", this.newPipelineName);
+                    }
+                    this.discardPipelineNameChange();
                 }
-                this.discardPipelineNameChange();
             },
             discardPipelineNameChange() {
                 this.namingDialog = false;
@@ -262,11 +266,32 @@
         },
         computed: {
             checkCameraName() {
+                let re = new RegExp('^[A-Za-z0-9 _]*[A-Za-z0-9][A-Za-z0-9 _]*$');
                 if (this.newCameraName !== this.cameraList[this.currentCameraIndex]) {
-                    for (let cam in this.cameraList) {
-                        if (this.newCameraName === this.cameraList[cam]) {
-                            return "Camera by that name already Exists"
+                    if (re.test(this.newCameraName)) {
+                        for (let cam in this.cameraList) {
+                            if (this.newCameraName === this.cameraList[cam]) {
+                                return "Camera by that name already Exists"
+                            }
                         }
+                    } else {
+                        return "Camera name can only contain letters, numbers and spaces"
+                    }
+                }
+                return ""
+            },
+            checkPipelineName() {
+                let re = new RegExp('^[A-Za-z0-9 _]*[A-Za-z0-9][A-Za-z0-9 _]*$');
+                if (this.newPipelineName !== this.pipelineList[this.currentPipelineIndex - 1] || this.isPipelineNameEdit === false) {
+                    if (re.test(this.newPipelineName)) {
+                        for (let pipe in this.pipelineList) {
+                            if (this.newPipelineName === this.pipelineList[pipe]) {
+                                return "A pipeline with this name already exists"
+                            }
+                        }
+
+                    } else {
+                        return "Pipeline name can only contain letters, numbers, and spaces"
                     }
                 }
                 return ""
