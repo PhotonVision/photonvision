@@ -107,24 +107,31 @@ public class PipelineManager {
     }
 
     public void setCurrentPipeline(int index) {
-        CVPipeline newPipeline;
+        CVPipeline newPipeline=null;
         if (index == DRIVERMODE_INDEX) {
             newPipeline = driverModePipeline;
 
             // if we're changing into driver mode, try to set the nt entry to true
             parentProcess.setDriverModeEntry(true);
         } else {
-            newPipeline = pipelines.get(index);
+            if (index < pipelines.size()&&index>=0) {
+                newPipeline = pipelines.get(index);
 
-            // if we're switching out of driver mode, try to set the nt entry to false
-            parentProcess.setDriverModeEntry(false);
+                // if we're switching out of driver mode, try to set the nt entry to false
+                parentProcess.setDriverModeEntry(false);
+            }
+            else
+                {
+                    //TODO alert/warn user that pipeline doesnt exsits
+                    System.err.println("Index is out of bounds");
+                }
         }
         if (newPipeline != null) {
             lastPipelineIndex = currentPipelineIndex;
             currentPipelineIndex = index;
             getCurrentPipeline().initPipeline(parentProcess.getCamera());
 
-            if(ConfigManager.settings.currentCamera.equals(parentProcess.getCamera().getProperties().name)) {
+            if (ConfigManager.settings.currentCamera.equals(parentProcess.getCamera().getProperties().name)) {
                 ConfigManager.settings.currentPipeline = currentPipelineIndex;
 
                 HashMap<String, Object> pipeChange = new HashMap<>();
@@ -137,9 +144,9 @@ public class PipelineManager {
                 }
             }
             newPipeline.initPipeline(parentProcess.getCamera());
-            if(parentProcess.cameraStreamer!=null)
-                parentProcess.cameraStreamer.setDivisor(newPipeline.settings.streamDivisor,true);
-            if(ntIndexEntry != null) {
+            if (parentProcess.cameraStreamer != null)
+                parentProcess.cameraStreamer.setDivisor(newPipeline.settings.streamDivisor, true);
+            if (ntIndexEntry != null) {
                 ntIndexEntry.setDouble(index);
             }
         }
