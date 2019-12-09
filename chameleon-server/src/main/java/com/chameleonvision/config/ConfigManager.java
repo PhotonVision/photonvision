@@ -1,10 +1,7 @@
 package com.chameleonvision.config;
 
 import com.chameleonvision.Main;
-import com.chameleonvision.util.Platform;
-import com.chameleonvision.util.ProgramDirectoryUtilities;
-import com.chameleonvision.util.JacksonHelper;
-import com.chameleonvision.util.ShellExec;
+import com.chameleonvision.util.*;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 
 import java.io.File;
@@ -36,7 +33,7 @@ public class ConfigManager {
                     System.err.println("Failed to create settings folder: " + SettingsPath.toString());
                 }
                 Files.createDirectory(SettingsPath);
-                if (!Platform.getCurrentPlatform().isWindows()) {
+                if (!Platform.CurrentPlatform.isWindows()) {
                     new ShellExec().executeBashCommand("sudo chmod -R 0777 " + SettingsPath.toString());
                 }
             } catch (IOException e) {
@@ -51,6 +48,7 @@ public class ConfigManager {
         if (settingsFileEmpty || !settingsFileExists()) {
             try {
                 JacksonHelper.serializer(settingsFilePath, settings);
+                FileHelper.setFilePerms(settingsFilePath);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -72,6 +70,7 @@ public class ConfigManager {
     private static void saveSettingsFile() {
         try {
             JacksonHelper.serializer(settingsFilePath, settings);
+            FileHelper.setFilePerms(settingsFilePath);
         } catch (IOException e) {
             System.err.println("Failed to save settings.json!");
         }

@@ -69,7 +69,7 @@ public enum Platform {
 		}
 	}
 
-	public static Platform getCurrentPlatform() {
+	private static Platform getCurrentPlatform() {
 		if (OS_NAME.contains("Windows")) {
 			if (OS_ARCH.equals("amd64")) return Platform.WINDOWS_64;
 		}
