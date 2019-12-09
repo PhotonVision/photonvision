@@ -5,15 +5,15 @@
                        @input="handleData('saturation')"/>
         <CVrangeSlider v-model="value.value" name="Value" :min="0" :max="255" @input="handleData('value')"/>
         <v-divider color="darkgray " style="margin-top: 5px"/>
-        <v-btn style="margin: 20px;" tile color="#4baf62" @click="setFunction(1)" small>
+        <v-btn style="margin: 20px;" color="#4baf62" @click="setFunction(1)" small>
             <v-icon>colorize</v-icon>
             Eye drop
         </v-btn>
-        <v-btn style="margin: 20px;" tile color="#4baf62" @click="setFunction(2)" small>
+        <v-btn style="margin: 20px;" color="#4baf62" @click="setFunction(2)" small>
             <v-icon>add</v-icon>
             Expand Selection
         </v-btn>
-        <v-btn style="margin: 20px;" tile color="#4baf62" @click="setFunction(3)" small>
+        <v-btn style="margin: 20px;" color="#4baf62" @click="setFunction(3)" small>
             <v-icon>remove</v-icon>
             Shrink Selection
         </v-btn>
