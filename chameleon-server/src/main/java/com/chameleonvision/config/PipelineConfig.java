@@ -1,5 +1,6 @@
 package com.chameleonvision.config;
 
+import com.chameleonvision.util.FileHelper;
 import com.chameleonvision.util.JacksonHelper;
 import com.chameleonvision.vision.pipeline.*;
 import com.chameleonvision.vision.pipeline.impl.CVPipeline2dSettings;
@@ -29,15 +30,20 @@ public class PipelineConfig {
     }
 
     private void checkFolder() {
-        if ( !(new File(cameraConfig.getPipelineFolderPath().toUri()).mkdirs())) {
-            if (Files.notExists(cameraConfig.getPipelineFolderPath())) {
+        if ( !(new File(cameraConfig.pipelineFolderPath.toUri()).mkdirs())) {
+            if (Files.notExists(cameraConfig.pipelineFolderPath)) {
                 System.err.println("Failed to create pipelines folder.");
             }
+        }
+        try {
+            FileHelper.setFilePerms(cameraConfig.pipelineFolderPath);
+        } catch (IOException e) {
+            // ignored
         }
     }
 
     private File[] getPipelineFiles() {
-        return new File(cameraConfig.getPipelineFolderPath().toUri()).listFiles();
+        return new File(cameraConfig.pipelineFolderPath.toUri()).listFiles();
     }
 
     private boolean folderHasPipelines() {
@@ -59,7 +65,7 @@ public class PipelineConfig {
         String pipelineName = setting.nickname.replace(' ', '_');
         String prefix = ((setting instanceof CVPipeline2dSettings) ? CVPipeline2DPrefix : CVPipeline3DPrefix) + "-";
         String fullFileName = prefix + pipelineName + ".json";
-        return Path.of(cameraConfig.getPipelineFolderPath().toString(), fullFileName);
+        return Path.of(cameraConfig.pipelineFolderPath.toString(), fullFileName);
     }
 
     private boolean pipelineExists(CVPipelineSettings setting) {
@@ -73,12 +79,14 @@ public class PipelineConfig {
         if (settings instanceof CVPipeline3dSettings) {
             try {
                 JacksonHelper.serializer(path, settings);
+                FileHelper.setFilePerms(path);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else if (settings instanceof CVPipeline2dSettings) {
             try {
                 JacksonHelper.serializer(path, settings);
+                FileHelper.setFilePerms(path);
             } catch (IOException e) {
                 e.printStackTrace();
             }

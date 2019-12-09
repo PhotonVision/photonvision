@@ -3,6 +3,7 @@ package com.chameleonvision;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.network.NetworkManager;
 import com.chameleonvision.util.Platform;
+import com.chameleonvision.util.ShellExec;
 import com.chameleonvision.util.Utilities;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.web.Server;
