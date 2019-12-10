@@ -103,15 +103,18 @@ public class SocketHandler {
                         sendFullSettings();
                         break;
                     }
+                    case "addNewPipeline": {
+//                        HashMap<String, Object> data = (HashMap<String, Object>) entry.getValue();
+                        String pipeName = (String) entry.getValue();
+                        // TODO: add to UI selection for new 2d/3d
+                        boolean is3d = false;
+                        currentProcess.pipelineManager.addNewPipeline(is3d, pipeName);
+                        sendFullSettings();
+                        VisionManager.saveCurrentCameraPipelines();
+                        break;
+                    }
                     case "command": {
                         switch ((String) entry.getValue()) {
-                            case "addNewPipeline":
-                                // TODO: add to UI selection for new 2d/3d
-                                boolean is3d = false;
-                                currentProcess.pipelineManager.addNewPipeline(is3d);
-                                sendFullSettings();
-                                VisionManager.saveCurrentCameraPipelines();
-                                break;
                             case "deleteCurrentPipeline":
                                 currentProcess.pipelineManager.deleteCurrentPipeline();
                                 sendFullSettings();
@@ -141,10 +144,10 @@ public class SocketHandler {
                         switch (entry.getKey()) {//Pre field value set
                             case "rotationMode": {//Create new CaptureStaticProperties with new width and height, reset crosshair calib
                                 ImageRotationMode oldRot = currentPipeline.settings.rotationMode;
-                                ImageRotationMode newRot = ImageRotationMode.class.getEnumConstants()[(Integer)entry.getValue()];
+                                ImageRotationMode newRot = ImageRotationMode.class.getEnumConstants()[(Integer) entry.getValue()];
                                 CaptureStaticProperties prop = currentCamera.getProperties().getStaticProperties();
                                 int width, height;
-                                if(oldRot.isRotated()!=newRot.isRotated()){
+                                if (oldRot.isRotated() != newRot.isRotated()) {
                                     width = prop.mode.height;
                                     height = prop.mode.width;
                                     //Creates new video mode with new width and height to create new CaptureStaticProperties and applies it

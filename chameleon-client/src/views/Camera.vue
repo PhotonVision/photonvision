@@ -21,14 +21,13 @@
                     </div>
                 </v-col>
                 <v-col :cols="3" class="colsClass">
-                    <CVselect v-if="isPipelineEdit === false" name="Pipeline"
+                    <CVselect name="Pipeline"
                               :list="['Driver Mode'].concat(pipelineList)"
                               v-model="currentPipelineIndex"
                               @input="handleInput('currentPipeline',currentPipelineIndex - 1)"/>
-                    <CVinput v-else name="Pipeline" v-model="newPipelineName" @Enter="savePipelineNameChange"/>
                 </v-col>
                 <v-col :cols="1" class="colsClass" md="3" v-if="currentPipelineIndex !== 0">
-                    <v-menu v-if="isPipelineEdit === false" offset-y dark auto>
+                    <v-menu offset-y dark auto>
                         <template v-slot:activator="{ on }">
                             <v-icon color="white" v-on="on">menu</v-icon>
                         </template>
@@ -38,7 +37,7 @@
                                     <CVicon color="#c5c5c5" :right="true" text="edit" tooltip="Edit pipeline name"/>
                                 </v-list-item-title>
                             </v-list-item>
-                            <v-list-item @click="handleInput('command','addNewPipeline')">
+                            <v-list-item @click="toCreatePipeline">
                                 <v-list-item-title>
                                     <CVicon color="#c5c5c5" :right="true" text="add" tooltip="Add new pipeline"/>
                                 </v-list-item-title>
@@ -57,12 +56,6 @@
                             </v-list-item>
                         </v-list>
                     </v-menu>
-                    <div v-else>
-                        <CVicon color="#c5c5c5" style="display: inline-block;" hover text="save"
-                                @click="savePipelineNameChange" tooltip="Save Pipeline Name"/>
-                        <CVicon color="error" style="display: inline-block;" hover text="close"
-                                @click="discardPipelineNameChange" tooltip="Discard Changes"/>
-                    </div>
                 </v-col>
 
                 <v-btn style="position: absolute; top:5px;right: 0;" tile color="#4baf62"
@@ -125,8 +118,26 @@
                 </v-divider>
                 <v-card-actions>
                     <v-spacer/>
-                    <v-btn color="#4baf62" outlined @click="duplicatePipeline">Duplicate</v-btn>
-                    <v-btn color="error" outlined @click="closeDuplicateDialog">Cancel</v-btn>
+                    <v-btn color="#4baf62" @click="duplicatePipeline">Duplicate</v-btn>
+                    <v-btn color="error" @click="closeDuplicateDialog">Cancel</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
+        <!--pipeline naming dialog-->
+        <v-dialog dark v-model="namingDialog" width="500" height="357">
+            <v-card dark>
+                <v-card-title class="headline" primary-title>Pipeline Name</v-card-title>
+                <v-card-text>
+                    <CVinput name="Pipeline" :error-message="checkPipelineName" v-model="newPipelineName"
+                             @Enter="savePipelineNameChange"/>
+                </v-card-text>
+                <v-divider>
+                </v-divider>
+                <v-card-actions>
+                    <v-spacer/>
+                    <v-btn color="#4baf62" @click="savePipelineNameChange" :disabled="checkPipelineName !==''">Save
+                    </v-btn>
+                    <v-btn color="error" @click="discardPipelineNameChange">Cancel</v-btn>
                 </v-card-actions>
             </v-card>
         </v-dialog>
@@ -169,7 +180,7 @@
                 this.isCameraNameEdit = true;
             },
             saveCameraNameChange() {
-                if (this.cameraNameError === "") {
+                if (this.checkCameraName === "") {
                     this.handleInput("changeCameraName", this.newCameraName);
                     this.discardCameraNameChange();
                 }
@@ -179,15 +190,28 @@
                 this.newCameraName = "";
             },
             toPipelineNameChange() {
-                this.newPipelineName = this.pipelineList[this.currentPipelineIndex];
-                this.isPipelineEdit = true;
+                this.newPipelineName = this.pipelineList[this.currentPipelineIndex - 1];
+                this.isPipelineNameEdit = true;
+                this.namingDialog = true;
+            },
+            toCreatePipeline() {
+                this.newPipelineName = "New Pipeline";
+                this.isPipelineNameEdit = false;
+                this.namingDialog = true;
             },
             savePipelineNameChange() {
-                this.handleInput("changePipelineName", this.newPipelineName);
-                this.discardPipelineNameChange();
+                if (this.checkPipelineName === "") {
+                    if (this.isPipelineNameEdit) {
+                        this.handleInput("changePipelineName", this.newPipelineName);
+                    } else {
+                        this.handleInput("addNewPipeline", this.newPipelineName);
+                    }
+                    this.discardPipelineNameChange();
+                }
             },
             discardPipelineNameChange() {
-                this.isPipelineEdit = false;
+                this.namingDialog = false;
+                this.isPipelineNameEdit = false;
                 this.newPipelineName = "";
             },
             duplicatePipeline() {
@@ -227,7 +251,8 @@
                 newCameraName: "",
                 cameraNameError: "",
                 // pipeline edit variables
-                isPipelineEdit: false,
+                isPipelineNameEdit: false,
+                namingDialog: false,
                 newPipelineName: "",
                 duplicateDialog: false,
                 anotherCamera: false,
@@ -241,11 +266,32 @@
         },
         computed: {
             checkCameraName() {
+                let re = new RegExp('^[A-Za-z0-9 _]*[A-Za-z0-9][A-Za-z0-9 _]*$');
                 if (this.newCameraName !== this.cameraList[this.currentCameraIndex]) {
-                    for (let cam in this.cameraList) {
-                        if (this.newCameraName === this.cameraList[cam]) {
-                            return "Camera by that name already Exists"
+                    if (re.test(this.newCameraName)) {
+                        for (let cam in this.cameraList) {
+                            if (this.newCameraName === this.cameraList[cam]) {
+                                return "Camera by that name already Exists"
+                            }
                         }
+                    } else {
+                        return "Camera name can only contain letters, numbers and spaces"
+                    }
+                }
+                return ""
+            },
+            checkPipelineName() {
+                let re = new RegExp('^[A-Za-z0-9 _]*[A-Za-z0-9][A-Za-z0-9 _]*$');
+                if (this.newPipelineName !== this.pipelineList[this.currentPipelineIndex - 1] || this.isPipelineNameEdit === false) {
+                    if (re.test(this.newPipelineName)) {
+                        for (let pipe in this.pipelineList) {
+                            if (this.newPipelineName === this.pipelineList[pipe]) {
+                                return "A pipeline with this name already exists"
+                            }
+                        }
+
+                    } else {
+                        return "Pipeline name can only contain letters, numbers, and spaces"
                     }
                 }
                 return ""

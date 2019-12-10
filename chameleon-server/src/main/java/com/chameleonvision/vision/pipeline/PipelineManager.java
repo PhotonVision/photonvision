@@ -163,13 +163,14 @@ public class PipelineManager {
         savePipelineConfig(pipeline.settings);
     }
 
-    public void addNewPipeline(boolean is3D) {
+    public void addNewPipeline(boolean is3D, String piplineName) {
         CVPipeline newPipeline;
         if (!is3D) {
             newPipeline = new CVPipeline2d();
         } else {
             newPipeline = new CVPipeline3d();
         }
+        newPipeline.settings.nickname = piplineName;
         newPipeline.settings.index = pipelines.size();
         addPipeline(newPipeline);
     }
