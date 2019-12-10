@@ -245,6 +245,7 @@
         },
         data() {
             return {
+                re: RegExp('^[A-Za-z0-9 \\-)(]*[A-Za-z0-9][A-Za-z0-9 \\-)(.]*$'),
                 selectedTab: 0,
                 // camera edit variables
                 isCameraNameEdit: false,
@@ -266,9 +267,9 @@
         },
         computed: {
             checkCameraName() {
-                let re = new RegExp('^[A-Za-z0-9 _]*[A-Za-z0-9][A-Za-z0-9 _]*$');
+
                 if (this.newCameraName !== this.cameraList[this.currentCameraIndex]) {
-                    if (re.test(this.newCameraName)) {
+                    if (this.re.test(this.newCameraName)) {
                         for (let cam in this.cameraList) {
                             if (this.newCameraName === this.cameraList[cam]) {
                                 return "Camera by that name already Exists"
@@ -281,9 +282,9 @@
                 return ""
             },
             checkPipelineName() {
-                let re = new RegExp('^[A-Za-z0-9 _]*[A-Za-z0-9][A-Za-z0-9 _]*$');
+
                 if (this.newPipelineName !== this.pipelineList[this.currentPipelineIndex - 1] || this.isPipelineNameEdit === false) {
-                    if (re.test(this.newPipelineName)) {
+                    if (this.re.test(this.newPipelineName)) {
                         for (let pipe in this.pipelineList) {
                             if (this.newPipelineName === this.pipelineList[pipe]) {
                                 return "A pipeline with this name already exists"
