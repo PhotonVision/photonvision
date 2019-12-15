@@ -24,4 +24,9 @@ public class MathHandler {
     public static double toSlope(Number angle){
         return FastMath.atan(FastMath.toRadians(angle.doubleValue() - 90));
     }
+
+    public static double roundTo(double value, int to) {
+        double toMult = Math.pow(10, to);
+        return (double)Math.round(value * toMult) / toMult;
+    }
 }

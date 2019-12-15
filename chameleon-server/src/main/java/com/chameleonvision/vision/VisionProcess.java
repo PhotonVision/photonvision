@@ -3,6 +3,7 @@ package com.chameleonvision.vision;
 import com.chameleonvision.Debug;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.util.LoopingRunnable;
+import com.chameleonvision.util.MathHandler;
 import com.chameleonvision.vision.camera.CameraStreamer;
 import com.chameleonvision.vision.camera.USBCameraCapture;
 import com.chameleonvision.vision.pipeline.*;
@@ -47,7 +48,7 @@ public class VisionProcess {
     private NetworkTableEntry ntPitchEntry;
     private NetworkTableEntry ntAuxListEntry;
     private NetworkTableEntry ntAreaEntry;
-    private NetworkTableEntry ntTimeStampEntry;
+    private NetworkTableEntry ntLatencyEntry;
     private NetworkTableEntry ntValidEntry;
     private ObjectMapper objectMapper = new ObjectMapper();
 
@@ -108,7 +109,7 @@ public class VisionProcess {
         ntPitchEntry = newTable.getEntry("pitch");
         ntYawEntry = newTable.getEntry("yaw");
         ntAreaEntry = newTable.getEntry("area");
-        ntTimeStampEntry = newTable.getEntry("timestamp");
+        ntLatencyEntry = newTable.getEntry("latency");
         ntValidEntry = newTable.getEntry("is_valid");
         ntAuxListEntry = newTable.getEntry("aux_targets");
         ntDriveModeListenerID = ntDriverModeEntry.addListener(this::setDriverMode, EntryListenerFlags.kUpdate);
@@ -197,7 +198,7 @@ public class VisionProcess {
 
                 //noinspection unchecked
                 List<CVPipeline2d.Target2d> targets = (List<CVPipeline2d.Target2d>) data.targets;
-                ntTimeStampEntry.setDouble(data.imageTimestamp);
+                ntLatencyEntry.setDouble(MathHandler.roundTo(data.processTime * 1e-6, 3));
                 ntPitchEntry.setDouble(targets.get(0).pitch);
                 ntYawEntry.setDouble(targets.get(0).yaw);
                 ntAreaEntry.setDouble(targets.get(0).area);
@@ -213,7 +214,7 @@ public class VisionProcess {
             ntPitchEntry.setDouble(0.0);
             ntYawEntry.setDouble(0.0);
             ntAreaEntry.setDouble(0.0);
-            ntTimeStampEntry.setDouble(0.0);
+            ntLatencyEntry.setDouble(0.0);
             ntAuxListEntry.setString("");
         }
     }
