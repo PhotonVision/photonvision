@@ -40,6 +40,7 @@ public class VisionProcess {
 
     // network table stuff
     private final NetworkTable defaultTable;
+    private NetworkTableInstance tableInstance;
     private NetworkTableEntry ntPipelineEntry;
     public NetworkTableEntry ntDriverModeEntry;
     private int ntDriveModeListenerID;
@@ -104,6 +105,7 @@ public class VisionProcess {
     }
 
     private void initNT(NetworkTable newTable) {
+        tableInstance = newTable.getInstance();
         ntPipelineEntry = newTable.getEntry("pipeline");
         ntDriverModeEntry = newTable.getEntry("driver_mode");
         ntPitchEntry = newTable.getEntry("pitch");
@@ -217,6 +219,8 @@ public class VisionProcess {
             ntLatencyEntry.setDouble(0.0);
             ntAuxListEntry.setString("");
         }
+        tableInstance.flush();
+
     }
 
     public void setVideoMode(VideoMode newMode) {
