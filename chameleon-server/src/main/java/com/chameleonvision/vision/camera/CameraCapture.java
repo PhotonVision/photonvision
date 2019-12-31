@@ -1,8 +1,11 @@
 package com.chameleonvision.vision.camera;
 
+import com.chameleonvision.config.CameraCalibrationConfig;
 import com.chameleonvision.vision.image.CaptureProperties;
 import com.chameleonvision.vision.image.ImageCapture;
 import edu.wpi.cscore.VideoMode;
+
+import java.util.List;
 
 public interface CameraCapture extends ImageCapture {
     CaptureProperties getProperties();
@@ -39,4 +42,7 @@ public interface CameraCapture extends ImageCapture {
      * @param gain the new gain to set the camera to
      */
     void setGain(int gain);
+
+    CameraCalibrationConfig getCurrentCalibrationData();
+    List<CameraCalibrationConfig> getAllCalibrationData();
 }

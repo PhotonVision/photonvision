@@ -65,6 +65,7 @@ public class ConfigManager {
         System.out.println("Settings folder: " + SettingsPath.toString());
         checkSettingsFolder();
         checkSettingsFile();
+        FileHelper.setAllPerms(SettingsPath);
     }
 
     private static void saveSettingsFile() {

@@ -3,7 +3,7 @@ package com.chameleonvision.config;
 import com.chameleonvision.util.ProgramDirectoryUtilities;
 import com.chameleonvision.vision.camera.CameraStreamer;
 import com.chameleonvision.vision.image.StaticImageCapture;
-import com.chameleonvision.vision.pipeline.impl.CVPipeline2d;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import edu.wpi.cscore.CameraServerCvJNI;
 import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -58,7 +58,7 @@ class StaticCaptureTest {
     @Test
     void ImageProcessTest() throws InterruptedException {
         ImageLoadTest();
-        CVPipeline2d testPipeline = new CVPipeline2d();
+        StandardCVPipeline testPipeline = new StandardCVPipeline();
         String testImage1 = "CargoSideStraightDark36in";
         StaticImageCapture testCapture1 = loadedImages.get(testImage1);
 

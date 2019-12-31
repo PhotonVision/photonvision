@@ -3,7 +3,7 @@
         <CVselect name="SortMode" v-model="value.sortMode"
                   :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
                   @input="handleData('sortMode')"/>
-        <CVswitch name="Output multiple" v-model="value.multiple" @input="handleData('multiple')"></CVswitch>
+        <CVswitch name="Output multiple" v-model="value.multiple" @input="handleData('multiple')"/>
         <span>Calibrate:</span>
         <v-divider dark color="white"/>
         <CVselect name="Calibration Mode" v-model="value.calibrationMode" :list="['None','Single point','Dual point']"

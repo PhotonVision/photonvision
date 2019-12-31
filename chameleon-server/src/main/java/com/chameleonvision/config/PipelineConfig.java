@@ -3,8 +3,7 @@ package com.chameleonvision.config;
 import com.chameleonvision.util.FileHelper;
 import com.chameleonvision.util.JacksonHelper;
 import com.chameleonvision.vision.pipeline.*;
-import com.chameleonvision.vision.pipeline.impl.CVPipeline2dSettings;
-import com.chameleonvision.vision.pipeline.impl.CVPipeline3dSettings;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipelineSettings;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,9 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PipelineConfig {
-
-    private static final String CVPipeline2DPrefix = "CV2D";
-    private static final String CVPipeline3DPrefix = "CV3D";
 
     private final CameraConfig cameraConfig;
 
@@ -57,14 +53,13 @@ public class PipelineConfig {
         checkFolder();
         // Check if there's at least one pipe
         if (!folderHasPipelines()) {
-            save(new CVPipeline2dSettings());
+            save(new StandardCVPipelineSettings());
         }
     }
 
     private Path getPipelinePath(CVPipelineSettings setting) {
         String pipelineName = setting.nickname.replace(' ', '_');
-        String prefix = ((setting instanceof CVPipeline2dSettings) ? CVPipeline2DPrefix : CVPipeline3DPrefix) + "-";
-        String fullFileName = prefix + pipelineName + ".json";
+        String fullFileName = pipelineName + ".json";
         return Path.of(cameraConfig.pipelineFolderPath.toString(), fullFileName);
     }
 
@@ -76,22 +71,11 @@ public class PipelineConfig {
 
         var path = getPipelinePath(settings);
 
-        if (settings instanceof CVPipeline3dSettings) {
-            try {
-                JacksonHelper.serializer(path, settings);
-                FileHelper.setFilePerms(path);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else if (settings instanceof CVPipeline2dSettings) {
-            try {
-                JacksonHelper.serializer(path, settings);
-                FileHelper.setFilePerms(path);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            throw new RuntimeException("saving non-2d and non-3d pipelines not implemented~");
+        try {
+            JacksonHelper.serializer(path, settings);
+            FileHelper.setFilePerms(path);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -134,24 +118,12 @@ public class PipelineConfig {
             System.err.println("no pipes to load! loading default");
         } else {
             for(File pipelineFile : pipelineFiles) {
-                var name = pipelineFile.getName();
-                if(name.startsWith(CVPipeline3DPrefix)) {
-                    // try to load 3d pipe
                     try {
-                        var pipe = JacksonHelper.deserializer(Paths.get(pipelineFile.getPath()), CVPipeline3dSettings.class);
-                        deserializedList.add(pipe);
-                    } catch (IOException e) {
-                        System.err.println("couldn't load cvpipeline3d");
-                    }
-                } else if(name.startsWith(CVPipeline2DPrefix)) {
-                    // try to load 2d pipe
-                    try {
-                        var pipe = JacksonHelper.deserializer(Paths.get(pipelineFile.getPath()), CVPipeline2dSettings.class);
+                        var pipe = JacksonHelper.deserializer(Paths.get(pipelineFile.getPath()), StandardCVPipelineSettings.class);
                         deserializedList.add(pipe);
                     } catch (IOException e) {
                         System.err.println("couldn't load cvpipeline2d");
                     }
-                }
             }
         }
 

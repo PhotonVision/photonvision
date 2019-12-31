@@ -2,6 +2,7 @@ package com.chameleonvision.vision.pipeline.pipes;
 
 import com.chameleonvision.vision.enums.ImageFlipMode;
 import com.chameleonvision.vision.enums.ImageRotationMode;
+import com.chameleonvision.vision.pipeline.Pipe;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;

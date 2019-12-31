@@ -1,4 +1,4 @@
-package com.chameleonvision.vision.pipeline.pipes;
+package com.chameleonvision.vision.pipeline;
 
 import org.apache.commons.lang3.tuple.Pair;
 

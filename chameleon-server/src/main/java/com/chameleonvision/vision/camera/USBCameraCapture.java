@@ -1,7 +1,7 @@
 package com.chameleonvision.vision.camera;
 
-import com.chameleonvision.config.CameraJsonConfig;
-import com.chameleonvision.vision.image.CaptureProperties;
+import com.chameleonvision.config.CameraCalibrationConfig;
+import com.chameleonvision.config.FullCameraConfiguration;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoException;
@@ -9,14 +9,23 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class USBCameraCapture implements CameraCapture {
     private final UsbCamera baseCamera;
     private final CvSink cvSink;
+    private List<CameraCalibrationConfig> calibrationList;
     private Mat imageBuffer = new Mat();
     private USBCaptureProperties properties;
 
-    public USBCameraCapture(CameraJsonConfig config) {
+    public USBCameraCapture(FullCameraConfiguration fullCameraConfiguration) {
+        var config = fullCameraConfiguration.cameraConfig;
+        this.calibrationList = new ArrayList<>(); //fullCameraConfiguration.calibration;
+        calibrationList.addAll(fullCameraConfiguration.calibration);
         baseCamera = new UsbCamera(config.name, config.path);
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
         properties = new USBCaptureProperties(baseCamera, config);
@@ -25,6 +34,24 @@ public class USBCameraCapture implements CameraCapture {
         setVideoMode(videoMode);
     }
 
+    public CameraCalibrationConfig getCalibration(Size size) {
+        for(var calibration: calibrationList) {
+            if(calibration.resolution.equals(size)) return calibration;
+        }
+        return null;
+    }
+
+    public CameraCalibrationConfig getCalibration(VideoMode mode) {
+        return getCalibration(new Size(mode.width, mode.height));
+    }
+
+    public void addCalibrationData(CameraCalibrationConfig newConfig) {
+        calibrationList.add(newConfig);
+    }
+
+    public List<CameraCalibrationConfig> getConfig() {
+        return calibrationList;
+    }
 
     @Override
     public USBCaptureProperties getProperties() {
@@ -90,5 +117,15 @@ public class USBCameraCapture implements CameraCapture {
                 System.err.println("Failed to change camera gain!");
             }
         }
+    }
+
+    @Override
+    public CameraCalibrationConfig getCurrentCalibrationData() {
+        return getCalibration(getCurrentVideoMode());
+    }
+
+    @Override
+    public List<CameraCalibrationConfig> getAllCalibrationData() {
+        return calibrationList;
     }
 }

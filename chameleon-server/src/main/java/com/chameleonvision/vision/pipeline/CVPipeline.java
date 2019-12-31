@@ -1,7 +1,6 @@
 package com.chameleonvision.vision.pipeline;
 
 import com.chameleonvision.vision.camera.CameraCapture;
-import com.chameleonvision.vision.pipeline.impl.CVPipeline3d;
 import org.opencv.core.Mat;
 
 /**
@@ -30,8 +29,4 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         cameraCapture.setGain((int) settings.gain);
     }
     abstract public R runPipeline(Mat inputMat);
-
-    public boolean is3D() {
-        return (this instanceof CVPipeline3d);
-    }
 }

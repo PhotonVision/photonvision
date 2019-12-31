@@ -6,7 +6,7 @@
             </v-col>
             <v-col>
                 <v-text-field dark v-model="localValue" class="mt-0 pt-0" hide-details single-line type="number"
-                              style="width: 70px"/>
+                              style="width: 70px" :step="step"/>
             </v-col>
         </v-row>
     </div>
@@ -15,7 +15,7 @@
 <script>
     export default {
         name: 'NumberInput',
-        props: ['name', 'value'],
+        props: ['name', 'value', 'step'],
         data() {
             return {}
         },

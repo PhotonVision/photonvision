@@ -75,6 +75,7 @@
                     <v-tab>Threshold</v-tab>
                     <v-tab>Contours</v-tab>
                     <v-tab>Output</v-tab>
+                    <v-tab>3D</v-tab>
                 </v-tabs>
                 <div v-else style="height: 48px"></div>
                 <div style="padding-left:30px">
@@ -96,10 +97,40 @@
                     <div v-else style="height: 58px"></div>
                     <!-- camera image stream -->
                     <div class="videoClass">
-                        <img id="CameraStream" v-if="cameraList.length > 0" :src="streamAddress" @click="onImageClick"
-                             crossorigin="Anonymous"/>
-                        <span v-else>No Cameras Are connected</span>
-                        <h5 id="Point">{{point}}</h5>
+                        <v-row align="center">
+                            <img id="CameraStream" style="display: block;margin: auto; width: 70%;height: 70%;"
+                                 v-if="cameraList.length > 0"
+                                 :src="streamAddress" @click="onImageClick"
+                                 crossorigin="Anonymous"/>
+                            <span v-else>No Cameras Are connected</span>
+                        </v-row>
+                        <v-row justify="end">
+                            <span style="margin-right: 45px">FPS:{{fps.toFixed(2)}}</span>
+                        </v-row>
+                        <v-row align="center">
+                            <v-simple-table
+                                    style="text-align: center;background-color: transparent; display: block;margin: auto"
+                                    dense dark>
+                                <template v-slot:default>
+                                    <thead>
+                                    <tr>
+                                        <th class="text-center">Target</th>
+                                        <th class="text-center">Pitch</th>
+                                        <th class="text-center">Yaw</th>
+                                        <th class="text-center">Area</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr v-for="(value, index) in targets" :key="index">
+                                        <td>{{ index}}</td>
+                                        <td>{{ parseFloat(value.pitch).toFixed(2) }}</td>
+                                        <td>{{ parseFloat(value.yaw).toFixed(2) }}</td>
+                                        <td>{{ parseFloat(value.area).toFixed(2) }}</td>
+                                    </tr>
+                                    </tbody>
+                                </template>
+                            </v-simple-table>
+                        </v-row>
                     </div>
                 </div>
             </v-col>
@@ -154,6 +185,7 @@
     import ThresholdTab from './CameraViewes/ThresholdTab'
     import ContoursTab from './CameraViewes/ContoursTab'
     import OutputTab from './CameraViewes/OutputTab'
+    import pnpTab from './CameraViewes/3D'
     import CVselect from '../components/cv-select'
     import CVicon from '../components/cv-icon'
     import CVinput from '../components/cv-input'
@@ -165,6 +197,7 @@
             ThresholdTab,
             ContoursTab,
             OutputTab,
+            pnpTab,
             CVselect,
             CVicon,
             CVinput
@@ -319,19 +352,21 @@
                             return "ContoursTab";
                         case 3:
                             return "OutputTab";
+                        case 4:
+                            return "pnpTab";
                     }
                     return "";
                 }
             },
-            point: {
+            targets: {
                 get: function () {
-                    let p = this.$store.state.point.calculated;
-                    let fps = this.$store.state.point.fps;
-                    if (p !== undefined) {
-                        return `Pitch: ${parseFloat(p['pitch']).toFixed(2)}, Yaw: ${parseFloat(p['yaw']).toFixed(2)}, Area: ${parseFloat(p['area']).toFixed(2)}, FPS: ${parseFloat(fps).toFixed(2)}`
-                    } else {
-                        return undefined;
-                    }
+
+                    return this.$store.state.point.targets;
+                }
+            },
+            fps: {
+                get() {
+                    return this.$store.state.point.fps;
                 }
             },
             currentCameraIndex: {
@@ -384,17 +419,16 @@
         text-align: center;
     }
 
-    .videoClass img {
-        max-height: 70vh;
-        max-width: 70%;
+
+    .tableClass {
+        padding-top: 5px;
         width: 70%;
-        object-fit: cover;
-        vertical-align: middle;
+        text-align: center;
     }
 
-    #Point {
-        padding-top: 5px;
+    th {
+        width: 80px;
         text-align: center;
-        color: #f4f4f4;
     }
+
 </style>

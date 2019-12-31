@@ -17,10 +17,28 @@ public class FileHelper {
 
     public static void setFilePerms(Path path) throws IOException {
         if (!Platform.CurrentPlatform.isWindows()) {
+            File thisFile = path.toFile();
             Set<PosixFilePermission> perms = Files.readAttributes(path, PosixFileAttributes.class).permissions();
             if (!perms.equals(allReadWriteExecutePerms)) {
+                System.out.printf("setting perms on %s\n", path.toString());
                 Files.setPosixFilePermissions(path, perms);
+                if (thisFile.isDirectory()) {
+                    for (File subfile : thisFile.listFiles()) {
+                        setFilePerms(subfile.toPath());
+                    }
+                }
             }
+        }
+    }
+
+    public static void setAllPerms(Path path) {
+        String command = String.format("chmod 777 -R %s", path.toString());
+        try {
+            Process p = Runtime.getRuntime().exec(command);
+            p.waitFor();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

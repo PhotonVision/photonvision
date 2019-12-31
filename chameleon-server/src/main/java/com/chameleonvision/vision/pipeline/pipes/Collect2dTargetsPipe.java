@@ -1,23 +1,23 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
 import com.chameleonvision.vision.camera.CaptureStaticProperties;
-import com.chameleonvision.vision.pipeline.impl.CVPipeline2d;
+import com.chameleonvision.vision.pipeline.Pipe;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import com.chameleonvision.vision.enums.CalibrationMode;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
-import org.opencv.core.RotatedRect;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Collect2dTargetsPipe implements Pipe<Pair<List<RotatedRect>, CaptureStaticProperties>, List<CVPipeline2d.Target2d>> {
+public class Collect2dTargetsPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTarget>, CaptureStaticProperties>, List<StandardCVPipeline.TrackedTarget>> {
 
 
     private CaptureStaticProperties camProps;
     private CalibrationMode calibrationMode;
     private List<Number> calibrationPoint;
     private double calibrationM, calibrationB;
-    private List<CVPipeline2d.Target2d> targets = new ArrayList<>();
+    private List<StandardCVPipeline.TrackedTarget> targets = new ArrayList<>();
 
     public Collect2dTargetsPipe(CalibrationMode calibrationMode, List<Number> calibrationPoint, double calibrationM, double calibrationB, CaptureStaticProperties camProps) {
         setConfig(calibrationMode, calibrationPoint, calibrationM, calibrationB, camProps);
@@ -32,7 +32,7 @@ public class Collect2dTargetsPipe implements Pipe<Pair<List<RotatedRect>, Captur
     }
 
     @Override
-    public Pair<List<CVPipeline2d.Target2d>, Long> run(Pair<List<RotatedRect>, CaptureStaticProperties> inputPair) {
+    public Pair<List<StandardCVPipeline.TrackedTarget>, Long> run(Pair<List<StandardCVPipeline.TrackedTarget>, CaptureStaticProperties> inputPair) {
         long processStartNanos = System.nanoTime();
 
         targets.clear();
@@ -40,9 +40,7 @@ public class Collect2dTargetsPipe implements Pipe<Pair<List<RotatedRect>, Captur
         var imageArea = inputPair.getRight().imageArea;
 
         if (input.size() > 0) {
-            for (RotatedRect r : input) {
-                CVPipeline2d.Target2d t = new CVPipeline2d.Target2d();
-                t.rawPoint = r;
+            for (var t : input) {
                 switch (this.calibrationMode) {
                     case Single:
                         if(this.calibrationPoint.isEmpty())
@@ -58,14 +56,14 @@ public class Collect2dTargetsPipe implements Pipe<Pair<List<RotatedRect>, Captur
                         t.calibratedY = camProps.centerY;
                         break;
                     case Dual:
-                        t.calibratedX = (r.center.y - this.calibrationB) / this.calibrationM;
-                        t.calibratedY = (r.center.x * this.calibrationM) + this.calibrationB;
+                        t.calibratedX = (t.minAreaRect.center.y - this.calibrationB) / this.calibrationM;
+                        t.calibratedY = (t.minAreaRect.center.x * this.calibrationM) + this.calibrationB;
                         break;
                 }
 
-                t.pitch = calculatePitch(r.center.y, t.calibratedY);
-                t.yaw = calculateYaw(r.center.x, t.calibratedX);
-                t.area = r.size.area() / imageArea;
+                t.pitch = calculatePitch(t.minAreaRect.center.y, t.calibratedY);
+                t.yaw = calculateYaw(t.minAreaRect.center.x, t.calibratedX);
+                t.area = t.minAreaRect.size.area() / imageArea;
 
                 targets.add(t);
             }

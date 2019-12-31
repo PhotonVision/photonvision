@@ -2,6 +2,8 @@ package com.chameleonvision.vision.pipeline.pipes;
 
 import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.util.Helpers;
+import com.chameleonvision.vision.pipeline.Pipe;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
 import org.opencv.core.*;
@@ -11,7 +13,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Mat> {
+public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.TrackedTarget>>, Mat> {
 
     private final Draw2dContoursSettings settings;
     private CaptureStaticProperties camProps;
@@ -37,7 +39,7 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
     }
 
     @Override
-    public Pair<Mat, Long> run(Pair<Mat, List<RotatedRect>> input) {
+    public Pair<Mat, Long> run(Pair<Mat, List<StandardCVPipeline.TrackedTarget>> input) {
         long processStartNanos = System.nanoTime();
 
         if (settings.showCentroid || settings.showMaximumBox || settings.showRotatedBox) {
@@ -49,7 +51,8 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
                     if (i != 0 && !settings.showMultiple){
                         break;
                     }
-                    RotatedRect r = input.getRight().get(i);
+                    StandardCVPipeline.TrackedTarget target = input.getRight().get(i);
+                    RotatedRect r = input.getRight().get(i).minAreaRect;
                     if (r == null) continue;
 
                     drawnContours.forEach(Mat::release);
@@ -71,6 +74,12 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
                     if (settings.showMaximumBox) {
                         Rect box = Imgproc.boundingRect(contour);
                         Imgproc.rectangle(input.getLeft(), new Point(box.x, box.y), new Point((box.x + box.width), (box.y + box.height)), Helpers.colorToScalar(settings.maximumBoxColor), settings.boxOutlineSize);
+                    }
+
+                    if(settings.showContor) {
+                        MatOfPoint matOfPoint = new MatOfPoint();
+                        matOfPoint.fromArray(target.contour.toArray());
+                        Imgproc.drawContours(input.getLeft(), List.of(matOfPoint), 0, new Scalar(255, 255, 255));
                     }
 
 //                    contour.release();
@@ -95,5 +104,6 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<RotatedRect>>, Ma
         public Color centroidColor = Color.GREEN;
         public Color rotatedBoxColor = Color.BLUE;
         public Color maximumBoxColor = Color.RED;
+        public boolean showContor = true;
     }
 }
