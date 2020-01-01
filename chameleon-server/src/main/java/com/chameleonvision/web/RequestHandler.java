@@ -22,8 +22,10 @@ import java.util.Map;
 
 public class RequestHandler {
 
+    private static final ObjectMapper kObjectMapper = new ObjectMapper();
+
     public static void onGeneralSettings(Context ctx) {
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = kObjectMapper;
         try {
             Map map = objectMapper.readValue(ctx.body(), Map.class);
 
@@ -44,7 +46,7 @@ public class RequestHandler {
     }
 
     public static void onDuplicatePipeline(Context ctx) {
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = kObjectMapper;
 
         try {
             Map newPipelineData = objectMapper.readValue(ctx.body(), Map.class);
@@ -81,7 +83,7 @@ public class RequestHandler {
     }
 
     public static void onCameraSettings(Context ctx) {
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = kObjectMapper;
         try {
             Map camSettings = objectMapper.readValue(ctx.body(), Map.class);
 
@@ -112,7 +114,7 @@ public class RequestHandler {
 
     public static void onCalibrationStart(Context ctx) throws JsonProcessingException {
         PipelineManager pipeManager = VisionManager.getCurrentUIVisionProcess().pipelineManager;
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = kObjectMapper;
         var data = objectMapper.readValue(ctx.body(), Map.class);
         int resolutionIndex = (Integer) data.get("resolution");
         double squareSize;
@@ -122,7 +124,7 @@ public class RequestHandler {
             squareSize = (Integer) data.get("squareSize");
         }
         // convert from mm to meters
-        pipeManager.calib3dPipe.setSquareSize(squareSize / 1000d);
+        pipeManager.calib3dPipe.setSquareSize(squareSize);
         VisionManager.getCurrentUIVisionProcess().pipelineManager.calib3dPipe.settings.videoModeIndex = resolutionIndex;
         VisionManager.getCurrentUIVisionProcess().pipelineManager.setCalibrationMode(true);
         VisionManager.getCurrentUIVisionProcess().getCamera().setVideoMode(resolutionIndex);
@@ -143,6 +145,16 @@ public class RequestHandler {
 
     public static void onCalibrationEnding(Context ctx) throws JsonProcessingException {
         PipelineManager pipeManager = VisionManager.getCurrentUIVisionProcess().pipelineManager;
+
+        var data = kObjectMapper.readValue(ctx.body(), Map.class);
+        double squareSize;
+        try {
+            squareSize = (Double) data.get("squareSize");
+        } catch (Exception e) {
+            squareSize = (Integer) data.get("squareSize");
+        }
+        pipeManager.calib3dPipe.setSquareSize(squareSize);
+
         System.out.println("Finishing Cal");
         if (pipeManager.calib3dPipe.hasEnoughSnapshots()) {
             if (pipeManager.calib3dPipe.tryCalibration()) {
@@ -158,7 +170,7 @@ public class RequestHandler {
 
     public static void onPnpModel(Context ctx) throws JsonProcessingException {
         System.out.println(ctx.body());
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = kObjectMapper;
         List points = objectMapper.readValue(ctx.body(), List.class);
         System.out.println(points);
     }

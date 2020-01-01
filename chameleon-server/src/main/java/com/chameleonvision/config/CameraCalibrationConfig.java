@@ -15,21 +15,25 @@ public class CameraCalibrationConfig {
     @JsonProperty("resolution") public final Size resolution;
     @JsonProperty("cameraMatrix") public final JsonMat cameraMatrix;
     @JsonProperty("distortionCoeffs") public final JsonMat distortionCoeffs;
+    @JsonProperty("squareSize") public final double squareSize;
 
     @JsonCreator
     public CameraCalibrationConfig(
             @JsonProperty("resolution") Size resolution,
             @JsonProperty("cameraMatrix") JsonMat cameraMatrix,
-            @JsonProperty("distortionCoeffs") JsonMat distortionCoeffs) {
+            @JsonProperty("distortionCoeffs") JsonMat distortionCoeffs,
+            @JsonProperty("squareSize") double squareSize) {
         this.resolution = resolution;
         this.cameraMatrix = cameraMatrix;
         this.distortionCoeffs = distortionCoeffs;
+        this.squareSize = squareSize;
     }
 
-    public CameraCalibrationConfig(Size resolution, Mat cameraMatrix, Mat distortionCoeffs) {
+    public CameraCalibrationConfig(Size resolution, Mat cameraMatrix, Mat distortionCoeffs, double squareSize) {
         this.resolution = resolution;
         this.cameraMatrix = JsonMat.fromMat(cameraMatrix);
         this.distortionCoeffs = JsonMat.fromMat(distortionCoeffs);
+        this.squareSize = squareSize;
     }
 
     @JsonIgnoreType

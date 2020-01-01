@@ -33,6 +33,7 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
     private List<StandardCVPipeline.TrackedTarget> poseList = new ArrayList<>();
     Comparator<Point> leftRightComparator = Comparator.comparingDouble(point -> point.x);
     Comparator<Point> verticalComparator = Comparator.comparingDouble(point -> point.y);
+    private double distanceDivisor = 1.0;
 
     public SolvePNPPipe(StandardCVPipelineSettings settings, CameraCalibrationConfig calibration, Rotation2d tilt) {
         super();
@@ -78,6 +79,7 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
             distortionCoefficients.release();
             settings.getDistortionCoeffsAsMat().copyTo(distortionCoefficients);
         }
+        this.distanceDivisor = settings.squareSize;
     }
 
     @Override
@@ -235,7 +237,7 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         var targetAngle = -angle1; // radians
         var targetRotation = -angle2; // radians
         //noinspection UnnecessaryLocalVariable
-        var targetDistance = distance; // meters or whatever the calibration was in
+        var targetDistance = distance * 25.4 / 1000d / distanceDivisor; // meters or whatever the calibration was in
 
         var targetLocation = new Translation2d(targetDistance * FastMath.cos(targetAngle), targetDistance * FastMath.sin(targetAngle));
         target.cameraRelativePose = new Pose2d(targetLocation, new Rotation2d(targetRotation));

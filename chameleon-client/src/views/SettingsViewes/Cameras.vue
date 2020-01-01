@@ -17,7 +17,7 @@
                     <CVselect name="Resolution" v-model="resolutionIndex" :list="resolutionList"/>
                 </v-col>
                 <v-col>
-                    <CVnumberinput name="Square Size (mm)" v-model="squareSize"/>
+                    <CVnumberinput name="Square Size (in)" v-model="squareSize"/>
                 </v-col>
             </v-row>
             <v-row>
@@ -74,7 +74,7 @@
                     text: "Cancel Calibration",
                     color: "red"
                 },
-                squareSize: 2.54,
+                squareSize: 1.0,
                 snapshotAmount: 0,
                 hasEnough: false,
                 snack: false

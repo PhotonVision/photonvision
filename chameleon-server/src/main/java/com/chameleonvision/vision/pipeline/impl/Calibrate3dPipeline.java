@@ -40,6 +40,7 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
 
     private int captureCount = 0;
     private boolean wantsSnapshot = false;
+    private double squareSizeInches;
 
     public Calibrate3dPipeline(StandardCVPipelineSettings settings) {
         super(settings);
@@ -60,7 +61,7 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
     }
 
     public void setSquareSize(double size) {
-        Core.multiply(objP_ORIG, new Scalar(new double[] { size, size, size }), objP);
+        this.squareSizeInches = size;
     }
 
     public void takeSnapshot() {
@@ -139,7 +140,7 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
 
         VideoMode currentVidMode = cameraCapture.getCurrentVideoMode();
         Size resolution = new Size(currentVidMode.width, currentVidMode.height);
-        CameraCalibrationConfig cal = new CameraCalibrationConfig(resolution, cameraMatrix, distortionCoeffs);
+        CameraCalibrationConfig cal = new CameraCalibrationConfig(resolution, cameraMatrix, distortionCoeffs, squareSizeInches);
 
         VisionManager.getCurrentUIVisionProcess().addCalibration(cal);
 
