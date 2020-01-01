@@ -31,7 +31,8 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.chameleonvision.Main</mainClass>
                                 </transformer>
                             </transformers>
@@ -43,20 +44,14 @@
     </build>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <wpilib.version>2020.1.1-beta-3-15-g7b9c6eb</wpilib.version>
+        <wpilib.version>2020.1.1</wpilib.version>
         <opencv.version>3.4.7-2</opencv.version>
     </properties>
     <repositories>
-        <!--WPI official maven repo for frc libs-->
-<!--        <repository>-->
-<!--            <id>WPI</id>-->
-<!--            <name>WPI Maven repo</name>-->
-<!--            <url>https://first.wpi.edu/FRC/roborio/maven/release</url>-->
-<!--        </repository>-->
         <repository>
             <id>WPI</id>
             <name>WPILib Artifactory Server-releases</name>
-            <url>https://frcmaven.wpi.edu:443/artifactory/development</url>
+            <url>https://frcmaven.wpi.edu:443/artifactory/release</url>
         </repository>
     </repositories>
     <dependencies>

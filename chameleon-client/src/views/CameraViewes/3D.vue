@@ -2,7 +2,7 @@
     <div>
         <v-row align="center" justify="start" dense>
             <v-col :cols="6">
-                <CVswitch v-model="value.is3D" name="Enable 3D" @input="handleData('is3D')"/>
+                <CVswitch :disabled="allow3D" v-model="value.is3D" name="Enable 3D" @input="handleData('is3D')"/>
             </v-col>
             <v-col>
                 <CVnumberInput name="Max Height:" v-model="value.targetHeight" @input="handleData('targetHeight')"/>
@@ -62,7 +62,6 @@
                 get() {
                     return this.$store.state.point.targets;
                 }
-
             },
             horizontalFOV: {
                 get() {
@@ -72,6 +71,18 @@
                     let diagonalView = FOV * (Math.PI / 180);
                     let diagonalAspect = Math.hypot(resolution.width, resolution.height);
                     return Math.atan(Math.tan(diagonalView / 2) * (resolution.width / diagonalAspect)) * 2 * (180 / Math.PI)
+                }
+            },
+            allow3D:{
+                get(){
+                    let currentRes = this.$store.state.resolutionList[this.$store.state.pipeline.videoModeIndex];
+                    console.log('change');
+                    for (let res of this.$store.state.cameraSettings.calibration){
+                        if (currentRes.width === res.width && currentRes.height === res.height){
+                            return false;
+                        }
+                    }
+                    return true;
                 }
             }
         }

@@ -5,7 +5,7 @@
                 <span>{{name}}</span>
             </v-col>
             <v-col>
-                <v-switch v-model="localValue" color="#4baf62"/>
+                <v-switch dark :disabled="disabled" v-model="localValue" color="#4baf62"/>
             </v-col>
         </v-row>
     </div>
@@ -14,7 +14,7 @@
 <script>
     export default {
         name: 'CVSwitch',
-        props: ['name', 'value'],
+        props: ['name', 'value', 'disabled'],
         data() {
             return {}
         },
