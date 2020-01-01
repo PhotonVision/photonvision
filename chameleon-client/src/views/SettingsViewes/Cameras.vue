@@ -177,7 +177,7 @@
                     for (let i in this.$store.state.resolutionList) {
                         let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
                         if (!tmp_list.some(e => e.width === res.width && e.height === res.height)) {
-                            res['actualIndex'] = i;
+                            res['actualIndex'] = parseInt(i);
                             tmp_list.push(res);
                         }
                     }
