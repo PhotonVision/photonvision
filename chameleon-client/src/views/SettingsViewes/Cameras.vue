@@ -1,10 +1,11 @@
 <template>
     <div>
         <div>
-            <CVselect name="Camera" :list="cameraList" v-model="currentCameraIndex" @input="handleInput('currentCamera',currentCameraIndex)"/>
+            <CVselect name="Camera" :list="cameraList" v-model="currentCameraIndex"
+                      @input="handleInput('currentCamera',currentCameraIndex)"/>
             <CVnumberinput name="Diagonal FOV" v-model="cameraSettings.fov"/>
             <br>
-            <CVnumberinput name="Camera pitch"  v-model="cameraSettings.tilt" :step="0.01"/>
+            <CVnumberinput name="Camera pitch" v-model="cameraSettings.tilt" :step="0.01"/>
             <br>
             <v-btn style="margin-top:10px" small color="#4baf62" @click="sendCameraSettings">Save Camera Settings
             </v-btn>
@@ -14,7 +15,7 @@
             <v-divider color="white" style="margin-bottom: 10px"/>
             <v-row>
                 <v-col>
-                    <CVselect name="Resolution" v-model="resolutionIndex" :list="resolutionList"/>
+                    <CVselect name="Resolution" v-model="resolutionIndex" :list="stringResolutionList"/>
                 </v-col>
                 <v-col>
                     <CVnumberinput name="Square Size (in)" v-model="squareSize"/>
@@ -99,7 +100,7 @@
                     connection_string += "snapshot"
                 } else {
                     connection_string += "startCalibration";
-                    data['resolution'] = this.resolutionIndex;
+                    data['resolution'] = this.filteredResolutionList[this.resolutionIndex].actualIndex;
                     data['squareSize'] = this.squareSize;
                     self.hasEnough = false;
                 }
@@ -170,13 +171,26 @@
                     this.$store.commit('cameraList', value);
                 }
             },
-            resolutionList: {
+            filteredResolutionList: {
                 get() {
                     let tmp_list = [];
-                    for (let i of this.$store.state.resolutionList) {
-                        tmp_list.push(`${i['width']} X ${i['height']} at ${i['fps']} FPS, ${i['pixelFormat']}`)
+                    for (let i in this.$store.state.resolutionList) {
+                        let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
+                        if (!tmp_list.some(e => e.width === res.width && e.height === res.height)) {
+                            res['actualIndex'] = i;
+                            tmp_list.push(res);
+                        }
                     }
                     return tmp_list;
+                }
+            },
+            stringResolutionList: {
+                get() {
+                    let tmp = [];
+                    for (let i of this.filteredResolutionList) {
+                        tmp.push(`${i['width']} X ${i['height']}`)
+                    }
+                    return tmp
                 }
             },
             cameraSettings: {
