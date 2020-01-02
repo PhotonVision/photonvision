@@ -91,9 +91,14 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
                                 var target = new StandardCVPipeline.TrackedTarget();
                                 target.minAreaRect = rect;
                                 target.contour = contour;
+
                                 target.leftRightDualTargetPair =
                                         Pair.of(Imgproc.boundingRect(firstContour),
                                                 Imgproc.boundingRect(secondContour));
+
+                                target.leftRightRotatedRect =
+                                        Pair.of(Imgproc.minAreaRect(new MatOfPoint2f(firstContour.toArray())),
+                                                Imgproc.minAreaRect(new MatOfPoint2f(secondContour.toArray())));
 
                                 groupedContours.add(target);
                             }

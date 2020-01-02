@@ -120,6 +120,42 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         return points;
     }
 
+    private MatOfPoint2f findCornerMinAreaRect(StandardCVPipeline.TrackedTarget target) {
+        if(target.leftRightRotatedRect == null) return null;
+
+        var centroid = target.minAreaRect.center;
+
+        var left = target.leftRightRotatedRect.getLeft();
+        var right = target.leftRightRotatedRect.getRight();
+
+        // flip if the "left" target is to the right
+        if(left.center.x > right.center.x) {
+            var temp = left;
+            left = right;
+            right = temp;
+        }
+
+        var leftPoints = new Point[4];
+        left.points(leftPoints);
+        var rightPoints = new Point[4];
+        right.points(rightPoints);
+        ArrayList<Point> combinedList = new ArrayList<>(List.of(leftPoints));
+        combinedList.addAll(List.of(rightPoints));
+
+        // start looking in the top left quadrant
+        Comparator<Point> distanceProvider = Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
+
+        var tl = combinedList.stream().filter(point -> point.x < centroid.x && point.y < centroid.y).max(distanceProvider).get();
+        var tr = combinedList.stream().filter(point -> point.x > centroid.x && point.y < centroid.y).max(distanceProvider).get();
+        var bl = combinedList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
+        var br = combinedList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
+
+        boundingBoxResultMat.release();
+        boundingBoxResultMat.fromList(List.of(tl, bl, br, tr));
+
+        return boundingBoxResultMat;
+    }
+
     private MatOfPoint2f findBoundingBoxCorners(StandardCVPipeline.TrackedTarget target) {
 
 //        List<Pair<MatOfPoint2f, CVPipeline2d.Target2d>> list = new ArrayList<>();
@@ -202,7 +238,8 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         return tempCornerList;
     }
 
-    private MatOfPoint2f findCorners2019(StandardCVPipeline.TrackedTarget target, Mat srcImage) {
+    @Deprecated
+    private MatOfPoint2f findGoodFeaturesToTrack2019(StandardCVPipeline.TrackedTarget target, Mat srcImage) {
 
 //        Imgproc.approxPolyDP(new MatOfPoint2f(max_contour.toArray()),approx,epsilon,true);
 
