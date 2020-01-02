@@ -83,30 +83,6 @@ public class SocketHandler {
                         VisionManager.saveCurrentCameraPipelines();
                         break;
                     }
-                    case "duplicatePipeline": {
-                        HashMap pipelineVals = (HashMap) entry.getValue();
-                        int pipelineIndex = (int) pipelineVals.get("pipeline");
-                        int cameraIndex = (int) pipelineVals.get("camera");
-                        ObjectMapper mapper = new ObjectMapper();
-                        CVPipelineSettings origPipeline = currentProcess.pipelineManager.getPipeline(pipelineIndex).settings;
-                        String val = mapper.writeValueAsString(origPipeline);
-                        CVPipelineSettings newPipeline = mapper.readValue(val, origPipeline.getClass());
-
-                        if (cameraIndex != -1) {
-                            VisionProcess newProcess = VisionManager.getVisionProcessByIndex(cameraIndex);
-                            if (newProcess != null) {
-                                currentProcess.pipelineManager.duplicatePipeline(newPipeline, newProcess);
-                            } else {
-                                System.err.println("Failed to get destination camera for pipeline duplication!");
-                            }
-                        } else {
-                            currentProcess.pipelineManager.duplicatePipeline(newPipeline);
-                        }
-
-                        VisionManager.saveCurrentCameraPipelines();
-                        sendFullSettings();
-                        break;
-                    }
                     case "addNewPipeline": {
 //                        HashMap<String, Object> data = (HashMap<String, Object>) entry.getValue();
                         String pipeName = (String) entry.getValue();

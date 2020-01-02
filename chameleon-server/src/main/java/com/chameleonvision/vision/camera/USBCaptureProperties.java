@@ -101,6 +101,10 @@ public class USBCaptureProperties extends CaptureProperties {
         return videoModes;
     }
 
+    public VideoMode getVideoMode(int index){
+        return videoModes.get(index);
+    }
+
     public VideoMode getCurrentVideoMode() { return staticProperties.mode; }
 
     public int getCurrentVideoModeIndex(){

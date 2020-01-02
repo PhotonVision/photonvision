@@ -1,5 +1,6 @@
 package com.chameleonvision.web;
 
+import com.chameleonvision.Exceptions.DuplicatedKeyException;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.network.NetworkIPMode;
 import com.chameleonvision.vision.VisionManager;
@@ -8,7 +9,10 @@ import com.chameleonvision.vision.camera.USBCameraCapture;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision.vision.pipeline.PipelineManager;
 import com.chameleonvision.vision.pipeline.impl.Calibrate3dPipeline;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
@@ -47,40 +51,43 @@ public class RequestHandler {
 
     public static void onDuplicatePipeline(Context ctx) {
         ObjectMapper objectMapper = kObjectMapper;
-
         try {
-            Map newPipelineData = objectMapper.readValue(ctx.body(), Map.class);
+            Map data = objectMapper.readValue(ctx.body(), Map.class);
 
-            int newCam = -1;
-            try {
-                newCam = (Integer) newPipelineData.get("camera");
-            } catch (Exception e) {
-                // ignored
-            }
+            int cameraIndex = (Integer) data.getOrDefault("camera", -1);
 
-            var pipeline = (CVPipelineSettings) newPipelineData.get("pipeline");
+            var pipelineIndex = (Integer) data.get("pipeline");
+            StandardCVPipelineSettings origPipeline = (StandardCVPipelineSettings) VisionManager.getCurrentUIVisionProcess().pipelineManager.getPipeline(pipelineIndex).settings;
+            String tmp = objectMapper.writeValueAsString(origPipeline);
+            StandardCVPipelineSettings newPipeline = objectMapper.readValue(tmp, StandardCVPipelineSettings.class);
 
-            if (newCam == -1) {
-                if (VisionManager.getCurrentCameraPipelineNicknames().contains(pipeline.nickname)) {
-                    ctx.status(400); // BAD REQUEST
-                } else {
-                    VisionManager.getCurrentUIVisionProcess().pipelineManager.addPipeline(pipeline);
+            if (cameraIndex == -1) { // same camera
+
+                VisionManager.getCurrentUIVisionProcess().pipelineManager.duplicatePipeline(newPipeline);
+
+            } else { // another camera
+                var cam = VisionManager.getVisionProcessByIndex(cameraIndex);
+                if (cam != null) {
+                    if (cam.getCamera().getProperties().videoModes.size() < newPipeline.videoModeIndex) {
+                        newPipeline.videoModeIndex = cam.getCamera().getProperties().videoModes.size() - 1;
+                    }
+                    if (newPipeline.is3D){
+                        var calibration = cam.getCamera().getCalibration(cam.getCamera().getProperties().getVideoMode(newPipeline.videoModeIndex));
+                        if (calibration == null){
+                            newPipeline.is3D = false;
+                        }
+                    }
+                    VisionManager.getCurrentUIVisionProcess().pipelineManager.duplicatePipeline(newPipeline, cam);
                     ctx.status(200);
-                }
-            } else {
-                var cam = VisionManager.getVisionProcessByIndex(newCam);
-                if (cam != null && cam.pipelineManager.pipelines.stream().anyMatch(c -> c.settings.nickname.equals(pipeline.nickname))) {
-                    ctx.status(400); // BAD REQUEST
                 } else {
-                    cam.pipelineManager.addPipeline(pipeline);
-                    ctx.status(200);
+                    ctx.status(500);
                 }
             }
-
-        } catch (JsonProcessingException e) {
+        } catch (JsonProcessingException | DuplicatedKeyException ex) {
             ctx.status(500);
         }
     }
+
 
     public static void onCameraSettings(Context ctx) {
         ObjectMapper objectMapper = kObjectMapper;
