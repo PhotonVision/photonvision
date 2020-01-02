@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>, List<StandardCVPipeline.TrackedTarget>> {
 
@@ -228,15 +229,22 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         var corners = new MatOfPoint();
         Imgproc.goodFeaturesToTrack(croppedImage, corners, 8,0.5,5);
 
-        var cornerList = new ArrayList<>(corners.toList());
+        List<Point> cornerList = new ArrayList<>(corners.toList());
         if(cornerList.size() != 8 && cornerList.size() != 4) return null;
         cornerList.sort(leftRightComparator);
+
+        cornerList = cornerList.stream().map(point ->
+            new Point(point.x + slightlyBiggerTl.x, point.y + slightlyBiggerTl.y))
+            .collect(Collectors.toList());
 
         // of these, we want the two leftmost and two rightmost points
         var left1 = cornerList.get(0);
         var left2 = cornerList.get(1);
         var right1 = cornerList.get(0);
         var right2 = cornerList.get(1);
+
+        // TODO maximize distance from the center rather than naively assume the leftmost and rightmost
+        // will have to do per quadrant
 
         var leftOrder = left1.y < left2.y;
         var rightOrder = right1.y < right2.y;
