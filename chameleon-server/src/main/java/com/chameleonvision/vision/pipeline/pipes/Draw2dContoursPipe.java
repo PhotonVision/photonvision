@@ -76,12 +76,6 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<StandardCVPipelin
                         Imgproc.rectangle(input.getLeft(), new Point(box.x, box.y), new Point((box.x + box.width), (box.y + box.height)), Helpers.colorToScalar(settings.maximumBoxColor), settings.boxOutlineSize);
                     }
 
-                    if(settings.showContor) {
-                        MatOfPoint matOfPoint = new MatOfPoint();
-                        matOfPoint.fromArray(target.contour.toArray());
-                        Imgproc.drawContours(input.getLeft(), List.of(matOfPoint), 0, new Scalar(255, 255, 255));
-                    }
-
 //                    contour.release();
                 }
             }
@@ -104,6 +98,5 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<StandardCVPipelin
         public Color centroidColor = Color.GREEN;
         public Color rotatedBoxColor = Color.BLUE;
         public Color maximumBoxColor = Color.RED;
-        public boolean showContor = true;
     }
 }

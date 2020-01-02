@@ -254,7 +254,6 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
         public double yaw = 0.0;
         public double area = 0.0;
         public RotatedRect minAreaRect;
-        public MatOfPoint2f contour;
 
         // 3d stuff
         public Pose2d cameraRelativePose = new Pose2d();
@@ -265,7 +264,6 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
         public Pair<RotatedRect, RotatedRect> leftRightRotatedRect = null;
 
         public void release() {
-            contour.release();
             rVector.release();
             tVector.release();
             imageCornerPoints.release();
