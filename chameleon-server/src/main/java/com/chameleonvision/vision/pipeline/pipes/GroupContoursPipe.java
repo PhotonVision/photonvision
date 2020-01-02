@@ -94,10 +94,14 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
                                         Pair.of(Imgproc.boundingRect(firstContour),
                                                 Imgproc.boundingRect(secondContour));
 
-                                target.leftRightRotatedRect =
-                                        Pair.of(Imgproc.minAreaRect(new MatOfPoint2f(firstContour.toArray())),
-                                                Imgproc.minAreaRect(new MatOfPoint2f(secondContour.toArray())));
+                                tempRectMat.fromArray(firstContour.toArray());
+                                var minAreaRect1 = Imgproc.minAreaRect(tempRectMat);
+                                tempRectMat.fromArray(secondContour.toArray());
+                                var minAreaRect2 = Imgproc.minAreaRect(tempRectMat);
 
+                                target.leftRightRotatedRect =
+                                        Pair.of(minAreaRect1, minAreaRect2);
+                                
                                 groupedContours.add(target);
                             }
                         } catch (IndexOutOfBoundsException e) {
@@ -112,6 +116,8 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
         long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(groupedContours, processTime);
     }
+
+    MatOfPoint2f tempRectMat = new MatOfPoint2f();
 
     private static double calcMomentsX(MatOfPoint c) {
         Moments m = Imgproc.moments(c);
