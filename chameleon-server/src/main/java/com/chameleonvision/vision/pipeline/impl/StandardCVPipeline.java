@@ -89,10 +89,14 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
 
     private final MemoryManager memManager = new MemoryManager(120, 20000);
 
+    private StandardCVPipelineResult resultCache = new StandardCVPipelineResult(List.of(), new Mat(), 0L);
+
     @Override
     public StandardCVPipelineResult runPipeline(Mat inputMat) {
         long totalPipelineTimeNanos = 0;
         long pipelineStartTimeNanos = System.nanoTime();
+
+        resultCache.release();
 
         if (cameraCapture == null) {
             throw new RuntimeException("Pipeline was not initialized before being run!");
@@ -236,6 +240,11 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
         public StandardCVPipelineResult(List<TrackedTarget> targets, Mat outputMat, long processTimeNanos) {
             super(targets, outputMat, processTimeNanos);
         }
+
+        public void release() {
+            targets.forEach(TrackedTarget::release);
+            outputMat.release();
+        }
     }
 
     public static class TrackedTarget {
@@ -254,6 +263,13 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
         public MatOfPoint2f imageCornerPoints = new MatOfPoint2f();
         public Pair<Rect, Rect> leftRightDualTargetPair = null;
         public Pair<RotatedRect, RotatedRect> leftRightRotatedRect = null;
+
+        public void release() {
+            contour.release();
+            rVector.release();
+            tVector.release();
+            imageCornerPoints.release();
+        }
     }
 
 
