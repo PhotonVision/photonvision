@@ -232,15 +232,6 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
         }
 
         memManager.run();
-
-        // release all the results
-        erodeDilateResult.getLeft().release();
-        hsvResult.getLeft().release();
-        findContoursResult.getLeft().forEach(Mat::release);
-        filterContoursResult.getLeft().forEach(Mat::release);
-        speckleRejectResult.getLeft().forEach(Mat::release);
-        groupContoursResult.getLeft().forEach(TrackedTarget::release);
-        sortContoursResult.getLeft().forEach(TrackedTarget::release);
         
         return new StandardCVPipelineResult(collect2dTargetsResult.getLeft(), outputMat, totalPipelineTimeNanos);
     }
