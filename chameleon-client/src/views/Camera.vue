@@ -251,7 +251,12 @@
                 if (!this.anotherCamera) {
                     this.pipelineDuplicate.camera = -1
                 }
-                this.handleInput("duplicatePipeline", this.pipelineDuplicate);
+                // this.handleInput("duplicatePipeline", this.pipelineDuplicate);
+                this.axios.post("http://" + this.$address + "/api/vision/duplicate", this.pipelineDuplicate).then(
+                    function (response) {
+                        
+                    }
+                );
                 this.closeDuplicateDialog();
             },
             openDuplicateDialog() {

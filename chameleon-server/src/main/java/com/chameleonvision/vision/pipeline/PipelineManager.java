@@ -1,5 +1,6 @@
 package com.chameleonvision.vision.pipeline;
 
+import com.chameleonvision.Exceptions.DuplicatedKeyException;
 import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
@@ -188,14 +189,18 @@ public class PipelineManager {
         return pipelines.get(index);
     }
 
-    public void duplicatePipeline(CVPipelineSettings pipeline) {
+    public void duplicatePipeline(CVPipelineSettings pipeline) throws DuplicatedKeyException {
         duplicatePipeline(pipeline, parentProcess);
     }
 
-    public void duplicatePipeline(CVPipelineSettings pipeline, VisionProcess destinationProcess) {
+    public void duplicatePipeline(CVPipelineSettings pipeline, VisionProcess destinationProcess) throws DuplicatedKeyException {
         pipeline.index = destinationProcess.pipelineManager.pipelines.size();
         pipeline.nickname += "(Copy)";
-        destinationProcess.pipelineManager.addPipeline(pipeline);
+        if (destinationProcess.pipelineManager.pipelines.stream().anyMatch(c -> c.settings.nickname.equals(pipeline.nickname))){
+         throw new DuplicatedKeyException("key Already exists");
+        } else{
+            destinationProcess.pipelineManager.addPipeline(pipeline);
+        }
     }
 
     public void renameCurrentPipeline(String newName) {
