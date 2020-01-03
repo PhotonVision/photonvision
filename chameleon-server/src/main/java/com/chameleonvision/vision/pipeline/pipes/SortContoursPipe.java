@@ -19,7 +19,7 @@ public class SortContoursPipe implements Pipe<List<StandardCVPipeline.TrackedTar
     private static final Comparator<StandardCVPipeline.TrackedTarget> SortByLargestComparator = (rect1, rect2) -> Double.compare(rect2.minAreaRect.size.area(), rect1.minAreaRect.size.area());
     private static final Comparator<StandardCVPipeline.TrackedTarget> SortBySmallestComparator = SortByLargestComparator.reversed();
 
-    private static final Comparator<StandardCVPipeline.TrackedTarget> SortByHighestComparator = (rect1, rect2) -> Double.compare(rect2.minAreaRect.center.y, rect1.minAreaRect.center.y);
+    private static final Comparator<StandardCVPipeline.TrackedTarget> SortByHighestComparator = (rect1, rect2) -> Double.compare(rect1.minAreaRect.center.y, rect2.minAreaRect.center.y);
     private static final Comparator<StandardCVPipeline.TrackedTarget> SortByLowestComparator = SortByHighestComparator.reversed();
 
     public static final Comparator<StandardCVPipeline.TrackedTarget> SortByLeftmostComparator = Comparator.comparingDouble(target -> target.minAreaRect.center.x);
