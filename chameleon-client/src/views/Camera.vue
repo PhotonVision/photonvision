@@ -102,10 +102,10 @@
                                  v-if="cameraList.length > 0"
                                  :src="streamAddress" @click="onImageClick"
                                  crossorigin="Anonymous"/>
-                            <span v-else>No Cameras Are connected</span>
+                            <span style="display: block;margin: auto; width: 70%;height: 70%;" v-else>No Cameras Are connected</span>
                         </v-row>
                         <v-row justify="end">
-                            <span style="margin-right: 45px">FPS:{{fps.toFixed(2)}}</span>
+                            <span style="margin-right: 45px">FPS:{{parseFloat(fps).toFixed(2)}}</span>
                         </v-row>
                         <v-row align="center">
                             <v-simple-table
@@ -252,11 +252,7 @@
                     this.pipelineDuplicate.camera = -1
                 }
                 // this.handleInput("duplicatePipeline", this.pipelineDuplicate);
-                this.axios.post("http://" + this.$address + "/api/vision/duplicate", this.pipelineDuplicate).then(
-                    function (response) {
-                        
-                    }
-                );
+                this.axios.post("http://" + this.$address + "/api/vision/duplicate", this.pipelineDuplicate);
                 this.closeDuplicateDialog();
             },
             openDuplicateDialog() {

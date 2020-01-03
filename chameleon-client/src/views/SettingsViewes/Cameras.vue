@@ -35,10 +35,12 @@
                     </v-btn>
                 </v-col>
                 <v-col>
-                    <v-btn color="whitesmoke" small><a style="color: black; text-decoration: none"
-                                                       :href="require('../../assets/chessboard.png')"
-                                                       download="Calibration Board.png">Download Checkerboard</a>
+                    <v-btn color="whitesmoke" small @click="$refs.calibrationFile.click()">
+                        Download Checkerboard
                     </v-btn>
+                    <a ref="calibrationFile" style="color: black; text-decoration: none; display: none"
+                       :href="require('../../assets/chessboard.png')"
+                       download="Calibration Board.png"/>
                 </v-col>
             </v-row>
             <v-row v-if="isCalibrating">
