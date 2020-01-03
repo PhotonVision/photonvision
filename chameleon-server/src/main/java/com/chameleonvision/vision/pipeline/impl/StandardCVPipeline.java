@@ -232,8 +232,9 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
         }
 
         memManager.run();
-        
-        return new StandardCVPipelineResult(collect2dTargetsResult.getLeft(), outputMat, totalPipelineTimeNanos);
+
+        resultCache = new StandardCVPipelineResult(collect2dTargetsResult.getLeft(), outputMat, totalPipelineTimeNanos);
+        return resultCache;
     }
 
     public static class StandardCVPipelineResult extends CVPipelineResult<TrackedTarget> {
