@@ -6,6 +6,7 @@ import com.chameleonvision.vision.pipeline.Pipe;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
+import org.opencv.core.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -78,9 +79,12 @@ public class SortContoursPipe implements Pipe<List<StandardCVPipeline.TrackedTar
             }
         }
 
-        sortedContours = sortedContours.subList(0, Math.min(input.size(), maxTargets - 1));
+        var sublistedContors = new ArrayList<>(sortedContours.subList(0, Math.min(input.size(), maxTargets - 1)));
+        sortedContours.subList(Math.min(input.size(), maxTargets - 1), sortedContours.size()).forEach(StandardCVPipeline.TrackedTarget::release);
+        sortedContours.clear();
+
         long processTime = System.nanoTime() - processStartNanos;
-        return Pair.of(sortedContours, processTime);
+        return Pair.of(sublistedContors, processTime);
     }
 
     private double calcSquareCenterDistance(StandardCVPipeline.TrackedTarget rect) {
