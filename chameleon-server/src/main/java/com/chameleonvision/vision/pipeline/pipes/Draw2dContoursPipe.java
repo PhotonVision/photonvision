@@ -57,6 +57,7 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<StandardCVPipelin
 
                     drawnContours.forEach(Mat::release);
                     drawnContours.clear();
+                    drawnContours = new ArrayList<>();
 
                     r.points(vertices);
                     contour.fromArray(vertices);
