@@ -76,7 +76,6 @@
             allow3D:{
                 get(){
                     let currentRes = this.$store.state.resolutionList[this.$store.state.pipeline.videoModeIndex];
-                    console.log('change');
                     for (let res of this.$store.state.cameraSettings.calibration){
                         if (currentRes.width === res.width && currentRes.height === res.height){
                             return false;
