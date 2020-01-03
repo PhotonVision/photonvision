@@ -103,6 +103,9 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
                                         Pair.of(minAreaRect1, minAreaRect2);
                                 
                                 groupedContours.add(target);
+
+                                // skip the next contour because it's been grouped already
+                                i += 1;
                             }
                         } catch (IndexOutOfBoundsException e) {
                             finalContourList.clear();
