@@ -3,7 +3,7 @@
         <v-row style="width: 400px;" align="center">
             <canvas id="canvasId" width="800" height="800"/>
         </v-row>
-        <v-row style="width: 400px;" align="center" justify="middle">
+        <v-row style="width: 400px;" align="center">
             <v-simple-table
                     style="text-align: center;background-color: transparent; display: block;margin: auto"
                     dense dark>
