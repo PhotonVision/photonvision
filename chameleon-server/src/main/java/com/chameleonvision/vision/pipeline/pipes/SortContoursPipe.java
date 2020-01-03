@@ -82,6 +82,7 @@ public class SortContoursPipe implements Pipe<List<StandardCVPipeline.TrackedTar
         var sublistedContors = new ArrayList<>(sortedContours.subList(0, Math.min(input.size(), maxTargets - 1)));
         sortedContours.subList(Math.min(input.size(), maxTargets - 1), sortedContours.size()).forEach(StandardCVPipeline.TrackedTarget::release);
         sortedContours.clear();
+        sortedContours = new ArrayList<>();
 
         long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(sublistedContors, processTime);
