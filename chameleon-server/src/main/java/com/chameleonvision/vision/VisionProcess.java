@@ -4,6 +4,8 @@ import com.chameleonvision.Debug;
 import com.chameleonvision.config.CameraCalibrationConfig;
 import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.config.ConfigManager;
+import com.chameleonvision.scripting.ScriptEventType;
+import com.chameleonvision.scripting.ScriptManager;
 import com.chameleonvision.config.FullCameraConfiguration;
 import com.chameleonvision.util.LoopingRunnable;
 import com.chameleonvision.util.MathHandler;
@@ -137,6 +139,7 @@ public class VisionProcess {
 
     public void setDriverMode(boolean driverMode) {
         pipelineManager.setDriverMode(driverMode);
+        ScriptManager.queueEvent(driverMode ? ScriptEventType.kEnterDriverMode : ScriptEventType.kExitDriverMode);
         SocketHandler.sendFullSettings();
     }
 
