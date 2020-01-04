@@ -41,6 +41,7 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
     public Pair<List<StandardCVPipeline.TrackedTarget>, Long> run(List<MatOfPoint> input) {
         long processStartNanos = System.nanoTime();
 
+        groupedContours.forEach(StandardCVPipeline.TrackedTarget::release);
         groupedContours.clear();
 
         if (input.size() > (group.equals(TargetGroup.Single) ? 0 : 1)) {
@@ -103,6 +104,9 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
                                         Pair.of(minAreaRect1, minAreaRect2);
                                 
                                 groupedContours.add(target);
+
+                                firstContour.release();
+                                secondContour.release();
 
                                 // skip the next contour because it's been grouped already
                                 i += 1;

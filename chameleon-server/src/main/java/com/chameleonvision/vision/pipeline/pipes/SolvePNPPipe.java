@@ -36,6 +36,7 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
     Comparator<Point> leftRightComparator = Comparator.comparingDouble(point -> point.x);
     Comparator<Point> verticalComparator = Comparator.comparingDouble(point -> point.y);
     private double distanceDivisor = 1.0;
+    Mat scaledTvec = new Mat();
 
     public SolvePNPPipe(StandardCVPipelineSettings settings, CameraCalibrationConfig calibration, Rotation2d tilt) {
         super();
@@ -331,21 +332,19 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
 
         // This should be pzero_world = numpy.matmul(rot_inv, -tvec)
 //        pzero_world  = rot_inv.mul(matScale(tVec, -1));
-        Core.gemm(rot_inv, matScale(tVec, -1), 1, kMat, 0, pzero_world);
+        scaledTvec = matScale(tVec, -1);
+        Core.gemm(rot_inv, scaledTvec, 1, kMat, 0, pzero_world);
 
         var angle2 = FastMath.atan2(pzero_world.get(0, 0)[0], pzero_world.get(2, 0)[0]);
 
         var targetAngle = -angle1; // radians
         var targetRotation = -angle2; // radians
-        //noinspection UnnecessaryLocalVariable
-        var targetDistance = distance * 25.4 / 1000d / distanceDivisor; // meters or whatever the calibration was in
+        var targetDistance = distance * 25.4 / 1000d / distanceDivisor; // This should be meters
 
         var targetLocation = new Translation2d(targetDistance * FastMath.cos(targetAngle), targetDistance * FastMath.sin(targetAngle));
         target.cameraRelativePose = new Pose2d(targetLocation, new Rotation2d(targetRotation));
         target.rVector = rVec;
         target.tVector = tVec;
-
-//        System.out.println("Found target at pose: " + target.cameraRelativePose.toString());
 
         return target;
     }
@@ -358,7 +357,7 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
      */
     public Mat matScale(Mat src, double factor) {
         Mat dst = new Mat(src.rows(),src.cols(),src.type());
-        Scalar s = new Scalar(factor);
+        Scalar s = new Scalar(factor); // TODO check if we need to add more elements to this
         Core.multiply(src, s, dst);
         return dst;
     }
