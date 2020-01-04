@@ -20,7 +20,7 @@ public class NetworkManager {
 			return;
 		}
 
-		Platform platform = Platform.getCurrentPlatform();
+		Platform platform = Platform.CurrentPlatform;
 
 		if (platform.isLinux()) {
 			networking = new LinuxNetworking();

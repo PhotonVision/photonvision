@@ -1,5 +1,6 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
+import com.chameleonvision.vision.pipeline.Pipe;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
@@ -10,9 +11,6 @@ public class ErodeDilatePipe implements Pipe<Mat, Mat> {
     private boolean erode;
     private boolean dilate;
     private Mat kernel;
-
-    private Mat processBuffer = new Mat();
-    private Mat outputMat = new Mat();
 
     public ErodeDilatePipe(boolean erode, boolean dilate, int kernelSize) {
         this.erode = erode;

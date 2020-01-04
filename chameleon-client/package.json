@@ -27,6 +27,7 @@
     "babel-eslint": "^10.0.1",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
+    "papaparse": "^5.1.0",
     "sass": "^1.17.4",
     "sass-loader": "^7.1.0",
     "vue-cli-plugin-vuetify": "^0.6.3",

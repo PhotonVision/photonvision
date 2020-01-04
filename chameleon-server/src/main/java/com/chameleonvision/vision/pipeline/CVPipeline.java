@@ -9,7 +9,7 @@ import org.opencv.core.Mat;
  */
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
     protected Mat outputMat = new Mat();
-    CameraCapture cameraCapture;
+    protected CameraCapture cameraCapture;
     public S settings;
 
     protected CVPipeline(S settings) {
@@ -29,8 +29,4 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         cameraCapture.setGain((int) settings.gain);
     }
     abstract public R runPipeline(Mat inputMat);
-
-    public boolean is3D() {
-        return (this instanceof CVPipeline3d);
-    }
 }

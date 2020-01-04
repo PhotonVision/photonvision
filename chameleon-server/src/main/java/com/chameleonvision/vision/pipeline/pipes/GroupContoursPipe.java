@@ -3,6 +3,8 @@ package com.chameleonvision.vision.pipeline.pipes;
 import com.chameleonvision.util.MathHandler;
 import com.chameleonvision.vision.enums.TargetGroup;
 import com.chameleonvision.vision.enums.TargetIntersection;
+import com.chameleonvision.vision.pipeline.Pipe;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -13,7 +15,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRect>> {
+public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCVPipeline.TrackedTarget>> {
 
     private static final Comparator<MatOfPoint> sortByMomentsX =
             Comparator.comparingDouble(GroupContoursPipe::calcMomentsX);
@@ -21,7 +23,7 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
     private TargetGroup group;
     private TargetIntersection intersection;
 
-    private List<RotatedRect> groupedContours = new ArrayList<>();
+    private List<StandardCVPipeline.TrackedTarget> groupedContours = new ArrayList<>();
     private MatOfPoint2f intersectMatA = new MatOfPoint2f();
     private MatOfPoint2f intersectMatB = new MatOfPoint2f();
 
@@ -36,9 +38,10 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
     }
 
     @Override
-    public Pair<List<RotatedRect>, Long> run(List<MatOfPoint> input) {
+    public Pair<List<StandardCVPipeline.TrackedTarget>, Long> run(List<MatOfPoint> input) {
         long processStartNanos = System.nanoTime();
 
+        groupedContours.forEach(StandardCVPipeline.TrackedTarget::release);
         groupedContours.clear();
 
         if (input.size() > (group.equals(TargetGroup.Single) ? 0 : 1)) {
@@ -55,7 +58,9 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
                         contour.fromArray(c.toArray());
                         if (contour.cols() != 0 && contour.rows() != 0) {
                             RotatedRect rect = Imgproc.minAreaRect(contour);
-                            groupedContours.add(rect);
+                            var target = new StandardCVPipeline.TrackedTarget();
+                            target.minAreaRect = rect;
+                            groupedContours.add(target);
                         }
                     });
                     break;
@@ -77,15 +82,34 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
 
                             intersectMatA.release();
                             intersectMatB.release();
-                            firstContour.release();
-                            secondContour.release();
 
                             MatOfPoint2f contour = new MatOfPoint2f();
                             contour.fromList(finalContourList);
 
                             if (contour.cols() != 0 && contour.rows() != 0) {
                                 RotatedRect rect = Imgproc.minAreaRect(contour);
-                                groupedContours.add(rect);
+                                var target = new StandardCVPipeline.TrackedTarget();
+                                target.minAreaRect = rect;
+
+                                target.leftRightDualTargetPair =
+                                        Pair.of(Imgproc.boundingRect(firstContour),
+                                                Imgproc.boundingRect(secondContour));
+
+                                tempRectMat.fromArray(firstContour.toArray());
+                                var minAreaRect1 = Imgproc.minAreaRect(tempRectMat);
+                                tempRectMat.fromArray(secondContour.toArray());
+                                var minAreaRect2 = Imgproc.minAreaRect(tempRectMat);
+
+                                target.leftRightRotatedRect =
+                                        Pair.of(minAreaRect1, minAreaRect2);
+                                
+                                groupedContours.add(target);
+
+                                firstContour.release();
+                                secondContour.release();
+
+                                // skip the next contour because it's been grouped already
+                                i += 1;
                             }
                         } catch (IndexOutOfBoundsException e) {
                             finalContourList.clear();
@@ -99,6 +123,8 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<RotatedRec
         long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(groupedContours, processTime);
     }
+
+    MatOfPoint2f tempRectMat = new MatOfPoint2f();
 
     private static double calcMomentsX(MatOfPoint c) {
         Moments m = Imgproc.moments(c);

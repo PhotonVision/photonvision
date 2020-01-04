@@ -1,10 +1,13 @@
 package com.chameleonvision.vision.pipeline;
 
+import com.chameleonvision.Exceptions.DuplicatedKeyException;
 import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
+import com.chameleonvision.vision.pipeline.impl.*;
 import com.chameleonvision.web.SocketHandler;
+import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.NetworkTableEntry;
 
 import java.util.Comparator;
@@ -16,10 +19,12 @@ import java.util.List;
 public class PipelineManager {
 
     private static final int DRIVERMODE_INDEX = -1;
+    private static final int CAL_3D_INDEX = -2;
 
     public final LinkedList<CVPipeline> pipelines = new LinkedList<>();
 
     public final CVPipeline driverModePipeline = new DriverVisionPipeline(new CVPipelineSettings());
+    public final Calibrate3dPipeline calib3dPipe = new Calibrate3dPipeline(new StandardCVPipelineSettings());
 
     private final VisionProcess parentProcess;
     private int lastPipelineIndex;
@@ -29,7 +34,7 @@ public class PipelineManager {
     public PipelineManager(VisionProcess visionProcess, List<CVPipelineSettings> loadedPipelineSettings) {
         parentProcess = visionProcess;
         if (loadedPipelineSettings == null || loadedPipelineSettings.size() == 0) {
-            pipelines.add(new CVPipeline2d("New Pipeline"));
+            pipelines.add(new StandardCVPipeline("New Pipeline"));
         } else {
             for (CVPipelineSettings setting : loadedPipelineSettings) {
                 addInternalPipeline(setting);
@@ -71,10 +76,8 @@ public class PipelineManager {
     }
 
     private void addInternalPipeline(CVPipelineSettings setting) {
-        if (setting instanceof CVPipeline3dSettings) {
-            pipelines.add(new CVPipeline3d((CVPipeline3dSettings) setting));
-        } else if (setting instanceof CVPipeline2dSettings) {
-            pipelines.add(new CVPipeline2d((CVPipeline2dSettings) setting));
+        if (setting instanceof StandardCVPipelineSettings) {
+            pipelines.add(new StandardCVPipeline((StandardCVPipelineSettings) setting));
         } else {
             System.out.println("Non 2D/3D pipelines not supported!");
         }
@@ -82,11 +85,18 @@ public class PipelineManager {
     }
 
     public void setDriverMode(boolean driverMode) {
-        if (driverMode) {
-            setCurrentPipeline(DRIVERMODE_INDEX);
-        } else {
-            setCurrentPipeline(lastPipelineIndex);
-        }
+        if (driverMode) setCurrentPipeline(DRIVERMODE_INDEX);
+        else setCurrentPipeline(lastPipelineIndex);
+    }
+
+    public void setCalibrationMode(boolean calibrationMode) {
+        setCurrentPipeline((calibrationMode ? CAL_3D_INDEX : lastPipelineIndex));
+    }
+
+    public void enableCalibrationMode(VideoMode mode) {
+        parentProcess.setVideoMode(mode);
+        calib3dPipe.setVideoMode(mode);
+        setCalibrationMode(true);
     }
 
     public boolean getDriverMode() {
@@ -98,32 +108,45 @@ public class PipelineManager {
     }
 
     public CVPipeline getCurrentPipeline() {
-        if (currentPipelineIndex <= DRIVERMODE_INDEX) {
+        if (currentPipelineIndex == DRIVERMODE_INDEX) {
             return driverModePipeline;
+        } else if (currentPipelineIndex <= CAL_3D_INDEX) {
+          return calib3dPipe;
         } else {
             return pipelines.get(currentPipelineIndex);
         }
     }
 
     public void setCurrentPipeline(int index) {
-        CVPipeline newPipeline;
+        CVPipeline newPipeline=null;
         if (index == DRIVERMODE_INDEX) {
             newPipeline = driverModePipeline;
 
-            // if we're changing into driver mode, try to set the nt entry to frue
+            // if we're changing into driver mode, try to set the nt entry to true
             parentProcess.setDriverModeEntry(true);
-        } else {
-            newPipeline = pipelines.get(index);
+        } else if (index == CAL_3D_INDEX) {
+            parentProcess.setDriverModeEntry(true);
 
-            // if we're switching out of driver mode, try to set the nt entry to false
-            parentProcess.setDriverModeEntry(false);
+            newPipeline = calib3dPipe;
+        } else {
+            if (index < pipelines.size()&&index>=0) {
+                newPipeline = pipelines.get(index);
+
+                // if we're switching out of driver mode, try to set the nt entry to false
+                parentProcess.setDriverModeEntry(false);
+            }
+            else
+                {
+                    //TODO alert/warn user that pipeline doesnt exsits
+                    System.err.println("Index is out of bounds");
+                }
         }
         if (newPipeline != null) {
             lastPipelineIndex = currentPipelineIndex;
             currentPipelineIndex = index;
             getCurrentPipeline().initPipeline(parentProcess.getCamera());
 
-            if(ConfigManager.settings.currentCamera.equals(parentProcess.getCamera().getProperties().name)) {
+            if (ConfigManager.settings.currentCamera.equals(parentProcess.getCamera().getProperties().name)) {
                 ConfigManager.settings.currentPipeline = currentPipelineIndex;
 
                 HashMap<String, Object> pipeChange = new HashMap<>();
@@ -136,7 +159,9 @@ public class PipelineManager {
                 }
             }
             newPipeline.initPipeline(parentProcess.getCamera());
-            if(ntIndexEntry != null) {
+            if (parentProcess.cameraStreamer != null)
+                parentProcess.cameraStreamer.setDivisor(newPipeline.settings.streamDivisor, true);
+            if (ntIndexEntry != null) {
                 ntIndexEntry.setDouble(index);
             }
         }
@@ -153,13 +178,9 @@ public class PipelineManager {
         savePipelineConfig(pipeline.settings);
     }
 
-    public void addNewPipeline(boolean is3D) {
-        CVPipeline newPipeline;
-        if (!is3D) {
-            newPipeline = new CVPipeline2d();
-        } else {
-            newPipeline = new CVPipeline3d();
-        }
+    public void addNewPipeline(String piplineName) {
+        StandardCVPipeline newPipeline = new StandardCVPipeline();
+        newPipeline.settings.nickname = piplineName;
         newPipeline.settings.index = pipelines.size();
         addPipeline(newPipeline);
     }
@@ -168,19 +189,22 @@ public class PipelineManager {
         return pipelines.get(index);
     }
 
-    public void duplicatePipeline(CVPipelineSettings pipeline) {
+    public void duplicatePipeline(CVPipelineSettings pipeline) throws DuplicatedKeyException {
         duplicatePipeline(pipeline, parentProcess);
     }
 
-    public void duplicatePipeline(CVPipelineSettings pipeline, VisionProcess destinationProcess) {
+    public void duplicatePipeline(CVPipelineSettings pipeline, VisionProcess destinationProcess) throws DuplicatedKeyException {
         pipeline.index = destinationProcess.pipelineManager.pipelines.size();
         pipeline.nickname += "(Copy)";
-        destinationProcess.pipelineManager.addPipeline(pipeline);
+        if (destinationProcess.pipelineManager.pipelines.stream().anyMatch(c -> c.settings.nickname.equals(pipeline.nickname))){
+         throw new DuplicatedKeyException("key Already exists");
+        } else{
+            destinationProcess.pipelineManager.addPipeline(pipeline);
+        }
     }
 
     public void renameCurrentPipeline(String newName) {
         CVPipelineSettings settings = getCurrentPipeline().settings;
-        settings.nickname = newName;
         renamePipelineConfig(settings, newName);
     }
 

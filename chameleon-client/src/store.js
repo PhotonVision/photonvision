@@ -33,13 +33,20 @@ export default new Vuex.Store({
             targetGrouping: 0,
             targetIntersection: 0,
             sortMode: 0,
-            multiple:false,
+            multiple: false,
             isBinary: 0,
             calibrationMode: 0,
-            videoModeIndex:0,
-            streamDivisor:0
+            videoModeIndex: 0,
+            streamDivisor: 0,
+            is3D: false
         },
-        cameraSettings: {},
+        cameraSettings: {
+            calibration: [],
+            fov: 0,
+            resolution: 0,
+            streamDivisor: 0,
+            tilt: 0
+        },
         resolutionList: [],
         port: 1181,
         currentCameraIndex: 0,

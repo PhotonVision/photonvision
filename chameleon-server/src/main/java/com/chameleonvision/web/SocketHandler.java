@@ -1,16 +1,21 @@
 package com.chameleonvision.web;
 
+import com.chameleonvision.config.CameraCalibrationConfig;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.CameraCapture;
+import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.camera.USBCameraCapture;
+import com.chameleonvision.vision.enums.ImageRotationMode;
 import com.chameleonvision.vision.enums.StreamDivisor;
 import com.chameleonvision.vision.pipeline.CVPipeline;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.cscore.VideoMode;
 import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
@@ -20,16 +25,17 @@ import org.msgpack.jackson.dataformat.MessagePackFactory;
 
 import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 
 public class SocketHandler {
 
     private static List<WsContext> users;
     private static ObjectMapper objectMapper;
+
+    private static final Object broadcastLock = new Object();
 
     SocketHandler() {
         users = new ArrayList<>();
@@ -54,7 +60,7 @@ public class SocketHandler {
                 VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
                 CameraCapture currentCamera = currentProcess.getCamera();
                 CVPipeline currentPipeline = currentProcess.pipelineManager.getCurrentPipeline();
-
+//                System.out.println("entry.getKey()+entry.getValue()= " + entry.getKey() + entry.getValue());
                 switch (entry.getKey()) {
                     case "driverMode": {
                         HashMap<String, Object> data = (HashMap<String, Object>) entry.getValue();
@@ -77,39 +83,17 @@ public class SocketHandler {
                         VisionManager.saveCurrentCameraPipelines();
                         break;
                     }
-                    case "duplicatePipeline": {
-                        HashMap pipelineVals = (HashMap) entry.getValue();
-                        int pipelineIndex = (int) pipelineVals.get("pipeline");
-                        int cameraIndex = (int) pipelineVals.get("camera");
-                        ObjectMapper mapper = new ObjectMapper();
-                        CVPipelineSettings origPipeline = currentProcess.pipelineManager.getPipeline(pipelineIndex).settings;
-                        String val = mapper.writeValueAsString(origPipeline);
-                        CVPipelineSettings newPipeline = mapper.readValue(val, origPipeline.getClass());
-
-                        if (cameraIndex != -1) {
-                            VisionProcess newProcess = VisionManager.getVisionProcessByIndex(cameraIndex);
-                            if (newProcess != null) {
-                                currentProcess.pipelineManager.duplicatePipeline(newPipeline, newProcess);
-                            } else {
-                                System.err.println("Failed to get destination camera for pipeline duplication!");
-                            }
-                        } else {
-                            currentProcess.pipelineManager.duplicatePipeline(newPipeline);
-                        }
-
-                        VisionManager.saveCurrentCameraPipelines();
+                    case "addNewPipeline": {
+//                        HashMap<String, Object> data = (HashMap<String, Object>) entry.getValue();
+                        String pipeName = (String) entry.getValue();
+                        // TODO: add to UI selection for new 2d/3d
+                        currentProcess.pipelineManager.addNewPipeline(pipeName);
                         sendFullSettings();
+                        VisionManager.saveCurrentCameraPipelines();
                         break;
                     }
                     case "command": {
                         switch ((String) entry.getValue()) {
-                            case "addNewPipeline":
-                                // TODO: add to UI selection for new 2d/3d
-                                boolean is3d = false;
-                                currentProcess.pipelineManager.addNewPipeline(is3d);
-                                sendFullSettings();
-                                VisionManager.saveCurrentCameraPipelines();
-                                break;
                             case "deleteCurrentPipeline":
                                 currentProcess.pipelineManager.deleteCurrentPipeline();
                                 sendFullSettings();
@@ -129,20 +113,54 @@ public class SocketHandler {
                         sendFullSettings();
                         break;
                     }
+                    case "is3D": {
+                        VisionManager.getCurrentUIVisionProcess().setIs3d((Boolean) entry.getValue());
+                        break;
+                    }
                     case "currentPipeline": {
                         currentProcess.pipelineManager.setCurrentPipeline((Integer) entry.getValue());
                         sendFullSettings();
                         break;
                     }
+                    case "isPNPCalibration": {
+                        currentProcess.pipelineManager.setCalibrationMode((Boolean) entry.getValue());
+                        break;
+                    }
+                    case "takeCalibrationSnapshot": {
+                        currentProcess.pipelineManager.calib3dPipe.takeSnapshot();
+                    }
                     default: {
 
-                        // only change settings when we aren't in driver mode
-                        if(currentProcess.pipelineManager.getDriverMode()) {
+                        switch (entry.getKey()) {//Pre field value set
+                            case "rotationMode": {//Create new CaptureStaticProperties with new width and height, reset crosshair calib
+                                ImageRotationMode oldRot = currentPipeline.settings.rotationMode;
+                                ImageRotationMode newRot = ImageRotationMode.class.getEnumConstants()[(Integer) entry.getValue()];
+                                CaptureStaticProperties prop = currentCamera.getProperties().getStaticProperties();
+                                int width, height;
+                                if (oldRot.isRotated() != newRot.isRotated()) {
+                                    width = prop.mode.height;
+                                    height = prop.mode.width;
+                                    //Creates new video mode with new width and height to create new CaptureStaticProperties and applies it
+                                    currentCamera.getProperties().setStaticProperties(new CaptureStaticProperties(
+                                            new VideoMode(prop.mode.pixelFormat, width, height, prop.mode.fps), prop.fov));
+                                }
+                                prop = currentCamera.getProperties().getStaticProperties();
+                                currentProcess.cameraStreamer.recalculateDivision();
+                                if (currentPipeline instanceof StandardCVPipeline)
+                                    ((StandardCVPipeline) currentPipeline).settings.point = Arrays.asList(prop.mode.width / 2, prop.mode.height / 2);//Reset Crosshair in single point calib
+                                break;
+                            }
+
+                        }
+
+
+                        if (currentProcess.pipelineManager.getDriverMode()) {
                             setField(currentProcess.pipelineManager.driverModePipeline.settings, entry.getKey(), entry.getValue());
                         } else {
                             setField(currentPipeline.settings, entry.getKey(), entry.getValue());
                         }
 
+                        //Post field value set
                         switch (entry.getKey()) {
                             case "exposure": {
                                 currentCamera.setExposure((Integer) entry.getValue());
@@ -152,11 +170,14 @@ public class SocketHandler {
                                 currentCamera.setBrightness((Integer) entry.getValue());
                                 break;
                             }
-                            case "videoModeIndex":{
+                            case "videoModeIndex": {
+                                if (currentPipeline instanceof StandardCVPipeline)
+                                    ((StandardCVPipeline) currentPipeline).settings.point = new ArrayList<>();//This will reset the calibration
                                 currentCamera.setVideoMode((Integer) entry.getValue());
+                                currentProcess.cameraStreamer.recalculateDivision();
                                 break;
                             }
-                            case "streamDivisor":{
+                            case "streamDivisor": {
                                 currentProcess.cameraStreamer.setDivisor(StreamDivisor.values()[(Integer) entry.getValue()], true);
                                 break;
                             }
@@ -186,18 +207,22 @@ public class SocketHandler {
     }
 
     private static void broadcastMessage(Object obj, WsContext userToSkip) {
-        if (users != null)
-            for (WsContext user : users) {
-                if (userToSkip != null && user.getSessionId().equals(userToSkip.getSessionId())) {
-                    continue;
-                }
-                try {
-                    ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(obj));
-                    user.send(b);
-                } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+        synchronized (broadcastLock) {
+            if (users != null) {
+                var userList = users;
+                for (WsContext user : userList) {
+                    if (userToSkip != null && user.getSessionId().equals(userToSkip.getSessionId())) {
+                        continue;
+                    }
+                    try {
+                        ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(obj));
+                        user.send(b);
+                    } catch (JsonProcessingException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
+        }
     }
 
     public static void broadcastMessage(Object obj) {
@@ -236,9 +261,16 @@ public class SocketHandler {
         HashMap<String, Object> tmp = new HashMap<>();
         VisionProcess currentVisionProcess = VisionManager.getCurrentUIVisionProcess();
         USBCameraCapture currentCamera = VisionManager.getCurrentUIVisionProcess().getCamera();
+
         tmp.put("fov", currentCamera.getProperties().getFOV());
         tmp.put("streamDivisor", currentVisionProcess.cameraStreamer.getDivisor().ordinal());
         tmp.put("resolution", currentVisionProcess.getCamera().getProperties().getCurrentVideoModeIndex());
+        tmp.put("tilt", currentVisionProcess.getCamera().getProperties().getTilt().getDegrees());
+        
+        List<CameraCalibrationConfig.UICameraCalibrationConfig> calibrations = currentCamera.getAllCalibrationData().stream()
+                .map(CameraCalibrationConfig.UICameraCalibrationConfig::new).collect(Collectors.toList());
+        tmp.put("calibration", calibrations);
+        
         return tmp;
     }
 

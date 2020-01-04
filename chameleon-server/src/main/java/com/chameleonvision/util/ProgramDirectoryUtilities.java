@@ -24,17 +24,14 @@ public class ProgramDirectoryUtilities
     {
         if (runningFromJAR())
         {
+            if (Platform.isRaspberryPi()) {
+                return "/boot/chameleon-vision";
+            }
             return getCurrentJARDirectory();
         } else
         {
             return System.getProperty("user.dir");
-//            return getCurrentProjectDirectory();
         }
-    }
-
-    private static String getCurrentProjectDirectory()
-    {
-        return new File("").getAbsolutePath();
     }
 
     private static String getCurrentJARDirectory()

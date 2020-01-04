@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.chameleon-vision.main</groupId>
     <artifactId>chameleon-vision</artifactId>
-    <version>2.0-RELEASE</version>
+    <version>2.1-RELEASE</version>
     <build>
         <plugins>
             <!--setup for java jdk 12-->
@@ -31,7 +31,8 @@
                         </goals>
                         <configuration>
                             <transformers>
-                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.chameleonvision.Main</mainClass>
                                 </transformer>
                             </transformers>
@@ -43,18 +44,14 @@
     </build>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <wpilib.version>2020.1.2</wpilib.version>
+        <opencv.version>3.4.7-2</opencv.version>
     </properties>
     <repositories>
-        <!--WPI official maven repo for frc libs-->
-<!--        <repository>-->
-<!--            <id>WPI</id>-->
-<!--            <name>WPI Maven repo</name>-->
-<!--            <url>https://first.wpi.edu/FRC/roborio/maven/release</url>-->
-<!--        </repository>-->
         <repository>
             <id>WPI</id>
             <name>WPILib Artifactory Server-releases</name>
-            <url>https://frcmaven.wpi.edu:443/artifactory/development</url>
+            <url>https://frcmaven.wpi.edu:443/artifactory/release</url>
         </repository>
     </repositories>
     <dependencies>
@@ -136,37 +133,37 @@
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-java</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
         </dependency>
         <!--frc cscore interface libs-->
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
             <classifier>linuxaarch64bionic</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
             <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.cscore</groupId>
             <artifactId>cscore-jni</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
@@ -174,45 +171,45 @@
         <dependency>
             <groupId>edu.wpi.first.cameraserver</groupId>
             <artifactId>cameraserver-java</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
         </dependency>
 
         <!--frc network table java libs-->
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-java</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
         </dependency>
 
         <!--frc network tables interface libs-->
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
             <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
             <classifier>linuxaarch64bionic</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.ntcore</groupId>
             <artifactId>ntcore-jni</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
 
@@ -220,43 +217,43 @@
         <dependency>
             <groupId>edu.wpi.first.wpiutil</groupId>
             <artifactId>wpiutil-java</artifactId>
-            <version>2020.1.1-beta-3-12-gb8c1024</version>
+            <version>${wpilib.version}</version>
         </dependency>
 
         <!-- WPI OpenCV for all supported platforms -->
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-java</artifactId>
-            <version>3.4.7-2</version>
+            <version>${opencv.version}</version>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
-            <version>3.4.7-2</version>
+            <version>${opencv.version}</version>
             <classifier>linuxaarch64bionic</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
-            <version>3.4.7-2</version>
+            <version>${opencv.version}</version>
             <classifier>linuxraspbian</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
-            <version>3.4.7-2</version>
+            <version>${opencv.version}</version>
             <classifier>linuxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
-            <version>3.4.7-2</version>
+            <version>${opencv.version}</version>
             <classifier>osxx86-64</classifier>
         </dependency>
         <dependency>
             <groupId>edu.wpi.first.thirdparty.frc2020.opencv</groupId>
             <artifactId>opencv-jni</artifactId>
-            <version>3.4.7-2</version>
+            <version>${opencv.version}</version>
             <classifier>windowsx86-64</classifier>
         </dependency>
     </dependencies>

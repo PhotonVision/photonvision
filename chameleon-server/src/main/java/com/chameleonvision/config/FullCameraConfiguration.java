@@ -7,13 +7,15 @@ import java.util.List;
 public class FullCameraConfiguration {
     public final CameraJsonConfig cameraConfig;
     public final List<CVPipelineSettings> pipelines;
-    public final CVPipelineSettings drivermode;
+    public final CVPipelineSettings driverMode;
+    public final List<CameraCalibrationConfig> calibration;
     public final CameraConfig fileConfig;
 
-    FullCameraConfiguration(CameraJsonConfig cameraConfig, List<CVPipelineSettings> pipelines, CVPipelineSettings drivermode, CameraConfig fileConfig) {
+    FullCameraConfiguration(CameraJsonConfig cameraConfig, List<CVPipelineSettings> pipelines, CVPipelineSettings driverMode, List<CameraCalibrationConfig> calibration, CameraConfig fileConfig) {
         this.cameraConfig = cameraConfig;
         this.pipelines = pipelines;
-        this.drivermode = drivermode;
+        this.driverMode = driverMode;
+        this.calibration = calibration;
         this.fileConfig = fileConfig;
     }
 }

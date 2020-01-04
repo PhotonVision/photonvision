@@ -17,12 +17,16 @@
         props: ['rawPoint'],
         methods: {
             clearPoint() {
-                this.handleInput('point', [0, 0]);
+                this.handleInput('point', []);
                 this.$emit('update');
             },
             takePoint() {
-                this.handleInput('point', this.rawPoint);
-                this.$emit('update');
+                if (this.rawPoint[0] && this.rawPoint[1]) {
+                    this.handleInput('point', this.rawPoint);
+                    this.$emit('update');
+                } else {
+                    this.$emit('snackbar',"No target found");
+                }
             }
         }
     }

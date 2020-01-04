@@ -23,7 +23,7 @@ public enum Platform {
 	private static final String OS_ARCH = System.getProperty("os.arch");
 	public static final Platform CurrentPlatform = getCurrentPlatform();
 
-	public boolean isWindows() {
+    public boolean isWindows() {
 		return this == WINDOWS_64;
 	}
 
@@ -33,6 +33,10 @@ public enum Platform {
 
 	public boolean isMac() {
 		return this == MACOS_64;
+	}
+
+	public static boolean isRaspberryPi() {
+		return CurrentPlatform.equals(LINUX_RASPBIAN);
 	}
 
 	private static ShellExec shell = new ShellExec(true, false);

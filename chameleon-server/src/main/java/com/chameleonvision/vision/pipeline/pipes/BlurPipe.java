@@ -1,10 +1,8 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
+import com.chameleonvision.vision.pipeline.Pipe;
 import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.CvException;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 
 public class BlurPipe implements Pipe<Mat, Mat> {
 

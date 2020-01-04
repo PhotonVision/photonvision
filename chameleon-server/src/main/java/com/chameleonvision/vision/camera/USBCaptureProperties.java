@@ -5,6 +5,7 @@ import com.chameleonvision.util.Platform;
 import com.chameleonvision.vision.image.CaptureProperties;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 
 import java.util.Arrays;
 import java.util.List;
@@ -12,7 +13,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class USBCaptureProperties extends com.chameleonvision.vision.image.CaptureProperties {
+public class USBCaptureProperties extends CaptureProperties {
     public static final double DEFAULT_FOV = 70;
     private static final int DEFAULT_EXPOSURE = 50;
     private static final int DEFAULT_BRIGHTNESS = 50;
@@ -100,10 +101,16 @@ public class USBCaptureProperties extends com.chameleonvision.vision.image.Captu
         return videoModes;
     }
 
+    public VideoMode getVideoMode(int index){
+        return videoModes.get(index);
+    }
+
     public VideoMode getCurrentVideoMode() { return staticProperties.mode; }
 
     public int getCurrentVideoModeIndex(){
         return getVideoModes().indexOf(getCurrentVideoMode());
     }
+
+
 
 }

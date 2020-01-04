@@ -40,13 +40,13 @@
                     if (isNaN(m) === false && isNaN(b) === false) {
                         this.sendSlope(m, b, true);
                     } else {
-                        this.$emit('snackbar');
+                        this.$emit('snackbar',"Points are too close");
                     }
                     this.pointA = undefined;
                     this.pointB = undefined;
                 }
             },
-            sendSlope(m, b, valid) {
+            sendSlope(m, b) {
                 this.handleInput('dualTargetCalibrationM', m);
                 this.handleInput('dualTargetCalibrationB', b);
                 this.$emit('update');

@@ -14,13 +14,14 @@ import org.opencv.imgproc.Imgproc;
 public class CameraStreamer {
     private final CameraCapture cameraCapture;
     private final String name;
-    private StreamDivisor divisor = StreamDivisor.NONE;
+    private StreamDivisor divisor;
     private CvSource cvSource;
     private final Object streamBufferLock = new Object();
     private Mat streamBuffer = new Mat();
     private Size size;
 
-    public CameraStreamer(CameraCapture cameraCapture, String name) {
+    public CameraStreamer(CameraCapture cameraCapture, String name,StreamDivisor div) {
+        this.divisor = div;
         this.cameraCapture = cameraCapture;
         this.name = name;
         this.cvSource = CameraServer.getInstance().putVideo(name,
@@ -35,26 +36,31 @@ public class CameraStreamer {
     }
 
     public void setDivisor(StreamDivisor newDivisor, boolean updateUI) {
-        if (divisor != newDivisor) {
-            this.divisor = newDivisor;
-            var camValues = cameraCapture.getProperties();
-            var newWidth = camValues.getStaticProperties().imageWidth / newDivisor.value;
-            var newHeight = camValues.getStaticProperties().imageHeight / newDivisor.value;
-            this.size = new Size(newWidth, newHeight);
-            synchronized (streamBufferLock) {
-                this.streamBuffer = new Mat(newWidth, newHeight, CvType.CV_8UC3);
-                this.cvSource = CameraServer.getInstance().putVideo(this.name,
-                        cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
-                        cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value);
-            }
-            if (updateUI) {
-                SocketHandler.sendFullSettings();
-            }
+        this.divisor = newDivisor;
+        var camValues = cameraCapture.getProperties();
+        var newWidth = camValues.getStaticProperties().imageWidth / newDivisor.value;
+        var newHeight = camValues.getStaticProperties().imageHeight / newDivisor.value;
+        this.size = new Size(newWidth, newHeight);
+        synchronized (streamBufferLock) {
+            this.streamBuffer = new Mat(newWidth, newHeight, CvType.CV_8UC3);
+            VideoMode oldVideoMode = cvSource.getVideoMode();
+            cvSource.setVideoMode(new VideoMode(oldVideoMode.pixelFormat,
+                    cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
+                    cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value,
+                    oldVideoMode.fps));
         }
+        if (updateUI) {
+            SocketHandler.sendFullSettings();
+        }
+
     }
 
     public StreamDivisor getDivisor() {
         return divisor;
+    }
+
+    public void recalculateDivision() {
+        setDivisor(this.divisor, false);
     }
 
     public void setNewVideoMode(VideoMode newVideoMode) {

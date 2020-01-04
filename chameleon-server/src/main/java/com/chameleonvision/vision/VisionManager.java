@@ -6,7 +6,6 @@ import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.config.FullCameraConfiguration;
 import com.chameleonvision.util.Helpers;
 import com.chameleonvision.util.Platform;
-import com.chameleonvision.vision.camera.CameraCapture;
 import com.chameleonvision.vision.camera.USBCameraCapture;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import edu.wpi.cscore.UsbCamera;
@@ -84,9 +83,9 @@ public class VisionManager {
 
             CameraJsonConfig cameraJsonConfig = config.cameraConfig;
 
-            USBCameraCapture camera = new USBCameraCapture(cameraJsonConfig);
-            VisionProcess process = new VisionProcess(camera, cameraJsonConfig.name, config.pipelines);
-            process.pipelineManager.driverModePipeline.settings = config.drivermode;
+            USBCameraCapture camera = new USBCameraCapture(config);
+            VisionProcess process = new VisionProcess(camera, config);
+            process.pipelineManager.driverModePipeline.settings = config.driverMode;
             visionProcesses.add(new VisionProcessManageable(i, cameraJsonConfig.name, process));
         }
         currentUIVisionProcess = getVisionProcessByIndex(0);
@@ -100,6 +99,10 @@ public class VisionManager {
 
     public static VisionProcess getCurrentUIVisionProcess() {
         return currentUIVisionProcess;
+    }
+
+    public static CameraConfig getCurrentCameraConfig() {
+        return getCameraConfig(currentUIVisionProcess);
     }
 
     public static CameraConfig getCameraConfig(VisionProcess process) {

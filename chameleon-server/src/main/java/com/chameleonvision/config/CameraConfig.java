@@ -1,5 +1,6 @@
 package com.chameleonvision.config;
 
+import com.chameleonvision.util.FileHelper;
 import com.chameleonvision.util.JacksonHelper;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 
@@ -8,58 +9,85 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class CameraConfig {
 
-    private static final Path camerasConfigFolderPath = Paths.get(ConfigManager.SettingsPath.toString(), "cameras");
+    private static final Path camerasConfigFolderPath = Path.of(ConfigManager.SettingsPath.toString(), "cameras");
 
-    private final String cameraConfigName;
     private final CameraJsonConfig preliminaryConfig;
+    private final Path configFolderPath;
+    private final Path configPath;
+    private final Path driverModePath;
+    private final Path calibrationPath;
+    final Path pipelineFolderPath;
 
     public final PipelineConfig pipelineConfig;
 
     CameraConfig(CameraJsonConfig config) {
         preliminaryConfig = config;
-        cameraConfigName = preliminaryConfig.name.replace(' ', '_');
+        String cameraConfigName = preliminaryConfig.name.replace(' ', '_');
         pipelineConfig = new PipelineConfig(this);
+
+        configFolderPath = Path.of(camerasConfigFolderPath.toString(), cameraConfigName);
+        configPath = Path.of(configFolderPath.toString(), "camera.json");
+        driverModePath = Path.of(configFolderPath.toString(), "drivermode.json");
+        calibrationPath = Path.of(configFolderPath.toString(), "calibration.json");
+        pipelineFolderPath = Paths.get(configFolderPath.toString(), "pipelines");
     }
 
     public FullCameraConfiguration load() {
         checkFolder();
         checkConfig();
         checkDriverMode();
+        checkCalibration();
         pipelineConfig.check();
 
-        return new FullCameraConfiguration(loadConfig(), pipelineConfig.load(), loadDriverMode(), this);
+        return new FullCameraConfiguration(loadConfig(), pipelineConfig.load(), loadDriverMode(), loadCalibration(), this);
     }
 
     private CameraJsonConfig loadConfig() {
         CameraJsonConfig config = preliminaryConfig;
         try {
-            config = JacksonHelper.deserializer(getConfigPath(), CameraJsonConfig.class);
+            config = JacksonHelper.deserializer(configPath, CameraJsonConfig.class);
         } catch (IOException e) {
-            System.err.printf("Failed to load camera config: %s - using default.\n", getConfigPath().toString());
+            System.err.printf("Failed to load camera config: %s - using default.\n", configPath.toString());
         }
         return config;
     }
 
     private CVPipelineSettings loadDriverMode() {
         CVPipelineSettings driverMode = new CVPipelineSettings();
-        driverMode.nickname = "DRIVERMODE";
         try {
-            driverMode = JacksonHelper.deserializer(getDriverModePath(), CVPipelineSettings.class);
+            driverMode = JacksonHelper.deserializer(driverModePath, CVPipelineSettings.class);
         } catch (IOException e) {
-            System.err.println("Failed to load camera drivermode: " + getDriverModePath().toString());
+            System.err.println("Failed to load camera drivermode: " + driverModePath.toString());
+        }
+        if (driverMode != null) {
+            driverMode.nickname = "DRIVERMODE";
+            driverMode.index = -1;
         }
         return driverMode;
     }
 
+    private List<CameraCalibrationConfig> loadCalibration() {
+        List<CameraCalibrationConfig> calibrations = new ArrayList<>();
+        try {
+            calibrations = List.of(Objects.requireNonNull(JacksonHelper.deserializer(calibrationPath, CameraCalibrationConfig[].class)));
+        } catch (Exception e) {
+            System.err.println("Failed to load camera calibration: " + driverModePath.toString());
+        }
+        return calibrations;
+    }
+
     void saveConfig(CameraJsonConfig config) {
         try {
-            JacksonHelper.serializer(getConfigPath(), config);
+            JacksonHelper.serializer(configPath, config);
+            FileHelper.setFilePerms(configPath);
         } catch (IOException e) {
-            System.err.println("Failed to save camera config file: " + getConfigPath().toString());
+            System.err.println("Failed to save camera config file: " + configPath.toString());
         }
     }
 
@@ -69,20 +97,33 @@ public class CameraConfig {
 
     public void saveDriverMode(CVPipelineSettings driverMode) {
         try {
-            JacksonHelper.serializer(getDriverModePath(), driverMode);
+            JacksonHelper.serializer(driverModePath, driverMode);
+            FileHelper.setFilePerms(driverModePath);
         } catch (IOException e) {
-            System.err.println("Failed to save camera drivermode file: " + getDriverModePath().toString());
+            System.err.println("Failed to save camera drivermode file: " + driverModePath.toString());
+        }
+    }
+
+
+    public void saveCalibration(List<CameraCalibrationConfig> cal) {
+        CameraCalibrationConfig[] configs = cal.toArray(new CameraCalibrationConfig[0]);
+        try {
+            JacksonHelper.serializer(calibrationPath, configs);
+            FileHelper.setFilePerms(calibrationPath);
+        } catch (IOException e) {
+            System.err.println("Failed to save camera calibration file: " + calibrationPath.toString());
         }
     }
 
     void checkFolder() {
-        if (!getConfigFolderExists()) {
+        if (!configFolderExists()) {
             try {
-                if (!(new File(getConfigFolderPath().toUri()).mkdirs())) {
-                    System.err.println("Failed to create camera config folder: " + getConfigFolderPath().toString());
+                if (!(new File(configFolderPath.toUri()).mkdirs())) {
+                    System.err.println("Failed to create camera config folder: " + configFolderPath.toString());
                 }
+                FileHelper.setFilePerms(configFolderPath);
             } catch(Exception e) {
-                System.err.println("Failed to create camera config folder: " + getConfigFolderPath().toString());
+                System.err.println("Failed to create camera config folder: " + configFolderPath.toString());
             }
         }
     }
@@ -90,9 +131,10 @@ public class CameraConfig {
     private void checkConfig() {
         if (!configExists()) {
             try {
-                JacksonHelper.serializer(getConfigPath(), preliminaryConfig);
+                JacksonHelper.serializer(configPath, preliminaryConfig);
+                FileHelper.setFilePerms(configPath);
             } catch (IOException e) {
-                System.err.println("Failed to create camera config file: " + getConfigPath().toString());
+                System.err.println("Failed to create camera config file: " + configPath.toString());
             }
         }
     }
@@ -102,38 +144,38 @@ public class CameraConfig {
             try {
                 CVPipelineSettings newDriverModeSettings = new CVPipelineSettings();
                 newDriverModeSettings.nickname = "DRIVERMODE";
-                JacksonHelper.serializer(getDriverModePath(), newDriverModeSettings);
+                JacksonHelper.serializer(driverModePath, newDriverModeSettings);
+                FileHelper.setFilePerms(driverModePath);
             } catch (IOException e) {
-                System.err.println("Failed to create camera drivermode file: " + getDriverModePath().toString());
+                System.err.println("Failed to create camera drivermode file: " + driverModePath.toString());
             }
         }
     }
 
-    private Path getConfigFolderPath() {
-        return Paths.get(camerasConfigFolderPath.toString(), cameraConfigName);
+    private void checkCalibration() {
+        if (!calibrationExists()) {
+            try {
+                List<CameraCalibrationConfig> calibrations = new ArrayList<>();
+                JacksonHelper.serializer(calibrationPath, calibrations.toArray());
+            } catch (IOException e) {
+                System.err.println("Failed to create camera calibration file: " + calibrationPath.toString());
+            }
+        }
     }
 
-    private Path getConfigPath() {
-        return Paths.get(getConfigFolderPath().toString(), "camera.json");
-    }
-
-    private Path getDriverModePath() {
-        return Paths.get(getConfigFolderPath().toString(), "drivermode.json");
-    }
-
-    private boolean getConfigFolderExists() {
-        return Files.exists(getConfigFolderPath());
-    }
-
-    Path getPipelineFolderPath() {
-        return Paths.get(getConfigFolderPath().toString(), "pipelines");
+    private boolean configFolderExists() {
+        return Files.exists(configFolderPath);
     }
 
     private boolean configExists() {
-        return getConfigFolderExists() && Files.exists(getConfigPath());
+        return configFolderExists() && Files.exists(configPath);
     }
 
     private boolean driverModeExists() {
-        return getConfigFolderExists() && Files.exists(getDriverModePath());
+        return configFolderExists() && Files.exists(driverModePath);
+    }
+
+    private boolean calibrationExists() {
+        return configFolderExists() && Files.exists(calibrationPath);
     }
 }
