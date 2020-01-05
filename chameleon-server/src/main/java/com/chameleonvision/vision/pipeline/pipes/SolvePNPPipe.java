@@ -37,6 +37,7 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
     Comparator<Point> verticalComparator = Comparator.comparingDouble(point -> point.y);
     private double distanceDivisor = 1.0;
     Mat scaledTvec = new Mat();
+    private Comparator<Point> distanceProvider = Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
 
     public SolvePNPPipe(StandardCVPipelineSettings settings, CameraCalibrationConfig calibration, Rotation2d tilt) {
         super();
@@ -121,7 +122,36 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         return points;
     }
 
-    private MatOfPoint2f findCornerMinAreaRect(StandardCVPipeline.TrackedTarget target) {
+    /**
+     * Find the target using the outermost tape corners and a dual target.
+     * @param target the target.
+     * @return The four outermost tape corners.
+     */
+    private MatOfPoint2f find2020VisionTarget(StandardCVPipeline.TrackedTarget target) {
+        if(target.rawContour.cols() < 1) return null;
+
+        var centroid = target.minAreaRect.center;
+        var contour = target.rawContour;
+        var combinedList = contour.toList();
+
+        // start looking in the top left quadrant
+        var tl = combinedList.stream().filter(point -> point.x < centroid.x && point.y < centroid.y).max(distanceProvider).get();
+        var tr = combinedList.stream().filter(point -> point.x > centroid.x && point.y < centroid.y).max(distanceProvider).get();
+        var bl = combinedList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
+        var br = combinedList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
+
+        boundingBoxResultMat.release();
+        boundingBoxResultMat.fromList(List.of(tl, bl, br, tr));
+
+        return boundingBoxResultMat;
+    }
+
+    /**
+     * Find the target using the outermost tape corners and a dual target.
+     * @param target the target.
+     * @return The four outermost tape corners.
+     */
+    private MatOfPoint2f findDualTargetCornerMinAreaRect(StandardCVPipeline.TrackedTarget target) {
         if(target.leftRightRotatedRect == null) return null;
 
         var centroid = target.minAreaRect.center;
@@ -144,8 +174,6 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         combinedList.addAll(List.of(rightPoints));
 
         // start looking in the top left quadrant
-        Comparator<Point> distanceProvider = Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
-
         var tl = combinedList.stream().filter(point -> point.x < centroid.x && point.y < centroid.y).max(distanceProvider).get();
         var tr = combinedList.stream().filter(point -> point.x > centroid.x && point.y < centroid.y).max(distanceProvider).get();
         var bl = combinedList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();

@@ -45,6 +45,7 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
 
         groupedContours.forEach(StandardCVPipeline.TrackedTarget::release);
         groupedContours.clear();
+        contourBuffer.release();
 
         if (input.size() > (group.equals(TargetGroup.Single) ? 0 : 1)) {
 
@@ -61,6 +62,7 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
                             RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
                             var target = new StandardCVPipeline.TrackedTarget();
                             target.minAreaRect = rect;
+                            target.rawContour = contourBuffer;
                             groupedContours.add(target);
                         }
                     });
@@ -91,18 +93,21 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
                                 var target = new StandardCVPipeline.TrackedTarget();
                                 target.minAreaRect = rect;
 
+                                // find left and right bouding rectangles
                                 target.leftRightDualTargetPair =
                                         Pair.of(Imgproc.boundingRect(firstContour),
                                                 Imgproc.boundingRect(secondContour));
 
+                                // find left and right min area rectangles
                                 tempRectMat.fromArray(firstContour.toArray());
                                 var minAreaRect1 = Imgproc.minAreaRect(tempRectMat);
                                 tempRectMat.fromArray(secondContour.toArray());
                                 var minAreaRect2 = Imgproc.minAreaRect(tempRectMat);
-
                                 target.leftRightRotatedRect =
                                         Pair.of(minAreaRect1, minAreaRect2);
-                                
+
+                                target.rawContour = contourBuffer;
+
                                 groupedContours.add(target);
 
                                 firstContour.release();
