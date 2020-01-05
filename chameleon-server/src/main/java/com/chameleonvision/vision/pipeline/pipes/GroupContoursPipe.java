@@ -23,6 +23,8 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
     private TargetGroup group;
     private TargetIntersection intersection;
 
+    private MatOfPoint2f contourBuffer = new MatOfPoint2f();
+
     private List<StandardCVPipeline.TrackedTarget> groupedContours = new ArrayList<>();
     private MatOfPoint2f intersectMatA = new MatOfPoint2f();
     private MatOfPoint2f intersectMatB = new MatOfPoint2f();
@@ -54,10 +56,9 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
             switch (group) {
                 case Single: {
                     input.forEach(c -> {
-                        MatOfPoint2f contour = new MatOfPoint2f();
-                        contour.fromArray(c.toArray());
-                        if (contour.cols() != 0 && contour.rows() != 0) {
-                            RotatedRect rect = Imgproc.minAreaRect(contour);
+                        contourBuffer.fromArray(c.toArray());
+                        if (contourBuffer.cols() != 0 && contourBuffer.rows() != 0) {
+                            RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
                             var target = new StandardCVPipeline.TrackedTarget();
                             target.minAreaRect = rect;
                             groupedContours.add(target);
@@ -83,11 +84,10 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
                             intersectMatA.release();
                             intersectMatB.release();
 
-                            MatOfPoint2f contour = new MatOfPoint2f();
-                            contour.fromList(finalContourList);
+                            dualTargetcontor.fromList(finalContourList);
 
-                            if (contour.cols() != 0 && contour.rows() != 0) {
-                                RotatedRect rect = Imgproc.minAreaRect(contour);
+                            if (dualTargetcontor.cols() != 0 && dualTargetcontor.rows() != 0) {
+                                RotatedRect rect = Imgproc.minAreaRect(dualTargetcontor);
                                 var target = new StandardCVPipeline.TrackedTarget();
                                 target.minAreaRect = rect;
 
