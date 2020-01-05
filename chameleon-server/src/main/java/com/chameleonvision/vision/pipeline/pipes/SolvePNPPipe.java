@@ -13,7 +13,6 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -42,11 +41,28 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
     public SolvePNPPipe(StandardCVPipelineSettings settings, CameraCalibrationConfig calibration, Rotation2d tilt) {
         super();
         setCameraCoeffs(calibration);
-        setTarget(settings.targetWidth, settings.targetHeight);
+//        setBoundingBoxTarget(settings.targetWidth, settings.targetHeight);
+        // TODO add proper year differentiation
+        set2020Target(true);
+
         this.tilt_angle = tilt.getRadians();
     }
 
-    public void setTarget(double targetWidth, double targetHeight) {
+    public void set2020Target(boolean isHighGoal) {
+        if(isHighGoal) {
+            // tl, bl, br, tr is the order
+            List<Point3> corners = List.of(
+                new Point3(-16.25, 0, 0),
+                new Point3(-9.819867, -17, 0),
+                new Point3(9.819867, -17, 0),
+                new Point3(16.25, 0, 0));
+            setObjectCorners(corners);
+        } else {
+            setBoundingBoxTarget(7, 11);
+        }
+    }
+
+    public void setBoundingBoxTarget(double targetWidth, double targetHeight) {
         // order is left top, left bottom, right bottom, right top
 
         List<Point3> corners = List.of(
@@ -66,7 +82,8 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
 
     public void setConfig(StandardCVPipelineSettings settings, CameraCalibrationConfig camConfig, Rotation2d tilt) {
         setCameraCoeffs(camConfig);
-        setTarget(settings.targetWidth, settings.targetHeight);
+//        setBoundingBoxTarget(settings.targetWidth, settings.targetHeight);
+        // TODO add proper year differentiation
         tilt_angle = tilt.getRadians();
     }
 
