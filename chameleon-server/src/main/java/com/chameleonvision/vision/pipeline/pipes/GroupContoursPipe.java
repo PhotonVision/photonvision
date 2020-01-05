@@ -84,10 +84,10 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
                             intersectMatA.release();
                             intersectMatB.release();
 
-                            dualTargetcontor.fromList(finalContourList);
+                            contourBuffer.fromList(finalContourList);
 
-                            if (dualTargetcontor.cols() != 0 && dualTargetcontor.rows() != 0) {
-                                RotatedRect rect = Imgproc.minAreaRect(dualTargetcontor);
+                            if (contourBuffer.cols() != 0 && contourBuffer.rows() != 0) {
+                                RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
                                 var target = new StandardCVPipeline.TrackedTarget();
                                 target.minAreaRect = rect;
 

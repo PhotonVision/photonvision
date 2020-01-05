@@ -120,3 +120,4 @@ New client/chameleon-client/*
 *.prefs
 *.jfr
 .DS_Store
+*.iml
