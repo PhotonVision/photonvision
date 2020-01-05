@@ -36,7 +36,6 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
     Comparator<Point> verticalComparator = Comparator.comparingDouble(point -> point.y);
     private double distanceDivisor = 1.0;
     Mat scaledTvec = new Mat();
-    private Comparator<Point> distanceProvider = Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
 
     public SolvePNPPipe(StandardCVPipelineSettings settings, CameraCalibrationConfig calibration, Rotation2d tilt) {
         super();
@@ -148,6 +147,8 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         if(target.rawContour.cols() < 1) return null;
 
         var centroid = target.minAreaRect.center;
+        Comparator<Point> distanceProvider = Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
+
         var contour = target.rawContour;
         var combinedList = contour.toList();
 
@@ -172,6 +173,7 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         if(target.leftRightRotatedRect == null) return null;
 
         var centroid = target.minAreaRect.center;
+        Comparator<Point> distanceProvider = Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
 
         var left = target.leftRightRotatedRect.getLeft();
         var right = target.leftRightRotatedRect.getRight();
