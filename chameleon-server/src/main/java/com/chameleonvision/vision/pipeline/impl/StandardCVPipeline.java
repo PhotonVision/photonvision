@@ -263,12 +263,15 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
         public MatOfPoint2f imageCornerPoints = new MatOfPoint2f();
         public Pair<Rect, Rect> leftRightDualTargetPair = null;
         public Pair<RotatedRect, RotatedRect> leftRightRotatedRect = null;
+        public MatOfPoint2f rawContour = kMat2f;
 
         public void release() {
             rVector.release();
             tVector.release();
             imageCornerPoints.release();
         }
+
+        private static final MatOfPoint2f kMat2f = new MatOfPoint2f();
     }
 
 
