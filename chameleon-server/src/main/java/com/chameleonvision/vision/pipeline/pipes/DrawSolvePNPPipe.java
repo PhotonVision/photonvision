@@ -83,6 +83,7 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
                 var point = new Point(it.imageCornerPoints.get(i, 0));
                 Imgproc.circle(image, point, 4, new Scalar(0, 255, 0), 5);
             }
+            Imgproc.circle(image, it.minAreaRect.center, 4, new Scalar(200, 0, 100), 5);
 
             // sketch out floor
             Imgproc.line(image, pts.get(0), pts.get(1), new Scalar(0, 255, 0), 3);

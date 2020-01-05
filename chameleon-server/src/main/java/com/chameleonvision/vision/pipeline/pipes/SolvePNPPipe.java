@@ -107,7 +107,8 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         long processStartNanos = System.nanoTime();
         poseList.clear();
         for(var target: targets) {
-            var corners = (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
+            var corners = find2020VisionTarget(target);// (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
+            if(corners == null) continue;
             var pose = calculatePose(corners, target);
             if(pose != null) poseList.add(pose);
         }
