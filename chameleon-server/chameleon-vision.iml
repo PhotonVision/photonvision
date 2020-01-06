@@ -58,16 +58,16 @@
     <orderEntry type="library" exported="" name="Maven: edu.wpi.first.cameraserver:cameraserver-java:2020.1.2" level="project" />
     <orderEntry type="library" exported="" name="Maven: edu.wpi.first.ntcore:ntcore-java:2020.1.2" level="project" />
     <orderEntry type="library" exported="" name="Maven: edu.wpi.first.ntcore:ntcore-jni:osxx86-64:2020.1.2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxraspbian:2020.1.2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxx86-64:2020.1.2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxaarch64bionic:2020.1.2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.ntcore:ntcore-jni:windowsx86-64:2020.1.2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.wpiutil:wpiutil-java:2020.1.2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-java:3.4.7-2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:linuxaarch64bionic:3.4.7-2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:linuxraspbian:3.4.7-2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:linuxx86-64:3.4.7-2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:osxx86-64:3.4.7-2" level="project" />
-    <orderEntry type="library" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:windowsx86-64:3.4.7-2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxraspbian:2020.1.2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxx86-64:2020.1.2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.ntcore:ntcore-jni:linuxaarch64bionic:2020.1.2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.ntcore:ntcore-jni:windowsx86-64:2020.1.2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.wpiutil:wpiutil-java:2020.1.2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-java:3.4.7-2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:linuxaarch64bionic:3.4.7-2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:linuxraspbian:3.4.7-2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:linuxx86-64:3.4.7-2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:osxx86-64:3.4.7-2" level="project" />
+    <orderEntry type="library" exported="" name="Maven: edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:windowsx86-64:3.4.7-2" level="project" />
   </component>
 </module>
