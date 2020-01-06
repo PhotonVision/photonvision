@@ -23,7 +23,8 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
 
     public DrawSolvePNPPipe(CameraCalibrationConfig settings) {
         setConfig(settings);
-        setObjectBox(14.5, 6, 2);
+//        setObjectBox(14.5, 6, 2);
+        set2020Box();
     }
 
     public void setObjectBox(double targetWidth, double targetHeight, double targetDepth) {
@@ -39,6 +40,20 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
                 new Point3(-targetWidth/2d, targetHeight/2d, -targetDepth),
                 new Point3(targetWidth/2d, targetHeight/2d, -targetDepth),
                 new Point3(targetWidth/2d, -targetHeight/2d, -targetDepth)
+        );
+    }
+
+    public void set2020Box() {
+        boxCornerMat.release();
+        boxCornerMat = new MatOfPoint3f(
+                new Point3(-16.25, 0, 0),
+                new Point3(-9.819867, -17, 0),
+                new Point3(9.819867, -17, 0),
+                new Point3(16.25, 0, 0),
+                new Point3(-16.25, 0, -6),
+                new Point3(-9.819867, -17, -6),
+                new Point3(9.819867, -17, -6),
+                new Point3(16.25, 0, -6)
         );
     }
 
@@ -58,13 +73,15 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
         this.distortionCoefficients = distortionMatrix_;
     }
 
+    MatOfPoint2f imagePoints = new MatOfPoint2f();
+
     @Override
     public Pair<Mat, Long> run(Pair<Mat, List<StandardCVPipeline.TrackedTarget>> targets) {
         long processStartNanos = System.nanoTime();
 
         var image = targets.getLeft();
         for(var it : targets.getRight()) {
-            MatOfPoint2f imagePoints = new MatOfPoint2f();
+
             try {
                 Calib3d.projectPoints(boxCornerMat, it.rVector, it.tVector, this.cameraMatrix, this.distortionCoefficients, imagePoints, new Mat() , 0);
             } catch (Exception e) {
