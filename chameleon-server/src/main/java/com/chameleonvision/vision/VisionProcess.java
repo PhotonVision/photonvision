@@ -220,10 +220,11 @@ public class VisionProcess {
                     point.put("fps", visionRunnable.fps);
                     point.put("targets", webTargets);
                     point.put("rawPoint", center);
-                    WebSend.put("point", point);
-                    SocketHandler.broadcastMessage(WebSend);
+                } else {
+                    point.put("fps", visionRunnable.fps);
                 }
-
+                WebSend.put("point", point);
+                SocketHandler.broadcastMessage(WebSend);
             }
         }
     }
