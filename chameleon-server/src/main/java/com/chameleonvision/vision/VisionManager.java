@@ -44,7 +44,8 @@ public class VisionManager {
             VideoCapture cap = new VideoCapture(info.dev);
             if (cap.isOpened()) {
                 cap.release();
-                String name = info.name;
+                // Filter non-ascii characters because ext4 doesn't play nice with unicode in directory names
+                String name = info.name.replaceAll("[^\\x00-\\x7F]", "");
                 while (usbCameraInfosByCameraName.containsKey(name)) {
                     suffix++;
                     name = String.format("%s (%d)", name, suffix);
