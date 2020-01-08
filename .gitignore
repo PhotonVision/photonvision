@@ -113,10 +113,11 @@ chameleon-server/.classpath
 chameleon-server/.project
 chameleon-server/settings
 chameleon-server/dependency-reduced-pom.xml
-chameleon-server/chameleon-vision.iml
+# chameleon-server/chameleon-vision.iml
 
 New client/chameleon-client/*
 
 *.prefs
 *.jfr
 .DS_Store
+# *.iml

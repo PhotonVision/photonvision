@@ -23,6 +23,8 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
     private TargetGroup group;
     private TargetIntersection intersection;
 
+    private MatOfPoint2f contourBuffer = new MatOfPoint2f();
+
     private List<StandardCVPipeline.TrackedTarget> groupedContours = new ArrayList<>();
     private MatOfPoint2f intersectMatA = new MatOfPoint2f();
     private MatOfPoint2f intersectMatB = new MatOfPoint2f();
@@ -43,6 +45,7 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
 
         groupedContours.forEach(StandardCVPipeline.TrackedTarget::release);
         groupedContours.clear();
+        contourBuffer.release();
 
         if (input.size() > (group.equals(TargetGroup.Single) ? 0 : 1)) {
 
@@ -54,12 +57,12 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
             switch (group) {
                 case Single: {
                     input.forEach(c -> {
-                        MatOfPoint2f contour = new MatOfPoint2f();
-                        contour.fromArray(c.toArray());
-                        if (contour.cols() != 0 && contour.rows() != 0) {
-                            RotatedRect rect = Imgproc.minAreaRect(contour);
+                        contourBuffer.fromArray(c.toArray());
+                        if (contourBuffer.cols() != 0 && contourBuffer.rows() != 0) {
+                            RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
                             var target = new StandardCVPipeline.TrackedTarget();
                             target.minAreaRect = rect;
+                            target.rawContour = contourBuffer;
                             groupedContours.add(target);
                         }
                     });
@@ -83,26 +86,28 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
                             intersectMatA.release();
                             intersectMatB.release();
 
-                            MatOfPoint2f contour = new MatOfPoint2f();
-                            contour.fromList(finalContourList);
+                            contourBuffer.fromList(finalContourList);
 
-                            if (contour.cols() != 0 && contour.rows() != 0) {
-                                RotatedRect rect = Imgproc.minAreaRect(contour);
+                            if (contourBuffer.cols() != 0 && contourBuffer.rows() != 0) {
+                                RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
                                 var target = new StandardCVPipeline.TrackedTarget();
                                 target.minAreaRect = rect;
 
+                                // find left and right bouding rectangles
                                 target.leftRightDualTargetPair =
                                         Pair.of(Imgproc.boundingRect(firstContour),
                                                 Imgproc.boundingRect(secondContour));
 
+                                // find left and right min area rectangles
                                 tempRectMat.fromArray(firstContour.toArray());
                                 var minAreaRect1 = Imgproc.minAreaRect(tempRectMat);
                                 tempRectMat.fromArray(secondContour.toArray());
                                 var minAreaRect2 = Imgproc.minAreaRect(tempRectMat);
-
                                 target.leftRightRotatedRect =
                                         Pair.of(minAreaRect1, minAreaRect2);
-                                
+
+                                target.rawContour = contourBuffer;
+
                                 groupedContours.add(target);
 
                                 firstContour.release();

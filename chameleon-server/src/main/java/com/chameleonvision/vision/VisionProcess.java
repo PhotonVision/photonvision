@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpiutil.CircularBuffer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -36,7 +35,7 @@ import java.util.stream.Collectors;
 public class VisionProcess {
 
     private final USBCameraCapture cameraCapture;
-    private final CameraStreamerRunnable streamRunnable;
+//    private final CameraStreamerRunnable streamRunnable;
     private final VisionProcessRunnable visionRunnable;
     private final CameraConfig fileConfig;
     public final CameraStreamer cameraStreamer;
@@ -73,7 +72,7 @@ public class VisionProcess {
 
         // Thread to put frames on the dashboard
         this.cameraStreamer = new CameraStreamer(cameraCapture, config.cameraConfig.name, pipelineManager.getCurrentPipeline().settings.streamDivisor);
-        this.streamRunnable = new CameraStreamerRunnable(30, cameraStreamer);
+//        this.streamRunnable = new CameraStreamerRunnable(30, cameraStreamer);
 
         // Thread to process vision data
         this.visionRunnable = new VisionProcessRunnable();
@@ -125,7 +124,7 @@ public class VisionProcess {
         ntLatencyEntry = newTable.getEntry("latency");
         ntValidEntry = newTable.getEntry("is_valid");
         ntAuxListEntry = newTable.getEntry("aux_targets");
-        ntPoseEntry = newTable.getEntry("poseList");
+        ntPoseEntry = newTable.getEntry("pose");
         ntDriveModeListenerID = ntDriverModeEntry.addListener(this::setDriverMode, EntryListenerFlags.kUpdate);
         ntPipelineListenerID = ntPipelineEntry.addListener(this::setPipeline, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
@@ -150,7 +149,11 @@ public class VisionProcess {
      */
     private void setPipeline(EntryNotification notification) {
         var wantedPipelineIndex = (int) notification.value.getDouble();
-        pipelineManager.setCurrentPipeline(wantedPipelineIndex);
+        if (pipelineManager.pipelines.size() - 1 < wantedPipelineIndex) {
+            ntPipelineEntry.setDouble(pipelineManager.getCurrentPipelineIndex());
+        } else {
+            pipelineManager.setCurrentPipeline(wantedPipelineIndex);
+        }
     }
 
     public void setDriverModeEntry(boolean isDriverMode) {
@@ -177,44 +180,49 @@ public class VisionProcess {
                 List<Double> center = new ArrayList<>();
 
 
-
                 if (data.hasTarget) {
                     if (data instanceof StandardCVPipeline.StandardCVPipelineResult) {
                         StandardCVPipeline.StandardCVPipelineResult result = (StandardCVPipeline.StandardCVPipelineResult) data;
                         StandardCVPipeline.TrackedTarget bestTarget = result.targets.get(0);
-                        if (((StandardCVPipelineSettings) pipelineManager.getCurrentPipeline().settings).multiple) {
-                            for (var target : result.targets) {
-                                pointMap = new HashMap<>();
-                                pointMap.put("pitch", target.pitch);
-                                pointMap.put("yaw", target.yaw);
-                                pointMap.put("area", target.area);
-                                pointMap.put("pose", target.cameraRelativePose);
+                        try {
+                            if (((StandardCVPipelineSettings) pipelineManager.getCurrentPipeline().settings).multiple) {
+                                for (var target : result.targets) {
+                                    pointMap = new HashMap<>();
+                                    pointMap.put("pitch", target.pitch);
+                                    pointMap.put("yaw", target.yaw);
+                                    pointMap.put("area", target.area);
+                                    pointMap.put("pose", target.cameraRelativePose);
+                                    webTargets.add(pointMap);
+                                }
+                            } else {
+                                pointMap.put("pitch", bestTarget.pitch);
+                                pointMap.put("yaw", bestTarget.yaw);
+                                pointMap.put("area", bestTarget.area);
+                                pointMap.put("pose", bestTarget.cameraRelativePose);
                                 webTargets.add(pointMap);
                             }
-                        } else {
-                            pointMap.put("pitch", bestTarget.pitch);
-                            pointMap.put("yaw", bestTarget.yaw);
-                            pointMap.put("area", bestTarget.area);
-                            pointMap.put("pose", bestTarget.cameraRelativePose);
-                            webTargets.add(pointMap);
+                            center.add(bestTarget.minAreaRect.center.x);
+                            center.add(bestTarget.minAreaRect.center.y);
+
+                        } catch (ClassCastException ignored) {
+
                         }
-                        center.add(bestTarget.minAreaRect.center.x);
-                        center.add(bestTarget.minAreaRect.center.y);
-
+                    } else {
+                        pointMap.put("pitch", null);
+                        pointMap.put("yaw", null);
+                        pointMap.put("area", null);
+                        pointMap.put("pose", new Pose2d());
+                        webTargets.add(pointMap);
+                        center.add(null);
+                        center.add(null);
                     }
-                } else {
-                    pointMap.put("pitch", null);
-                    pointMap.put("yaw", null);
-                    pointMap.put("area", null);
-                    pointMap.put("pose", new Pose2d());
-                    webTargets.add(pointMap);
-                    center.add(null);
-                    center.add(null);
-                }
 
-                point.put("fps", visionRunnable.fps);
-                point.put("targets", webTargets);
-                point.put("rawPoint", center);
+                    point.put("fps", visionRunnable.fps);
+                    point.put("targets", webTargets);
+                    point.put("rawPoint", center);
+                } else {
+                    point.put("fps", visionRunnable.fps);
+                }
                 WebSend.put("point", point);
                 SocketHandler.broadcastMessage(WebSend);
             }
@@ -233,12 +241,13 @@ public class VisionProcess {
                 ntYawEntry.setDouble(targets.get(0).yaw);
                 ntAreaEntry.setDouble(targets.get(0).area);
                 try {
+                    Pose2d targetPose = targets.get(0).cameraRelativePose;
+                    double[] targetArray = {targetPose.getTranslation().getX(), targetPose.getTranslation().getY(), targetPose.getRotation().getDegrees()};
+                    ntPoseEntry.setDoubleArray(targetArray);
+//                    ntPoseEntry.setString(objectMapper.writeValueAsString(targets.get(0).cameraRelativePose));
                     ntAuxListEntry.setString(objectMapper.writeValueAsString(targets.stream()
                             .map(it -> List.of(it.pitch, it.yaw, it.area, it.cameraRelativePose))
                             .collect(Collectors.toList())));
-
-                    // TODO: (2.1) 3d stuff...
-                    ntPoseEntry.setString(objectMapper.writeValueAsString(targets.stream().map(target -> target.cameraRelativePose).collect(Collectors.toList())));
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
@@ -337,7 +346,7 @@ public class VisionProcess {
 //                    streamFrameQueue.clear();
 //                    streamFrameQueue.add(lastPipelineResult.outputMat);
                     var currentTime = System.currentTimeMillis();
-                    if((currentTime - lastStreamTimeMs)/1000d > 1.0 / 30.0) {
+                    if ((currentTime - lastStreamTimeMs) / 1000d > 1.0 / 30.0) {
                         cameraStreamer.runStream(lastPipelineResult.outputMat);
 //                        System.out.println("Ran stream in " + (System.currentTimeMillis() - currentTime) + "ms!");
                         lastStreamTimeMs = currentTime;

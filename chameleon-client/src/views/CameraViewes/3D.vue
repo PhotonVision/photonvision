@@ -4,17 +4,12 @@
             <v-col :cols="6">
                 <CVswitch :disabled="allow3D" v-model="value.is3D" name="Enable 3D" @input="handleData('is3D')"/>
             </v-col>
-            <v-col>
-                <CVnumberInput name="Max Height:" v-model="value.targetHeight" @input="handleData('targetHeight')"/>
-                <CVnumberInput name="Max Width:" v-model="value.targetWidth" @input="handleData('targetWidth')"/>
-            </v-col>
-<!--            <v-col>-->
+            <!--            <v-col>-->
 <!--                <input type="file" ref="file" style="display: none" accept=".csv" @change="readFile">-->
 <!--                <v-btn @click="$refs.file.click()" small>-->
 <!--                    upload model-->
 <!--                </v-btn>-->
 <!--            </v-col>-->
-
         </v-row>
         <mini-map class="miniMapClass" :targets="targets" :horizontal-f-o-v="horizontalFOV"/>
     </div>

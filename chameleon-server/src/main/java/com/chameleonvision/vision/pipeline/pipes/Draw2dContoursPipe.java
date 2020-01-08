@@ -64,9 +64,6 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<StandardCVPipelin
 //                    MatOfPoint contour = new MatOfPoint(vertices);
                     drawnContours.add(contour);
 
-                    if (settings.showCentroid) {
-                        Imgproc.circle(input.getLeft(), r.center, 3, Helpers.colorToScalar(settings.centroidColor));
-                    }
 
                     if (settings.showRotatedBox) {
                         Imgproc.drawContours(input.getLeft(), drawnContours, 0, Helpers.colorToScalar(settings.rotatedBoxColor), settings.boxOutlineSize);
@@ -75,6 +72,10 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<StandardCVPipelin
                     if (settings.showMaximumBox) {
                         Rect box = Imgproc.boundingRect(contour);
                         Imgproc.rectangle(input.getLeft(), new Point(box.x, box.y), new Point((box.x + box.width), (box.y + box.height)), Helpers.colorToScalar(settings.maximumBoxColor), settings.boxOutlineSize);
+                    }
+                    if (settings.showCentroid) {
+                        Imgproc.circle(input.getLeft(), target.point, 3, Helpers.colorToScalar(settings.centroidColor), 2);
+
                     }
 
 //                    contour.release();

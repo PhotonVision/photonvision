@@ -13,14 +13,10 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>, List<StandardCVPipeline.TrackedTarget>> {
+public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTarget>, Mat>, List<StandardCVPipeline.TrackedTarget>> {
 
     private Double tilt_angle;
     private MatOfPoint3f objPointsMat = new MatOfPoint3f();
@@ -41,11 +37,28 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
     public SolvePNPPipe(StandardCVPipelineSettings settings, CameraCalibrationConfig calibration, Rotation2d tilt) {
         super();
         setCameraCoeffs(calibration);
-        setTarget(settings.targetWidth, settings.targetHeight);
+//        setBoundingBoxTarget(settings.targetWidth, settings.targetHeight);
+        // TODO add proper year differentiation
+        set2020Target(true);
+
         this.tilt_angle = tilt.getRadians();
     }
 
-    public void setTarget(double targetWidth, double targetHeight) {
+    public void set2020Target(boolean isHighGoal) {
+        if(isHighGoal) {
+            // tl, bl, br, tr is the order
+            List<Point3> corners = List.of(
+                new Point3(-16.25, 0, 0),
+                new Point3(-9.819867, -17, 0),
+                new Point3(9.819867, -17, 0),
+                new Point3(16.25, 0, 0));
+            setObjectCorners(corners);
+        } else {
+            setBoundingBoxTarget(7, 11);
+        }
+    }
+
+    public void setBoundingBoxTarget(double targetWidth, double targetHeight) {
         // order is left top, left bottom, right bottom, right top
 
         List<Point3> corners = List.of(
@@ -65,7 +78,8 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
 
     public void setConfig(StandardCVPipelineSettings settings, CameraCalibrationConfig camConfig, Rotation2d tilt) {
         setCameraCoeffs(camConfig);
-        setTarget(settings.targetWidth, settings.targetHeight);
+//        setBoundingBoxTarget(settings.targetWidth, settings.targetHeight);
+        // TODO add proper year differentiation
         tilt_angle = tilt.getRadians();
     }
 
@@ -86,11 +100,13 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
     }
 
     @Override
-    public Pair<List<StandardCVPipeline.TrackedTarget>, Long> run(List<StandardCVPipeline.TrackedTarget> targets) {
+    public Pair<List<StandardCVPipeline.TrackedTarget>, Long> run(Pair<List<StandardCVPipeline.TrackedTarget>, Mat> imageTargetPair) {
         long processStartNanos = System.nanoTime();
+        var targets = imageTargetPair.getLeft();
         poseList.clear();
         for(var target: targets) {
-            var corners = (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
+            var corners = find2020VisionTarget(target);//, imageTargetPair.getRight()); //find2020VisionTarget(target);// (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
+            if(corners == null) continue;
             var pose = calculatePose(corners, target);
             if(pose != null) poseList.add(pose);
         }
@@ -121,10 +137,54 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         return points;
     }
 
-    private MatOfPoint2f findCornerMinAreaRect(StandardCVPipeline.TrackedTarget target) {
+    /**
+     * Find the target using the outermost tape corners and a 2020 target.
+     * @param target the target.
+     * @return The four outermost tape corners.
+     */
+    private MatOfPoint2f find2020VisionTarget(StandardCVPipeline.TrackedTarget target) {
+        if(target.rawContour.cols() < 1) return null;
+
+        var centroid = target.minAreaRect.center;
+        Comparator<Point> distanceProvider = Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
+
+        var contour = target.rawContour;
+        var combinedList = contour.toList();
+
+        // approx poly dp time
+        Imgproc.approxPolyDP(contour, polyOutput, 3, true);
+        var polyList = polyOutput.toList();
+
+        polyOutput.copyTo(target.approxPoly);
+
+        // start looking in the top left quadrant
+        try {
+            var tl = polyList.stream().filter(point -> point.x < centroid.x && point.y < centroid.y).max(distanceProvider).get();
+            var tr = polyList.stream().filter(point -> point.x > centroid.x && point.y < centroid.y).max(distanceProvider).get();
+            var bl = polyList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
+            var br = polyList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
+
+            boundingBoxResultMat.release();
+            boundingBoxResultMat.fromList(List.of(tl, bl, br, tr));
+
+            return boundingBoxResultMat;
+        } catch (NoSuchElementException e) {
+            return null;
+        }
+    }
+
+    MatOfPoint2f polyOutput = new MatOfPoint2f();
+
+    /**
+     * Find the target using the outermost tape corners and a dual target.
+     * @param target the target.
+     * @return The four outermost tape corners.
+     */
+    private MatOfPoint2f findDualTargetCornerMinAreaRect(StandardCVPipeline.TrackedTarget target) {
         if(target.leftRightRotatedRect == null) return null;
 
         var centroid = target.minAreaRect.center;
+        Comparator<Point> distanceProvider = Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
 
         var left = target.leftRightRotatedRect.getLeft();
         var right = target.leftRightRotatedRect.getRight();
@@ -144,8 +204,6 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
         combinedList.addAll(List.of(rightPoints));
 
         // start looking in the top left quadrant
-        Comparator<Point> distanceProvider = Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
-
         var tl = combinedList.stream().filter(point -> point.x < centroid.x && point.y < centroid.y).max(distanceProvider).get();
         var tr = combinedList.stream().filter(point -> point.x > centroid.x && point.y < centroid.y).max(distanceProvider).get();
         var bl = combinedList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
@@ -244,13 +302,19 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
 
 //        Imgproc.approxPolyDP(new MatOfPoint2f(max_contour.toArray()),approx,epsilon,true);
 
-        // start by looking at the targets
-        var leftRight = target.leftRightDualTargetPair;
-        var reverse = (leftRight.getLeft().x < leftRight.getRight().x);
-        var left =  reverse ? leftRight.getLeft() : leftRight.getRight();
-        var right =  !reverse ? leftRight.getLeft() : leftRight.getRight();
-        var boundingTl = left.tl();
-        var boundingBr = right.br();
+        // start by looking for corners
+        var points__ = findBoundingBoxCorners(target).toList();
+        var xList = points__.stream().map(it -> it.x).sorted(Double::compare).collect(Collectors.toList());
+        var yList = points__.stream().map(it -> it.y).sorted(Double::compare).collect(Collectors.toList());
+
+        var boundingTl = new Point(
+            xList.get(0), yList.get(0)
+        );
+        var boundingBr = new Point (
+            xList.get(2), yList.get(2)
+        );
+
+        System.out.println("tl/br:\n" + boundingTl.toString() + "\n" + boundingBr.toString());
 
         var slightlyBiggerTl = new Point(
             Math.max(0, boundingTl.x - 5),
@@ -265,10 +329,10 @@ public class SolvePNPPipe implements Pipe<List<StandardCVPipeline.TrackedTarget>
 
         var croppedImage = srcImage.submat(rect);
         var corners = new MatOfPoint();
-        Imgproc.goodFeaturesToTrack(croppedImage, corners, 8,0.5,5);
+        Imgproc.goodFeaturesToTrack(croppedImage, corners, 0,0.01,5);
 
         List<Point> cornerList = new ArrayList<>(corners.toList());
-        if(cornerList.size() != 8 && cornerList.size() != 4) return null;
+//        if(cornerList.size() != 8 && cornerList.size() != 4) return null;
         cornerList.sort(leftRightComparator);
 
         cornerList = cornerList.stream().map(point ->

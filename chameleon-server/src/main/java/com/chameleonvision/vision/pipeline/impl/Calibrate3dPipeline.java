@@ -20,7 +20,6 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
 
     private int checkerboardSquaresHigh = 7;
     private int checkerboardSquaresWide = 7;
-    private MatOfPoint3f objP_ORIG;
 
     private MatOfPoint3f objP;// new MatOfPoint3f(checkerboardSquaresHigh + checkerboardSquaresWide, 3);//(checkerboardSquaresWide * checkerboardSquaresHigh, 3);
     private Size patternSize = new Size(checkerboardSquaresHigh, checkerboardSquaresWide);
@@ -45,11 +44,10 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
     public Calibrate3dPipeline(StandardCVPipelineSettings settings) {
         super(settings);
 
-        objP_ORIG = new MatOfPoint3f();
         objP = new MatOfPoint3f();
 
         for(int i = 0; i < checkerboardSquaresHigh * checkerboardSquaresWide; i++) {
-            objP_ORIG.push_back(new MatOfPoint3f(new Point3(i / checkerboardSquaresWide, i % checkerboardSquaresHigh, 0.0f)));
+            objP.push_back(new MatOfPoint3f(new Point3(i / checkerboardSquaresWide, i % checkerboardSquaresHigh, 0.0f)));
         }
 
         setSquareSize(checkerboardSquareSizeUnits);

@@ -32,13 +32,19 @@ public class FileHelper {
     }
 
     public static void setAllPerms(Path path) {
-        String command = String.format("chmod 777 -R %s", path.toString());
-        try {
-            Process p = Runtime.getRuntime().exec(command);
-            p.waitFor();
+        if (!Platform.CurrentPlatform.isWindows()) {
+            String command = String.format("chmod 777 -R %s", path.toString());
+            try {
+                Process p = Runtime.getRuntime().exec(command);
+                p.waitFor();
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            // TODO file perms on Windows
+            System.out.println("File permission setting not available on Windows. Not changing file permissions.");
         }
+
     }
 }

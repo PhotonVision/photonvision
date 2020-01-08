@@ -1,9 +1,6 @@
 package com.chameleonvision.vision.pipeline.impl;
 
-import com.chameleonvision.vision.enums.CalibrationMode;
-import com.chameleonvision.vision.enums.SortMode;
-import com.chameleonvision.vision.enums.TargetGroup;
-import com.chameleonvision.vision.enums.TargetIntersection;
+import com.chameleonvision.vision.enums.*;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.wpi.first.wpilibj.util.Units;
@@ -27,6 +24,8 @@ public class StandardCVPipelineSettings extends CVPipelineSettings {
     public Number speckle = 5;
     public boolean isBinary = false;
     public SortMode sortMode = SortMode.Largest;
+    public TargetRegion targetRegion = TargetRegion.Center;
+    public TargetOrientation targetOrientation = TargetOrientation.Landscape;
     public boolean multiple = false;
     public TargetGroup targetGroup = TargetGroup.Single;
     public TargetIntersection targetIntersection = TargetIntersection.Up;
