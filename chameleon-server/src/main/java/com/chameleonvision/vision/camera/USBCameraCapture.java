@@ -13,6 +13,7 @@ import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class USBCameraCapture implements CameraCapture {
@@ -29,6 +30,12 @@ public class USBCameraCapture implements CameraCapture {
         baseCamera = new UsbCamera(config.name, config.path);
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
         properties = new USBCaptureProperties(baseCamera, config);
+
+        var videoModes = properties.getVideoModes();
+        if(videoModes.size() < 1) {
+            throw new VideoException("0 video modes are valid! Full list provided by camera: \n\n"
+            + Arrays.toString(baseCamera.enumerateVideoModes()));
+        }
 
         int videoMode = properties.videoModes.size() - 1 <= config.videomode ? config.videomode : 0;
         setVideoMode(videoMode);
