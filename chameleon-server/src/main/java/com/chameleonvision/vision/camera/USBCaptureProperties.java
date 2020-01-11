@@ -17,7 +17,7 @@ public class USBCaptureProperties extends CaptureProperties {
     public static final double DEFAULT_FOV = 70;
     private static final int DEFAULT_EXPOSURE = 50;
     private static final int DEFAULT_BRIGHTNESS = 50;
-    private static final int MINIMUM_FPS = 30;
+    private static final int MINIMUM_FPS = 21;
     private static final int MINIMUM_WIDTH = 320;
     private static final int MINIMUM_HEIGHT = 200;
     private static final int MAX_INIT_MS = 1500;
