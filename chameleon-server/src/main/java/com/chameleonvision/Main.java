@@ -26,6 +26,7 @@ public class Main {
     private static final String NETWORK_MANAGE_KEY = "--unmanage-network"; // no args for this setting
     private static final String IGNORE_ROOT_KEY = "--ignore-root"; // no args for this setting
     private static final String TEST_MODE_KEY = "--cv-development";
+    private static final String UI_PORT_KEY = "--ui-port";
 
     private static final int DEFAULT_PORT = 5800;
 
@@ -34,6 +35,7 @@ public class Main {
     private static boolean ignoreRoot = false;
     private static String ntClientModeServer = null;
     public static boolean testMode = false;
+    public static int uiPort = DEFAULT_PORT;
 
     private static class NTLogger implements Consumer<LogMessage> {
 
@@ -64,6 +66,13 @@ public class Main {
                         value = potentialValue.toLowerCase();
                     }
                     i++; // increment to skip an 'arg' next go-around of for loop, as that would be this value
+                    break;
+                case UI_PORT_KEY:
+                    var potentialPort = args[i + 1];
+                    if (potentialPort != null && !potentialPort.isBlank() && !potentialPort.startsWith("-") & !potentialPort.startsWith("--")) {
+                        value = potentialPort;
+                    }
+                    i++;
                     break;
                 case NT_SERVERMODE_KEY:
                 case NETWORK_MANAGE_KEY:
@@ -101,6 +110,15 @@ public class Main {
                 case TEST_MODE_KEY:
                     testMode = true;
                     break;
+                case UI_PORT_KEY:
+                    if (value != null) {
+                        try {
+                            uiPort = Integer.parseInt(value);
+                        } catch (NumberFormatException e){
+                            System.err.println("ui Port was not a valid number using port 5800");
+                        }
+                    }
+                    break;
             }
         }
     }
@@ -124,7 +142,7 @@ public class Main {
                 System.out.println("Ignoring root, network will not be managed!");
             } else {
                 System.err.println("This program must be run as root!");
-                    return;
+                return;
             }
         }
 
@@ -133,7 +151,7 @@ public class Main {
             CameraServerJNI.forceLoad();
             CameraServerCvJNI.forceLoad();
         } catch (UnsatisfiedLinkError | IOException e) {
-            if(CurrentPlatform.isWindows()) {
+            if (CurrentPlatform.isWindows()) {
                 System.err.println("Try to download the VC++ Redistributable, https://aka.ms/vs/16/release/vc_redist.x64.exe");
             }
             throw new RuntimeException("Failed to load JNI Libraries!");
@@ -179,7 +197,7 @@ public class Main {
 
         VisionManager.startProcesses();
 
-        System.out.printf("Starting Web server at port %d\n", DEFAULT_PORT);
-        Server.main(DEFAULT_PORT);
+        System.out.printf("Starting Web server at port %d\n", uiPort);
+        Server.main(uiPort);
     }
 }
