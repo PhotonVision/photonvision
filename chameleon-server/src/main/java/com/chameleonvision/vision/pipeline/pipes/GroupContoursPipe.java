@@ -7,6 +7,7 @@ import com.chameleonvision.vision.pipeline.Pipe;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
+import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
@@ -60,9 +61,11 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
                         contourBuffer.fromArray(c.toArray());
                         if (contourBuffer.cols() != 0 && contourBuffer.rows() != 0) {
                             RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
+                            Rect boundingRect = Imgproc.boundingRect(contourBuffer);
                             var target = new StandardCVPipeline.TrackedTarget();
                             target.minAreaRect = rect;
                             target.rawContour = contourBuffer;
+                            target.boundingRect = boundingRect;
                             groupedContours.add(target);
                         }
                     });

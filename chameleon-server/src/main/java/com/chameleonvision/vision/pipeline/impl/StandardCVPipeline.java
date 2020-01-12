@@ -260,6 +260,7 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
         public double area = 0.0;
         public Point point = new Point();
         public RotatedRect minAreaRect;
+        public Rect boundingRect;
 
         // 3d stuff
         public Pose2d cameraRelativePose = new Pose2d();

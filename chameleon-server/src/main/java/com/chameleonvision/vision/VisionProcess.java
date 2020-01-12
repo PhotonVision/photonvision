@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpiutil.CircularBuffer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
 public class VisionProcess {
 
     private final USBCameraCapture cameraCapture;
-//    private final CameraStreamerRunnable streamRunnable;
+    //    private final CameraStreamerRunnable streamRunnable;
     private final VisionProcessRunnable visionRunnable;
     private final CameraConfig fileConfig;
     public final CameraStreamer cameraStreamer;
@@ -59,6 +60,12 @@ public class VisionProcess {
     private NetworkTableEntry ntLatencyEntry;
     private NetworkTableEntry ntValidEntry;
     private NetworkTableEntry ntPoseEntry;
+    private NetworkTableEntry ntFittedHeightEntry;
+    private NetworkTableEntry ntFittedWidthEntry;
+    private NetworkTableEntry ntBoundingHeightEntry;
+    private NetworkTableEntry ntBoundingWidthEntry;
+    private NetworkTableEntry ntTargetRotation;
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private long lastUIUpdateMs = 0;
@@ -117,14 +124,19 @@ public class VisionProcess {
     private void initNT(NetworkTable newTable) {
         tableInstance = newTable.getInstance();
         ntPipelineEntry = newTable.getEntry("pipeline");
-        ntDriverModeEntry = newTable.getEntry("driver_mode");
-        ntPitchEntry = newTable.getEntry("pitch");
-        ntYawEntry = newTable.getEntry("yaw");
-        ntAreaEntry = newTable.getEntry("area");
+        ntDriverModeEntry = newTable.getEntry("driverMode");
+        ntPitchEntry = newTable.getEntry("targetPitch");
+        ntYawEntry = newTable.getEntry("targetYaw");
+        ntAreaEntry = newTable.getEntry("targetArea");
         ntLatencyEntry = newTable.getEntry("latency");
-        ntValidEntry = newTable.getEntry("is_valid");
-        ntAuxListEntry = newTable.getEntry("aux_targets");
-        ntPoseEntry = newTable.getEntry("pose");
+        ntValidEntry = newTable.getEntry("isValid");
+        ntAuxListEntry = newTable.getEntry("auxTargets");
+        ntPoseEntry = newTable.getEntry("targetPose");
+        ntFittedHeightEntry = newTable.getEntry("targetFittedHeight");
+        ntFittedWidthEntry = newTable.getEntry("targetFittedWidth");
+        ntBoundingHeightEntry = newTable.getEntry("targetBoundingHeight");
+        ntBoundingWidthEntry = newTable.getEntry("targetBoundingWidth");
+        ntTargetRotation = newTable.getEntry("targetRotation");
         ntDriveModeListenerID = ntDriverModeEntry.addListener(this::setDriverMode, EntryListenerFlags.kUpdate);
         ntPipelineListenerID = ntPipelineEntry.addListener(this::setPipeline, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
@@ -236,17 +248,23 @@ public class VisionProcess {
 
                 //noinspection unchecked
                 List<StandardCVPipeline.TrackedTarget> targets = (List<StandardCVPipeline.TrackedTarget>) data.targets;
+                StandardCVPipeline.TrackedTarget bestTarget = targets.get(0);
                 ntLatencyEntry.setDouble(MathHandler.roundTo(data.processTime * 1e-6, 3));
-                ntPitchEntry.setDouble(targets.get(0).pitch);
-                ntYawEntry.setDouble(targets.get(0).yaw);
-                ntAreaEntry.setDouble(targets.get(0).area);
+                ntPitchEntry.setDouble(bestTarget.pitch);
+                ntYawEntry.setDouble(bestTarget.yaw);
+                ntAreaEntry.setDouble(bestTarget.area);
+                ntBoundingHeightEntry.setDouble(bestTarget.boundingRect.height);
+                ntBoundingWidthEntry.setDouble(bestTarget.boundingRect.width);
+                ntFittedHeightEntry.setDouble(bestTarget.minAreaRect.size.height);
+                ntFittedWidthEntry.setDouble(bestTarget.minAreaRect.size.width);
+                ntTargetRotation.setDouble(bestTarget.minAreaRect.angle);
                 try {
                     Pose2d targetPose = targets.get(0).cameraRelativePose;
                     double[] targetArray = {targetPose.getTranslation().getX(), targetPose.getTranslation().getY(), targetPose.getRotation().getDegrees()};
                     ntPoseEntry.setDoubleArray(targetArray);
 //                    ntPoseEntry.setString(objectMapper.writeValueAsString(targets.get(0).cameraRelativePose));
                     ntAuxListEntry.setString(objectMapper.writeValueAsString(targets.stream()
-                            .map(it -> List.of(it.pitch, it.yaw, it.area, it.cameraRelativePose))
+                            .map(it -> List.of(it.pitch, it.yaw, it.area, it.boundingRect.width, it.boundingRect.height, it.minAreaRect.size.width, it.minAreaRect.size.height, it.minAreaRect.angle, it.cameraRelativePose))
                             .collect(Collectors.toList())));
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
