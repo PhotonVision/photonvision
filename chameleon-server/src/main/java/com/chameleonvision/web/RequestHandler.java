@@ -176,7 +176,6 @@ public class RequestHandler {
     }
 
     public static void onPnpModel(Context ctx) throws JsonProcessingException {
-        System.out.println(ctx.body());
         ObjectMapper objectMapper = kObjectMapper;
         List points = objectMapper.readValue(ctx.body(), List.class);
         System.out.println(points);
