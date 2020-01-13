@@ -48,14 +48,14 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
     public void set2020Box() {
         boxCornerMat.release();
         boxCornerMat = new MatOfPoint3f(
-                new Point3(-16.25, 0, 0),
+                new Point3(-19.625, 0, 0),
                 new Point3(-9.819867, -17, 0),
                 new Point3(9.819867, -17, 0),
-                new Point3(16.25, 0, 0),
-                new Point3(-16.25, 0, -6),
+                new Point3(19.625, 0, 0),
+                new Point3(-19.625, 0, -6),
                 new Point3(-9.819867, -17, -6),
                 new Point3(9.819867, -17, -6),
-                new Point3(16.25, 0, -6)
+                new Point3(19.625, 0, -6)
         );
     }
 

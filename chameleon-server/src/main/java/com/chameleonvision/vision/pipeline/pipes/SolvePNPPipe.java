@@ -48,10 +48,10 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         if(isHighGoal) {
             // tl, bl, br, tr is the order
             List<Point3> corners = List.of(
-                new Point3(-16.25, 0, 0),
+                new Point3(-19.625, 0, 0),
                 new Point3(-9.819867, -17, 0),
                 new Point3(9.819867, -17, 0),
-                new Point3(16.25, 0, 0));
+                new Point3(19.625, 0, 0));
             setObjectCorners(corners);
         } else {
             setBoundingBoxTarget(7, 11);
