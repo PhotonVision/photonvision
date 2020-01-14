@@ -4,10 +4,7 @@ import com.chameleonvision.vision.enums.*;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import edu.wpi.first.wpilibj.util.Units;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfDouble;
-import org.opencv.core.Point;
-import org.opencv.core.Point3;
+import org.opencv.core.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +32,22 @@ public class StandardCVPipelineSettings extends CVPipelineSettings {
     public double dualTargetCalibrationB = 0;
 
     // 3d stuff
-    public double targetWidth = 15.5, targetHeight = 6.0;
+    public MatOfPoint3f targetCornerMat = new MatOfPoint3f();
+    private static MatOfPoint3f hexTargetMat = new MatOfPoint3f();
+
+    static {
+        hexTargetMat.fromList(List.of(
+            new Point3(-19.625, 0, 0),
+            new Point3(-9.819867, -17, 0),
+            new Point3(9.819867, -17, 0),
+            new Point3(19.625, 0, 0)));
+    }
+
+    public StandardCVPipelineSettings() {
+        super();
+        hexTargetMat.copyTo(targetCornerMat);
+    }
+
 
     public boolean is3D = false;
 }

@@ -81,6 +81,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
 //        setBoundingBoxTarget(settings.targetWidth, settings.targetHeight);
         // TODO add proper year differentiation
         tilt_angle = tilt.getRadians();
+        this.objPointsMat = settings.targetCornerMat;
     }
 
     private void setCameraCoeffs(CameraCalibrationConfig settings) {

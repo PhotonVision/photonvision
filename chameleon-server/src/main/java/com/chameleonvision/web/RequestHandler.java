@@ -176,8 +176,13 @@ public class RequestHandler {
     }
 
     public static void onPnpModel(Context ctx) throws JsonProcessingException {
-        ObjectMapper objectMapper = kObjectMapper;
-        List points = objectMapper.readValue(ctx.body(), List.class);
-        System.out.println(points);
+        //noinspection unchecked
+        List<Object> points = kObjectMapper.readValue(ctx.body(), List.class);
+
+        // each entry should be an xy pair
+        for(Object point: points) {
+            //noinspection RedundantCast
+            point = (List<Object>) point;
+        }
     }
 }
