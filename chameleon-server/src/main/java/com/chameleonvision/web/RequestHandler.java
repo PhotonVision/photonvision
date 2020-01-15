@@ -74,9 +74,9 @@ public class RequestHandler {
                     if (cam.getCamera().getProperties().videoModes.size() < newPipeline.videoModeIndex) {
                         newPipeline.videoModeIndex = cam.getCamera().getProperties().videoModes.size() - 1;
                     }
-                    if (newPipeline.is3D){
+                    if (newPipeline.is3D) {
                         var calibration = cam.getCamera().getCalibration(cam.getCamera().getProperties().getVideoMode(newPipeline.videoModeIndex));
-                        if (calibration == null){
+                        if (calibration == null) {
                             newPipeline.is3D = false;
                         }
                     }
@@ -180,31 +180,21 @@ public class RequestHandler {
 
     public static void onPnpModel(Context ctx) throws JsonProcessingException {
         //noinspection unchecked
-        List<List<Object>> points = kObjectMapper.readValue(ctx.body(), List.class);
+        List<List<Number>> points = kObjectMapper.readValue(ctx.body(), List.class);
 
         // each entry should be an xy pair
         var pointsList = new ArrayList<Point3>();
-        for(List<Object> point: points) {
+        for (List<Number> point : points) {
             double x, y;
-            try {
-                x = (Double) point.get(0);
-            } catch (ClassCastException e) {
-                x = (Integer) point.get(0);
-            }
-            try {
-                y = (Double) point.get(1);
-            } catch (ClassCastException e) {
-                y = (Integer) point.get(1);
-            }
+            x = point.get(0).doubleValue();
+            y = point.get(1).doubleValue();
             var pointToAdd = new Point3(x, y, 0.0);
             pointsList.add(pointToAdd);
         }
         System.out.println(pointsList.toString());
-
-        if(VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings instanceof StandardCVPipelineSettings) {
+        if (VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings instanceof StandardCVPipelineSettings) {
             var settings = (StandardCVPipelineSettings) VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings;
             settings.targetCornerMat.fromList(pointsList);
-            var xxx = 4;
         }
     }
 }
