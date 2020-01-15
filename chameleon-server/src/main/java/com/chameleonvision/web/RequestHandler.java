@@ -18,8 +18,11 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import org.opencv.core.Point;
+import org.opencv.core.Point3;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -177,12 +180,31 @@ public class RequestHandler {
 
     public static void onPnpModel(Context ctx) throws JsonProcessingException {
         //noinspection unchecked
-        List<Object> points = kObjectMapper.readValue(ctx.body(), List.class);
+        List<List<Object>> points = kObjectMapper.readValue(ctx.body(), List.class);
 
         // each entry should be an xy pair
-        for(Object point: points) {
-            //noinspection RedundantCast
-            point = (List<Object>) point;
+        var pointsList = new ArrayList<Point3>();
+        for(List<Object> point: points) {
+            double x, y;
+            try {
+                x = (Double) point.get(0);
+            } catch (ClassCastException e) {
+                x = (Integer) point.get(0);
+            }
+            try {
+                y = (Double) point.get(1);
+            } catch (ClassCastException e) {
+                y = (Integer) point.get(1);
+            }
+            var pointToAdd = new Point3(x, y, 0.0);
+            pointsList.add(pointToAdd);
+        }
+        System.out.println(pointsList.toString());
+
+        if(VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings instanceof StandardCVPipelineSettings) {
+            var settings = (StandardCVPipelineSettings) VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings;
+            settings.targetCornerMat.fromList(pointsList);
+            var xxx = 4;
         }
     }
 }
