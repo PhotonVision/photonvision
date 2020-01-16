@@ -15,9 +15,9 @@ import org.opencv.videoio.VideoCapture;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("rawtypes")
 public class VisionManager {
-    private VisionManager() {
-    }
+    private VisionManager() {}
 
     private static final LinkedHashMap<String, UsbCameraInfo> usbCameraInfosByCameraName = new LinkedHashMap<>();
     private static final LinkedList<FullCameraConfiguration> loadedCameraConfigs = new LinkedList<>();

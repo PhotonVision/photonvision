@@ -4,6 +4,7 @@ import com.chameleonvision.Debug;
 import com.chameleonvision.config.CameraCalibrationConfig;
 import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.config.ConfigManager;
+import com.chameleonvision.networktables.NetworkTablesManager;
 import com.chameleonvision.scripting.ScriptEventType;
 import com.chameleonvision.scripting.ScriptManager;
 import com.chameleonvision.config.FullCameraConfiguration;
@@ -33,6 +34,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 
 
+@SuppressWarnings("rawtypes")
 public class VisionProcess {
 
     private final USBCameraCapture cameraCapture;
@@ -113,26 +115,26 @@ public class VisionProcess {
 
     public void setCameraNickname(String newName) {
         getCamera().getProperties().setNickname(newName);
-        var newTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + newName);
-        resetNT(newTable);
+        NetworkTable camTable = NetworkTablesManager.kRootTable.getSubTable(newName);
+        resetNT(camTable);
     }
 
-    private void initNT(NetworkTable newTable) {
-        tableInstance = newTable.getInstance();
-        ntPipelineEntry = newTable.getEntry("pipeline");
-        ntDriverModeEntry = newTable.getEntry("driverMode");
-        ntPitchEntry = newTable.getEntry("targetPitch");
-        ntYawEntry = newTable.getEntry("targetYaw");
-        ntAreaEntry = newTable.getEntry("targetArea");
-        ntLatencyEntry = newTable.getEntry("latency");
-        ntValidEntry = newTable.getEntry("isValid");
-        ntAuxListEntry = newTable.getEntry("auxTargets");
-        ntPoseEntry = newTable.getEntry("targetPose");
-        ntFittedHeightEntry = newTable.getEntry("targetFittedHeight");
-        ntFittedWidthEntry = newTable.getEntry("targetFittedWidth");
-        ntBoundingHeightEntry = newTable.getEntry("targetBoundingHeight");
-        ntBoundingWidthEntry = newTable.getEntry("targetBoundingWidth");
-        ntTargetRotation = newTable.getEntry("targetRotation");
+    private void initNT(NetworkTable camTable) {
+        tableInstance = camTable.getInstance();
+        ntPipelineEntry = camTable.getEntry("pipeline");
+        ntDriverModeEntry = camTable.getEntry("driverMode");
+        ntPitchEntry = camTable.getEntry("targetPitch");
+        ntYawEntry = camTable.getEntry("targetYaw");
+        ntAreaEntry = camTable.getEntry("targetArea");
+        ntLatencyEntry = camTable.getEntry("latency");
+        ntValidEntry = camTable.getEntry("isValid");
+        ntAuxListEntry = camTable.getEntry("auxTargets");
+        ntPoseEntry = camTable.getEntry("targetPose");
+        ntFittedHeightEntry = camTable.getEntry("targetFittedHeight");
+        ntFittedWidthEntry = camTable.getEntry("targetFittedWidth");
+        ntBoundingHeightEntry = camTable.getEntry("targetBoundingHeight");
+        ntBoundingWidthEntry = camTable.getEntry("targetBoundingWidth");
+        ntTargetRotation = camTable.getEntry("targetRotation");
         ntDriveModeListenerID = ntDriverModeEntry.addListener(this::setDriverMode, EntryListenerFlags.kUpdate);
         ntPipelineListenerID = ntPipelineEntry.addListener(this::setPipeline, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
@@ -165,7 +167,6 @@ public class VisionProcess {
     }
 
     public void setDriverModeEntry(boolean isDriverMode) {
-
         // if it's null, we haven't even started the program yet, so just return
         // otherwise, set it.
         if (ntDriverModeEntry != null) {
@@ -184,7 +185,7 @@ public class VisionProcess {
                 HashMap<String, Object> WebSend = new HashMap<>();
                 HashMap<String, Object> point = new HashMap<>();
                 HashMap<String, Object> pointMap = new HashMap<>();
-                ArrayList<Object> webTargets = new ArrayList<Object>();
+                ArrayList<Object> webTargets = new ArrayList<>();
                 List<Double> center = new ArrayList<>();
 
 
@@ -383,7 +384,5 @@ public class VisionProcess {
             temp /= 7.0;
             return temp;
         }
-
     }
-
 }

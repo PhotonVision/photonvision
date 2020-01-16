@@ -2,20 +2,17 @@ package com.chameleonvision;
 
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.network.NetworkManager;
+import com.chameleonvision.networktables.NetworkTablesManager;
 import com.chameleonvision.scripting.ScriptEventType;
 import com.chameleonvision.scripting.ScriptManager;
 import com.chameleonvision.util.Platform;
-import com.chameleonvision.util.ShellExec;
 import com.chameleonvision.util.Utilities;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.web.Server;
 import edu.wpi.cscore.CameraServerCvJNI;
 import edu.wpi.cscore.CameraServerJNI;
-import edu.wpi.first.networktables.LogMessage;
-import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 import static com.chameleonvision.util.Platform.CurrentPlatform;
 
@@ -36,21 +33,6 @@ public class Main {
     private static String ntClientModeServer = null;
     public static boolean testMode = false;
     public static int uiPort = DEFAULT_PORT;
-
-    private static class NTLogger implements Consumer<LogMessage> {
-
-        private boolean hasReportedConnectionFailure = false;
-
-        @Override
-        public void accept(LogMessage logMessage) {
-            if (!hasReportedConnectionFailure && logMessage.message.contains("timed out")) {
-                System.err.println("NT Connection has failed!");
-                hasReportedConnectionFailure = true;
-            } else if (logMessage.message.contains("connected")) {
-                ScriptManager.queueEvent(ScriptEventType.kNTConnected);
-            }
-        }
-    }
 
     private static void handleArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
@@ -165,20 +147,12 @@ public class Main {
             System.out.println("Scripts not yet supported on Windows. ScriptEvents will be ignored.");
         }
 
-
         NetworkManager.initialize(manageNetwork);
 
         if (ntServerMode) {
-            System.out.println("Starting NT Server");
-            NetworkTableInstance.getDefault().startServer();
+            NetworkTablesManager.setServerMode();
         } else {
-            NetworkTableInstance.getDefault().addLogger(new NTLogger(), 0, 255); // to hide error messages
-            if (ntClientModeServer != null) {
-                NetworkTableInstance.getDefault().startClient(ntClientModeServer);
-            } else {
-                NetworkTableInstance.getDefault().startClientTeam(ConfigManager.settings.teamNumber);
-            }
-//            NetworkTableInstance.getDefault().startClient("localhost");
+            NetworkTablesManager.setClientMode(ntClientModeServer);
         }
 
         ScriptManager.queueEvent(ScriptEventType.kProgramInit);
