@@ -3,6 +3,7 @@ package com.chameleonvision.web;
 import com.chameleonvision.Exceptions.DuplicatedKeyException;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.network.NetworkIPMode;
+import com.chameleonvision.networktables.NetworkTablesManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.USBCameraCapture;
@@ -18,6 +19,7 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import org.apache.commons.math3.ml.neuralnet.Network;
 import org.opencv.core.Point;
 import org.opencv.core.Point3;
 
@@ -37,7 +39,11 @@ public class RequestHandler {
             Map map = objectMapper.readValue(ctx.body(), Map.class);
 
             // TODO: change to function, to restart NetworkTables
-            ConfigManager.settings.teamNumber = (int) map.get("teamNumber");
+            int newTeamNumber = (int) map.get("teamNumber");
+            if (newTeamNumber != ConfigManager.settings.teamNumber && !NetworkTablesManager.isServer) {
+                NetworkTablesManager.setTeamClientMode();
+            }
+            ConfigManager.settings.teamNumber = newTeamNumber;
 
             ConfigManager.settings.connectionType = NetworkIPMode.values()[(int) map.get("connectionType")];
             ConfigManager.settings.ip = (String) map.get("ip");
