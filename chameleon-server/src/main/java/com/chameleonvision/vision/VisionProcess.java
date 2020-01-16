@@ -36,15 +36,12 @@ import java.util.stream.Collectors;
 public class VisionProcess {
 
     private final USBCameraCapture cameraCapture;
-    //    private final CameraStreamerRunnable streamRunnable;
     private final VisionProcessRunnable visionRunnable;
     private final CameraConfig fileConfig;
     public final CameraStreamer cameraStreamer;
     public PipelineManager pipelineManager;
 
     private volatile CVPipelineResult lastPipelineResult;
-
-    private BlockingQueue<Mat> streamFrameQueue = new LinkedBlockingDeque<>(1);
 
     // network table stuff
     private final NetworkTable defaultTable;
@@ -79,7 +76,6 @@ public class VisionProcess {
 
         // Thread to put frames on the dashboard
         this.cameraStreamer = new CameraStreamer(cameraCapture, config.cameraConfig.name, pipelineManager.getCurrentPipeline().settings.streamDivisor);
-//        this.streamRunnable = new CameraStreamerRunnable(30, cameraStreamer);
 
         // Thread to process vision data
         this.visionRunnable = new VisionProcessRunnable();
@@ -278,7 +274,6 @@ public class VisionProcess {
             }
         }
         tableInstance.flush();
-
     }
 
     public void setVideoMode(VideoMode newMode) {
@@ -361,8 +356,6 @@ public class VisionProcess {
                 }
 
                 try {
-//                    streamFrameQueue.clear();
-//                    streamFrameQueue.add(lastPipelineResult.outputMat);
                     var currentTime = System.currentTimeMillis();
                     if ((currentTime - lastStreamTimeMs) / 1000d > 1.0 / 30.0) {
                         cameraStreamer.runStream(lastPipelineResult.outputMat);
@@ -393,35 +386,4 @@ public class VisionProcess {
 
     }
 
-    private class CameraStreamerRunnable extends LoopingRunnable {
-
-        final CameraStreamer streamer;
-        private Mat bufferMat = new Mat();
-
-        private CameraStreamerRunnable(int cameraFPS, CameraStreamer streamer) {
-            // add 2 FPS to allow for a bit of overhead
-            super(1000L / (cameraFPS + 2));
-            this.streamer = streamer;
-        }
-
-        @Override
-        protected void process() {
-            if (!streamFrameQueue.isEmpty()) {
-                try {
-
-                    bufferMat = streamFrameQueue.take();
-
-                    try {
-                        streamer.runStream(bufferMat);
-                        bufferMat.release();
-                    } catch (Exception e) {
-                        // do nothing
-                    }
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
 }
