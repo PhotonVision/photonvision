@@ -235,7 +235,7 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
             System.out.printf("full pipeline run time was %.3fms (%.2fFPS)\n", truePipelineTimeMillis, truePipelineFPS);
         }
 
-        memManager.run();
+//        memManager.run();
 
         resultCache = new StandardCVPipelineResult(collect2dTargetsResult.getLeft(), outputMat, totalPipelineTimeNanos);
         return resultCache;
