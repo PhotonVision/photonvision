@@ -118,7 +118,8 @@ public class PipelineManager {
     }
 
     public void setCurrentPipeline(int index) {
-        CVPipeline newPipeline=null;
+        CVPipeline newPipeline = null;
+
         if (index == DRIVERMODE_INDEX) {
             newPipeline = driverModePipeline;
 
@@ -164,6 +165,11 @@ public class PipelineManager {
             if (ntIndexEntry != null) {
                 ntIndexEntry.setDouble(index);
             }
+        }
+
+        // gain setting quirk
+        if (!parentProcess.cameraCapture.getProperties().isPS3Eye) {
+            getCurrentPipeline().settings.gain = -1;
         }
     }
 

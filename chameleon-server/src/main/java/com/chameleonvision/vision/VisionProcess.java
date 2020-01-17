@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("rawtypes")
 public class VisionProcess {
 
-    private final USBCameraCapture cameraCapture;
+    public final USBCameraCapture cameraCapture;
     private final VisionProcessRunnable visionRunnable;
     private final CameraConfig fileConfig;
     public final CameraStreamer cameraStreamer;
