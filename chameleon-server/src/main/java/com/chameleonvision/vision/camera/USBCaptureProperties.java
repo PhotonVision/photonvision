@@ -22,8 +22,8 @@ public class USBCaptureProperties extends CaptureProperties {
     private static final int MINIMUM_HEIGHT = 200;
     private static final int MAX_INIT_MS = 1500;
 
-    private static final int PS3EYE_VID = 1415;
-    private static final int PS3EYE_PID = 2000;
+    private static final int PS3EYE_VID = 0x1415;
+    private static final int PS3EYE_PID = 0x2000;
 
     private static final List<VideoMode.PixelFormat> ALLOWED_PIXEL_FORMATS = Arrays.asList(VideoMode.PixelFormat.kYUYV, VideoMode.PixelFormat.kMJPEG, VideoMode.PixelFormat.kBGR);
 
