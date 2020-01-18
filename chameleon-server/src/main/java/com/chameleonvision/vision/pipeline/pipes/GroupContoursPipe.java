@@ -93,9 +93,10 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
 
                             if (contourBuffer.cols() != 0 && contourBuffer.rows() != 0) {
                                 RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
+                                Rect boundingRect = Imgproc.boundingRect(contourBuffer);
                                 var target = new StandardCVPipeline.TrackedTarget();
                                 target.minAreaRect = rect;
-
+                                target.boundingRect = boundingRect;
                                 // find left and right bouding rectangles
                                 target.leftRightDualTargetPair =
                                         Pair.of(Imgproc.boundingRect(firstContour),
