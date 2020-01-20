@@ -1,6 +1,5 @@
 package com.chameleonvision.config;
 
-import com.chameleonvision.Main;
 import com.chameleonvision.util.*;
 import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 
@@ -54,7 +53,7 @@ public class ConfigManager {
             }
         } else {
             try {
-                settings = JacksonHelper.deserializer(settingsFilePath, GeneralSettings.class);
+                settings = JacksonHelper.deserialize(settingsFilePath, GeneralSettings.class);
             } catch (IOException e) {
                 System.err.println("Failed to load settings.json, using defaults.");
             }

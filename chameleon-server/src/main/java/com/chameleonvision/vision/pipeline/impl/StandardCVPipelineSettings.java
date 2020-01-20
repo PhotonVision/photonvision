@@ -17,7 +17,7 @@ public class StandardCVPipelineSettings extends CVPipelineSettings {
     public boolean dilate = false;
     public List<Number> area = Arrays.asList(0.0, 100.0);
     public List<Number> ratio = Arrays.asList(0.0, 20.0);
-    public List<Number> extent = Arrays.asList(0, 100);
+    public List<Number> extent = Arrays.asList(0.0, 100.0);
     public Number speckle = 5;
     public boolean isBinary = false;
     public SortMode sortMode = SortMode.Largest;

@@ -1,5 +1,7 @@
 package com.chameleonvision.util;
 
+import com.chameleonvision.Debug;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,7 +22,7 @@ public class FileHelper {
             File thisFile = path.toFile();
             Set<PosixFilePermission> perms = Files.readAttributes(path, PosixFileAttributes.class).permissions();
             if (!perms.equals(allReadWriteExecutePerms)) {
-                System.out.printf("setting perms on %s\n", path.toString());
+                Debug.printInfo("Setting perms on" + path.toString());
                 Files.setPosixFilePermissions(path, perms);
                 if (thisFile.isDirectory()) {
                     for (File subfile : thisFile.listFiles()) {

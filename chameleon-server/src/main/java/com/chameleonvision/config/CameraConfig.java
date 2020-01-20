@@ -51,7 +51,7 @@ public class CameraConfig {
     private CameraJsonConfig loadConfig() {
         CameraJsonConfig config = preliminaryConfig;
         try {
-            config = JacksonHelper.deserializer(configPath, CameraJsonConfig.class);
+            config = JacksonHelper.deserialize(configPath, CameraJsonConfig.class);
         } catch (IOException e) {
             System.err.printf("Failed to load camera config: %s - using default.\n", configPath.toString());
         }
@@ -61,7 +61,7 @@ public class CameraConfig {
     private CVPipelineSettings loadDriverMode() {
         CVPipelineSettings driverMode = new CVPipelineSettings();
         try {
-            driverMode = JacksonHelper.deserializer(driverModePath, CVPipelineSettings.class);
+            driverMode = JacksonHelper.deserialize(driverModePath, CVPipelineSettings.class);
         } catch (IOException e) {
             System.err.println("Failed to load camera drivermode: " + driverModePath.toString());
         }
@@ -75,7 +75,7 @@ public class CameraConfig {
     private List<CameraCalibrationConfig> loadCalibration() {
         List<CameraCalibrationConfig> calibrations = new ArrayList<>();
         try {
-            calibrations = List.of(Objects.requireNonNull(JacksonHelper.deserializer(calibrationPath, CameraCalibrationConfig[].class)));
+            calibrations = List.of(Objects.requireNonNull(JacksonHelper.deserialize(calibrationPath, CameraCalibrationConfig[].class)));
         } catch (Exception e) {
             System.err.println("Failed to load camera calibration: " + driverModePath.toString());
         }

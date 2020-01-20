@@ -1,5 +1,7 @@
 package com.chameleonvision.config;
 
+import com.chameleonvision.config.serializers.StandardCVPipelineSettingsDeserializer;
+import com.chameleonvision.config.serializers.StandardCVPipelineSettingsSerializer;
 import com.chameleonvision.util.FileHelper;
 import com.chameleonvision.util.JacksonHelper;
 import com.chameleonvision.vision.pipeline.*;
@@ -71,11 +73,20 @@ public class PipelineConfig {
 
         var path = getPipelinePath(settings);
 
-        try {
-            JacksonHelper.serializer(path, settings);
-            FileHelper.setFilePerms(path);
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (settings instanceof StandardCVPipelineSettings) {
+            try {
+                JacksonHelper.serialize(path, (StandardCVPipelineSettings)settings, StandardCVPipelineSettings.class, new StandardCVPipelineSettingsSerializer());
+                FileHelper.setFilePerms(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else {
+            try {
+                JacksonHelper.serializer(path, settings);
+                FileHelper.setFilePerms(path);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -119,7 +130,7 @@ public class PipelineConfig {
         } else {
             for(File pipelineFile : pipelineFiles) {
                     try {
-                        var pipe = JacksonHelper.deserializer(Paths.get(pipelineFile.getPath()), StandardCVPipelineSettings.class);
+                        var pipe = JacksonHelper.deserialize(Paths.get(pipelineFile.getPath()), StandardCVPipelineSettings.class, new StandardCVPipelineSettingsDeserializer());
                         deserializedList.add(pipe);
                     } catch (IOException e) {
                         System.err.println("couldn't load cvpipeline2d");
