@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpiutil.CircularBuffer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -212,9 +211,8 @@ public class VisionProcess {
                             }
                             center.add(bestTarget.minAreaRect.center.x);
                             center.add(bestTarget.minAreaRect.center.y);
-
                         } catch (ClassCastException ignored) {
-
+                          
                         }
                     } else {
                         pointMap.put("pitch", null);

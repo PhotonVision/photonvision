@@ -48,6 +48,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         if(isHighGoal) {
             // tl, bl, br, tr is the order
             List<Point3> corners = List.of(
+
                 new Point3(-19.625, 0, 0),
                 new Point3(-9.819867, -17, 0),
                 new Point3(9.819867, -17, 0),
@@ -176,6 +177,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         tempMat2f.fromArray(hullPoints);
 
         Imgproc.approxPolyDP(tempMat2f, polyOutput, 5, true);
+
         var polyList = polyOutput.toList();
 
         polyOutput.copyTo(target.approxPoly);
@@ -347,7 +349,6 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         var boundingBr = new Point (
             xList.get(2), yList.get(2)
         );
-
         System.out.println("tl/br:\n" + boundingTl.toString() + "\n" + boundingBr.toString());
 
         var slightlyBiggerTl = new Point(
