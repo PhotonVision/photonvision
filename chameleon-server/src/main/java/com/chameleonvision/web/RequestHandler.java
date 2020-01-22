@@ -3,6 +3,7 @@ package com.chameleonvision.web;
 import com.chameleonvision.Exceptions.DuplicatedKeyException;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.network.NetworkIPMode;
+import com.chameleonvision.networktables.NetworkTablesManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.USBCameraCapture;
@@ -18,8 +19,12 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
+import org.apache.commons.math3.ml.neuralnet.Network;
+import org.opencv.core.Point;
+import org.opencv.core.Point3;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +39,11 @@ public class RequestHandler {
             Map map = objectMapper.readValue(ctx.body(), Map.class);
 
             // TODO: change to function, to restart NetworkTables
-            ConfigManager.settings.teamNumber = (int) map.get("teamNumber");
+            int newTeamNumber = (int) map.get("teamNumber");
+            if (newTeamNumber != ConfigManager.settings.teamNumber && !NetworkTablesManager.isServer) {
+                NetworkTablesManager.setTeamClientMode();
+            }
+            ConfigManager.settings.teamNumber = newTeamNumber;
 
             ConfigManager.settings.connectionType = NetworkIPMode.values()[(int) map.get("connectionType")];
             ConfigManager.settings.ip = (String) map.get("ip");
@@ -71,9 +80,9 @@ public class RequestHandler {
                     if (cam.getCamera().getProperties().videoModes.size() < newPipeline.videoModeIndex) {
                         newPipeline.videoModeIndex = cam.getCamera().getProperties().videoModes.size() - 1;
                     }
-                    if (newPipeline.is3D){
+                    if (newPipeline.is3D) {
                         var calibration = cam.getCamera().getCalibration(cam.getCamera().getProperties().getVideoMode(newPipeline.videoModeIndex));
-                        if (calibration == null){
+                        if (calibration == null) {
                             newPipeline.is3D = false;
                         }
                     }
@@ -176,9 +185,22 @@ public class RequestHandler {
     }
 
     public static void onPnpModel(Context ctx) throws JsonProcessingException {
-        System.out.println(ctx.body());
-        ObjectMapper objectMapper = kObjectMapper;
-        List points = objectMapper.readValue(ctx.body(), List.class);
-        System.out.println(points);
+        //noinspection unchecked
+        List<List<Number>> points = kObjectMapper.readValue(ctx.body(), List.class);
+
+        // each entry should be an xy pair
+        var pointsList = new ArrayList<Point3>();
+        for (List<Number> point : points) {
+            double x, y;
+            x = point.get(0).doubleValue();
+            y = point.get(1).doubleValue();
+            var pointToAdd = new Point3(x, y, 0.0);
+            pointsList.add(pointToAdd);
+        }
+        System.out.println(pointsList.toString());
+        if (VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings instanceof StandardCVPipelineSettings) {
+            var settings = (StandardCVPipelineSettings) VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings;
+            settings.targetCornerMat.fromList(pointsList);
+        }
     }
 }

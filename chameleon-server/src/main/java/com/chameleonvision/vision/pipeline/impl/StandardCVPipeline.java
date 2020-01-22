@@ -235,7 +235,7 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
             System.out.printf("full pipeline run time was %.3fms (%.2fFPS)\n", truePipelineTimeMillis, truePipelineFPS);
         }
 
-        memManager.run();
+//        memManager.run();
 
         resultCache = new StandardCVPipelineResult(collect2dTargetsResult.getLeft(), outputMat, totalPipelineTimeNanos);
         return resultCache;
@@ -260,6 +260,7 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
         public double area = 0.0;
         public Point point = new Point();
         public RotatedRect minAreaRect;
+        public Rect boundingRect;
 
         // 3d stuff
         public Pose2d cameraRelativePose = new Pose2d();

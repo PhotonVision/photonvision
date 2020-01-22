@@ -16,10 +16,12 @@ import java.util.List;
 public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.TrackedTarget>>, Mat> {
 
     private MatOfPoint3f boxCornerMat = new MatOfPoint3f();
+    private MatOfPoint tempMatOfPoints = new MatOfPoint();
 
     public Scalar green = Helpers.colorToScalar(Color.GREEN);
     public Scalar blue = Helpers.colorToScalar(Color.BLUE);
     public Scalar red = Helpers.colorToScalar(Color.RED);
+    public Scalar orange = Helpers.colorToScalar(Color.orange);
 
     public DrawSolvePNPPipe(CameraCalibrationConfig settings) {
         setConfig(settings);
@@ -46,14 +48,14 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
     public void set2020Box() {
         boxCornerMat.release();
         boxCornerMat = new MatOfPoint3f(
-                new Point3(-16.25, 0, 0),
+                new Point3(-19.625, 0, 0),
                 new Point3(-9.819867, -17, 0),
                 new Point3(9.819867, -17, 0),
-                new Point3(16.25, 0, 0),
-                new Point3(-16.25, 0, -6),
+                new Point3(19.625, 0, 0),
+                new Point3(-19.625, 0, -6),
                 new Point3(-9.819867, -17, -6),
                 new Point3(9.819867, -17, -6),
-                new Point3(16.25, 0, -6)
+                new Point3(19.625, 0, -6)
         );
     }
 
@@ -97,17 +99,20 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
                 Imgproc.rectangle(image, right.tl(), right.br(), new Scalar(200, 200, 0), 2);
             }
 
-            // draw corners
-            for(int i = 0; i < it.imageCornerPoints.rows(); i++) {
-                var point = new Point(it.imageCornerPoints.get(i, 0));
-                Imgproc.circle(image, point, 4, green, 5);
-            }
-
             // draw poly dp
             var list = it.approxPoly.toList();
             for(int i = 0; i < list.size(); i++) {
                 var next = (i == list.size() - 1) ? list.get(0) : list.get(i + 1);
-                Imgproc.line(image, list.get(i), next, red, 3);
+                Imgproc.line(image, list.get(i), next, red, 2);
+            }
+
+            // draw center
+            Imgproc.circle(image, it.minAreaRect.center, 5, red);
+
+            // draw corners
+            for(int i = 0; i < it.imageCornerPoints.rows(); i++) {
+                var point = new Point(it.imageCornerPoints.get(i, 0));
+                Imgproc.circle(image, point, 4, green, 5);
             }
 
             // sketch out floor

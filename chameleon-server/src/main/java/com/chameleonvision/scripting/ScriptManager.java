@@ -1,24 +1,18 @@
 package com.chameleonvision.scripting;
 
 import com.chameleonvision.Debug;
-import com.chameleonvision.Main;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.util.JacksonHelper;
 import com.chameleonvision.util.LoopingRunnable;
 import com.chameleonvision.util.Platform;
-import com.chameleonvision.util.ProgramDirectoryUtilities;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class ScriptManager {
 
@@ -94,7 +88,7 @@ public class ScriptManager {
 
         static List<ScriptConfig> loadConfig() {
             try {
-                var raw = JacksonHelper.deserializer(scriptConfigPath, ScriptConfig[].class);
+                var raw = JacksonHelper.deserialize(scriptConfigPath, ScriptConfig[].class);
                 if (raw != null) {
                     return List.of(raw);
                 }

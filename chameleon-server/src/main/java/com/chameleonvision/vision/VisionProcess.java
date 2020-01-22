@@ -4,6 +4,7 @@ import com.chameleonvision.Debug;
 import com.chameleonvision.config.CameraCalibrationConfig;
 import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.config.ConfigManager;
+import com.chameleonvision.networktables.NetworkTablesManager;
 import com.chameleonvision.scripting.ScriptEventType;
 import com.chameleonvision.scripting.ScriptManager;
 import com.chameleonvision.config.FullCameraConfiguration;
@@ -32,18 +33,16 @@ import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 
 
+@SuppressWarnings("rawtypes")
 public class VisionProcess {
 
-    private final USBCameraCapture cameraCapture;
-//    private final CameraStreamerRunnable streamRunnable;
+    public final USBCameraCapture cameraCapture;
     private final VisionProcessRunnable visionRunnable;
     private final CameraConfig fileConfig;
     public final CameraStreamer cameraStreamer;
     public PipelineManager pipelineManager;
 
     private volatile CVPipelineResult lastPipelineResult;
-
-    private BlockingQueue<Mat> streamFrameQueue = new LinkedBlockingDeque<>(1);
 
     // network table stuff
     private final NetworkTable defaultTable;
@@ -59,6 +58,12 @@ public class VisionProcess {
     private NetworkTableEntry ntLatencyEntry;
     private NetworkTableEntry ntValidEntry;
     private NetworkTableEntry ntPoseEntry;
+    private NetworkTableEntry ntFittedHeightEntry;
+    private NetworkTableEntry ntFittedWidthEntry;
+    private NetworkTableEntry ntBoundingHeightEntry;
+    private NetworkTableEntry ntBoundingWidthEntry;
+    private NetworkTableEntry ntTargetRotation;
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private long lastUIUpdateMs = 0;
@@ -72,7 +77,6 @@ public class VisionProcess {
 
         // Thread to put frames on the dashboard
         this.cameraStreamer = new CameraStreamer(cameraCapture, config.cameraConfig.name, pipelineManager.getCurrentPipeline().settings.streamDivisor);
-//        this.streamRunnable = new CameraStreamerRunnable(30, cameraStreamer);
 
         // Thread to process vision data
         this.visionRunnable = new VisionProcessRunnable();
@@ -110,21 +114,26 @@ public class VisionProcess {
 
     public void setCameraNickname(String newName) {
         getCamera().getProperties().setNickname(newName);
-        var newTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + newName);
-        resetNT(newTable);
+        NetworkTable camTable = NetworkTablesManager.kRootTable.getSubTable(newName);
+        resetNT(camTable);
     }
 
-    private void initNT(NetworkTable newTable) {
-        tableInstance = newTable.getInstance();
-        ntPipelineEntry = newTable.getEntry("pipeline");
-        ntDriverModeEntry = newTable.getEntry("driver_mode");
-        ntPitchEntry = newTable.getEntry("pitch");
-        ntYawEntry = newTable.getEntry("yaw");
-        ntAreaEntry = newTable.getEntry("area");
-        ntLatencyEntry = newTable.getEntry("latency");
-        ntValidEntry = newTable.getEntry("is_valid");
-        ntAuxListEntry = newTable.getEntry("aux_targets");
-        ntPoseEntry = newTable.getEntry("pose");
+    private void initNT(NetworkTable camTable) {
+        tableInstance = camTable.getInstance();
+        ntPipelineEntry = camTable.getEntry("pipeline");
+        ntDriverModeEntry = camTable.getEntry("driverMode");
+        ntPitchEntry = camTable.getEntry("targetPitch");
+        ntYawEntry = camTable.getEntry("targetYaw");
+        ntAreaEntry = camTable.getEntry("targetArea");
+        ntLatencyEntry = camTable.getEntry("latency");
+        ntValidEntry = camTable.getEntry("isValid");
+        ntAuxListEntry = camTable.getEntry("auxTargets");
+        ntPoseEntry = camTable.getEntry("targetPose");
+        ntFittedHeightEntry = camTable.getEntry("targetFittedHeight");
+        ntFittedWidthEntry = camTable.getEntry("targetFittedWidth");
+        ntBoundingHeightEntry = camTable.getEntry("targetBoundingHeight");
+        ntBoundingWidthEntry = camTable.getEntry("targetBoundingWidth");
+        ntTargetRotation = camTable.getEntry("targetRotation");
         ntDriveModeListenerID = ntDriverModeEntry.addListener(this::setDriverMode, EntryListenerFlags.kUpdate);
         ntPipelineListenerID = ntPipelineEntry.addListener(this::setPipeline, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
@@ -157,7 +166,6 @@ public class VisionProcess {
     }
 
     public void setDriverModeEntry(boolean isDriverMode) {
-
         // if it's null, we haven't even started the program yet, so just return
         // otherwise, set it.
         if (ntDriverModeEntry != null) {
@@ -176,7 +184,7 @@ public class VisionProcess {
                 HashMap<String, Object> WebSend = new HashMap<>();
                 HashMap<String, Object> point = new HashMap<>();
                 HashMap<String, Object> pointMap = new HashMap<>();
-                ArrayList<Object> webTargets = new ArrayList<Object>();
+                ArrayList<Object> webTargets = new ArrayList<>();
                 List<Double> center = new ArrayList<>();
 
 
@@ -203,9 +211,8 @@ public class VisionProcess {
                             }
                             center.add(bestTarget.minAreaRect.center.x);
                             center.add(bestTarget.minAreaRect.center.y);
-
                         } catch (ClassCastException ignored) {
-
+                          
                         }
                     } else {
                         pointMap.put("pitch", null);
@@ -236,17 +243,23 @@ public class VisionProcess {
 
                 //noinspection unchecked
                 List<StandardCVPipeline.TrackedTarget> targets = (List<StandardCVPipeline.TrackedTarget>) data.targets;
+                StandardCVPipeline.TrackedTarget bestTarget = targets.get(0);
                 ntLatencyEntry.setDouble(MathHandler.roundTo(data.processTime * 1e-6, 3));
-                ntPitchEntry.setDouble(targets.get(0).pitch);
-                ntYawEntry.setDouble(targets.get(0).yaw);
-                ntAreaEntry.setDouble(targets.get(0).area);
+                ntPitchEntry.setDouble(bestTarget.pitch);
+                ntYawEntry.setDouble(bestTarget.yaw);
+                ntAreaEntry.setDouble(bestTarget.area);
+                ntBoundingHeightEntry.setDouble(bestTarget.boundingRect.height);
+                ntBoundingWidthEntry.setDouble(bestTarget.boundingRect.width);
+                ntFittedHeightEntry.setDouble(bestTarget.minAreaRect.size.height);
+                ntFittedWidthEntry.setDouble(bestTarget.minAreaRect.size.width);
+                ntTargetRotation.setDouble(bestTarget.minAreaRect.angle);
                 try {
                     Pose2d targetPose = targets.get(0).cameraRelativePose;
                     double[] targetArray = {targetPose.getTranslation().getX(), targetPose.getTranslation().getY(), targetPose.getRotation().getDegrees()};
                     ntPoseEntry.setDoubleArray(targetArray);
 //                    ntPoseEntry.setString(objectMapper.writeValueAsString(targets.get(0).cameraRelativePose));
                     ntAuxListEntry.setString(objectMapper.writeValueAsString(targets.stream()
-                            .map(it -> List.of(it.pitch, it.yaw, it.area, it.cameraRelativePose))
+                            .map(it -> List.of(it.pitch, it.yaw, it.area, it.boundingRect.width, it.boundingRect.height, it.minAreaRect.size.width, it.minAreaRect.size.height, it.minAreaRect.angle, it.cameraRelativePose))
                             .collect(Collectors.toList())));
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
@@ -260,7 +273,6 @@ public class VisionProcess {
             }
         }
         tableInstance.flush();
-
     }
 
     public void setVideoMode(VideoMode newMode) {
@@ -343,8 +355,6 @@ public class VisionProcess {
                 }
 
                 try {
-//                    streamFrameQueue.clear();
-//                    streamFrameQueue.add(lastPipelineResult.outputMat);
                     var currentTime = System.currentTimeMillis();
                     if ((currentTime - lastStreamTimeMs) / 1000d > 1.0 / 30.0) {
                         cameraStreamer.runStream(lastPipelineResult.outputMat);
@@ -371,39 +381,6 @@ public class VisionProcess {
             }
             temp /= 7.0;
             return temp;
-        }
-
-    }
-
-    private class CameraStreamerRunnable extends LoopingRunnable {
-
-        final CameraStreamer streamer;
-        private Mat bufferMat = new Mat();
-
-        private CameraStreamerRunnable(int cameraFPS, CameraStreamer streamer) {
-            // add 2 FPS to allow for a bit of overhead
-            super(1000L / (cameraFPS + 2));
-            this.streamer = streamer;
-        }
-
-        @Override
-        protected void process() {
-            if (!streamFrameQueue.isEmpty()) {
-                try {
-
-                    bufferMat = streamFrameQueue.take();
-
-                    try {
-                        streamer.runStream(bufferMat);
-                        bufferMat.release();
-                    } catch (Exception e) {
-                        // do nothing
-                    }
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 }

@@ -2,20 +2,17 @@ package com.chameleonvision;
 
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.network.NetworkManager;
+import com.chameleonvision.networktables.NetworkTablesManager;
 import com.chameleonvision.scripting.ScriptEventType;
 import com.chameleonvision.scripting.ScriptManager;
 import com.chameleonvision.util.Platform;
-import com.chameleonvision.util.ShellExec;
 import com.chameleonvision.util.Utilities;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.web.Server;
 import edu.wpi.cscore.CameraServerCvJNI;
 import edu.wpi.cscore.CameraServerJNI;
-import edu.wpi.first.networktables.LogMessage;
-import edu.wpi.first.networktables.NetworkTableInstance;
 
 import java.io.IOException;
-import java.util.function.Consumer;
 
 import static com.chameleonvision.util.Platform.CurrentPlatform;
 
@@ -26,6 +23,7 @@ public class Main {
     private static final String NETWORK_MANAGE_KEY = "--unmanage-network"; // no args for this setting
     private static final String IGNORE_ROOT_KEY = "--ignore-root"; // no args for this setting
     private static final String TEST_MODE_KEY = "--cv-development";
+    private static final String UI_PORT_KEY = "--ui-port";
 
     private static final int DEFAULT_PORT = 5800;
 
@@ -34,21 +32,7 @@ public class Main {
     private static boolean ignoreRoot = false;
     private static String ntClientModeServer = null;
     public static boolean testMode = false;
-
-    private static class NTLogger implements Consumer<LogMessage> {
-
-        private boolean hasReportedConnectionFailure = false;
-
-        @Override
-        public void accept(LogMessage logMessage) {
-            if (!hasReportedConnectionFailure && logMessage.message.contains("timed out")) {
-                System.err.println("NT Connection has failed!");
-                hasReportedConnectionFailure = true;
-            } else if (logMessage.message.contains("connected")) {
-                ScriptManager.queueEvent(ScriptEventType.kNTConnected);
-            }
-        }
-    }
+    public static int uiPort = DEFAULT_PORT;
 
     private static void handleArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
@@ -64,6 +48,13 @@ public class Main {
                         value = potentialValue.toLowerCase();
                     }
                     i++; // increment to skip an 'arg' next go-around of for loop, as that would be this value
+                    break;
+                case UI_PORT_KEY:
+                    var potentialPort = args[i + 1];
+                    if (potentialPort != null && !potentialPort.isBlank() && !potentialPort.startsWith("-") & !potentialPort.startsWith("--")) {
+                        value = potentialPort;
+                    }
+                    i++;
                     break;
                 case NT_SERVERMODE_KEY:
                 case NETWORK_MANAGE_KEY:
@@ -101,6 +92,15 @@ public class Main {
                 case TEST_MODE_KEY:
                     testMode = true;
                     break;
+                case UI_PORT_KEY:
+                    if (value != null) {
+                        try {
+                            uiPort = Integer.parseInt(value);
+                        } catch (NumberFormatException e){
+                            System.err.println("ui Port was not a valid number using port 5800");
+                        }
+                    }
+                    break;
             }
         }
     }
@@ -124,7 +124,7 @@ public class Main {
                 System.out.println("Ignoring root, network will not be managed!");
             } else {
                 System.err.println("This program must be run as root!");
-                    return;
+                return;
             }
         }
 
@@ -133,7 +133,7 @@ public class Main {
             CameraServerJNI.forceLoad();
             CameraServerCvJNI.forceLoad();
         } catch (UnsatisfiedLinkError | IOException e) {
-            if(CurrentPlatform.isWindows()) {
+            if (CurrentPlatform.isWindows()) {
                 System.err.println("Try to download the VC++ Redistributable, https://aka.ms/vs/16/release/vc_redist.x64.exe");
             }
             throw new RuntimeException("Failed to load JNI Libraries!");
@@ -147,20 +147,12 @@ public class Main {
             System.out.println("Scripts not yet supported on Windows. ScriptEvents will be ignored.");
         }
 
-
         NetworkManager.initialize(manageNetwork);
 
         if (ntServerMode) {
-            System.out.println("Starting NT Server");
-            NetworkTableInstance.getDefault().startServer();
+            NetworkTablesManager.setServerMode();
         } else {
-            NetworkTableInstance.getDefault().addLogger(new NTLogger(), 0, 255); // to hide error messages
-            if (ntClientModeServer != null) {
-                NetworkTableInstance.getDefault().startClient(ntClientModeServer);
-            } else {
-                NetworkTableInstance.getDefault().startClientTeam(ConfigManager.settings.teamNumber);
-            }
-//            NetworkTableInstance.getDefault().startClient("localhost");
+            NetworkTablesManager.setClientMode(ntClientModeServer);
         }
 
         ScriptManager.queueEvent(ScriptEventType.kProgramInit);
@@ -179,7 +171,7 @@ public class Main {
 
         VisionManager.startProcesses();
 
-        System.out.printf("Starting Web server at port %d\n", DEFAULT_PORT);
-        Server.main(DEFAULT_PORT);
+        System.out.printf("Starting Web server at port %d\n", uiPort);
+        Server.main(uiPort);
     }
 }

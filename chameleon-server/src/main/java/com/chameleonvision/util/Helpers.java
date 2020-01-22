@@ -12,7 +12,7 @@ public class Helpers {
     }
 
     public static Scalar colorToScalar(Color color) {
-        return new Scalar(color.getRed(), color.getGreen(), color.getBlue());
+        return new Scalar(color.getBlue(), color.getGreen(), color.getRed());
     }
 
     public static HashMap VideoModeToHashMap(VideoMode videoMode) {
