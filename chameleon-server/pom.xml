@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.chameleon-vision.main</groupId>
     <artifactId>chameleon-vision</artifactId>
-    <version>2.1.2-RELEASE</version>
+    <version>2.2-RELEASE</version>
     <build>
         <plugins>
             <!--setup for java jdk 12-->
