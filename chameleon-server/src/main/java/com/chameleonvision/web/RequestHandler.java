@@ -187,20 +187,23 @@ public class RequestHandler {
     public static void onPnpModel(Context ctx) throws JsonProcessingException {
         //noinspection unchecked
         List<List<Number>> points = kObjectMapper.readValue(ctx.body(), List.class);
-
-        // each entry should be an xy pair
-        var pointsList = new ArrayList<Point3>();
-        for (List<Number> point : points) {
-            double x, y;
-            x = point.get(0).doubleValue();
-            y = point.get(1).doubleValue();
-            var pointToAdd = new Point3(x, y, 0.0);
-            pointsList.add(pointToAdd);
-        }
-        System.out.println(pointsList.toString());
-        if (VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings instanceof StandardCVPipelineSettings) {
-            var settings = (StandardCVPipelineSettings) VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings;
-            settings.targetCornerMat.fromList(pointsList);
+        try {
+            // each entry should be an xy pair
+            var pointsList = new ArrayList<Point3>();
+            for (List<Number> point : points) {
+                double x, y;
+                x = point.get(0).doubleValue();
+                y = point.get(1).doubleValue();
+                var pointToAdd = new Point3(x, y, 0.0);
+                pointsList.add(pointToAdd);
+            }
+            System.out.println(pointsList.toString());
+            if (VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings instanceof StandardCVPipelineSettings) {
+                var settings = (StandardCVPipelineSettings) VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings;
+                settings.targetCornerMat.fromList(pointsList);
+            }
+        } catch (Exception e){
+            ctx.status(500);
         }
     }
 }

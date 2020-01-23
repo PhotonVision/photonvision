@@ -17,10 +17,14 @@
                 <mini-map class="miniMapClass" :targets="targets" :horizontal-f-o-v="horizontalFOV"/>
             </v-col>
             <v-col>
-                <v-select v-model="selectedModel" :items="FRCtargets" item-text="name" item-value="data" dark color="#4baf62" item-color="green"/>
+                <v-select v-model="selectedModel" :items="FRCtargets" item-text="name" item-value="data" dark
+                          color="#4baf62" item-color="green"/>
                 <v-btn small v-if="selectedModel !== null" @click="uploadPremade">Upload Premade</v-btn>
             </v-col>
         </v-row>
+        <v-snackbar v-model="snack" top :color="snackbar.color">
+            <span>{{snackbar.text}}</span>
+        </v-snackbar>
     </div>
 </template>
 
@@ -41,7 +45,12 @@
             return {
                 is3D: false,
                 selectedModel: null,
-                FRCtargets: null
+                FRCtargets: null,
+                snackbar: {
+                    color: "success",
+                    text: ""
+                },
+                snack: false
             }
         },
         methods: {
@@ -57,17 +66,50 @@
                 });
             },
             onParse(result) {
-                let data = result.data.map(item => {
-                    Object.keys(item).forEach(k => item[k] = isNaN(item[k])? item[k] : Number(item[k]));
-                    return item;
-                });
-                this.uploadModel(data);
+                if (result.data.length > 0) {
+
+
+                    let data = [];
+                    for (let item of result.data) {
+                        let tmp = [];
+                        tmp.push(Number(item[0]));
+                        tmp.push(Number(item[1]));
+                        if (isNaN(tmp[0]) || isNaN(tmp[1])) {
+                            this.snackbar = {
+                                color: "error",
+                                text: "Error: cvs did parse correctly"
+                            };
+                            this.snack = true;
+                            return;
+                        }
+                        data.push(tmp);
+                    }
+                    this.uploadModel(data);
+                } else {
+                    this.snackbar = {
+                        color: "error",
+                        text: "Error: cvs did not contain any data"
+                    };
+                    this.snack = true;
+                }
             },
             uploadPremade() {
                 this.uploadModel(this.selectedModel);
             },
             uploadModel(model) {
-                this.axios.post("http://" + this.$address + "/api/vision/pnpModel", model);
+                this.axios.post("http://" + this.$address + "/api/vision/pnpModel", model).then((response) => {
+                    this.snackbar = {
+                        color: "success",
+                        text: "File uploaded successfully"
+                    };
+                    this.snack = true;
+                }).catch((error) => {
+                    this.snackbar = {
+                        color: "error",
+                        text: "An error occurred"
+                    };
+                    this.snack = true;
+                })
             }
         },
         computed: {
