@@ -57,7 +57,11 @@
                 });
             },
             onParse(result) {
-                this.uploadModel(result.data);
+                let data = result.data.map(item => {
+                    Object.keys(item).forEach(k => item[k] = isNaN(item[k])? item[k] : Number(item[k]));
+                    return item;
+                });
+                this.uploadModel(data);
             },
             uploadPremade() {
                 this.uploadModel(this.selectedModel);
