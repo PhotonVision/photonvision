@@ -4,6 +4,7 @@ import com.chameleonvision.config.CameraCalibrationConfig;
 import com.chameleonvision.util.Helpers;
 import com.chameleonvision.vision.pipeline.Pipe;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipelineSettings;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
@@ -11,7 +12,9 @@ import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.TrackedTarget>>, Mat> {
 
@@ -45,9 +48,25 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
         );
     }
 
+    private MatOfPoint3f lastCornerListPtr = null;
+    public void setConfig(StandardCVPipelineSettings settings) {
+//        boxCornerMat.fromList(settings.targetCornerMat);
+
+        if(settings.targetCornerMat == lastCornerListPtr) {
+            lastCornerListPtr = settings.targetCornerMat;
+            return;
+        }
+
+        var list = settings.targetCornerMat.toList();
+        var auxList = list.stream().map(it -> new Point3(it.x, it.y, it.z - 6)).collect(Collectors.toList());
+        var finalList = new ArrayList<>(list);
+        finalList.addAll(auxList);
+        boxCornerMat.fromList(finalList);
+    }
+
     public void set2020Box() {
         boxCornerMat.release();
-        boxCornerMat = new MatOfPoint3f(
+        boxCornerMat.fromList(List.of(
                 new Point3(-19.625, 0, 0),
                 new Point3(-9.819867, -17, 0),
                 new Point3(9.819867, -17, 0),
@@ -56,7 +75,7 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
                 new Point3(-9.819867, -17, -6),
                 new Point3(9.819867, -17, -6),
                 new Point3(19.625, 0, -6)
-        );
+        ));
     }
 
     private Mat cameraMatrix = new Mat();
