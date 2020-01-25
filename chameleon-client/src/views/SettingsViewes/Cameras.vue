@@ -106,7 +106,7 @@
             handleData(val) {
                 this.handleInput(val, this.pipeline[val]);
             },
-            changeFps(){
+            changeFps() {
                 this.handleInput('videoModeIndex', this.filteredFpsList[this.pipeline['videoModeIndex']]['actualIndex']);
             },
             sendCameraSettings() {
@@ -232,9 +232,11 @@
                 let tmpList = [];
                 for (let i in this.$store.state.resolutionList) {
                     let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
-                    if (res.width === selectedRes.width && res.height === selectedRes.height) {
-                        res['actualIndex'] = parseInt(i);
-                        tmpList.push(res);
+                    if (!tmpList.some(e => e['fps'] === res['fps'])) {
+                        if (res.width === selectedRes.width && res.height === selectedRes.height) {
+                            res['actualIndex'] = parseInt(i);
+                            tmpList.push(res);
+                        }
                     }
                 }
                 return tmpList;
