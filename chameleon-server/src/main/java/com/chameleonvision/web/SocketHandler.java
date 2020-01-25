@@ -53,8 +53,8 @@ public class SocketHandler {
 
     @SuppressWarnings("unchecked")
     void onBinaryMessage(WsBinaryMessageContext context) throws Exception {
-        Map<String, Object> deserialized = objectMapper.readValue(ArrayUtils.toPrimitive(context.data()), new TypeReference<>() {
-        });
+        Map<String, Object> deserialized = objectMapper.readValue((byte[]) ArrayUtils.toPrimitive(context.data()),
+                new TypeReference<>(){});
         for (Map.Entry<String, Object> entry : deserialized.entrySet()) {
             try {
                 VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
@@ -266,11 +266,11 @@ public class SocketHandler {
         tmp.put("streamDivisor", currentVisionProcess.cameraStreamer.getDivisor().ordinal());
         tmp.put("resolution", currentVisionProcess.getCamera().getProperties().getCurrentVideoModeIndex());
         tmp.put("tilt", currentVisionProcess.getCamera().getProperties().getTilt().getDegrees());
-        
+
         List<CameraCalibrationConfig.UICameraCalibrationConfig> calibrations = currentCamera.getAllCalibrationData().stream()
                 .map(CameraCalibrationConfig.UICameraCalibrationConfig::new).collect(Collectors.toList());
         tmp.put("calibration", calibrations);
-        
+
         return tmp;
     }
 

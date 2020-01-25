@@ -11,7 +11,7 @@
                     <component :is="selectedComponent" @update="$emit('save')"/>
                 </div>
             </v-col>
-            <v-col class="colsClass" v-show="selectedTab === 1 || selectedTab === 2">
+            <v-col class="colsClass" v-show="selectedTab === 1">
                 <div class="videoClass">
                     <img :src="streamAddress" alt="Camera Stream">
                 </div>
@@ -34,18 +34,13 @@
         data() {
             return {
                 selectedTab: 0,
+                tabList:[General, Cameras]
             }
         },
         computed: {
             selectedComponent: {
                 get() {
-                    switch (this.selectedTab) {
-                        case 0:
-                            return "General";
-                        case 1:
-                            return "Cameras";
-                    }
-                    return "";
+                    return this.tabList[this.selectedTab];
                 }
             },
             streamAddress: {
