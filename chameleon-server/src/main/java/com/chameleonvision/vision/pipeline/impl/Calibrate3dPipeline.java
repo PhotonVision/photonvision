@@ -38,6 +38,7 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
     private TermCriteria criteria = new TermCriteria(3, 30, 0.001); //(Imgproc.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     private int captureCount = 0;
+    private double calibrationAccuracy = 0;
     private boolean wantsSnapshot = false;
     private double squareSizeInches;
 
@@ -129,7 +130,7 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
         List<Mat> tvecs = new ArrayList<>();
 
         try {
-            Calib3d.calibrateCamera(objpoints, imgpoints, imageSize, cameraMatrix, distortionCoeffs, rvecs, tvecs);
+           calibrationAccuracy = Calib3d.calibrateCamera(objpoints, imgpoints, imageSize, cameraMatrix, distortionCoeffs, rvecs, tvecs);
         } catch(Exception e) {
             System.err.println("Camera calibration failed!");
             initPipeline(cameraCapture);
@@ -161,5 +162,9 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
     
     public int getSnapshotCount() {
         return captureCount + 1;
+    }
+
+    public double getCalibrationAccuracy(){
+        return calibrationAccuracy;
     }
 }

@@ -48,9 +48,21 @@
                     <span>Snapshot Amount: {{snapshotAmount}}</span>
                 </v-col>
             </v-row>
+            <div v-if="isCalibrating">
+                <v-checkbox v-model="isAdvanced" label="Advanced Menu" dark/>
+                <div v-if="isAdvanced">
+                    <CVslider name="Exposure" v-model="pipeline.exposure" :min="0" :max="100"
+                              @input="handleData('exposure')"/>
+                    <CVslider name="Brightness" v-model="pipeline.brightness" :min="0" :max="100"
+                              @input="handleData('brightness')"/>
+                    <CVslider name="Gain" v-if="pipeline.gain !== -1" v-model="pipeline.gain" :min="0" :max="100"
+                              @input="handleData('gain')"/>
+                    <CVselect name="FPS" v-model="pipeline.videoModeIndex" :list="stringFpsList" @input="changeFps"/>
+                </div>
+            </div>
         </div>
-        <v-snackbar v-model="snack">
-            <span>Calibration Failed</span>
+        <v-snackbar v-model="snack" top :color="snackbar.color">
+            <span>{{snackbar.text}}</span>
         </v-snackbar>
     </div>
 </template>
@@ -58,12 +70,14 @@
 <script>
     import CVselect from '../../components/cv-select'
     import CVnumberinput from '../../components/cv-number-input'
+    import CVslider from '../../components/cv-slider'
 
     export default {
         name: 'CameraSettings',
         components: {
             CVselect,
-            CVnumberinput
+            CVnumberinput,
+            CVslider
         },
         data() {
             return {
@@ -77,13 +91,24 @@
                     text: "Cancel Calibration",
                     color: "red"
                 },
+                snackbar: {
+                    color: "success",
+                    text: ""
+                },
                 squareSize: 1.0,
                 snapshotAmount: 0,
                 hasEnough: false,
-                snack: false
+                snack: false,
+                isAdvanced: false
             }
         },
         methods: {
+            handleData(val) {
+                this.handleInput(val, this.pipeline[val]);
+            },
+            changeFps(){
+                this.handleInput('videoModeIndex', this.filteredFpsList[this.pipeline['videoModeIndex']]['actualIndex']);
+            },
             sendCameraSettings() {
                 const self = this;
                 this.axios.post("http://" + this.$address + "/api/settings/camera", this.cameraSettings).then(
@@ -129,9 +154,13 @@
                 let connection_string = "/api/settings/endCalibration";
                 let data = {};
                 data['squareSize'] = this.squareSize;
-                self.axios.post("http://" + this.$address + connection_string, data).then(
-                    function (response) {
-                        if (response.status === 500) {
+                self.axios.post("http://" + this.$address + connection_string, data).then((response) => {
+                        if (response.status === 200) {
+                            self.snackbar = {
+                                color: "success",
+                                text: "calibration successful. \n" +
+                                    "accuracy: " + response.data['accuracy'].toFixed(5)
+                            };
                             self.snack = true;
                         }
                         self.isCalibrating = false;
@@ -141,7 +170,19 @@
                         self.cancellationModeButton.text = "Cancel Calibration";
                         self.cancellationModeButton.color = "red";
                     }
-                );
+                ).catch(() => {
+                    self.snackbar = {
+                        color: "error",
+                        text: "calibration failed"
+                    };
+                    self.snack = true;
+                    self.isCalibrating = false;
+                    self.hasEnough = false;
+                    self.snapshotAmount = 0;
+                    self.calibrationModeButton.text = "Start Calibration";
+                    self.cancellationModeButton.text = "Cancel Calibration";
+                    self.cancellationModeButton.color = "red";
+                });
             }
         },
         computed: {
@@ -186,6 +227,25 @@
                     return tmp_list;
                 }
             },
+            filteredFpsList() {
+                let selectedRes = this.$store.state.resolutionList[this.resolutionIndex];
+                let tmpList = [];
+                for (let i in this.$store.state.resolutionList) {
+                    let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
+                    if (res.width === selectedRes.width && res.height === selectedRes.height) {
+                        res['actualIndex'] = parseInt(i);
+                        tmpList.push(res);
+                    }
+                }
+                return tmpList;
+            },
+            stringFpsList() {
+                let tmp = [];
+                for (let i of this.filteredFpsList) {
+                    tmp.push(i['fps']);
+                }
+                return tmp;
+            },
             stringResolutionList: {
                 get() {
                     let tmp = [];
@@ -203,7 +263,9 @@
                     this.$store.commit('cameraSettings', value);
                 }
             },
-
+            pipeline() {
+                return this.$store.state.pipeline
+            }
         }
     }
 </script>
