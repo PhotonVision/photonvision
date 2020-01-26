@@ -193,9 +193,9 @@ public class RequestHandler {
                 ctx.status(500);
             }
         } else {
-            pipeManager.setCalibrationMode(false);
             ctx.status(201);
         }
+        pipeManager.setCalibrationMode(false);
     }
 
     public static void onPnpModel(Context ctx) throws JsonProcessingException {
