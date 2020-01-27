@@ -78,6 +78,10 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
         ));
     }
 
+    public void setTargetBox(MatOfPoint3f cornerMat) {
+        this.boxCornerMat = cornerMat;
+    }
+
     private Mat cameraMatrix = new Mat();
     private MatOfDouble distortionCoefficients = new MatOfDouble();
 
