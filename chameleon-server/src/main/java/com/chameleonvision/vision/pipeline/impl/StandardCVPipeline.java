@@ -139,7 +139,6 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
 
             solvePNPPipe.setConfig(settings, cameraCapture.getCurrentCalibrationData(), cameraCapture.getProperties().getTilt());
             drawSolvePNPPipe.setConfig(cameraCapture.getCurrentCalibrationData());
-            drawSolvePNPPipe.setTargetBox(settings.targetCornerMat);
 
         }
 
