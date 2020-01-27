@@ -135,10 +135,11 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
             if (solvePNPPipe == null)
                 solvePNPPipe = new SolvePNPPipe(settings, cameraCapture.getCurrentCalibrationData(), cameraCapture.getProperties().getTilt());
             if (drawSolvePNPPipe == null)
-                drawSolvePNPPipe = new DrawSolvePNPPipe(cameraCapture.getCurrentCalibrationData());
+                drawSolvePNPPipe = new DrawSolvePNPPipe(settings, cameraCapture.getCurrentCalibrationData());
 
             solvePNPPipe.setConfig(settings, cameraCapture.getCurrentCalibrationData(), cameraCapture.getProperties().getTilt());
             drawSolvePNPPipe.setConfig(cameraCapture.getCurrentCalibrationData());
+            drawSolvePNPPipe.setConfig(settings);
 
         }
 
