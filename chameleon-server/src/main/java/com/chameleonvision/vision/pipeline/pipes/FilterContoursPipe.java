@@ -1,7 +1,7 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
-import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.util.MathHandler;
+import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.pipeline.Pipe;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.MatOfPoint;

@@ -1,16 +1,17 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
 import com.chameleonvision.vision.camera.CaptureStaticProperties;
+import com.chameleonvision.vision.enums.CalibrationMode;
 import com.chameleonvision.vision.enums.TargetOrientation;
 import com.chameleonvision.vision.enums.TargetRegion;
 import com.chameleonvision.vision.pipeline.Pipe;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
-import com.chameleonvision.vision.enums.CalibrationMode;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
 import org.opencv.core.Point;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Collect2dTargetsPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTarget>, CaptureStaticProperties>, List<StandardCVPipeline.TrackedTarget>> {
 

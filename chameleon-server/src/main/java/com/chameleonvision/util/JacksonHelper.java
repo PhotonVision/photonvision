@@ -1,7 +1,5 @@
 package com.chameleonvision.util;
 
-import com.chameleonvision.config.serializers.StandardCVPipelineSettingsDeserializer;
-import com.chameleonvision.vision.pipeline.impl.StandardCVPipelineSettings;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.json.JsonMapper;

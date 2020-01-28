@@ -1,7 +1,7 @@
 package com.chameleonvision.vision.pipeline.pipes;
 
-import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.util.Helpers;
+import com.chameleonvision.vision.camera.CaptureStaticProperties;
 import com.chameleonvision.vision.pipeline.Pipe;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import org.apache.commons.lang3.tuple.Pair;

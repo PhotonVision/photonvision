@@ -6,7 +6,6 @@ import com.chameleonvision.vision.pipeline.Pipe;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
-import org.opencv.core.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;

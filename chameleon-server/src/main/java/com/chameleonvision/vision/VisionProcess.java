@@ -4,17 +4,18 @@ import com.chameleonvision.Debug;
 import com.chameleonvision.config.CameraCalibrationConfig;
 import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.config.ConfigManager;
+import com.chameleonvision.config.FullCameraConfiguration;
 import com.chameleonvision.networktables.NetworkTablesManager;
 import com.chameleonvision.scripting.ScriptEventType;
 import com.chameleonvision.scripting.ScriptManager;
-import com.chameleonvision.config.FullCameraConfiguration;
-import com.chameleonvision.util.LoopingRunnable;
 import com.chameleonvision.util.MathHandler;
 import com.chameleonvision.vision.camera.CameraStreamer;
 import com.chameleonvision.vision.camera.USBCameraCapture;
-import com.chameleonvision.vision.pipeline.*;
-import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
+import com.chameleonvision.vision.pipeline.CVPipelineResult;
+import com.chameleonvision.vision.pipeline.CVPipelineSettings;
+import com.chameleonvision.vision.pipeline.PipelineManager;
 import com.chameleonvision.vision.pipeline.impl.DriverVisionPipeline;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipelineSettings;
 import com.chameleonvision.web.SocketHandler;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -25,11 +26,10 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpiutil.CircularBuffer;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.stream.Collectors;
 
 

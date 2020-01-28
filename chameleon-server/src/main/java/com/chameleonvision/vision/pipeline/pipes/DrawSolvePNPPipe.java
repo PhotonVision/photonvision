@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.TrackedTarget>>, Mat> {
 
     private MatOfPoint3f boxCornerMat = new MatOfPoint3f();
-    private MatOfPoint tempMatOfPoints = new MatOfPoint();
 
     public Scalar green = Helpers.colorToScalar(Color.GREEN);
     public Scalar blue = Helpers.colorToScalar(Color.BLUE);

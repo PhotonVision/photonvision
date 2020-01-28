@@ -1,7 +1,6 @@
 package com.chameleonvision.util;
 
 import edu.wpi.cscore.VideoMode;
-import io.javalin.http.UploadedFile;
 import org.opencv.core.Scalar;
 
 import java.awt.*;
@@ -9,9 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.Map;
 
 public class Helpers {
     private static final String kServicePath = "/etc/systemd/system/chameleonVision.service";

@@ -4,10 +4,6 @@ import com.chameleonvision.Debug;
 import com.chameleonvision.util.ShellExec;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 public class ScriptEvent {
     private static final ShellExec executor = new ShellExec(true, true);

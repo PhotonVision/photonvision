@@ -9,13 +9,13 @@ import com.chameleonvision.vision.pipeline.CVPipelineResult;
 import com.chameleonvision.vision.pipeline.pipes.*;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.*;
 import org.opencv.core.Point;
+import org.opencv.core.*;
 
 import java.awt.*;
 import java.util.List;
 
-import static com.chameleonvision.vision.pipeline.impl.StandardCVPipeline.*;
+import static com.chameleonvision.vision.pipeline.impl.StandardCVPipeline.StandardCVPipelineResult;
 
 @SuppressWarnings("WeakerAccess")
 public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, StandardCVPipelineSettings> {

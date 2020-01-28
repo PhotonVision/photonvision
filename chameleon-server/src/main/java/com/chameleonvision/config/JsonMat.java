@@ -4,11 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
 
 
 public class JsonMat {
