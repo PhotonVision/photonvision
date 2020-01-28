@@ -1,29 +1,31 @@
 package com.chameleonvision.web;
 
 import com.chameleonvision.Exceptions.DuplicatedKeyException;
+import com.chameleonvision.Main;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.network.NetworkIPMode;
 import com.chameleonvision.networktables.NetworkTablesManager;
+import com.chameleonvision.util.Helpers;
+import com.chameleonvision.util.Platform;
+import com.chameleonvision.util.ProgramDirectoryUtilities;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.camera.USBCameraCapture;
-import com.chameleonvision.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision.vision.pipeline.PipelineManager;
 import com.chameleonvision.vision.pipeline.impl.Calibrate3dPipeline;
-import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import io.javalin.http.Context;
-import io.javalin.http.Handler;
-import org.apache.commons.math3.ml.neuralnet.Network;
-import org.opencv.core.Point;
+import io.javalin.http.UploadedFile;
 import org.opencv.core.Point3;
 
-import java.io.IOException;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -174,33 +176,67 @@ public class RequestHandler {
         System.out.println("Finishing Cal");
         if (pipeManager.calib3dPipe.hasEnoughSnapshots()) {
             if (pipeManager.calib3dPipe.tryCalibration()) {
+                HashMap<String, Double> tmp = new HashMap<String, Double>();
+                tmp.put("accuracy", pipeManager.calib3dPipe.getCalibrationAccuracy());
+                ctx.json(tmp);
                 ctx.status(200);
             } else {
                 System.err.println("CALFAIL");
                 ctx.status(500);
             }
+        } else {
+            ctx.status(201);
         }
         pipeManager.setCalibrationMode(false);
-        ctx.status(200);
     }
 
     public static void onPnpModel(Context ctx) throws JsonProcessingException {
         //noinspection unchecked
         List<List<Number>> points = kObjectMapper.readValue(ctx.body(), List.class);
-
-        // each entry should be an xy pair
-        var pointsList = new ArrayList<Point3>();
-        for (List<Number> point : points) {
-            double x, y;
-            x = point.get(0).doubleValue();
-            y = point.get(1).doubleValue();
-            var pointToAdd = new Point3(x, y, 0.0);
-            pointsList.add(pointToAdd);
+        try {
+            // each entry should be an xy pair
+            var pointsList = new ArrayList<Point3>();
+            for (List<Number> point : points) {
+                double x, y;
+                x = point.get(0).doubleValue();
+                y = point.get(1).doubleValue();
+                var pointToAdd = new Point3(x, y, 0.0);
+                pointsList.add(pointToAdd);
+            }
+            System.out.println(pointsList.toString());
+            if (VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings instanceof StandardCVPipelineSettings) {
+                var settings = (StandardCVPipelineSettings) VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings;
+                settings.targetCornerMat.fromList(pointsList);
+            }
+        } catch (Exception e) {
+            ctx.status(500);
         }
-        System.out.println(pointsList.toString());
-        if (VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings instanceof StandardCVPipelineSettings) {
-            var settings = (StandardCVPipelineSettings) VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings;
-            settings.targetCornerMat.fromList(pointsList);
+    }
+
+    public static void onInstallOrUpdate(Context ctx) {
+        Platform p = Platform.getCurrentPlatform();
+        try {
+            if (p == Platform.LINUX_RASPBIAN || p == Platform.LINUX_64) {
+                UploadedFile file = ctx.uploadedFile("file");
+                Path filePath;
+                if (file != null) {
+                    filePath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), file.getFilename());
+                    File target = new File(filePath.toString());
+                    OutputStream stream = new FileOutputStream(target);
+                    file.getContent().transferTo(stream);
+                    stream.close();
+                } else {
+                    filePath = Paths.get(new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath()); // quirk to get the current file directory
+                }
+                Helpers.setService(filePath);
+                ctx.status(200);
+            } else {
+                ctx.result("Only Linux Platforms Support this feature");
+                ctx.status(500);
+            }
+        } catch (Exception e) {
+            ctx.result(e.toString());
+            ctx.status(500);
         }
     }
 }

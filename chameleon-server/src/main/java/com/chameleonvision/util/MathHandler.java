@@ -1,8 +1,5 @@
 package com.chameleonvision.util;
 
-import java.lang.Math;
-
-import edu.wpi.first.wpiutil.math.Num;
 import org.apache.commons.math3.util.FastMath;
 
 public class MathHandler {

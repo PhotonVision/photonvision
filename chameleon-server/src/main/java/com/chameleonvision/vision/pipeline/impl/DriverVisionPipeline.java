@@ -10,7 +10,6 @@ import com.chameleonvision.vision.pipeline.pipes.Draw2dCrosshairPipe;
 import com.chameleonvision.vision.pipeline.pipes.RotateFlipPipe;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
-import org.opencv.core.RotatedRect;
 
 import java.util.List;
 

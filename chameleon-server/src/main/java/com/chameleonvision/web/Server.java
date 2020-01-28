@@ -35,6 +35,7 @@ public class Server {
         app.post("/api/settings/snapshot", RequestHandler::onSnapshot);
         app.post("/api/settings/endCalibration", RequestHandler::onCalibrationEnding);
         app.post("/api/vision/pnpModel", RequestHandler::onPnpModel);
+        app.post("/api/install", RequestHandler::onInstallOrUpdate);
         app.start(port);
     }
 }

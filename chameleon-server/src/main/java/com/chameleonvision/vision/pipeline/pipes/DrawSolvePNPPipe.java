@@ -4,6 +4,7 @@ import com.chameleonvision.config.CameraCalibrationConfig;
 import com.chameleonvision.util.Helpers;
 import com.chameleonvision.vision.pipeline.Pipe;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
+import com.chameleonvision.vision.pipeline.impl.StandardCVPipelineSettings;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
@@ -11,59 +12,44 @@ import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.TrackedTarget>>, Mat> {
 
     private MatOfPoint3f boxCornerMat = new MatOfPoint3f();
-    private MatOfPoint tempMatOfPoints = new MatOfPoint();
 
     public Scalar green = Helpers.colorToScalar(Color.GREEN);
     public Scalar blue = Helpers.colorToScalar(Color.BLUE);
     public Scalar red = Helpers.colorToScalar(Color.RED);
     public Scalar orange = Helpers.colorToScalar(Color.orange);
 
-    public DrawSolvePNPPipe(CameraCalibrationConfig settings) {
+    public DrawSolvePNPPipe(StandardCVPipelineSettings standardCVPipelineSettings, CameraCalibrationConfig settings) {
         setConfig(settings);
-//        setObjectBox(14.5, 6, 2);
-        set2020Box();
+        setBox(standardCVPipelineSettings.targetCornerMat);
     }
 
-    public void setObjectBox(double targetWidth, double targetHeight, double targetDepth) {
-        // implementation from 5190 Green Hope Falcons
 
+    private void setBox(MatOfPoint3f mat) {
         boxCornerMat.release();
-        boxCornerMat = new MatOfPoint3f(
-                new Point3(-targetWidth/2d, -targetHeight/2d, 0),
-                new Point3(-targetWidth/2d, targetHeight/2d, 0),
-                new Point3(targetWidth/2d, targetHeight/2d, 0),
-                new Point3(targetWidth/2d, -targetHeight/2d, 0),
-                new Point3(-targetWidth/2d, -targetHeight/2d, -targetDepth),
-                new Point3(-targetWidth/2d, targetHeight/2d, -targetDepth),
-                new Point3(targetWidth/2d, targetHeight/2d, -targetDepth),
-                new Point3(targetWidth/2d, -targetHeight/2d, -targetDepth)
-        );
+        var list = mat.toList();
+        var auxList = list.stream().map(it -> new Point3(it.x, it.y, it.z - 6)).collect(Collectors.toList());
+        var finalList = new ArrayList<>(list);
+        finalList.addAll(auxList);
+        boxCornerMat.fromList(finalList);
     }
 
-    public void set2020Box() {
-        boxCornerMat.release();
-        boxCornerMat = new MatOfPoint3f(
-                new Point3(-19.625, 0, 0),
-                new Point3(-9.819867, -17, 0),
-                new Point3(9.819867, -17, 0),
-                new Point3(19.625, 0, 0),
-                new Point3(-19.625, 0, -6),
-                new Point3(-9.819867, -17, -6),
-                new Point3(9.819867, -17, -6),
-                new Point3(19.625, 0, -6)
-        );
+
+    public void setConfig(StandardCVPipelineSettings settings) {
+        setBox(settings.targetCornerMat);
     }
 
     private Mat cameraMatrix = new Mat();
     private MatOfDouble distortionCoefficients = new MatOfDouble();
 
     public void setConfig(CameraCalibrationConfig config) {
-        if(config == null) {
+        if (config == null) {
             System.err.println("got passed a null config! Returning...");
             return;
         }
@@ -82,17 +68,17 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
         long processStartNanos = System.nanoTime();
 
         var image = targets.getLeft();
-        for(var it : targets.getRight()) {
+        for (var it : targets.getRight()) {
 
             try {
-                Calib3d.projectPoints(boxCornerMat, it.rVector, it.tVector, this.cameraMatrix, this.distortionCoefficients, imagePoints, new Mat() , 0);
+                Calib3d.projectPoints(boxCornerMat, it.rVector, it.tVector, this.cameraMatrix, this.distortionCoefficients, imagePoints, new Mat(), 0);
             } catch (Exception e) {
                 e.printStackTrace();
             }
             var pts = imagePoints.toList();
 
             // draw left and right targets if possible
-            if(it.leftRightDualTargetPair != null) {
+            if (it.leftRightDualTargetPair != null) {
                 var left = it.leftRightDualTargetPair.getLeft();
                 var right = it.leftRightDualTargetPair.getRight();
                 Imgproc.rectangle(image, left.tl(), left.br(), new Scalar(200, 200, 0), 4);
@@ -101,7 +87,7 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
 
             // draw poly dp
             var list = it.approxPoly.toList();
-            for(int i = 0; i < list.size(); i++) {
+            for (int i = 0; i < list.size(); i++) {
                 var next = (i == list.size() - 1) ? list.get(0) : list.get(i + 1);
                 Imgproc.line(image, list.get(i), next, red, 2);
             }
@@ -110,7 +96,7 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
             Imgproc.circle(image, it.minAreaRect.center, 5, red);
 
             // draw corners
-            for(int i = 0; i < it.imageCornerPoints.rows(); i++) {
+            for (int i = 0; i < it.imageCornerPoints.rows(); i++) {
                 var point = new Point(it.imageCornerPoints.get(i, 0));
                 Imgproc.circle(image, point, 4, green, 5);
             }
