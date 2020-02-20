@@ -160,23 +160,25 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         var centroid = target.minAreaRect.center;
         Comparator<Point> distanceProvider = Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
 
-        var contour = target.rawContour;
-        var convex = tempInt;
-        tempMatOfPoint.fromList(contour.toList());
-        Imgproc.convexHull(tempMatOfPoint, convex);
-        var combinedList = contour.toList();
+        // algorithm from team 4915
 
-        // approx poly dp time
+        // Contour perimiter
+        var peri = Imgproc.arcLength(target.rawContour, true);
+        // approximating a shape around the contours
+        // Can be tuned to allow/disallow hulls
+        // Approx is the number of verticies
+        // Ramer–Douglas–Peucker algorithm
+        Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.01 * peri, true);
 
-        Point[] contourArray = contour.toArray();
-        Point[] hullPoints = new Point[convex.rows()];
-        List<Integer> hullContourIdxList = convex.toList();
-        for (int i = 0; i < hullContourIdxList.size(); i++) {
-            hullPoints[i] = contourArray[hullContourIdxList.get(i)];
+        if(polyOutput.toList().size() != 8) {
+            return null;
         }
-        tempMat2f.fromArray(hullPoints);
 
-        Imgproc.approxPolyDP(tempMat2f, polyOutput, 5, true);
+        var area = Imgproc.moments(polyOutput);
+
+        if (area.get_m00() < 200) {
+            return null;
+        }
 
         var polyList = polyOutput.toList();
 
@@ -420,14 +422,14 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         var z = FastMath.sin(tilt_angle) * tVec.get(1, 0)[0] + tVec.get(2, 0)[0] *  FastMath.cos(tilt_angle);
 
         // distance in the horizontal plane between camera and target
-        var distance = FastMath.sqrt(x * x + z  * z);
+        var distance = FastMath.sqrt(x * x + z * z);
 
         // horizontal angle between center camera and target
         @SuppressWarnings("SuspiciousNameCombination")
         var angle1 = FastMath.atan2(x, z);
 
         Calib3d.Rodrigues(rVec, rodriguez);
-        Core.transpose(rodriguez, rot_inv);
+        Core.transpose(rodriguez, rot_inv); // rodrigurz.t()
 
         // This should be pzero_world = numpy.matmul(rot_inv, -tvec)
 //        pzero_world  = rot_inv.mul(matScale(tVec, -1));
