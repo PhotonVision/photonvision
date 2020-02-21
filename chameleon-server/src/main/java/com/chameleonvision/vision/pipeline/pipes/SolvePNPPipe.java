@@ -170,9 +170,9 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         // Ramer–Douglas–Peucker algorithm
         Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.01 * peri, true);
 
-        if(polyOutput.toList().size() != 8) {
-            return null;
-        }
+//        if(polyOutput.toList().size() != 8) {
+//            return null;
+//        }
 
         var area = Imgproc.moments(polyOutput);
 
@@ -196,17 +196,17 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
             var bl = polyList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
             var br = polyList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
 
-            polyList = new ArrayList<>(polyList);
-            polyList.removeAll(List.of(tl, tr, bl, br));
-
-            var tl2 = polyList.stream().min(Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(0)))).get();
-            var tr2 = polyList.stream().min(Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(3)))).get();
-
-            var bl2 = polyList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
-            var br2 = polyList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
+//            polyList = new ArrayList<>(polyList);
+//            polyList.removeAll(List.of(tl, tr, bl, br));
+//
+//            var tl2 = polyList.stream().min(Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(0)))).get();
+//            var tr2 = polyList.stream().min(Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(3)))).get();
+//
+//            var bl2 = polyList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
+//            var br2 = polyList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
 
             target2020ResultMat.release();
-            target2020ResultMat.fromList(List.of(tl, bl, br, tr, tr2, br2, bl2, tl2));
+            target2020ResultMat.fromList(List.of(tl, bl, br, tr));//, tr2, br2, bl2, tl2));
 
             return target2020ResultMat;
         } catch (NoSuchElementException e) {
