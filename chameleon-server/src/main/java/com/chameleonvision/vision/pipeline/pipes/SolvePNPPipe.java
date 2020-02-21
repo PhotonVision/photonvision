@@ -162,11 +162,11 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
 
         // algorithm from team 4915
 
-        // Contour perimiter
+        // Contour perimeter
         var peri = Imgproc.arcLength(target.rawContour, true);
         // approximating a shape around the contours
         // Can be tuned to allow/disallow hulls
-        // Approx is the number of verticies
+        // Approx is the number of vertices
         // Ramer–Douglas–Peucker algorithm
         Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.01 * peri, true);
 
@@ -190,17 +190,23 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         try {
 
             // top left and top right are the poly corners closest to the bouding box tl and tr
-            Point tl = polyList.stream().min(Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(0)))).get();
-            Point tr = polyList.stream().min(Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(3)))).get();
+            var tl = polyList.stream().min(Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(0)))).get();
+            var tr = polyList.stream().min(Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(3)))).get();
 
-
-//            var tl = polyList.stream().filter(point -> point.x < centroid.x && point.y < centroid.y).max(distanceProvider).get();
-//            var tr = polyList.stream().filter(point -> point.x > centroid.x && point.y < centroid.y).max(distanceProvider).get();
             var bl = polyList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
             var br = polyList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
 
+            polyList = new ArrayList<>(polyList);
+            polyList.removeAll(List.of(tl, tr, bl, br));
+
+            var tl2 = polyList.stream().min(Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(0)))).get();
+            var tr2 = polyList.stream().min(Comparator.comparingDouble((Point p) -> distanceBetween(p, boundingBoxCorners.get(3)))).get();
+
+            var bl2 = polyList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
+            var br2 = polyList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
+
             target2020ResultMat.release();
-            target2020ResultMat.fromList(List.of(tl, bl, br, tr));
+            target2020ResultMat.fromList(List.of(tl, bl, br, tr, tr2, br2, bl2, tl2));
 
             return target2020ResultMat;
         } catch (NoSuchElementException e) {
