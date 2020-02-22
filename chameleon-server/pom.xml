@@ -87,6 +87,11 @@
             <version>3.6.1</version>
         </dependency>
         <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+        <dependency>
             <groupId>org.msgpack</groupId>
             <artifactId>msgpack-core</artifactId>
             <version>0.8.18</version>
