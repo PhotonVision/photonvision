@@ -17,8 +17,8 @@ public class Helpers {
             "\n" +
             "[Service]\n" +
             "ExecStart=/usr/bin/java -jar %s \n" +
-            "StandardOutput=file:/var/log/something.out.txt\n" +
-            "StandardError=file:/var/log/something.err.txt\n" +
+            "StandardOutput=file:/var/log/chameleon.out.txt\n" +
+            "StandardError=file:/var/log/chameleon.err.txt\n" +
             "Type=simple\n" +
             "WorkingDirectory=/usr/local/bin\n" +
             "\n" +
