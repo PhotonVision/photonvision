@@ -170,10 +170,6 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         // Ramer–Douglas–Peucker algorithm
         Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.01 * peri, true);
 
-//        if(polyOutput.toList().size() != 8) {
-//            return null;
-//        }
-
         var area = Imgproc.moments(polyOutput);
 
         if (area.get_m00() < 200) {
