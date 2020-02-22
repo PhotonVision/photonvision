@@ -168,7 +168,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         // Can be tuned to allow/disallow hulls
         // Approx is the number of vertices
         // Ramer–Douglas–Peucker algorithm
-        Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.04 * peri, true);
+        Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.02 * peri, true);
 
         var area = Imgproc.moments(polyOutput);
 
