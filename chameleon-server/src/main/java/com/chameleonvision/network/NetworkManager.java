@@ -68,12 +68,6 @@ public class NetworkManager {
         } else {
             isManaged = false;
             System.err.println("No valid network interfaces found! Staying unmanaged.");
-            return;
-        }
-
-        if (!loadFromGeneralSettings()) {
-            isManaged = false;
-            System.err.println("Failed to load network settings. Staying unmanaged!");
         }
     }
 
@@ -81,13 +75,6 @@ public class NetworkManager {
         return new byte[]{(byte) (teamNumber / 100), (byte) (teamNumber % 100)};
     }
 
-    private static boolean loadFromGeneralSettings() {
-        if (!isManaged) {
-            return true;
-        }
-        var genSettings = ConfigManager.settings;
-        return setHostname(genSettings.hostname);
-    }
 
     private static boolean setDHCP() {
         if (!isManaged) {
@@ -103,7 +90,7 @@ public class NetworkManager {
         return networking.setStatic(ipAddress, netmask, gateway);
     }
 
-    private static boolean setHostname(String hostname) {
+    public static boolean setHostname(String hostname) {
         if (!isManaged) {
             return true;
         }

@@ -64,7 +64,7 @@ public class LinuxNetworking extends SysNetworking {
 
     @Override
     public boolean setStatic(String ipAddress, String netmask, String gateway) {
-        setDHCP();
+        setDHCP(); // clean up old static interface
         File dhcpConf = new File(PATH);
         try {
             List<String> lines = FileUtils.readLines(dhcpConf, StandardCharsets.UTF_8);
@@ -89,7 +89,6 @@ public class LinuxNetworking extends SysNetworking {
         } catch (SocketException e) {
             return null;
         }
-
         List<java.net.NetworkInterface> goodInterfaces = new ArrayList<>();
 
         for (var netInterface : netInterfaces) {

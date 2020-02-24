@@ -53,11 +53,18 @@ public class RequestHandler {
             ConfigManager.settings.netmask = (String) map.get("netmask");
             ConfigManager.settings.gateway = (String) map.get("gateway");
             ConfigManager.settings.hostname = (String) map.get("hostname");
-            boolean isStatic = ConfigManager.settings.connectionType.equals(NetworkIPMode.STATIC);
             ConfigManager.saveGeneralSettings();
-            NetworkManager.setNetwork(isStatic, ConfigManager.settings.ip, ConfigManager.settings.netmask, ConfigManager.settings.gateway);
+            // setting up network config after saving
+            boolean isStatic = ConfigManager.settings.connectionType.equals(NetworkIPMode.STATIC);
+
+            if (NetworkManager.setHostname(ConfigManager.settings.hostname) &&
+                    NetworkManager.setNetwork(isStatic, ConfigManager.settings.ip, ConfigManager.settings.netmask, ConfigManager.settings.gateway)) {
+                ctx.status(200);
+            } else {
+                ctx.result("something went wrong while setting network configuration");
+                ctx.status(501);
+            }
             SocketHandler.sendFullSettings();
-            ctx.status(200);
         } catch (JsonProcessingException e) {
             ctx.status(500);
         }
