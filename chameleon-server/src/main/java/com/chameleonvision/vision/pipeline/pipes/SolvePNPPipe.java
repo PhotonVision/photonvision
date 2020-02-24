@@ -293,7 +293,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     }
 
     // Set the needed parameters to find the refined corners
-    Size winSize = new Size(5, 5);
+    Size winSize = new Size(12, 12);
     Size zeroZone = new Size(-1, -1); // we don't need a zero zone
     TermCriteria criteria = new TermCriteria(TermCriteria.EPS + TermCriteria.COUNT, 50, 0.001);
 
