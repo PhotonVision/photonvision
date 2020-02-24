@@ -54,16 +54,17 @@ public class SolvePNPtest {
         // make a tvec and rvec
 //        positive x to the right, positive y to the bottom, positive z away from the image
         // tvec example:
-//        [45.92180012026041;
-//        24.94979431168253;
-//        88.00905002660249]
+//        [-3.377348429632199;
+//        9.132802434424915;
+//        67.79662519667924]
+
         // rvec:
 //        [1.990867004634147;
 //        -0.1508389335122144;
 //        -1.552061845576413]
 
         Mat tvec = new Mat(3, 1, 6);
-        tvec.put(0, 0, 0, 0, 200); // 10ft away?
+        tvec.put(0, 0, 0, 40, 200); // 10ft away?
         Mat rvec = new Mat(3, 1, 6);
         rvec.put(0, 0, 0, 0, 0);
 
@@ -74,6 +75,18 @@ public class SolvePNPtest {
         for(var p: projectedPts) {
             Imgproc.circle(blank, p, 3, new Scalar(0, 0, 255), 4);
         }
+
+        // go backwards to solvePNP
+        Mat rvec_ = new Mat(), tvec_ = new Mat();
+        Calib3d.solvePnP(target, imagePoints, calibration.getCameraMatrixAsMat(), calibration.getDistortionCoeffsAsMat(), rvec_, tvec_);
+
+        // what we projected
+        var initTvec = tvec.dump();
+        var initRvec = rvec.dump();
+
+        // what solvePNP gives
+        var retedTvec = tvec_.dump();
+        var rettedRvec = rvec_.dump();
 
         displayImage(mat2BufferedImage(blank));
     }
