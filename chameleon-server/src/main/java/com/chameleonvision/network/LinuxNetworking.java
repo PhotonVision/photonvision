@@ -1,11 +1,10 @@
 package com.chameleonvision.network;
 
-import io.javalin.core.util.FileUtil;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.reflect.FieldUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -13,41 +12,42 @@ import java.util.Collections;
 import java.util.List;
 
 public class LinuxNetworking extends SysNetworking {
+    private static final String PATH = "/etc/dhcpcd.conf";
 
     @Override
     public boolean setDHCP() {
-        File interfaces = new File("/etc/network/interfaces");
-        try {
-            List<String> lines = FileUtils.readLines(interfaces, StandardCharsets.UTF_8);
-            for (int i = 0; i < lines.size(); i++) {
-                String line = lines.get(i);
-                if (line.contains("iface " + networkInterface.name)) {
-                    line = "iface " + networkInterface.name + "inet dhcp";
-                    lines.set(i, line);
-                    List<Integer> rLines = new ArrayList<>();
-                    for (var j = i; j < lines.size(); j++) {
-                        String tmp = lines.get(j);
-                        if (tmp.contains("address") || tmp.contains("netmask") || tmp.contains("gateway")) {
-                            rLines.add(j);
+        File dhcpConf = new File(PATH);
+        if (dhcpConf.exists()) {
+            try {
+                List<String> lines = FileUtils.readLines(dhcpConf, StandardCharsets.UTF_8);
+                for (int i = 0; i < lines.size(); i++) {
+                    String line = lines.get(i);
+                    if (line.contains("interface " + networkInterface.name)) {
+                        lines.remove(i);
+                        for (int j = i; j < lines.size(); j++) {
+                            String subInterface = lines.get(j);
+                            if (subInterface.contains("static ip_address") || subInterface.contains("static routers")) {
+                                lines.remove(j);
+                                j--;
+                            }
+                            if (subInterface.contains("interface")) {
+                                break;
+                            }
                         }
-                        if (tmp.contains("iface")) {
-                            break;
-                        }
+                        FileUtils.writeLines(dhcpConf, lines);
+                        return true;
                     }
-                    for (Integer rLine : rLines) {
-                        lines.remove(rLine.intValue());
-                    }
-                    FileUtils.writeLines(interfaces, lines);
-                    Process p = Runtime.getRuntime().exec("systemctl restart network");
-                    p.waitFor();
-                    return true;
                 }
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
             }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-        }
 
-        return false;
+        } else {
+            System.err.println("dhcpcd5 is not installed cant set ip");
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -63,25 +63,18 @@ public class LinuxNetworking extends SysNetworking {
     }
 
     @Override
-    public boolean setStatic(String ipAddress, String netmask, String gateway, String broadcast) {
-        File interfaces = new File("/etc/network/interfaces");
+    public boolean setStatic(String ipAddress, String netmask, String gateway) {
+        setDHCP();
+        File dhcpConf = new File(PATH);
         try {
-            List<String> lines = FileUtils.readLines(interfaces, StandardCharsets.UTF_8);
-            for (int i = 0; i < lines.size(); i++) {
-                String line = lines.get(i);
-                if (line.contains("iface " + networkInterface.name)) {
-                    line = "iface " + networkInterface.name + "inet static";
-                    lines.set(i, line);
-                    lines.add(i + 1, "address " + ipAddress);
-                    lines.add(i + 2, "netmask " + netmask);
-                    lines.add(i + 2, "gateway " + gateway);
-                    FileUtils.writeLines(interfaces, lines);
-                    Process p = Runtime.getRuntime().exec("systemctl restart network");
-                    p.waitFor();
-                    return true;
-                }
-            }
-        } catch (IOException | InterruptedException e) {
+            List<String> lines = FileUtils.readLines(dhcpConf, StandardCharsets.UTF_8);
+            lines.add("interface " + networkInterface.name);
+            InetAddress iNetMask = InetAddress.getByName(netmask);
+            int prefix = NetmaskToCIDR.convertNetmaskToCIDR(iNetMask);
+            lines.add("static ip_address " + ipAddress + "/" + prefix);
+            lines.add("static routers " + gateway);
+            FileUtils.writeLines(dhcpConf, lines);
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return false;
