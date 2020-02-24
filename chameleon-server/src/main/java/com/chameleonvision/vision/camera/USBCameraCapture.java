@@ -54,11 +54,7 @@ public class USBCameraCapture implements CameraCapture {
     }
 
     public void addCalibrationData(CameraCalibrationConfig newConfig) {
-        for (CameraCalibrationConfig c : calibrationList){
-            if (newConfig.resolution == c.resolution){
-                calibrationList.remove(c);
-            }
-        }
+        calibrationList.removeIf(c -> newConfig.resolution.height == c.resolution.height && newConfig.resolution.width == c.resolution.width);
         calibrationList.add(newConfig);
     }
 
