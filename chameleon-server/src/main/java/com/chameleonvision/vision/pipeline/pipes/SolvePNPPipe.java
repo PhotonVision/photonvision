@@ -14,7 +14,6 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTarget>, Mat>, List<StandardCVPipeline.TrackedTarget>> {
 
@@ -33,6 +32,9 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     Comparator<Point> verticalComparator = Comparator.comparingDouble(point -> point.y);
     private double distanceDivisor = 1.0;
     Mat scaledTvec = new Mat();
+    MatOfPoint2f boundingBoxResultMat = new MatOfPoint2f();
+    MatOfPoint2f polyOutput = new MatOfPoint2f();
+    private Mat greyImg = new Mat();
 
     public SolvePNPPipe(StandardCVPipelineSettings settings, CameraCalibrationConfig calibration, Rotation2d tilt) {
         super();
@@ -105,10 +107,16 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     public Pair<List<StandardCVPipeline.TrackedTarget>, Long> run(Pair<List<StandardCVPipeline.TrackedTarget>, Mat> imageTargetPair) {
         long processStartNanos = System.nanoTime();
         var targets = imageTargetPair.getLeft();
+        var image = imageTargetPair.getRight();
         poseList.clear();
         for(var target: targets) {
             var corners = find2020VisionTarget(target);//, imageTargetPair.getRight()); //find2020VisionTarget(target);// (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
+//            var corners = findCorner2019(target);
             if(corners == null) continue;
+
+            // refine the estimate
+            corners = refineCornerEstimateSubPix(corners, image);
+
             var pose = calculatePose(corners, target);
             if(pose != null) poseList.add(pose);
         }
@@ -144,10 +152,6 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     private double distanceBetween(Point a, Point b) {
         return FastMath.sqrt(FastMath.pow(a.x - b.x, 2) + FastMath.pow(a.y - b.y, 2));
     }
-
-    MatOfInt tempInt = new MatOfInt();
-    MatOfPoint2f tempMat2f = new MatOfPoint2f();
-    MatOfPoint tempMatOfPoint = new MatOfPoint();
 
     /**
      * Find the target using the outermost tape corners and a 2020 target.
@@ -209,8 +213,6 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
             return null;
         }
     }
-
-    MatOfPoint2f polyOutput = new MatOfPoint2f();
 
     /**
      * Find the target using the outermost tape corners and a dual target.
@@ -290,115 +292,29 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         return boundingBoxResultMat;
     }
 
-    MatOfPoint2f boundingBoxResultMat = new MatOfPoint2f();
-    MatOfPoint2f goodFeaturesResultMat = new MatOfPoint2f();
+    // Set the needed parameters to find the refined corners
+    Size winSize = new Size(5, 5);
+    Size zeroZone = new Size(-1, -1); // we don't need a zero zone
+    TermCriteria criteria = new TermCriteria(TermCriteria.EPS + TermCriteria.COUNT, 50, 0.001);
 
-    private Mat dstNorm = new Mat();
-    private Mat dstNormScaled = new Mat();
-    List<Point> tempCornerList = new ArrayList<>();
+    private boolean shouldRefineCorners = true;
 
     /**
-     * Find the corners in an image.
-     * @param targetImage the image to find corners in.
-     * @return the corners found in the image.
+     * Refine an estimated corner position using the cornerSubPixel algorithm.
+     *
+     * TODO should this be here or before the points are chosen? 
+     *
+     * @param corners the corners detected -- this mat is modified!
+     * @param img the image taken by the camera as color
+     * @return the updated mat, same as the corner mat passed in.
      */
-    @Deprecated
-    private List<Point> findCornerHarris(Mat targetImage) {
+    private MatOfPoint2f refineCornerEstimateSubPix(MatOfPoint2f corners, Mat img) {
+        if(!shouldRefineCorners) return corners; // just return
 
-        // convert the image to greyscale
-        var gray = new Mat();
-        Imgproc.cvtColor(targetImage, gray, Imgproc.COLOR_BGR2GRAY);
-        Mat dst = Mat.zeros(targetImage.size(), CvType.CV_8U);
+        Imgproc.cvtColor(img, greyImg, Imgproc.COLOR_BGR2GRAY);
+        Imgproc.cornerSubPix(greyImg, corners, winSize, zeroZone, criteria);
 
-        // constants
-        final int blockSize = 2;
-        final int apertureSize = 3;
-        final double k = 0.04;
-        final int threshold = 200;
-
-        /// Detecting corners
-        Imgproc.cornerHarris(gray, dst, blockSize, apertureSize, k);
-
-        /// Normalizing
-        Core.normalize(dst, dstNorm, 0, 255, Core.NORM_MINMAX);
-        Core.convertScaleAbs(dstNorm, dstNormScaled);
-
-        /// Drawing a circle around corners
-        float[] dstNormData = new float[(int) (dstNorm.total() * dstNorm.channels())];
-        dstNorm.get(0, 0, dstNormData);
-
-        tempCornerList.clear();
-        for (int i = 0; i < dstNorm.rows(); i++) {
-            for (int j = 0; j < dstNorm.cols(); j++) {
-                if ((int) dstNormData[i * dstNorm.cols() + j] > threshold) {
-                    tempCornerList.add(new Point(j, i));
-                }
-            }
-        }
-
-        return tempCornerList;
-    }
-
-    @Deprecated
-    private MatOfPoint2f findGoodFeaturesToTrack2019(StandardCVPipeline.TrackedTarget target, Mat srcImage) {
-
-        // start by looking for corners
-        var points__ = findBoundingBoxCorners(target).toList();
-        var xList = points__.stream().map(it -> it.x).sorted(Double::compare).collect(Collectors.toList());
-        var yList = points__.stream().map(it -> it.y).sorted(Double::compare).collect(Collectors.toList());
-
-        var boundingTl = new Point(
-            xList.get(0), yList.get(0)
-        );
-        var boundingBr = new Point (
-            xList.get(2), yList.get(2)
-        );
-        System.out.println("tl/br:\n" + boundingTl.toString() + "\n" + boundingBr.toString());
-
-        var slightlyBiggerTl = new Point(
-            Math.max(0, boundingTl.x - 5),
-            Math.max(0, boundingTl.y - 5)
-        );
-
-        var slightlyBiggerBr = new Point(
-            Math.min(srcImage.rows(), boundingBr.x + 5),
-            Math.min(srcImage.cols(), boundingBr.y + 5)
-        );
-        var rect = new Rect(slightlyBiggerTl, slightlyBiggerBr);
-
-        var croppedImage = srcImage.submat(rect);
-        var corners = new MatOfPoint();
-        Imgproc.goodFeaturesToTrack(croppedImage, corners, 0,0.01,5);
-
-        List<Point> cornerList = new ArrayList<>(corners.toList());
-//        if(cornerList.size() != 8 && cornerList.size() != 4) return null;
-        cornerList.sort(leftRightComparator);
-
-        cornerList = cornerList.stream().map(point ->
-            new Point(point.x + slightlyBiggerTl.x, point.y + slightlyBiggerTl.y))
-            .collect(Collectors.toList());
-
-        // of these, we want the two leftmost and two rightmost points
-        var left1 = cornerList.get(0);
-        var left2 = cornerList.get(1);
-        var right1 = cornerList.get(0);
-        var right2 = cornerList.get(1);
-
-        // TODO maximize distance from the center rather than naively assume the leftmost and rightmost
-        // will have to do per quadrant
-
-        var leftOrder = left1.y < left2.y;
-        var rightOrder = right1.y < right2.y;
-
-        var tl = leftOrder ? left1 : left2;
-        var bl = !leftOrder ? left1 : left2;
-        var tr = rightOrder ? right1 : right2;
-        var br = !rightOrder ? right1 : right2;
-
-        goodFeaturesResultMat.release();
-        goodFeaturesResultMat.fromList(List.of(tl, bl, br, tr));
-
-        return goodFeaturesResultMat;
+        return corners;
     }
 
     private StandardCVPipeline.TrackedTarget calculatePose(MatOfPoint2f imageCornerPoints, StandardCVPipeline.TrackedTarget target) {

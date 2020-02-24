@@ -200,7 +200,7 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipelineResult, Sta
 
         if (settings.is3D) {
             // once we've sorted our targets, perform solvePNP. The number of "best targets" is limited by the above pipe
-            Pair<List<TrackedTarget>, Long> solvePNPResult = solvePNPPipe.run(Pair.of(collect2dTargetsResult.getLeft(), hsvResult.getLeft()));
+            Pair<List<TrackedTarget>, Long> solvePNPResult = solvePNPPipe.run(Pair.of(collect2dTargetsResult.getLeft(), rotateFlipResult.getLeft()));
             totalPipelineTimeNanos += solvePNPResult.getRight();
 
             Pair<Mat, Long> draw3dContoursResult = drawSolvePNPPipe.run(Pair.of(outputMatResult.getLeft(), solvePNPResult.getLeft()));
