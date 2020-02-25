@@ -14,6 +14,7 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTarget>, Mat>, List<StandardCVPipeline.TrackedTarget>> {
 
@@ -108,14 +109,18 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         long processStartNanos = System.nanoTime();
         var targets = imageTargetPair.getLeft();
         var image = imageTargetPair.getRight();
+        Imgproc.cvtColor(image, greyImg, Imgproc.COLOR_BGR2GRAY);
         poseList.clear();
         for(var target: targets) {
             var corners = find2020VisionTarget(target);//, imageTargetPair.getRight()); //find2020VisionTarget(target);// (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
 //            var corners = findCorner2019(target);
             if(corners == null) continue;
 
+            // use best features to track
+            corners = refineCornersByBestTrack(corners, greyImg, target);
+
             // refine the estimate
-            corners = refineCornerEstimateSubPix(corners, image);
+            corners = refineCornerEstimateSubPix(corners, greyImg);
 
             var pose = calculatePose(corners, target);
             if(pose != null) poseList.add(pose);
@@ -172,7 +177,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         // Can be tuned to allow/disallow hulls
         // Approx is the number of vertices
         // Ramer–Douglas–Peucker algorithm
-        Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.02 * peri, true);
+        Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.01 * peri, true);
 
         var area = Imgproc.moments(polyOutput);
 
@@ -292,10 +297,46 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         return boundingBoxResultMat;
     }
 
+    MatOfPoint2f goodFeatureToTrackRetval = new MatOfPoint2f();
+
+    private MatOfPoint2f refineCornersByBestTrack(MatOfPoint2f corners, Mat greyImg, StandardCVPipeline.TrackedTarget target) {
+
+        MatOfPoint approxf1 = new MatOfPoint();
+        var origCornerList = new ArrayList<>(corners.toList());
+        approxf1.fromList(origCornerList.stream()
+                .map(it -> new Point(it.x - target.boundingRect.x, it.y - target.boundingRect.y))
+                .collect(Collectors.toList())
+        );
+        var croppedImage = greyImg.submat(target.boundingRect);
+
+        Imgproc.goodFeaturesToTrack(croppedImage, approxf1, 0, 0.01, 5);
+
+        // at this point corners is still unmodified so let's map it
+        List<Point> tempList = new ArrayList<>();
+
+        // shift all points back into global pose
+        var reshiftedList = approxf1.toList().stream().map(it -> new Point(it.x + target.boundingRect.x, it.y + target.boundingRect.y))
+                .collect(Collectors.toList());
+        for(Point p: origCornerList) {
+            // find the goodFeaturesToTrack corner closest to me
+            var closestPoint = reshiftedList.stream().min(Comparator.comparingDouble(p_ -> distanceBetween(p_, p)));
+            if(closestPoint.isEmpty()) {
+                tempList.add(p);
+                reshiftedList.remove(p);
+            } else {
+                tempList.add(closestPoint.get());
+                reshiftedList.remove(closestPoint.get());
+            }
+        }
+
+        goodFeatureToTrackRetval.fromList(tempList);
+        return goodFeatureToTrackRetval;
+    }
+
     // Set the needed parameters to find the refined corners
-    Size winSize = new Size(12, 12);
+    Size winSize = new Size(4, 4);
     Size zeroZone = new Size(-1, -1); // we don't need a zero zone
-    TermCriteria criteria = new TermCriteria(TermCriteria.EPS + TermCriteria.COUNT, 50, 0.001);
+    TermCriteria criteria = new TermCriteria(TermCriteria.EPS + TermCriteria.COUNT, 90, 0.001);
 
     private boolean shouldRefineCorners = true;
 
@@ -305,19 +346,17 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
      * TODO should this be here or before the points are chosen? 
      *
      * @param corners the corners detected -- this mat is modified!
-     * @param img the image taken by the camera as color
+     * @param greyImg the image taken by the camera as color
      * @return the updated mat, same as the corner mat passed in.
      */
-    private MatOfPoint2f refineCornerEstimateSubPix(MatOfPoint2f corners, Mat img) {
+    private MatOfPoint2f refineCornerEstimateSubPix(MatOfPoint2f corners, Mat greyImg) {
         if(!shouldRefineCorners) return corners; // just return
-
-        Imgproc.cvtColor(img, greyImg, Imgproc.COLOR_BGR2GRAY);
         Imgproc.cornerSubPix(greyImg, corners, winSize, zeroZone, criteria);
 
         return corners;
     }
 
-    private StandardCVPipeline.TrackedTarget calculatePose(MatOfPoint2f imageCornerPoints, StandardCVPipeline.TrackedTarget target) {
+    public StandardCVPipeline.TrackedTarget calculatePose(MatOfPoint2f imageCornerPoints, StandardCVPipeline.TrackedTarget target) {
         if(objPointsMat.rows() != imageCornerPoints.rows() || cameraMatrix.rows() < 2 || distortionCoefficients.cols() < 4) {
             System.err.println("can't do solvePNP with invalid params!");
             return null;
