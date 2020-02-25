@@ -4,6 +4,7 @@ import com.chameleonvision.Exceptions.DuplicatedKeyException;
 import com.chameleonvision.Main;
 import com.chameleonvision.config.ConfigManager;
 import com.chameleonvision.network.NetworkIPMode;
+import com.chameleonvision.network.NetworkManager;
 import com.chameleonvision.networktables.NetworkTablesManager;
 import com.chameleonvision.util.Helpers;
 import com.chameleonvision.util.Platform;
@@ -53,8 +54,17 @@ public class RequestHandler {
             ConfigManager.settings.gateway = (String) map.get("gateway");
             ConfigManager.settings.hostname = (String) map.get("hostname");
             ConfigManager.saveGeneralSettings();
+            // setting up network config after saving
+            boolean isStatic = ConfigManager.settings.connectionType.equals(NetworkIPMode.STATIC);
+
+            if (NetworkManager.setHostname(ConfigManager.settings.hostname) &&
+                    NetworkManager.setNetwork(isStatic, ConfigManager.settings.ip, ConfigManager.settings.netmask, ConfigManager.settings.gateway)) {
+                ctx.status(200);
+            } else {
+                ctx.result("something went wrong while setting network configuration");
+                ctx.status(501);
+            }
             SocketHandler.sendFullSettings();
-            ctx.status(200);
         } catch (JsonProcessingException e) {
             ctx.status(500);
         }
