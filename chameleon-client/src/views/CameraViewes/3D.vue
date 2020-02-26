@@ -12,7 +12,7 @@
                 </v-btn>
             </v-col>
         </v-row>
-        <CVslider name="Accuracy" v-model="value.accuracy" :min="0" :max="100" @input="handleData('accuracy')"/>
+        <CVslider name="Contour simplification" v-model="value.accuracy" :min="0" :max="100" @input="handleData('accuracy')"/>
         <v-row>
             <v-col>
                 <mini-map class="miniMapClass" :targets="targets" :horizontal-f-o-v="horizontalFOV"/>
