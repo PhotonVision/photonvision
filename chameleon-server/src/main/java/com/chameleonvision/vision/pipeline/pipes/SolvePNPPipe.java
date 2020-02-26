@@ -38,6 +38,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     MatOfPoint2f boundingBoxResultMat = new MatOfPoint2f();
     MatOfPoint2f polyOutput = new MatOfPoint2f();
     private Mat greyImg = new Mat();
+    private double accuracyPercentage = 0.2;
 
     public SolvePNPPipe(StandardCVPipelineSettings settings, CameraCalibrationConfig calibration, Rotation2d tilt) {
         super();
@@ -88,6 +89,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         // TODO add proper year differentiation
         tilt_angle = tilt.getRadians();
         this.objPointsMat = settings.targetCornerMat;
+        this.accuracyPercentage = settings.accuracy.doubleValue();
     }
 
     private void setCameraCoeffs(CameraCalibrationConfig settings) {
@@ -114,7 +116,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         Imgproc.cvtColor(image, greyImg, Imgproc.COLOR_BGR2GRAY);
         poseList.clear();
         for(var target: targets) {
-            var corners = find2020VisionTarget(target);//, imageTargetPair.getRight()); //find2020VisionTarget(target);// (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
+            var corners = find2020VisionTarget(target, accuracyPercentage);//, imageTargetPair.getRight()); //find2020VisionTarget(target);// (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
 //            var corners = findCorner2019(target);
             if(corners == null) continue;
 
@@ -165,7 +167,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
      * @param target the target.
      * @return The four outermost tape corners.
      */
-    private MatOfPoint2f find2020VisionTarget(StandardCVPipeline.TrackedTarget target) {
+    private MatOfPoint2f find2020VisionTarget(StandardCVPipeline.TrackedTarget target, double accuracyPercentage) {
         if(target.rawContour.cols() < 1) return null;
 
         var centroid = target.minAreaRect.center;
@@ -179,7 +181,9 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         // Can be tuned to allow/disallow hulls
         // Approx is the number of vertices
         // Ramer–Douglas–Peucker algorithm
-        Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.01 * peri, true);
+        // we want a number between 0 and 0.16 out of a percentage from 0 to 100
+        // so take accuracy and divide by 600
+        Imgproc.approxPolyDP(target.rawContour, polyOutput, accuracyPercentage / 600.0 * peri, true);
 
         var area = Imgproc.moments(polyOutput);
 
