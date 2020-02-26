@@ -12,6 +12,7 @@ public class CameraJsonConfig {
     public final String name;
     public final String nickname;
     public final int videomode;
+    public final double tilt;
     public final StreamDivisor streamDivisor;
 
     @JsonCreator
@@ -21,13 +22,15 @@ public class CameraJsonConfig {
             @JsonProperty("name") String name,
             @JsonProperty("nickname") String nickname,
             @JsonProperty("videomode") int videomode,
-            @JsonProperty("streamDivisor") StreamDivisor streamDivisor) {
+            @JsonProperty("streamDivisor") StreamDivisor streamDivisor,
+            @JsonProperty("tilt") double tilt) {
         this.fov = fov;
         this.path = path;
         this.name = name;
         this.nickname = nickname;
         this.videomode = videomode;
         this.streamDivisor = streamDivisor;
+        this.tilt = tilt;
     }
 
     public CameraJsonConfig(String path, String name) {
@@ -37,12 +40,14 @@ public class CameraJsonConfig {
         this.nickname = name;
         this.videomode = 0;
         this.streamDivisor = StreamDivisor.NONE;
+        this.tilt = 0;
     }
 
     public static CameraJsonConfig fromVisionProcess(VisionProcess process) {
         USBCaptureProperties camProps = process.getCamera().getProperties();
         int videomode = camProps.getCurrentVideoModeIndex();
         StreamDivisor streamDivisor = process.cameraStreamer.getDivisor();
-        return new CameraJsonConfig(camProps.getFOV(), camProps.path, camProps.name, camProps.getNickname(), videomode, streamDivisor);
+        double tilt = process.getCamera().getProperties().getTilt().getDegrees();
+        return new CameraJsonConfig(camProps.getFOV(), camProps.path, camProps.name, camProps.getNickname(), videomode, streamDivisor, tilt);
     }
 }

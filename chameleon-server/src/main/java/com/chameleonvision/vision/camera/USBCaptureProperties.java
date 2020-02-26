@@ -45,6 +45,7 @@ public class USBCaptureProperties extends CaptureProperties {
         FOV = config.fov;
         name = config.name;
         path = config.path;
+        setTilt(Rotation2d.fromDegrees(config.tilt));
         nickname = config.nickname;
         this.baseCamera = baseCamera;
 
