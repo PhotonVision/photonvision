@@ -116,7 +116,12 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         Imgproc.cvtColor(image, greyImg, Imgproc.COLOR_BGR2GRAY);
         poseList.clear();
         for(var target: targets) {
-            var corners = find2020VisionTarget(target, accuracyPercentage);//, imageTargetPair.getRight()); //find2020VisionTarget(target);// (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
+            MatOfPoint2f corners;
+            if(target.leftRightRotatedRect == null) {
+                corners = find2020VisionTarget(target, accuracyPercentage);//, imageTargetPair.getRight()); //find2020VisionTarget(target);// (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
+            } else {
+                corners = findCorner2019(target);
+            }
 //            var corners = findCorner2019(target);
             if(corners == null) continue;
 
