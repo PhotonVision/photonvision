@@ -3,10 +3,8 @@ package com.chameleonvision.util;
 import java.io.File;
 import java.net.URISyntaxException;
 
-public class ProgramDirectoryUtilities
-{
-    private static String getJarName()
-    {
+public class ProgramDirectoryUtilities {
+    private static String getJarName() {
         return new File(ProgramDirectoryUtilities.class.getProtectionDomain()
                 .getCodeSource()
                 .getLocation()
@@ -14,33 +12,23 @@ public class ProgramDirectoryUtilities
                 .getName();
     }
 
-    private static boolean runningFromJAR()
-    {
+    private static boolean runningFromJAR() {
         String jarName = getJarName();
         return jarName.contains(".jar");
     }
 
-    public static String getProgramDirectory()
-    {
-        if (runningFromJAR())
-        {
-            if (Platform.isRaspberryPi()) {
-                return "/boot/chameleon-vision";
-            }
+    public static String getProgramDirectory() {
+        if (runningFromJAR()) {
             return getCurrentJARDirectory();
-        } else
-        {
+        } else {
             return System.getProperty("user.dir");
         }
     }
 
-    private static String getCurrentJARDirectory()
-    {
-        try
-        {
+    private static String getCurrentJARDirectory() {
+        try {
             return new File(ProgramDirectoryUtilities.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent();
-        } catch (URISyntaxException exception)
-        {
+        } catch (URISyntaxException exception) {
             exception.printStackTrace();
         }
 
