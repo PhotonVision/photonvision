@@ -40,8 +40,8 @@ public class SolvePNPtest {
         var settings = new StandardCVPipelineSettings();
         var calibration = new CameraCalibrationConfig(
                 new Size(640, 480),
-                new JsonMat(3, 3, 6, new double[] { 926.1016601017006, 0.0, 437.22446072361055, 0.0, 918.2612433944396, 137.8989492231747, 0.0, 0.0, 1.0 }),
-                new JsonMat(1, 5, 6, new double[] { -0.001917838248173303, 0.0059895823594355, -0.035282888419499406, 0.04373249383460662, 0.1732528905031391 }),
+                new JsonMat(3, 3, 6, new double[] { 1126.1154452525066, 0.0, 666.4172679761178, 0.0, 1088.0425532065287, 335.37748454259633, 0.0, 0.0, 1.0 }),
+                new JsonMat(1, 5, 6, new double[] { 0.07253724845871252, -0.664268685338307, -0.0011224914177033868, 4.8323234488098423E-4, 1.1731498589436031 }),
                 1.056
                 );
 
@@ -54,26 +54,50 @@ public class SolvePNPtest {
         // make a tvec and rvec
 //        positive x to the right, positive y to the bottom, positive z away from the image
         // tvec example:
-//        [45.92180012026041;
-//        24.94979431168253;
-//        88.00905002660249]
+//        [-3.377348429632199;
+//        9.132802434424915;
+//        67.79662519667924]
+
         // rvec:
 //        [1.990867004634147;
 //        -0.1508389335122144;
 //        -1.552061845576413]
 
         Mat tvec = new Mat(3, 1, 6);
-        tvec.put(0, 0, 0, 0, 200); // 10ft away?
         Mat rvec = new Mat(3, 1, 6);
-        rvec.put(0, 0, 0, 0, 0);
+//        tvec.put(0, 0, 1.032188152287021,  -3.78145690753876, 52.32713732614368);
+//        rvec.put(0, 0, -3.084531365719034, -0.1446574541579896,  -0.1297813889017779);
+        tvec.put(0, 0, 1.75, -6, 75.2);
+        rvec.put(0, 0, 2.79, 0.23, -0.0388);
 
         MatOfPoint2f imagePoints = new MatOfPoint2f();
         Calib3d.projectPoints(target, rvec, tvec, calibration.getCameraMatrixAsMat(), calibration.getDistortionCoeffsAsMat(), imagePoints, new Mat(), 0);
         var projectedPts = imagePoints.toList();
 
+        // draw circles
         for(var p: projectedPts) {
             Imgproc.circle(blank, p, 3, new Scalar(0, 0, 255), 4);
         }
+        Imgproc.line(blank, projectedPts.get(0), projectedPts.get(1), new Scalar(255, 0, 0));
+        Imgproc.line(blank, projectedPts.get(1), projectedPts.get(2), new Scalar(255, 0, 0));
+        Imgproc.line(blank, projectedPts.get(2), projectedPts.get(3), new Scalar(255, 0, 0));
+        Imgproc.line(blank, projectedPts.get(3), projectedPts.get(0), new Scalar(255, 0, 0));
+
+        // go backwards to solvePNP
+        Mat rvec_ = new Mat(), tvec_ = new Mat();
+        Calib3d.solvePnP(target, imagePoints, calibration.getCameraMatrixAsMat(), calibration.getDistortionCoeffsAsMat(), rvec_, tvec_);
+
+        // what we projected
+        var initTvec = tvec.dump();
+        var initRvec = rvec.dump();
+
+        // what solvePNP gives
+        var retedTvec = tvec_.dump();
+        var rettedRvec = rvec_.dump();
+
+        var target_ = new StandardCVPipeline.TrackedTarget();
+        pipe.calculatePose(imagePoints, target_);
+        System.out.println(target_.cameraRelativePose);
 
         displayImage(mat2BufferedImage(blank));
     }

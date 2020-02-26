@@ -4,6 +4,8 @@ import com.chameleonvision.config.CameraCalibrationConfig;
 import com.chameleonvision.vision.pipeline.Pipe;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipelineSettings;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
@@ -33,6 +35,9 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     Comparator<Point> verticalComparator = Comparator.comparingDouble(point -> point.y);
     private double distanceDivisor = 1.0;
     Mat scaledTvec = new Mat();
+    MatOfPoint2f boundingBoxResultMat = new MatOfPoint2f();
+    MatOfPoint2f polyOutput = new MatOfPoint2f();
+    private Mat greyImg = new Mat();
 
     public SolvePNPPipe(StandardCVPipelineSettings settings, CameraCalibrationConfig calibration, Rotation2d tilt) {
         super();
@@ -105,10 +110,20 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     public Pair<List<StandardCVPipeline.TrackedTarget>, Long> run(Pair<List<StandardCVPipeline.TrackedTarget>, Mat> imageTargetPair) {
         long processStartNanos = System.nanoTime();
         var targets = imageTargetPair.getLeft();
+        var image = imageTargetPair.getRight();
+        Imgproc.cvtColor(image, greyImg, Imgproc.COLOR_BGR2GRAY);
         poseList.clear();
         for(var target: targets) {
             var corners = find2020VisionTarget(target);//, imageTargetPair.getRight()); //find2020VisionTarget(target);// (target.leftRightDualTargetPair != null) ? findCorner2019(target) : findBoundingBoxCorners(target);
+//            var corners = findCorner2019(target);
             if(corners == null) continue;
+
+//            // use best features to track
+//            corners = refineCornersByBestTrack(corners, greyImg, target);
+
+            // refine the estimate
+            corners = refineCornerEstimateSubPix(corners, greyImg);
+
             var pose = calculatePose(corners, target);
             if(pose != null) poseList.add(pose);
         }
@@ -145,10 +160,6 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         return FastMath.sqrt(FastMath.pow(a.x - b.x, 2) + FastMath.pow(a.y - b.y, 2));
     }
 
-    MatOfInt tempInt = new MatOfInt();
-    MatOfPoint2f tempMat2f = new MatOfPoint2f();
-    MatOfPoint tempMatOfPoint = new MatOfPoint();
-
     /**
      * Find the target using the outermost tape corners and a 2020 target.
      * @param target the target.
@@ -168,7 +179,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         // Can be tuned to allow/disallow hulls
         // Approx is the number of vertices
         // Ramer–Douglas–Peucker algorithm
-        Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.02 * peri, true);
+        Imgproc.approxPolyDP(target.rawContour, polyOutput, 0.01 * peri, true);
 
         var area = Imgproc.moments(polyOutput);
 
@@ -209,8 +220,6 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
             return null;
         }
     }
-
-    MatOfPoint2f polyOutput = new MatOfPoint2f();
 
     /**
      * Find the target using the outermost tape corners and a dual target.
@@ -290,118 +299,69 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         return boundingBoxResultMat;
     }
 
-    MatOfPoint2f boundingBoxResultMat = new MatOfPoint2f();
-    MatOfPoint2f goodFeaturesResultMat = new MatOfPoint2f();
+    MatOfPoint2f goodFeatureToTrackRetval = new MatOfPoint2f();
 
-    private Mat dstNorm = new Mat();
-    private Mat dstNormScaled = new Mat();
-    List<Point> tempCornerList = new ArrayList<>();
+    private MatOfPoint2f refineCornersByBestTrack(MatOfPoint2f corners, Mat greyImg, StandardCVPipeline.TrackedTarget target) {
 
-    /**
-     * Find the corners in an image.
-     * @param targetImage the image to find corners in.
-     * @return the corners found in the image.
-     */
-    @Deprecated
-    private List<Point> findCornerHarris(Mat targetImage) {
+        MatOfPoint approxf1 = new MatOfPoint();
+        var origCornerList = new ArrayList<>(corners.toList());
+        approxf1.fromList(origCornerList.stream()
+                .map(it -> new Point(it.x - target.boundingRect.x, it.y - target.boundingRect.y))
+                .collect(Collectors.toList())
+        );
+        var croppedImage = greyImg.submat(target.boundingRect);
 
-        // convert the image to greyscale
-        var gray = new Mat();
-        Imgproc.cvtColor(targetImage, gray, Imgproc.COLOR_BGR2GRAY);
-        Mat dst = Mat.zeros(targetImage.size(), CvType.CV_8U);
+        Imgproc.goodFeaturesToTrack(croppedImage, approxf1, 0, 0.1, 5);
 
-        // constants
-        final int blockSize = 2;
-        final int apertureSize = 3;
-        final double k = 0.04;
-        final int threshold = 200;
+        // at this point corners is still unmodified so let's map it
+        List<Point> tempList = new ArrayList<>();
 
-        /// Detecting corners
-        Imgproc.cornerHarris(gray, dst, blockSize, apertureSize, k);
-
-        /// Normalizing
-        Core.normalize(dst, dstNorm, 0, 255, Core.NORM_MINMAX);
-        Core.convertScaleAbs(dstNorm, dstNormScaled);
-
-        /// Drawing a circle around corners
-        float[] dstNormData = new float[(int) (dstNorm.total() * dstNorm.channels())];
-        dstNorm.get(0, 0, dstNormData);
-
-        tempCornerList.clear();
-        for (int i = 0; i < dstNorm.rows(); i++) {
-            for (int j = 0; j < dstNorm.cols(); j++) {
-                if ((int) dstNormData[i * dstNorm.cols() + j] > threshold) {
-                    tempCornerList.add(new Point(j, i));
-                }
+        // shift all points back into global pose
+        var reshiftedList = approxf1.toList().stream().map(it -> new Point(it.x + target.boundingRect.x, it.y + target.boundingRect.y))
+                .collect(Collectors.toList());
+        for(Point p: origCornerList) {
+            // find the goodFeaturesToTrack corner closest to me
+            var closestPoint = reshiftedList.stream().min(Comparator.comparingDouble(p_ -> distanceBetween(p_, p)));
+            if(closestPoint.isEmpty()) {
+                tempList.add(p);
+                reshiftedList.remove(p);
+            } else {
+                tempList.add(closestPoint.get());
+                reshiftedList.remove(closestPoint.get());
             }
         }
 
-        return tempCornerList;
+        goodFeatureToTrackRetval.fromList(tempList);
+        return goodFeatureToTrackRetval;
     }
 
-    @Deprecated
-    private MatOfPoint2f findGoodFeaturesToTrack2019(StandardCVPipeline.TrackedTarget target, Mat srcImage) {
+    // Set the needed parameters to find the refined corners
+    Size winSize = new Size(4, 4);
+    Size zeroZone = new Size(-1, -1); // we don't need a zero zone
+    TermCriteria criteria = new TermCriteria(TermCriteria.EPS + TermCriteria.COUNT, 90, 0.001);
 
-        // start by looking for corners
-        var points__ = findBoundingBoxCorners(target).toList();
-        var xList = points__.stream().map(it -> it.x).sorted(Double::compare).collect(Collectors.toList());
-        var yList = points__.stream().map(it -> it.y).sorted(Double::compare).collect(Collectors.toList());
+    private boolean shouldRefineCorners = true;
 
-        var boundingTl = new Point(
-            xList.get(0), yList.get(0)
-        );
-        var boundingBr = new Point (
-            xList.get(2), yList.get(2)
-        );
-        System.out.println("tl/br:\n" + boundingTl.toString() + "\n" + boundingBr.toString());
+    /**
+     * Refine an estimated corner position using the cornerSubPixel algorithm.
+     *
+     * TODO should this be here or before the points are chosen? 
+     *
+     * @param corners the corners detected -- this mat is modified!
+     * @param greyImg the image taken by the camera as color
+     * @return the updated mat, same as the corner mat passed in.
+     */
+    private MatOfPoint2f refineCornerEstimateSubPix(MatOfPoint2f corners, Mat greyImg) {
+        if(!shouldRefineCorners) return corners; // just return
+        Imgproc.cornerSubPix(greyImg, corners, winSize, zeroZone, criteria);
 
-        var slightlyBiggerTl = new Point(
-            Math.max(0, boundingTl.x - 5),
-            Math.max(0, boundingTl.y - 5)
-        );
-
-        var slightlyBiggerBr = new Point(
-            Math.min(srcImage.rows(), boundingBr.x + 5),
-            Math.min(srcImage.cols(), boundingBr.y + 5)
-        );
-        var rect = new Rect(slightlyBiggerTl, slightlyBiggerBr);
-
-        var croppedImage = srcImage.submat(rect);
-        var corners = new MatOfPoint();
-        Imgproc.goodFeaturesToTrack(croppedImage, corners, 0,0.01,5);
-
-        List<Point> cornerList = new ArrayList<>(corners.toList());
-//        if(cornerList.size() != 8 && cornerList.size() != 4) return null;
-        cornerList.sort(leftRightComparator);
-
-        cornerList = cornerList.stream().map(point ->
-            new Point(point.x + slightlyBiggerTl.x, point.y + slightlyBiggerTl.y))
-            .collect(Collectors.toList());
-
-        // of these, we want the two leftmost and two rightmost points
-        var left1 = cornerList.get(0);
-        var left2 = cornerList.get(1);
-        var right1 = cornerList.get(0);
-        var right2 = cornerList.get(1);
-
-        // TODO maximize distance from the center rather than naively assume the leftmost and rightmost
-        // will have to do per quadrant
-
-        var leftOrder = left1.y < left2.y;
-        var rightOrder = right1.y < right2.y;
-
-        var tl = leftOrder ? left1 : left2;
-        var bl = !leftOrder ? left1 : left2;
-        var tr = rightOrder ? right1 : right2;
-        var br = !rightOrder ? right1 : right2;
-
-        goodFeaturesResultMat.release();
-        goodFeaturesResultMat.fromList(List.of(tl, bl, br, tr));
-
-        return goodFeaturesResultMat;
+        return corners;
     }
 
-    private StandardCVPipeline.TrackedTarget calculatePose(MatOfPoint2f imageCornerPoints, StandardCVPipeline.TrackedTarget target) {
+    NetworkTableEntry tvecE = NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("tvec");
+    NetworkTableEntry rvecE = NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("rvec");
+
+    public StandardCVPipeline.TrackedTarget calculatePose(MatOfPoint2f imageCornerPoints, StandardCVPipeline.TrackedTarget target) {
         if(objPointsMat.rows() != imageCornerPoints.rows() || cameraMatrix.rows() < 2 || distortionCoefficients.cols() < 4) {
             System.err.println("can't do solvePNP with invalid params!");
             return null;
@@ -416,35 +376,43 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
             return null;
         }
 
+        tvecE.setString(tVec.dump());
+        rvecE.setString(rVec.dump());
+
         // Algorithm from team 5190 Green Hope Falcons
 
 //        var tilt_angle = 0.0; // TODO add to settings
 
+        // the left/right distance to the target, unchanged by tilt
         var x = tVec.get(0, 0)[0];
-        var z = FastMath.sin(tilt_angle) * tVec.get(1, 0)[0] + tVec.get(2, 0)[0] *  FastMath.cos(tilt_angle);
 
-        // distance in the horizontal plane between camera and target
-        var distance = FastMath.sqrt(x * x + z * z);
+        // Z distance in the flat plane is given by
+        // Z_field = z cos theta + y sin theta
+        var z = tVec.get(2, 0)[0] *  FastMath.cos(tilt_angle) + tVec.get(1, 0)[0] * FastMath.sin(tilt_angle);
 
-        // horizontal angle between center camera and target
-        @SuppressWarnings("SuspiciousNameCombination")
-        var angle1 = FastMath.atan2(x, z);
+        // find skew of the target relative to the camera
+        // from ligerbots:
+        // rot, _ = cv2.Rodrigues(rvec)
+        // rot_inv = rot.transpose()
+        // pzero_world = numpy.matmul(rot_inv, -tvec)
+        // angle2 = math.atan2(pzero_world[0][0], pzero_world[2][0]
 
         Calib3d.Rodrigues(rVec, rodriguez);
         Core.transpose(rodriguez, rot_inv); // rodrigurz.t()
 
-        // This should be pzero_world = numpy.matmul(rot_inv, -tvec)
-//        pzero_world  = rot_inv.mul(matScale(tVec, -1));
         scaledTvec = matScale(tVec, -1);
         Core.gemm(rot_inv, scaledTvec, 1, kMat, 0, pzero_world);
 
         var angle2 = FastMath.atan2(pzero_world.get(0, 0)[0], pzero_world.get(2, 0)[0]);
 
-        var targetAngle = -angle1; // radians
         var targetRotation = -angle2; // radians
-        var targetDistance = distance * 25.4 / 1000d / distanceDivisor; // This should be meters
 
-        var targetLocation = new Translation2d(targetDistance * FastMath.cos(targetAngle), targetDistance * FastMath.sin(targetAngle));
+        // We want a vector that is X forward and Y left.
+        // We have a Z_field (out of the camera projected onto the field), and an X left/right.
+        // so Z_field becomes X, and X becomes Y
+
+        //noinspection SuspiciousNameCombination
+        var targetLocation = new Translation2d(z, x).times(25.4 / 1000d / distanceDivisor);
         target.cameraRelativePose = new Pose2d(targetLocation, new Rotation2d(targetRotation));
         target.rVector = rVec;
         target.tVector = tVec;
