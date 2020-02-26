@@ -33,6 +33,7 @@ public class StandardCVPipelineSettings extends CVPipelineSettings {
 
     // 3d stuff
     public MatOfPoint3f targetCornerMat = new MatOfPoint3f();
+    public Number accuracy = 2;
     private static MatOfPoint3f hexTargetMat = new MatOfPoint3f();
 
     static {

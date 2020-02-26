@@ -74,6 +74,7 @@ public class StandardCVPipelineSettingsDeserializer extends BaseDeserializer<Sta
 
         pipeline.is3D = getBoolean("is3D", pipeline.is3D);
         pipeline.targetCornerMat = getMatOfPoint3f("targetCornerMat", pipeline.targetCornerMat);
+        pipeline.accuracy = getDouble("accuracy", pipeline.accuracy.doubleValue());
 
         return pipeline;
     }
