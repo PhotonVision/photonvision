@@ -4,6 +4,8 @@ import com.chameleonvision.config.CameraCalibrationConfig;
 import com.chameleonvision.vision.pipeline.Pipe;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipeline;
 import com.chameleonvision.vision.pipeline.impl.StandardCVPipelineSettings;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
@@ -116,8 +118,8 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
 //            var corners = findCorner2019(target);
             if(corners == null) continue;
 
-            // use best features to track
-            corners = refineCornersByBestTrack(corners, greyImg, target);
+//            // use best features to track
+//            corners = refineCornersByBestTrack(corners, greyImg, target);
 
             // refine the estimate
             corners = refineCornerEstimateSubPix(corners, greyImg);
@@ -309,7 +311,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         );
         var croppedImage = greyImg.submat(target.boundingRect);
 
-        Imgproc.goodFeaturesToTrack(croppedImage, approxf1, 0, 0.01, 5);
+        Imgproc.goodFeaturesToTrack(croppedImage, approxf1, 0, 0.1, 5);
 
         // at this point corners is still unmodified so let's map it
         List<Point> tempList = new ArrayList<>();
@@ -356,6 +358,9 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         return corners;
     }
 
+    NetworkTableEntry tvecE = NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("tvec");
+    NetworkTableEntry rvecE = NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("rvec");
+
     public StandardCVPipeline.TrackedTarget calculatePose(MatOfPoint2f imageCornerPoints, StandardCVPipeline.TrackedTarget target) {
         if(objPointsMat.rows() != imageCornerPoints.rows() || cameraMatrix.rows() < 2 || distortionCoefficients.cols() < 4) {
             System.err.println("can't do solvePNP with invalid params!");
@@ -371,35 +376,43 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
             return null;
         }
 
+        tvecE.setString(tVec.dump());
+        rvecE.setString(rVec.dump());
+
         // Algorithm from team 5190 Green Hope Falcons
 
 //        var tilt_angle = 0.0; // TODO add to settings
 
+        // the left/right distance to the target, unchanged by tilt
         var x = tVec.get(0, 0)[0];
-        var z = FastMath.sin(tilt_angle) * tVec.get(1, 0)[0] + tVec.get(2, 0)[0] *  FastMath.cos(tilt_angle);
 
-        // distance in the horizontal plane between camera and target
-        var distance = FastMath.sqrt(x * x + z * z);
+        // Z distance in the flat plane is given by
+        // Z_field = z cos theta + y sin theta
+        var z = tVec.get(2, 0)[0] *  FastMath.cos(tilt_angle) + tVec.get(1, 0)[0] * FastMath.sin(tilt_angle);
 
-        // horizontal angle between center camera and target
-        @SuppressWarnings("SuspiciousNameCombination")
-        var angle1 = FastMath.atan2(x, z);
+        // find skew of the target relative to the camera
+        // from ligerbots:
+        // rot, _ = cv2.Rodrigues(rvec)
+        // rot_inv = rot.transpose()
+        // pzero_world = numpy.matmul(rot_inv, -tvec)
+        // angle2 = math.atan2(pzero_world[0][0], pzero_world[2][0]
 
         Calib3d.Rodrigues(rVec, rodriguez);
         Core.transpose(rodriguez, rot_inv); // rodrigurz.t()
 
-        // This should be pzero_world = numpy.matmul(rot_inv, -tvec)
-//        pzero_world  = rot_inv.mul(matScale(tVec, -1));
         scaledTvec = matScale(tVec, -1);
         Core.gemm(rot_inv, scaledTvec, 1, kMat, 0, pzero_world);
 
         var angle2 = FastMath.atan2(pzero_world.get(0, 0)[0], pzero_world.get(2, 0)[0]);
 
-        var targetAngle = -angle1; // radians
         var targetRotation = -angle2; // radians
-        var targetDistance = distance * 25.4 / 1000d / distanceDivisor; // This should be meters
 
-        var targetLocation = new Translation2d(targetDistance * FastMath.cos(targetAngle), targetDistance * FastMath.sin(targetAngle));
+        // We want a vector that is X forward and Y left.
+        // We have a Z_field (out of the camera projected onto the field), and an X left/right.
+        // so Z_field becomes X, and X becomes Y
+
+        //noinspection SuspiciousNameCombination
+        var targetLocation = new Translation2d(z, x).times(25.4 / 1000d / distanceDivisor);
         target.cameraRelativePose = new Pose2d(targetLocation, new Rotation2d(targetRotation));
         target.rVector = rVec;
         target.tVector = tVec;
