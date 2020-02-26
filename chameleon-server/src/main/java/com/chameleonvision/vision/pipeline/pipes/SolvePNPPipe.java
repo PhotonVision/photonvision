@@ -421,7 +421,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         // so Z_field becomes X, and X becomes Y
 
         //noinspection SuspiciousNameCombination
-        var targetLocation = new Translation2d(z, x).times(25.4 / 1000d / distanceDivisor);
+        var targetLocation = new Translation2d(z, -x).times(25.4 / 1000d / distanceDivisor);
         target.cameraRelativePose = new Pose2d(targetLocation, new Rotation2d(targetRotation));
         target.rVector = rVec;
         target.tVector = tVec;
