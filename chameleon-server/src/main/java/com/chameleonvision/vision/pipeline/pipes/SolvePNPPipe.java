@@ -129,7 +129,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
 //            corners = refineCornersByBestTrack(corners, greyImg, target);
 
             // refine the estimate
-            corners = refineCornerEstimateSubPix(corners, greyImg);
+//            corners = refineCornerEstimateSubPix(corners, greyImg);
 
             var pose = calculatePose(corners, target);
             if(pose != null) poseList.add(pose);
