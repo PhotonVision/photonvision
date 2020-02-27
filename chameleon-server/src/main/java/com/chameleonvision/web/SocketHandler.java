@@ -52,7 +52,8 @@ public class SocketHandler {
     @SuppressWarnings("unchecked")
     void onBinaryMessage(WsBinaryMessageContext context) throws Exception {
         Map<String, Object> deserialized = objectMapper.readValue((byte[]) ArrayUtils.toPrimitive(context.data()),
-                new TypeReference<>(){});
+                new TypeReference<>() {
+                });
         for (Map.Entry<String, Object> entry : deserialized.entrySet()) {
             try {
                 VisionProcess currentProcess = VisionManager.getCurrentUIVisionProcess();
@@ -166,6 +167,10 @@ public class SocketHandler {
                             }
                             case "brightness": {
                                 currentCamera.setBrightness((Integer) entry.getValue());
+                                break;
+                            }
+                            case "gain": {
+                                currentCamera.setGain((Integer) entry.getValue());
                                 break;
                             }
                             case "videoModeIndex": {
