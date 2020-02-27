@@ -3,6 +3,8 @@ package com.chameleonvision.vision.pipeline;
 import com.chameleonvision.Exceptions.DuplicatedKeyException;
 import com.chameleonvision.config.CameraConfig;
 import com.chameleonvision.config.ConfigManager;
+import com.chameleonvision.scripting.ScriptEventType;
+import com.chameleonvision.scripting.ScriptManager;
 import com.chameleonvision.vision.VisionManager;
 import com.chameleonvision.vision.VisionProcess;
 import com.chameleonvision.vision.pipeline.impl.Calibrate3dPipeline;
@@ -124,6 +126,7 @@ public class PipelineManager {
         CVPipeline newPipeline = null;
 
         if (index == DRIVERMODE_INDEX) {
+            ScriptManager.queueEvent(ScriptEventType.kLEDOff);
             newPipeline = driverModePipeline;
 
             // if we're changing into driver mode, try to set the nt entry to true
@@ -138,6 +141,7 @@ public class PipelineManager {
 
                 // if we're switching out of driver mode, try to set the nt entry to false
                 parentProcess.setDriverModeEntry(false);
+                ScriptManager.queueEvent(ScriptEventType.kLEDOn);
             }
             else
                 {

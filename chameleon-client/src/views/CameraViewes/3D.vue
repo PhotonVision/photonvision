@@ -12,6 +12,7 @@
                 </v-btn>
             </v-col>
         </v-row>
+        <CVslider name="Contour simplification" v-model="value.accuracy" :min="0" :max="100" @input="handleData('accuracy')"/>
         <v-row>
             <v-col>
                 <mini-map class="miniMapClass" :targets="targets" :horizontal-f-o-v="horizontalFOV"/>
@@ -29,9 +30,10 @@
 </template>
 
 <script>
+    import Papa from 'papaparse';
     import miniMap from '../../components/3D/MiniMap';
     import CVswitch from '../../components/cv-switch';
-    import Papa from 'papaparse';
+    import CVslider from '../../components/cv-slider'
     import FRCtargetsConfig from '../../assets/FRCtargets'
 
     export default {
@@ -39,6 +41,7 @@
         props: ['value'],
         components: {
             CVswitch,
+            CVslider,
             miniMap
         },
         data() {

@@ -30,7 +30,7 @@ public abstract class SysNetworking {
 	}
 	public abstract boolean setDHCP();
 	public abstract boolean setHostname(String hostname);
-	public abstract boolean setStatic(String ipAddress, String netmask, String gateway, String broadcast);
+	public abstract boolean setStatic(String ipAddress, String netmask, String gateway);
 	public abstract List<java.net.NetworkInterface> getNetworkInterfaces() throws SocketException;
 
 }

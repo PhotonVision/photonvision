@@ -144,8 +144,8 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
         VisionManager.getCurrentUIVisionProcess().addCalibration(cal);
 
         try {
-            System.out.printf("CALIBRATION SUCCESS! camMatrix: \n%s\ndistortionCoeffs:\n%s\n",
-                    new ObjectMapper().writeValueAsString(cal.cameraMatrix), new ObjectMapper().writeValueAsString(cal.distortionCoeffs));
+            System.out.printf("CALIBRATION SUCCESS (with accuracy %s)! camMatrix: \n%s\ndistortionCoeffs:\n%s\n",
+                    calibrationAccuracy, new ObjectMapper().writeValueAsString(cal.cameraMatrix), new ObjectMapper().writeValueAsString(cal.distortionCoeffs));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

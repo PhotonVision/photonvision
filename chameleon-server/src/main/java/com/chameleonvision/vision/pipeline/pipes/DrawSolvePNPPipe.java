@@ -34,7 +34,7 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
     private void setBox(MatOfPoint3f mat) {
         boxCornerMat.release();
         var list = mat.toList();
-        var auxList = list.stream().map(it -> new Point3(it.x, it.y, it.z - 6)).collect(Collectors.toList());
+        var auxList = list.stream().map(it -> new Point3(it.x, it.y, it.z + 6)).collect(Collectors.toList());
         var finalList = new ArrayList<>(list);
         finalList.addAll(auxList);
         boxCornerMat.fromList(finalList);

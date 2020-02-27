@@ -265,8 +265,10 @@
                     this.$store.commit('cameraSettings', value);
                 }
             },
-            pipeline() {
-                return this.$store.state.pipeline
+            pipeline: {
+                get() {
+                    return this.$store.state.pipeline;
+                }
             }
         }
     }

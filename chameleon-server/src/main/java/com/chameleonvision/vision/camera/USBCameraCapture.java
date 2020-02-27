@@ -54,6 +54,7 @@ public class USBCameraCapture implements CameraCapture {
     }
 
     public void addCalibrationData(CameraCalibrationConfig newConfig) {
+        calibrationList.removeIf(c -> newConfig.resolution.height == c.resolution.height && newConfig.resolution.width == c.resolution.width);
         calibrationList.add(newConfig);
     }
 
@@ -77,6 +78,7 @@ public class USBCameraCapture implements CameraCapture {
         // TODO: Why multiply by 1000 here?
         Mat tempMat = new Mat();
         deltaTime = cvSink.grabFrame(tempMat) * 1000L;
+//        tempMat = Imgcodecs.imread("C:\\Users\\imadu\\Documents\\GitHub\\chameleon-vision\\chameleon-server\\testimages\\2020\\image.png");
         tempMat.copyTo(imageBuffer);
         tempMat.release();
         return Pair.of(imageBuffer, deltaTime);

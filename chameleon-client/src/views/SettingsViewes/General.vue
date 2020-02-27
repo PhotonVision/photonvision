@@ -104,9 +104,9 @@
         computed: {
             fileUploadText() {
                 if (this.file !== undefined) {
-                    return "Install and update"
+                    return "Update and run at startup"
                 } else {
-                    return "Install current version"
+                    return "Run current version at startup"
                 }
             },
             isDisabled() {

@@ -32,7 +32,7 @@ public class WindowsNetworking extends SysNetworking {
 	}
 
 	@Override
-	public boolean setStatic(String ipAddress, String netmask, String gateway, String broadcast) {
+	public boolean setStatic(String ipAddress, String netmask, String gateway) {
 		return false;
 	}
 

@@ -4,6 +4,7 @@ import edu.wpi.cscore.VideoMode;
 import org.opencv.core.Scalar;
 
 import java.awt.*;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
@@ -17,8 +18,8 @@ public class Helpers {
             "\n" +
             "[Service]\n" +
             "ExecStart=/usr/bin/java -jar %s \n" +
-            "StandardOutput=file:/var/log/something.out.txt\n" +
-            "StandardError=file:/var/log/something.err.txt\n" +
+            "StandardOutput=file:/var/log/chameleon.out.txt\n" +
+            "StandardError=file:/var/log/chameleon.err.txt\n" +
             "Type=simple\n" +
             "WorkingDirectory=/usr/local/bin\n" +
             "\n" +
@@ -44,7 +45,11 @@ public class Helpers {
 
     public static void setService(Path filePath) throws IOException, InterruptedException {
         String newService = String.format(kServiceString, filePath.toString());
-        Writer writer = new FileWriter(kServicePath, false);
+        File file = new File(kServicePath);
+        if (file.exists()) {
+            file.delete();
+        }
+        Writer writer = new FileWriter(file, false);
         writer.write(newService);
         writer.close();
         Process p = Runtime.getRuntime().exec("systemctl enable chameleonVision.service");
