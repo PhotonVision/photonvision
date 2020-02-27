@@ -354,7 +354,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     /**
      * Refine an estimated corner position using the cornerSubPixel algorithm.
      *
-     * TODO should this be here or before the points are chosen? 
+     * TODO should this be here or before the points are chosen?
      *
      * @param corners the corners detected -- this mat is modified!
      * @param greyImg the image taken by the camera as color
@@ -367,8 +367,8 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
         return corners;
     }
 
-    NetworkTableEntry tvecE = NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("tvec");
-    NetworkTableEntry rvecE = NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("rvec");
+//    NetworkTableEntry tvecE = NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("tvec");
+//    NetworkTableEntry rvecE = NetworkTableInstance.getDefault().getTable("SmartDashboard").getEntry("rvec");
 
     public StandardCVPipeline.TrackedTarget calculatePose(MatOfPoint2f imageCornerPoints, StandardCVPipeline.TrackedTarget target) {
         if(objPointsMat.rows() != imageCornerPoints.rows() || cameraMatrix.rows() < 2 || distortionCoefficients.cols() < 4) {
@@ -385,8 +385,8 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
             return null;
         }
 
-        tvecE.setString(tVec.dump());
-        rvecE.setString(rVec.dump());
+//        tvecE.setString(tVec.dump());
+//        rvecE.setString(rVec.dump());
 
         // Algorithm from team 5190 Green Hope Falcons
 

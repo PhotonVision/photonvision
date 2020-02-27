@@ -22,7 +22,7 @@ public class LinuxNetworking extends SysNetworking {
                 List<String> lines = FileUtils.readLines(dhcpConf, StandardCharsets.UTF_8);
                 for (int i = 0; i < lines.size(); i++) {
                     String line = lines.get(i);
-                    if (line.contains("interface " + networkInterface.name)) {
+                    if (line.startsWith("interface " + networkInterface.name)) {
                         lines.remove(i);
                         for (int j = i; j < lines.size(); j++) {
                             String subInterface = lines.get(j);

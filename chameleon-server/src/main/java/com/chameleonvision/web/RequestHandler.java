@@ -61,7 +61,7 @@ public class RequestHandler {
                     NetworkManager.setNetwork(isStatic, ConfigManager.settings.ip, ConfigManager.settings.netmask, ConfigManager.settings.gateway)) {
                 ctx.status(200);
             } else {
-                ctx.result("something went wrong while setting network configuration");
+                ctx.result("Something went wrong while setting network configuration");
                 ctx.status(501);
             }
             SocketHandler.sendFullSettings();

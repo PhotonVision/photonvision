@@ -104,7 +104,7 @@
         computed: {
             fileUploadText() {
                 if (this.file !== undefined) {
-                    return "update and run at startup"
+                    return "Update and run at startup"
                 } else {
                     return "Run current version at startup"
                 }
