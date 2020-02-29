@@ -15,7 +15,7 @@
         <v-btn style="margin-top:10px" small color="#4baf62" @click="sendGeneralSettings">Save General Settings</v-btn>
         <div style="margin-top: 20px">
             <span>Install or Update:</span>
-            <v-divider color="white"></v-divider>
+            <v-divider color="white"/>
         </div>
         <div v-if="!isLoading">
             <v-row dense align="center">
@@ -23,14 +23,14 @@
                     <span>Choose a newer version: </span>
                 </v-col>
                 <v-col :cols="6">
-                    <v-file-input accept=".jar" dark v-model="file"></v-file-input>
+                    <v-file-input accept=".jar" dark v-model="file"/>
                 </v-col>
             </v-row>
             <v-btn small @click="installOrUpdate">{{fileUploadText}}</v-btn>
         </div>
         <div v-else style="text-align: center; margin-top: 20px">
             <v-progress-circular color="white" :indeterminate="true" size="32"
-                                 width="4"></v-progress-circular>
+                                 width="4"/>
             <br>
             <span>Please wait this may take a while</span>
         </div>
@@ -69,8 +69,19 @@
                 this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
                     function (response) {
                         if (response.status === 200) {
-                            self.$store.state.saveBar = true;
+                            self.snackbar = {
+                                color: "success",
+                                text: "Save successful, Please restart for changes to take action"
+                            };
+                            self.snack = true;
                         }
+                    },
+                    function (error) {
+                        self.snackbar = {
+                            color: "error",
+                            text: error.response.data
+                        };
+                        self.snack = true;
                     }
                 )
             },

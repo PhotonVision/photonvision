@@ -57,8 +57,8 @@ public class RequestHandler {
             // setting up network config after saving
             boolean isStatic = ConfigManager.settings.connectionType.equals(NetworkIPMode.STATIC);
 
-            if (NetworkManager.setHostname(ConfigManager.settings.hostname) &&
-                    NetworkManager.setNetwork(isStatic, ConfigManager.settings.ip, ConfigManager.settings.netmask, ConfigManager.settings.gateway)) {
+            boolean state = NetworkManager.setHostname(ConfigManager.settings.hostname) && NetworkManager.setNetwork(isStatic, ConfigManager.settings.ip, ConfigManager.settings.netmask, ConfigManager.settings.gateway);
+            if (state) {
                 ctx.status(200);
             } else {
                 ctx.result("Something went wrong while setting network configuration");

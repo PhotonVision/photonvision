@@ -71,9 +71,10 @@ public class LinuxNetworking extends SysNetworking {
             lines.add("interface " + networkInterface.name);
             InetAddress iNetMask = InetAddress.getByName(netmask);
             int prefix = NetmaskToCIDR.convertNetmaskToCIDR(iNetMask);
-            lines.add("static ip_address " + ipAddress + "/" + prefix);
-            lines.add("static routers " + gateway);
+            lines.add("static ip_address=" + ipAddress + "/" + prefix);
+            lines.add("static routers=" + gateway);
             FileUtils.writeLines(dhcpConf, lines);
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
