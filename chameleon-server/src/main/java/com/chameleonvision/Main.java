@@ -129,6 +129,7 @@ public class Main {
         }
 
         // Attempt to load the JNI Libraries
+        System.out.println("Loading CameraServer...");
         try {
             CameraServerJNI.forceLoad();
             CameraServerCvJNI.forceLoad();
@@ -139,9 +140,11 @@ public class Main {
             throw new RuntimeException("Failed to load JNI Libraries!");
         }
 
+        System.out.println("Checking Settings...");
         ConfigManager.initializeSettings();
 
         if (!CurrentPlatform.isWindows()) {
+            System.out.println("Initializing Script Manager...");
             ScriptManager.initialize();
         } else {
             System.out.println("Scripts not yet supported on Windows. ScriptEvents will be ignored.");
@@ -159,16 +162,17 @@ public class Main {
 
         boolean visionSourcesOk = VisionManager.initializeSources();
         if (!visionSourcesOk) {
-            System.out.println("No cameras connected!");
+            System.err.println("No cameras connected!");
             return;
         }
 
         boolean visionProcessesOk = VisionManager.initializeProcesses();
         if (!visionProcessesOk) {
-            System.err.println("Failed to start threads!");
+            System.err.println("Failed to initialize vision processes!");
             return;
         }
 
+        System.out.println("Starting vision processes...");
         VisionManager.startProcesses();
 
         System.out.printf("Starting Web server at port %d\n", uiPort);

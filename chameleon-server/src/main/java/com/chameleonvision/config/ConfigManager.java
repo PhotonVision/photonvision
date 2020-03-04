@@ -13,7 +13,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class ConfigManager {
-    private ConfigManager() {}
+    private ConfigManager() {
+    }
 
     public static final Path SettingsPath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "settings");
     private static final Path settingsFilePath = Paths.get(SettingsPath.toString(), "settings.json");
@@ -22,13 +23,18 @@ public class ConfigManager {
 
     public static GeneralSettings settings = new GeneralSettings();
 
-    private static boolean settingsFolderExists() { return Files.exists(SettingsPath); }
-    private static boolean settingsFileExists() { return settingsFolderExists() && Files.exists(settingsFilePath); }
+    private static boolean settingsFolderExists() {
+        return Files.exists(SettingsPath);
+    }
+
+    private static boolean settingsFileExists() {
+        return settingsFolderExists() && Files.exists(settingsFilePath);
+    }
 
     private static void checkSettingsFolder() {
         if (!settingsFolderExists()) {
             try {
-                if( !(new File(SettingsPath.toUri()).mkdirs()) ) {
+                if (!(new File(SettingsPath.toUri()).mkdirs())) {
                     System.err.println("Failed to create settings folder: " + SettingsPath.toString());
                 }
                 Files.createDirectory(SettingsPath);
@@ -36,7 +42,7 @@ public class ConfigManager {
                     new ShellExec().executeBashCommand("sudo chmod -R 0777 " + SettingsPath.toString());
                 }
             } catch (IOException e) {
-                if(!(e instanceof java.nio.file.FileAlreadyExistsException))
+                if (!(e instanceof java.nio.file.FileAlreadyExistsException))
                     e.printStackTrace();
             }
         }
@@ -46,7 +52,7 @@ public class ConfigManager {
         boolean settingsFileEmpty = settingsFileExists() && new File(settingsFilePath.toString()).length() == 0;
         if (settingsFileEmpty || !settingsFileExists()) {
             try {
-                JacksonHelper.serializer(settingsFilePath, settings);
+                JacksonHelper.serializer(settingsFilePath, settings, true);
                 FileHelper.setFilePerms(settingsFilePath);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -69,7 +75,7 @@ public class ConfigManager {
 
     private static void saveSettingsFile() {
         try {
-            JacksonHelper.serializer(settingsFilePath, settings);
+            JacksonHelper.serializer(settingsFilePath, settings, true);
             FileHelper.setFilePerms(settingsFilePath);
         } catch (IOException e) {
             System.err.println("Failed to save settings.json!");

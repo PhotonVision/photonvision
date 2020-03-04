@@ -16,7 +16,8 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class ScriptManager {
 
-    private ScriptManager() {}
+    private ScriptManager() {
+    }
 
     private static final List<ScriptEvent> events = new ArrayList<>();
     private static final LinkedBlockingDeque<ScriptEventType> queuedEvents = new LinkedBlockingDeque<>(25);
@@ -67,9 +68,12 @@ public class ScriptManager {
 
         protected static final Path scriptConfigPath = Paths.get(ConfigManager.SettingsPath.toString(), "scripts.json");
 
-        private ScriptConfigManager() {}
+        private ScriptConfigManager() {
+        }
 
-        static boolean fileExists() { return Files.exists(scriptConfigPath); }
+        static boolean fileExists() {
+            return Files.exists(scriptConfigPath);
+        }
 
         public static void initialize() {
             if (!fileExists()) {
@@ -79,7 +83,7 @@ public class ScriptManager {
                 }
 
                 try {
-                    JacksonHelper.serializer(scriptConfigPath, eventsConfig.toArray(new ScriptConfig[0]));
+                    JacksonHelper.serializer(scriptConfigPath, eventsConfig.toArray(new ScriptConfig[0]), true);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

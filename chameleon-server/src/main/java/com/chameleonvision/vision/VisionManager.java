@@ -57,6 +57,7 @@ public class VisionManager {
         if (usbCameraInfosByCameraName.isEmpty()) {
             return false;
         }
+        System.out.printf("[VisionManager] Found %s cameras!\n", usbCameraInfosByCameraName.size());
 
         // load the config
         List<CameraJsonConfig> preliminaryConfigs = new ArrayList<>();
@@ -74,7 +75,7 @@ public class VisionManager {
         });
 
         loadedCameraConfigs.addAll(ConfigManager.initializeCameras(preliminaryConfigs));
-
+        System.out.printf("[VisionManager] Loaded %s cameras!\n", loadedCameraConfigs.size());
         return true;
     }
 
@@ -91,6 +92,8 @@ public class VisionManager {
         }
         currentUIVisionProcess = getVisionProcessByIndex(0);
         ConfigManager.settings.currentCamera = visionProcesses.get(0).name;
+
+        System.out.printf("[VisionManager] Loaded %s vision processes! Current process: %s\n", visionProcesses.size(), visionProcesses.get(0).name);
         return true;
     }
 

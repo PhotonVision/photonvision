@@ -21,6 +21,7 @@ public class PipelineConfig {
 
     /**
      * Construct a new PipelineConfig
+     *
      * @param cameraConfig the CameraConfig (parent folder, kinda?)
      */
     PipelineConfig(CameraConfig cameraConfig) {
@@ -28,7 +29,7 @@ public class PipelineConfig {
     }
 
     private void checkFolder() {
-        if ( !(new File(cameraConfig.pipelineFolderPath.toUri()).mkdirs())) {
+        if (!(new File(cameraConfig.pipelineFolderPath.toUri()).mkdirs())) {
             if (Files.notExists(cameraConfig.pipelineFolderPath)) {
                 System.err.println("Failed to create pipelines folder.");
             }
@@ -46,7 +47,7 @@ public class PipelineConfig {
 
     private boolean folderHasPipelines() {
         File[] folderContents = getPipelineFiles();
-        if(folderContents == null) return false;
+        if (folderContents == null) return false;
         return folderContents.length > 0;
     }
 
@@ -75,14 +76,14 @@ public class PipelineConfig {
 
         if (settings instanceof StandardCVPipelineSettings) {
             try {
-                JacksonHelper.serialize(path, (StandardCVPipelineSettings)settings, StandardCVPipelineSettings.class, new StandardCVPipelineSettingsSerializer());
+                JacksonHelper.serialize(path, (StandardCVPipelineSettings) settings, StandardCVPipelineSettings.class, new StandardCVPipelineSettingsSerializer(), true);
                 FileHelper.setFilePerms(path);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         } else {
             try {
-                JacksonHelper.serializer(path, settings);
+                JacksonHelper.serializer(path, settings, true);
                 FileHelper.setFilePerms(path);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -91,13 +92,13 @@ public class PipelineConfig {
     }
 
     public void save(List<CVPipelineSettings> settings) {
-        for(CVPipelineSettings setting : settings) {
+        for (CVPipelineSettings setting : settings) {
             save(setting);
         }
     }
 
     public void delete(CVPipelineSettings setting) {
-        if(pipelineExists(setting)) {
+        if (pipelineExists(setting)) {
             try {
                 Files.delete(getPipelinePath(setting));
             } catch (IOException e) {
@@ -124,17 +125,17 @@ public class PipelineConfig {
         File[] pipelineFiles = getPipelineFiles();
         List<CVPipelineSettings> deserializedList = new ArrayList<>();
 
-        if(pipelineFiles == null || pipelineFiles.length < 1) {
+        if (pipelineFiles == null || pipelineFiles.length < 1) {
             // TODO handle no pipelines to load
             System.err.println("no pipes to load! loading default");
         } else {
-            for(File pipelineFile : pipelineFiles) {
-                    try {
-                        var pipe = JacksonHelper.deserialize(Paths.get(pipelineFile.getPath()), StandardCVPipelineSettings.class, new StandardCVPipelineSettingsDeserializer());
-                        deserializedList.add(pipe);
-                    } catch (IOException e) {
-                        System.err.println("couldn't load cvpipeline2d");
-                    }
+            for (File pipelineFile : pipelineFiles) {
+                try {
+                    var pipe = JacksonHelper.deserialize(Paths.get(pipelineFile.getPath()), StandardCVPipelineSettings.class, new StandardCVPipelineSettingsDeserializer());
+                    deserializedList.add(pipe);
+                } catch (IOException e) {
+                    System.err.println("couldn't load cvpipeline2d");
+                }
             }
         }
 

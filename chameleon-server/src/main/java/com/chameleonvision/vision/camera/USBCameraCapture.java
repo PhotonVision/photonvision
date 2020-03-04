@@ -58,10 +58,6 @@ public class USBCameraCapture implements CameraCapture {
         calibrationList.add(newConfig);
     }
 
-    public List<CameraCalibrationConfig> getConfig() {
-        return calibrationList;
-    }
-
     @Override
     public USBCaptureProperties getProperties() {
         return properties;

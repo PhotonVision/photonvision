@@ -13,7 +13,7 @@ public class NetworkTablesManager {
 
     private NetworkTablesManager() {}
 
-    private static final NetworkTableInstance NTInst = NetworkTableInstance.getDefault();
+    private static final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
 
     public static final String kRootTableName = "/chameleon-vision";
     public static final NetworkTable kRootTable = NetworkTableInstance.getDefault().getTable(kRootTableName);
@@ -48,11 +48,16 @@ public class NetworkTablesManager {
     public static void setClientMode(String host) {
         isServer = false;
         System.out.println("Starting NT Client");
-        NTInst.stopServer();
+        ntInstance.stopServer();
         if (host != null) {
-            NTInst.startClient(host);
+            ntInstance.startClient(host);
         } else {
-            NTInst.startClientTeam(getTeamNumber());
+            ntInstance.startClientTeam(getTeamNumber());
+            if(ntInstance.isConnected()) {
+                System.out.println("[NetworkTablesManager] Connected to the robot!");
+            } else {
+                System.out.println("[NetworkTablesManager] Could NOT to the robot! Will retry in the background...");
+            }
         }
     }
 
@@ -63,7 +68,7 @@ public class NetworkTablesManager {
     public static void setServerMode() {
         isServer = true;
         System.out.println("Starting NT Server");
-        NTInst.stopClient();
-        NTInst.startServer();
+        ntInstance.stopClient();
+        ntInstance.startServer();
     }
 }
