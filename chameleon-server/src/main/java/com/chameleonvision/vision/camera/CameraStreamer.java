@@ -86,6 +86,18 @@ public class CameraStreamer {
 //            Size newSize = new Size(newWidth, newHeight);
              Imgproc.resize(streamBuffer, streamBuffer, this.size);
         }
+
+        var sourceVideoMode = cvSource.getVideoMode();
+        var imageSize = streamBuffer.size();
+        if(sourceVideoMode.width != (int) imageSize.width || sourceVideoMode.height != (int) imageSize.height) {
+            synchronized (streamBufferLock) {
+                cvSource.setVideoMode(new VideoMode(sourceVideoMode.pixelFormat,
+                        (int)imageSize.width,
+                        (int) imageSize.height,
+                        sourceVideoMode.fps));
+            }
+        }
+
         cvSource.putFrame(streamBuffer);
     }
 }
