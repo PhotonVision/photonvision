@@ -30,7 +30,13 @@ public class USBCameraCapture implements CameraCapture {
         calibrationList.addAll(fullCameraConfiguration.calibration);
         baseCamera = new UsbCamera(config.name, config.path);
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
-        properties = new USBCaptureProperties(baseCamera, config);
+        try {
+            properties = new USBCaptureProperties(baseCamera, config);
+        } catch(VideoException e) {
+            System.err.println("Camera cannot be found on the saved USB port!" +
+                    " Ensure that the camera has not been plugged into a different USB port, and if so, correct it.");
+            e.printStackTrace();
+        }
 
         var videoModes = properties.getVideoModes();
         if(videoModes.size() < 1) {
