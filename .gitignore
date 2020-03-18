@@ -121,3 +121,4 @@ New client/chameleon-client/*
 *.jfr
 .DS_Store
 # *.iml
+chameleon-server/build
