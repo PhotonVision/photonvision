@@ -11,7 +11,7 @@
         </v-row>
     </div>
 </template>
-
+s
 <script>
     export default {
         name: 'Input',
@@ -21,7 +21,7 @@
         },
         methods: {
             handleKeyboard(event) {
-                if (event.key == "Enter") {
+                if (event.key === "Enter") {
                     this.$emit("Enter");
                 }
             }

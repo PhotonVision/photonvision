@@ -123,9 +123,9 @@
                                     <tbody>
                                     <tr v-for="(value, index) in targets" :key="index">
                                         <td>{{ index}}</td>
-                                        <td>{{ parseFloat(value.pitch).toFixed(2) }}</td>
-                                        <td>{{ parseFloat(value.yaw).toFixed(2) }}</td>
-                                        <td>{{ parseFloat(value.area).toFixed(2) }}</td>
+                                        <td>{{ parseFloat(value.pitch).toFixed(2)}}</td>
+                                        <td>{{ parseFloat(value.yaw).toFixed(2)}}</td>
+                                        <td>{{ parseFloat(value.area).toFixed(2)}}</td>
                                     </tr>
                                     </tbody>
                                 </template>
@@ -279,7 +279,7 @@
         },
         data() {
             return {
-                re: RegExp('^[A-Za-z0-9 \\-)(]*[A-Za-z0-9][A-Za-z0-9 \\-)(.]*$'),
+                re: RegExp("^[A-Za-z0-9 \\-)(]*[A-Za-z0-9][A-Za-z0-9 \\-)(.]*$"),
                 selectedTab: 0,
                 // camera edit variables
                 isCameraNameEdit: false,
@@ -301,12 +301,13 @@
         },
         computed: {
             checkCameraName() {
-
                 if (this.newCameraName !== this.cameraList[this.currentCameraIndex]) {
                     if (this.re.test(this.newCameraName)) {
                         for (let cam in this.cameraList) {
-                            if (this.newCameraName === this.cameraList[cam]) {
-                                return "Camera by that name already Exists"
+                            if (this.cameraList.hasOwnProperty(cam)) {
+                                if (this.newCameraName === this.cameraList[cam]) {
+                                    return "Camera by that name already Exists"
+                                }
                             }
                         }
                     } else {
@@ -316,15 +317,15 @@
                 return ""
             },
             checkPipelineName() {
-
                 if (this.newPipelineName !== this.pipelineList[this.currentPipelineIndex - 1] || this.isPipelineNameEdit === false) {
                     if (this.re.test(this.newPipelineName)) {
                         for (let pipe in this.pipelineList) {
-                            if (this.newPipelineName === this.pipelineList[pipe]) {
-                                return "A pipeline with this name already exists"
+                            if (this.pipelineList.hasOwnProperty(pipe)) {
+                                if (this.newPipelineName === this.pipelineList[pipe]) {
+                                    return "A pipeline with this name already exists"
+                                }
                             }
                         }
-
                     } else {
                         return "Pipeline name can only contain letters, numbers, and spaces"
                     }
@@ -341,27 +342,11 @@
             },
             selectedComponent: {
                 get() {
-                    if (this.currentPipelineIndex === 0) {
-                        return "InputTab"
-                    }
-                    switch (this.selectedTab) {
-                        case 0:
-                            return "InputTab";
-                        case 1:
-                            return "ThresholdTab";
-                        case 2:
-                            return "ContoursTab";
-                        case 3:
-                            return "OutputTab";
-                        case 4:
-                            return "pnpTab";
-                    }
-                    return "";
+                    return this.currentPipelineIndex === 0 ? "InputTab" : ["InputTab", "ThresholdTab", "ContoursTab", "OutputTab", "pnpTab"][this.selectedTab];
                 }
             },
             targets: {
                 get: function () {
-
                     return this.$store.state.point.targets;
                 }
             },
@@ -402,7 +387,7 @@
                 }
             },
             streamAddress: {
-                get: function () {
+                get() {
                     return "http://" + location.hostname + ":" + this.$store.state.port + "/stream.mjpg";
                 }
             },
@@ -420,12 +405,6 @@
         text-align: center;
     }
 
-
-    .tableClass {
-        padding-top: 5px;
-        width: 70%;
-        text-align: center;
-    }
 
     th {
         width: 80px;

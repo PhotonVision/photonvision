@@ -131,7 +131,7 @@
             this.grad = this.ctx.createLinearGradient(400, 800, 400, 600);
             this.grad.addColorStop(0, "rgb(119,119,119)");
             this.grad.addColorStop(0.05, "rgba(14,92,22,0.96)");
-            this.grad.addColorStop(0.8, "rgba(43,43,43,0.48)");
+            this.grad.addColorStop(0.8, 'rgba(43,43,43,0.48)');
 
             // setting canvas context values for drawing
 

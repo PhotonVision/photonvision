@@ -22,9 +22,12 @@
             }
         },
         computed: {
-            hoverClass() {
-                if (this.hover !== undefined) {
-                    return "hover";
+            hoverClass: {
+                get() {
+                    if (this.hover !== undefined) {
+                        return "hover";
+                    }
+                    return "";
                 }
             }
         },

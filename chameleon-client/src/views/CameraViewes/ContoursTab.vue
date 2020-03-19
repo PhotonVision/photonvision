@@ -41,10 +41,8 @@
         },
         computed: {
             isDisabled() {
-                if (this.value.targetGroup === 0) {
-                    return true;
-                }
-                return false;
+                return this.value.targetGroup === 0;
+
             }
         },
     }

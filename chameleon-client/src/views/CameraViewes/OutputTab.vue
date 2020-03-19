@@ -3,7 +3,8 @@
         <CVselect name="Sort Mode" v-model="value.sortMode"
                   :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
                   @input="handleData('sortMode')"/>
-        <CVselect v-model="value.targetRegion" name="Target Region" :list="['Center','Top','Bottom','Left','Right']" @input="handleData('targetRegion')"/>
+        <CVselect v-model="value.targetRegion" name="Target Region" :list="['Center','Top','Bottom','Left','Right']"
+                  @input="handleData('targetRegion')"/>
         <CVselect name="Target Orientation" :list="['Portrait', 'Landscape']" v-model="value.targetOrientation"
                   @input="handleData('targetOrientation')"/>
         <CVswitch name="Output multiple" v-model="value.multiple" @input="handleData('multiple')"/>

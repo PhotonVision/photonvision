@@ -40,7 +40,7 @@
                     if (isNaN(m) === false && isNaN(b) === false) {
                         this.sendSlope(m, b, true);
                     } else {
-                        this.$emit('snackbar',"Points are too close");
+                        this.$emit('snackbar', "Points are too close");
                     }
                     this.pointA = undefined;
                     this.pointB = undefined;

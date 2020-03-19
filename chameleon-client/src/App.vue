@@ -5,7 +5,7 @@
             <v-toolbar-title id="title">Chameleon Vision</v-toolbar-title>
             <div class="flex-grow-1"></div>
             <v-toolbar-items>
-                <v-tabs dark height="48" slider-color="#4baf62">
+                <v-tabs background-color="#272727" dark height="48" slider-color="#4baf62">
                     <v-tab to="vision">Vision</v-tab>
                     <v-tab to="settings">Settings</v-tab>
                 </v-tabs>
@@ -31,7 +31,6 @@
 <script>
     export default {
         name: 'App',
-
         components: {},
         methods: {
             handleMessage(key, value) {
@@ -41,7 +40,6 @@
                     this.$store.commit('setPipeValues', {[key]: value});
                 } else {
                     switch (key) {
-
                         default: {
                             console.log(key + " : " + value);
                         }
@@ -66,9 +64,7 @@
         created() {
             this.$options.sockets.onmessage = (data) => {
                 try {
-
                     let message = this.$msgPack.decode(data.data);
-
                     for (let prop in message) {
                         if (message.hasOwnProperty(prop)) {
                             this.handleMessage(prop, message[prop]);
@@ -102,10 +98,6 @@
         height: 45px;
         vertical-align: middle;
         padding-right: 5px;
-    }
-
-    .tabClass {
-        color: #4baf62;
     }
 
     .container {

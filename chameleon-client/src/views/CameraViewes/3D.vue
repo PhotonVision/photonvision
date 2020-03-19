@@ -12,7 +12,8 @@
                 </v-btn>
             </v-col>
         </v-row>
-        <CVslider name="Contour simplification" v-model="value.accuracy" :min="0" :max="100" @input="handleData('accuracy')"/>
+        <CVslider name="Contour simplification" v-model="value.accuracy" :min="0" :max="100"
+                  @input="handleData('accuracy')"/>
         <v-row>
             <v-col>
                 <mini-map class="miniMapClass" :targets="targets" :horizontal-f-o-v="horizontalFOV"/>
@@ -100,13 +101,13 @@
                 this.uploadModel(this.selectedModel);
             },
             uploadModel(model) {
-                this.axios.post("http://" + this.$address + "/api/vision/pnpModel", model).then((response) => {
+                this.axios.post("http://" + this.$address + "/api/vision/pnpModel", model).then(() => {
                     this.snackbar = {
                         color: "success",
                         text: "File uploaded successfully"
                     };
                     this.snack = true;
-                }).catch((error) => {
+                }).catch(() => {
                     this.snackbar = {
                         color: "error",
                         text: "An error occurred"
@@ -146,7 +147,9 @@
         mounted() {
             let tmp = [];
             for (let t in FRCtargetsConfig) {
-                tmp.push({name: t, data: FRCtargetsConfig[t]})
+                if (FRCtargetsConfig.hasOwnProperty(t)) {
+                    tmp.push({name: t, data: FRCtargetsConfig[t]})
+                }
             }
             this.FRCtargets = tmp;
         }

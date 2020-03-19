@@ -30,12 +30,12 @@
                 </v-col>
                 <v-col>
                     <v-btn small :color="cancellationModeButton.color" @click="sendCalibrationFinish"
-                           :disabled="checkCancelation">
+                           :disabled="checkCancellation">
                         {{cancellationModeButton.text}}
                     </v-btn>
                 </v-col>
                 <v-col>
-                    <v-btn color="whitesmoke" small @click="$refs.calibrationFile.click()">
+                    <v-btn color="whitesmoke" small @click="downloadBoard">
                         Download Checkerboard
                     </v-btn>
                     <a ref="calibrationFile" style="color: black; text-decoration: none; display: none"
@@ -105,6 +105,11 @@
         methods: {
             handleData(val) {
                 this.handleInput(val, this.pipeline[val]);
+            },
+            downloadBoard() {
+                this.axios.get("http://" + this.$address + require('../../assets/chessboard.png'), {responseType: 'blob'}).then((response) => {
+                    require('downloadjs')(response.data, "Calibration Board", "image/png")
+                })
             },
             changeFps() {
                 this.handleInput('videoModeIndex', this.filteredFpsList[this.pipeline['videoModeIndex']]['actualIndex']);
@@ -189,7 +194,7 @@
             checkResolution() {
                 return this.resolutionIndex === undefined;
             },
-            checkCancelation() {
+            checkCancellation() {
                 if (this.isCalibrating) {
                     return false
                 } else if (this.checkResolution) {
@@ -218,10 +223,12 @@
                 get() {
                     let tmp_list = [];
                     for (let i in this.$store.state.resolutionList) {
-                        let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
-                        if (!tmp_list.some(e => e.width === res.width && e.height === res.height)) {
-                            res['actualIndex'] = parseInt(i);
-                            tmp_list.push(res);
+                        if (this.$store.state.resolutionList.hasOwnProperty(i)) {
+                            let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
+                            if (!tmp_list.some(e => e.width === res.width && e.height === res.height)) {
+                                res['actualIndex'] = parseInt(i);
+                                tmp_list.push(res);
+                            }
                         }
                     }
                     return tmp_list;
@@ -231,11 +238,13 @@
                 let selectedRes = this.$store.state.resolutionList[this.resolutionIndex];
                 let tmpList = [];
                 for (let i in this.$store.state.resolutionList) {
-                    let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
-                    if (!tmpList.some(e => e['fps'] === res['fps'])) {
-                        if (res.width === selectedRes.width && res.height === selectedRes.height) {
-                            res['actualIndex'] = parseInt(i);
-                            tmpList.push(res);
+                    if (this.$store.state.resolutionList.hasOwnProperty(i)) {
+                        let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
+                        if (!tmpList.some(e => e['fps'] === res['fps'])) {
+                            if (res.width === selectedRes.width && res.height === selectedRes.height) {
+                                res['actualIndex'] = parseInt(i);
+                                tmpList.push(res);
+                            }
                         }
                     }
                 }

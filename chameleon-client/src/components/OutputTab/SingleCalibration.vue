@@ -25,7 +25,7 @@
                     this.handleInput('point', this.rawPoint);
                     this.$emit('update');
                 } else {
-                    this.$emit('snackbar',"No target found");
+                    this.$emit('snackbar', "No target found");
                 }
             }
         }

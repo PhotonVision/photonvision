@@ -34,7 +34,7 @@
         data() {
             return {
                 selectedTab: 0,
-                tabList:[General, Cameras]
+                tabList: [General, Cameras]
             }
         },
         computed: {
