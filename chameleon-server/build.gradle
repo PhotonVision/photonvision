@@ -102,6 +102,15 @@ dependencies {
     testImplementation('org.junit.jupiter:junit-jupiter:5.6.0')
 }
 
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+            exclude '**/_2/**'
+        }
+    }
+}
+
 test {
     test {
         useJUnitPlatform()
