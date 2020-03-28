@@ -21,7 +21,7 @@ jobs:
   build_jar:
     working_directory: ~/project/chameleon-server
     docker:
-      - image: maven:3.6.2-jdk-12
+      - image: gradle:jdk12
     steps:
       - checkout:
           path: ~/project
@@ -30,7 +30,7 @@ jobs:
       
       - run: rm -rf src/main/resources/web/*
       - run: cp -r /UI/dist/. src/main/resources/web/
-      - run: shadowjar
+      - run: gradlew shadowJar
       - store_artifacts: 
           path: build/libs
       - persist_to_workspace:
