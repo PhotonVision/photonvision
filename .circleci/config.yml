@@ -31,7 +31,7 @@ jobs:
       - run: rm -rf src/main/resources/web/*
       - run: mkdir -p src/main/resources/web/
       - run: cp -r /UI/dist/. src/main/resources/web/
-      - run: ./gradlew shadowJar
+      - run: gradle shadowJar
       - store_artifacts: 
           path: build/libs
       - persist_to_workspace:
