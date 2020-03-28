@@ -29,6 +29,7 @@ jobs:
           at: /UI
       
       - run: rm -rf src/main/resources/web/*
+      - run: mkdir -p src/main/resources/web/
       - run: cp -r /UI/dist/. src/main/resources/web/
       - run: gradlew shadowJar
       - store_artifacts: 
