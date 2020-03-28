@@ -3,15 +3,13 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
-shadowJar {
-    baseName = 'shadow'
-    configurations = [project.configurations.compile]
-    classifier = ''
-    archiveVersion = ''
-}
-
 group 'com.chameleonvision'
-version '1.0-SNAPSHOT'
+version '3.0-SNAPSHOT'
+
+shadowJar {
+    configurations = [project.configurations.compile]
+    archiveFileName.set("chameleonvision-${project.version}.jar")
+}
 
 sourceCompatibility = 11
 
