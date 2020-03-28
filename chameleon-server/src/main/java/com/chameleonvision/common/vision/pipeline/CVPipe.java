@@ -1,4 +1,4 @@
-package com.chameleonvision.common.vision.base.pipeline;
+package com.chameleonvision.common.vision.pipeline;
 
 import java.util.function.Function;
 
@@ -8,6 +8,7 @@ import java.util.function.Function;
  *
  * @param <I> Input type for the pipe
  * @param <O> Output type for the pipe
+ * @param <P> Parameters type for the pipe
  */
 public abstract class CVPipe<I, O, P> implements Function<I, PipeResult<O>> {
 

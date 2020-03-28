@@ -1,4 +1,4 @@
-package com.chameleonvision.common.vision.base.pipeline;
+package com.chameleonvision.common.vision.pipeline;
 
 public class PipeResult<O> {
     O result;

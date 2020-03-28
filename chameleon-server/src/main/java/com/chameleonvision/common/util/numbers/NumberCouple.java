@@ -1,6 +1,6 @@
 package com.chameleonvision.common.util.numbers;
 
-public class NumberCouple<T extends Number> {
+public abstract class NumberCouple<T extends Number> {
 
     private T first;
     private T second;
@@ -29,5 +29,27 @@ public class NumberCouple<T extends Number> {
     public void set(T first, T second) {
         this.first = first;
         this.second = second;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof NumberCouple)) {
+            return false;
+        }
+
+        var couple = (NumberCouple) obj;
+        if (!couple.first.equals(first)) {
+            return false;
+        }
+
+        if (!couple.second.equals(second)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    public boolean isEmpty() {
+        return first.intValue() == 0 && second.intValue() == 0;
     }
 }

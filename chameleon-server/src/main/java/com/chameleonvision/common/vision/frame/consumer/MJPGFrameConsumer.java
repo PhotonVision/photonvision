@@ -1,7 +1,7 @@
-package com.chameleonvision.common.vision.base.frame.consumer;
+package com.chameleonvision.common.vision.frame.consumer;
 
-import com.chameleonvision.common.vision.base.frame.Frame;
-import com.chameleonvision.common.vision.base.frame.FrameConsumer;
+import com.chameleonvision.common.vision.frame.Frame;
+import com.chameleonvision.common.vision.frame.FrameConsumer;
 import org.apache.commons.lang3.NotImplementedException;
 
 public class MJPGFrameConsumer implements FrameConsumer {

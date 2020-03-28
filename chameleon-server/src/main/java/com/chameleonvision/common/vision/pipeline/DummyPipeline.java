@@ -1,7 +1,7 @@
-package com.chameleonvision.common.vision.base.pipeline;
+package com.chameleonvision.common.vision.pipeline;
 
-import com.chameleonvision.common.vision.base.pipeline.pipe.ResizeImagePipe;
-import com.chameleonvision.common.vision.base.pipeline.pipe.RotateImagePipe;
+import com.chameleonvision.common.vision.pipeline.pipe.ResizeImagePipe;
+import com.chameleonvision.common.vision.pipeline.pipe.RotateImagePipe;
 import edu.wpi.cscore.CameraServerCvJNI;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;

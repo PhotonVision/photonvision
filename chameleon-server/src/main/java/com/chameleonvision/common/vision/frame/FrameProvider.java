@@ -1,4 +1,4 @@
-package com.chameleonvision.common.vision.base.frame;
+package com.chameleonvision.common.vision.frame;
 
 public interface FrameProvider {
     Frame getFrame();

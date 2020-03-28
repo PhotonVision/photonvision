@@ -7,6 +7,7 @@ import com.chameleonvision._2.vision.pipeline.CVPipeline;
 import com.chameleonvision._2.vision.pipeline.CVPipelineResult;
 import com.chameleonvision._2.vision.pipeline.pipes.*;
 import com.chameleonvision.common.util.MemoryManager;
+import com.chameleonvision.common.vision.opencv.Contour;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
@@ -124,7 +125,7 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipeline.StandardCV
         speckleRejectPipe.setConfig(settings.speckle.doubleValue());
         groupContoursPipe.setConfig(settings.targetGroup, settings.targetIntersection);
         sortContoursPipe.setConfig(settings.sortMode, camProps, 5);
-        collect2dTargetsPipe = new Collect2dTargetsPipe(settings.calibrationMode, settings.targetRegion, settings.targetOrientation, settings.point, settings.dualTargetCalibrationM, settings.dualTargetCalibrationB, camProps);
+        collect2dTargetsPipe.setConfig(settings.calibrationMode, settings.targetRegion, settings.targetOrientation, settings.point, settings.dualTargetCalibrationM, settings.dualTargetCalibrationB, camProps);
         draw2dContoursPipe.setConfig(settings.multiple, camProps);
         draw2dCrosshairPipe.setConfig(draw2dCrosshairPipeSettings, settings.calibrationMode, settings.point, settings.dualTargetCalibrationM, settings.dualTargetCalibrationB);
         outputMatPipe.setConfig(settings.isBinary);
@@ -161,9 +162,10 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipeline.StandardCV
         Pair<List<MatOfPoint>, Long> findContoursResult = findContoursPipe.run(hsvResult.getLeft());
         totalPipelineTimeNanos += findContoursResult.getRight();
 
-        Pair<List<MatOfPoint>, Long> filterContoursResult = filterContoursPipe.run(findContoursResult.getLeft());
+        Pair<List<Contour>, Long> filterContoursResult = filterContoursPipe.run(findContoursResult.getLeft());
         totalPipelineTimeNanos += filterContoursResult.getRight();
 
+        // ignore !
         Pair<List<MatOfPoint>, Long> speckleRejectResult = speckleRejectPipe.run(filterContoursResult.getLeft());
         totalPipelineTimeNanos += speckleRejectResult.getRight();
 
