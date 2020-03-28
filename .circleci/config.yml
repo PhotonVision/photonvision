@@ -30,11 +30,11 @@ jobs:
       
       - run: rm -rf src/main/resources/web/*
       - run: cp -r /UI/dist/. src/main/resources/web/
-      - run: mvn package
+      - run: shadowjar
       - store_artifacts: 
-          path: target/
+          path: build/libs
       - persist_to_workspace:
-          root: ./target
+          root: ./build/libs
           paths:
             - .
 
