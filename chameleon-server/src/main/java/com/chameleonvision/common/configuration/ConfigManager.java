@@ -2,18 +2,18 @@ package com.chameleonvision.common.configuration;
 
 public class ConfigManager {
 
-	private final ConfigFolder rootFolder;
+    private final ConfigFolder rootFolder;
 
-	protected ConfigManager() {
+    protected ConfigManager() {
 
-		rootFolder = new ConfigFolder("");
-	}
+        rootFolder = new ConfigFolder("");
+    }
 
-	private static class SingletonHolder {
-		private static final ConfigManager INSTANCE = new ConfigManager();
-	}
+    private static class SingletonHolder {
+        private static final ConfigManager INSTANCE = new ConfigManager();
+    }
 
-	public static ConfigManager getInstance() {
-		return SingletonHolder.INSTANCE;
-	}
+    public static ConfigManager getInstance() {
+        return SingletonHolder.INSTANCE;
+    }
 }
