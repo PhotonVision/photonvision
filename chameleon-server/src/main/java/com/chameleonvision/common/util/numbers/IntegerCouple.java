@@ -2,11 +2,11 @@ package com.chameleonvision.common.util.numbers;
 
 public class IntegerCouple extends NumberCouple<Integer> {
 
-    public IntegerCouple() {
-        super(0, 0);
-    }
+	public IntegerCouple() {
+		super(0, 0);
+	}
 
-    public IntegerCouple(Integer first, Integer second) {
-        super(first, second);
-    }
+	public IntegerCouple(Integer first, Integer second) {
+		super(first, second);
+	}
 }

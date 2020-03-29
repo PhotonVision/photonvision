@@ -5,8 +5,8 @@ import com.chameleonvision.common.vision.frame.FrameProvider;
 import org.apache.commons.lang3.NotImplementedException;
 
 public class FileFrameProvider implements FrameProvider {
-    @Override
-    public Frame getFrame() {
-        throw new NotImplementedException("");
-    }
+	@Override
+	public Frame getFrame() {
+		throw new NotImplementedException("");
+	}
 }
