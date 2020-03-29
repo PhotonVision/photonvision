@@ -1,7 +1,7 @@
 package com.chameleonvision.common.vision.opencv;
 
 import com.chameleonvision.common.util.math.MathUtils;
-import com.chameleonvision.common.vision.target.TrackedTarget;
+import com.chameleonvision.common.vision.target.PotentialTarget;
 import java.util.Comparator;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -59,10 +59,10 @@ public class Contour {
     }
 
     public boolean isIntersecting(
-            Contour secondContour, TrackedTarget.TargetContourIntersection intersection) {
+            Contour secondContour, PotentialTarget.TargetContourIntersection intersection) {
         boolean isIntersecting = false;
 
-        if (intersection == TrackedTarget.TargetContourIntersection.None) {
+        if (intersection == PotentialTarget.TargetContourIntersection.None) {
             isIntersecting = true;
         } else {
             try {

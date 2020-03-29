@@ -2,85 +2,59 @@ package com.chameleonvision.common.vision.target;
 
 import com.chameleonvision.common.util.numbers.DoubleCouple;
 import com.chameleonvision.common.vision.opencv.Contour;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.apache.commons.math3.util.FastMath;
-import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 
 // TODO: banks fix
 public class TrackedTarget {
     final Contour mainContour;
-    final List<Contour> subContours = new ArrayList<>(); // can be empty
+    List<Contour> subContours; // can be empty
 
-    private Point targetOffsetPoint = null;
-    private Point robotOffsetPoint = null;
+    private Point targetOffsetPoint;
+    private Point robotOffsetPoint;
 
-    // Single Grouped
-    public TrackedTarget(Contour inputContour) {
-        mainContour = inputContour;
+    private double pitch;
+    private double yaw;
+    private double area;
+
+    public TrackedTarget(PotentialTarget origTarget, TargetCalculationParameters params) {
+        this.mainContour = origTarget.mainContour;
+        this.subContours = origTarget.subContours;
+        calculateValues(params);
     }
 
-    // Dual grouping
-    public TrackedTarget(
-            List<Contour> subContours,
-            TargetContourIntersection intersection,
-            TargetContourGrouping grouping) {
-        // do contour grouping
-        mainContour = calculateMultiContour(subContours, intersection, grouping);
-        if (mainContour == null) {
-            // this means we don't have a valid grouped target. what do we do???
-            throw new RuntimeException("Something went fucky wucky");
-        }
-        this.subContours.addAll(subContours);
+    public Point getTargetOffsetPoint() {
+        return targetOffsetPoint;
     }
 
-    private Contour calculateMultiContour(
-            List<Contour> input, TargetContourIntersection intersection, TargetContourGrouping grouping) {
-        int reqSize = grouping == TargetContourGrouping.Single ? 1 : 2;
-
-        if (input.size() != reqSize) {
-            throw new RuntimeException("Insufficient contours for target grouping!");
-        }
-
-        switch (grouping) {
-                // technically should never happen but :shrug:
-            case Single:
-                return input.get(0);
-            case Dual:
-                input.sort(Contour.SortByMomentsX);
-                Collections.reverse(input); // why?
-
-                Contour firstContour = input.get(0);
-                Contour secondContour = input.get(1);
-
-                // total contour for both. add the first one for now
-                List<Point> fullContourPoints = new ArrayList<>(firstContour.mat.toList());
-
-                // add second contour if it is intersecting
-                if (firstContour.isIntersecting(secondContour, intersection)) {
-                    fullContourPoints.addAll(secondContour.mat.toList());
-                } else {
-                    return null;
-                }
-
-                MatOfPoint finalContour = new MatOfPoint(fullContourPoints.toArray(new Point[0]));
-
-                if (finalContour.cols() != 0 && finalContour.rows() != 0) {
-                    return new Contour(finalContour);
-                }
-                break;
-        }
-        return null; //
+    public Point getRobotOffsetPoint() {
+        return robotOffsetPoint;
     }
 
-    private Point calculateOffsetPoint(boolean isLandscape, TargetOffsetPointRegion offsetRegion) {
+    public double getPitch() {
+        return pitch;
+    }
+
+    public double getYaw() {
+        return yaw;
+    }
+
+    public double getArea() {
+        return area;
+    }
+
+    public RotatedRect getMinAreaRect() {
+        return mainContour.getMinAreaRect();
+    }
+
+    private void calculateTargetOffsetPoint(
+            boolean isLandscape, TargetOffsetPointRegion offsetRegion) {
         Point[] vertices = new Point[4];
 
-        RotatedRect minRect = mainContour.getMinAreaRect();
-        minRect.points(vertices);
+        var minAreaRect = getMinAreaRect();
+        minAreaRect.points(vertices);
 
         Point bl = getMiddle(vertices[0], vertices[1]);
         Point tl = getMiddle(vertices[1], vertices[2]);
@@ -88,45 +62,38 @@ public class TrackedTarget {
         Point br = getMiddle(vertices[3], vertices[0]);
         boolean orientation;
         if (isLandscape) {
-            orientation = minRect.size.width > minRect.size.height;
+            orientation = minAreaRect.size.width > minAreaRect.size.height;
         } else {
-            orientation = minRect.size.width < minRect.size.height;
+            orientation = minAreaRect.size.width < minAreaRect.size.height;
         }
 
-        Point result = minRect.center;
+        Point resultPoint = minAreaRect.center;
         switch (offsetRegion) {
             case Top:
                 {
-                    result = orientation ? tl : tr;
+                    resultPoint = orientation ? tl : tr;
                     break;
                 }
             case Bottom:
                 {
-                    result = orientation ? br : bl;
+                    resultPoint = orientation ? br : bl;
                     break;
                 }
             case Left:
                 {
-                    result = orientation ? bl : tl;
+                    resultPoint = orientation ? bl : tl;
                     break;
                 }
             case Right:
                 {
-                    result = orientation ? tr : br;
+                    resultPoint = orientation ? tr : br;
                     break;
                 }
         }
-        return result;
+        targetOffsetPoint = resultPoint;
     }
 
-    public Point getTargetOffsetPoint(boolean isLandscape, TargetOffsetPointRegion offsetRegion) {
-        if (targetOffsetPoint == null) {
-            targetOffsetPoint = calculateOffsetPoint(isLandscape, offsetRegion);
-        }
-        return targetOffsetPoint;
-    }
-
-    private Point calculateRobotOffsetPoint(
+    private void calculateRobotOffsetPoint(
             Point offsetPoint,
             Point camCenterPoint,
             DoubleCouple offsetEquationValues,
@@ -150,47 +117,93 @@ public class TrackedTarget {
                         (offsetPoint.y * offsetEquationValues.getSecond()) + offsetEquationValues.getFirst();
                 break;
         }
-        return resultPoint;
+
+        robotOffsetPoint = resultPoint;
     }
 
-    public Point getRobotOffsetPoint(
-            Point userOffsetPoint,
-            Point camCenterPoint,
-            DoubleCouple offsetEquationValues,
-            RobotOffsetPointMode offsetMode) {
-        if (robotOffsetPoint == null) {
-            robotOffsetPoint =
-                    calculateRobotOffsetPoint(
-                            userOffsetPoint, camCenterPoint, offsetEquationValues, offsetMode);
-        }
-        return robotOffsetPoint;
+    private void calculatePitch(double verticalFocalLength) {
+        double contourCenterY = mainContour.getCenterPoint().y;
+        double targetCenterY = targetOffsetPoint.y;
+        pitch =
+                -FastMath.toDegrees(FastMath.atan((contourCenterY - targetCenterY) / verticalFocalLength));
     }
 
-    private double calculatePitch(double pixelY, double centerY, double verticalFocalLength) {
-        double pitch = FastMath.toDegrees(FastMath.atan((pixelY - centerY) / verticalFocalLength));
-        return (pitch * -1);
+    private void calculateYaw(double horizontalFocalLength) {
+        double contourCenterX = mainContour.getCenterPoint().x;
+        double targetCenterX = targetOffsetPoint.x;
+        yaw =
+                FastMath.toDegrees(FastMath.atan((contourCenterX - targetCenterX) / horizontalFocalLength));
     }
 
-    private double calculateYaw(double pixelX, double centerX, double horizontalFocalLength) {
-        return FastMath.toDegrees(FastMath.atan((pixelX - centerX) / horizontalFocalLength));
+    private void calculateArea(double imageArea) {
+        area = mainContour.getMinAreaRect().size.area() / imageArea;
     }
 
     private Point getMiddle(Point p1, Point p2) {
         return new Point(((p1.x + p2.x) / 2), ((p1.y + p2.y) / 2));
     }
 
-    // TODO: move these? also docs plox
-    public enum TargetContourIntersection {
-        None,
-        Up,
-        Down,
-        Left,
-        Right
+    public void calculateValues(TargetCalculationParameters params) {
+        // this MUST happen in this exact order!
+        calculateTargetOffsetPoint(params.isLandscape, params.targetOffsetPointRegion);
+        calculateRobotOffsetPoint(
+                targetOffsetPoint,
+                params.cameraCenterPoint,
+                params.offsetEquationValues,
+                params.robotOffsetPointMode);
+
+        // order of this stuff doesnt matter though
+        calculatePitch(params.verticalFocalLength);
+        calculateYaw(params.horizontalFocalLength);
+        calculateArea(params.imageArea);
     }
 
-    public enum TargetContourGrouping {
-        Single,
-        Dual
+    public static class TargetCalculationParameters {
+        // TargetOffset calculation values
+        final boolean isLandscape;
+        final TargetOffsetPointRegion targetOffsetPointRegion;
+
+        // RobotOffset calculation values
+        final Point userOffsetPoint;
+        final Point cameraCenterPoint;
+        final DoubleCouple offsetEquationValues;
+        final RobotOffsetPointMode robotOffsetPointMode;
+
+        // yaw calculation values
+        final double horizontalFocalLength;
+
+        // pitch calculation values
+        final double verticalFocalLength;
+
+        // area calculation values
+        final double imageArea;
+
+        public TargetCalculationParameters(
+                boolean isLandscape,
+                TargetOffsetPointRegion targetOffsetPointRegion,
+                Point userOffsetPoint,
+                Point cameraCenterPoint,
+                DoubleCouple offsetEquationValues,
+                RobotOffsetPointMode robotOffsetPointMode,
+                double horizontalFocalLength,
+                double verticalFocalLength,
+                double imageArea) {
+            this.isLandscape = isLandscape;
+            this.targetOffsetPointRegion = targetOffsetPointRegion;
+            this.userOffsetPoint = userOffsetPoint;
+            this.cameraCenterPoint = cameraCenterPoint;
+            this.offsetEquationValues = offsetEquationValues;
+            this.robotOffsetPointMode = robotOffsetPointMode;
+            this.horizontalFocalLength = horizontalFocalLength;
+            this.verticalFocalLength = verticalFocalLength;
+            this.imageArea = imageArea;
+        }
+    }
+
+    // TODO: move these? also docs plox
+    public enum TargetOrientation {
+        Portrait,
+        Landscape
     }
 
     public enum TargetOffsetPointRegion {
