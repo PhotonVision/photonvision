@@ -187,6 +187,13 @@ public class RequestHandler {
             if (pipeManager.calib3dPipe.tryCalibration()) {
                 HashMap<String, Double> tmp = new HashMap<String, Double>();
                 tmp.put("accuracy", pipeManager.calib3dPipe.getCalibrationAccuracy());
+
+                HashMap<String, String> perViewErrors = new HashMap<>();
+                perViewErrors.put("StdDeviationsIntrinsics", pipeManager.calib3dPipe.getStdDeviationsIntrinsics().dump());
+                perViewErrors.put("StdDeviationsExtrinsics", pipeManager.calib3dPipe.getStdDeviationsExtrinsics().dump());
+                perViewErrors.put("PerViewErrors", pipeManager.calib3dPipe.getPerViewErrors().dump());
+
+                ctx.json(perViewErrors);
                 ctx.json(tmp);
                 ctx.status(200);
             } else {
