@@ -57,7 +57,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
   private double accuracyPercentage = 0.2;
 
   /**
-   * @param settings    unused :bolb:
+   * @param settings    unused :blob:
    * @param calibration the camera intrinsics and extrinsics
    * @param tilt        The pitch of the camera relative to horzontal. used to account for
    *                    distances in calculate pose
@@ -76,26 +76,20 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
   public void set2020Target(boolean isHighGoal) {
     if (isHighGoal) {
       // tl, bl, br, tr is the order
-      List<Point3> corners = List.of(
-
-              new Point3(-19.625, 0, 0),
-              new Point3(-9.819867, -17, 0),
-              new Point3(9.819867, -17, 0),
-              new Point3(19.625, 0, 0));
-      setObjectCorners(corners);
+      setBoundingBoxTarget(39.25, 19.625, 17, 17);
     } else {
-      setBoundingBoxTarget(7, 11);
+      setBoundingBoxTarget(7, 7, 11, 11);
     }
   }
 
-  public void setBoundingBoxTarget(double targetWidth, double targetHeight) {
+  public void setBoundingBoxTarget(double topWidth, double bottomWidth, double leftLength, double rightLength) {
     // order is left top, left bottom, right bottom, right top
 
     List<Point3> corners = List.of(
-            new Point3(-targetWidth / 2.0, targetHeight / 2.0, 0.0),
-            new Point3(-targetWidth / 2.0, -targetHeight / 2.0, 0.0),
-            new Point3(targetWidth / 2.0, -targetHeight / 2.0, 0.0),
-            new Point3(targetWidth / 2.0, targetHeight / 2.0, 0.0)
+            new Point3(-topWidth / 2.0, leftLength / 2.0, 0.0),
+            new Point3(-bottomWidth / 2.0, -leftLength / 2.0, 0.0),
+            new Point3(bottomWidth / 2.0, -rightLength / 2.0, 0.0),
+            new Point3(topWidth / 2.0, rightLength / 2.0, 0.0)
     );
     setObjectCorners(corners);
   }
@@ -252,19 +246,6 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
               polyList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
       var br =
               polyList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
-
-//            polyList = new ArrayList<>(polyList);
-//            polyList.removeAll(List.of(tl, tr, bl, br));
-//
-//            var tl2 = polyList.stream().min(Comparator.comparingDouble((Point p) ->
-//            distanceBetween(p, boundingBoxCorners.get(0)))).get();
-//            var tr2 = polyList.stream().min(Comparator.comparingDouble((Point p) ->
-//            distanceBetween(p, boundingBoxCorners.get(3)))).get();
-//
-//            var bl2 = polyList.stream().filter(point -> point.x < centroid.x && point.y >
-//            centroid.y).max(distanceProvider).get();
-//            var br2 = polyList.stream().filter(point -> point.x > centroid.x && point.y >
-//            centroid.y).max(distanceProvider).get();
 
       target2020ResultMat.release();
       target2020ResultMat.fromList(List.of(tl, bl, br, tr));//, tr2, br2, bl2, tl2));
@@ -443,8 +424,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     imageCornerPoints.copyTo(target.imageCornerPoints);
 
     try {
-      Calib3d.solvePnP(objPointsMat, imageCornerPoints, cameraMatrix, distortionCoefficients,
-              rVec, tVec);
+      Calib3d.solvePnP(objPointsMat, imageCornerPoints, cameraMatrix, distortionCoefficients, rVec, tVec);
     } catch (Exception e) {
       e.printStackTrace();
       return null;

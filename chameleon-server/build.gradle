@@ -1,7 +1,7 @@
 plugins {
     id 'java'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
     id "com.diffplug.gradle.spotless" version "3.28.0"
+    id "com.github.johnrengelman.shadow" version "5.2.0"
 }
 
 group 'com.chameleonvision'
@@ -67,6 +67,9 @@ dependencies {
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:linuxx86-64"
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:osxx86-64"
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:windowsx86-64"
+
+
+
 
     // javacv (ew)
 //    def withoutJunk = {
