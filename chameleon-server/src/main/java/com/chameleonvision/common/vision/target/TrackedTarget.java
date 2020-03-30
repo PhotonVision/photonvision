@@ -9,44 +9,44 @@ import org.opencv.core.RotatedRect;
 
 // TODO: banks fix
 public class TrackedTarget {
-    final Contour mainContour;
-    List<Contour> subContours; // can be empty
+    final Contour m_mainContour;
+    List<Contour> m_subContours; // can be empty
 
-    private Point targetOffsetPoint;
-    private Point robotOffsetPoint;
+    private Point m_targetOffsetPoint;
+    private Point m_robotOffsetPoint;
 
-    private double pitch;
-    private double yaw;
-    private double area;
+    private double m_pitch;
+    private double m_yaw;
+    private double m_area;
 
     public TrackedTarget(PotentialTarget origTarget, TargetCalculationParameters params) {
-        this.mainContour = origTarget.mainContour;
-        this.subContours = origTarget.subContours;
+        this.m_mainContour = origTarget.m_mainContour;
+        this.m_subContours = origTarget.m_subContours;
         calculateValues(params);
     }
 
     public Point getTargetOffsetPoint() {
-        return targetOffsetPoint;
+        return m_targetOffsetPoint;
     }
 
     public Point getRobotOffsetPoint() {
-        return robotOffsetPoint;
+        return m_robotOffsetPoint;
     }
 
     public double getPitch() {
-        return pitch;
+        return m_pitch;
     }
 
     public double getYaw() {
-        return yaw;
+        return m_yaw;
     }
 
     public double getArea() {
-        return area;
+        return m_area;
     }
 
     public RotatedRect getMinAreaRect() {
-        return mainContour.getMinAreaRect();
+        return m_mainContour.getMinAreaRect();
     }
 
     private void calculateTargetOffsetPoint(
@@ -90,7 +90,7 @@ public class TrackedTarget {
                     break;
                 }
         }
-        targetOffsetPoint = resultPoint;
+        m_targetOffsetPoint = resultPoint;
     }
 
     private void calculateRobotOffsetPoint(
@@ -118,25 +118,25 @@ public class TrackedTarget {
                 break;
         }
 
-        robotOffsetPoint = resultPoint;
+        m_robotOffsetPoint = resultPoint;
     }
 
     private void calculatePitch(double verticalFocalLength) {
-        double contourCenterY = mainContour.getCenterPoint().y;
-        double targetCenterY = targetOffsetPoint.y;
-        pitch =
+        double contourCenterY = m_mainContour.getCenterPoint().y;
+        double targetCenterY = m_targetOffsetPoint.y;
+        m_pitch =
                 -FastMath.toDegrees(FastMath.atan((contourCenterY - targetCenterY) / verticalFocalLength));
     }
 
     private void calculateYaw(double horizontalFocalLength) {
-        double contourCenterX = mainContour.getCenterPoint().x;
-        double targetCenterX = targetOffsetPoint.x;
-        yaw =
+        double contourCenterX = m_mainContour.getCenterPoint().x;
+        double targetCenterX = m_targetOffsetPoint.x;
+        m_yaw =
                 FastMath.toDegrees(FastMath.atan((contourCenterX - targetCenterX) / horizontalFocalLength));
     }
 
     private void calculateArea(double imageArea) {
-        area = mainContour.getMinAreaRect().size.area() / imageArea;
+        m_area = m_mainContour.getMinAreaRect().size.area() / imageArea;
     }
 
     private Point getMiddle(Point p1, Point p2) {
@@ -147,7 +147,7 @@ public class TrackedTarget {
         // this MUST happen in this exact order!
         calculateTargetOffsetPoint(params.isLandscape, params.targetOffsetPointRegion);
         calculateRobotOffsetPoint(
-                targetOffsetPoint,
+                m_targetOffsetPoint,
                 params.cameraCenterPoint,
                 params.offsetEquationValues,
                 params.robotOffsetPointMode);

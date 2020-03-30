@@ -1,8 +1,9 @@
 package com.chameleonvision.common.vision.opencv;
 
 import com.chameleonvision.common.util.math.MathUtils;
-import com.chameleonvision.common.vision.target.PotentialTarget;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
@@ -58,11 +59,14 @@ public class Contour {
         return getMinAreaRect().center;
     }
 
-    public boolean isIntersecting(
-            Contour secondContour, PotentialTarget.TargetContourIntersection intersection) {
+    public boolean isEmpty() {
+        return mat.cols() != 0 && mat.rows() != 0;
+    }
+
+    public boolean isIntersecting(Contour secondContour, ContourIntersection intersection) {
         boolean isIntersecting = false;
 
-        if (intersection == PotentialTarget.TargetContourIntersection.None) {
+        if (intersection == ContourIntersection.None) {
             isIntersecting = true;
         } else {
             try {
@@ -104,5 +108,51 @@ public class Contour {
         }
 
         return isIntersecting;
+    }
+
+    // TODO: refactor to do "infinite" contours
+    public static Contour groupContoursByIntersection(
+            Contour firstContour, Contour secondContour, ContourIntersection intersection) {
+        if (firstContour.isIntersecting(secondContour, intersection)) {
+            return combineContours(firstContour, secondContour);
+        } else {
+            return null;
+        }
+    }
+
+    // TODO: does this leak?
+    private static Contour combineContours(Contour... contours) {
+        List<Point> fullContourPoints = new ArrayList<>();
+
+        for (var contour : contours) {
+            fullContourPoints.addAll(contour.mat.toList());
+        }
+
+        var points = new MatOfPoint(fullContourPoints.toArray(new Point[0]));
+        var finalContour = new Contour(points);
+
+        if (!finalContour.isEmpty()) {
+            return finalContour;
+        } else return null;
+    }
+
+    // TODO: move these? also docs plox
+    public enum ContourIntersection {
+        None,
+        Up,
+        Down,
+        Left,
+        Right
+    }
+
+    public enum ContourGrouping {
+        Single(1),
+        Dual(2);
+
+        public final int count;
+
+        ContourGrouping(int count) {
+            this.count = count;
+        }
     }
 }

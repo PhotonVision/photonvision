@@ -22,14 +22,14 @@ public abstract class CVPipe<I, O, P> implements Function<I, PipeResult<O>> {
     /**
     * Runs the process for the pipe.
     *
-    * @param in Input for pipe processing
-    * @return Result of processing
+    * @param in Input for pipe processing.
+    * @return Result of processing.
     */
     protected abstract O process(I in);
 
     /**
-    * @param in Input for pipe processing
-    * @return Result of processing
+    * @param in Input for pipe processing.
+    * @return Result of processing.
     */
     @Override
     public PipeResult<O> apply(I in) {
