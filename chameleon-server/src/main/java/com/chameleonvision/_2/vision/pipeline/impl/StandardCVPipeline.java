@@ -159,14 +159,14 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipeline.StandardCV
         Pair<Mat, Long> hsvResult = hsvPipe.run(erodeDilateResult.getLeft());
         totalPipelineTimeNanos += hsvResult.getRight();
 
-        Pair<List<MatOfPoint>, Long> findContoursResult = findContoursPipe.run(hsvResult.getLeft());
+        Pair<List<Contour>, Long> findContoursResult = findContoursPipe.run(hsvResult.getLeft());
         totalPipelineTimeNanos += findContoursResult.getRight();
 
         Pair<List<Contour>, Long> filterContoursResult = filterContoursPipe.run(findContoursResult.getLeft());
         totalPipelineTimeNanos += filterContoursResult.getRight();
 
         // ignore !
-        Pair<List<MatOfPoint>, Long> speckleRejectResult = speckleRejectPipe.run(filterContoursResult.getLeft());
+        Pair<List<Contour>, Long> speckleRejectResult = speckleRejectPipe.run(filterContoursResult.getLeft());
         totalPipelineTimeNanos += speckleRejectResult.getRight();
 
         Pair<List<TrackedTarget>, Long> groupContoursResult = groupContoursPipe.run(speckleRejectResult.getLeft());

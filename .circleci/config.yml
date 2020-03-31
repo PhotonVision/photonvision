@@ -38,6 +38,18 @@ jobs:
           root: ./build/libs
           paths:
             - .
+            
+  format_diff_against_git:
+    working_directory: ~/project/chameleon-server
+    docker:
+      - image: gradle:jdk12
+    steps:
+      - checkout:
+          path: ~/project
+      
+      - run: gradle spotlessApply
+      - run: git --no-pager diff --exit-code HEAD
+    
 
   deploy:
     docker:
@@ -55,12 +67,14 @@ workflows:
   version: 2
   release:
     jobs:
+      - format_diff_against_git
       - build_ui
       - build_jar:
           requires:
             - build_ui
       - deploy:
           requires:
+            - format_diff_against_git
             - build_jar
           filters:
             branches:
