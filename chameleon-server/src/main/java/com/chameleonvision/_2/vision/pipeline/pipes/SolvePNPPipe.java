@@ -57,7 +57,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
   private double accuracyPercentage = 0.2;
 
   /**
-   * @param settings    unused :bolb:
+   * @param settings    unused :blob:
    * @param calibration the camera intrinsics and extrinsics
    * @param tilt        The pitch of the camera relative to horzontal. used to account for
    *                    distances in calculate pose
@@ -76,31 +76,35 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
   public void set2020Target(boolean isHighGoal) {
     if (isHighGoal) {
       // tl, bl, br, tr is the order
-      List<Point3> corners = List.of(
-
-              new Point3(-19.625, 0, 0),
-              new Point3(-9.819867, -17, 0),
-              new Point3(9.819867, -17, 0),
-              new Point3(19.625, 0, 0));
-      setObjectCorners(corners);
+      setBoundingBoxTarget(39.25, 19.625, 17, 17);
     } else {
-      setBoundingBoxTarget(7, 11);
+      setBoundingBoxTarget(7, 7, 11, 11);
     }
   }
 
-  public void setBoundingBoxTarget(double targetWidth, double targetHeight) {
+  /*
+  * Using only the target width and height to generate a model, prevents us from creating models for non-rectangular objects, such as the 2020 hex target
+  * @param  topWidth  the width of the top of the target
+  * @param  bottomWidth  the width of the bottom of the target
+  * @param  leftLength  the height of the left side of the target
+  * @param  rightLength  the height of the right side of the target
+  * */
+
+  public void setBoundingBoxTarget(double topWidth, double bottomWidth, double leftLength, double rightLength) {
     // order is left top, left bottom, right bottom, right top
 
     List<Point3> corners = List.of(
-            new Point3(-targetWidth / 2.0, targetHeight / 2.0, 0.0),
-            new Point3(-targetWidth / 2.0, -targetHeight / 2.0, 0.0),
-            new Point3(targetWidth / 2.0, -targetHeight / 2.0, 0.0),
-            new Point3(targetWidth / 2.0, targetHeight / 2.0, 0.0)
+            new Point3(-topWidth / 2.0, leftLength / 2.0, 0.0),
+            new Point3(-bottomWidth / 2.0, -leftLength / 2.0, 0.0),
+            new Point3(bottomWidth / 2.0, -rightLength / 2.0, 0.0),
+            new Point3(topWidth / 2.0, rightLength / 2.0, 0.0)
     );
     setObjectCorners(corners);
   }
 
   public void setObjectCorners(List<Point3> objectCorners) {
+
+    //Release the memeory of the Mat object and replace it with the new object corners.
     objPointsMat.release();
     objPointsMat = new MatOfPoint3f();
     objPointsMat.fromList(objectCorners);
@@ -118,6 +122,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
 
   private void setCameraCoeffs(CameraCalibrationConfig settings) {
     if (settings == null) {
+      //Instead of throwing an error, we can rescale the camera matrix using the {@link #scaleCameraMatrix(double oldDimX, double oldDimY, double newDimX, double newDimY, Mat cameraMatrix) scaleCameraMatrix} method.
       System.err.println("SolvePNP can only run on a calibrated resolution, and this one is not!" +
               " Please calibrate to use solvePNP.");
       return;
@@ -138,6 +143,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     long processStartNanos = System.nanoTime();
     var targets = imageTargetPair.getLeft();
     var image = imageTargetPair.getRight();
+    //Convert image from BGR to grayscale
     Imgproc.cvtColor(image, greyImg, Imgproc.COLOR_BGR2GRAY);
     targetList.clear();
     for (var target : targets) {
@@ -211,7 +217,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
 
     var centroid = target.minAreaRect.center;
     Comparator<Point> distanceProvider =
-            Comparator.comparingDouble((Point point) -> FastMath.sqrt(FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
+            Comparator.comparingDouble((Point point) -> distanceBetween(centroid, point));
 
     // algorithm from team 4915
 
@@ -253,19 +259,6 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
       var br =
               polyList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
 
-//            polyList = new ArrayList<>(polyList);
-//            polyList.removeAll(List.of(tl, tr, bl, br));
-//
-//            var tl2 = polyList.stream().min(Comparator.comparingDouble((Point p) ->
-//            distanceBetween(p, boundingBoxCorners.get(0)))).get();
-//            var tr2 = polyList.stream().min(Comparator.comparingDouble((Point p) ->
-//            distanceBetween(p, boundingBoxCorners.get(3)))).get();
-//
-//            var bl2 = polyList.stream().filter(point -> point.x < centroid.x && point.y >
-//            centroid.y).max(distanceProvider).get();
-//            var br2 = polyList.stream().filter(point -> point.x > centroid.x && point.y >
-//            centroid.y).max(distanceProvider).get();
-
       target2020ResultMat.release();
       target2020ResultMat.fromList(List.of(tl, bl, br, tr));//, tr2, br2, bl2, tl2));
 
@@ -306,14 +299,14 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     combinedList.addAll(List.of(rightPoints));
 
     // start looking in the top left quadrant
-    var tl =
-            combinedList.stream().filter(point -> point.x < centroid.x && point.y < centroid.y).max(distanceProvider).get();
-    var tr =
-            combinedList.stream().filter(point -> point.x > centroid.x && point.y < centroid.y).max(distanceProvider).get();
-    var bl =
-            combinedList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).get();
-    var br =
-            combinedList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).get();
+    Point tl =
+            combinedList.stream().filter(point -> point.x < centroid.x && point.y < centroid.y).max(distanceProvider).orElse(null);
+    Point tr =
+            combinedList.stream().filter(point -> point.x > centroid.x && point.y < centroid.y).max(distanceProvider).orElse(null);
+    Point bl =
+            combinedList.stream().filter(point -> point.x < centroid.x && point.y > centroid.y).max(distanceProvider).orElse(null);
+    Point br =
+            combinedList.stream().filter(point -> point.x > centroid.x && point.y > centroid.y).max(distanceProvider).orElse(null);
 
     boundingBoxResultMat.release();
     boundingBoxResultMat.fromList(List.of(tl, bl, br, tr));
@@ -443,8 +436,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     imageCornerPoints.copyTo(target.imageCornerPoints);
 
     try {
-      Calib3d.solvePnP(objPointsMat, imageCornerPoints, cameraMatrix, distortionCoefficients,
-              rVec, tVec);
+      Calib3d.solvePnP(objPointsMat, imageCornerPoints, cameraMatrix, distortionCoefficients, rVec, tVec);
     } catch (Exception e) {
       e.printStackTrace();
       return null;
@@ -487,6 +479,31 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     target.tVector = tVec;
 
     return target;
+  }
+
+  /*Since changing the resolution of the camera does not affect the distortion coefficients, but only affects the camera matrix. That being said, when the resolution is changed,
+   *all values in the camera matrix are scaled proportionally to the change in resolution, hence, we can auto scale the camera matrix so you don't have to recalibrate.
+   *@param  oldDimX   this is the old resolution along the x axis
+   *@param  oldDimY   this is the old resolution along the y axis
+   *@param  newDimX   this is the new resolution along the x axis
+   *@param  newDimY   this is the new resolution along the y axis
+   */
+  public void scaleCameraMatrix(double oldDimX, double oldDimY, double newDimX, double newDimY, Mat cameraMatrix){
+    //The focal length and center of image along the x axis
+    double fx =  cameraMatrix.get(0, 0)[0];
+    double cx = cameraMatrix.get(0, 2)[0];
+
+    //The focal length and center of image along the y axis
+    double fy =  cameraMatrix.get(1, 1)[0];
+    double cy = cameraMatrix.get(1, 2)[0];
+
+    //Replace fx, fy, cx,, and cy in the Mat with the new scaled ones
+    cameraMatrix.put(0, 0, fx * (newDimX / oldDimX));
+    cameraMatrix.put(1, 1, fy * (newDimY / oldDimY));
+
+    cameraMatrix.put(0, 2, cx * (newDimX / oldDimX));
+    cameraMatrix.put(1, 2, cy * (newDimY / oldDimY));
+
   }
 
   /**
