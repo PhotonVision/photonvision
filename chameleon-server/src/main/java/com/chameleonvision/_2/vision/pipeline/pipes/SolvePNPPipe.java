@@ -481,7 +481,7 @@ public class SolvePNPPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTa
     return target;
   }
 
-  /*Since changing the resolution of the camera does not affect the distortion coefficients, but only affects the camera matrix. That being said, when the resolution is changed,
+  /*Since changing the resolution of the camera does not affect the distortion coefficients, but only affects the camera matrix, when the resolution is changed,
    *all values in the camera matrix are scaled proportionally to the change in resolution, hence, we can auto scale the camera matrix so you don't have to recalibrate.
    *@param  oldDimX   this is the old resolution along the x axis
    *@param  oldDimY   this is the old resolution along the y axis
