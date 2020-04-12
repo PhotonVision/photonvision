@@ -3,7 +3,8 @@ package com.chameleonvision._2.network;
 import java.net.InetAddress;
 
 public class NetmaskToCIDR {
-    //code belongs to https://stackoverflow.com/questions/19531411/calculate-cidr-from-a-given-netmask-java
+    // code belongs to
+    // https://stackoverflow.com/questions/19531411/calculate-cidr-from-a-given-netmask-java
     public static int convertNetmaskToCIDR(InetAddress netmask) {
 
         byte[] netmaskBytes = netmask.getAddress();

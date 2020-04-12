@@ -3,6 +3,7 @@ package com.chameleonvision.common.vision.frame;
 import edu.wpi.cscore.VideoMode;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.util.FastMath;
+import org.opencv.core.Point;
 
 /** Represents the properties of a frame. */
 public class FrameStaticProperties {
@@ -12,6 +13,7 @@ public class FrameStaticProperties {
     public final double imageArea;
     public final double centerX;
     public final double centerY;
+    public final Point centerPoint;
     public final double horizontalFocalLength;
     public final double verticalFocalLength;
 
@@ -41,6 +43,7 @@ public class FrameStaticProperties {
 
         centerX = ((double) this.imageWidth / 2) - 0.5;
         centerY = ((double) this.imageHeight / 2) - 0.5;
+        centerPoint = new Point(centerX, centerY);
 
         // pinhole model calculations
         double diagonalView = FastMath.toRadians(this.fov);

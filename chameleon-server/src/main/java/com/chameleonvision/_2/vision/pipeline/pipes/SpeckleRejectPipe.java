@@ -1,12 +1,11 @@
 package com.chameleonvision._2.vision.pipeline.pipes;
 
 import com.chameleonvision._2.vision.pipeline.Pipe;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.MatOfPoint;
 import org.opencv.imgproc.Imgproc;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class SpeckleRejectPipe implements Pipe<List<MatOfPoint>, List<MatOfPoint>> {
 

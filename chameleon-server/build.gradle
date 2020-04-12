@@ -68,6 +68,8 @@ dependencies {
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:osxx86-64"
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:windowsx86-64"
 
+    testCompile "ch.qos.logback:logback-classic:0.9.26"
+
     // javacv (ew)
 //    def withoutJunk = {
 //        exclude group: 'org.bytedeco', module: 'artoolkitplus'
@@ -104,7 +106,6 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDir 'src'
             exclude '**/_2/**'
         }
     }
@@ -113,9 +114,6 @@ sourceSets {
 test {
     test {
         useJUnitPlatform()
-        testLogging {
-            events "passed", "skipped", "failed"
-        }
     }
 }
 
@@ -125,5 +123,6 @@ spotless {
     paddedCell()
     indentWithTabs(2)
     indentWithSpaces(4)
+    removeUnusedImports()
   }
 }

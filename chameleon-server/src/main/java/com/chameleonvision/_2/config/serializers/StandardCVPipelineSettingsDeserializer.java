@@ -5,10 +5,10 @@ import com.chameleonvision._2.vision.pipeline.impl.StandardCVPipelineSettings;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
-
 import java.io.IOException;
 
-public class StandardCVPipelineSettingsDeserializer extends BaseDeserializer<StandardCVPipelineSettings> {
+public class StandardCVPipelineSettingsDeserializer
+        extends BaseDeserializer<StandardCVPipelineSettings> {
     public StandardCVPipelineSettingsDeserializer() {
         this(null);
     }
@@ -18,7 +18,8 @@ public class StandardCVPipelineSettingsDeserializer extends BaseDeserializer<Sta
     }
 
     @Override
-    public StandardCVPipelineSettings deserialize(JsonParser jsonParser, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public StandardCVPipelineSettings deserialize(JsonParser jsonParser, DeserializationContext ctxt)
+            throws IOException, JsonProcessingException {
         // set BaseDeserializer parser reference.
         baseNode = jsonParser.getCodec().readTree(jsonParser);
 
@@ -56,19 +57,24 @@ public class StandardCVPipelineSettingsDeserializer extends BaseDeserializer<Sta
 
         pipeline.sortMode = getEnum("sortMode", SortMode.class, pipeline.sortMode);
         pipeline.targetRegion = getEnum("targetRegion", TargetRegion.class, pipeline.targetRegion);
-        pipeline.targetOrientation = getEnum("targetOrientation", TargetOrientation.class, pipeline.targetOrientation);
+        pipeline.targetOrientation =
+                getEnum("targetOrientation", TargetOrientation.class, pipeline.targetOrientation);
 
         pipeline.multiple = getBoolean("multiple", pipeline.multiple);
 
         pipeline.targetGroup = getEnum("targetGroup", TargetGroup.class, pipeline.targetGroup);
-        pipeline.targetIntersection = getEnum("targetIntersection", TargetIntersection.class, pipeline.targetIntersection);
+        pipeline.targetIntersection =
+                getEnum("targetIntersection", TargetIntersection.class, pipeline.targetIntersection);
 
         pipeline.point = getNumberCouple("point", pipeline.point);
-        
-        pipeline.calibrationMode = getEnum("calibrationMode", CalibrationMode.class, pipeline.calibrationMode);
-        
-        pipeline.dualTargetCalibrationM = getDouble("dualTargetCalibrationM", pipeline.dualTargetCalibrationM);
-        pipeline.dualTargetCalibrationB = getDouble("dualTargetCalibrationB", pipeline.dualTargetCalibrationB);
+
+        pipeline.calibrationMode =
+                getEnum("calibrationMode", CalibrationMode.class, pipeline.calibrationMode);
+
+        pipeline.dualTargetCalibrationM =
+                getDouble("dualTargetCalibrationM", pipeline.dualTargetCalibrationM);
+        pipeline.dualTargetCalibrationB =
+                getDouble("dualTargetCalibrationB", pipeline.dualTargetCalibrationB);
 
         pipeline.is3D = getBoolean("is3D", pipeline.is3D);
         pipeline.targetCornerMat = getMatOfPoint3f("targetCornerMat", pipeline.targetCornerMat);

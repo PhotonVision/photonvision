@@ -8,17 +8,17 @@ import com.chameleonvision._2.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision.common.util.Platform;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
-import org.opencv.videoio.VideoCapture;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import org.opencv.videoio.VideoCapture;
 
 @SuppressWarnings("rawtypes")
 public class VisionManager {
     private VisionManager() {}
 
-    private static final LinkedHashMap<String, UsbCameraInfo> usbCameraInfosByCameraName = new LinkedHashMap<>();
+    private static final LinkedHashMap<String, UsbCameraInfo> usbCameraInfosByCameraName =
+            new LinkedHashMap<>();
     private static final LinkedList<FullCameraConfiguration> loadedCameraConfigs = new LinkedList<>();
     private static final LinkedList<VisionProcessManageable> visionProcesses = new LinkedList<>();
 
@@ -43,7 +43,8 @@ public class VisionManager {
             VideoCapture cap = new VideoCapture(info.dev);
             if (cap.isOpened()) {
                 cap.release();
-                // Filter non-ascii characters because ext4 doesn't play nice with unicode in directory names
+                // Filter non-ascii characters because ext4 doesn't play nice with unicode in directory
+                // names
                 String name = info.name.replaceAll("[^\\x00-\\x7F]", "");
                 while (usbCameraInfosByCameraName.containsKey(name)) {
                     suffix++;
@@ -61,17 +62,22 @@ public class VisionManager {
         // load the config
         List<CameraJsonConfig> preliminaryConfigs = new ArrayList<>();
 
-        usbCameraInfosByCameraName.forEach((suffixedName, cameraInfo) -> {
-            String truePath;
+        usbCameraInfosByCameraName.forEach(
+                (suffixedName, cameraInfo) -> {
+                    String truePath;
 
-            if (Platform.CurrentPlatform.isWindows()) {
-                truePath = cameraInfo.path;
-            } else {
-                truePath = Arrays.stream(cameraInfo.otherPaths).filter(x -> x.contains("/dev/v4l/by-path")).findFirst().orElse(cameraInfo.path);
-            }
+                    if (Platform.CurrentPlatform.isWindows()) {
+                        truePath = cameraInfo.path;
+                    } else {
+                        truePath =
+                                Arrays.stream(cameraInfo.otherPaths)
+                                        .filter(x -> x.contains("/dev/v4l/by-path"))
+                                        .findFirst()
+                                        .orElse(cameraInfo.path);
+                    }
 
-            preliminaryConfigs.add(new CameraJsonConfig(truePath, suffixedName));
-        });
+                    preliminaryConfigs.add(new CameraJsonConfig(truePath, suffixedName));
+                });
 
         loadedCameraConfigs.addAll(ConfigManager.initializeCameras(preliminaryConfigs));
         System.out.printf("[VisionManager] Loaded %s cameras!\n", loadedCameraConfigs.size());
@@ -92,7 +98,9 @@ public class VisionManager {
         currentUIVisionProcess = getVisionProcessByIndex(0);
         ConfigManager.settings.currentCamera = visionProcesses.get(0).name;
 
-        System.out.printf("[VisionManager] Loaded %s vision processes! Current process: %s\n", visionProcesses.size(), visionProcesses.get(0).name);
+        System.out.printf(
+                "[VisionManager] Loaded %s vision processes! Current process: %s\n",
+                visionProcesses.size(), visionProcesses.get(0).name);
         return true;
     }
 
@@ -110,7 +118,12 @@ public class VisionManager {
 
     public static CameraConfig getCameraConfig(VisionProcess process) {
         String cameraName = process.getCamera().getProperties().name;
-        return Objects.requireNonNull(loadedCameraConfigs.stream().filter(x -> x.cameraConfig.name.equals(cameraName)).findFirst().orElse(null)).fileConfig;
+        return Objects.requireNonNull(
+                        loadedCameraConfigs.stream()
+                                .filter(x -> x.cameraConfig.name.equals(cameraName))
+                                .findFirst()
+                                .orElse(null))
+                .fileConfig;
     }
 
     public static void setCurrentProcessByIndex(int processIndex) {
@@ -127,32 +140,42 @@ public class VisionManager {
             return null;
         }
 
-        VisionProcessManageable vpm =  visionProcesses.stream().filter(manageable -> manageable.index == processIndex).findFirst().orElse(null);
+        VisionProcessManageable vpm =
+                visionProcesses.stream()
+                        .filter(manageable -> manageable.index == processIndex)
+                        .findFirst()
+                        .orElse(null);
         return vpm != null ? vpm.visionProcess : null;
     }
 
     public static List<String> getAllCameraNicknames() {
-        return visionProcesses.stream().map(vpm -> vpm.visionProcess.getCamera()
-                .getProperties().getNickname()).collect(Collectors.toList());
+        return visionProcesses.stream()
+                .map(vpm -> vpm.visionProcess.getCamera().getProperties().getNickname())
+                .collect(Collectors.toList());
     }
 
     public static List<String> getCurrentCameraPipelineNicknames() {
-        return currentUIVisionProcess.pipelineManager.pipelines.stream().map(cvPipeline -> cvPipeline.settings.nickname).collect(Collectors.toList());
+        return currentUIVisionProcess.pipelineManager.pipelines.stream()
+                .map(cvPipeline -> cvPipeline.settings.nickname)
+                .collect(Collectors.toList());
     }
 
-
     public static void saveAllCameras() {
-        visionProcesses.forEach((vpm) -> {
-            VisionProcess process = vpm.visionProcess;
-            String cameraName = process.getCamera().getProperties().name;
-            Stream<CVPipeline> pipelineStream = process.pipelineManager.pipelines.stream();
-            List<CVPipelineSettings> pipelines = process.pipelineManager.pipelines.stream().map(cvPipeline -> cvPipeline.settings).collect(Collectors.toList());
-            CVPipelineSettings driverMode = process.getDriverModeSettings();
-            CameraJsonConfig config = CameraJsonConfig.fromVisionProcess(process);
-            ConfigManager.saveCameraPipelines(cameraName, pipelines);
-            ConfigManager.saveCameraDriverMode(cameraName, driverMode);
-            ConfigManager.saveCameraConfig(cameraName, config);
-        });
+        visionProcesses.forEach(
+                (vpm) -> {
+                    VisionProcess process = vpm.visionProcess;
+                    String cameraName = process.getCamera().getProperties().name;
+                    Stream<CVPipeline> pipelineStream = process.pipelineManager.pipelines.stream();
+                    List<CVPipelineSettings> pipelines =
+                            process.pipelineManager.pipelines.stream()
+                                    .map(cvPipeline -> cvPipeline.settings)
+                                    .collect(Collectors.toList());
+                    CVPipelineSettings driverMode = process.getDriverModeSettings();
+                    CameraJsonConfig config = CameraJsonConfig.fromVisionProcess(process);
+                    ConfigManager.saveCameraPipelines(cameraName, pipelines);
+                    ConfigManager.saveCameraDriverMode(cameraName, driverMode);
+                    ConfigManager.saveCameraConfig(cameraName, config);
+                });
     }
 
     private static String getCurrentCameraName() {
@@ -173,7 +196,9 @@ public class VisionManager {
     }
 
     private static List<HashMap> getCameraResolutionList(USBCameraCapture capture) {
-        return capture.getProperties().getVideoModes().stream().map(Helpers::VideoModeToHashMap).collect(Collectors.toList());
+        return capture.getProperties().getVideoModes().stream()
+                .map(Helpers::VideoModeToHashMap)
+                .collect(Collectors.toList());
     }
 
     public static List<HashMap> getCurrentCameraResolutionList() {
@@ -181,7 +206,11 @@ public class VisionManager {
     }
 
     public static int getCurrentUIVisionProcessIndex() {
-        VisionProcessManageable vpm = visionProcesses.stream().filter(v -> v.visionProcess == currentUIVisionProcess).findFirst().orElse(null);
+        VisionProcessManageable vpm =
+                visionProcesses.stream()
+                        .filter(v -> v.visionProcess == currentUIVisionProcess)
+                        .findFirst()
+                        .orElse(null);
         return vpm != null ? vpm.index : -1;
     }
 }

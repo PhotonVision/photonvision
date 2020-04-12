@@ -31,9 +31,11 @@ public class CaptureStaticProperties {
         int horizontalRatio = aspectFraction.getNumerator();
         int verticalRatio = aspectFraction.getDenominator();
         double diagonalAspect = FastMath.hypot(horizontalRatio, verticalRatio);
-        double horizontalView = FastMath.atan(FastMath.tan(diagonalView / 2) * (horizontalRatio / diagonalAspect)) * 2;
-        double verticalView = FastMath.atan(FastMath.tan(diagonalView / 2) * (verticalRatio / diagonalAspect)) * 2;
-        horizontalFocalLength = this.imageWidth / (2 * FastMath.tan(horizontalView /2));
-        verticalFocalLength = this.imageHeight / (2 * FastMath.tan(verticalView /2));
+        double horizontalView =
+                FastMath.atan(FastMath.tan(diagonalView / 2) * (horizontalRatio / diagonalAspect)) * 2;
+        double verticalView =
+                FastMath.atan(FastMath.tan(diagonalView / 2) * (verticalRatio / diagonalAspect)) * 2;
+        horizontalFocalLength = this.imageWidth / (2 * FastMath.tan(horizontalView / 2));
+        verticalFocalLength = this.imageHeight / (2 * FastMath.tan(verticalView / 2));
     }
 }

@@ -8,17 +8,17 @@ import com.chameleonvision._2.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision._2.vision.pipeline.pipes.Draw2dCrosshairPipe;
 import com.chameleonvision._2.vision.pipeline.pipes.RotateFlipPipe;
 import com.chameleonvision.common.util.MemoryManager;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 
-import java.util.List;
-
-
-public class DriverVisionPipeline extends CVPipeline<DriverVisionPipeline.DriverPipelineResult, CVPipelineSettings> {
+public class DriverVisionPipeline
+        extends CVPipeline<DriverVisionPipeline.DriverPipelineResult, CVPipelineSettings> {
 
     private RotateFlipPipe rotateFlipPipe;
     private Draw2dCrosshairPipe drawCrosshairPipe;
-    private Draw2dCrosshairPipe.Draw2dCrosshairPipeSettings crosshairPipeSettings = new Draw2dCrosshairPipe.Draw2dCrosshairPipeSettings();
+    private Draw2dCrosshairPipe.Draw2dCrosshairPipeSettings crosshairPipeSettings =
+            new Draw2dCrosshairPipe.Draw2dCrosshairPipeSettings();
 
     private final MemoryManager memoryManager = new MemoryManager(200, 20000);
 
@@ -31,8 +31,9 @@ public class DriverVisionPipeline extends CVPipeline<DriverVisionPipeline.Driver
     public void initPipeline(CameraCapture capture) {
         super.initPipeline(capture);
         rotateFlipPipe = new RotateFlipPipe(settings.rotationMode, settings.flipMode);
-        crosshairPipeSettings.showCrosshair=true;
-        drawCrosshairPipe = new Draw2dCrosshairPipe(crosshairPipeSettings, CalibrationMode.None,null,0,0);
+        crosshairPipeSettings.showCrosshair = true;
+        drawCrosshairPipe =
+                new Draw2dCrosshairPipe(crosshairPipeSettings, CalibrationMode.None, null, 0, 0);
     }
 
     @Override
@@ -41,7 +42,8 @@ public class DriverVisionPipeline extends CVPipeline<DriverVisionPipeline.Driver
         rotateFlipPipe.setConfig(settings.rotationMode, settings.flipMode);
 
         Pair<Mat, Long> rotateFlipResult = rotateFlipPipe.run(inputMat);
-        Pair<Mat, Long> draw2dCrosshairResult = drawCrosshairPipe.run(Pair.of(rotateFlipResult.getLeft(),null));
+        Pair<Mat, Long> draw2dCrosshairResult =
+                drawCrosshairPipe.run(Pair.of(rotateFlipResult.getLeft(), null));
         memoryManager.run();
 
         return new DriverPipelineResult(null, draw2dCrosshairResult.getLeft(), 0);

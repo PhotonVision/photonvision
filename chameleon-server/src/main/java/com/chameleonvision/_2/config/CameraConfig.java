@@ -1,9 +1,8 @@
 package com.chameleonvision._2.config;
 
+import com.chameleonvision._2.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision.common.util.file.FileUtils;
 import com.chameleonvision.common.util.file.JacksonUtils;
-import com.chameleonvision._2.vision.pipeline.CVPipelineSettings;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,7 +14,8 @@ import java.util.Objects;
 
 public class CameraConfig {
 
-    private static final Path camerasConfigFolderPath = Path.of(ConfigManager.SettingsPath.toString(), "cameras");
+    private static final Path camerasConfigFolderPath =
+            Path.of(ConfigManager.SettingsPath.toString(), "cameras");
 
     private final CameraJsonConfig preliminaryConfig;
     private final Path configFolderPath;
@@ -45,7 +45,8 @@ public class CameraConfig {
         checkCalibration();
         pipelineConfig.check();
 
-        return new FullCameraConfiguration(loadConfig(), pipelineConfig.load(), loadDriverMode(), loadCalibration(), this);
+        return new FullCameraConfiguration(
+                loadConfig(), pipelineConfig.load(), loadDriverMode(), loadCalibration(), this);
     }
 
     private CameraJsonConfig loadConfig() {
@@ -53,7 +54,8 @@ public class CameraConfig {
         try {
             config = JacksonUtils.deserialize(configPath, CameraJsonConfig.class);
         } catch (IOException e) {
-            System.err.printf("Failed to load camera config: %s - using default.\n", configPath.toString());
+            System.err.printf(
+                    "Failed to load camera config: %s - using default.\n", configPath.toString());
         }
         return config;
     }
@@ -75,7 +77,10 @@ public class CameraConfig {
     private List<CameraCalibrationConfig> loadCalibration() {
         List<CameraCalibrationConfig> calibrations = new ArrayList<>();
         try {
-            calibrations = List.of(Objects.requireNonNull(JacksonUtils.deserialize(calibrationPath, CameraCalibrationConfig[].class)));
+            calibrations =
+                    List.of(
+                            Objects.requireNonNull(
+                                    JacksonUtils.deserialize(calibrationPath, CameraCalibrationConfig[].class)));
         } catch (Exception e) {
             System.err.println("Failed to load camera calibration: " + driverModePath.toString());
         }
@@ -104,7 +109,6 @@ public class CameraConfig {
         }
     }
 
-
     public void saveCalibration(List<CameraCalibrationConfig> cal) {
         CameraCalibrationConfig[] configs = cal.toArray(new CameraCalibrationConfig[0]);
         try {
@@ -119,7 +123,8 @@ public class CameraConfig {
         if (!configFolderExists()) {
             try {
                 if (!(new File(configFolderPath.toUri()).mkdirs())) {
-                    System.err.println("Failed to create camera config folder: " + configFolderPath.toString());
+                    System.err.println(
+                            "Failed to create camera config folder: " + configFolderPath.toString());
                 }
                 FileUtils.setFilePerms(configFolderPath);
             } catch (Exception e) {
@@ -158,7 +163,8 @@ public class CameraConfig {
                 List<CameraCalibrationConfig> calibrations = new ArrayList<>();
                 JacksonUtils.serializer(calibrationPath, calibrations.toArray(), true);
             } catch (IOException e) {
-                System.err.println("Failed to create camera calibration file: " + calibrationPath.toString());
+                System.err.println(
+                        "Failed to create camera calibration file: " + calibrationPath.toString());
             }
         }
     }

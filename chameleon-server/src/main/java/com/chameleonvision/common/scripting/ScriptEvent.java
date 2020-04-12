@@ -1,14 +1,15 @@
 package com.chameleonvision.common.scripting;
 
-import com.chameleonvision.common.logging.DebugLogger;
 import com.chameleonvision.common.util.ShellExec;
 import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ScriptEvent {
-    private static final DebugLogger logger = new DebugLogger(true);
     private static final ShellExec executor = new ShellExec(true, true);
 
     public final ScriptConfig config;
+    private final Logger logger = LoggerFactory.getLogger(ScriptEvent.class);
 
     public ScriptEvent(ScriptConfig config) {
         this.config = config;
@@ -23,12 +24,13 @@ public class ScriptEvent {
         if (!error.isEmpty()) {
             System.err.printf("Error when running \"%s\" script: %s\n", config.eventType.name(), error);
         } else if (!output.isEmpty()) {
-            logger.printInfo(
+            logger.info(
                     String.format("Output from \"%s\" script: %s\n", config.eventType.name(), output));
         }
-        logger.printInfo(
+        logger.info(
                 String.format(
-                        "Script for %s ran with command line: \"%s\", exit code: %d, output: %s, error: %s\n",
+                        "Script for %s ran with command line: \"%s\", exit code: %d, output: %s, "
+                                + "error: %s\n",
                         config.eventType.name(), config.command, retVal, output, error));
         return retVal;
     }

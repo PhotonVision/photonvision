@@ -1,6 +1,5 @@
 package com.chameleonvision.common.util.file;
 
-import com.chameleonvision.common.logging.DebugLogger;
 import com.chameleonvision.common.util.Platform;
 import java.io.File;
 import java.io.IOException;
@@ -11,9 +10,14 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FileUtils {
-    private static DebugLogger logger = new DebugLogger(true);
+
+    private FileUtils() {}
+
+    private static Logger logger = LoggerFactory.getLogger(FileUtils.class);
     private static final Set<PosixFilePermission> allReadWriteExecutePerms =
             new HashSet<>(Arrays.asList(PosixFilePermission.values()));
 
@@ -23,7 +27,7 @@ public class FileUtils {
             Set<PosixFilePermission> perms =
                     Files.readAttributes(path, PosixFileAttributes.class).permissions();
             if (!perms.equals(allReadWriteExecutePerms)) {
-                logger.printInfo("Setting perms on" + path.toString());
+                logger.info("Setting perms on" + path.toString());
                 Files.setPosixFilePermissions(path, perms);
                 if (thisFile.isDirectory()) {
                     for (File subfile : thisFile.listFiles()) {
@@ -46,8 +50,7 @@ public class FileUtils {
             }
         } else {
             // TODO file perms on Windows
-            System.out.println(
-                    "File permission setting not available on Windows. Not changing file permissions.");
+            logger.info("Cannot set directory permissions on Windows!");
         }
     }
 }

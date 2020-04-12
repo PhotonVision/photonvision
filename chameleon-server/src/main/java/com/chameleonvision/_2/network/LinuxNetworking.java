@@ -1,7 +1,5 @@
 package com.chameleonvision._2.network;
 
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -10,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.io.FileUtils;
 
 public class LinuxNetworking extends SysNetworking {
     private static final String PATH = "/etc/dhcpcd.conf";
@@ -26,7 +25,8 @@ public class LinuxNetworking extends SysNetworking {
                         lines.remove(i);
                         for (int j = i; j < lines.size(); j++) {
                             String subInterface = lines.get(j);
-                            if (subInterface.contains("static ip_address") || subInterface.contains("static routers")) {
+                            if (subInterface.contains("static ip_address")
+                                    || subInterface.contains("static routers")) {
                                 lines.remove(j);
                                 j--;
                             }
@@ -81,7 +81,6 @@ public class LinuxNetworking extends SysNetworking {
         return false;
     }
 
-
     @Override
     public List<java.net.NetworkInterface> getNetworkInterfaces() throws SocketException {
         List<java.net.NetworkInterface> netInterfaces;
@@ -98,6 +97,5 @@ public class LinuxNetworking extends SysNetworking {
             goodInterfaces.add(netInterface);
         }
         return goodInterfaces;
-
     }
 }

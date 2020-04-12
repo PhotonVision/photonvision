@@ -1,14 +1,18 @@
 package com.chameleonvision.common.vision.opencv;
 
 import com.chameleonvision.common.util.math.MathUtils;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
-import org.opencv.core.*;
+import org.opencv.core.CvType;
+import org.opencv.core.MatOfInt;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
-public class Contour {
+public class Contour implements Releasable {
 
     public static final Comparator<Contour> SortByMomentsX =
             Comparator.comparingDouble(
@@ -17,12 +21,34 @@ public class Contour {
     public final MatOfPoint mat;
 
     private Double area = Double.NaN;
+    private Double perimeter = Double.NaN;
+    private MatOfPoint2f mat2f = null;
     private RotatedRect minAreaRect = null;
     private Rect boundingRect = null;
     private Moments moments = null;
 
+    private MatOfPoint2f convexHull = null;
+
     public Contour(MatOfPoint mat) {
         this.mat = mat;
+    }
+
+    public MatOfPoint2f getMat2f() {
+        if (mat2f == null) {
+            mat2f = new MatOfPoint2f(mat.toArray());
+            mat.convertTo(mat2f, CvType.CV_32F);
+        }
+        return mat2f;
+    }
+
+    public MatOfPoint2f getConvexHull() {
+        if (this.convexHull == null) {
+            var ints = new MatOfInt();
+            Imgproc.convexHull(mat, ints);
+            this.convexHull = Contour.convertIndexesToPoints(mat, ints);
+            ints.release();
+        }
+        return convexHull;
     }
 
     public double getArea() {
@@ -32,11 +58,16 @@ public class Contour {
         return area;
     }
 
+    public double getPerimeter() {
+        if (Double.isNaN(perimeter)) {
+            perimeter = Imgproc.arcLength(getMat2f(), true);
+        }
+        return perimeter;
+    }
+
     public RotatedRect getMinAreaRect() {
         if (minAreaRect == null) {
-            MatOfPoint2f temp = new MatOfPoint2f(mat.toArray());
-            minAreaRect = Imgproc.minAreaRect(temp);
-            temp.release();
+            minAreaRect = Imgproc.minAreaRect(getMat2f());
         }
         return minAreaRect;
     }
@@ -60,20 +91,23 @@ public class Contour {
     }
 
     public boolean isEmpty() {
-        return mat.cols() != 0 && mat.rows() != 0;
+        return mat.empty();
     }
 
-    public boolean isIntersecting(Contour secondContour, ContourIntersection intersection) {
+    public boolean isIntersecting(
+            Contour secondContour, ContourIntersectionDirection intersectionDirection) {
         boolean isIntersecting = false;
 
-        if (intersection == ContourIntersection.None) {
+        if (intersectionDirection == ContourIntersectionDirection.None) {
             isIntersecting = true;
         } else {
             try {
                 MatOfPoint2f intersectMatA = new MatOfPoint2f();
                 MatOfPoint2f intersectMatB = new MatOfPoint2f();
-                intersectMatA.fromArray(mat.toArray());
-                intersectMatB.fromArray(secondContour.mat.toArray());
+
+                mat.convertTo(intersectMatA, CvType.CV_32F);
+                secondContour.mat.convertTo(intersectMatB, CvType.CV_32F);
+
                 RotatedRect a = Imgproc.fitEllipse(intersectMatA);
                 RotatedRect b = Imgproc.fitEllipse(intersectMatB);
                 double mA = MathUtils.toSlope(a.angle);
@@ -86,7 +120,7 @@ public class Contour {
                 double intersectionY = (mA * (intersectionX - x0A)) + y0A;
                 double massX = (x0A + x0B) / 2;
                 double massY = (y0A + y0B) / 2;
-                switch (intersection) {
+                switch (intersectionDirection) {
                     case Up:
                         if (intersectionY < massY) isIntersecting = true;
                         break;
@@ -112,47 +146,53 @@ public class Contour {
 
     // TODO: refactor to do "infinite" contours
     public static Contour groupContoursByIntersection(
-            Contour firstContour, Contour secondContour, ContourIntersection intersection) {
-        if (firstContour.isIntersecting(secondContour, intersection)) {
+            Contour firstContour, Contour secondContour, ContourIntersectionDirection intersection) {
+        if (areIntersecting(firstContour, secondContour, intersection)) {
             return combineContours(firstContour, secondContour);
         } else {
             return null;
         }
     }
 
-    // TODO: does this leak?
+    public static boolean areIntersecting(
+            Contour firstContour,
+            Contour secondContour,
+            ContourIntersectionDirection intersectionDirection) {
+        return firstContour.isIntersecting(secondContour, intersectionDirection)
+                || secondContour.isIntersecting(firstContour, intersectionDirection);
+    }
+
     private static Contour combineContours(Contour... contours) {
-        List<Point> fullContourPoints = new ArrayList<>();
+        var points = new MatOfPoint();
 
         for (var contour : contours) {
-            fullContourPoints.addAll(contour.mat.toList());
+            points.push_back(contour.mat);
         }
 
-        var points = new MatOfPoint(fullContourPoints.toArray(new Point[0]));
         var finalContour = new Contour(points);
 
-        if (!finalContour.isEmpty()) {
-            return finalContour;
-        } else return null;
+        boolean contourEmpty = finalContour.isEmpty();
+        return contourEmpty ? null : finalContour;
     }
 
-    // TODO: move these? also docs plox
-    public enum ContourIntersection {
-        None,
-        Up,
-        Down,
-        Left,
-        Right
+    @Override
+    public void release() {
+        mat.release();
+        mat2f.release();
+        convexHull.release();
     }
 
-    public enum ContourGrouping {
-        Single(1),
-        Dual(2);
+    public static MatOfPoint2f convertIndexesToPoints(MatOfPoint contour, MatOfInt indexes) {
+        int[] arrIndex = indexes.toArray();
+        Point[] arrContour = contour.toArray();
+        Point[] arrPoints = new Point[arrIndex.length];
 
-        public final int count;
-
-        ContourGrouping(int count) {
-            this.count = count;
+        for (int i = 0; i < arrIndex.length; i++) {
+            arrPoints[i] = arrContour[arrIndex[i]];
         }
+
+        var hull = new MatOfPoint2f();
+        hull.fromArray(arrPoints);
+        return hull;
     }
 }

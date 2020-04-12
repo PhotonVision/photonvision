@@ -2,14 +2,12 @@ package com.chameleonvision._2.network;
 
 import com.chameleonvision._2.config.ConfigManager;
 import com.chameleonvision.common.util.Platform;
-
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class NetworkManager {
-    private NetworkManager() {
-    }
+    private NetworkManager() {}
 
     private static SysNetworking networking;
     private static boolean isManaged = false;
@@ -25,7 +23,7 @@ public class NetworkManager {
         if (platform.isLinux()) {
             networking = new LinuxNetworking();
         } else if (platform.isWindows()) {
-//			networking = new WindowsNetworking();
+            //			networking = new WindowsNetworking();
             System.out.println("Windows networking is not yet supported. Running unmanaged.");
             return;
         }
@@ -71,9 +69,8 @@ public class NetworkManager {
     }
 
     private static byte[] GetTeamNumberIPBytes(int teamNumber) {
-        return new byte[]{(byte) (teamNumber / 100), (byte) (teamNumber % 100)};
+        return new byte[] {(byte) (teamNumber / 100), (byte) (teamNumber % 100)};
     }
-
 
     private static boolean setDHCP() {
         if (!isManaged) {

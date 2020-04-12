@@ -6,7 +6,6 @@ import com.chameleonvision._2.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision._2.vision.pipeline.impl.StandardCVPipelineSettings;
 import com.chameleonvision.common.util.file.FileUtils;
 import com.chameleonvision.common.util.file.JacksonUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -20,10 +19,10 @@ public class PipelineConfig {
     private final CameraConfig cameraConfig;
 
     /**
-     * Construct a new PipelineConfig
-     *
-     * @param cameraConfig the CameraConfig (parent folder, kinda?)
-     */
+    * Construct a new PipelineConfig
+    *
+    * @param cameraConfig the CameraConfig (parent folder, kinda?)
+    */
     PipelineConfig(CameraConfig cameraConfig) {
         this.cameraConfig = cameraConfig;
     }
@@ -76,7 +75,12 @@ public class PipelineConfig {
 
         if (settings instanceof StandardCVPipelineSettings) {
             try {
-                JacksonUtils.serialize(path, (StandardCVPipelineSettings) settings, StandardCVPipelineSettings.class, new StandardCVPipelineSettingsSerializer(), true);
+                JacksonUtils.serialize(
+                        path,
+                        (StandardCVPipelineSettings) settings,
+                        StandardCVPipelineSettings.class,
+                        new StandardCVPipelineSettingsSerializer(),
+                        true);
                 FileUtils.setFilePerms(path);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -131,7 +135,11 @@ public class PipelineConfig {
         } else {
             for (File pipelineFile : pipelineFiles) {
                 try {
-                    var pipe = JacksonUtils.deserialize(Paths.get(pipelineFile.getPath()), StandardCVPipelineSettings.class, new StandardCVPipelineSettingsDeserializer());
+                    var pipe =
+                            JacksonUtils.deserialize(
+                                    Paths.get(pipelineFile.getPath()),
+                                    StandardCVPipelineSettings.class,
+                                    new StandardCVPipelineSettingsDeserializer());
                     deserializedList.add(pipe);
                 } catch (IOException e) {
                     System.err.println("couldn't load cvpipeline2d");

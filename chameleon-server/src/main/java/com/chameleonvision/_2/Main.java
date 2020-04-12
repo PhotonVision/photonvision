@@ -1,5 +1,7 @@
 package com.chameleonvision._2;
 
+import static com.chameleonvision.common.util.Platform.CurrentPlatform;
+
 import com.chameleonvision._2.config.ConfigManager;
 import com.chameleonvision._2.vision.VisionManager;
 import com.chameleonvision._2.web.Server;
@@ -11,15 +13,14 @@ import com.chameleonvision.common.util.Platform;
 import com.chameleonvision.common.util.math.IPUtils;
 import edu.wpi.cscore.CameraServerCvJNI;
 import edu.wpi.cscore.CameraServerJNI;
-
 import java.io.IOException;
-
-import static com.chameleonvision.common.util.Platform.CurrentPlatform;
 
 public class Main {
 
     private static final String NT_SERVERMODE_KEY = "--nt-servermode"; // no args for this setting
-    private static final String NT_CLIENTMODESERVER_KEY = "--nt-client-server"; // expects String representing an IP address (hostnames will be rejected!)
+    private static final String NT_CLIENTMODESERVER_KEY =
+            "--nt-client-server"; // expects String representing an IP address (hostnames will be
+    // rejected!)
     private static final String NETWORK_MANAGE_KEY = "--unmanage-network"; // no args for this setting
     private static final String IGNORE_ROOT_KEY = "--ignore-root"; // no args for this setting
     private static final String TEST_MODE_KEY = "--cv-development";
@@ -44,14 +45,18 @@ public class Main {
                 case NT_CLIENTMODESERVER_KEY:
                     var potentialValue = args[i + 1];
                     // ensures this "value" isnt null, blank, nor another argument
-                    if (potentialValue != null && !potentialValue.isBlank() && !potentialValue.startsWith("-") & !potentialValue.startsWith("--")) {
+                    if (potentialValue != null
+                            && !potentialValue.isBlank()
+                            && !potentialValue.startsWith("-") & !potentialValue.startsWith("--")) {
                         value = potentialValue.toLowerCase();
                     }
                     i++; // increment to skip an 'arg' next go-around of for loop, as that would be this value
                     break;
                 case UI_PORT_KEY:
                     var potentialPort = args[i + 1];
-                    if (potentialPort != null && !potentialPort.isBlank() && !potentialPort.startsWith("-") & !potentialPort.startsWith("--")) {
+                    if (potentialPort != null
+                            && !potentialPort.isBlank()
+                            && !potentialPort.startsWith("-") & !potentialPort.startsWith("--")) {
                         value = potentialPort;
                     }
                     i++;
@@ -81,7 +86,8 @@ public class Main {
                             continue;
                         }
                     }
-                    System.err.println("Argument for NT Server Host was invalid, defaulting to team number host");
+                    System.err.println(
+                            "Argument for NT Server Host was invalid, defaulting to team number host");
                     break;
                 case NETWORK_MANAGE_KEY:
                     manageNetwork = false;
@@ -96,7 +102,7 @@ public class Main {
                     if (value != null) {
                         try {
                             uiPort = Integer.parseInt(value);
-                        } catch (NumberFormatException e){
+                        } catch (NumberFormatException e) {
                             System.err.println("ui Port was not a valid number using port 5800");
                         }
                     }
@@ -107,10 +113,13 @@ public class Main {
 
     public static void main(String[] args) {
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> ScriptManager.queueEvent(ScriptEventType.kProgramExit)));
+        Runtime.getRuntime()
+                .addShutdownHook(new Thread(() -> ScriptManager.queueEvent(ScriptEventType.kProgramExit)));
 
         if (CurrentPlatform.equals(Platform.UNSUPPORTED)) {
-            System.err.printf("Sorry, this platform is not supported. Give these details to the developers.\n%s\n", CurrentPlatform.toString());
+            System.err.printf(
+                    "Sorry, this platform is not supported. Give these details to the developers.\n%s\n",
+                    CurrentPlatform.toString());
             return;
         } else {
             System.out.printf("Starting Chameleon Vision on platform %s\n", CurrentPlatform.toString());
@@ -135,7 +144,8 @@ public class Main {
             CameraServerCvJNI.forceLoad();
         } catch (UnsatisfiedLinkError | IOException e) {
             if (CurrentPlatform.isWindows()) {
-                System.err.println("Try to download the VC++ Redistributable, https://aka.ms/vs/16/release/vc_redist.x64.exe");
+                System.err.println(
+                        "Try to download the VC++ Redistributable, https://aka.ms/vs/16/release/vc_redist.x64.exe");
             }
             throw new RuntimeException("Failed to load JNI Libraries!");
         }

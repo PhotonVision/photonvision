@@ -4,16 +4,16 @@ import com.chameleonvision._2.vision.camera.CaptureStaticProperties;
 import com.chameleonvision._2.vision.pipeline.Pipe;
 import com.chameleonvision._2.vision.pipeline.impl.StandardCVPipeline;
 import com.chameleonvision.common.util.ColorHelper;
-import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.Point;
-import org.opencv.core.*;
-import org.opencv.imgproc.Imgproc;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.*;
+import org.opencv.core.Point;
+import org.opencv.imgproc.Imgproc;
 
-public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.TrackedTarget>>, Mat> {
+public class Draw2dContoursPipe
+        implements Pipe<Pair<Mat, List<StandardCVPipeline.TrackedTarget>>, Mat> {
 
     private final Draw2dContoursSettings settings;
     private CaptureStaticProperties camProps;
@@ -27,13 +27,12 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<StandardCVPipelin
     @SuppressWarnings("FieldCanBeLocal")
     private Point xMax = new Point(), xMin = new Point(), yMax = new Point(), yMin = new Point();
 
-
     public Draw2dContoursPipe(Draw2dContoursSettings settings, CaptureStaticProperties camProps) {
         this.settings = settings;
         this.camProps = camProps;
     }
 
-    public void setConfig(boolean showMultiple,CaptureStaticProperties captureProps) {
+    public void setConfig(boolean showMultiple, CaptureStaticProperties captureProps) {
         settings.showMultiple = showMultiple;
         camProps = captureProps;
     }
@@ -43,12 +42,12 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<StandardCVPipelin
         long processStartNanos = System.nanoTime();
 
         if (settings.showCentroid || settings.showMaximumBox || settings.showRotatedBox) {
-//            input.getLeft().copyTo(processBuffer);
-//            processBuffer = input.getLeft();
+            //            input.getLeft().copyTo(processBuffer);
+            //            processBuffer = input.getLeft();
 
             if (input.getRight().size() > 0) {
                 for (int i = 0; i < input.getRight().size(); i++) {
-                    if (i != 0 && !settings.showMultiple){
+                    if (i != 0 && !settings.showMultiple) {
                         break;
                     }
                     StandardCVPipeline.TrackedTarget target = input.getRight().get(i);
@@ -61,31 +60,44 @@ public class Draw2dContoursPipe implements Pipe<Pair<Mat, List<StandardCVPipelin
 
                     r.points(vertices);
                     contour.fromArray(vertices);
-//                    MatOfPoint contour = new MatOfPoint(vertices);
+                    //                    MatOfPoint contour = new MatOfPoint(vertices);
                     drawnContours.add(contour);
 
-
                     if (settings.showRotatedBox) {
-                        Imgproc.drawContours(input.getLeft(), drawnContours, 0, ColorHelper.colorToScalar(settings.rotatedBoxColor), settings.boxOutlineSize);
+                        Imgproc.drawContours(
+                                input.getLeft(),
+                                drawnContours,
+                                0,
+                                ColorHelper.colorToScalar(settings.rotatedBoxColor),
+                                settings.boxOutlineSize);
                     }
 
                     if (settings.showMaximumBox) {
                         Rect box = Imgproc.boundingRect(contour);
-                        Imgproc.rectangle(input.getLeft(), new Point(box.x, box.y), new Point((box.x + box.width), (box.y + box.height)), ColorHelper.colorToScalar(settings.maximumBoxColor), settings.boxOutlineSize);
+                        Imgproc.rectangle(
+                                input.getLeft(),
+                                new Point(box.x, box.y),
+                                new Point((box.x + box.width), (box.y + box.height)),
+                                ColorHelper.colorToScalar(settings.maximumBoxColor),
+                                settings.boxOutlineSize);
                     }
                     if (settings.showCentroid) {
-                        Imgproc.circle(input.getLeft(), target.point, 3, ColorHelper.colorToScalar(settings.centroidColor), 2);
-
+                        Imgproc.circle(
+                                input.getLeft(),
+                                target.point,
+                                3,
+                                ColorHelper.colorToScalar(settings.centroidColor),
+                                2);
                     }
 
-//                    contour.release();
+                    //                    contour.release();
                 }
             }
 
-//            processBuffer.copyTo(outputMat);
-//            processBuffer.release();
+            //            processBuffer.copyTo(outputMat);
+            //            processBuffer.release();
         } else {
-//            input.getLeft().copyTo(outputMat);
+            //            input.getLeft().copyTo(outputMat);
         }
         long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(input.getLeft(), processTime);

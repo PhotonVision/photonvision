@@ -23,14 +23,12 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.*;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpiutil.CircularBuffer;
-import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.Mat;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-
+import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.Mat;
 
 @SuppressWarnings("rawtypes")
 public class VisionProcess {
@@ -75,31 +73,38 @@ public class VisionProcess {
         pipelineManager = new PipelineManager(this, config.pipelines);
 
         // Thread to put frames on the dashboard
-        this.cameraStreamer = new CameraStreamer(cameraCapture, config.cameraConfig.name, pipelineManager.getCurrentPipeline().settings.streamDivisor);
+        this.cameraStreamer =
+                new CameraStreamer(
+                        cameraCapture,
+                        config.cameraConfig.name,
+                        pipelineManager.getCurrentPipeline().settings.streamDivisor);
 
         // Thread to process vision data
         this.visionRunnable = new VisionProcessRunnable();
 
         // network table
-        defaultTable = NetworkTableInstance.getDefault().getTable("/chameleon-vision/" + cameraCapture.getProperties().getNickname());
+        defaultTable =
+                NetworkTableInstance.getDefault()
+                        .getTable("/chameleon-vision/" + cameraCapture.getProperties().getNickname());
     }
 
     public void start() {
-        System.out.printf("[%s Process] Creating network table...\n", getCamera().getProperties().getNickname());
+        System.out.printf(
+                "[%s Process] Creating network table...\n", getCamera().getProperties().getNickname());
         initNT(defaultTable);
 
-        System.out.printf("[%s Process] Starting vision thread...\n", getCamera().getProperties().getNickname());
+        System.out.printf(
+                "[%s Process] Starting vision thread...\n", getCamera().getProperties().getNickname());
         var visionThread = new Thread(visionRunnable);
         visionThread.setName(getCamera().getProperties().name + " - Vision Thread");
         visionThread.start();
     }
 
     /**
-     * Removes the old value change listeners
-     * calls {@link #initNT}
-     *
-     * @param newTable passed to {@link #initNT}
-     */
+    * Removes the old value change listeners calls {@link #initNT}
+    *
+    * @param newTable passed to {@link #initNT}
+    */
     public void resetNT(NetworkTable newTable) {
         ntDriverModeEntry.removeListener(ntDriveModeListenerID);
         ntPipelineEntry.removeListener(ntPipelineListenerID);
@@ -128,8 +133,10 @@ public class VisionProcess {
         ntBoundingHeightEntry = camTable.getEntry("targetBoundingHeight");
         ntBoundingWidthEntry = camTable.getEntry("targetBoundingWidth");
         ntTargetRotation = camTable.getEntry("targetRotation");
-        ntDriveModeListenerID = ntDriverModeEntry.addListener(this::setDriverMode, EntryListenerFlags.kUpdate);
-        ntPipelineListenerID = ntPipelineEntry.addListener(this::setPipeline, EntryListenerFlags.kUpdate);
+        ntDriveModeListenerID =
+                ntDriverModeEntry.addListener(this::setDriverMode, EntryListenerFlags.kUpdate);
+        ntPipelineListenerID =
+                ntPipelineEntry.addListener(this::setPipeline, EntryListenerFlags.kUpdate);
         ntDriverModeEntry.setBoolean(false);
         ntPipelineEntry.setNumber(pipelineManager.getCurrentPipelineIndex());
         pipelineManager.ntIndexEntry = ntPipelineEntry;
@@ -141,15 +148,16 @@ public class VisionProcess {
 
     public void setDriverMode(boolean driverMode) {
         pipelineManager.setDriverMode(driverMode);
-        ScriptManager.queueEvent(driverMode ? ScriptEventType.kEnterDriverMode : ScriptEventType.kExitDriverMode);
+        ScriptManager.queueEvent(
+                driverMode ? ScriptEventType.kEnterDriverMode : ScriptEventType.kExitDriverMode);
         SocketHandler.sendFullSettings();
     }
 
     /**
-     * Method called by the nt entry listener to update the next pipeline.
-     *
-     * @param notification the notification
-     */
+    * Method called by the nt entry listener to update the next pipeline.
+    *
+    * @param notification the notification
+    */
     private void setPipeline(EntryNotification notification) {
         var wantedPipelineIndex = (int) notification.value.getDouble();
         if (pipelineManager.pipelines.size() - 1 < wantedPipelineIndex) {
@@ -173,7 +181,6 @@ public class VisionProcess {
         if (currentMillis - lastUIUpdateMs > 1000 / 30) {
             lastUIUpdateMs = currentMillis;
 
-
             if (cameraCapture.getProperties().name.equals(ConfigManager.settings.currentCamera)) {
                 HashMap<String, Object> WebSend = new HashMap<>();
                 HashMap<String, Object> point = new HashMap<>();
@@ -181,13 +188,14 @@ public class VisionProcess {
                 ArrayList<Object> webTargets = new ArrayList<>();
                 List<Double> center = new ArrayList<>();
 
-
                 if (data.hasTarget) {
                     if (data instanceof StandardCVPipeline.StandardCVPipelineResult) {
-                        StandardCVPipeline.StandardCVPipelineResult result = (StandardCVPipeline.StandardCVPipelineResult) data;
+                        StandardCVPipeline.StandardCVPipelineResult result =
+                                (StandardCVPipeline.StandardCVPipelineResult) data;
                         StandardCVPipeline.TrackedTarget bestTarget = result.targets.get(0);
                         try {
-                            if (((StandardCVPipelineSettings) pipelineManager.getCurrentPipeline().settings).multiple) {
+                            if (((StandardCVPipelineSettings) pipelineManager.getCurrentPipeline().settings)
+                                    .multiple) {
                                 for (var target : result.targets) {
                                     pointMap = new HashMap<>();
                                     pointMap.put("pitch", target.pitch);
@@ -206,7 +214,7 @@ public class VisionProcess {
                             center.add(bestTarget.minAreaRect.center.x);
                             center.add(bestTarget.minAreaRect.center.y);
                         } catch (ClassCastException ignored) {
-                          
+
                         }
                     } else {
                         pointMap.put("pitch", null);
@@ -236,7 +244,8 @@ public class VisionProcess {
             if (data instanceof StandardCVPipeline.StandardCVPipelineResult) {
 
                 //noinspection unchecked
-                List<StandardCVPipeline.TrackedTarget> targets = (List<StandardCVPipeline.TrackedTarget>) data.targets;
+                List<StandardCVPipeline.TrackedTarget> targets =
+                        (List<StandardCVPipeline.TrackedTarget>) data.targets;
                 StandardCVPipeline.TrackedTarget bestTarget = targets.get(0);
                 ntLatencyEntry.setDouble(MathUtils.roundTo(data.processTime * 1e-6, 3));
                 ntPitchEntry.setDouble(bestTarget.pitch);
@@ -249,12 +258,30 @@ public class VisionProcess {
                 ntTargetRotation.setDouble(bestTarget.minAreaRect.angle);
                 try {
                     Pose2d targetPose = targets.get(0).cameraRelativePose;
-                    double[] targetArray = {targetPose.getTranslation().getX(), targetPose.getTranslation().getY(), targetPose.getRotation().getDegrees()};
+                    double[] targetArray = {
+                        targetPose.getTranslation().getX(),
+                        targetPose.getTranslation().getY(),
+                        targetPose.getRotation().getDegrees()
+                    };
                     ntPoseEntry.setDoubleArray(targetArray);
-//                    ntPoseEntry.setString(objectMapper.writeValueAsString(targets.get(0).cameraRelativePose));
-                    ntAuxListEntry.setString(objectMapper.writeValueAsString(targets.stream()
-                            .map(it -> List.of(it.pitch, it.yaw, it.area, it.boundingRect.width, it.boundingRect.height, it.minAreaRect.size.width, it.minAreaRect.size.height, it.minAreaRect.angle, it.cameraRelativePose))
-                            .collect(Collectors.toList())));
+                    //
+                    // ntPoseEntry.setString(objectMapper.writeValueAsString(targets.get(0).cameraRelativePose));
+                    ntAuxListEntry.setString(
+                            objectMapper.writeValueAsString(
+                                    targets.stream()
+                                            .map(
+                                                    it ->
+                                                            List.of(
+                                                                    it.pitch,
+                                                                    it.yaw,
+                                                                    it.area,
+                                                                    it.boundingRect.width,
+                                                                    it.boundingRect.height,
+                                                                    it.minAreaRect.size.width,
+                                                                    it.minAreaRect.size.height,
+                                                                    it.minAreaRect.angle,
+                                                                    it.cameraRelativePose))
+                                            .collect(Collectors.toList())));
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
@@ -311,9 +338,7 @@ public class VisionProcess {
         return false;
     }
 
-    /**
-     * VisionProcessRunnable will process images as quickly as possible
-     */
+    /** VisionProcessRunnable will process images as quickly as possible */
     private class VisionProcessRunnable implements Runnable {
 
         volatile Double fps = 0.0;
@@ -324,13 +349,14 @@ public class VisionProcess {
             var lastUpdateTimeNanos = System.nanoTime();
             var lastStreamTimeMs = System.currentTimeMillis();
 
-            System.out.printf("[%s Process] Vision Process Thread -- first run!\n", getCamera().getProperties().getNickname());
+            System.out.printf(
+                    "[%s Process] Vision Process Thread -- first run!\n",
+                    getCamera().getProperties().getNickname());
 
             while (!Thread.interrupted()) {
 
                 // blocking call, will block until camera has a new frame.
                 Pair<Mat, Long> camData = cameraCapture.getFrame();
-
 
                 Mat camFrame = camData.getLeft();
                 if (camFrame.cols() > 0 && camFrame.rows() > 0) {
@@ -338,7 +364,8 @@ public class VisionProcess {
                     try {
                         result = pipelineManager.getCurrentPipeline().runPipeline(camFrame);
                     } catch (Exception e) {
-                        System.err.println("Exception in vision process " + getCamera().getProperties().getNickname() + "!");
+                        System.err.println(
+                                "Exception in vision process " + getCamera().getProperties().getNickname() + "!");
                         e.printStackTrace();
                     }
 
@@ -355,18 +382,22 @@ public class VisionProcess {
                 try {
                     var currentTime = System.currentTimeMillis();
                     if ((currentTime - lastStreamTimeMs) / 1000d > 1.0 / 30.0) {
-                        if(lastPipelineResult != null) {
+                        if (lastPipelineResult != null) {
                             cameraStreamer.runStream(lastPipelineResult.outputMat);
                             lastStreamTimeMs = currentTime;
                             lastPipelineResult.outputMat.release();
                         } else {
-                            System.err.printf("[%s Process] Last pipeline result was null!\n", getCamera().getProperties().getNickname());
+                            System.err.printf(
+                                    "[%s Process] Last pipeline result was null!\n",
+                                    getCamera().getProperties().getNickname());
                         }
                     }
 
                 } catch (Exception e) {
-//                    Debug.printInfo("Vision running faster than stream.");
-                    System.err.printf("[%s Process] Exception in vision thread!\n", getCamera().getProperties().getNickname());
+                    //                    Debug.printInfo("Vision running faster than stream.");
+                    System.err.printf(
+                            "[%s Process] Exception in vision thread!\n",
+                            getCamera().getProperties().getNickname());
                     e.printStackTrace();
                 }
 

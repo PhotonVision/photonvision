@@ -8,13 +8,12 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoException;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
-import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.Mat;
+import org.opencv.core.Size;
 
 public class USBCameraCapture implements CameraCapture {
     private final UsbCamera baseCamera;
@@ -25,22 +24,26 @@ public class USBCameraCapture implements CameraCapture {
 
     public USBCameraCapture(FullCameraConfiguration fullCameraConfiguration) {
         var config = fullCameraConfiguration.cameraConfig;
-        this.calibrationList = new ArrayList<>(); //fullCameraConfiguration.calibration;
+        this.calibrationList = new ArrayList<>(); // fullCameraConfiguration.calibration;
         calibrationList.addAll(fullCameraConfiguration.calibration);
         baseCamera = new UsbCamera(config.name, config.path);
         cvSink = CameraServer.getInstance().getVideo(baseCamera);
         try {
             properties = new USBCaptureProperties(baseCamera, config);
-        } catch(VideoException e) {
-            System.err.println("Camera cannot be found on the saved USB port!" +
-                    " Ensure that the camera has not been plugged into a different USB port, and if so, correct it.");
+        } catch (VideoException e) {
+            System.err.println(
+                    "Camera cannot be found on the saved USB port!"
+                            + " Ensure that the camera has not been plugged into a different USB port, and if so, correct it.");
             e.printStackTrace();
         }
 
         var videoModes = properties.getVideoModes();
-        if(videoModes.size() < 1) {
-            throw new VideoException("0 video modes are valid! Full list provided by camera: \n\n"
-            + Arrays.stream(baseCamera.enumerateVideoModes()).map(Helpers::VideoModeToHashMap).toString()  );
+        if (videoModes.size() < 1) {
+            throw new VideoException(
+                    "0 video modes are valid! Full list provided by camera: \n\n"
+                            + Arrays.stream(baseCamera.enumerateVideoModes())
+                                    .map(Helpers::VideoModeToHashMap)
+                                    .toString());
         }
 
         int videoMode = properties.videoModes.size() - 1 <= config.videomode ? config.videomode : 0;
@@ -48,8 +51,8 @@ public class USBCameraCapture implements CameraCapture {
     }
 
     public CameraCalibrationConfig getCalibration(Size size) {
-        for(var calibration: calibrationList) {
-            if(calibration.resolution.equals(size)) return calibration;
+        for (var calibration : calibrationList) {
+            if (calibration.resolution.equals(size)) return calibration;
         }
         return null;
     }
@@ -59,7 +62,10 @@ public class USBCameraCapture implements CameraCapture {
     }
 
     public void addCalibrationData(CameraCalibrationConfig newConfig) {
-        calibrationList.removeIf(c -> newConfig.resolution.height == c.resolution.height && newConfig.resolution.width == c.resolution.width);
+        calibrationList.removeIf(
+                c ->
+                        newConfig.resolution.height == c.resolution.height
+                                && newConfig.resolution.width == c.resolution.width);
         calibrationList.add(newConfig);
     }
 
@@ -79,7 +85,8 @@ public class USBCameraCapture implements CameraCapture {
         // TODO: Why multiply by 1000 here?
         Mat tempMat = new Mat();
         deltaTime = cvSink.grabFrame(tempMat) * 1000L;
-//        tempMat = Imgcodecs.imread("C:\\Users\\imadu\\Documents\\GitHub\\chameleon-vision\\chameleon-server\\testimages\\2020\\image.png");
+        //        tempMat =
+        // Imgcodecs.imread("C:\\Users\\imadu\\Documents\\GitHub\\chameleon-vision\\chameleon-server\\testimages\\2020\\image.png");
         tempMat.copyTo(imageBuffer);
         tempMat.release();
         return Pair.of(imageBuffer, deltaTime);
@@ -113,7 +120,7 @@ public class USBCameraCapture implements CameraCapture {
         }
     }
 
-    public void setVideoMode(int index){
+    public void setVideoMode(int index) {
         VideoMode mode = properties.getVideoModes().get(index);
         setVideoMode(mode);
     }

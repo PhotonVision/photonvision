@@ -2,26 +2,27 @@ package com.chameleonvision._2.vision.pipeline.impl;
 
 import com.chameleonvision._2.config.CameraCalibrationConfig;
 import com.chameleonvision._2.config.ConfigManager;
-import com.chameleonvision._2.vision.pipeline.CVPipeline;
 import com.chameleonvision._2.vision.VisionManager;
 import com.chameleonvision._2.vision.camera.CameraCapture;
+import com.chameleonvision._2.vision.pipeline.CVPipeline;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.util.Units;
+import java.util.ArrayList;
+import java.util.List;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverPipelineResult, StandardCVPipelineSettings> {
+public class Calibrate3dPipeline
+        extends CVPipeline<DriverVisionPipeline.DriverPipelineResult, StandardCVPipelineSettings> {
 
     private int checkerboardSquaresHigh = 7;
     private int checkerboardSquaresWide = 7;
 
-    private MatOfPoint3f objP;// new MatOfPoint3f(checkerboardSquaresHigh + checkerboardSquaresWide, 3);//(checkerboardSquaresWide * checkerboardSquaresHigh, 3);
+    private MatOfPoint3f objP; // new MatOfPoint3f(checkerboardSquaresHigh + checkerboardSquaresWide,
+    // 3);//(checkerboardSquaresWide * checkerboardSquaresHigh, 3);
     private Size patternSize = new Size(checkerboardSquaresHigh, checkerboardSquaresWide);
     private Size imageSize;
     double checkerboardSquareSize = 1; // inches!
@@ -35,7 +36,9 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
     private VideoMode calibrationMode;
     private final Size windowSize = new Size(11, 11);
     private final Size zeroZone = new Size(-1, -1);
-    private TermCriteria criteria = new TermCriteria(3, 30, 0.001); //(Imgproc.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
+    private TermCriteria criteria =
+            new TermCriteria(
+                    3, 30, 0.001); // (Imgproc.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
 
     private int captureCount = 0;
     private double calibrationAccuracy = 0;
@@ -47,8 +50,10 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
 
         objP = new MatOfPoint3f();
 
-        for(int i = 0; i < checkerboardSquaresHigh * checkerboardSquaresWide; i++) {
-            objP.push_back(new MatOfPoint3f(new Point3(i / checkerboardSquaresWide, i % checkerboardSquaresHigh, 0.0f)));
+        for (int i = 0; i < checkerboardSquaresHigh * checkerboardSquaresWide; i++) {
+            objP.push_back(
+                    new MatOfPoint3f(
+                            new Point3(i / checkerboardSquaresWide, i % checkerboardSquaresHigh, 0.0f)));
         }
 
         setSquareSize(checkerboardSquareSizeUnits);
@@ -78,15 +83,13 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
         Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_BGR2GRAY);
         var checkerboardFound = Calib3d.findChessboardCorners(inputMat, patternSize, calibrationOutput);
 
-
-
-        if(!checkerboardFound) {
+        if (!checkerboardFound) {
             Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_GRAY2BGR);
 
             return new DriverVisionPipeline.DriverPipelineResult(null, inputMat, 0);
         }
 
-//        System.out.println("[SolvePNP] checkerboard found!!");
+        //        System.out.println("[SolvePNP] checkerboard found!!");
 
         // cool we found a checkerboard
         // do corner subpixel
@@ -97,7 +100,7 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
         // draw the chessboard
         Calib3d.drawChessboardCorners(inputMat, patternSize, calibrationOutput, true);
 
-        if(wantsSnapshot) {
+        if (wantsSnapshot) {
             this.imageSize = new Size(inputMat.width(), inputMat.height());
 
             var mat = new MatOfPoint3f();
@@ -130,8 +133,10 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
         List<Mat> tvecs = new ArrayList<>();
 
         try {
-           calibrationAccuracy = Calib3d.calibrateCamera(objpoints, imgpoints, imageSize, cameraMatrix, distortionCoeffs, rvecs, tvecs);
-        } catch(Exception e) {
+            calibrationAccuracy =
+                    Calib3d.calibrateCamera(
+                            objpoints, imgpoints, imageSize, cameraMatrix, distortionCoeffs, rvecs, tvecs);
+        } catch (Exception e) {
             System.err.println("Camera calibration failed!");
             initPipeline(cameraCapture);
             return false;
@@ -139,32 +144,35 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
 
         VideoMode currentVidMode = cameraCapture.getCurrentVideoMode();
         Size resolution = new Size(currentVidMode.width, currentVidMode.height);
-        CameraCalibrationConfig cal = new CameraCalibrationConfig(resolution, cameraMatrix, distortionCoeffs, squareSizeInches);
+        CameraCalibrationConfig cal =
+                new CameraCalibrationConfig(resolution, cameraMatrix, distortionCoeffs, squareSizeInches);
 
         VisionManager.getCurrentUIVisionProcess().addCalibration(cal);
 
         try {
-            System.out.printf("CALIBRATION SUCCESS (with accuracy %s)! camMatrix: \n%s\ndistortionCoeffs:\n%s\n",
-                    calibrationAccuracy, new ObjectMapper().writeValueAsString(cal.cameraMatrix), new ObjectMapper().writeValueAsString(cal.distortionCoeffs));
+            System.out.printf(
+                    "CALIBRATION SUCCESS (with accuracy %s)! camMatrix: \n%s\ndistortionCoeffs:\n%s\n",
+                    calibrationAccuracy,
+                    new ObjectMapper().writeValueAsString(cal.cameraMatrix),
+                    new ObjectMapper().writeValueAsString(cal.distortionCoeffs));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-
 
         ConfigManager.saveGeneralSettings();
 
         return true;
     }
 
-    public void setVideoMode(VideoMode mode){
+    public void setVideoMode(VideoMode mode) {
         this.calibrationMode = mode;
     }
-    
+
     public int getSnapshotCount() {
         return captureCount + 1;
     }
 
-    public double getCalibrationAccuracy(){
+    public double getCalibrationAccuracy() {
         return calibrationAccuracy;
     }
 }

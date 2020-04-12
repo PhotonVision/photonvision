@@ -24,14 +24,17 @@ public class CameraStreamer {
         this.divisor = div;
         this.cameraCapture = cameraCapture;
         this.name = name;
-        this.cvSource = CameraServer.getInstance().putVideo(name,
-                cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
-                cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value);
+        this.cvSource =
+                CameraServer.getInstance()
+                        .putVideo(
+                                name,
+                                cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
+                                cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value);
         //noinspection IntegerDivisionInFloatingPointContext
-        this.size = new Size(
-                cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
-                cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value
-        );
+        this.size =
+                new Size(
+                        cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
+                        cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value);
         setDivisor(divisor, false);
     }
 
@@ -44,15 +47,16 @@ public class CameraStreamer {
         synchronized (streamBufferLock) {
             this.streamBuffer = new Mat(newWidth, newHeight, CvType.CV_8UC3);
             VideoMode oldVideoMode = cvSource.getVideoMode();
-            cvSource.setVideoMode(new VideoMode(oldVideoMode.pixelFormat,
-                    cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
-                    cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value,
-                    oldVideoMode.fps));
+            cvSource.setVideoMode(
+                    new VideoMode(
+                            oldVideoMode.pixelFormat,
+                            cameraCapture.getProperties().getStaticProperties().imageWidth / divisor.value,
+                            cameraCapture.getProperties().getStaticProperties().imageHeight / divisor.value,
+                            oldVideoMode.fps));
         }
         if (updateUI) {
             SocketHandler.sendFullSettings();
         }
-
     }
 
     public StreamDivisor getDivisor() {
@@ -80,21 +84,24 @@ public class CameraStreamer {
         }
 
         if (divisor.value != 1) {
-//            var camVal = cameraProcess.getProperties().staticProperties;
-//            var newWidth = camVal.imageWidth / divisor.value;
-//            var newHeight = camVal.imageHeight / divisor.value;
-//            Size newSize = new Size(newWidth, newHeight);
-             Imgproc.resize(streamBuffer, streamBuffer, this.size);
+            //            var camVal = cameraProcess.getProperties().staticProperties;
+            //            var newWidth = camVal.imageWidth / divisor.value;
+            //            var newHeight = camVal.imageHeight / divisor.value;
+            //            Size newSize = new Size(newWidth, newHeight);
+            Imgproc.resize(streamBuffer, streamBuffer, this.size);
         }
 
         var sourceVideoMode = cvSource.getVideoMode();
         var imageSize = streamBuffer.size();
-        if(sourceVideoMode.width != (int) imageSize.width || sourceVideoMode.height != (int) imageSize.height) {
+        if (sourceVideoMode.width != (int) imageSize.width
+                || sourceVideoMode.height != (int) imageSize.height) {
             synchronized (streamBufferLock) {
-                cvSource.setVideoMode(new VideoMode(sourceVideoMode.pixelFormat,
-                        (int)imageSize.width,
-                        (int) imageSize.height,
-                        sourceVideoMode.fps));
+                cvSource.setVideoMode(
+                        new VideoMode(
+                                sourceVideoMode.pixelFormat,
+                                (int) imageSize.width,
+                                (int) imageSize.height,
+                                sourceVideoMode.fps));
             }
         }
 

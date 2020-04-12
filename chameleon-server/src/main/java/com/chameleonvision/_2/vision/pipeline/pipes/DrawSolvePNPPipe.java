@@ -5,18 +5,18 @@ import com.chameleonvision._2.vision.pipeline.Pipe;
 import com.chameleonvision._2.vision.pipeline.impl.StandardCVPipeline;
 import com.chameleonvision._2.vision.pipeline.impl.StandardCVPipelineSettings;
 import com.chameleonvision.common.util.ColorHelper;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 
-import java.awt.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.stream.Collectors;
-
-public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.TrackedTarget>>, Mat> {
+public class DrawSolvePNPPipe
+        implements Pipe<Pair<Mat, List<StandardCVPipeline.TrackedTarget>>, Mat> {
 
     private MatOfPoint3f boxCornerMat = new MatOfPoint3f();
 
@@ -25,21 +25,21 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
     public Scalar red = ColorHelper.colorToScalar(Color.RED);
     public Scalar orange = ColorHelper.colorToScalar(Color.orange);
 
-    public DrawSolvePNPPipe(StandardCVPipelineSettings standardCVPipelineSettings, CameraCalibrationConfig settings) {
+    public DrawSolvePNPPipe(
+            StandardCVPipelineSettings standardCVPipelineSettings, CameraCalibrationConfig settings) {
         setConfig(settings);
         setBox(standardCVPipelineSettings.targetCornerMat);
     }
 
-
     private void setBox(MatOfPoint3f mat) {
         boxCornerMat.release();
         var list = mat.toList();
-        var auxList = list.stream().map(it -> new Point3(it.x, it.y, it.z + 6)).collect(Collectors.toList());
+        var auxList =
+                list.stream().map(it -> new Point3(it.x, it.y, it.z + 6)).collect(Collectors.toList());
         var finalList = new ArrayList<>(list);
         finalList.addAll(auxList);
         boxCornerMat.fromList(finalList);
     }
-
 
     public void setConfig(StandardCVPipelineSettings settings) {
         setBox(settings.targetCornerMat);
@@ -71,7 +71,15 @@ public class DrawSolvePNPPipe implements Pipe<Pair<Mat, List<StandardCVPipeline.
         for (var it : targets.getRight()) {
 
             try {
-                Calib3d.projectPoints(boxCornerMat, it.rVector, it.tVector, this.cameraMatrix, this.distortionCoefficients, imagePoints, new Mat(), 0);
+                Calib3d.projectPoints(
+                        boxCornerMat,
+                        it.rVector,
+                        it.tVector,
+                        this.cameraMatrix,
+                        this.distortionCoefficients,
+                        imagePoints,
+                        new Mat(),
+                        0);
             } catch (Exception e) {
                 e.printStackTrace();
             }

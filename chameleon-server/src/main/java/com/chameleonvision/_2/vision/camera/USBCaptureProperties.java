@@ -6,7 +6,6 @@ import com.chameleonvision.common.util.Platform;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
@@ -25,11 +24,16 @@ public class USBCaptureProperties extends CaptureProperties {
     private static final int PS3EYE_VID = 0x1415;
     private static final int PS3EYE_PID = 0x2000;
 
-    private static final List<VideoMode.PixelFormat> ALLOWED_PIXEL_FORMATS = Arrays.asList(VideoMode.PixelFormat.kYUYV, VideoMode.PixelFormat.kMJPEG, VideoMode.PixelFormat.kBGR);
+    private static final List<VideoMode.PixelFormat> ALLOWED_PIXEL_FORMATS =
+            Arrays.asList(
+                    VideoMode.PixelFormat.kYUYV, VideoMode.PixelFormat.kMJPEG, VideoMode.PixelFormat.kBGR);
 
-    private static final Predicate<VideoMode> kMinFPSPredicate = (videoMode -> videoMode.fps >= MINIMUM_FPS);
-    private static final Predicate<VideoMode> kMinSizePredicate = (videoMode -> videoMode.width >= MINIMUM_WIDTH && videoMode.height >= MINIMUM_HEIGHT);
-    private static final Predicate<VideoMode> kPixelFormatPredicate = (videoMode -> ALLOWED_PIXEL_FORMATS.contains(videoMode.pixelFormat));
+    private static final Predicate<VideoMode> kMinFPSPredicate =
+            (videoMode -> videoMode.fps >= MINIMUM_FPS);
+    private static final Predicate<VideoMode> kMinSizePredicate =
+            (videoMode -> videoMode.width >= MINIMUM_WIDTH && videoMode.height >= MINIMUM_HEIGHT);
+    private static final Predicate<VideoMode> kPixelFormatPredicate =
+            (videoMode -> ALLOWED_PIXEL_FORMATS.contains(videoMode.pixelFormat));
 
     public final String name;
     public final String path;
@@ -89,7 +93,8 @@ public class USBCaptureProperties extends CaptureProperties {
     }
 
     private List<VideoMode> filterVideoModes(VideoMode[] videoModes) {
-        Predicate<VideoMode> fullPredicate = kMinFPSPredicate.and(kMinSizePredicate).and(kPixelFormatPredicate);
+        Predicate<VideoMode> fullPredicate =
+                kMinFPSPredicate.and(kMinSizePredicate).and(kPixelFormatPredicate);
         Stream<VideoMode> validModes = Arrays.stream(videoModes).filter(fullPredicate);
         return validModes.collect(Collectors.toList());
     }
@@ -102,16 +107,15 @@ public class USBCaptureProperties extends CaptureProperties {
         return videoModes;
     }
 
-    public VideoMode getVideoMode(int index){
+    public VideoMode getVideoMode(int index) {
         return videoModes.get(index);
     }
 
-    public VideoMode getCurrentVideoMode() { return staticProperties.mode; }
-
-    public int getCurrentVideoModeIndex(){
-        return getVideoModes().indexOf(getCurrentVideoMode());
+    public VideoMode getCurrentVideoMode() {
+        return staticProperties.mode;
     }
 
-
-
+    public int getCurrentVideoModeIndex() {
+        return getVideoModes().indexOf(getCurrentVideoMode());
+    }
 }

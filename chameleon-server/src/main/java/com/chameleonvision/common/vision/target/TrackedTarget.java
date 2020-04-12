@@ -2,15 +2,23 @@ package com.chameleonvision.common.vision.target;
 
 import com.chameleonvision.common.util.numbers.DoubleCouple;
 import com.chameleonvision.common.vision.opencv.Contour;
+import com.chameleonvision.common.vision.opencv.Releasable;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
 import java.util.List;
 import org.apache.commons.math3.util.FastMath;
+import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 
 // TODO: banks fix
-public class TrackedTarget {
-    final Contour m_mainContour;
+public class TrackedTarget implements Releasable {
+    public final Contour m_mainContour;
     List<Contour> m_subContours; // can be empty
+
+    private MatOfPoint2f m_approximateBoundingPolygon;
+
+    private List<Point> m_targetCorners;
 
     private Point m_targetOffsetPoint;
     private Point m_robotOffsetPoint;
@@ -19,10 +27,24 @@ public class TrackedTarget {
     private double m_yaw;
     private double m_area;
 
+    private Pose2d m_robotRelativePose;
+
+    private Mat m_cameraRelativeTvec, m_cameraRelativeRvec;
+
     public TrackedTarget(PotentialTarget origTarget, TargetCalculationParameters params) {
         this.m_mainContour = origTarget.m_mainContour;
         this.m_subContours = origTarget.m_subContours;
         calculateValues(params);
+    }
+
+    /**
+    * Set the approximate bouding polygon.
+    *
+    * @param boundingPolygon List of points to copy. Not modified.
+    */
+    public void setApproximateBoundingPolygon(MatOfPoint2f boundingPolygon) {
+        if (m_approximateBoundingPolygon == null) m_approximateBoundingPolygon = new MatOfPoint2f();
+        boundingPolygon.copyTo(m_approximateBoundingPolygon);
     }
 
     public Point getTargetOffsetPoint() {
@@ -49,8 +71,11 @@ public class TrackedTarget {
         return m_mainContour.getMinAreaRect();
     }
 
-    private void calculateTargetOffsetPoint(
-            boolean isLandscape, TargetOffsetPointRegion offsetRegion) {
+    public MatOfPoint2f getApproximateBoundingPolygon() {
+        return m_approximateBoundingPolygon;
+    }
+
+    private void calculateTargetOffsetPoint(boolean isLandscape, TargetOffsetPointEdge offsetRegion) {
         Point[] vertices = new Point[4];
 
         var minAreaRect = getMinAreaRect();
@@ -145,7 +170,7 @@ public class TrackedTarget {
 
     public void calculateValues(TargetCalculationParameters params) {
         // this MUST happen in this exact order!
-        calculateTargetOffsetPoint(params.isLandscape, params.targetOffsetPointRegion);
+        calculateTargetOffsetPoint(params.isLandscape, params.targetOffsetPointEdge);
         calculateRobotOffsetPoint(
                 m_targetOffsetPoint,
                 params.cameraCenterPoint,
@@ -158,10 +183,59 @@ public class TrackedTarget {
         calculateArea(params.imageArea);
     }
 
+    @Override
+    public void release() {
+        m_mainContour.release();
+        for (var sc : m_subContours) {
+            sc.release();
+        }
+
+        if (m_cameraRelativeTvec != null) m_cameraRelativeTvec.release();
+        if (m_cameraRelativeRvec != null) m_cameraRelativeRvec.release();
+    }
+
+    public void setCorners(List<Point> targetCorners) {
+        this.m_targetCorners = targetCorners;
+    }
+
+    public List<Point> getTargetCorners() {
+        return m_targetCorners;
+    }
+
+    public boolean hasSubContours() {
+        return !m_subContours.isEmpty();
+    }
+
+    public Pose2d getRobotRelativePose() {
+        return m_robotRelativePose;
+    }
+
+    public void setRobotRelativePose(Pose2d robotRelativePose) {
+        this.m_robotRelativePose = robotRelativePose;
+    }
+
+    public Mat getCameraRelativeTvec() {
+        return m_cameraRelativeTvec;
+    }
+
+    public void setCameraRelativeTvec(Mat cameraRelativeTvec) {
+        if (this.m_cameraRelativeTvec == null) m_cameraRelativeTvec = new Mat();
+        cameraRelativeTvec.copyTo(this.m_cameraRelativeTvec);
+    }
+
+    public Mat getCameraRelativeRvec() {
+        return m_cameraRelativeRvec;
+    }
+
+    public void setCameraRelativeRvec(Mat cameraRelativeRvec) {
+        if (this.m_cameraRelativeRvec == null) m_cameraRelativeRvec = new Mat();
+        cameraRelativeRvec.copyTo(this.m_cameraRelativeRvec);
+    }
+
     public static class TargetCalculationParameters {
         // TargetOffset calculation values
         final boolean isLandscape;
-        final TargetOffsetPointRegion targetOffsetPointRegion;
+        final TargetOffsetPointEdge targetOffsetPointEdge;
 
         // RobotOffset calculation values
         final Point userOffsetPoint;
@@ -180,7 +254,7 @@ public class TrackedTarget {
 
         public TargetCalculationParameters(
                 boolean isLandscape,
-                TargetOffsetPointRegion targetOffsetPointRegion,
+                TargetOffsetPointEdge targetOffsetPointEdge,
                 Point userOffsetPoint,
                 Point cameraCenterPoint,
                 DoubleCouple offsetEquationValues,
@@ -189,7 +263,7 @@ public class TrackedTarget {
                 double verticalFocalLength,
                 double imageArea) {
             this.isLandscape = isLandscape;
-            this.targetOffsetPointRegion = targetOffsetPointRegion;
+            this.targetOffsetPointEdge = targetOffsetPointEdge;
             this.userOffsetPoint = userOffsetPoint;
             this.cameraCenterPoint = cameraCenterPoint;
             this.offsetEquationValues = offsetEquationValues;
@@ -198,25 +272,5 @@ public class TrackedTarget {
             this.verticalFocalLength = verticalFocalLength;
             this.imageArea = imageArea;
         }
-    }
-
-    // TODO: move these? also docs plox
-    public enum TargetOrientation {
-        Portrait,
-        Landscape
-    }
-
-    public enum TargetOffsetPointRegion {
-        Center,
-        Top,
-        Bottom,
-        Left,
-        Right
-    }
-
-    public enum RobotOffsetPointMode {
-        None,
-        Single,
-        Dual
     }
 }

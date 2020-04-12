@@ -19,8 +19,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import io.javalin.http.Context;
 import io.javalin.http.UploadedFile;
-import org.opencv.core.Point3;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -30,6 +28,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.opencv.core.Point3;
 
 public class RequestHandler {
 
@@ -56,7 +55,13 @@ public class RequestHandler {
             // setting up network config after saving
             boolean isStatic = ConfigManager.settings.connectionType.equals(NetworkMode.STATIC);
 
-            boolean state = NetworkManager.setHostname(ConfigManager.settings.hostname) && NetworkManager.setNetwork(isStatic, ConfigManager.settings.ip, ConfigManager.settings.netmask, ConfigManager.settings.gateway);
+            boolean state =
+                    NetworkManager.setHostname(ConfigManager.settings.hostname)
+                            && NetworkManager.setNetwork(
+                                    isStatic,
+                                    ConfigManager.settings.ip,
+                                    ConfigManager.settings.netmask,
+                                    ConfigManager.settings.gateway);
             if (state) {
                 ctx.status(200);
             } else {
@@ -77,9 +82,15 @@ public class RequestHandler {
             int cameraIndex = (Integer) data.getOrDefault("camera", -1);
 
             var pipelineIndex = (Integer) data.get("pipeline");
-            StandardCVPipelineSettings origPipeline = (StandardCVPipelineSettings) VisionManager.getCurrentUIVisionProcess().pipelineManager.getPipeline(pipelineIndex).settings;
+            StandardCVPipelineSettings origPipeline =
+                    (StandardCVPipelineSettings)
+                            VisionManager.getCurrentUIVisionProcess()
+                                    .pipelineManager
+                                    .getPipeline(pipelineIndex)
+                                    .settings;
             String tmp = objectMapper.writeValueAsString(origPipeline);
-            StandardCVPipelineSettings newPipeline = objectMapper.readValue(tmp, StandardCVPipelineSettings.class);
+            StandardCVPipelineSettings newPipeline =
+                    objectMapper.readValue(tmp, StandardCVPipelineSettings.class);
 
             if (cameraIndex == -1) { // same camera
 
@@ -92,12 +103,17 @@ public class RequestHandler {
                         newPipeline.videoModeIndex = cam.getCamera().getProperties().videoModes.size() - 1;
                     }
                     if (newPipeline.is3D) {
-                        var calibration = cam.getCamera().getCalibration(cam.getCamera().getProperties().getVideoMode(newPipeline.videoModeIndex));
+                        var calibration =
+                                cam.getCamera()
+                                        .getCalibration(
+                                                cam.getCamera().getProperties().getVideoMode(newPipeline.videoModeIndex));
                         if (calibration == null) {
                             newPipeline.is3D = false;
                         }
                     }
-                    VisionManager.getCurrentUIVisionProcess().pipelineManager.duplicatePipeline(newPipeline, cam);
+                    VisionManager.getCurrentUIVisionProcess()
+                            .pipelineManager
+                            .duplicatePipeline(newPipeline, cam);
                     ctx.status(200);
                 } else {
                     ctx.status(500);
@@ -107,7 +123,6 @@ public class RequestHandler {
             ctx.status(500);
         }
     }
-
 
     public static void onCameraSettings(Context ctx) {
         ObjectMapper objectMapper = kObjectMapper;
@@ -152,13 +167,15 @@ public class RequestHandler {
         }
         // convert from mm to meters
         pipeManager.calib3dPipe.setSquareSize(squareSize);
-        VisionManager.getCurrentUIVisionProcess().pipelineManager.calib3dPipe.settings.videoModeIndex = resolutionIndex;
+        VisionManager.getCurrentUIVisionProcess().pipelineManager.calib3dPipe.settings.videoModeIndex =
+                resolutionIndex;
         VisionManager.getCurrentUIVisionProcess().pipelineManager.setCalibrationMode(true);
         VisionManager.getCurrentUIVisionProcess().getCamera().setVideoMode(resolutionIndex);
     }
 
     public static void onSnapshot(Context ctx) {
-        Calibrate3dPipeline calPipe = VisionManager.getCurrentUIVisionProcess().pipelineManager.calib3dPipe;
+        Calibrate3dPipeline calPipe =
+                VisionManager.getCurrentUIVisionProcess().pipelineManager.calib3dPipe;
 
         calPipe.takeSnapshot();
 
@@ -213,8 +230,14 @@ public class RequestHandler {
                 pointsList.add(pointToAdd);
             }
             System.out.println(pointsList.toString());
-            if (VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings instanceof StandardCVPipelineSettings) {
-                var settings = (StandardCVPipelineSettings) VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings;
+            if (VisionManager.getCurrentUIVisionProcess().pipelineManager.getCurrentPipeline().settings
+                    instanceof StandardCVPipelineSettings) {
+                var settings =
+                        (StandardCVPipelineSettings)
+                                VisionManager.getCurrentUIVisionProcess()
+                                        .pipelineManager
+                                        .getCurrentPipeline()
+                                        .settings;
                 settings.targetCornerMat.fromList(pointsList);
             }
         } catch (Exception e) {
@@ -235,7 +258,10 @@ public class RequestHandler {
                     file.getContent().transferTo(stream);
                     stream.close();
                 } else {
-                    filePath = Paths.get(new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getPath()); // quirk to get the current file directory
+                    filePath =
+                            Paths.get(
+                                    new File(Main.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+                                            .getPath()); // quirk to get the current file directory
                 }
                 Helpers.setService(filePath);
                 ctx.status(200);

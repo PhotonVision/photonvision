@@ -48,6 +48,13 @@ public class CameraJsonConfig {
         int videomode = camProps.getCurrentVideoModeIndex();
         StreamDivisor streamDivisor = process.cameraStreamer.getDivisor();
         double tilt = process.getCamera().getProperties().getTilt().getDegrees();
-        return new CameraJsonConfig(camProps.getFOV(), camProps.path, camProps.name, camProps.getNickname(), videomode, streamDivisor, tilt);
+        return new CameraJsonConfig(
+                camProps.getFOV(),
+                camProps.path,
+                camProps.name,
+                camProps.getNickname(),
+                videomode,
+                streamDivisor,
+                tilt);
     }
 }

@@ -43,4 +43,3 @@ public class HsvPipe implements Pipe<Mat, Mat> {
         return Pair.of(outputMat, processTime);
     }
 }
-

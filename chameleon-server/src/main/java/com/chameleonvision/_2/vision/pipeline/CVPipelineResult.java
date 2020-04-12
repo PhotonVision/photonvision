@@ -1,8 +1,7 @@
 package com.chameleonvision._2.vision.pipeline;
 
-import org.opencv.core.Mat;
-
 import java.util.List;
+import org.opencv.core.Mat;
 
 public abstract class CVPipelineResult<T> {
     public final List<T> targets;
@@ -14,7 +13,7 @@ public abstract class CVPipelineResult<T> {
     public CVPipelineResult(List<T> targets, Mat outputMat, long processTime) {
         this.targets = targets;
         hasTarget = targets != null && !targets.isEmpty();
-//        this.outputMat = outputMat;
+        //        this.outputMat = outputMat;
         outputMat.copyTo(this.outputMat);
         outputMat.release();
         this.processTime = processTime;

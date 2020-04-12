@@ -3,11 +3,10 @@ package com.chameleonvision._2.config.serializers;
 import com.chameleonvision.common.util.numbers.NumberCouple;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import org.opencv.core.MatOfPoint3f;
-import org.opencv.core.Point3;
-
 import java.io.IOException;
 import java.util.List;
+import org.opencv.core.MatOfPoint3f;
+import org.opencv.core.Point3;
 
 public abstract class BaseSerializer<T> extends StdSerializer<T> {
     protected BaseSerializer(Class<T> t) {
@@ -16,7 +15,8 @@ public abstract class BaseSerializer<T> extends StdSerializer<T> {
 
     JsonGenerator generator;
 
-    <N extends NumberCouple> void writeNumberCoupleAsNumberArray(String name, N couple) throws IOException {
+    <N extends NumberCouple> void writeNumberCoupleAsNumberArray(String name, N couple)
+            throws IOException {
         generator.writeArrayFieldStart(name);
         generator.writeObject(couple.getFirst());
         generator.writeObject(couple.getSecond());

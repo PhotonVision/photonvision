@@ -23,18 +23,19 @@ public class BlurPipe implements Pipe<Mat, Mat> {
     public Pair<Mat, Long> run(Mat input) {
         long processStartNanos = System.nanoTime();
 
-//        if (blurSize > 0) {
-//            input.copyTo(processBuffer);
-//            try {
-//                Imgproc.blur(processBuffer, processBuffer, new Size(blurSize, blurSize));
-//                processBuffer.copyTo(outputMat);
-//                processBuffer.release();
-//            } catch (CvException e) {
-//                System.err.println("(BlurPipe) Exception thrown by OpenCV: \n" + e.getMessage());
-//            }
-//        } else {
-//            input.copyTo(outputMat);
-//        }
+        //        if (blurSize > 0) {
+        //            input.copyTo(processBuffer);
+        //            try {
+        //                Imgproc.blur(processBuffer, processBuffer, new Size(blurSize, blurSize));
+        //                processBuffer.copyTo(outputMat);
+        //                processBuffer.release();
+        //            } catch (CvException e) {
+        //                System.err.println("(BlurPipe) Exception thrown by OpenCV: \n" +
+        // e.getMessage());
+        //            }
+        //        } else {
+        //            input.copyTo(outputMat);
+        //        }
 
         long processTime = System.nanoTime() - processStartNanos;
         return Pair.of(input, processTime);
