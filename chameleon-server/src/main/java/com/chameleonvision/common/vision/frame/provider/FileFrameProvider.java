@@ -3,6 +3,7 @@ package com.chameleonvision.common.vision.frame.provider;
 import com.chameleonvision.common.vision.frame.Frame;
 import com.chameleonvision.common.vision.frame.FrameProvider;
 import com.chameleonvision.common.vision.frame.FrameStaticProperties;
+import com.chameleonvision.common.vision.opencv.CVMat;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -51,7 +52,7 @@ public class FileFrameProvider implements FrameProvider {
 
         if (image.cols() > 0 && image.rows() > 0) {
             m_properties = new FrameStaticProperties(image.width(), image.height(), m_fov);
-            m_frame = new Frame(image);
+            m_frame = new Frame(new CVMat(image), m_properties);
         } else {
             throw new RuntimeException("Image loading failed!");
         }
@@ -74,11 +75,6 @@ public class FileFrameProvider implements FrameProvider {
     */
     public boolean isImageReloading() {
         return m_reloadImage;
-    }
-
-    @Override
-    public FrameStaticProperties getFrameProperties() {
-        return m_properties;
     }
 
     @Override

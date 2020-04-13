@@ -5,15 +5,12 @@ import com.chameleonvision._2.vision.pipeline.Pipe;
 import com.chameleonvision.common.util.math.MathUtils;
 import com.chameleonvision.common.util.numbers.DoubleCouple;
 import com.chameleonvision.common.vision.opencv.Contour;
-import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.Rect;
-import org.opencv.core.RotatedRect;
-import org.opencv.imgproc.Imgproc;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
 
 public class FilterContoursPipe implements Pipe<List<MatOfPoint>, List<Contour>> {
 
@@ -24,14 +21,22 @@ public class FilterContoursPipe implements Pipe<List<MatOfPoint>, List<Contour>>
 
     private List<Contour> filteredContours = new ArrayList<>();
 
-    public FilterContoursPipe(DoubleCouple area, DoubleCouple ratio, DoubleCouple extent, CaptureStaticProperties camProps) {
+    public FilterContoursPipe(
+            DoubleCouple area,
+            DoubleCouple ratio,
+            DoubleCouple extent,
+            CaptureStaticProperties camProps) {
         this.area = area;
         this.ratio = ratio;
         this.extent = extent;
         this.camProps = camProps;
     }
 
-    public void setConfig(DoubleCouple area, DoubleCouple ratio, DoubleCouple extent, CaptureStaticProperties camProps) {
+    public void setConfig(
+            DoubleCouple area,
+            DoubleCouple ratio,
+            DoubleCouple extent,
+            CaptureStaticProperties camProps) {
         this.area = area;
         this.ratio = ratio;
         this.extent = extent;
@@ -61,7 +66,7 @@ public class FilterContoursPipe implements Pipe<List<MatOfPoint>, List<Contour>>
 
         // AspectRatio filtering
         Rect boundingRect = realContour.getBoundingRect();
-        double aspectRatio = ((double)boundingRect.width / boundingRect.height);
+        double aspectRatio = ((double) boundingRect.width / boundingRect.height);
         if (aspectRatio < ratio.getFirst() || aspectRatio > ratio.getSecond()) {
             return;
         }

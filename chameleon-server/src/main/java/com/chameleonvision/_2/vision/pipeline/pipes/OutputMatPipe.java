@@ -22,11 +22,10 @@ public class OutputMatPipe implements Pipe<Pair<Mat, Mat>, Mat> {
     }
 
     /**
-     *
-     * @param input Input object for pipe
-     *        Left is raw camera mat (8UC3), Right is HSV threshold mat (8UC1)
-     * @return Returns desired output Mat, and processing time in nanoseconds
-     */
+    * @param input Input object for pipe Left is raw camera mat (8UC3), Right is HSV threshold mat
+    *     (8UC1)
+    * @return Returns desired output Mat, and processing time in nanoseconds
+    */
     @Override
     public Pair<Mat, Long> run(Pair<Mat, Mat> input) {
         long processStartNanos = System.nanoTime();

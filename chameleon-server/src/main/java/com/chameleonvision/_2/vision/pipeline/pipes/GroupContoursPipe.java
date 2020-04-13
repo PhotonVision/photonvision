@@ -5,17 +5,17 @@ import com.chameleonvision._2.vision.enums.TargetIntersection;
 import com.chameleonvision._2.vision.pipeline.Pipe;
 import com.chameleonvision._2.vision.pipeline.impl.StandardCVPipeline;
 import com.chameleonvision.common.util.math.MathUtils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCVPipeline.TrackedTarget>> {
+public class GroupContoursPipe
+        implements Pipe<List<MatOfPoint>, List<StandardCVPipeline.TrackedTarget>> {
 
     private static final Comparator<MatOfPoint> sortByMomentsX =
             Comparator.comparingDouble(GroupContoursPipe::calcMomentsX);
@@ -55,76 +55,78 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
             Collections.reverse(sorted);
 
             switch (group) {
-                case Single: {
-                    input.forEach(c -> {
-                        contourBuffer.fromArray(c.toArray());
-                        if (contourBuffer.cols() != 0 && contourBuffer.rows() != 0) {
-                            RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
-                            Rect boundingRect = Imgproc.boundingRect(contourBuffer);
-                            var target = new StandardCVPipeline.TrackedTarget();
-                            target.minAreaRect = rect;
-                            target.rawContour = contourBuffer;
-                            target.boundingRect = boundingRect;
-                            groupedContours.add(target);
-                        }
-                    });
-                    break;
-                }
-                case Dual: {
-                    for (var i = 0; i < input.size(); i++) {
-                        List<Point> finalContourList = new ArrayList<>(input.get(i).toList());
-
-                        try {
-                            MatOfPoint firstContour = input.get(i);
-                            MatOfPoint secondContour = input.get(i + 1);
-
-                            if (isIntersecting(firstContour, secondContour)) {
-                                finalContourList.addAll(secondContour.toList());
-                            } else {
-                                finalContourList.clear();
-                                continue;
-                            }
-
-                            intersectMatA.release();
-                            intersectMatB.release();
-
-                            contourBuffer.fromList(finalContourList);
-
-                            if (contourBuffer.cols() != 0 && contourBuffer.rows() != 0) {
-                                RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
-                                Rect boundingRect = Imgproc.boundingRect(contourBuffer);
-                                var target = new StandardCVPipeline.TrackedTarget();
-                                target.minAreaRect = rect;
-                                target.boundingRect = boundingRect;
-                                // find left and right bouding rectangles
-                                target.leftRightDualTargetPair =
-                                        Pair.of(Imgproc.boundingRect(firstContour),
-                                                Imgproc.boundingRect(secondContour));
-
-                                // find left and right min area rectangles
-                                tempRectMat.fromArray(firstContour.toArray());
-                                var minAreaRect1 = Imgproc.minAreaRect(tempRectMat);
-                                tempRectMat.fromArray(secondContour.toArray());
-                                var minAreaRect2 = Imgproc.minAreaRect(tempRectMat);
-                                target.leftRightRotatedRect =
-                                        Pair.of(minAreaRect1, minAreaRect2);
-
-                                target.rawContour = contourBuffer;
-
-                                groupedContours.add(target);
-
-                                firstContour.release();
-                                secondContour.release();
-
-                                // skip the next contour because it's been grouped already
-                                i += 1;
-                            }
-                        } catch (IndexOutOfBoundsException e) {
-                            finalContourList.clear();
-                        }
+                case Single:
+                    {
+                        input.forEach(
+                                c -> {
+                                    contourBuffer.fromArray(c.toArray());
+                                    if (contourBuffer.cols() != 0 && contourBuffer.rows() != 0) {
+                                        RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
+                                        Rect boundingRect = Imgproc.boundingRect(contourBuffer);
+                                        var target = new StandardCVPipeline.TrackedTarget();
+                                        target.minAreaRect = rect;
+                                        target.rawContour = contourBuffer;
+                                        target.boundingRect = boundingRect;
+                                        groupedContours.add(target);
+                                    }
+                                });
+                        break;
                     }
-                    break;
-                }
+                case Dual:
+                    {
+                        for (var i = 0; i < input.size(); i++) {
+                            List<Point> finalContourList = new ArrayList<>(input.get(i).toList());
+
+                            try {
+                                MatOfPoint firstContour = input.get(i);
+                                MatOfPoint secondContour = input.get(i + 1);
+
+                                if (isIntersecting(firstContour, secondContour)) {
+                                    finalContourList.addAll(secondContour.toList());
+                                } else {
+                                    finalContourList.clear();
+                                    continue;
+                                }
+
+                                intersectMatA.release();
+                                intersectMatB.release();
+
+                                contourBuffer.fromList(finalContourList);
+
+                                if (contourBuffer.cols() != 0 && contourBuffer.rows() != 0) {
+                                    RotatedRect rect = Imgproc.minAreaRect(contourBuffer);
+                                    Rect boundingRect = Imgproc.boundingRect(contourBuffer);
+                                    var target = new StandardCVPipeline.TrackedTarget();
+                                    target.minAreaRect = rect;
+                                    target.boundingRect = boundingRect;
+                                    // find left and right bouding rectangles
+                                    target.leftRightDualTargetPair =
+                                            Pair.of(
+                                                    Imgproc.boundingRect(firstContour), Imgproc.boundingRect(secondContour));
+
+                                    // find left and right min area rectangles
+                                    tempRectMat.fromArray(firstContour.toArray());
+                                    var minAreaRect1 = Imgproc.minAreaRect(tempRectMat);
+                                    tempRectMat.fromArray(secondContour.toArray());
+                                    var minAreaRect2 = Imgproc.minAreaRect(tempRectMat);
+                                    target.leftRightRotatedRect = Pair.of(minAreaRect1, minAreaRect2);
+
+                                    target.rawContour = contourBuffer;
+
+                                    groupedContours.add(target);
+
+                                    firstContour.release();
+                                    secondContour.release();
+
+                                    // skip the next contour because it's been grouped already
+                                    i += 1;
+                                }
+                            } catch (IndexOutOfBoundsException e) {
+                                finalContourList.clear();
+                            }
+                        }
+                        break;
+                    }
             }
         }
 
@@ -160,32 +162,36 @@ public class GroupContoursPipe implements Pipe<List<MatOfPoint>, List<StandardCV
             double massX = (x0A + x0B) / 2;
             double massY = (y0A + y0B) / 2;
             switch (intersection) {
-                case Up: {
-                    if (intersectionY < massY) {
+                case Up:
+                    {
+                        if (intersectionY < massY) {
                             return true;
+                        }
+                        break;
                     }
-                    break;
-                }
-                case Down: {
-                    if (intersectionY > massY) {
+                case Down:
+                    {
+                        if (intersectionY > massY) {
                             return true;
-                    }
+                        }
 
-                    break;
-                }
-                case Left: {
-                    if (intersectionX < massX) {
+                        break;
+                    }
+                case Left:
+                    {
+                        if (intersectionX < massX) {
 
-                        return true;
+                            return true;
+                        }
+                        break;
                     }
-                    break;
-                }
-                case Right: {
-                    if (intersectionX > massX) {
-                        return true;
+                case Right:
+                    {
+                        if (intersectionX > massX) {
+                            return true;
+                        }
+                        break;
                     }
-                    break;
-                }
             }
             return false;
         } catch (Exception e) {

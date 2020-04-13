@@ -6,7 +6,6 @@ import com.chameleonvision.common.util.Platform;
 import com.chameleonvision.common.util.ShellExec;
 import com.chameleonvision.common.util.file.FileUtils;
 import com.chameleonvision.common.util.file.JacksonUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,10 +16,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 public class ConfigManager {
-    private ConfigManager() {
-    }
+    private ConfigManager() {}
 
-    public static final Path SettingsPath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "settings");
+    public static final Path SettingsPath =
+            Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "settings");
     private static final Path settingsFilePath = Paths.get(SettingsPath.toString(), "settings.json");
 
     private static final LinkedHashMap<String, CameraConfig> cameraConfigs = new LinkedHashMap<>();
@@ -46,14 +45,14 @@ public class ConfigManager {
                     new ShellExec().executeBashCommand("sudo chmod -R 0777 " + SettingsPath.toString());
                 }
             } catch (IOException e) {
-                if (!(e instanceof java.nio.file.FileAlreadyExistsException))
-                    e.printStackTrace();
+                if (!(e instanceof java.nio.file.FileAlreadyExistsException)) e.printStackTrace();
             }
         }
     }
 
     private static void checkSettingsFile() {
-        boolean settingsFileEmpty = settingsFileExists() && new File(settingsFilePath.toString()).length() == 0;
+        boolean settingsFileEmpty =
+                settingsFileExists() && new File(settingsFilePath.toString()).length() == 0;
         if (settingsFileEmpty || !settingsFileExists()) {
             try {
                 JacksonUtils.serializer(settingsFilePath, settings, true);
@@ -91,7 +90,8 @@ public class ConfigManager {
         saveSettingsFile();
     }
 
-    public static List<FullCameraConfiguration> initializeCameras(List<CameraJsonConfig> preliminaryConfigs) {
+    public static List<FullCameraConfiguration> initializeCameras(
+            List<CameraJsonConfig> preliminaryConfigs) {
         List<FullCameraConfiguration> configList = new ArrayList<>();
 
         checkSettingsFolder();

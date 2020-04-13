@@ -8,14 +8,19 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Size;
 
-/**
- * A class that holds a camera matrix and distortion coefficients for a given resolution
- */
+/** A class that holds a camera matrix and distortion coefficients for a given resolution */
 public class CameraCalibrationConfig {
-    @JsonProperty("resolution") public final Size resolution;
-    @JsonProperty("cameraMatrix") public final JsonMat cameraMatrix;
-    @JsonProperty("distortionCoeffs") public final JsonMat distortionCoeffs;
-    @JsonProperty("squareSize") public final double squareSize;
+    @JsonProperty("resolution")
+    public final Size resolution;
+
+    @JsonProperty("cameraMatrix")
+    public final JsonMat cameraMatrix;
+
+    @JsonProperty("distortionCoeffs")
+    public final JsonMat distortionCoeffs;
+
+    @JsonProperty("squareSize")
+    public final double squareSize;
 
     @JsonCreator
     public CameraCalibrationConfig(
@@ -29,7 +34,8 @@ public class CameraCalibrationConfig {
         this.squareSize = squareSize;
     }
 
-    public CameraCalibrationConfig(Size resolution, Mat cameraMatrix, Mat distortionCoeffs, double squareSize) {
+    public CameraCalibrationConfig(
+            Size resolution, Mat cameraMatrix, Mat distortionCoeffs, double squareSize) {
         this.resolution = resolution;
         this.cameraMatrix = JsonMat.fromMat(cameraMatrix);
         this.distortionCoeffs = JsonMat.fromMat(distortionCoeffs);
@@ -49,16 +55,15 @@ public class CameraCalibrationConfig {
             cameraMatrix = config.cameraMatrix.data;
             distortionCoeffs = config.distortionCoeffs.data;
         }
-
     }
 
     @JsonIgnore
     public Mat getCameraMatrixAsMat() {
-        return cameraMatrix.toMat();
+        return cameraMatrix.getAsMat();
     }
 
     @JsonIgnore
     public MatOfDouble getDistortionCoeffsAsMat() {
-        return new MatOfDouble(distortionCoeffs.toMat());
+        return new MatOfDouble(distortionCoeffs.getAsMat());
     }
 }

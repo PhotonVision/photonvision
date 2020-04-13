@@ -5,10 +5,12 @@ import java.net.URISyntaxException;
 
 public class ProgramDirectoryUtilities {
     private static String getJarName() {
-        return new File(ProgramDirectoryUtilities.class.getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .getPath())
+        return new File(
+                        ProgramDirectoryUtilities.class
+                                .getProtectionDomain()
+                                .getCodeSource()
+                                .getLocation()
+                                .getPath())
                 .getName();
     }
 
@@ -27,7 +29,14 @@ public class ProgramDirectoryUtilities {
 
     private static String getCurrentJARDirectory() {
         try {
-            return new File(ProgramDirectoryUtilities.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath()).getParent();
+            return new File(
+                            ProgramDirectoryUtilities.class
+                                    .getProtectionDomain()
+                                    .getCodeSource()
+                                    .getLocation()
+                                    .toURI()
+                                    .getPath())
+                    .getParent();
         } catch (URISyntaxException exception) {
             exception.printStackTrace();
         }

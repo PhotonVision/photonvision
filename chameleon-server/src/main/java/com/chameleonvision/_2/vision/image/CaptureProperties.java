@@ -9,13 +9,16 @@ public class CaptureProperties {
     protected CaptureStaticProperties staticProperties;
     private Rotation2d tilt = new Rotation2d();
 
-    protected CaptureProperties() {
-    }
+    protected CaptureProperties() {}
 
     public CaptureProperties(VideoMode videoMode, double fov) {
         staticProperties = new CaptureStaticProperties(videoMode, fov);
     }
-    public void setStaticProperties(CaptureStaticProperties staticProperties) {this.staticProperties = staticProperties;}
+
+    public void setStaticProperties(CaptureStaticProperties staticProperties) {
+        this.staticProperties = staticProperties;
+    }
+
     public CaptureStaticProperties getStaticProperties() {
         return staticProperties;
     }

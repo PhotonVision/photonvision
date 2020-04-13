@@ -26,4 +26,8 @@ public class MathUtils {
         double toMult = Math.pow(10, to);
         return (double) Math.round(value * toMult) / toMult;
     }
+
+    public static double nanosToMillis(long nanos) {
+        return nanos / 1000000.0;
+    }
 }

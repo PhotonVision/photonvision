@@ -7,15 +7,16 @@ import com.chameleonvision._2.vision.enums.TargetRegion;
 import com.chameleonvision._2.vision.pipeline.Pipe;
 import com.chameleonvision._2.vision.pipeline.impl.StandardCVPipeline;
 import com.chameleonvision.common.util.numbers.DoubleCouple;
+import java.util.ArrayList;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
 import org.opencv.core.Point;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class Collect2dTargetsPipe implements Pipe<Pair<List<StandardCVPipeline.TrackedTarget>, CaptureStaticProperties>, List<StandardCVPipeline.TrackedTarget>> {
-
+public class Collect2dTargetsPipe
+        implements Pipe<
+                Pair<List<StandardCVPipeline.TrackedTarget>, CaptureStaticProperties>,
+                List<StandardCVPipeline.TrackedTarget>> {
 
     private CaptureStaticProperties camProps;
     private CalibrationMode calibrationMode;
@@ -26,11 +27,32 @@ public class Collect2dTargetsPipe implements Pipe<Pair<List<StandardCVPipeline.T
     private List<StandardCVPipeline.TrackedTarget> targets = new ArrayList<>();
     private Point[] vertices = new Point[4];
 
-    public Collect2dTargetsPipe(CalibrationMode calibrationMode, TargetRegion targetRegion, TargetOrientation targetOrientation, DoubleCouple calibrationPoint, double calibrationM, double calibrationB, CaptureStaticProperties camProps) {
-        setConfig(calibrationMode, targetRegion, targetOrientation, calibrationPoint, calibrationM, calibrationB, camProps);
+    public Collect2dTargetsPipe(
+            CalibrationMode calibrationMode,
+            TargetRegion targetRegion,
+            TargetOrientation targetOrientation,
+            DoubleCouple calibrationPoint,
+            double calibrationM,
+            double calibrationB,
+            CaptureStaticProperties camProps) {
+        setConfig(
+                calibrationMode,
+                targetRegion,
+                targetOrientation,
+                calibrationPoint,
+                calibrationM,
+                calibrationB,
+                camProps);
     }
 
-    public void setConfig(CalibrationMode calibrationMode, TargetRegion targetRegion, TargetOrientation targetOrientation, DoubleCouple calibrationPoint, double calibrationM, double calibrationB, CaptureStaticProperties camProps) {
+    public void setConfig(
+            CalibrationMode calibrationMode,
+            TargetRegion targetRegion,
+            TargetOrientation targetOrientation,
+            DoubleCouple calibrationPoint,
+            double calibrationM,
+            double calibrationB,
+            CaptureStaticProperties camProps) {
         this.calibrationMode = calibrationMode;
         this.calibrationPoint = calibrationPoint;
         this.calibrationM = calibrationM;
@@ -41,7 +63,8 @@ public class Collect2dTargetsPipe implements Pipe<Pair<List<StandardCVPipeline.T
     }
 
     @Override
-    public Pair<List<StandardCVPipeline.TrackedTarget>, Long> run(Pair<List<StandardCVPipeline.TrackedTarget>, CaptureStaticProperties> inputPair) {
+    public Pair<List<StandardCVPipeline.TrackedTarget>, Long> run(
+            Pair<List<StandardCVPipeline.TrackedTarget>, CaptureStaticProperties> inputPair) {
         long processStartNanos = System.nanoTime();
 
         targets.clear();
@@ -64,22 +87,26 @@ public class Collect2dTargetsPipe implements Pipe<Pair<List<StandardCVPipeline.T
 
                 Point result = t.minAreaRect.center;
                 switch (this.targetRegion) {
-                    case Top: {
-                        result = orientation ? tl : tr;
-                        break;
-                    }
-                    case Bottom: {
-                        result = orientation ? br : bl;
-                        break;
-                    }
-                    case Left: {
-                        result = orientation ? bl : tl;
-                        break;
-                    }
-                    case Right: {
-                        result = orientation ? tr : br;
-                        break;
-                    }
+                    case Top:
+                        {
+                            result = orientation ? tl : tr;
+                            break;
+                        }
+                    case Bottom:
+                        {
+                            result = orientation ? br : bl;
+                            break;
+                        }
+                    case Left:
+                        {
+                            result = orientation ? bl : tl;
+                            break;
+                        }
+                    case Right:
+                        {
+                            result = orientation ? tr : br;
+                            break;
+                        }
                 }
                 t.point = result;
 
@@ -114,7 +141,8 @@ public class Collect2dTargetsPipe implements Pipe<Pair<List<StandardCVPipeline.T
     }
 
     private double calculatePitch(double pixelY, double centerY) {
-        double pitch = FastMath.toDegrees(FastMath.atan((pixelY - centerY) / camProps.verticalFocalLength));
+        double pitch =
+                FastMath.toDegrees(FastMath.atan((pixelY - centerY) / camProps.verticalFocalLength));
         return (pitch * -1);
     }
 

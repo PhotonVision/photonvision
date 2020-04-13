@@ -9,13 +9,18 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class LinuxNetworking extends SysNetworking {
     private static final String PATH = "/etc/dhcpcd.conf";
 
+    private Logger logger = LoggerFactory.getLogger(LinuxNetworking.class);
+
     @Override
     public boolean setDHCP() {
         File dhcpConf = new File(PATH);
+        logger.debug("Removing static IP from {}", PATH);
         if (dhcpConf.exists()) {
             try {
                 List<String> lines = FileUtils.readLines(dhcpConf, StandardCharsets.UTF_8);
@@ -44,7 +49,7 @@ public class LinuxNetworking extends SysNetworking {
             }
 
         } else {
-            System.err.println("dhcpcd5 is not installed, unable to set IP.");
+            logger.error("dhcpcd5 is not installed, unable to set IP.");
             return false;
         }
         return true;

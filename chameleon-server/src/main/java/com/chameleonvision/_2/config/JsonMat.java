@@ -1,17 +1,21 @@
 package com.chameleonvision._2.config;
 
+import com.chameleonvision.common.vision.opencv.Releasable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Arrays;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
 
-import java.util.Arrays;
-
-
-public class JsonMat {
+public class JsonMat implements Releasable {
     public final int rows;
     public final int cols;
     public final int type;
     public final double[] data;
+
+    @JsonIgnore private Mat wrappedMat;
+    private MatOfDouble wrappedMatOfDouble;
 
     public JsonMat(int rows, int cols, double[] data) {
         this(rows, cols, CvType.CV_64FC1, data);
@@ -28,10 +32,6 @@ public class JsonMat {
         this.data = data;
     }
 
-    public Mat toMat() {
-        return toMat(this);
-    }
-
     private static boolean isCameraMatrixMat(Mat mat) {
         return mat.type() == CvType.CV_64FC1 && mat.cols() == 3 && mat.rows() == 3;
     }
@@ -44,10 +44,11 @@ public class JsonMat {
         return isDistortionCoeffsMat(mat) || isCameraMatrixMat(mat);
     }
 
+    @JsonIgnore
     public static double[] getDataFromMat(Mat mat) {
         if (!isCalibrationMat(mat)) return null;
 
-        double[] data = new double[(int)(mat.total()*mat.elemSize())];
+        double[] data = new double[(int) (mat.total() * mat.elemSize())];
         mat.get(0, 0, data);
 
         int dataLen = -1;
@@ -64,11 +65,28 @@ public class JsonMat {
         return new JsonMat(mat.rows(), mat.cols(), getDataFromMat(mat));
     }
 
-    public static Mat toMat(JsonMat jsonMat) {
-        if (jsonMat.type != CvType.CV_64FC1) return null;
+    @JsonIgnore
+    public Mat getAsMat() {
+        if (this.type != CvType.CV_64FC1) return null;
 
-        Mat retMat = new Mat(jsonMat.rows, jsonMat.cols, jsonMat.type);
-        retMat.put(0, 0, jsonMat.data);
-        return retMat;
+        if (wrappedMat == null) {
+            this.wrappedMat = new Mat(this.rows, this.cols, this.type);
+            this.wrappedMat.put(0, 0, this.data);
+        }
+        return this.wrappedMat;
+    }
+
+    @JsonIgnore
+    public MatOfDouble getAsMatOfDouble() {
+        if (this.wrappedMatOfDouble == null) {
+            this.wrappedMatOfDouble = new MatOfDouble();
+            getAsMat().convertTo(wrappedMatOfDouble, CvType.CV_64F);
+        }
+        return this.wrappedMatOfDouble;
+    }
+
+    @Override
+    public void release() {
+        getAsMat().release();
     }
 }

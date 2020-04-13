@@ -3,13 +3,12 @@ package com.chameleonvision._2.vision.image;
 import com.chameleonvision._2.config.CameraCalibrationConfig;
 import com.chameleonvision._2.vision.camera.CameraCapture;
 import edu.wpi.cscore.VideoMode;
-import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 
 public class StaticImageCapture implements CameraCapture {
 

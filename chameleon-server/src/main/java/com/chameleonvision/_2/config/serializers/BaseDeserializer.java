@@ -8,12 +8,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import org.opencv.core.MatOfPoint3f;
-import org.opencv.core.Point3;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.opencv.core.MatOfPoint3f;
+import org.opencv.core.Point3;
 
 public abstract class BaseDeserializer<T> extends StdDeserializer<T> {
     protected BaseDeserializer(Class<?> vc) {
@@ -22,14 +21,18 @@ public abstract class BaseDeserializer<T> extends StdDeserializer<T> {
 
     JsonNode baseNode;
 
-    private static final CollectionType numberListColType = TypeFactory.defaultInstance().constructCollectionType(List.class, Number.class);
-    private CollectionType pointListColType = TypeFactory.defaultInstance().constructCollectionType(List.class, Object.class);
+    private static final CollectionType numberListColType =
+            TypeFactory.defaultInstance().constructCollectionType(List.class, Number.class);
+    private CollectionType pointListColType =
+            TypeFactory.defaultInstance().constructCollectionType(List.class, Object.class);
     private static final ObjectMapper mapper = new ObjectMapper();
+
     private static boolean nodeGood(JsonNode node) {
         return node != null && !node.toString().equals("");
     }
 
-    IntegerCouple getNumberCouple(String name, IntegerCouple defaultValue) throws JsonProcessingException {
+    IntegerCouple getNumberCouple(String name, IntegerCouple defaultValue)
+            throws JsonProcessingException {
         JsonNode node = baseNode.get(name);
 
         if (nodeGood(node)) {
@@ -39,7 +42,8 @@ public abstract class BaseDeserializer<T> extends StdDeserializer<T> {
         return defaultValue;
     }
 
-    DoubleCouple getNumberCouple(String name, DoubleCouple defaultValue) throws JsonProcessingException {
+    DoubleCouple getNumberCouple(String name, DoubleCouple defaultValue)
+            throws JsonProcessingException {
         JsonNode node = baseNode.get(name);
 
         if (nodeGood(node)) {
@@ -49,7 +53,8 @@ public abstract class BaseDeserializer<T> extends StdDeserializer<T> {
         return defaultValue;
     }
 
-    List<Number> getNumberList(String name, List<Number> defaultValue) throws JsonProcessingException {
+    List<Number> getNumberList(String name, List<Number> defaultValue)
+            throws JsonProcessingException {
         JsonNode node = baseNode.get(name);
 
         if (nodeGood(node)) {
@@ -69,7 +74,7 @@ public abstract class BaseDeserializer<T> extends StdDeserializer<T> {
     }
 
     int getInt(String name, int defaultValue) {
-        return (int)  getDouble(name, defaultValue);
+        return (int) getDouble(name, defaultValue);
     }
 
     double getDouble(String name, double defaultValue) {
@@ -92,7 +97,8 @@ public abstract class BaseDeserializer<T> extends StdDeserializer<T> {
         return defaultValue;
     }
 
-    <E extends Enum<E>> E getEnum(String name, Class<E> enumClass, E defaultValue) throws IOException {
+    <E extends Enum<E>> E getEnum(String name, Class<E> enumClass, E defaultValue)
+            throws IOException {
         JsonNode node = baseNode.get(name);
 
         if (nodeGood(node)) {
@@ -108,12 +114,14 @@ public abstract class BaseDeserializer<T> extends StdDeserializer<T> {
 
         return defaultValue;
     }
-    MatOfPoint3f getMatOfPoint3f(String name, MatOfPoint3f defaultValue) throws JsonProcessingException {
+
+    MatOfPoint3f getMatOfPoint3f(String name, MatOfPoint3f defaultValue)
+            throws JsonProcessingException {
         JsonNode node = baseNode.get(name);
-        if (nodeGood(node)){
+        if (nodeGood(node)) {
             List<List<Number>> numberList = mapper.readValue(node.toString(), pointListColType);
             List<Point3> point3List = new ArrayList<>();
-            for (List<Number> tmp : numberList){
+            for (List<Number> tmp : numberList) {
                 Point3 p = new Point3();
                 p.x = tmp.get(0).doubleValue();
                 p.y = tmp.get(1).doubleValue();

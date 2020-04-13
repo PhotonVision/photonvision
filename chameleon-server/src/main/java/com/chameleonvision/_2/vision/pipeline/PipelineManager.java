@@ -13,7 +13,6 @@ import com.chameleonvision.common.scripting.ScriptEventType;
 import com.chameleonvision.common.scripting.ScriptManager;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.NetworkTableEntry;
-
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -28,14 +27,16 @@ public class PipelineManager {
     public final LinkedList<CVPipeline> pipelines = new LinkedList<>();
 
     public final CVPipeline driverModePipeline = new DriverVisionPipeline(new CVPipelineSettings());
-    public final Calibrate3dPipeline calib3dPipe = new Calibrate3dPipeline(new StandardCVPipelineSettings());
+    public final Calibrate3dPipeline calib3dPipe =
+            new Calibrate3dPipeline(new StandardCVPipelineSettings());
 
     private final VisionProcess parentProcess;
     private int lastPipelineIndex;
     private int currentPipelineIndex;
     public NetworkTableEntry ntIndexEntry;
 
-    public PipelineManager(VisionProcess visionProcess, List<CVPipelineSettings> loadedPipelineSettings) {
+    public PipelineManager(
+            VisionProcess visionProcess, List<CVPipelineSettings> loadedPipelineSettings) {
         parentProcess = visionProcess;
         if (loadedPipelineSettings == null || loadedPipelineSettings.size() == 0) {
             pipelines.add(new StandardCVPipeline("New Pipeline"));
@@ -115,7 +116,7 @@ public class PipelineManager {
         if (currentPipelineIndex == DRIVERMODE_INDEX) {
             return driverModePipeline;
         } else if (currentPipelineIndex <= CAL_3D_INDEX) {
-          return calib3dPipe;
+            return calib3dPipe;
         } else {
             return pipelines.get(currentPipelineIndex);
         }
@@ -135,25 +136,24 @@ public class PipelineManager {
 
             newPipeline = calib3dPipe;
         } else {
-            if (index < pipelines.size()&&index>=0) {
+            if (index < pipelines.size() && index >= 0) {
                 newPipeline = pipelines.get(index);
 
                 // if we're switching out of driver mode, try to set the nt entry to false
                 parentProcess.setDriverModeEntry(false);
                 ScriptManager.queueEvent(ScriptEventType.kLEDOn);
+            } else {
+                // TODO alert/warn user that pipeline doesnt exsits
+                System.err.println("Index is out of bounds");
             }
-            else
-                {
-                    //TODO alert/warn user that pipeline doesnt exsits
-                    System.err.println("Index is out of bounds");
-                }
         }
         if (newPipeline != null) {
             lastPipelineIndex = currentPipelineIndex;
             currentPipelineIndex = index;
             getCurrentPipeline().initPipeline(parentProcess.getCamera());
 
-            if (ConfigManager.settings.currentCamera.equals(parentProcess.getCamera().getProperties().name)) {
+            if (ConfigManager.settings.currentCamera.equals(
+                    parentProcess.getCamera().getProperties().name)) {
                 ConfigManager.settings.currentPipeline = currentPipelineIndex;
 
                 HashMap<String, Object> pipeChange = new HashMap<>();
@@ -208,9 +208,10 @@ public class PipelineManager {
     public void duplicatePipeline(CVPipelineSettings pipeline, VisionProcess destinationProcess) {
         pipeline.index = destinationProcess.pipelineManager.pipelines.size();
         pipeline.nickname += "(Copy)";
-        if (destinationProcess.pipelineManager.pipelines.stream().anyMatch(c -> c.settings.nickname.equals(pipeline.nickname))){
-//         throw new DuplicatedKeyException("key Already exists");
-        } else{
+        if (destinationProcess.pipelineManager.pipelines.stream()
+                .anyMatch(c -> c.settings.nickname.equals(pipeline.nickname))) {
+            //         throw new DuplicatedKeyException("key Already exists");
+        } else {
             destinationProcess.pipelineManager.addPipeline(pipeline);
         }
     }
@@ -237,15 +238,16 @@ public class PipelineManager {
         getConfig().saveDriverMode(driverModePipeline.settings);
     }
 
-    private static final Comparator<CVPipeline> IndexComparator = (o1, o2) -> {
-        int o1Index = o1.settings.index;
-        int o2Index = o2.settings.index;
+    private static final Comparator<CVPipeline> IndexComparator =
+            (o1, o2) -> {
+                int o1Index = o1.settings.index;
+                int o2Index = o2.settings.index;
 
-        if (o1Index == o2Index) {
-            return 0;
-        } else if (o1Index < o2Index) {
-            return -1;
-        }
-        return 1;
-    };
+                if (o1Index == o2Index) {
+                    return 0;
+                } else if (o1Index < o2Index) {
+                    return -1;
+                }
+                return 1;
+            };
 }

@@ -5,8 +5,9 @@ import org.opencv.core.Mat;
 
 public interface ImageCapture {
     /**
-     * Get the next camera frame
-     * @return a Pair of the captured image and the Linux epoch of when the frame was grabbed (in uS)
-     */
+    * Get the next camera frame
+    *
+    * @return a Pair of the captured image and the Linux epoch of when the frame was grabbed (in uS)
+    */
     Pair<Mat, Long> getFrame();
 }

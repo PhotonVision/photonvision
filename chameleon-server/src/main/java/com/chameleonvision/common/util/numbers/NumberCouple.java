@@ -2,8 +2,8 @@ package com.chameleonvision.common.util.numbers;
 
 public abstract class NumberCouple<T extends Number> {
 
-    private T first;
-    private T second;
+    protected T first;
+    protected T second;
 
     public NumberCouple(T first, T second) {
         this.first = first;

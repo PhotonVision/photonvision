@@ -33,18 +33,17 @@ public class StandardCVPipelineSettings extends CVPipelineSettings {
     public boolean isUsingChessboard = false;
     public MatOfPoint3f targetCornerMat = new MatOfPoint3f();
     public Number accuracy = 5;
-    private static MatOfPoint3f hexTargetMat = new MatOfPoint3f(
-            new Point3(-19.625, 0, 0),
-            new Point3(-9.819867, -17, 0),
-            new Point3(9.819867, -17, 0),
-            new Point3(19.625, 0, 0)
-    );
+    private static MatOfPoint3f hexTargetMat =
+            new MatOfPoint3f(
+                    new Point3(-19.625, 0, 0),
+                    new Point3(-9.819867, -17, 0),
+                    new Point3(9.819867, -17, 0),
+                    new Point3(19.625, 0, 0));
 
     public StandardCVPipelineSettings() {
         super();
         hexTargetMat.copyTo(targetCornerMat);
     }
-
 
     public boolean is3D = false;
 }

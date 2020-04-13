@@ -3,10 +3,10 @@ package com.chameleonvision._2.config.serializers;
 import com.chameleonvision._2.vision.pipeline.impl.StandardCVPipelineSettings;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
-
 import java.io.IOException;
 
-public class StandardCVPipelineSettingsSerializer extends BaseSerializer<StandardCVPipelineSettings> {
+public class StandardCVPipelineSettingsSerializer
+        extends BaseSerializer<StandardCVPipelineSettings> {
     public StandardCVPipelineSettingsSerializer() {
         this(null);
     }
@@ -16,7 +16,9 @@ public class StandardCVPipelineSettingsSerializer extends BaseSerializer<Standar
     }
 
     @Override
-    public void serialize(StandardCVPipelineSettings pipeline, JsonGenerator gen, SerializerProvider provider) throws IOException {
+    public void serialize(
+            StandardCVPipelineSettings pipeline, JsonGenerator gen, SerializerProvider provider)
+            throws IOException {
         // set BaseSerializer generator reference.
         generator = gen;
 

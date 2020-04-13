@@ -1,6 +1,5 @@
 package com.chameleonvision.common.scripting;
 
-import com.chameleonvision.common.logging.DebugLogger;
 import com.chameleonvision.common.util.LoopingRunnable;
 import com.chameleonvision.common.util.Platform;
 import com.chameleonvision.common.util.file.JacksonUtils;
@@ -11,10 +10,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ScriptManager {
 
-    private static DebugLogger logger = new DebugLogger(true);
+    private static final Logger logger = LoggerFactory.getLogger(ScriptManager.class);
 
     private ScriptManager() {}
 
@@ -124,7 +125,7 @@ public class ScriptManager {
         if (!Platform.CurrentPlatform.isWindows()) {
             try {
                 queuedEvents.putLast(eventType);
-                logger.printInfo("Queued event: " + eventType.name());
+                logger.info("Queued event: " + eventType.name());
             } catch (InterruptedException e) {
                 System.err.println("Failed to add event to queue: " + eventType.name());
             }
