@@ -2,9 +2,10 @@ package com.chameleonvision.common.vision.pipeline.impl;
 
 import com.chameleonvision._2.config.CameraCalibrationConfig;
 import com.chameleonvision._2.config.ConfigManager;
-import com.chameleonvision._2.vision.pipeline.CVPipeline;
+
 import com.chameleonvision._2.vision.VisionManager;
 import com.chameleonvision._2.vision.camera.CameraCapture;
+import com.chameleonvision._2.vision.pipeline.CVPipeline;
 import com.chameleonvision._2.vision.pipeline.impl.DriverVisionPipeline;
 import com.chameleonvision._2.vision.pipeline.impl.StandardCVPipelineSettings;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,6 +21,7 @@ import java.util.List;
 
 public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverPipelineResult, StandardCVPipelineSettings> {
 
+    //Needs to be 4x11 if using standard Asymmetric DotBoard
     private int checkerboardSquaresHigh = 7;
     private int checkerboardSquaresWide = 7;
 
@@ -27,6 +29,8 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
     private Size patternSize = new Size(checkerboardSquaresHigh, checkerboardSquaresWide);
     private Size imageSize;
     double checkerboardSquareSize = 1; // inches!
+    double grid_size = 15; //mm for dotboard
+
     private MatOfPoint2f calibrationOutput = new MatOfPoint2f();
     private List<Mat> objpoints = new ArrayList<>();
     private List<Mat> imgpoints = new ArrayList<>();
@@ -55,8 +59,18 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
 
         objP = new MatOfPoint3f();
 
-        for(int i = 0; i < checkerboardSquaresHigh * checkerboardSquaresWide; i++) {
-            objP.push_back(new MatOfPoint3f(new Point3(i / checkerboardSquaresWide, i % checkerboardSquaresHigh, 0.0f)));
+        if(settings.isUsingChessboard) {
+            for (int i = 0; i < checkerboardSquaresHigh * checkerboardSquaresWide; i++) {
+                objP.push_back(new MatOfPoint3f(new Point3(i / checkerboardSquaresWide, i % checkerboardSquaresHigh, 0.0f)));
+            }
+        }else{
+            //Since this is an asymmetric dotboard, we cannot generate a NxN Mat since the board has different alternating dots each column (first column has 4 dots, 2nd has 5, 3rd has 4...)
+            //From https://docs.opencv.org/master/d4/d94/tutorial_camera_calibration.html
+            for( int i = 0; i < checkerboardSquaresHigh; i++ ) {
+                for (int j = 0; j < checkerboardSquaresWide; j++) {
+                    objP.push_back(new MatOfPoint3f( new Point3((2 * j + i % 2) * grid_size, i * grid_size, 0.0d)));
+                }
+            }
         }
 
         setSquareSize(checkerboardSquareSizeUnits);
@@ -92,7 +106,12 @@ public class Calibrate3dPipeline extends CVPipeline<DriverVisionPipeline.DriverP
 
         // look for checkerboard
         Imgproc.cvtColor(inputMat, inputMat, Imgproc.COLOR_BGR2GRAY);
-        var checkerboardFound = Calib3d.findChessboardCorners(inputMat, patternSize, calibrationOutput);
+        boolean checkerboardFound;
+        if(settings.isUsingChessboard) {
+            checkerboardFound = Calib3d.findChessboardCorners(inputMat, patternSize, calibrationOutput);
+        }else{
+            checkerboardFound = Calib3d.findCirclesGrid(inputMat, patternSize, calibrationOutput, Calib3d.CALIB_CB_ASYMMETRIC_GRID);
+        }
 
 
 

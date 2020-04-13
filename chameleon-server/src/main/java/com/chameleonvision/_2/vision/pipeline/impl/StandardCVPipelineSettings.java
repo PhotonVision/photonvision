@@ -30,6 +30,7 @@ public class StandardCVPipelineSettings extends CVPipelineSettings {
     public double dualTargetCalibrationB = 0;
 
     // 3d stuff
+    public boolean isUsingChessboard = false;
     public MatOfPoint3f targetCornerMat = new MatOfPoint3f();
     public Number accuracy = 5;
     private static MatOfPoint3f hexTargetMat = new MatOfPoint3f(
