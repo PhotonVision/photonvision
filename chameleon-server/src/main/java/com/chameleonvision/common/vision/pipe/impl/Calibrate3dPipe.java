@@ -61,13 +61,15 @@ public class Calibrate3dPipe
         } catch (Exception e) {
             e.printStackTrace();
         }
+        JsonMat cameraMatrixMat = JsonMat.fromMat(cameraMatrix);
+        JsonMat distortionCoefficientsMat = JsonMat.fromMat(distortionCoefficients);
         try {
             // Print calibration successful
             System.out.printf(
                     "CALIBRATION SUCCESS (with accuracy %s)! camMatrix: \n%s\ndistortionCoeffs:\n%s\n",
                     calibrationAccuracy,
-                    new ObjectMapper().writeValueAsString(cameraMatrix.dump()),
-                    new ObjectMapper().writeValueAsString(distortionCoefficients.dump()));
+                    new ObjectMapper().writeValueAsString(cameraMatrixMat),
+                    new ObjectMapper().writeValueAsString(distortionCoefficientsMat));
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
@@ -76,10 +78,7 @@ public class Calibrate3dPipe
                 new double[(int) perViewErrors.total() * perViewErrors.channels()];
         perViewErrors.get(0, 0, perViewErrorsArray);
         return new CameraCalibrationCoefficients(
-                params.resolution,
-                JsonMat.fromMat(cameraMatrix),
-                JsonMat.fromMat(distortionCoefficients),
-                perViewErrorsArray);
+                params.resolution, cameraMatrixMat, distortionCoefficientsMat, perViewErrorsArray);
     }
 
     public static class CalibratePipeParams {
