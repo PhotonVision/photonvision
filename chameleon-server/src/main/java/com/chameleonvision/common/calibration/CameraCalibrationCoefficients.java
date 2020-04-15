@@ -44,7 +44,9 @@ public class CameraCalibrationCoefficients implements Releasable {
     }
 
     @JsonIgnore
-    public double[] getPerViewErrors() { return perViewErrors; }
+    public double[] getPerViewErrors() {
+        return perViewErrors;
+    }
 
     @Override
     public void release() {
