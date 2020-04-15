@@ -162,7 +162,7 @@ public class StandardCVPipeline extends CVPipeline<StandardCVPipeline.StandardCV
         Pair<List<Contour>, Long> findContoursResult = findContoursPipe.run(hsvResult.getLeft());
         totalPipelineTimeNanos += findContoursResult.getRight();
 
-        Pair<List<Contour>, Long> filterContoursResult = filterContoursPipe.run(findContoursResult.getLeft());
+        Pair<List<Contour>, Long> filterContoursResult = filterContoursPipe.run(findContoursResult.getLeft().);
         totalPipelineTimeNanos += filterContoursResult.getRight();
 
         // ignore !

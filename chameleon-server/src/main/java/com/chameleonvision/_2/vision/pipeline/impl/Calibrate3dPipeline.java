@@ -150,10 +150,6 @@ public class Calibrate3dPipeline
            calibrationAccuracy = Calib3d.calibrateCameraExtended(objpoints, imgpoints, imageSize, cameraMatrix, distortionCoeffs, rvecs, tvecs, stdDeviationsIntrinsics, stdDeviationsExtrinsics, perViewErrors);
         } catch(Exception e) {
             e.printStackTrace();
-        } catch (Exception e) {
-            System.err.println("Camera calibration failed!");
-            initPipeline(cameraCapture);
-            return false;
         }
 
         VideoMode currentVidMode = cameraCapture.getCurrentVideoMode();
