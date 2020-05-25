@@ -21,10 +21,10 @@
 </template>
 
 <script>
-    import CVselect from '../../components/cv-select'
-    import CVswitch from '../../components/cv-switch'
-    import DualCalibration from "../../components/OutputTab/DualCalibration";
-    import SingleCalibration from "../../components/OutputTab/SingleCalibration";
+    import CVselect from '../../components/common/cv-select'
+    import CVswitch from '../../components/common/cv-switch'
+    import DualCalibration from "../../components/pipeline/OutputTab/DualCalibration";
+    import SingleCalibration from "../../components/pipeline/OutputTab/SingleCalibration";
 
 
     export default {
@@ -38,10 +38,6 @@
 
         },
         methods: {
-            handleData(val) {
-                this.handleInput(val, this.value[val]);
-                this.$emit('update')
-            },
             doUpdate() {
                 this.$emit('update')
             },

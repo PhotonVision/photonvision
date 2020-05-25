@@ -24,8 +24,8 @@
 </template>
 
 <script>
-    import CVrangeSlider from '../../components/cv-range-slider'
-    import CVswitch from '../../components/cv-switch'
+    import CVrangeSlider from '../../components/common/cv-range-slider'
+    import CVswitch from '../../components/common/cv-switch'
 
     export default {
         name: 'Threshold',
@@ -96,11 +96,7 @@
                         this.currentFunction = this.colorPicker.shrink;
                         break;
                 }
-            },
-            handleData(val) {
-                this.handleInput(val, this.value[val]);
-                this.$emit('update')
-            },
+            }
         },
         mounted: function () {
             const self = this;

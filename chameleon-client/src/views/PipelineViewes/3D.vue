@@ -32,9 +32,9 @@
 
 <script>
     import Papa from 'papaparse';
-    import miniMap from '../../components/3D/MiniMap';
-    import CVswitch from '../../components/cv-switch';
-    import CVslider from '../../components/cv-slider'
+    import miniMap from '../../components/pipeline/3D/MiniMap';
+    import CVswitch from '../../components/common/cv-switch';
+    import CVslider from '../../components/common/cv-slider'
     import FRCtargetsConfig from '../../assets/FRCtargets'
 
     export default {
@@ -58,10 +58,6 @@
             }
         },
         methods: {
-            handleData(val) {
-                this.handleInput(val, this.value[val]);
-                this.$emit('update')
-            },
             readFile(event) {
                 let file = event.target.files[0];
                 Papa.parse(file, {

@@ -13,7 +13,7 @@
             </v-col>
             <v-col class="colsClass" v-show="selectedTab === 1">
                 <div class="videoClass">
-                    <img :src="streamAddress" alt="Camera Stream">
+                    <cvImage :address="$store.getters.streamAddress" :scale="75"/>
                 </div>
             </v-col>
         </v-row>
@@ -23,11 +23,13 @@
 <script>
     import General from './SettingsViewes/General'
     import Cameras from './SettingsViewes/Cameras'
+    import cvImage from '../components/common/cv-image'
 
 
     export default {
         name: 'SettingsTab',
         components: {
+            cvImage,
             General,
             Cameras,
         },
@@ -43,11 +45,6 @@
                     return this.tabList[this.selectedTab];
                 }
             },
-            streamAddress: {
-                get: function () {
-                    return "http://" + location.hostname + ":" + this.$store.state.port + "/stream.mjpg";
-                }
-            },
         }
     }
 </script>
@@ -60,7 +57,6 @@
     .videoClass img {
         padding-top: 10px;
         height: auto !important;
-        width: 75%;
         vertical-align: middle;
     }
 

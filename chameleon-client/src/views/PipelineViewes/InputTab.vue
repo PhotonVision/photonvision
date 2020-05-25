@@ -14,8 +14,8 @@
 </template>
 
 <script>
-    import CVslider from '../../components/cv-slider'
-    import CVselect from '../../components/cv-select'
+    import CVslider from '../../components/common/cv-slider'
+    import CVselect from '../../components/common/cv-select'
 
     export default {
         name: 'Input',
@@ -25,10 +25,6 @@
             CVselect,
         },
         methods: {
-            handleData(val) {
-                this.handleInput(val, this.value[val]);
-                this.$emit('update')
-            }
         },
         data() {
             return {

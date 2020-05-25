@@ -37,7 +37,7 @@
                 if (this.$store.state.hasOwnProperty(key)) {
                     this.$store.commit(key, value);
                 } else if (this.$store.state.pipeline.hasOwnProperty(key)) {
-                    this.$store.commit('setPipeValues', {[key]: value});
+                    this.$store.commit('mutatePipeline', {'key': key, 'value': value});
                 } else {
                     switch (key) {
                         default: {

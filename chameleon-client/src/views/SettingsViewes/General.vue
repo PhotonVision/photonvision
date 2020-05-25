@@ -41,9 +41,9 @@
 </template>
 
 <script>
-    import CVnumberinput from '../../components/cv-number-input'
-    import CVradio from '../../components/cv-radio'
-    import CVinput from '../../components/cv-input'
+    import CVnumberinput from '../../components/common/cv-number-input'
+    import CVradio from '../../components/common/cv-radio'
+    import CVinput from '../../components/common/cv-input'
 
     export default {
         name: 'General',
