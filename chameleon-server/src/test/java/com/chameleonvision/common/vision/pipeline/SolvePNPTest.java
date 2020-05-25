@@ -81,21 +81,17 @@ public class SolvePNPTest {
     public void test2019() {
         var pipeline = new ReflectivePipeline();
 
-        var settings = new ReflectivePipelineSettings();
-        settings.hsvHue.set(60, 100);
-        settings.hsvSaturation.set(100, 255);
-        settings.hsvValue.set(190, 255);
-        settings.outputShowThresholded = true;
-        settings.outputShowMultipleTargets = true;
-        settings.solvePNPEnabled = true;
-        settings.contourGroupingMode = ContourGroupingMode.Dual;
-        settings.contourIntersection = ContourIntersectionDirection.Up;
-        settings.cornerDetectionUseConvexHulls = true;
-
-        settings.targetModel = TargetModel.get2019Target();
-        settings.cameraCalibration = getCoeffs(LIFECAM_240P_CAL_FILE);
-
-        pipeline.settings = settings;
+        pipeline.getSettings().hsvHue.set(60, 100);
+        pipeline.getSettings().hsvSaturation.set(100, 255);
+        pipeline.getSettings().hsvValue.set(190, 255);
+        pipeline.getSettings().outputShowThresholded = true;
+        pipeline.getSettings().outputShowMultipleTargets = true;
+        pipeline.getSettings().solvePNPEnabled = true;
+        pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
+        pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
+        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+        pipeline.getSettings().targetModel = TargetModel.get2019Target();
+        pipeline.getSettings().cameraCalibration = getCoeffs(LIFECAM_240P_CAL_FILE);
 
         var frameProvider =
                 new FileFrameProvider(
@@ -120,20 +116,16 @@ public class SolvePNPTest {
     public void test2020() {
         var pipeline = new ReflectivePipeline();
 
-        var settings = new ReflectivePipelineSettings();
-        settings.hsvHue.set(60, 100);
-        settings.hsvSaturation.set(100, 255);
-        settings.hsvValue.set(60, 255);
-        settings.outputShowThresholded = true;
-        settings.solvePNPEnabled = true;
-        settings.cornerDetectionAccuracyPercentage = 4;
-        settings.cornerDetectionUseConvexHulls = true;
-        settings.cameraCalibration = getCoeffs(LIFECAM_480P_CAL_FILE);
-
-        settings.targetModel = TargetModel.get2020Target(36);
-        settings.cameraPitch = Rotation2d.fromDegrees(0.0);
-
-        pipeline.settings = settings;
+        pipeline.getSettings().hsvHue.set(60, 100);
+        pipeline.getSettings().hsvSaturation.set(100, 255);
+        pipeline.getSettings().hsvValue.set(60, 255);
+        pipeline.getSettings().outputShowThresholded = true;
+        pipeline.getSettings().solvePNPEnabled = true;
+        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+        pipeline.getSettings().cameraCalibration = getCoeffs(LIFECAM_480P_CAL_FILE);
+        pipeline.getSettings().targetModel = TargetModel.get2020Target(36);
+        pipeline.getSettings().cameraPitch = Rotation2d.fromDegrees(0.0);
 
         var frameProvider =
                 new FileFrameProvider(
@@ -175,6 +167,7 @@ public class SolvePNPTest {
     private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {
         var pipeline = new ReflectivePipeline();
         pipeline.settings = settings;
+
         while (true) {
             CVPipelineResult pipelineResult = pipeline.run(frame);
             printTestResults(pipelineResult);

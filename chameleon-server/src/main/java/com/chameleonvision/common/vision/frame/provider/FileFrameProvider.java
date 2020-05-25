@@ -32,7 +32,8 @@ public class FileFrameProvider implements FrameProvider {
     * @param fov The fov of the image.
     */
     public FileFrameProvider(Path path, double fov) {
-        if (!Files.exists(path)) throw new RuntimeException("Invalid path for image!");
+        if (!Files.exists(path))
+            throw new RuntimeException("Invalid path for image: " + path.toAbsolutePath().toString());
         m_path = path;
         m_fov = fov;
 

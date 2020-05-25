@@ -18,6 +18,37 @@ jobs:
             - dist
 
   
+  run_tests:
+    working_directory: ~/project/chameleon-server
+    docker:
+      - image: gradle:jdk12
+    steps:
+      - checkout:
+          path: ~/project
+      #- restore_cache:
+      #    key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      #- restore_cache:
+      #    key: v1-gradle-cache-{{ checksum "build.gradle" }}
+      - run:
+          name: list
+          command: ls
+      - run:
+          name: Run tests
+          command: ./gradlew test
+      #- save_cache:
+      #    paths:
+      #      - .gradle/wrapper
+      #    key: v1-gradle-wrapper-{{ checksum "gradle/wrapper/gradle-wrapper.properties" }}
+      #- save_cache:
+      #    paths:
+      #      - .gradle/caches
+      #    key: v1-gradle-cache-{{ checksum "build.gradle" }}
+      - store_test_results:
+          path: build/test-results/test
+      - store_artifacts: # Upload test results for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
+          path: build/test-results/test
+          when: always
+  
   build_jar:
     working_directory: ~/project/chameleon-server
     docker:
@@ -50,7 +81,6 @@ jobs:
       - run: gradle spotlessApply
       - run: git --no-pager diff --exit-code HEAD
     
-
   deploy:
     docker:
       - image: cibuilds/github:0.10
@@ -68,13 +98,15 @@ workflows:
   release:
     jobs:
       - format_diff_against_git
+      - run_tests
       - build_ui
       - build_jar:
           requires:
+            - format_diff_against_git
+            - run_tests
             - build_ui
       - deploy:
           requires:
-            - format_diff_against_git
             - build_jar
           filters:
             branches:

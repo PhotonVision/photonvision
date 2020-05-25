@@ -1,15 +1,15 @@
 package com.chameleonvision.common.util;
 
 import edu.wpi.cscore.CameraServerCvJNI;
-import java.io.File;
+import java.awt.*;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Optional;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
 
 public class TestUtils {
 
+    @SuppressWarnings("unused")
     public enum WPI2019Image {
         kCargoAngledDark48in(1.2192),
         kCargoSideStraightDark36in(0.9144),
@@ -26,11 +26,11 @@ public class TestUtils {
         public static double FOV = 68.5;
 
         public final double distanceMeters;
-        public final String path;
+        public final Path path;
 
-        String getPath() {
+        Path getPath() {
             var filename = this.toString().substring(1);
-            return "\\2019\\WPI\\" + filename + ".jpg";
+            return Path.of("2019", "WPI", filename + ".jpg");
         }
 
         WPI2019Image(double distanceMeters) {
@@ -39,6 +39,7 @@ public class TestUtils {
         }
     }
 
+    @SuppressWarnings("unused")
     public enum WPI2020Image {
         kBlueGoal_060in_Center(1.524),
         kBlueGoal_084in_Center(2.1336),
@@ -62,11 +63,11 @@ public class TestUtils {
         public static double FOV = 68.5;
 
         public final double distanceMeters;
-        public final String path;
+        public final Path path;
 
-        String getPath() {
+        Path getPath() {
             var filename = this.toString().substring(1).replace('_', '-');
-            return "\\2020\\WPI\\" + filename + ".jpg";
+            return Path.of("2020", "WPI", filename + ".jpg");
         }
 
         WPI2020Image(double distanceMeters) {
@@ -75,22 +76,24 @@ public class TestUtils {
         }
     }
 
-    private static Path getTestImagesPath() {
-        var folder = TestUtils.class.getClassLoader().getResource("testimages");
-        return Optional.ofNullable(folder).map(url -> new File(url.getFile()).toPath()).orElse(null);
+    private static Path getResourcesFolderPath() {
+        return Path.of("src", "test", "resources").toAbsolutePath();
+    }
+
+    public static Path getTestImagesPath() {
+        return getResourcesFolderPath().resolve("testimages");
     }
 
     public static Path getCalibrationPath() {
-        var folder = TestUtils.class.getClassLoader().getResource("calibration");
-        return Optional.ofNullable(folder).map(url -> new File(url.getFile()).toPath()).orElse(null);
+        return getResourcesFolderPath().resolve("calibration");
     }
 
     public static Path getWPIImagePath(WPI2020Image image) {
-        return Path.of(getTestImagesPath().toString(), image.path);
+        return getTestImagesPath().resolve(image.path);
     }
 
     public static Path getWPIImagePath(WPI2019Image image) {
-        return Path.of(getTestImagesPath().toString(), image.path);
+        return getTestImagesPath().resolve(image.path);
     }
 
     public static void loadLibraries() {
@@ -104,9 +107,13 @@ public class TestUtils {
     private static int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {
-        HighGui.imshow(title, frame);
-        HighGui.waitKey(timeoutMs);
-        HighGui.destroyAllWindows();
+        try {
+            HighGui.imshow(title, frame);
+            HighGui.waitKey(timeoutMs);
+            HighGui.destroyAllWindows();
+        } catch (HeadlessException ignored) {
+
+        }
     }
 
     public static void showImage(Mat frame, int timeoutMs) {

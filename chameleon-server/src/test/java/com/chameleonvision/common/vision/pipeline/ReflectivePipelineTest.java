@@ -32,15 +32,13 @@ public class ReflectivePipelineTest {
     public void test2019() {
         TestUtils.loadLibraries();
         var pipeline = new ReflectivePipeline();
-
-        var settings = new ReflectivePipelineSettings();
-        settings.hsvHue.set(60, 100);
-        settings.hsvSaturation.set(100, 255);
-        settings.hsvValue.set(190, 255);
-        settings.outputShowThresholded = true;
-        settings.outputShowMultipleTargets = true;
-        settings.contourGroupingMode = ContourGroupingMode.Dual;
-        settings.contourIntersection = ContourIntersectionDirection.Up;
+        pipeline.getSettings().hsvHue.set(60, 100);
+        pipeline.getSettings().hsvSaturation.set(100, 255);
+        pipeline.getSettings().hsvValue.set(190, 255);
+        pipeline.getSettings().outputShowThresholded = true;
+        pipeline.getSettings().outputShowMultipleTargets = true;
+        pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
+        pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
 
         var frameProvider =
                 new FileFrameProvider(
@@ -55,7 +53,7 @@ public class ReflectivePipelineTest {
         printTestResults(pipelineResult);
 
         Assertions.assertTrue(pipelineResult.hasTargets());
-        Assertions.assertEquals(2, pipelineResult.targets.size());
+        Assertions.assertEquals(2, pipelineResult.targets.size(), "Target count wrong!");
 
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output");
     }
@@ -65,11 +63,10 @@ public class ReflectivePipelineTest {
         TestUtils.loadLibraries();
         var pipeline = new ReflectivePipeline();
 
-        var settings = new ReflectivePipelineSettings();
-        settings.hsvHue.set(60, 100);
-        settings.hsvSaturation.set(200, 255);
-        settings.hsvValue.set(200, 255);
-        settings.outputShowThresholded = true;
+        pipeline.getSettings().hsvHue.set(60, 100);
+        pipeline.getSettings().hsvSaturation.set(200, 255);
+        pipeline.getSettings().hsvValue.set(200, 255);
+        pipeline.getSettings().outputShowThresholded = true;
 
         var frameProvider =
                 new FileFrameProvider(
