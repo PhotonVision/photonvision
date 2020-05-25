@@ -5,15 +5,23 @@ import com.chameleonvision.common.vision.frame.Frame;
 import com.chameleonvision.common.vision.frame.FrameStaticProperties;
 
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
+    protected S settings;
 
-    protected abstract void setPipeParams(S settings, FrameStaticProperties frameStaticProperties);
+    protected abstract void setPipeParams(FrameStaticProperties frameStaticProperties, S settings);
 
     protected abstract R process(Frame frame, S settings);
 
-    public R run(Frame frame, S settings) {
+    public S getSettings() {
+        return settings;
+    }
+
+    public R run(Frame frame) {
         long pipelineStartNanos = System.nanoTime();
 
-        setPipeParams(settings, frame.frameStaticProperties);
+        if (settings == null) {
+            throw new RuntimeException("No settings provided for pipeline!");
+        }
+        setPipeParams(frame.frameStaticProperties, settings);
 
         R result = process(frame, settings);
 

@@ -66,6 +66,16 @@ public class TargetModel implements Releasable {
         return new TargetModel(corners, 12); // TODO switch to meters
     }
 
+    public static TargetModel get2019Target() {
+        var corners =
+                List.of(
+                        new Point3(-5.936, 2.662, 0),
+                        new Point3(-7.313, -2.662, 0),
+                        new Point3(7.313, -2.662, 0),
+                        new Point3(5.936, 2.662, 0));
+        return new TargetModel(corners, 4);
+    }
+
     @Override
     public void release() {
         realWorldTargetCoordinates.release();

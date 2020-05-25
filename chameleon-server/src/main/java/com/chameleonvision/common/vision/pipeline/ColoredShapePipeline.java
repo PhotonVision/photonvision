@@ -7,7 +7,7 @@ public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
     @Override
     protected void setPipeParams(
-            ColoredShapePipelineSettings settings, FrameStaticProperties frameStaticProperties) {}
+            FrameStaticProperties frameStaticProperties, ColoredShapePipelineSettings settings) {}
 
     @Override
     protected CVPipelineResult process(Frame frame, ColoredShapePipelineSettings settings) {

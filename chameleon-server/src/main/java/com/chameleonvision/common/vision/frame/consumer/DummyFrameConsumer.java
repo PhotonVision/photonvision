@@ -5,7 +5,7 @@ import com.chameleonvision.common.vision.frame.FrameConsumer;
 
 public class DummyFrameConsumer implements FrameConsumer {
     @Override
-    public void consume(Frame frame) {
+    public void accept(Frame frame) {
         frame.release(); // lol ez
     }
 }

@@ -6,7 +6,7 @@ import org.apache.commons.lang3.NotImplementedException;
 
 public class MJPGFrameConsumer implements FrameConsumer {
     @Override
-    public void consume(Frame frame) {
+    public void accept(Frame frame) {
         throw new NotImplementedException("");
     }
 }

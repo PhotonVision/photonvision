@@ -19,9 +19,13 @@ public class DriverModePipeline
 
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
 
+    public DriverModePipeline() {
+        settings = new DriverModePipelineSettings();
+    }
+
     @Override
     protected void setPipeParams(
-            DriverModePipelineSettings settings, FrameStaticProperties frameStaticProperties) {
+            FrameStaticProperties frameStaticProperties, DriverModePipelineSettings settings) {
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);

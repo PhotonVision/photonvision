@@ -1,19 +1,19 @@
 package com.chameleonvision.common.datatransfer.networktables;
 
+import com.chameleonvision.common.logging.LogGroup;
+import com.chameleonvision.common.logging.Logger;
 import com.chameleonvision.common.scripting.ScriptEventType;
 import com.chameleonvision.common.scripting.ScriptManager;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class NetworkTablesManager {
 
     private NetworkTablesManager() {}
 
-    private static final Logger logger = LoggerFactory.getLogger(NetworkTablesManager.class);
+    private static final Logger logger = new Logger(NetworkTablesManager.class, LogGroup.General);
 
     private static final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
 

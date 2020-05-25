@@ -15,6 +15,8 @@ import org.opencv.imgcodecs.Imgcodecs;
 * path}.
 */
 public class FileFrameProvider implements FrameProvider {
+    private static int count = 0;
+
     private Frame m_frame;
     private Path m_path;
 
@@ -60,7 +62,7 @@ public class FileFrameProvider implements FrameProvider {
 
     /**
     * Set image reloading. If true this will reload the image from the path set in the constructor
-    * every time {@link FileFrameProvider#getFrame()} is called.
+    * every time {@link FileFrameProvider#get()} is called.
     *
     * @param reloadImage True to enable image reloading.
     */
@@ -78,11 +80,16 @@ public class FileFrameProvider implements FrameProvider {
     }
 
     @Override
-    public Frame getFrame() {
+    public Frame get() {
         if (m_reloadImage) {
             loadImage();
         }
 
         return m_frame;
+    }
+
+    @Override
+    public String getName() {
+        return "FileFrameProvider" + count++ + " - " + m_path.getFileName();
     }
 }

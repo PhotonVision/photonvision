@@ -5,7 +5,6 @@ public class ConfigManager {
     private final ConfigFolder rootFolder;
 
     protected ConfigManager() {
-
         rootFolder = new ConfigFolder("");
     }
 

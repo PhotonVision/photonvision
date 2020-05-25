@@ -112,11 +112,13 @@ public class Draw3dTargetsPipe
     public static class Draw3dContoursParams {
         private final int radius = 2;
         private final Color color = Color.RED;
-        private final TargetModel targetModel = TargetModel.get2020Target();
+        private final TargetModel targetModel;
         private final CameraCalibrationCoefficients cameraCalibrationCoefficients;
 
-        public Draw3dContoursParams(CameraCalibrationCoefficients cameraCalibrationCoefficients) {
+        public Draw3dContoursParams(
+                CameraCalibrationCoefficients cameraCalibrationCoefficients, TargetModel targetModel) {
             this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
+            this.targetModel = targetModel;
         }
     }
 }

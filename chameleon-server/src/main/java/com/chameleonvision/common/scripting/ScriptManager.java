@@ -1,5 +1,7 @@
 package com.chameleonvision.common.scripting;
 
+import com.chameleonvision.common.logging.LogGroup;
+import com.chameleonvision.common.logging.Logger;
 import com.chameleonvision.common.util.LoopingRunnable;
 import com.chameleonvision.common.util.Platform;
 import com.chameleonvision.common.util.file.JacksonUtils;
@@ -10,12 +12,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ScriptManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(ScriptManager.class);
+    private static final Logger logger = new Logger(ScriptManager.class, LogGroup.General);
 
     private ScriptManager() {}
 

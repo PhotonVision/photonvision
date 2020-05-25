@@ -50,9 +50,13 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private Mat rawInputMat = new Mat();
     private DualMat outputMats = new DualMat();
 
+    public ReflectivePipeline() {
+        settings = new ReflectivePipelineSettings();
+    }
+
     @Override
     protected void setPipeParams(
-            ReflectivePipelineSettings settings, FrameStaticProperties frameStaticProperties) {
+            FrameStaticProperties frameStaticProperties, ReflectivePipelineSettings settings) {
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
@@ -127,7 +131,8 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dContoursParams =
-                new Draw3dTargetsPipe.Draw3dContoursParams(settings.cameraCalibration);
+                new Draw3dTargetsPipe.Draw3dContoursParams(
+                        settings.cameraCalibration, settings.targetModel);
         draw3dTargetsPipe.setParams(draw3dContoursParams);
 
         var solvePNPParams =
@@ -138,7 +143,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
     @Override
     public CVPipelineResult process(Frame frame, ReflectivePipelineSettings settings) {
-        setPipeParams(settings, frame.frameStaticProperties);
+        setPipeParams(frame.frameStaticProperties, settings);
 
         long sumPipeNanosElapsed = 0L;
 

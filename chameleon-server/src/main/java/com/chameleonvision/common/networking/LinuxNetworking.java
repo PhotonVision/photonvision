@@ -1,5 +1,7 @@
 package com.chameleonvision.common.networking;
 
+import com.chameleonvision.common.logging.LogGroup;
+import com.chameleonvision.common.logging.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -9,18 +11,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LinuxNetworking extends SysNetworking {
     private static final String PATH = "/etc/dhcpcd.conf";
 
-    private Logger logger = LoggerFactory.getLogger(LinuxNetworking.class);
+    private Logger logger = new Logger(LinuxNetworking.class, LogGroup.General);
 
     @Override
     public boolean setDHCP() {
         File dhcpConf = new File(PATH);
-        logger.debug("Removing static IP from {}", PATH);
+        logger.debug("Removing static IP from " + PATH);
         if (dhcpConf.exists()) {
             try {
                 List<String> lines = FileUtils.readLines(dhcpConf, StandardCharsets.UTF_8);

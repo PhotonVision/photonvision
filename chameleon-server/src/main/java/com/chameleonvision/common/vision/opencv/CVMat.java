@@ -24,7 +24,11 @@ public class CVMat implements Releasable {
     public CVMat(Mat mat) {
         this.mat = mat;
         if (allMats.add(mat)) {
-            System.out.println("(CVMat) Added new Mat from: \n" + ReflectionUtils.getNthCaller(3));
+            System.out.println(
+                    "(CVMat) Added new Mat (count: "
+                            + allMats.size()
+                            + ") from: "
+                            + ReflectionUtils.getNthCaller(3));
         }
     }
 

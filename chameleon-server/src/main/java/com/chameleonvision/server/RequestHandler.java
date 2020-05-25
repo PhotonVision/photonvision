@@ -1,3 +1,3 @@
 package com.chameleonvision.server;
 
-public class Main {}
+public class RequestHandler {}

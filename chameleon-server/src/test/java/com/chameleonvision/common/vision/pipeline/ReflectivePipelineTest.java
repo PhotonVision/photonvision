@@ -47,11 +47,11 @@ public class ReflectivePipelineTest {
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
                         TestUtils.WPI2019Image.FOV);
 
-        TestUtils.showImage(frameProvider.getFrame().image.getMat(), "Pipeline input", 1);
+        TestUtils.showImage(frameProvider.get().image.getMat(), "Pipeline input", 1);
 
         CVPipelineResult pipelineResult;
 
-        pipelineResult = pipeline.run(frameProvider.getFrame(), settings);
+        pipelineResult = pipeline.run(frameProvider.get());
         printTestResults(pipelineResult);
 
         Assertions.assertTrue(pipelineResult.hasTargets());
@@ -76,7 +76,7 @@ public class ReflectivePipelineTest {
                         TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center),
                         TestUtils.WPI2020Image.FOV);
 
-        CVPipelineResult pipelineResult = pipeline.run(frameProvider.getFrame(), settings);
+        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
         printTestResults(pipelineResult);
 
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output");
@@ -86,7 +86,7 @@ public class ReflectivePipelineTest {
         var pipeline = new ReflectivePipeline();
 
         while (true) {
-            CVPipelineResult pipelineResult = pipeline.run(frame, settings);
+            CVPipelineResult pipelineResult = pipeline.run(frame);
             printTestResults(pipelineResult);
             int preRelease = CVMat.getMatCount();
             pipelineResult.release();
@@ -113,7 +113,7 @@ public class ReflectivePipelineTest {
         settings.contourGroupingMode = ContourGroupingMode.Dual;
         settings.contourIntersection = ContourIntersectionDirection.Up;
 
-        continuouslyRunPipeline(frameProvider.getFrame(), settings);
+        continuouslyRunPipeline(frameProvider.get(), settings);
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {

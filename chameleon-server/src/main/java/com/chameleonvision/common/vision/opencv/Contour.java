@@ -177,9 +177,9 @@ public class Contour implements Releasable {
 
     @Override
     public void release() {
-        mat.release();
-        mat2f.release();
-        convexHull.release();
+        if (mat != null) mat.release();
+        if (mat2f != null) mat2f.release();
+        if (convexHull != null) convexHull.release();
     }
 
     public static MatOfPoint2f convertIndexesToPoints(MatOfPoint contour, MatOfInt indexes) {
