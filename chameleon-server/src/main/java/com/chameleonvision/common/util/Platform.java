@@ -61,9 +61,8 @@ public enum Platform {
                 e.printStackTrace();
             }
 
-            // TODO: better way to do this?
             while (!shell.isOutputCompleted()) {
-                // ignored
+                // TODO: add timeout
             }
 
             if (shell.getExitCode() == 0) {

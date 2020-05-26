@@ -30,9 +30,6 @@ public class GroupContoursPipe
             int groupingCount = params.getGroup().count;
 
             if (input.size() > groupingCount) {
-                // todo: is it OK to mutate the input list?
-                //  or should we clone it like before?
-                //  what is the perf hit on cloning?
                 input.sort(Contour.SortByMomentsX);
                 // also why reverse? shouldn't the sort comparator just get reversed?
                 Collections.reverse(input);

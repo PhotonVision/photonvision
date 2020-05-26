@@ -16,4 +16,5 @@ public class CVPipelineSettings {
     public int cameraVideoModeIndex = 0;
     public FrameDivisor inputFrameDivisor = FrameDivisor.NONE;
     public FrameDivisor outputFrameDivisor = FrameDivisor.NONE;
+    public boolean ledMode = false;
 }

@@ -32,7 +32,7 @@ public class Draw2dCrosshairPipe
                     }
                     break;
                 case Dual:
-                    // TODO
+                    // TODO: draw crosshair based on dual calibration
                     break;
             }
 

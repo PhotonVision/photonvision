@@ -50,9 +50,7 @@ public class CVShape {
                 break;
             case Triangle:
                 break;
-            case Square:
-                break;
-            case Rectangle:
+            case Quadrilateral:
                 break;
         }
         return true;

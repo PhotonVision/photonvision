@@ -76,7 +76,7 @@ public class ScriptManager {
 
         //        protected static final Path scriptConfigPath =
         // Paths.get(ConfigManager.SettingsPath.toString(), "scripts.json");
-        static final Path scriptConfigPath = Paths.get(""); // TODO: FIX
+        static final Path scriptConfigPath = Paths.get(""); // TODO: Waiting on config
 
         private ScriptConfigManager() {}
 

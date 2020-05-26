@@ -45,7 +45,6 @@ public class FileFrameProviderTest {
         assertEquals(320, goodFrameCols);
         assertEquals(240, goodFrameRows);
 
-        // TODO: find a way to skip this if a flag isn't set
         TestUtils.showImage(goodFrame.image.getMat(), "2019");
 
         var badFilePath = Paths.get("bad.jpg"); // this file does not exist
@@ -78,7 +77,6 @@ public class FileFrameProviderTest {
         assertEquals(640, goodFrameCols);
         assertEquals(480, goodFrameRows);
 
-        // TODO: find a way to skip this if a flag isn't set
         TestUtils.showImage(goodFrame.image.getMat(), "2020");
 
         var badFilePath = Paths.get("bad.jpg"); // this file does not exist

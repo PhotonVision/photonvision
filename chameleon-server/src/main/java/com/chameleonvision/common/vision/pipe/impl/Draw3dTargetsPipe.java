@@ -18,8 +18,6 @@ import org.opencv.imgproc.Imgproc;
 public class Draw3dTargetsPipe
         extends CVPipe<Pair<Mat, List<TrackedTarget>>, Mat, Draw3dTargetsPipe.Draw3dContoursParams> {
 
-    private static MatOfPoint tempMat = new MatOfPoint();
-
     @Override
     protected Mat process(Pair<Mat, List<TrackedTarget>> in) {
         for (var target : in.getRight()) {

@@ -49,7 +49,6 @@ public class FileUtils {
                 e.printStackTrace();
             }
         } else {
-            // TODO file perms on Windows
             logger.info("Cannot set directory permissions on Windows!");
         }
     }

@@ -63,8 +63,8 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         ErodeDilatePipe.ErodeDilateParams erodeDilateParams =
                 new ErodeDilatePipe.ErodeDilateParams(
-                        settings.erode, settings.dilate, 5); // TODO: add kernel size to
-        // pipeline settings
+                        settings.erode, settings.dilate, 5);
+        // TODO: add kernel size to pipeline settings
         erodeDilatePipe.setParams(erodeDilateParams);
 
         HSVPipe.HSVParams hsvParams =
@@ -75,7 +75,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                 new OutputMatPipe.OutputMatParams(settings.outputShowThresholded);
         outputMatPipe.setParams(outputMatParams);
 
-        // TODO: necessary? offer different contour methods?
         FindContoursPipe.FindContoursParams findContoursParams =
                 new FindContoursPipe.FindContoursParams();
         findContoursPipe.setParams(findContoursParams);

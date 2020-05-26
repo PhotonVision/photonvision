@@ -15,7 +15,6 @@ public class CVPipelineResult implements Releasable {
         this.processingMillis = processingMillis;
         this.targets = targets;
 
-        // TODO: is this the best way to go about this?
         this.outputFrame = Frame.copyFrom(outputFrame);
     }
 

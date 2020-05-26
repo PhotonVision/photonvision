@@ -10,7 +10,6 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 
-// TODO: banks fix
 public class TrackedTarget implements Releasable {
     public final Contour m_mainContour;
     List<Contour> m_subContours; // can be empty

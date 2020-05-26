@@ -35,7 +35,7 @@ public class VisionModule {
     }
 
     void consumeResult(CVPipelineResult result) {
-        // TODO: put result in to Data
+        // TODO: put result in to Data (not this way!)
         var data = new Data();
         data.result = result;
         consumeData(data);
