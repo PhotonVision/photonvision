@@ -62,8 +62,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         rotateImagePipe.setParams(rotateImageParams);
 
         ErodeDilatePipe.ErodeDilateParams erodeDilateParams =
-                new ErodeDilatePipe.ErodeDilateParams(
-                        settings.erode, settings.dilate, 5);
+                new ErodeDilatePipe.ErodeDilateParams(settings.erode, settings.dilate, 5);
         // TODO: add kernel size to pipeline settings
         erodeDilatePipe.setParams(erodeDilateParams);
 

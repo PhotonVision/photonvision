@@ -6,7 +6,6 @@ import com.chameleonvision.common.vision.opencv.ContourSortMode;
 import com.chameleonvision.common.vision.target.RobotOffsetPointMode;
 import com.chameleonvision.common.vision.target.TargetOffsetPointEdge;
 import com.chameleonvision.common.vision.target.TargetOrientation;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class AdvancedPipelineSettings extends CVPipelineSettings {
 
