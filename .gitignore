@@ -122,4 +122,4 @@ New client/chameleon-client/*
 .DS_Store
 # *.iml
 chameleon-server/build
-chameleon-server/chameleon-vision (1).iml
+chameleon-server/chameleon-vision

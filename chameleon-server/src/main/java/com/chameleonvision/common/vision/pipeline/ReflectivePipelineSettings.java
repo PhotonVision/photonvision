@@ -5,8 +5,11 @@ import com.chameleonvision.common.vision.opencv.ContourGroupingMode;
 import com.chameleonvision.common.vision.opencv.ContourIntersectionDirection;
 import com.chameleonvision.common.vision.pipe.impl.CornerDetectionPipe;
 import com.chameleonvision.common.vision.target.TargetModel;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import java.util.Objects;
 
+@JsonTypeName("ReflectivePipelineSettings")
 public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
     // how many contours to attempt to group (Single, Dual)
     public ContourGroupingMode contourGroupingMode = ContourGroupingMode.Single;
@@ -27,4 +30,46 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
     public boolean cornerDetectionExactSideCount = false;
     public int cornerDetectionSideCount = 4;
     public double cornerDetectionAccuracyPercentage = 10;
+
+    public ReflectivePipelineSettings() {
+        super();
+        pipelineType = PipelineType.Reflective;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        ReflectivePipelineSettings that = (ReflectivePipelineSettings) o;
+        return solvePNPEnabled == that.solvePNPEnabled
+                && cornerDetectionUseConvexHulls == that.cornerDetectionUseConvexHulls
+                && cornerDetectionExactSideCount == that.cornerDetectionExactSideCount
+                && cornerDetectionSideCount == that.cornerDetectionSideCount
+                && Double.compare(that.cornerDetectionAccuracyPercentage, cornerDetectionAccuracyPercentage)
+                        == 0
+                && contourGroupingMode == that.contourGroupingMode
+                && contourIntersection == that.contourIntersection
+                && Objects.equals(cameraCalibration, that.cameraCalibration)
+                && targetModel.equals(that.targetModel)
+                && cameraPitch.equals(that.cameraPitch)
+                && cornerDetectionStrategy == that.cornerDetectionStrategy;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                super.hashCode(),
+                contourGroupingMode,
+                contourIntersection,
+                solvePNPEnabled,
+                cameraCalibration,
+                targetModel,
+                cameraPitch,
+                cornerDetectionStrategy,
+                cornerDetectionUseConvexHulls,
+                cornerDetectionExactSideCount,
+                cornerDetectionSideCount,
+                cornerDetectionAccuracyPercentage);
+    }
 }

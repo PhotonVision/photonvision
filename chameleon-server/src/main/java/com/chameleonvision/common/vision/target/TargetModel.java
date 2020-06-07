@@ -1,20 +1,28 @@
 package com.chameleonvision.common.vision.target;
 
 import com.chameleonvision.common.vision.opencv.Releasable;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
 
 public class TargetModel implements Releasable {
 
-    private final MatOfPoint3f realWorldTargetCoordinates;
+    @JsonIgnore private final MatOfPoint3f realWorldTargetCoordinates;
+    @JsonIgnore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
+    @JsonIgnore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
 
-    private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
-    private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
+    public final List<Point3> realWorldCoordinatesArray;
+    public final double boxHeight;
 
     public TargetModel(MatOfPoint3f realWorldTargetCoordinates, double boxHeight) {
         this.realWorldTargetCoordinates = realWorldTargetCoordinates;
+        this.realWorldCoordinatesArray = realWorldTargetCoordinates.toList();
+        this.boxHeight = boxHeight;
 
         var bottomList = realWorldTargetCoordinates.toList();
         var topList = new ArrayList<Point3>();
@@ -26,7 +34,10 @@ public class TargetModel implements Releasable {
         this.visualizationBoxTop.fromList(topList);
     }
 
-    public TargetModel(List<Point3> points, double boxHeight) {
+    @JsonCreator
+    public TargetModel(
+            @JsonProperty(value = "realWorldCoordinatesArray") List<Point3> points,
+            @JsonProperty(value = "boxHeight") double boxHeight) {
         this(listToMat(points), boxHeight);
     }
 
@@ -74,6 +85,20 @@ public class TargetModel implements Releasable {
                         new Point3(7.313, -2.662, 0),
                         new Point3(5.936, 2.662, 0));
         return new TargetModel(corners, 4);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TargetModel)) return false;
+        TargetModel that = (TargetModel) o;
+        return Double.compare(that.boxHeight, boxHeight) == 0
+                && Objects.equals(realWorldCoordinatesArray, that.realWorldCoordinatesArray);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(realWorldCoordinatesArray, boxHeight);
     }
 
     @Override

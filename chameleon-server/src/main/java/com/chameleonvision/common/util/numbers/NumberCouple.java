@@ -1,5 +1,7 @@
 package com.chameleonvision.common.util.numbers;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public abstract class NumberCouple<T extends Number> {
 
     protected T first;
@@ -49,6 +51,7 @@ public abstract class NumberCouple<T extends Number> {
         return true;
     }
 
+    @JsonIgnore
     public boolean isEmpty() {
         return first.intValue() == 0 && second.intValue() == 0;
     }

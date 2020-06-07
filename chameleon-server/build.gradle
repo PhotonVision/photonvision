@@ -41,8 +41,6 @@ dependencies {
     implementation "org.apache.commons:commons-collections4:4.4"
     implementation "org.apache.commons:commons-exec:1.3"
 
-    implementation "com.moandjiezana.toml:toml4j:0.7.2"
-
     // wpilib stuff
     implementation "edu.wpi.first.wpiutil:wpiutil-java:$wpilibVersion"
     implementation "edu.wpi.first.cameraserver:cameraserver-java:$wpilibVersion"

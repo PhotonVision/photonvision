@@ -6,6 +6,7 @@ import com.chameleonvision.common.vision.opencv.ContourSortMode;
 import com.chameleonvision.common.vision.target.RobotOffsetPointMode;
 import com.chameleonvision.common.vision.target.TargetOffsetPointEdge;
 import com.chameleonvision.common.vision.target.TargetOrientation;
+import java.util.Objects;
 
 public class AdvancedPipelineSettings extends CVPipelineSettings {
 
@@ -49,4 +50,54 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     // the two values that define the line of the Dual Point Offset calibration (think y=mx+b)
     public double offsetDualLineM = 1;
     public double offsetDualLineB = 0;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        if (!super.equals(o)) return false;
+        AdvancedPipelineSettings that = (AdvancedPipelineSettings) o;
+        return outputShowThresholded == that.outputShowThresholded
+                && outputShowMultipleTargets == that.outputShowMultipleTargets
+                && erode == that.erode
+                && dilate == that.dilate
+                && contourSpecklePercentage == that.contourSpecklePercentage
+                && Double.compare(that.offsetDualLineM, offsetDualLineM) == 0
+                && Double.compare(that.offsetDualLineB, offsetDualLineB) == 0
+                && hsvHue.equals(that.hsvHue)
+                && hsvSaturation.equals(that.hsvSaturation)
+                && hsvValue.equals(that.hsvValue)
+                && contourArea.equals(that.contourArea)
+                && contourRatio.equals(that.contourRatio)
+                && contourExtent.equals(that.contourExtent)
+                && contourSortMode == that.contourSortMode
+                && contourTargetOffsetPointEdge == that.contourTargetOffsetPointEdge
+                && contourTargetOrientation == that.contourTargetOrientation
+                && offsetRobotOffsetMode == that.offsetRobotOffsetMode
+                && offsetCalibrationPoint.equals(that.offsetCalibrationPoint);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(
+                super.hashCode(),
+                hsvHue,
+                hsvSaturation,
+                hsvValue,
+                outputShowThresholded,
+                outputShowMultipleTargets,
+                erode,
+                dilate,
+                contourArea,
+                contourRatio,
+                contourExtent,
+                contourSpecklePercentage,
+                contourSortMode,
+                contourTargetOffsetPointEdge,
+                contourTargetOrientation,
+                offsetRobotOffsetMode,
+                offsetCalibrationPoint,
+                offsetDualLineM,
+                offsetDualLineB);
+    }
 }

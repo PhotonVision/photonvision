@@ -2,7 +2,7 @@ package com.chameleonvision._2.config;
 
 import com.chameleonvision._2.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision.common.util.file.FileUtils;
-import com.chameleonvision.common.util.file.JacksonUtils;
+import com.chameleonvision.common.util.jackson.JacksonUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;

@@ -115,10 +115,10 @@ public class PipelineManager {
         }
     }
 
-    private static final Comparator<CVPipeline> IndexComparator =
+    public static final Comparator<CVPipelineSettings> PipelineSettingsIndexComparator =
             (o1, o2) -> {
-                int o1Index = o1.getSettings().pipelineIndex;
-                int o2Index = o2.getSettings().pipelineIndex;
+                int o1Index = o1.pipelineIndex;
+                int o2Index = o2.pipelineIndex;
 
                 if (o1Index == o2Index) {
                     return 0;
@@ -128,13 +128,16 @@ public class PipelineManager {
                 return 1;
             };
 
+    public static final Comparator<CVPipeline> PipelineIndexComparator =
+            (o1, o2) -> PipelineSettingsIndexComparator.compare(o1.getSettings(), o2.getSettings());
+
     /**
     * Sorts the pipeline list by index, and reassigns their indexes to match the new order. <br>
     * <br>
     * I don't like this but I have no other ideas, and it works so ¯\_(ツ)_/¯
     */
     private void reassignIndexes() {
-        userPipelines.sort(IndexComparator);
+        userPipelines.sort(PipelineIndexComparator);
         for (int i = 0; i < userPipelines.size(); i++) {
             getPipelineSettings(i).pipelineIndex = i;
         }
