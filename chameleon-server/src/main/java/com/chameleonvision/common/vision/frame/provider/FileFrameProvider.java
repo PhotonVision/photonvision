@@ -18,10 +18,9 @@ public class FileFrameProvider implements FrameProvider {
     private static int count = 0;
 
     private Frame m_frame;
-    private Path m_path;
+    private final Path m_path;
 
-    private double m_fov;
-    private FrameStaticProperties m_properties;
+    private final double m_fov;
 
     private boolean m_reloadImage;
 
@@ -54,7 +53,7 @@ public class FileFrameProvider implements FrameProvider {
         Mat image = Imgcodecs.imread(m_path.toString());
 
         if (image.cols() > 0 && image.rows() > 0) {
-            m_properties = new FrameStaticProperties(image.width(), image.height(), m_fov);
+            FrameStaticProperties m_properties = new FrameStaticProperties(image.width(), image.height(), m_fov);
             m_frame = new Frame(new CVMat(image), m_properties);
         } else {
             throw new RuntimeException("Image loading failed!");
@@ -83,6 +82,8 @@ public class FileFrameProvider implements FrameProvider {
     @Override
     public Frame get() {
         if (m_reloadImage) {
+            if (m_frame != null) m_frame.release();
+            m_frame = null;
             loadImage();
         }
 

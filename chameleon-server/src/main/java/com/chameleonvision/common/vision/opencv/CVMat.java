@@ -7,6 +7,8 @@ import org.opencv.core.Mat;
 public class CVMat implements Releasable {
     private static final HashSet<Mat> allMats = new HashSet<>();
 
+    private static boolean shouldPrint;
+
     private final Mat mat;
 
     public CVMat() {
@@ -23,7 +25,7 @@ public class CVMat implements Releasable {
 
     public CVMat(Mat mat) {
         this.mat = mat;
-        if (allMats.add(mat)) {
+        if (allMats.add(mat) && shouldPrint) {
             System.out.println(
                     "(CVMat) Added new Mat (count: "
                             + allMats.size()
@@ -44,5 +46,9 @@ public class CVMat implements Releasable {
 
     public static int getMatCount() {
         return allMats.size();
+    }
+
+    public static void enablePrint(boolean enabled) {
+        shouldPrint = enabled;
     }
 }

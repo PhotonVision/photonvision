@@ -111,6 +111,9 @@ sourceSets {
 
 test {
     useJUnitPlatform()
+    testLogging {
+        events "passed", "skipped", "failed", "standardOut", "standardError"
+    }
 }
 
 task testHeadless(type: Test) {
