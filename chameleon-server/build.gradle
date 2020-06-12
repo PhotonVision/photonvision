@@ -110,15 +110,13 @@ sourceSets {
 }
 
 test {
-    test {
-        systemProperty "java.awt.headless", System.getProperty("java.awt.headless")
-        useJUnitPlatform()
-    }
+    useJUnitPlatform()
 }
 
-task testHeadless(dependsOn: test) {
+task testHeadless(type: Test) {
     group = 'verification'
-    test.systemProperty("java.awt.headless", "true")
+    systemProperty("java.awt.headless", "true")
+    useJUnitPlatform()
 }
 
 spotless {
