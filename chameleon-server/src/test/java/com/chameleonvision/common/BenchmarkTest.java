@@ -53,8 +53,26 @@ public class BenchmarkTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoSideStraightDark72in),
-                        TestUtils.WPI2019Image.FOV);
+                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center),
+                        TestUtils.WPI2020Image.FOV);
+
+        frameProvider.setImageReloading(true);
+
+        benchmarkPipeline(frameProvider, pipeline, 5);
+    }
+
+    @Test
+    public void Reflective720pBenchmark() {
+        var pipeline = new ReflectivePipeline();
+        pipeline.getSettings().hsvHue.set(60, 100);
+        pipeline.getSettings().hsvSaturation.set(200, 255);
+        pipeline.getSettings().hsvValue.set(200, 255);
+        pipeline.getSettings().outputShowThresholded = true;
+
+        var frameProvider =
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center_720p),
+                        TestUtils.WPI2020Image.FOV);
 
         frameProvider.setImageReloading(true);
 
@@ -102,8 +120,8 @@ public class BenchmarkTest {
         do {
             CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
             pipelineResult.release();
-            processingTimes.add(MathUtils.roundTo(pipelineResult.processingMillis, 3));
-            latencyTimes.add(MathUtils.roundTo(pipelineResult.getLatencyMillis(), 3));
+            processingTimes.add(pipelineResult.processingMillis);
+            latencyTimes.add(pipelineResult.getLatencyMillis());
         } while (System.currentTimeMillis() - benchmarkStartMillis < secondsToRun * 1000);
         System.out.println("Benchmark complete.");
 
@@ -118,37 +136,37 @@ public class BenchmarkTest {
         String processingResult =
                 "Processing times - "
                         + "Min: "
-                        + processingMin
+                        + MathUtils.roundTo(processingMin, 3)
                         + "ms ("
-                        + 1000 / processingMin
+                        + MathUtils.roundTo(1000 / processingMin, 3)
                         + " FPS), "
                         + "Mean: "
-                        + processingMean
+                        + MathUtils.roundTo(processingMean, 3)
                         + "ms ("
-                        + 1000 / processingMean
+                        + MathUtils.roundTo(1000 / processingMean, 3)
                         + " FPS), "
                         + "Max: "
-                        + processingMax
+                        + MathUtils.roundTo(processingMax, 3)
                         + "ms ("
-                        + 1000 / processingMax
+                        + MathUtils.roundTo(1000 / processingMax, 3)
                         + " FPS)";
         System.out.println(processingResult);
         String latencyResult =
                 "Latency times - "
                         + "Min: "
-                        + latencyMin
+                        + MathUtils.roundTo(latencyMin, 3)
                         + "ms ("
-                        + 1000 / latencyMin
+                        + MathUtils.roundTo(1000 / latencyMin, 3)
                         + " FPS), "
                         + "Mean: "
-                        + latencyMean
+                        + MathUtils.roundTo(latencyMean, 3)
                         + "ms ("
-                        + 1000 / latencyMean
+                        + MathUtils.roundTo(1000 / latencyMean, 3)
                         + " FPS), "
                         + "Max: "
-                        + latencyMax
+                        + MathUtils.roundTo(latencyMax, 3)
                         + "ms ("
-                        + 1000 / latencyMax
+                        + MathUtils.roundTo(1000 / latencyMax, 3)
                         + " FPS)";
         System.out.println(latencyResult);
     }
