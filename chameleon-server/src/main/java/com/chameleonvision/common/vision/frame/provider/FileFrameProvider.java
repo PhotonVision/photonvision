@@ -53,7 +53,8 @@ public class FileFrameProvider implements FrameProvider {
         Mat image = Imgcodecs.imread(m_path.toString());
 
         if (image.cols() > 0 && image.rows() > 0) {
-            FrameStaticProperties m_properties = new FrameStaticProperties(image.width(), image.height(), m_fov);
+            FrameStaticProperties m_properties =
+                    new FrameStaticProperties(image.width(), image.height(), m_fov);
             m_frame = new Frame(new CVMat(image), m_properties);
         } else {
             throw new RuntimeException("Image loading failed!");

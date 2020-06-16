@@ -77,6 +77,41 @@ public class TestUtils {
         }
     }
 
+    public enum PolygonTestImages {
+        kPolygons;
+
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1).toLowerCase();
+            return Path.of("polygons", filename + ".png");
+        }
+
+        PolygonTestImages() {
+            this.path = getPath();
+        }
+    }
+
+    public enum PowercellTestImages {
+        kPowercell_test_1,
+        kPowercell_test_2,
+        kPowercell_test_3,
+        kPowercell_test_4,
+        kPowercell_test_5,
+        kPowercell_test_6;
+
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1).toLowerCase();
+            return Path.of(filename + ".png");
+        }
+
+        PowercellTestImages() {
+            this.path = getPath();
+        }
+    }
+
     private static Path getResourcesFolderPath() {
         return Path.of("src", "test", "resources").toAbsolutePath();
     }
@@ -89,12 +124,24 @@ public class TestUtils {
         return getResourcesFolderPath().resolve("calibration");
     }
 
+    public static Path getPowercellPath() {
+        return getTestImagesPath().resolve("polygons").resolve("powercells");
+    }
+
     public static Path getWPIImagePath(WPI2020Image image) {
         return getTestImagesPath().resolve(image.path);
     }
 
     public static Path getWPIImagePath(WPI2019Image image) {
         return getTestImagesPath().resolve(image.path);
+    }
+
+    public static Path getPolygonImagePath(PolygonTestImages image) {
+        return getTestImagesPath().resolve(image.path);
+    }
+
+    public static Path getPowercellImagePath(PowercellTestImages image) {
+        return getPowercellPath().resolve(image.path);
     }
 
     public static void loadLibraries() {

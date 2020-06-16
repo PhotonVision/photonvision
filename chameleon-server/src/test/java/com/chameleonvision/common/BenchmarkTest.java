@@ -115,7 +115,13 @@ public class BenchmarkTest {
         var frameProps = frameProvider.get().frameStaticProperties;
 
         // begin benchmark
-        System.out.println("Beginning " + secondsToRun + " second benchmark at resolution " + frameProps.imageWidth + "x" + frameProps.imageHeight);
+        System.out.println(
+                "Beginning "
+                        + secondsToRun
+                        + " second benchmark at resolution "
+                        + frameProps.imageWidth
+                        + "x"
+                        + frameProps.imageHeight);
         var benchmarkStartMillis = System.currentTimeMillis();
         do {
             CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());

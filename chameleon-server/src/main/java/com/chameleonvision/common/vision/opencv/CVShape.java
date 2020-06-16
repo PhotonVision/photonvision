@@ -23,6 +23,10 @@ public class CVShape {
         customTarget = targetPoints;
     }
 
+    public Contour getContour() {
+        return contour;
+    }
+
     public MatOfPoint2f getApproxPolyDp(double epsilon, boolean closed) {
         approxCurve.release();
         approxCurve = new MatOfPoint2f();

@@ -87,6 +87,16 @@ public class TargetModel implements Releasable {
         return new TargetModel(corners, 4);
     }
 
+    public static TargetModel getCircleTarget(double radius) {
+        var corners =
+                List.of(
+                        new Point3(-radius / 2, -radius / 2, -radius / 2),
+                        new Point3(-radius / 2, radius / 2, -radius / 2),
+                        new Point3(radius / 2, radius / 2, -radius / 2),
+                        new Point3(radius / 2, -radius / 2, -radius / 2));
+        return new TargetModel(corners, 0);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
