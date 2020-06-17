@@ -3,20 +3,58 @@ package com.chameleonvision.common.configuration;
 import com.chameleonvision.common.calibration.CameraCalibrationCoefficients;
 import com.chameleonvision.common.logging.LogGroup;
 import com.chameleonvision.common.logging.Logger;
+import com.chameleonvision.common.vision.camera.CameraType;
 import com.chameleonvision.common.vision.pipeline.CVPipelineSettings;
 import com.chameleonvision.common.vision.pipeline.DriverModePipelineSettings;
 import com.chameleonvision.common.vision.processes.PipelineManager;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 
 public class CameraConfiguration {
     private static final Logger logger = new Logger(CameraConfiguration.class, LogGroup.Camera);
 
-    public String name = "";
+    public String baseName = "";
+    public String uniqueName = "";
     public String nickname = "";
     public double FOV = 70;
+    public String path = "";
+    public CameraType cameraType = CameraType.UsbCamera;
     public CameraCalibrationCoefficients calibration;
+    public List<Integer> CameraLEDs = new ArrayList<>();
+
+    public CameraConfiguration(String baseName, String path) {
+        this(baseName, baseName, baseName, path);
+    }
+
+    public CameraConfiguration(String baseName, String uniqueName, String nickname, String path) {
+        this.baseName = baseName;
+        this.uniqueName = uniqueName;
+        this.nickname = nickname;
+        this.path = path;
+    }
+
+    @JsonCreator
+    public CameraConfiguration(
+            @JsonProperty("baseName") String baseName,
+            @JsonProperty("uniqueName") String uniqueName,
+            @JsonProperty("nickname") String nickname,
+            @JsonProperty("FOV") double FOV,
+            @JsonProperty("path") String path,
+            @JsonProperty("cameraType") CameraType cameraType,
+            @JsonProperty("calibration") CameraCalibrationCoefficients calibration,
+            @JsonProperty("CameraLEDs") List<Integer> cameraLEDs) {
+        this.baseName = baseName;
+        this.uniqueName = uniqueName;
+        this.nickname = nickname;
+        this.FOV = FOV;
+        this.path = path;
+        this.cameraType = cameraType;
+        this.calibration = calibration;
+        this.CameraLEDs = cameraLEDs;
+    }
 
     @JsonIgnore // this ignores the pipes as we serialize them to their own subfolder
     public final List<CVPipelineSettings> pipelineSettings = new ArrayList<>();

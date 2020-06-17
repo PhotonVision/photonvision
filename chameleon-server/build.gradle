@@ -15,13 +15,14 @@ shadowJar {
 sourceCompatibility = 11
 
 repositories {
+    jcenter()
     mavenCentral()
     maven {
-        url = 'https://frcmaven.wpi.edu:443/artifactory/release'
+        url = 'https://frcmaven.wpi.edu:443/artifactory/development'
     }
 }
 ext {
-    wpilibVersion = '2020.2.2'
+    wpilibVersion = '2020.3.2-75-g1557a4c'
     openCVVersion = '3.4.7-2'
 }
 
@@ -67,35 +68,6 @@ dependencies {
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:windowsx86-64"
 
     testCompile "ch.qos.logback:logback-classic:0.9.26"
-
-    // javacv (ew)
-//    def withoutJunk = {
-//        exclude group: 'org.bytedeco', module: 'artoolkitplus'
-//        exclude group: 'org.bytedeco', module: 'artoolkitplus-platform'
-//        exclude group: 'org.bytedeco', module: 'flandmark'
-//        exclude group: 'org.bytedeco', module: 'flandmark-platform'
-//        exclude group: 'org.bytedeco', module: 'flycapture'
-//        exclude group: 'org.bytedeco', module: 'flycapture-platform'
-//        exclude group: 'org.bytedeco', module: 'leptonica'
-//        exclude group: 'org.bytedeco', module: 'leptonica-platform'
-//        exclude group: 'org.bytedeco', module: 'libdc1394'
-//        exclude group: 'org.bytedeco', module: 'libdc1394-platform'
-//        exclude group: 'org.bytedeco', module: 'libfreenect'
-//        exclude group: 'org.bytedeco', module: 'libfreenect-platform'
-//        exclude group: 'org.bytedeco', module: 'libfreenect2'
-//        exclude group: 'org.bytedeco', module: 'libfreenect2-platform'
-//        exclude group: 'org.bytedeco', module: 'librealsense'
-//        exclude group: 'org.bytedeco', module: 'librealsense-platform'
-//        exclude group: 'org.bytedeco', module: 'librealsense2'
-//        exclude group: 'org.bytedeco', module: 'librealsense2-platform'
-//        exclude group: 'org.bytedeco', module: 'openblas'
-//        exclude group: 'org.bytedeco', module: 'openblas-platform'
-//        exclude group: 'org.bytedeco', module: 'tesseract'
-//        exclude group: 'org.bytedeco', module: 'tesseract-platform'
-//        exclude group: 'org.bytedeco', module: 'ffmpeg'
-//        exclude group: 'org.bytedeco', module: 'ffmpeg-platform'
-//    }
-//    compile 'org.bytedeco:javacv-platform:1.5.2', withoutJunk
 
     // test stuff
     testImplementation('org.junit.jupiter:junit-jupiter:5.6.0')

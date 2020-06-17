@@ -18,7 +18,8 @@ import org.junit.jupiter.api.*;
 public class ConfigTest {
 
     private static final ConfigManager configMgr;
-    private static final CameraConfiguration cameraConfig = new CameraConfiguration();
+    private static final CameraConfiguration cameraConfig =
+            new CameraConfiguration("TestCamera", "/dev/video420");
     private static final ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS =
             new ReflectivePipelineSettings();
     private static final ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS =
@@ -33,8 +34,6 @@ public class ConfigTest {
     public static void init() {
         TestUtils.loadLibraries();
         Logger.setLevel(LogGroup.General, Level.DE_PEST);
-
-        cameraConfig.name = "TestCamera";
 
         REFLECTIVE_PIPELINE_SETTINGS.pipelineNickname = "2019Tape";
         REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.get2019Target();

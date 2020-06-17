@@ -16,7 +16,7 @@ public class ChameleonConfiguration {
     }
 
     public void addCameraConfig(CameraConfiguration config) {
-        addCameraConfig(config.name, config);
+        addCameraConfig(config.uniqueName, config);
     }
 
     public void addCameraConfig(String name, CameraConfiguration config) {

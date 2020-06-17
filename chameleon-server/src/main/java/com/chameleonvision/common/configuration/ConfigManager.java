@@ -38,7 +38,7 @@ public class ConfigManager {
     }
 
     protected static Path getRootFolder() {
-        return Path.of("chameleon-vision"); // TODO change root folder?
+        return Path.of("chameleon-vision");
     }
 
     private ConfigManager(Path rootFolder) {
@@ -64,25 +64,36 @@ public class ConfigManager {
         HardwareConfig hardwareConfig;
         NetworkConfig networkConfig;
 
-        try {
-            hardwareConfig = JacksonUtils.deserialize(hardwareConfigFile.toPath(), HardwareConfig.class);
-            if (hardwareConfig == null) {
+        if (hardwareConfigFile.exists()) {
+            try {
+                hardwareConfig =
+                        JacksonUtils.deserialize(hardwareConfigFile.toPath(), HardwareConfig.class);
+                if (hardwareConfig == null) {
+                    logger.error("Could not deserialize hardware config! Loading defaults");
+                    hardwareConfig = new HardwareConfig();
+                }
+            } catch (IOException e) {
                 logger.error("Could not deserialize hardware config! Loading defaults");
                 hardwareConfig = new HardwareConfig();
             }
-        } catch (IOException e) {
-            logger.error("Could not deserialize hardware config! Loading defaults");
+        } else {
+            logger.info("Hardware config does not exist! Loading defaults");
             hardwareConfig = new HardwareConfig();
         }
 
-        try {
-            networkConfig = JacksonUtils.deserialize(networkConfigFile.toPath(), NetworkConfig.class);
-            if (networkConfig == null) {
+        if (networkConfigFile.exists()) {
+            try {
+                networkConfig = JacksonUtils.deserialize(networkConfigFile.toPath(), NetworkConfig.class);
+                if (networkConfig == null) {
+                    logger.error("Could not deserialize network config! Loading defaults");
+                    networkConfig = new NetworkConfig();
+                }
+            } catch (IOException e) {
                 logger.error("Could not deserialize network config! Loading defaults");
                 networkConfig = new NetworkConfig();
             }
-        } catch (IOException e) {
-            logger.error("Could not deserialize network config! Loading defaults");
+        } else {
+            logger.info("Network config file does not exist! Loading defaults");
             networkConfig = new NetworkConfig();
         }
 
@@ -164,11 +175,17 @@ public class ConfigManager {
 
             for (var subdir : subdirectories) {
                 var cameraConfigPath = Path.of(subdir.toString(), "config.json");
-                CameraConfiguration loadedConfig =
-                        JacksonUtils.deserialize(cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
-                if (loadedConfig == null) {
+                CameraConfiguration loadedConfig = null;
+                try {
+                    loadedConfig =
+                            JacksonUtils.deserialize(
+                                    cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
+                } catch (JsonProcessingException e) {
+                    e.printStackTrace();
+                }
+                if (loadedConfig == null) { // If the file could not be deserialized
                     logger.warn("Could not load camera " + subdir + "'s config.json! Loading " + "default");
-                    loadedConfig = new CameraConfiguration();
+                    continue; // TODO how do we later try to load this camera if it gets reconnected?
                 }
 
                 // At this point we have only loaded the base stuff
