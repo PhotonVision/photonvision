@@ -27,15 +27,17 @@ At least one USB camera ([supported](https://chameleon-vision.readthedocs.io/en/
 
 ### Prerequisites
 
-- Java Development Kit 12: 
-Follow the correct instructions for your platform from [BellSoft](https://bell-sw.com/pages/liberica_install_guide-12.0.2/)
-- Chameleon-vision source code
-Clone via a git client or download as zip and extract the source code into a empty folder
+- Java Development Kit 11: 
+Follow the correct instructions for your platform from [AdoptOpenJDK](https://adoptopenjdk.net/)
+	-When running the installer, follow the given instructions and ensure that you select Add to PATH, Associate .jar, and Set JAVA_HOME variable.
+- Chameleon-Vision source code
+Clone via a git client or download as zip and extract the source code into a empty folder.
+`git clone -b 3.0 https://github.com/Chameleon-Vision/chameleon-vision.git`
 #### For the co-processor(Linux system)
 - Avahi Daemon:
 `sudo apt-get install avahi-daemon avahi-discover avahi-utils libnss-mdns mdns-scan`
 
-#### For the driver station
+#### For the Driver Station
 
 - Bonjour
 Download and install Bonjour [from here](https://support.apple.com/kb/DL999?locale=en_US)
@@ -43,21 +45,19 @@ Download and install Bonjour [from here](https://support.apple.com/kb/DL999?loca
 Download and install [this](https://aka.ms/vs/16/release/vc_redist.x64.exe) 
 
 ## Importing to IDEA
-We recommend the use of [Intellij Idea](https://www.jetbrains.com/idea/) for running the source-code
+We recommend the use of [IntelliJ IDEA](https://www.jetbrains.com/idea/) for running the source-code
 
 1. Import Project 
 
-2. Choose the path to `chameleon-server` inside the copy of Chameleon-Vision that you cloned or downloaded
+2. Choose the path to `chameleon-server` inside the copy of chameleon-vision that you cloned or downloaded
 
 ![](https://i.vgy.me/KmrzCV.png)
 
-3. Import the project as a `Maven` project
+3. Click Ok, go to File -> Project Structure -> Project -> Project SDK, and then choose JDK 11.
 
-![](https://i.vgy.me/2ltb7B.png)
+4. Gradle will automatically download the necessary dependencies 
 
-4. Under `JDK for importer` choose the JDK 12 you downloaded earlier
-5. Maven will automatically download the necessary dependencies 
-6. Run `Main` under `src/main/java/com/chameleonvision/`
+Note: At this time, the program is not in a runnable state.
  
 ## Authors
 
@@ -82,7 +82,7 @@ We recommend the use of [Intellij Idea](https://www.jetbrains.com/idea/) for run
 
 * [JSON](https://json.org)
 
-* [Google](https://github.com/google) - Specifically [Gson](https://github.com/google/gson)
+* [FasterXML](https://github.com/FasterXML) - Specifically [jackson](https://github.com/FasterXML/jackson)
 
 ## License  
-Usage of Chameleon Vision must fall under all terms of [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode)
+Usage of Chameleon Vision must fall under all terms of [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html)
