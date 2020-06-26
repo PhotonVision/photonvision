@@ -1,72 +1,141 @@
 <template>
+  <div>
     <div>
-        <div>
-            <CVselect name="Camera" :list="$store.getters.cameraList" v-model="currentCameraIndex"
-                      @input="handleInput('currentCamera',currentCameraIndex)"/>
-            <CVnumberinput name="Diagonal FOV" v-model="cameraSettings.fov"/>
-            <br>
-            <CVnumberinput name="Camera pitch" v-model="cameraSettings.tilt" :step="0.01"/>
-            <br>
-            <v-btn style="margin-top:10px" small color="#4baf62" @click="sendCameraSettings">Save Camera Settings
-            </v-btn>
-        </div>
-        <div style="margin-top: 15px">
-            <span>3D Calibration</span>
-            <v-divider color="white" style="margin-bottom: 10px"/>
-            <v-row>
-                <v-col>
-                    <CVselect name="Resolution" v-model="resolutionIndex" :list="stringResolutionList"/>
-                </v-col>
-                <v-col>
-                    <CVnumberinput name="Square Size (in)" v-model="squareSize"/>
-                </v-col>
-            </v-row>
-            <v-row>
-                <v-col>
-                    <v-btn small :color="calibrationModeButton.color" @click="sendCalibrationMode"
-                           :disabled="checkResolution">
-                        {{calibrationModeButton.text}}
-                    </v-btn>
-                </v-col>
-                <v-col>
-                    <v-btn small :color="cancellationModeButton.color" @click="sendCalibrationFinish"
-                           :disabled="checkCancellation">
-                        {{cancellationModeButton.text}}
-                    </v-btn>
-                </v-col>
-                <v-col>
-                    <v-btn color="whitesmoke" small @click="downloadBoard">
-                        Download Checkerboard
-                    </v-btn>
-                    <a ref="calibrationFile" style="color: black; text-decoration: none; display: none"
-                       :href="require('../../assets/chessboard.png')"
-                       download="Calibration Board.png"/>
-                </v-col>
-            </v-row>
-            <v-row v-if="isCalibrating">
-                <v-col>
-                    <span>Snapshot Amount: {{snapshotAmount}}</span>
-                </v-col>
-            </v-row>
-            <div v-if="isCalibrating">
-                <v-checkbox v-model="isAdvanced" label="Advanced Menu" dark/>
-                <div v-if="isAdvanced" >
-                    <CVslider name="Exposure" v-model="$store.getters.pipeline.exposure" :min="0" :max="100"
-                              @input="e=> handleInput('exposure', e)"/>
-                    <CVslider name="Brightness" v-model="$store.getters.pipeline.brightness" :min="0" :max="100"
-                              @input="e=> handleInput('brightness', e)"/>
-                    <CVslider name="Gain" v-if="$store.getters.pipeline.gain !== -1"
-                              v-model="$store.getters.pipeline.gain" :min="0" :max="100"
-                              @input="e=> handleInput('gain', e)"/>
-                    <CVselect name="FPS" v-model="$store.getters.pipeline.videoModeIndex" :list="stringFpsList"
-                              @input="changeFps"/>
-                </div>
-            </div>
-        </div>
-        <v-snackbar v-model="snack" top :color="snackbar.color">
-            <span>{{snackbar.text}}</span>
-        </v-snackbar>
+      <CVselect
+        v-model="currentCameraIndex"
+        name="Camera"
+        :list="$store.getters.cameraList"
+        @input="handleInput('currentCamera',currentCameraIndex)"
+      />
+      <CVnumberinput
+        v-model="cameraSettings.fov"
+        name="Diagonal FOV"
+      />
+      <br>
+      <CVnumberinput
+        v-model="cameraSettings.tilt"
+        name="Camera pitch"
+        :step="0.01"
+      />
+      <br>
+      <v-btn
+        style="margin-top:10px"
+        small
+        color="#4baf62"
+        @click="sendCameraSettings"
+      >
+        Save Camera Settings
+      </v-btn>
     </div>
+    <div style="margin-top: 15px">
+      <span>3D Calibration</span>
+      <v-divider
+        color="white"
+        style="margin-bottom: 10px"
+      />
+      <v-row>
+        <v-col>
+          <CVselect
+            v-model="resolutionIndex"
+            name="Resolution"
+            :list="stringResolutionList"
+          />
+        </v-col>
+        <v-col>
+          <CVnumberinput
+            v-model="squareSize"
+            name="Square Size (in)"
+          />
+        </v-col>
+      </v-row>
+      <v-row>
+        <v-col>
+          <v-btn
+            small
+            :color="calibrationModeButton.color"
+            :disabled="checkResolution"
+            @click="sendCalibrationMode"
+          >
+            {{ calibrationModeButton.text }}
+          </v-btn>
+        </v-col>
+        <v-col>
+          <v-btn
+            small
+            :color="cancellationModeButton.color"
+            :disabled="checkCancellation"
+            @click="sendCalibrationFinish"
+          >
+            {{ cancellationModeButton.text }}
+          </v-btn>
+        </v-col>
+        <v-col>
+          <v-btn
+            color="whitesmoke"
+            small
+            @click="downloadBoard"
+          >
+            Download Checkerboard
+          </v-btn>
+          <a
+            ref="calibrationFile"
+            style="color: black; text-decoration: none; display: none"
+            :href="require('../../assets/chessboard.png')"
+            download="Calibration Board.png"
+          />
+        </v-col>
+      </v-row>
+      <v-row v-if="isCalibrating">
+        <v-col>
+          <span>Snapshot Amount: {{ snapshotAmount }}</span>
+        </v-col>
+      </v-row>
+      <div v-if="isCalibrating">
+        <v-checkbox
+          v-model="isAdvanced"
+          label="Advanced Menu"
+          dark
+        />
+        <div v-if="isAdvanced">
+          <CVslider
+            v-model="$store.getters.pipeline.exposure"
+            name="Exposure"
+            :min="0"
+            :max="100"
+            @input="e=> handleInput('exposure', e)"
+          />
+          <CVslider
+            v-model="$store.getters.pipeline.brightness"
+            name="Brightness"
+            :min="0"
+            :max="100"
+            @input="e=> handleInput('brightness', e)"
+          />
+          <CVslider
+            v-if="$store.getters.pipeline.gain !== -1"
+            v-model="$store.getters.pipeline.gain"
+            name="Gain"
+            :min="0"
+            :max="100"
+            @input="e=> handleInput('gain', e)"
+          />
+          <CVselect
+            v-model="$store.getters.pipeline.videoModeIndex"
+            name="FPS"
+            :list="stringFpsList"
+            @input="changeFps"
+          />
+        </div>
+      </div>
+    </div>
+    <v-snackbar
+      v-model="snack"
+      top
+      :color="snackbar.color"
+    >
+      <span>{{ snackbar.text }}</span>
+    </v-snackbar>
+  </div>
 </template>
 
 <script>
@@ -102,6 +171,83 @@
                 hasEnough: false,
                 snack: false,
                 isAdvanced: false
+            }
+        },
+        computed: {
+            checkResolution() {
+                return this.resolutionIndex === undefined;
+            },
+            checkCancellation() {
+                if (this.isCalibrating) {
+                    return false
+                } else if (this.checkResolution) {
+                    return true;
+                } else {
+                    return true
+                }
+            },
+            currentCameraIndex: {
+                get() {
+                    return this.$store.state.currentCameraIndex;
+                },
+                set(value) {
+                    this.$store.commit('currentCameraIndex', value);
+                }
+            },
+            filteredResolutionList: {
+                get() {
+                    let tmp_list = [];
+                    for (let i in this.$store.state.resolutionList) {
+                        if (this.$store.state.resolutionList.hasOwnProperty(i)) {
+                            let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
+                            if (!tmp_list.some(e => e.width === res.width && e.height === res.height)) {
+                                res['actualIndex'] = parseInt(i);
+                                tmp_list.push(res);
+                            }
+                        }
+                    }
+                    return tmp_list;
+                }
+            },
+            filteredFpsList() {
+                let selectedRes = this.$store.state.resolutionList[this.resolutionIndex];
+                let tmpList = [];
+                for (let i in this.$store.state.resolutionList) {
+                    if (this.$store.state.resolutionList.hasOwnProperty(i)) {
+                        let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
+                        if (!tmpList.some(e => e['fps'] === res['fps'])) {
+                            if (res.width === selectedRes.width && res.height === selectedRes.height) {
+                                res['actualIndex'] = parseInt(i);
+                                tmpList.push(res);
+                            }
+                        }
+                    }
+                }
+                return tmpList;
+            },
+            stringFpsList() {
+                let tmp = [];
+                for (let i of this.filteredFpsList) {
+                    tmp.push(i['fps']);
+                }
+                return tmp;
+            },
+            stringResolutionList: {
+                get() {
+                    let tmp = [];
+                    for (let i of this.filteredResolutionList) {
+                        tmp.push(`${i['width']} X ${i['height']}`)
+                    }
+                    return tmp
+                }
+            },
+            cameraSettings: {
+                get() {
+                    return this.$store.getters.cameraSettings;
+                },
+                set(value) {
+                    this.$store.commit('cameraSettings', value);
+                }
             }
         },
         methods: {
@@ -187,83 +333,6 @@
                     self.cancellationModeButton.text = "Cancel Calibration";
                     self.cancellationModeButton.color = "red";
                 });
-            }
-        },
-        computed: {
-            checkResolution() {
-                return this.resolutionIndex === undefined;
-            },
-            checkCancellation() {
-                if (this.isCalibrating) {
-                    return false
-                } else if (this.checkResolution) {
-                    return true;
-                } else {
-                    return true
-                }
-            },
-            currentCameraIndex: {
-                get() {
-                    return this.$store.state.currentCameraIndex;
-                },
-                set(value) {
-                    this.$store.commit('currentCameraIndex', value);
-                }
-            },
-            filteredResolutionList: {
-                get() {
-                    let tmp_list = [];
-                    for (let i in this.$store.state.resolutionList) {
-                        if (this.$store.state.resolutionList.hasOwnProperty(i)) {
-                            let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
-                            if (!tmp_list.some(e => e.width === res.width && e.height === res.height)) {
-                                res['actualIndex'] = parseInt(i);
-                                tmp_list.push(res);
-                            }
-                        }
-                    }
-                    return tmp_list;
-                }
-            },
-            filteredFpsList() {
-                let selectedRes = this.$store.state.resolutionList[this.resolutionIndex];
-                let tmpList = [];
-                for (let i in this.$store.state.resolutionList) {
-                    if (this.$store.state.resolutionList.hasOwnProperty(i)) {
-                        let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
-                        if (!tmpList.some(e => e['fps'] === res['fps'])) {
-                            if (res.width === selectedRes.width && res.height === selectedRes.height) {
-                                res['actualIndex'] = parseInt(i);
-                                tmpList.push(res);
-                            }
-                        }
-                    }
-                }
-                return tmpList;
-            },
-            stringFpsList() {
-                let tmp = [];
-                for (let i of this.filteredFpsList) {
-                    tmp.push(i['fps']);
-                }
-                return tmp;
-            },
-            stringResolutionList: {
-                get() {
-                    let tmp = [];
-                    for (let i of this.filteredResolutionList) {
-                        tmp.push(`${i['width']} X ${i['height']}`)
-                    }
-                    return tmp
-                }
-            },
-            cameraSettings: {
-                get() {
-                    return this.$store.getters.cameraSettings;
-                },
-                set(value) {
-                    this.$store.commit('cameraSettings', value);
-                }
             }
         }
     }

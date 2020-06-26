@@ -4,6 +4,7 @@ import Vuex from 'vuex'
 import pipeline from "./modules/pipeline";
 import generalSettings from "./modules/generalSettings";
 import cameraSettings from "./modules/cameraSettings";
+import undoRedo from "./modules/undoRedo";
 
 Vue.use(Vuex);
 
@@ -15,7 +16,8 @@ export default new Vuex.Store({
     modules: {
         pipeline: pipeline,
         settings: generalSettings,
-        cameraSettings: cameraSettings
+        cameraSettings: cameraSettings,
+        undoRedo: undoRedo
     },
     state: {
         resolutionList: [],

@@ -1,9 +1,20 @@
 <template>
-    <div>
-        <v-radio-group row v-model="localValue" dark :mandatory="true">
-            <v-radio color="#4baf62" v-for="(name,index) in list" :label="name" v-bind:key="index" :value="index"/>
-        </v-radio-group>
-    </div>
+  <div>
+    <v-radio-group
+      v-model="localValue"
+      row
+      dark
+      :mandatory="true"
+    >
+      <v-radio
+        v-for="(name,index) in list"
+        :key="index"
+        color="#4baf62"
+        :label="name"
+        :value="index"
+      />
+    </v-radio-group>
+  </div>
 </template>
 
 <script>

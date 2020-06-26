@@ -1,17 +1,44 @@
 <template>
-    <div>
-        <v-row align="center" justify="start">
-            <v-col style="padding-right:0" :cols="3">
-                <v-btn small color="#4baf62" @click="takePointA">Take Point A</v-btn>
-            </v-col>
-            <v-col style="margin-left:0" :cols="3">
-                <v-btn small color="#4baf62" @click="takePointB">Take Point B</v-btn>
-            </v-col>
-            <v-col>
-                <v-btn small @click="clearSlope" color="yellow darken-3">Clear All Points</v-btn>
-            </v-col>
-        </v-row>
-    </div>
+  <div>
+    <v-row
+      align="center"
+      justify="start"
+    >
+      <v-col
+        style="padding-right:0"
+        :cols="3"
+      >
+        <v-btn
+          small
+          color="#4baf62"
+          @click="takePointA"
+        >
+          Take Point A
+        </v-btn>
+      </v-col>
+      <v-col
+        style="margin-left:0"
+        :cols="3"
+      >
+        <v-btn
+          small
+          color="#4baf62"
+          @click="takePointB"
+        >
+          Take Point B
+        </v-btn>
+      </v-col>
+      <v-col>
+        <v-btn
+          small
+          color="yellow darken-3"
+          @click="clearSlope"
+        >
+          Clear All Points
+        </v-btn>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>

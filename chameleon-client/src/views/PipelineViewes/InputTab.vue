@@ -1,16 +1,52 @@
 <template>
-    <div>
-        <CVslider name="Exposure" v-model="value.exposure" :min="0" :max="100" @input="handleData('exposure')"/>
-        <CVslider name="Brightness" v-model="value.brightness" :min="0" :max="100" @input="handleData('brightness')"/>
-        <CVslider name="Gain" v-if="value.gain !== -1" v-model="value.gain" :min="0" :max="100"
-                  @input="handleData('gain')"/>
-        <CVselect name="Orientation" v-model="value.rotationMode" :list="['Normal','90° CW','180°','90° CCW']"
-                  @input="handleData('rotationMode')"/>
-        <CVselect name="Resolution" v-model="value.videoModeIndex" :list="resolutionList"
-                  @input="handleData('videoModeIndex')"/>
-        <CVselect name="Stream Resolution" v-model="value.streamDivisor"
-                  :list="streamResolutionList" @input="handleData('streamDivisor')"/>
-    </div>
+  <div>
+    <CVslider
+      v-model="value.exposure"
+      name="Exposure"
+      :min="0"
+      :max="100"
+      @input="handleData('exposure')"
+      @rollback="e => rollback('exposure', e)"
+    />
+    <CVslider
+      v-model="value.brightness"
+      name="Brightness"
+      :min="0"
+      :max="100"
+      @input="handleData('brightness')"
+      @rollback="e => rollback('brightness', e)"
+    />
+    <CVslider
+      v-if="value.gain !== -1"
+      v-model="value.gain"
+      name="Gain"
+      :min="0"
+      :max="100"
+      @input="handleData('gain')"
+      @rollback="e => rollback('gain', e)"
+    />
+    <CVselect
+      v-model="value.rotationMode"
+      name="Orientation"
+      :list="['Normal','90° CW','180°','90° CCW']"
+      @input="handleData('rotationMode')"
+      @rollback="e => e => rollback('rotationMode',e)"
+    />
+    <CVselect
+      v-model="value.videoModeIndex"
+      name="Resolution"
+      :list="resolutionList"
+      @input="handleData('videoModeIndex')"
+      @rollback="e => rollback('videoModeIndex', e)"
+    />
+    <CVselect
+      v-model="value.streamDivisor"
+      name="Stream Resolution"
+      :list="streamResolutionList"
+      @input="handleData('streamDivisor')"
+      @rollback="e => rollback('streamDivisor', e)"
+    />
+  </div>
 </template>
 
 <script>
@@ -19,18 +55,14 @@
 
     export default {
         name: 'Input',
-        props: ['value'],
         components: {
             CVslider,
             CVselect,
         },
-        methods: {
-        },
+      // eslint-disable-next-line vue/require-prop-types
+        props: ['value'],
         data() {
-            return {
-                t: 0,
-                a: 1
-            }
+            return {}
         },
         computed: {
             resolutionList: {
@@ -53,7 +85,8 @@
                     return tmp_list;
                 }
             }
-        }
+        },
+        methods: {}
     }
 </script>
 

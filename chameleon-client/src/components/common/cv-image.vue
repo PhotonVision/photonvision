@@ -1,16 +1,21 @@
 <template>
-    <img id="CameraStream" v-bind:style="styleObject" :src="address" @click="e => $emit('click', e)"
-         crossorigin="Anonymous" alt=""/>
-
+  <img
+    id="CameraStream"
+    :style="styleObject"
+    :src="address"
+    crossorigin="Anonymous"
+    alt=""
+    @click="e => $emit('click', e)"
+  >
 </template>
 
 <script>
     export default {
-        name: "cv-image",
+        name: "CvImage",
+        props: ['address', 'scale'],
         data: () => {
             return {}
         },
-        props: ['address', 'scale'],
         computed: {
             styleObject: {
                 get() {

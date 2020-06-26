@@ -1,23 +1,69 @@
 <template>
-    <div>
-        <CVselect name="Sort Mode" v-model="value.sortMode"
-                  :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
-                  @input="handleData('sortMode')"/>
-        <CVselect v-model="value.targetRegion" name="Target Region" :list="['Center','Top','Bottom','Left','Right']"
-                  @input="handleData('targetRegion')"/>
-        <CVselect name="Target Orientation" :list="['Portrait', 'Landscape']" v-model="value.targetOrientation"
-                  @input="handleData('targetOrientation')"/>
-        <CVswitch name="Output multiple" v-model="value.multiple" @input="handleData('multiple')"/>
-        <span>Calibrate:</span>
-        <v-divider dark color="white"/>
-        <CVselect name="Calibration Mode" v-model="value.calibrationMode" :list="['None','Single point','Dual point']"
-                  @input="handleData('calibrationMode')"/>
-        <component :raw-point="rawPoint" :is="selectedComponent" @update="doUpdate" @snackbar="showSnackbar"/>
-        <v-snackbar :timeout="3000" v-model="snackbar" top color="error">
-            <span style="color:#000">{{snackbarText}}</span>
-            <v-btn color="black" text @click="snackbar = false">Close</v-btn>
-        </v-snackbar>
-    </div>
+  <div>
+    <CVselect
+      v-model="value.sortMode"
+      name="Sort Mode"
+      :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
+      @input="handleData('sortMode')"
+      @rollback="rollback('sortMode',e)"
+    />
+
+    <CVselect
+      v-model="value.targetRegion"
+      name="Target Region"
+      :list="['Center','Top','Bottom','Left','Right']"
+      @input="handleData('targetRegion')"
+      @rollback="e=> rollback('targetRegion',e)"
+    />
+
+    <CVselect
+      v-model="value.targetOrientation"
+      name="Target Orientation"
+      :list="['Portrait', 'Landscape']"
+      @input="handleData('targetOrientation')"
+      @rollback="e=> rollback('targetOrientation',e)"
+    />
+
+    <CVswitch
+      v-model="value.multiple"
+      name="Output multiple"
+      @input="handleData('multiple')"
+      @rollback="e=> rollback('multiple',e)"
+    />
+    <span>Calibrate:</span>
+    <v-divider
+      dark
+      color="white"
+    />
+    <CVselect
+      v-model="value.calibrationMode"
+      name="Calibration Mode"
+      :list="['None','Single point','Dual point']"
+      @input="handleData('calibrationMode')"
+      @rollback="e=> rollback('calibrationMode',e)"
+    />
+    <component
+      :is="selectedComponent"
+      :raw-point="rawPoint"
+      @update="doUpdate"
+      @snackbar="showSnackbar"
+    />
+    <v-snackbar
+      v-model="snackbar"
+      :timeout="3000"
+      top
+      color="error"
+    >
+      <span style="color:#000">{{ snackbarText }}</span>
+      <v-btn
+        color="black"
+        text
+        @click="snackbar = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
+  </div>
 </template>
 
 <script>
@@ -29,7 +75,6 @@
 
     export default {
         name: 'Output',
-        props: ['value'],
         components: {
             CVselect,
             CVswitch,
@@ -37,15 +82,7 @@
             DualCalibration,
 
         },
-        methods: {
-            doUpdate() {
-                this.$emit('update')
-            },
-            showSnackbar(message) {
-                this.snackbarText = message;
-                this.snackbar = true;
-            },
-        },
+        props: ['value'],
 
         data() {
             return {
@@ -72,6 +109,15 @@
                     return this.$store.state.point.rawPoint;
                 }
             }
+        },
+        methods: {
+            doUpdate() {
+                this.$emit('update')
+            },
+            showSnackbar(message) {
+                this.snackbarText = message;
+                this.snackbar = true;
+            },
         }
     }
 </script>

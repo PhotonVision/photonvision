@@ -1,34 +1,56 @@
 <template>
-    <div>
-        <v-row style="width: 400px;" align="center">
-            <canvas id="canvasId" width="800" height="800"/>
-        </v-row>
-        <v-row style="width: 400px;" align="center">
-            <v-simple-table
-                    style="text-align: center;background-color: transparent; display: block;margin: auto"
-                    dense dark>
-                <template v-slot:default>
-                    <thead>
-                    <tr>
-                        <th class="text-center">Target</th>
-                        <th class="text-center">X</th>
-                        <th class="text-center">Y</th>
-                        <th class="text-center">Angle</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr v-for="(target, index) in targets" :key="index">
-                        <td>{{ index}}</td>
-                        <td>{{ target.pose.translation.x.toFixed(2) }}</td>
-                        <td>{{ target.pose.translation.y.toFixed(2) }}</td>
-                        <td>{{ target.pose.rotation.radians.toFixed(2) }}</td>
-                    </tr>
-                    </tbody>
-                </template>
-            </v-simple-table>
-        </v-row>
-    </div>
-
+  <div>
+    <v-row
+      style="width: 400px;"
+      align="center"
+    >
+      <canvas
+        id="canvasId"
+        width="800"
+        height="800"
+      />
+    </v-row>
+    <v-row
+      style="width: 400px;"
+      align="center"
+    >
+      <v-simple-table
+        style="text-align: center;background-color: transparent; display: block;margin: auto"
+        dense
+        dark
+      >
+        <template v-slot:default>
+          <thead>
+            <tr>
+              <th class="text-center">
+                Target
+              </th>
+              <th class="text-center">
+                X
+              </th>
+              <th class="text-center">
+                Y
+              </th>
+              <th class="text-center">
+                Angle
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="(target, index) in targets"
+              :key="index"
+            >
+              <td>{{ index }}</td>
+              <td>{{ target.pose.translation.x.toFixed(2) }}</td>
+              <td>{{ target.pose.translation.y.toFixed(2) }}</td>
+              <td>{{ target.pose.rotation.radians.toFixed(2) }}</td>
+            </tr>
+          </tbody>
+        </template>
+      </v-simple-table>
+    </v-row>
+  </div>
 </template>
 
 <script>
@@ -48,6 +70,13 @@
                 targetHeight: 6
             }
         },
+        computed: {
+            hLen: {
+                get() {
+                    return Math.tan(this.horizontalFOV / 2 * Math.PI / 180) * 150;
+                }
+            }
+        },
         watch: {
             targets: {
                 deep: true,
@@ -58,6 +87,28 @@
             horizontalFOV() {
                 this.draw();
             }
+        },
+        mounted: function () {
+            const canvas = document.getElementById("canvasId"); // getting the canvas element
+            const ctx = canvas.getContext("2d"); // getting the canvas context
+            this.canvas = canvas; // setting the canvas as a vue variable
+            this.ctx = ctx; // setting the canvas context as a vue variable
+            this.grad = this.ctx.createLinearGradient(400, 800, 400, 600);
+            this.grad.addColorStop(0, "rgb(119,119,119)");
+            this.grad.addColorStop(0.05, "rgba(14,92,22,0.96)");
+            this.grad.addColorStop(0.8, 'rgba(43,43,43,0.48)');
+
+            // setting canvas context values for drawing
+
+
+            this.ctx.font = "26px Arial";
+            this.ctx.strokeStyle = "whitesmoke";
+            this.ctx.lineWidth = 2;
+
+            this.$nextTick(function () {
+                this.drawPlayer();
+
+            });
         },
         methods: {
             draw() {
@@ -115,35 +166,6 @@
             clearBoard() {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // clearing the canvas
             }
-        },
-        computed: {
-            hLen: {
-                get() {
-                    return Math.tan(this.horizontalFOV / 2 * Math.PI / 180) * 150;
-                }
-            }
-        },
-        mounted: function () {
-            const canvas = document.getElementById("canvasId"); // getting the canvas element
-            const ctx = canvas.getContext("2d"); // getting the canvas context
-            this.canvas = canvas; // setting the canvas as a vue variable
-            this.ctx = ctx; // setting the canvas context as a vue variable
-            this.grad = this.ctx.createLinearGradient(400, 800, 400, 600);
-            this.grad.addColorStop(0, "rgb(119,119,119)");
-            this.grad.addColorStop(0.05, "rgba(14,92,22,0.96)");
-            this.grad.addColorStop(0.8, 'rgba(43,43,43,0.48)');
-
-            // setting canvas context values for drawing
-
-
-            this.ctx.font = "26px Arial";
-            this.ctx.strokeStyle = "whitesmoke";
-            this.ctx.lineWidth = 2;
-
-            this.$nextTick(function () {
-                this.drawPlayer();
-
-            });
         }
     }
 </script>

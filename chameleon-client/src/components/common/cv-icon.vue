@@ -1,12 +1,23 @@
 <template>
-    <div>
-        <v-tooltip :right="right" :bottom="!right" nudge-right="10">
-            <template v-slot:activator="{ on }">
-                <v-icon :class="hoverClass" @click="handleClick" v-on="on" :color="color">{{text}}</v-icon>
-            </template>
-            <span>{{tooltip}}</span>
-        </v-tooltip>
-    </div>
+  <div>
+    <v-tooltip
+      :right="right"
+      :bottom="!right"
+      nudge-right="10"
+    >
+      <template v-slot:activator="{ on }">
+        <v-icon
+          :class="hoverClass"
+          :color="color"
+          @click="handleClick"
+          v-on="on"
+        >
+          {{ text }}
+        </v-icon>
+      </template>
+      <span>{{ tooltip }}</span>
+    </v-tooltip>
+  </div>
 </template>
 
 <script>
@@ -16,11 +27,6 @@
         data() {
             return {}
         },
-        methods: {
-            handleClick() {
-                this.$emit('click');
-            }
-        },
         computed: {
             hoverClass: {
                 get() {
@@ -29,6 +35,11 @@
                     }
                     return "";
                 }
+            }
+        },
+        methods: {
+            handleClick() {
+                this.$emit('click');
             }
         },
 

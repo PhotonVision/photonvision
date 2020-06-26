@@ -1,23 +1,45 @@
 <template>
-    <div>
-        <v-row>
-            <v-col class="colsClass" cols="6">
-                <v-tabs background-color="#212121" dark fixed-tabs height="50" slider-color="#4baf62"
-                        v-model="selectedTab">
-                    <v-tab to="">General</v-tab>
-                    <v-tab to="">Cameras</v-tab>
-                </v-tabs>
-                <div style="padding-left:30px">
-                    <component :is="selectedComponent" @update="$emit('save')"/>
-                </div>
-            </v-col>
-            <v-col class="colsClass" v-show="selectedTab === 1">
-                <div class="videoClass">
-                    <cvImage :address="$store.getters.streamAddress" :scale="75"/>
-                </div>
-            </v-col>
-        </v-row>
-    </div>
+  <div>
+    <v-row>
+      <v-col
+        class="colsClass"
+        cols="6"
+      >
+        <v-tabs
+          v-model="selectedTab"
+          background-color="#212121"
+          dark
+          fixed-tabs
+          height="50"
+          slider-color="#4baf62"
+        >
+          <v-tab to="">
+            General
+          </v-tab>
+          <v-tab to="">
+            Cameras
+          </v-tab>
+        </v-tabs>
+        <div style="padding-left:30px">
+          <component
+            :is="selectedComponent"
+            @update="$emit('save')"
+          />
+        </div>
+      </v-col>
+      <v-col
+        v-show="selectedTab === 1"
+        class="colsClass"
+      >
+        <div class="videoClass">
+          <cvImage
+            :address="$store.getters.streamAddress"
+            :scale="75"
+          />
+        </div>
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>

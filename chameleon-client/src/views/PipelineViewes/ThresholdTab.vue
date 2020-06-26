@@ -1,26 +1,74 @@
 <template>
-    <div>
-        <CVrangeSlider v-model="value.hue" name="Hue" :min="0" :max="180" @input="handleData('hue')"/>
-        <CVrangeSlider v-model="value.saturation" name="Saturation" :min="0" :max="255"
-                       @input="handleData('saturation')"/>
-        <CVrangeSlider v-model="value.value" name="Value" :min="0" :max="255" @input="handleData('value')"/>
-        <v-divider color="darkgray " style="margin-top: 5px"/>
-        <v-btn style="margin: 20px;" color="#4baf62" @click="setFunction(1)" small>
-            <v-icon>colorize</v-icon>
-            Eye drop
-        </v-btn>
-        <v-btn style="margin: 20px;" color="#4baf62" @click="setFunction(2)" small>
-            <v-icon>add</v-icon>
-            Expand Selection
-        </v-btn>
-        <v-btn style="margin: 20px;" color="#4baf62" @click="setFunction(3)" small>
-            <v-icon>remove</v-icon>
-            Shrink Selection
-        </v-btn>
-        <v-divider color="darkgray "/>
-        <CVswitch v-model="value.erode" name="Erode" @input="handleData('erode')"/>
-        <CVswitch v-model="value.dilate" name="Dilate" @input="handleData('dilate')"/>
-    </div>
+  <div>
+    <CVrangeSlider
+      v-model="value.hue"
+      name="Hue"
+      :min="0"
+      :max="180"
+      @input="handleData('hue')"
+      @rollback="e => rollback('hue',e)"
+    />
+    <CVrangeSlider
+      v-model="value.saturation"
+      name="Saturation"
+      :min="0"
+      :max="255"
+      @input="handleData('saturation')"
+      @rollback="e => rollback('saturation',e)"
+    />
+    <CVrangeSlider
+      v-model="value.value"
+      name="Value"
+      :min="0"
+      :max="255"
+      @input="handleData('value')"
+      @rollback="e => rollback('value',e)"
+    />
+    <v-divider
+      color="darkgray "
+      style="margin-top: 5px"
+    />
+    <v-btn
+      style="margin: 20px;"
+      color="#4baf62"
+      small
+      @click="setFunction(1)"
+    >
+      <v-icon>colorize</v-icon>
+      Eye drop
+    </v-btn>
+    <v-btn
+      style="margin: 20px;"
+      color="#4baf62"
+      small
+      @click="setFunction(2)"
+    >
+      <v-icon>add</v-icon>
+      Expand Selection
+    </v-btn>
+    <v-btn
+      style="margin: 20px;"
+      color="#4baf62"
+      small
+      @click="setFunction(3)"
+    >
+      <v-icon>remove</v-icon>
+      Shrink Selection
+    </v-btn>
+    <v-divider color="darkgray " />
+    <CVswitch
+      v-model="value.erode"
+      name="Erode"
+      @input="handleData('erode')"
+      @rollback="e => rollback('erode',e)"
+    />
+    <CVswitch
+      v-model="value.dilate"
+      name="Dilate"
+      @input="handleData('dilate')"
+      @rollback="e => rollback('dilate',e)"
+    />
+  </div>
 </template>
 
 <script>
@@ -29,11 +77,11 @@
 
     export default {
         name: 'Threshold',
-        props: ['value'],
         components: {
             CVrangeSlider,
             CVswitch
         },
+        props: ['value'],
         data() {
             return {
                 currentFunction: undefined,
@@ -55,6 +103,13 @@
                     this.$store.commit("driverMode", val);
                 }
             }
+        },
+        mounted: function () {
+            const self = this;
+            this.colorPicker = require('../../plugins/ColorPicker').default;
+            this.$nextTick(() => {
+                self.colorPicker.initColorPicker();
+            });
         },
         methods: {
             onClick(event) {
@@ -97,13 +152,6 @@
                         break;
                 }
             }
-        },
-        mounted: function () {
-            const self = this;
-            this.colorPicker = require('../../plugins/ColorPicker').default;
-            this.$nextTick(() => {
-                self.colorPicker.initColorPicker();
-            });
         }
     }
 

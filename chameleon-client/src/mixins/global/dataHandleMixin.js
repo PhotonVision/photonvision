@@ -1,5 +1,5 @@
 export const dataHandleMixin = {
-    methods:{
+    methods: {
         handleInput(key, value) {
             let msg = this.$msgPack.encode({[key]: value});
             this.$socket.send(msg);
@@ -8,6 +8,9 @@ export const dataHandleMixin = {
             this.handleInput(val, this.value[val]);
             this.$emit('update')
         },
-
+        rollback(val, e) {
+            //TODO UPDATE VALUES INTO WEBSOCKET
+            this.$store.commit('updatePipeline', {[val]: e})
+        }
     }
 };

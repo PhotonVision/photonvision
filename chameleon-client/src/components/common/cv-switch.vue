@@ -1,14 +1,23 @@
 <template>
-    <div>
-        <v-row dense align="center">
-            <v-col :cols="2">
-                <span>{{name}}</span>
-            </v-col>
-            <v-col>
-                <v-switch dark :disabled="disabled" v-model="localValue" color="#4baf62"/>
-            </v-col>
-        </v-row>
-    </div>
+  <div>
+    <v-row
+      dense
+      align="center"
+    >
+      <v-col :cols="2">
+        <span>{{ name }}</span>
+      </v-col>
+      <v-col>
+        <v-switch
+          v-model="localValue"
+          dark
+          :disabled="disabled"
+          color="#4baf62"
+          @change="$emit('rollback', localValue)"
+        />
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>

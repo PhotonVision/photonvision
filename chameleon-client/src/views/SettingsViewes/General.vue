@@ -1,43 +1,94 @@
 <template>
-    <div>
-        <div style="margin-top: 15px">
-            <span>General Settings:</span>
-            <v-divider color="white"></v-divider>
-        </div>
-        <CVnumberinput v-model="settings.teamNumber" name="Team Number"/>
-        <CVradio v-model="settings.connectionType" :list="['DHCP','Static']"/>
-        <v-divider color="white"/>
-        <CVinput name="IP" v-model="settings.ip" :disabled="isDisabled"/>
-        <CVinput name="NetMask" v-model="settings.netmask" :disabled="isDisabled"/>
-        <CVinput name="Gateway" v-model="settings.gateway" :disabled="isDisabled"/>
-        <v-divider color="white"/>
-        <CVinput name="Hostname" v-model="settings.hostname"/>
-        <v-btn style="margin-top:10px" small color="#4baf62" @click="sendGeneralSettings">Save General Settings</v-btn>
-        <div style="margin-top: 20px">
-            <span>Install or Update:</span>
-            <v-divider color="white"/>
-        </div>
-        <div v-if="!isLoading">
-            <v-row dense align="center">
-                <v-col :cols="3">
-                    <span>Choose a newer version: </span>
-                </v-col>
-                <v-col :cols="6">
-                    <v-file-input accept=".jar" dark v-model="file"/>
-                </v-col>
-            </v-row>
-            <v-btn small @click="installOrUpdate">{{fileUploadText}}</v-btn>
-        </div>
-        <div v-else style="text-align: center; margin-top: 20px">
-            <v-progress-circular color="white" :indeterminate="true" size="32"
-                                 width="4"/>
-            <br>
-            <span>Please wait this may take a while</span>
-        </div>
-        <v-snackbar v-model="snack" top :color="snackbar.color">
-            <span>{{snackbar.text}}</span>
-        </v-snackbar>
+  <div>
+    <div style="margin-top: 15px">
+      <span>General Settings:</span>
+      <v-divider color="white" />
     </div>
+    <CVnumberinput
+      v-model="settings.teamNumber"
+      name="Team Number"
+    />
+    <CVradio
+      v-model="settings.connectionType"
+      :list="['DHCP','Static']"
+    />
+    <v-divider color="white" />
+    <CVinput
+      v-model="settings.ip"
+      name="IP"
+      :disabled="isDisabled"
+    />
+    <CVinput
+      v-model="settings.netmask"
+      name="NetMask"
+      :disabled="isDisabled"
+    />
+    <CVinput
+      v-model="settings.gateway"
+      name="Gateway"
+      :disabled="isDisabled"
+    />
+    <v-divider color="white" />
+    <CVinput
+      v-model="settings.hostname"
+      name="Hostname"
+    />
+    <v-btn
+      style="margin-top:10px"
+      small
+      color="#4baf62"
+      @click="sendGeneralSettings"
+    >
+      Save General Settings
+    </v-btn>
+    <div style="margin-top: 20px">
+      <span>Install or Update:</span>
+      <v-divider color="white" />
+    </div>
+    <div v-if="!isLoading">
+      <v-row
+        dense
+        align="center"
+      >
+        <v-col :cols="3">
+          <span>Choose a newer version: </span>
+        </v-col>
+        <v-col :cols="6">
+          <v-file-input
+            v-model="file"
+            accept=".jar"
+            dark
+          />
+        </v-col>
+      </v-row>
+      <v-btn
+        small
+        @click="installOrUpdate"
+      >
+        {{ fileUploadText }}
+      </v-btn>
+    </div>
+    <div
+      v-else
+      style="text-align: center; margin-top: 20px"
+    >
+      <v-progress-circular
+        color="white"
+        :indeterminate="true"
+        size="32"
+        width="4"
+      />
+      <br>
+      <span>Please wait this may take a while</span>
+    </div>
+    <v-snackbar
+      v-model="snack"
+      top
+      :color="snackbar.color"
+    >
+      <span>{{ snackbar.text }}</span>
+    </v-snackbar>
+  </div>
 </template>
 
 <script>
@@ -61,6 +112,23 @@
                 },
                 snack: false,
                 isLoading: false
+            }
+        },
+        computed: {
+            fileUploadText() {
+                if (this.file !== undefined) {
+                    return "Update and run at startup"
+                } else {
+                    return "Run current version at startup"
+                }
+            },
+            isDisabled() {
+                return this.settings.connectionType === 0;
+            },
+            settings: {
+                get() {
+                    return this.$store.state.settings;
+                }
             }
         },
         methods: {
@@ -110,23 +178,6 @@
                     this.isLoading = false;
                     this.snack = true;
                 })
-            }
-        },
-        computed: {
-            fileUploadText() {
-                if (this.file !== undefined) {
-                    return "Update and run at startup"
-                } else {
-                    return "Run current version at startup"
-                }
-            },
-            isDisabled() {
-                return this.settings.connectionType === 0;
-            },
-            settings: {
-                get() {
-                    return this.$store.state.settings;
-                }
             }
         }
     }

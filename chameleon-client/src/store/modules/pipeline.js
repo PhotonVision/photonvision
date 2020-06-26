@@ -1,3 +1,5 @@
+import Vue from 'vue'
+
 export default {
     state: {
         exposure: 0,
@@ -27,12 +29,10 @@ export default {
     },
     mutations: {
         isBinary: (state, value) => {
-            console.log(value)
             state.isBinary = value
         },
         mutatePipeline: (state, {key, value}) => {
-            // console.log(`key:${key}, value: ${value}`)
-            this.set(state, key, value)
+            Vue.set(state, key, value)
         }
 
     },

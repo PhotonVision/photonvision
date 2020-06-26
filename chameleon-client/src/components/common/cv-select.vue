@@ -1,15 +1,27 @@
 <template>
-    <div>
-        <v-row dense align="center">
-            <v-col :cols="3">
-                <span>{{name}}</span>
-            </v-col>
-            <v-col :cols="9">
-                <v-select v-model="localValue" :items="indexList" item-text="name" item-value="index" dark
-                          color="#4baf62" item-color="green" :disabled="disabled"/>
-            </v-col>
-        </v-row>
-    </div>
+  <div>
+    <v-row
+      dense
+      align="center"
+    >
+      <v-col :cols="3">
+        <span>{{ name }}</span>
+      </v-col>
+      <v-col :cols="9">
+        <v-select
+          v-model="localValue"
+          :items="indexList"
+          item-text="name"
+          item-value="index"
+          dark
+          color="#4baf62"
+          item-color="green"
+          :disabled="disabled"
+          @change="$emit('rollback', localValue)"
+        />
+      </v-col>
+    </v-row>
+  </div>
 </template>
 
 <script>
