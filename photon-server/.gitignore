@@ -1,0 +1,10 @@
+bin/*
+.settings/*
+.project
+.classpath
+*.prefs
+chameleon-vision
+.gradle
+.gradle/*
+build
+build/*
