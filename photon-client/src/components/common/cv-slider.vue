@@ -15,7 +15,7 @@
           :max="max"
           :min="min"
           hide-details
-          color="#4baf62"
+          color="#ffd843"
           :step="step"
           @start="isClicked = true"
           @end="isClicked = false"

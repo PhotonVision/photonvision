@@ -4,22 +4,20 @@
       app
       dense
       clipped-left
+      color="#006492"
       dark
     >
       <img
         class="imgClass"
         src="./assets/logo.png"
       >
-      <v-toolbar-title id="title">
-        Chameleon Vision
-      </v-toolbar-title>
       <div class="flex-grow-1" />
       <v-toolbar-items>
         <v-tabs
-          background-color="#272727"
+          background-color="#006492"
           dark
           height="48"
-          slider-color="#4baf62"
+          slider-color="#ffd843"
         >
           <v-tab to="vision">
             Vision
@@ -42,7 +40,7 @@
               v-model="saveSnackbar"
               :timeout="1000"
               top
-              color="#4baf62"
+              color="#ffd843"
             >
               <div style="text-align: center;width: 100%;">
                 <h4>Saved All changes</h4>
@@ -153,10 +151,6 @@
 </script>
 
 <style>
-    html {
-        overflow-y: hidden !important;
-    }
-
     .imgClass {
         width: auto;
         height: 45px;
@@ -186,17 +180,17 @@
 
 
     ::-webkit-scrollbar-thumb {
-        background-color: #4baf62;
+        background-color: #ffd843;
         border-radius: 10px;
     }
 
     .container {
-        background-color: #212121;
+        background-color: #232c37;
         padding: 0 !important;
     }
 
     #title {
-        color: #4baf62;
+        color: #ffd843;
     }
 
     span {

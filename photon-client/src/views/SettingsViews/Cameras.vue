@@ -21,7 +21,7 @@
       <v-btn
         style="margin-top:10px"
         small
-        color="#4baf62"
+        color="#ffd843"
         @click="sendCameraSettings"
       >
         Save Camera Settings

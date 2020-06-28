@@ -10,7 +10,7 @@
       >
         <v-btn
           small
-          color="#4baf62"
+          color="#ffd843"
           @click="takePointA"
         >
           Take Point A
@@ -22,7 +22,7 @@
       >
         <v-btn
           small
-          color="#4baf62"
+          color="#ffd843"
           @click="takePointB"
         >
           Take Point B

@@ -9,7 +9,7 @@
       <v-radio
         v-for="(name,index) in list"
         :key="index"
-        color="#4baf62"
+        color="#ffd843"
         :label="name"
         :value="index"
       />

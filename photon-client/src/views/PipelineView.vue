@@ -1,20 +1,23 @@
 <template>
   <div>
     <camera-and-pipeline-select />
-    <v-row>
+    <v-row no-gutters>
       <!-- vision tabs -->
       <v-col
-        cols="6"
-        class="colsClass"
+        cols="12"
+        sm="12"
+        md="7"
+        xl="6"
+        class="colsClass pr-8"
       >
         <v-tabs
           v-if="($store.getters.currentPipelineIndex + 1) !== 0"
           v-model="selectedTab"
           fixed-tabs
-          background-color="#212121"
+          background-color="#232c37"
           dark
           height="48"
-          slider-color="#4baf62"
+          slider-color="#ffd843"
         >
           <v-tab>Input</v-tab>
           <v-tab>Threshold</v-tab>
@@ -39,7 +42,10 @@
         </div>
       </v-col>
       <v-col
-        cols="6"
+        cols="12"
+        sm="12"
+        md="5"
+        xl="6"
         class="colsClass"
       >
         <div>
@@ -47,10 +53,10 @@
           <v-tabs
             v-if="($store.getters.currentPipelineIndex + 1) !== 0"
             v-model="isBinaryNumber"
-            background-color="#212121"
+            background-color="#232c37"
             dark
             height="48"
-            slider-color="#4baf62"
+            slider-color="#ffd843"
             centered
             style="padding-bottom:10px"
             @change="handleInput('isBinary',$store.getters.pipeline.isBinary)"
@@ -65,15 +71,16 @@
           <!-- camera image stream -->
           <div class="videoClass">
             <v-row align="center">
-              <cvImage
-                :address="$store.getters.streamAddress"
-                :scale="75"
-                @click="onImageClick"
-              />
+              <div style="position: relative; width: 100%; height: 100%;">
+                <cvImage
+                  :address="$store.getters.streamAddress"
+                  :scale="75"
+                  @click="onImageClick"
+                />
+                <span style=" position: absolute; top: 0.2%; left: 13%;">FPS:{{ parseFloat(fps).toFixed(2) }}</span>
+              </div>
             </v-row>
-            <v-row justify="end">
-              <span style="margin-right: 45px">FPS:{{ parseFloat(fps).toFixed(2) }}</span>
-            </v-row>
+
             <v-row align="center">
               <v-simple-table
                 style="text-align: center;background-color: transparent; display: block;margin: auto"
@@ -137,11 +144,11 @@
 <script>
     import CameraAndPipelineSelect from "../components/pipeline/CameraAndPipelineSelect";
     import cvImage from '../components/common/cv-image'
-    import InputTab from './PipelineViewes/InputTab'
-    import ThresholdTab from './PipelineViewes/ThresholdTab'
-    import ContoursTab from './PipelineViewes/ContoursTab'
-    import OutputTab from './PipelineViewes/OutputTab'
-    import pnpTab from './PipelineViewes/3D'
+    import InputTab from './PipelineViews/InputTab'
+    import ThresholdTab from './PipelineViews/ThresholdTab'
+    import ContoursTab from './PipelineViews/ContoursTab'
+    import OutputTab from './PipelineViews/OutputTab'
+    import pnpTab from './PipelineViews/3D'
 
     export default {
         name: 'CameraTab',

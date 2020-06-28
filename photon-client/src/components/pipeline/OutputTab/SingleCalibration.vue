@@ -10,7 +10,7 @@
       >
         <v-btn
           small
-          color="#4baf62"
+          color="#ffd843"
           @click="takePoint"
         >
           Take Point

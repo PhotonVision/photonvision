@@ -1,10 +1,10 @@
 export default {
     state:{
-        teamNumber: 1577,
+        teamNumber: 0,
         connectionType: 0,
         ip: "",
         gateway: "",
         netmask: "",
-        hostname: "chameleon-vision"
+        hostname: "photon-vision"
     }
 }
