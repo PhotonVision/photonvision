@@ -19,7 +19,7 @@ package org.photonvision.vision.frame.consumer;
 
 import edu.wpi.cscore.CvSource;
 import edu.wpi.first.cameraserver.CameraServer;
-import org.photonvision.common.configuration.USBCameraConfiguration;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
 
@@ -31,7 +31,7 @@ public class MJPGFrameConsumer implements FrameConsumer {
         this.cvSource = CameraServer.getInstance().putVideo(sourceName, width, height);
     }
 
-    public MJPGFrameConsumer(USBCameraConfiguration visionSource) {
+    public MJPGFrameConsumer(CameraConfiguration visionSource) {
         this(visionSource.nickname, 320, 240);
     }
 

@@ -122,7 +122,7 @@ public class ConfigManager {
             }
         }
 
-        HashMap<String, USBCameraConfiguration> cameraConfigurations = loadCameraConfigs();
+        HashMap<String, CameraConfiguration> cameraConfigurations = loadCameraConfigs();
 
         this.config = new PhotonConfiguration(hardwareConfig, networkConfig, cameraConfigurations);
     }
@@ -182,8 +182,8 @@ public class ConfigManager {
         }
     }
 
-    private HashMap<String, USBCameraConfiguration> loadCameraConfigs() {
-        HashMap<String, USBCameraConfiguration> loadedConfigurations = new HashMap<>();
+    private HashMap<String, CameraConfiguration> loadCameraConfigs() {
+        HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
         try {
             var subdirectories =
                     Files.list(camerasFolder.toPath())
@@ -192,11 +192,11 @@ public class ConfigManager {
 
             for (var subdir : subdirectories) {
                 var cameraConfigPath = Path.of(subdir.toString(), "config.json");
-                USBCameraConfiguration loadedConfig = null;
+                CameraConfiguration loadedConfig = null;
                 try {
                     loadedConfig =
                             JacksonUtils.deserialize(
-                                    cameraConfigPath.toAbsolutePath(), USBCameraConfiguration.class);
+                                    cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }

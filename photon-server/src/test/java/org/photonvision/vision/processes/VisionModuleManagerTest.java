@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.junit.jupiter.api.*;
-import org.photonvision.common.configuration.USBCameraConfiguration;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.datatransfer.DataConsumer;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
@@ -54,13 +54,13 @@ public class VisionModuleManagerTest {
 
         @Override
         public VisionSourceSettables getSettables() {
-            return new TestSettables(new USBCameraConfiguration("", "", "", ""));
+            return new TestSettables(new CameraConfiguration("", "", "", ""));
         }
     }
 
     private static class TestSettables extends VisionSourceSettables {
 
-        protected TestSettables(USBCameraConfiguration configuration) {
+        protected TestSettables(CameraConfiguration configuration) {
             super(configuration);
         }
 

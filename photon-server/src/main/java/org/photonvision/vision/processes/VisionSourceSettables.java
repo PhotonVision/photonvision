@@ -19,20 +19,20 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.cscore.VideoMode;
 import java.util.HashMap;
-import org.photonvision.common.configuration.USBCameraConfiguration;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameStaticProperties;
 
 public abstract class VisionSourceSettables {
-    private final USBCameraConfiguration configuration;
+    private final CameraConfiguration configuration;
 
-    protected VisionSourceSettables(USBCameraConfiguration configuration) {
+    protected VisionSourceSettables(CameraConfiguration configuration) {
         this.configuration = configuration;
     }
 
     FrameStaticProperties frameStaticProperties;
     protected HashMap<Integer, VideoMode> videoModes;
 
-    public USBCameraConfiguration getConfiguration() {
+    public CameraConfiguration getConfiguration() {
         return configuration;
     }
 

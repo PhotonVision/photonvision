@@ -1,6 +1,6 @@
 package org.photonvision;
 
-import org.photonvision.common.configuration.USBCameraConfiguration;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.datatransfer.networktables.NetworkTablesManager;
 import org.photonvision.common.networking.NetworkManager;
@@ -25,7 +25,7 @@ public class Main {
         NetworkManager.getInstance().initialize(false); // basically empty. todo: link to ConfigManager?
         NetworkTablesManager.setClientMode("127.0.0.1");
 
-        HashMap<String, USBCameraConfiguration> camConfigs = ConfigManager.getInstance().getConfig().getCameraConfigurations();
+        HashMap<String, CameraConfiguration> camConfigs = ConfigManager.getInstance().getConfig().getCameraConfigurations();
         var sources = VisionSourceManager.LoadAllSources(camConfigs.values());
 
         var collectedSources = new HashMap<VisionSource, List<CVPipelineSettings>>();

@@ -22,7 +22,7 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.photonvision.common.configuration.USBCameraConfiguration;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.USBCameraSource;
 
@@ -41,13 +41,13 @@ public class VisionSourceManagerTest {
                     new UsbCameraInfo(4, "/fake-path420", "notExisting", new String[] {""}, 420, 1),
                     new UsbCameraInfo(5, "/fake-path421", "notExisting", new String[] {""}, 420, 1));
 
-    final List<USBCameraConfiguration> camConfig =
+    final List<CameraConfiguration> camConfig =
             List.of(
-                    new USBCameraConfiguration("cameraByPath", "dank meme", "good name", "/this-is-a-real-path"),
-                    new USBCameraConfiguration(
+                    new CameraConfiguration("cameraByPath", "dank meme", "good name", "/this-is-a-real-path"),
+                    new CameraConfiguration(
                             "cameraByPath", "dank meme2", "very original", "/this-is-a-real-path2"),
-                    new USBCameraConfiguration("cameraById", "camera", "my camera", "2"),
-                    new USBCameraConfiguration("cameraById", "camera2", "my camera", "3"));
+                    new CameraConfiguration("cameraById", "camera", "my camera", "2"),
+                    new CameraConfiguration("cameraById", "camera2", "my camera", "3"));
 
     final List<USBCameraSource> usbCameraSources =
             List.of(
@@ -56,9 +56,9 @@ public class VisionSourceManagerTest {
                     new USBCameraSource(camConfig.get(2)),
                     new USBCameraSource(camConfig.get(3)),
                     new USBCameraSource(
-                            new USBCameraConfiguration("notExisting", "notExisting", "notExisting", "4")),
+                            new CameraConfiguration("notExisting", "notExisting", "notExisting", "4")),
                     new USBCameraSource(
-                            new USBCameraConfiguration("notExisting", "notExisting (1)", "notExisting (1)", "5")));
+                            new CameraConfiguration("notExisting", "notExisting (1)", "notExisting (1)", "5")));
 
     @Test
     public void visionSourceTest() {

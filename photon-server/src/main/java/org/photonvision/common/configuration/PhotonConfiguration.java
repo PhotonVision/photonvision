@@ -29,22 +29,22 @@ public class PhotonConfiguration {
         return networkConfig;
     }
 
-    public HashMap<String, USBCameraConfiguration> getCameraConfigurations() {
+    public HashMap<String, CameraConfiguration> getCameraConfigurations() {
         return cameraConfigurations;
     }
 
-    public void addCameraConfig(USBCameraConfiguration config) {
+    public void addCameraConfig(CameraConfiguration config) {
         addCameraConfig(config.uniqueName, config);
     }
 
-    public void addCameraConfig(String name, USBCameraConfiguration config) {
+    public void addCameraConfig(String name, CameraConfiguration config) {
         cameraConfigurations.put(name, config);
     }
 
     private HardwareConfig hardwareConfig;
     private NetworkConfig networkConfig;
 
-    private HashMap<String, USBCameraConfiguration> cameraConfigurations;
+    private HashMap<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(HardwareConfig hardwareConfig, NetworkConfig networkConfig) {
         this(hardwareConfig, networkConfig, new HashMap<>());
@@ -53,7 +53,7 @@ public class PhotonConfiguration {
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             NetworkConfig networkConfig,
-            HashMap<String, USBCameraConfiguration> cameraConfigurations) {
+            HashMap<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
         this.networkConfig = networkConfig;
         this.cameraConfigurations = cameraConfigurations;

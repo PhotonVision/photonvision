@@ -45,6 +45,7 @@ public class SocketHandler {
             Map<String, Object> data =
                     objectMapper.readValue(context.data(), new TypeReference<Map<String, Object>>() {});
             // TODO pass data to ui data provider
+            return;
         } catch (IOException e) {
             e.printStackTrace();
         }
