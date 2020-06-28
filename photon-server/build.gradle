@@ -2,15 +2,13 @@ plugins {
     id 'java'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
     id "com.diffplug.gradle.spotless" version "3.28.0"
+    id "application"
 }
 
 group 'org.photonvision'
 version '2020.6.1'
 
-shadowJar {
-    configurations = [project.configurations.compile]
-    archiveFileName.set("photonvision-${project.version}.jar")
-}
+mainClassName = "org.photonvision.server.Main"
 
 sourceCompatibility = 11
 
@@ -67,10 +65,16 @@ dependencies {
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:osxx86-64"
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:windowsx86-64"
 
-    testCompile "ch.qos.logback:logback-classic:0.9.26"
+    compile "org.slf4j:slf4j-simple:1.8.0-beta4"
 
     // test stuff
     testImplementation('org.junit.jupiter:junit-jupiter:5.6.0')
+}
+
+shadowJar {
+    configurations = [project.configurations.runtimeClasspath]
+
+    archiveFileName.set("photonvision-${project.version}.jar")
 }
 
 test {
