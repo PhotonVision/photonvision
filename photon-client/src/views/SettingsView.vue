@@ -43,8 +43,8 @@
 </template>
 
 <script>
-    import General from './SettingsViewes/General'
-    import Cameras from './SettingsViewes/Cameras'
+    import General from './SettingsViews/General'
+    import Cameras from './SettingsViews/Cameras'
     import cvImage from '../components/common/cv-image'
 
 
