@@ -7,11 +7,11 @@
       >
         <v-tabs
           v-model="selectedTab"
-          background-color="#212121"
+          background-color="#232c37"
           dark
           fixed-tabs
           height="50"
-          slider-color="#4baf62"
+          slider-color="#ffd843"
         >
           <v-tab to="">
             General

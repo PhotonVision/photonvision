@@ -14,8 +14,8 @@
           item-text="name"
           item-value="index"
           dark
-          color="#4baf62"
-          item-color="green"
+          color="#fcf6de"
+          item-color="blue"
           :disabled="disabled"
           @change="$emit('rollback', localValue)"
         />

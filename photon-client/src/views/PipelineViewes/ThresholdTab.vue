@@ -25,37 +25,39 @@
       @rollback="e => rollback('value',e)"
     />
     <v-divider
-      color="darkgray "
+      color="black"
       style="margin-top: 5px"
     />
-    <v-btn
-      style="margin: 20px;"
-      color="#4baf62"
-      small
-      @click="setFunction(1)"
-    >
-      <v-icon>colorize</v-icon>
-      Eye drop
-    </v-btn>
-    <v-btn
-      style="margin: 20px;"
-      color="#4baf62"
-      small
-      @click="setFunction(2)"
-    >
-      <v-icon>add</v-icon>
-      Expand Selection
-    </v-btn>
-    <v-btn
-      style="margin: 20px;"
-      color="#4baf62"
-      small
-      @click="setFunction(3)"
-    >
-      <v-icon>remove</v-icon>
-      Shrink Selection
-    </v-btn>
-    <v-divider color="darkgray " />
+    <v-row justify="center">
+      <v-btn
+        style="margin: 20px;"
+        color="#ffd843"
+        small
+        @click="setFunction(1)"
+      >
+        <v-icon>colorize</v-icon>
+        Eye drop
+      </v-btn>
+      <v-btn
+        style="margin: 20px;"
+        color="#ffd843"
+        small
+        @click="setFunction(2)"
+      >
+        <v-icon>add</v-icon>
+        Expand Selection
+      </v-btn>
+      <v-btn
+        style="margin: 20px;"
+        color="#ffd843"
+        small
+        @click="setFunction(3)"
+      >
+        <v-icon>remove</v-icon>
+        Shrink Selection
+      </v-btn>
+    </v-row>
+    <v-divider color="black" />
     <CVswitch
       v-model="value.erode"
       name="Erode"

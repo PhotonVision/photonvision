@@ -54,7 +54,7 @@
           item-text="name"
           item-value="data"
           dark
-          color="#4baf62"
+          color="#ffd843"
           item-color="green"
         />
         <v-btn

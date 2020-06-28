@@ -1,20 +1,23 @@
 <template>
   <div>
     <camera-and-pipeline-select />
-    <v-row>
+    <v-row no-gutters>
       <!-- vision tabs -->
       <v-col
-        cols="6"
-        class="colsClass"
+        cols="12"
+        sm="12"
+        md="7"
+        xl="6"
+        class="colsClass pr-8"
       >
         <v-tabs
           v-if="($store.getters.currentPipelineIndex + 1) !== 0"
           v-model="selectedTab"
           fixed-tabs
-          background-color="#212121"
+          background-color="#232c37"
           dark
           height="48"
-          slider-color="#4baf62"
+          slider-color="#ffd843"
         >
           <v-tab>Input</v-tab>
           <v-tab>Threshold</v-tab>
@@ -39,7 +42,10 @@
         </div>
       </v-col>
       <v-col
-        cols="6"
+        cols="12"
+        sm="12"
+        md="5"
+        xl="6"
         class="colsClass"
       >
         <div>
@@ -47,10 +53,10 @@
           <v-tabs
             v-if="($store.getters.currentPipelineIndex + 1) !== 0"
             v-model="isBinaryNumber"
-            background-color="#212121"
+            background-color="#232c37"
             dark
             height="48"
-            slider-color="#4baf62"
+            slider-color="#ffd843"
             centered
             style="padding-bottom:10px"
             @change="handleInput('isBinary',$store.getters.pipeline.isBinary)"

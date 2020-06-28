@@ -12,7 +12,7 @@
           v-model="localValue"
           dark
           :disabled="disabled"
-          color="#4baf62"
+          color="#ffd843"
           @change="$emit('rollback', localValue)"
         />
       </v-col>

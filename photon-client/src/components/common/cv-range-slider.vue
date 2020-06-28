@@ -15,7 +15,7 @@
           hide-details
           class="align-center"
           dark
-          color="#4baf62"
+          color="#ffd843"
           :step="step"
           @input="handleInput"
           @mousedown="$emit('rollback', localValue)"

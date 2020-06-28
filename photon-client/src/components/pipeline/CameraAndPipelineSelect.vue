@@ -128,7 +128,7 @@
       <v-btn
         style="position: absolute; top:5px;right: 0;"
         tile
-        color="#4baf62"
+        color="#ffd843"
         @click="handleInput('command','save')"
       >
         <v-icon>save</v-icon>
@@ -172,7 +172,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            color="#4baf62"
+            color="#ffd843"
             @click="duplicatePipeline"
           >
             Duplicate
@@ -212,7 +212,7 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            color="#4baf62"
+            color="#ffd843"
             :disabled="checkPipelineName !==''"
             @click="savePipelineNameChange"
           >
