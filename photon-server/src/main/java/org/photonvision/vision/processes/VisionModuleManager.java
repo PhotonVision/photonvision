@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 
 import java.util.ArrayList;
@@ -31,7 +32,8 @@ public class VisionModuleManager {
         for (var entry : visionSources.entrySet()) {
             var visionSource = entry.getKey();
             var pipelineManager = new PipelineManager(entry.getValue());
-            visionModules.add(new VisionModule(pipelineManager, visionSource));
+            var module = new VisionModule(pipelineManager, visionSource);
+            visionModules.add(module);
             // todo: logging
         }
     }

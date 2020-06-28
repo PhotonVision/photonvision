@@ -92,7 +92,7 @@ public class VisionSourceManager {
             }
 
             CameraConfiguration configuration =
-                    new CameraConfiguration(name, uniqueName, uniqueName, ((Integer) info.dev).toString());
+                    new CameraConfiguration(name, uniqueName, uniqueName, info.path);
             cameraConfigurations.add(configuration);
         }
 

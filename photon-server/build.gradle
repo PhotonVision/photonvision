@@ -12,8 +12,6 @@ mainClassName = 'org.photonvision.Main'
 group 'org.photonvision'
 version '2020.6.1'
 
-mainClassName = "org.photonvision.server.Main"
-
 sourceCompatibility = 11
 
 repositories {
