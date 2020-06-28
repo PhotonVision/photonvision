@@ -1,0 +1,38 @@
+# This workflow will do a clean install of node dependencies, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Node.js CI
+
+on:
+  push:
+    branches: [ master ]
+    paths: 
+      - photon-client/**
+  pull_request:
+    branches: [ master ]
+    paths: 
+      - photon-client/**
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    container:
+      image: docker://node:10
+      volumes: 
+        - /workspace:/github/workspace
+    steps:
+    - uses: actions/checkout@v2
+    - run: mkdir built-client
+    - run: cd built-client
+    - name: Use Node.js 10
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10
+    - run: npm ci
+    - run: npm run build --if-present
+    - uses: actions/upload-artifact@master
+      with: 
+        name: built-client
+        path: built-client
+    #- run: npm test
