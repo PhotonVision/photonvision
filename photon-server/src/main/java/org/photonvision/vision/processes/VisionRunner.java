@@ -22,7 +22,7 @@ import java.util.function.Supplier;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.pipeline.CVPipeline;
-import org.photonvision.vision.pipeline.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 /** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
 @SuppressWarnings("rawtypes")

@@ -130,18 +130,7 @@ public class PipelineManager {
     }
 
     public static final Comparator<CVPipelineSettings> PipelineSettingsIndexComparator =
-            (o1, o2) -> {
-                int o1Index = o1.pipelineIndex;
-                int o2Index = o2.pipelineIndex;
-
-                if (o1Index == o2Index) {
-                    return 0;
-                } else if (o1Index < o2Index) {
-                    return -1;
-                }
-                return 1;
-            };
-
+        Comparator.comparingInt(o -> o.pipelineIndex);
 
     /**
     * Sorts the pipeline list by index, and reassigns their indexes to match the new order. <br>

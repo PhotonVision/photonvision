@@ -15,9 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.vision.pipeline.result;
 
 import java.util.List;
+
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;
@@ -50,7 +51,7 @@ public class CVPipelineResult implements Releasable {
         return latencyMillis;
     }
 
-    protected void setLatencyMillis(double latencyMillis) {
+    public void setLatencyMillis(double latencyMillis) {
         this.latencyMillis = latencyMillis;
     }
 }

@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.processes.PipelineManager;
 
 public class Calibration3dPipeline extends CVPipeline<CVPipelineResult, CVPipelineSettings> {

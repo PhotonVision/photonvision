@@ -26,6 +26,7 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
 import org.photonvision.vision.pipe.impl.ResizeImagePipe;
 import org.photonvision.vision.pipe.impl.RotateImagePipe;
+import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
 
 public class DriverModePipeline
         extends CVPipeline<DriverModePipelineResult, DriverModePipelineSettings> {

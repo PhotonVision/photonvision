@@ -21,7 +21,7 @@ import java.util.LinkedList;
 import org.photonvision.common.datatransfer.DataConsumer;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
-import org.photonvision.vision.pipeline.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 /**
 * This is the God Class

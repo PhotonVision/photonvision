@@ -34,7 +34,7 @@ public class VisionModuleManager {
             var visionSource = entry.getKey();
             var pipelineManager = new PipelineManager(entry.getValue());
             var module = new VisionModule(pipelineManager, visionSource);
-            if(visionSource instanceof USBCameraSource) module.addFrameConsumer(new MJPGFrameConsumer((USBCameraSource) visionSource));
+            module.addFrameConsumer(new MJPGFrameConsumer(visionSource.getSettables().getConfiguration()));
             visionModules.add(module);
             // todo: logging
         }

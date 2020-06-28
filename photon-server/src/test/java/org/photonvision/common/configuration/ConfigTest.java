@@ -35,8 +35,8 @@ import org.photonvision.vision.target.TargetModel;
 public class ConfigTest {
 
     private static final ConfigManager configMgr;
-    private static final CameraConfiguration cameraConfig =
-            new CameraConfiguration("TestCamera", "/dev/video420");
+    private static final USBCameraConfiguration cameraConfig =
+            new USBCameraConfiguration("TestCamera", "/dev/video420");
     private static final ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS =
             new ReflectivePipelineSettings();
     private static final ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS =
@@ -90,7 +90,6 @@ public class ConfigTest {
     @Test
     @Order(2)
     public void deserializeConfig() {
-        configMgr.load();
 
         var reflectivePipelineSettings =
                 configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(0);

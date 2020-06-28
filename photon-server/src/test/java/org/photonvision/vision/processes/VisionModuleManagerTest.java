@@ -18,15 +18,18 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.cscore.VideoMode;
-import java.util.ArrayList;
+
 import java.util.HashMap;
+import java.util.List;
+
 import org.junit.jupiter.api.*;
-import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.USBCameraConfiguration;
 import org.photonvision.common.datatransfer.DataConsumer;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
-import org.photonvision.vision.pipeline.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
 
 public class VisionModuleManagerTest {
 
@@ -51,13 +54,13 @@ public class VisionModuleManagerTest {
 
         @Override
         public VisionSourceSettables getSettables() {
-            return new TestSettables(new CameraConfiguration("", "", "", ""));
+            return new TestSettables(new USBCameraConfiguration("", "", "", ""));
         }
     }
 
     private static class TestSettables extends VisionSourceSettables {
 
-        protected TestSettables(CameraConfiguration configuration) {
+        protected TestSettables(USBCameraConfiguration configuration) {
             super(configuration);
         }
 
@@ -114,12 +117,12 @@ public class VisionModuleManagerTest {
 
     @Test
     public void setupManager() {
-        var sources = new ArrayList<VisionSource>();
-        sources.add(
+        var sources = new HashMap<VisionSource, List<CVPipelineSettings>>();
+        sources.put(
                 new TestSource(
                         new FileFrameProvider(
                                 TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
-                                TestUtils.WPI2019Image.FOV)));
+                                TestUtils.WPI2019Image.FOV)), List.of());
 
         var moduleManager = new VisionModuleManager(sources);
         var module0DataConsumer = new TestDataConsumer();

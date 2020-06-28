@@ -23,7 +23,7 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import java.util.*;
-import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.USBCameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
@@ -33,12 +33,12 @@ public class USBCameraSource implements VisionSource {
     private final UsbCamera camera;
     private final USBCameraSettables usbCameraSettables;
     private final USBFrameProvider usbFrameProvider;
-    public final CameraConfiguration configuration;
+    public final USBCameraConfiguration configuration;
     private final CvSink cvSink;
 
     private final QuirkyCamera cameraQuirks;
 
-    public USBCameraSource(CameraConfiguration config) {
+    public USBCameraSource(USBCameraConfiguration config) {
         this.configuration = config;
         this.camera = new UsbCamera(config.nickname, config.path);
         this.cameraQuirks =
@@ -85,7 +85,7 @@ public class USBCameraSource implements VisionSource {
     }
 
     public class USBCameraSettables extends VisionSourceSettables {
-        protected USBCameraSettables(CameraConfiguration configuration) {
+        protected USBCameraSettables(USBCameraConfiguration configuration) {
             super(configuration);
             getAllVideoModes();
         }
@@ -137,7 +137,6 @@ public class USBCameraSource implements VisionSource {
         public HashMap<Integer, VideoMode> getAllVideoModes() {
             if (videoModes == null) {
                 videoModes = new HashMap<>();
-                var rawModes = camera.enumerateVideoModes();
                 List<VideoMode> videoModesList = Arrays.asList(camera.enumerateVideoModes());
                 for (VideoMode videoMode : videoModesList) {
                     videoModes.put(videoModesList.indexOf(videoMode), videoMode);

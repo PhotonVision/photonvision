@@ -42,6 +42,7 @@ import org.photonvision.vision.pipe.impl.RotateImagePipe;
 import org.photonvision.vision.pipe.impl.SolvePNPPipe;
 import org.photonvision.vision.pipe.impl.SortContoursPipe;
 import org.photonvision.vision.pipe.impl.SpeckleRejectPipe;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
 
