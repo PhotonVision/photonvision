@@ -126,8 +126,7 @@
       </v-col>
 
       <v-btn
-        style="position: absolute; top:5px;right: 0;"
-        tile
+        outlined
         color="#ffd843"
         @click="handleInput('command','save')"
       >

@@ -1,0 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@400;500&display=swap');
+$default-font: "Prompt",
+sans-serif !default;
+$body-font-family: $default-font;
+$heading-font-family: $default-font;
+.v-application {
+    font-family: $default-font !important;
+}
