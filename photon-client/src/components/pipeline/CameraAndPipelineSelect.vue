@@ -74,7 +74,7 @@
         >
           <template v-slot:activator="{ on }">
             <v-icon
-              color="white"
+              color="#c5c5c5"
               v-on="on"
             >
               menu
