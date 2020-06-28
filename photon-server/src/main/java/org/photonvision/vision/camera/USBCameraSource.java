@@ -51,6 +51,10 @@ public class USBCameraSource implements VisionSource {
                 new USBFrameProvider(cvSink, usbCameraSettables.getFrameStaticProperties());
     }
 
+    public UsbCamera getCamera() {
+        return camera;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj.getClass() != USBCameraSource.class) {
