@@ -1,11 +1,5 @@
 package org.photonvision.common.scripting;
 
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.LoopingRunnable;
-import org.photonvision.common.util.Platform;
-import org.photonvision.common.util.file.JacksonUtils;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +7,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.LoopingRunnable;
+import org.photonvision.common.util.Platform;
+import org.photonvision.common.util.file.JacksonUtils;
 
 public class ScriptManager {
 

@@ -1,11 +1,10 @@
 package org.photonvision.common.networking;
 
-import org.photonvision.common.util.ShellExec;
-
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.List;
+import org.photonvision.common.util.ShellExec;
 
 public abstract class SysNetworking {
     NetworkInterface networkInterface;

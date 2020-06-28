@@ -1,10 +1,9 @@
 package org.photonvision.common.scripting;
 
+import java.io.IOException;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
-
-import java.io.IOException;
 
 public class ScriptEvent {
     private static final ShellExec executor = new ShellExec(true, true);

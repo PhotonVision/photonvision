@@ -4,12 +4,12 @@ plugins {
     id "com.diffplug.gradle.spotless" version "3.28.0"
 }
 
-group 'com.chameleonvision'
-version '3.0-SNAPSHOT'
+group 'org.photonvision'
+version '2020.6.1'
 
 shadowJar {
     configurations = [project.configurations.compile]
-    archiveFileName.set("chameleonvision-${project.version}.jar")
+    archiveFileName.set("photonvision-${project.version}.jar")
 }
 
 sourceCompatibility = 11
@@ -71,14 +71,6 @@ dependencies {
 
     // test stuff
     testImplementation('org.junit.jupiter:junit-jupiter:5.6.0')
-}
-
-sourceSets {
-    main {
-        java {
-            exclude '**/_2/**'
-        }
-    }
 }
 
 test {

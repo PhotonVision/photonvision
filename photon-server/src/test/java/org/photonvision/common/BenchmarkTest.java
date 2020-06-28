@@ -1,22 +1,22 @@
 package org.photonvision.common;
 
-import org.photonvision.common.util.TestUtils;
-import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.common.util.numbers.NumberListUtils;
-import org.photonvision.common.vision.frame.FrameProvider;
-import org.photonvision.common.vision.frame.provider.FileFrameProvider;
-import org.photonvision.common.vision.opencv.CVMat;
-import org.photonvision.common.vision.opencv.ContourGroupingMode;
-import org.photonvision.common.vision.opencv.ContourIntersectionDirection;
-import com.chameleonvision.common.vision.pipeline.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.photonvision.common.vision.pipeline.CVPipeline;
-import org.photonvision.common.vision.pipeline.CVPipelineResult;
-import org.photonvision.common.vision.pipeline.ReflectivePipeline;
+import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.common.util.numbers.NumberListUtils;
+import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.provider.FileFrameProvider;
+import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.opencv.ContourGroupingMode;
+import org.photonvision.vision.opencv.ContourIntersectionDirection;
+import org.photonvision.vision.pipeline.CVPipeline;
+import org.photonvision.vision.pipeline.CVPipelineResult;
+import org.photonvision.vision.pipeline.ReflectivePipeline;
 
 /** Various tests that check performance on long-running tasks (i.e. a pipeline) */
 public class BenchmarkTest {
@@ -26,6 +26,7 @@ public class BenchmarkTest {
     }
 
     @Test
+    @Order(1)
     public void Reflective240pBenchmark() {
         var pipeline = new ReflectivePipeline();
         pipeline.getSettings().hsvHue.set(60, 100);
@@ -47,6 +48,7 @@ public class BenchmarkTest {
     }
 
     @Test
+    @Order(1)
     public void Reflective480pBenchmark() {
         var pipeline = new ReflectivePipeline();
         pipeline.getSettings().hsvHue.set(60, 100);
@@ -65,6 +67,7 @@ public class BenchmarkTest {
     }
 
     @Test
+    @Order(3)
     public void Reflective720pBenchmark() {
         var pipeline = new ReflectivePipeline();
         pipeline.getSettings().hsvHue.set(60, 100);
@@ -83,6 +86,7 @@ public class BenchmarkTest {
     }
 
     @Test
+    @Order(4)
     public void Reflective1920x1440Benchmark() {
         var pipeline = new ReflectivePipeline();
         pipeline.getSettings().hsvHue.set(60, 100);
@@ -104,7 +108,7 @@ public class BenchmarkTest {
     }
 
     private static <P extends CVPipeline> void benchmarkPipeline(
-        FrameProvider frameProvider, P pipeline, int secondsToRun) {
+            FrameProvider frameProvider, P pipeline, int secondsToRun) {
         CVMat.enablePrint(false);
         // warmup for 5 loops.
         System.out.println("Warming up for 5 loops...");

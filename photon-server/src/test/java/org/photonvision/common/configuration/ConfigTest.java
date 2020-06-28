@@ -1,19 +1,19 @@
 package org.photonvision.common.configuration;
 
-import org.photonvision.common.logging.Level;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.TestUtils;
-import org.photonvision.common.util.file.JacksonUtils;
-import org.photonvision.common.vision.pipeline.ColoredShapePipelineSettings;
-import org.photonvision.common.vision.pipeline.ReflectivePipelineSettings;
-import org.photonvision.common.vision.target.TargetModel;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.*;
+import org.photonvision.common.logging.Level;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
+import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
+import org.photonvision.vision.target.TargetModel;
 
 public class ConfigTest {
 

@@ -1,14 +1,13 @@
 package org.photonvision.common.datatransfer.networktables;
 
+import edu.wpi.first.networktables.LogMessage;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableInstance;
+import java.util.function.Consumer;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
-import edu.wpi.first.networktables.LogMessage;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
-
-import java.util.function.Consumer;
 
 public class NetworkTablesManager {
 

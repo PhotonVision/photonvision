@@ -1,7 +1,5 @@
 package org.photonvision.common.networking;
 
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -11,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.FileUtils;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 public class LinuxNetworking extends SysNetworking {
     private static final String PATH = "/etc/dhcpcd.conf";

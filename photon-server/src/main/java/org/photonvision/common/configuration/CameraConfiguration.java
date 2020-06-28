@@ -1,18 +1,17 @@
 package org.photonvision.common.configuration;
 
-import org.photonvision.common.calibration.CameraCalibrationCoefficients;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
-import org.photonvision.common.vision.camera.CameraType;
-import org.photonvision.common.vision.pipeline.CVPipelineSettings;
-import org.photonvision.common.vision.pipeline.DriverModePipelineSettings;
-import org.photonvision.common.vision.processes.PipelineManager;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.vision.pipeline.DriverModePipelineSettings;
+import org.photonvision.vision.processes.PipelineManager;
 
 public class CameraConfiguration {
     private static final Logger logger = new Logger(CameraConfiguration.class, LogGroup.Camera);

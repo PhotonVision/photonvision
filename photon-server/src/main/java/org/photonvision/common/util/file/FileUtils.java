@@ -1,9 +1,5 @@
 package org.photonvision.common.util.file;
 
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.Platform;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,6 +9,9 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.Platform;
 
 public class FileUtils {
 

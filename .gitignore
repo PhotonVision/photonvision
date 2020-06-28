@@ -105,21 +105,21 @@ fabric.properties
 .idea/caches/build_file_checksums.ser
 
 
-chameleon-server/.gradle
-chameleon-server/target
-chameleon-server/src/main/java/META-INF
-chameleon-server/.settings
-chameleon-server/.classpath
-chameleon-server/.project
-chameleon-server/settings
-chameleon-server/dependency-reduced-pom.xml
-# chameleon-server/chameleon-vision.iml
+photon-server/.gradle
+photon-server/target
+photon-server/src/main/java/META-INF
+photon-server/.settings
+photon-server/.classpath
+photon-server/.project
+photon-server/settings
+photon-server/dependency-reduced-pom.xml
+# photon-server/photon-vision.iml
 
-New client/chameleon-client/*
+New client/photon-client/*
 
 *.prefs
 *.jfr
 .DS_Store
 # *.iml
-chameleon-server/build
-chameleon-server/chameleon-vision
+photon-server/build
+photon-server/photon-vision
