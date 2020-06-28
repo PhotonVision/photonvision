@@ -68,7 +68,7 @@ public class ConfigManager {
         load();
     }
 
-    public void load() {
+    private void load() {
         logger.info("Loading settings...");
         if (!rootFolder.exists()) {
             if (rootFolder.mkdirs()) {

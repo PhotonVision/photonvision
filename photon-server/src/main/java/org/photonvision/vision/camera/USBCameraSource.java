@@ -20,6 +20,7 @@ package org.photonvision.vision.camera;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
+import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -32,7 +33,8 @@ public class USBCameraSource implements VisionSource {
     private final UsbCamera camera;
     private final USBCameraSettables usbCameraSettables;
     private final USBFrameProvider usbFrameProvider;
-    private final CameraConfiguration configuration;
+    public final CameraConfiguration configuration;
+    private final CvSink cvSink;
 
     private final QuirkyCamera cameraQuirks;
 
@@ -41,7 +43,9 @@ public class USBCameraSource implements VisionSource {
         this.camera = new UsbCamera(config.nickname, config.path);
         this.cameraQuirks =
                 new QuirkyCamera(camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
-        CvSink cvSink = CameraServer.getInstance().getVideo(this.camera);
+        cvSink = CameraServer.getInstance().getVideo(this.camera);
+        camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
+        var err = cvSink.getError();
         this.usbCameraSettables = new USBCameraSettables(config);
         this.usbFrameProvider =
                 new USBFrameProvider(cvSink, usbCameraSettables.getFrameStaticProperties());
@@ -79,6 +83,7 @@ public class USBCameraSource implements VisionSource {
     public class USBCameraSettables extends VisionSourceSettables {
         protected USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
+            getAllVideoModes();
         }
 
         @Override
@@ -128,6 +133,7 @@ public class USBCameraSource implements VisionSource {
         public HashMap<Integer, VideoMode> getAllVideoModes() {
             if (videoModes == null) {
                 videoModes = new HashMap<>();
+                var rawModes = camera.enumerateVideoModes();
                 List<VideoMode> videoModesList = Arrays.asList(camera.enumerateVideoModes());
                 for (VideoMode videoMode : videoModesList) {
                     videoModes.put(videoModesList.indexOf(videoMode), videoMode);

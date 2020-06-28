@@ -17,26 +17,29 @@
 
 package org.photonvision.vision.processes;
 
+import org.photonvision.vision.pipeline.CVPipelineSettings;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /** VisionModuleManager has many VisionModules, and provides camera configuration data to them. */
 public class VisionModuleManager {
     protected final List<VisionModule> visionModules = new ArrayList<>();
 
-    public VisionModuleManager(List<VisionSource> visionSources) {
-        for (var visionSource : visionSources) {
-
-            // TODO: loading existing pipelines from config
-            var pipelineManager = new PipelineManager();
-
+    public VisionModuleManager(HashMap<VisionSource, List<CVPipelineSettings>> visionSources) {
+        for (var entry : visionSources.entrySet()) {
+            var visionSource = entry.getKey();
+            var pipelineManager = new PipelineManager(entry.getValue());
             visionModules.add(new VisionModule(pipelineManager, visionSource));
+            // todo: logging
         }
     }
 
     public void startModules() {
         for (var visionModule : visionModules) {
             visionModule.start();
+            // todo: logging
         }
     }
 }

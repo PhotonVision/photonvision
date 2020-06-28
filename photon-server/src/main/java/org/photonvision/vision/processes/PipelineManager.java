@@ -19,6 +19,7 @@ package org.photonvision.vision.processes;
 
 import java.util.Comparator;
 import java.util.List;
+
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.Calibration3dPipeline;
@@ -27,15 +28,18 @@ import org.photonvision.vision.pipeline.DriverModePipeline;
 @SuppressWarnings({"rawtypes", "unused"})
 public class PipelineManager {
 
-    private static final int DRIVERMODE_INDEX = -1;
-    private static final int CAL_3D_INDEX = -2;
+    public static final int DRIVERMODE_INDEX = -1;
+    public static final int CAL_3D_INDEX = -2;
 
-    public final List<CVPipeline> userPipelines;
+    public final List<CVPipelineSettings> userPipelineSettings;
     private final Calibration3dPipeline calibration3dPipeline = new Calibration3dPipeline();
     private final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. */
     private int currentPipelineIndex = DRIVERMODE_INDEX;
+
+    /** The currently active pipeline. */
+    private CVPipeline currentPipeline = driverModePipeline;
 
     /**
     * Index of the last active user-created pipeline. <br>
@@ -50,32 +54,13 @@ public class PipelineManager {
     *
     * @param userPipelines Pipelines to add to the manager.
     */
-    public PipelineManager(List<CVPipeline> userPipelines) {
-        this.userPipelines = userPipelines;
+    public PipelineManager(List<CVPipelineSettings> userPipelines) {
+        this.userPipelineSettings = userPipelines;
     }
 
     /** Creates a PipelineManager with a DriverModePipeline, and a Calibration3dPipeline. */
     public PipelineManager() {
         this(List.of());
-    }
-
-    /**
-    * Get a pipeline by index.
-    *
-    * @param index Index of desired pipeline.
-    * @return The desired pipeline.
-    */
-    public CVPipeline getPipeline(int index) {
-        if (index < 0) {
-            switch (index) {
-                case DRIVERMODE_INDEX:
-                    return driverModePipeline;
-                case CAL_3D_INDEX:
-                    return calibration3dPipeline;
-            }
-        }
-
-        return userPipelines.get(index);
     }
 
     /**
@@ -85,7 +70,19 @@ public class PipelineManager {
     * @return The gotten settings of the pipeline whose index was provided.
     */
     public CVPipelineSettings getPipelineSettings(int index) {
-        return getPipeline(index).getSettings();
+        if (index < 0) {
+            switch (index) {
+                case DRIVERMODE_INDEX:
+                    return driverModePipeline.getSettings();
+                case CAL_3D_INDEX:
+                    return calibration3dPipeline.getSettings();
+            }
+        }
+
+        for (var setting : userPipelineSettings) {
+            if (setting.pipelineIndex == index) return setting;
+        }
+        return null;
     }
 
     /**
@@ -94,7 +91,7 @@ public class PipelineManager {
     * @return The currently active pipeline.
     */
     public CVPipeline getCurrentPipeline() {
-        return getPipeline(currentPipelineIndex);
+        return currentPipeline;
     }
 
     /**
@@ -145,8 +142,6 @@ public class PipelineManager {
                 return 1;
             };
 
-    public static final Comparator<CVPipeline> PipelineIndexComparator =
-            (o1, o2) -> PipelineSettingsIndexComparator.compare(o1.getSettings(), o2.getSettings());
 
     /**
     * Sorts the pipeline list by index, and reassigns their indexes to match the new order. <br>
@@ -154,8 +149,8 @@ public class PipelineManager {
     * I don't like this but I have no other ideas, and it works so ¯\_(ツ)_/¯
     */
     private void reassignIndexes() {
-        userPipelines.sort(PipelineIndexComparator);
-        for (int i = 0; i < userPipelines.size(); i++) {
+        userPipelineSettings.sort(PipelineSettingsIndexComparator);
+        for (int i = 0; i < userPipelineSettings.size(); i++) {
             getPipelineSettings(i).pipelineIndex = i;
         }
     }
