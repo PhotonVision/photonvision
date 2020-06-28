@@ -90,6 +90,27 @@ task testHeadless(type: Test) {
     useJUnitPlatform()
 }
 
+task runNpmOnClient(type: Exec) {
+    workingDir "${projectDir}/../photon-client"
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'cmd', '/c', 'npm run build'
+    } else {
+        commandLine 'npm run build'
+    }
+
+}
+
+task copyClientUIToResources(type: Copy) {
+    from "${projectDir}/../photon-client/dist/"
+    into "${projectDir}/src/main/resources/web/"
+}
+
+task buildAndCopyUI {}
+
+buildAndCopyUI.dependsOn copyClientUIToResources
+copyClientUIToResources.dependsOn runNpmOnClient
+copyClientUIToResources.shouldRunAfter runNpmOnClient
+
 spotless {
   java {
     googleJavaFormat()
