@@ -150,7 +150,12 @@
     };
 </script>
 
+<style lang="sass">
+@import "./scss/variables.scss"
+</style>
+
 <style>
+    
     .imgClass {
         width: auto;
         height: 45px;
