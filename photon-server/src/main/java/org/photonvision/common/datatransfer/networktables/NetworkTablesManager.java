@@ -17,7 +17,7 @@ public class NetworkTablesManager {
 
     private static final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
 
-    public static final String kRootTableName = "/chameleon-vision";
+    public static final String kRootTableName = "/photonvision";
     public static final NetworkTable kRootTable =
             NetworkTableInstance.getDefault().getTable(kRootTableName);
 

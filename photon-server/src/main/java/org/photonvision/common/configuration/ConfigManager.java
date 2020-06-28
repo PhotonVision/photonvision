@@ -38,7 +38,7 @@ public class ConfigManager {
     }
 
     protected static Path getRootFolder() {
-        return Path.of("chameleon-vision");
+        return Path.of("photonvision");
     }
 
     private ConfigManager(Path rootFolder) {
