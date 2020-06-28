@@ -1,0 +1,141 @@
+# This workflow builds the client (UI), the server, builds the JAR.
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  # This job builds the client (web view).
+  build-client:
+
+    # Let all steps run within the photon-client dir.
+    defaults:
+      run:
+        working-directory: photon-client
+
+    # The type of runner that the job will run on.
+    runs-on: ubuntu-latest
+
+    # Grab the docker container.
+    container:
+      image: docker://node:10
+
+    steps:
+    # Checkout code.
+    - uses: actions/checkout@v2
+
+    # Setup Node.js
+    - name: Setup Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 10
+
+    # Run npm
+    - run: |
+        npm ci
+        npm run build --if-present
+
+    # Upload client artifact.
+    - uses: actions/upload-artifact@master
+      with:
+        name: built-client
+        path: photon-client/dist/
+
+  build-server:
+    # Let all steps run within the photon-server dir.
+    defaults:
+      run:
+        working-directory: photon-server
+
+    # The type of runner that the job will run on.
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code.
+      - uses: actions/checkout@v2
+
+      # Install Java 11.
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      # Run Gradle tests.
+      - run: |
+          chmod +x gradlew
+          ./gradlew test
+
+  build-package:
+    needs: [build-client, build-server]
+
+    # Let all steps run within the photon-server dir.
+    defaults:
+      run:
+        working-directory: photon-server
+
+    # The type of runner that the job will run on.
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code.
+      - uses: actions/checkout@v2
+
+      # Install Java 11.
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+
+      # Clear any existing web resources.
+      - run: |
+          rm -rf src/main/resources/web/*
+          mkdir -p src/main/resources/web/
+
+      # Download client artifact to resources folder.
+      - uses: actions/download-artifact@v2
+        with:
+          name: built-client
+          path: photon-server/src/main/resources/web/
+
+      # Print folder contents.
+      - run: ls
+        working-directory: photon-server/src/main/resources/web/
+
+      # Build fat jar.
+      - run: |
+          chmod +x gradlew
+          ./gradlew shadowJar
+        working-directory: photon-server
+
+      # Upload final fat jar as artifact.
+      - uses: actions/upload-artifact@master
+        with:
+          name: jar
+          path: photon-server/build/libs
+
+  check-lint:
+    # Let all steps run within the photon-server dir.
+    defaults:
+      run:
+        working-directory: photon-server
+
+    # The type of runner that the job will run on.
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout code.
+      - uses: actions/checkout@v2
+
+      # Install Java 11.
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      
+      # Check server code with Spotless.
+      - run: |
+          chmod +x gradlew
+          ./gradlew spotlessCheck
