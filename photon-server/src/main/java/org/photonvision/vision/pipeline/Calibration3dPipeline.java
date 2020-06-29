@@ -102,6 +102,7 @@ public class Calibration3dPipeline extends CVPipeline<CVPipelineResult, Calibrat
                 //See if mat is empty
                 boardSnapshots.add(board);
 
+                //Set snapshot to false and increment number of snapshots taken
                 takeSnapshot = false;
                 numSnapshots++;
                 return new CVPipelineResult(
