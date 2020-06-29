@@ -19,4 +19,14 @@ public class DataChangeEvent<T> {
         this.propertyName = propertyName;
         this.data = newValue;
     }
+
+    @Override
+    public String toString() {
+        return "DataChangeEvent{" +
+            "sourceType=" + sourceType +
+            ", destType=" + destType +
+            ", propertyName='" + propertyName + '\'' +
+            ", data=" + data +
+            '}';
+    }
 }

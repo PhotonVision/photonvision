@@ -27,8 +27,7 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
             var thisEvent = (OutgoingUIEvent) event;
             try {
                 switch (thisEvent.updateType) {
-                    case BROADCAST:
-                    {
+                    case BROADCAST: {
                         if (event.data instanceof HashMap) {
                             var data = (SocketHandler.UIMap) event.data;
                             socketHandler.broadcastMessage(data, null);
@@ -37,8 +36,7 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
                         }
                         break;
                     }
-                    case SINGLEUSER:
-                    {
+                    case SINGLEUSER: {
                         if (event.data instanceof Pair) {
                             var pair = (SocketHandler.SelectiveBroadcastPair) event.data;
                             socketHandler.broadcastMessage(pair.getLeft(), pair.getRight());

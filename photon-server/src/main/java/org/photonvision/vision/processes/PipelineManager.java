@@ -17,13 +17,11 @@
 
 package org.photonvision.vision.processes;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.photonvision.vision.pipeline.CVPipeline;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
-import org.photonvision.vision.pipeline.Calibration3dPipeline;
-import org.photonvision.vision.pipeline.DriverModePipeline;
+import org.photonvision.vision.pipeline.*;
 
 @SuppressWarnings({"rawtypes", "unused"})
 public class PipelineManager {
@@ -56,6 +54,7 @@ public class PipelineManager {
     */
     public PipelineManager(List<CVPipelineSettings> userPipelines) {
         this.userPipelineSettings = userPipelines;
+        userPipelineSettings.add(new ReflectivePipelineSettings());
     }
 
     /** Creates a PipelineManager with a DriverModePipeline, and a Calibration3dPipeline. */
@@ -83,6 +82,19 @@ public class PipelineManager {
             if (setting.pipelineIndex == index) return setting;
         }
         return null;
+    }
+
+    public List<String> getPipelineNicknames() {
+        List<String> ret = new ArrayList<>();
+        for(var p: userPipelineSettings) {
+            ret.add(p.pipelineNickname);
+        }
+        return ret;
+    }
+
+
+    public int getCurrentPipelineIndex() {
+        return lastPipelineIndex;
     }
 
     /**

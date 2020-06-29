@@ -3,6 +3,9 @@ package org.photonvision;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.datatransfer.networktables.NetworkTablesManager;
+import org.photonvision.common.logging.Level;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.server.Server;
@@ -20,6 +23,12 @@ public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
     public static void main(String[] args) {
+        Logger.setLevel(LogGroup.Camera, Level.DE_PEST);
+        Logger.setLevel(LogGroup.Server, Level.DE_PEST);
+        Logger.setLevel(LogGroup.VisionProcess, Level.DE_PEST);
+        Logger.setLevel(LogGroup.Data, Level.DE_PEST);
+        Logger.setLevel(LogGroup.General, Level.DE_PEST);
+
         TestUtils.loadLibraries();
         ConfigManager.getInstance(); // init config manager
         NetworkManager.getInstance().initialize(false); // basically empty. todo: link to ConfigManager?
@@ -34,9 +43,9 @@ public class Main {
             collectedSources.put(usbSrc, usbSrc.configuration.pipelineSettings);
         }
 
-        var vmm = new VisionModuleManager(collectedSources);
+        VisionModuleManager.getInstance().addSources(collectedSources);
 
-        vmm.startModules();
+        VisionModuleManager.getInstance().startModules();
         Server.main(DEFAULT_WEBPORT);
     }
 }

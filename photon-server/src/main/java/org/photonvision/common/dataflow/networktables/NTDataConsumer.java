@@ -29,5 +29,6 @@ public class NTDataConsumer implements DataConsumer {
         var simplified = new SimplePipelineResult(data.result);
         var bytes = simplified.toByteArray();
         rawData.setRaw(bytes);
+        rootTable.getInstance().flush();
     }
 }

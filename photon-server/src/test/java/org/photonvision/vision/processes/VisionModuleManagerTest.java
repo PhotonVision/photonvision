@@ -124,12 +124,12 @@ public class VisionModuleManagerTest {
                                 TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
                                 TestUtils.WPI2019Image.FOV)), List.of());
 
-        var moduleManager = new VisionModuleManager(sources);
+        VisionModuleManager.getInstance().addSources(sources);
         var module0DataConsumer = new TestDataConsumer();
 
-        moduleManager.visionModules.get(0).addDataConsumer(module0DataConsumer);
+        VisionModuleManager.getInstance().visionModules.get(0).addDataConsumer(module0DataConsumer);
 
-        moduleManager.startModules();
+        VisionModuleManager.getInstance().startModules();
 
         sleep(500);
 

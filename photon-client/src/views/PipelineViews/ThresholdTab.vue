@@ -1,76 +1,76 @@
 <template>
-  <div>
-    <CVrangeSlider
-      v-model="value.hue"
-      name="Hue"
-      :min="0"
-      :max="180"
-      @input="handleData('hue')"
-      @rollback="e => rollback('hue',e)"
-    />
-    <CVrangeSlider
-      v-model="value.saturation"
-      name="Saturation"
-      :min="0"
-      :max="255"
-      @input="handleData('saturation')"
-      @rollback="e => rollback('saturation',e)"
-    />
-    <CVrangeSlider
-      v-model="value.value"
-      name="Value"
-      :min="0"
-      :max="255"
-      @input="handleData('value')"
-      @rollback="e => rollback('value',e)"
-    />
-    <v-divider
-      color="black"
-      style="margin-top: 5px"
-    />
-    <v-row justify="center">
-      <v-btn
-        style="margin: 20px;"
-        color="#ffd843"
-        small
-        @click="setFunction(1)"
-      >
-        <v-icon>colorize</v-icon>
-        Eye drop
-      </v-btn>
-      <v-btn
-        style="margin: 20px;"
-        color="#ffd843"
-        small
-        @click="setFunction(2)"
-      >
-        <v-icon>add</v-icon>
-        Expand Selection
-      </v-btn>
-      <v-btn
-        style="margin: 20px;"
-        color="#ffd843"
-        small
-        @click="setFunction(3)"
-      >
-        <v-icon>remove</v-icon>
-        Shrink Selection
-      </v-btn>
-    </v-row>
-    <v-divider color="black" />
-    <CVswitch
-      v-model="value.erode"
-      name="Erode"
-      @input="handleData('erode')"
-      @rollback="e => rollback('erode',e)"
-    />
-    <CVswitch
-      v-model="value.dilate"
-      name="Dilate"
-      @input="handleData('dilate')"
-      @rollback="e => rollback('dilate',e)"
-    />
-  </div>
+    <div>
+        <CVrangeSlider
+                v-model="value.hue"
+                name="Hue"
+                :min="0"
+                :max="180"
+                @input="handlePipelineData('hue')"
+                @rollback="e => rollback('hue',e)"
+        />
+        <CVrangeSlider
+                v-model="value.saturation"
+                name="Saturation"
+                :min="0"
+                :max="255"
+                @input="handlePipelineData('saturation')"
+                @rollback="e => rollback('saturation',e)"
+        />
+        <CVrangeSlider
+                v-model="value.value"
+                name="Value"
+                :min="0"
+                :max="255"
+                @input="handlePipelineData('value')"
+                @rollback="e => rollback('value',e)"
+        />
+        <v-divider
+                color="black"
+                style="margin-top: 5px"
+        />
+        <v-row justify="center">
+            <v-btn
+                    style="margin: 20px;"
+                    color="#ffd843"
+                    small
+                    @click="setFunction(1)"
+            >
+                <v-icon>colorize</v-icon>
+                Eye drop
+            </v-btn>
+            <v-btn
+                    style="margin: 20px;"
+                    color="#ffd843"
+                    small
+                    @click="setFunction(2)"
+            >
+                <v-icon>add</v-icon>
+                Expand Selection
+            </v-btn>
+            <v-btn
+                    style="margin: 20px;"
+                    color="#ffd843"
+                    small
+                    @click="setFunction(3)"
+            >
+                <v-icon>remove</v-icon>
+                Shrink Selection
+            </v-btn>
+        </v-row>
+        <v-divider color="black"/>
+        <CVswitch
+                v-model="value.erode"
+                name="Erode"
+                @input="handleData('erode')"
+                @rollback="e => rollback('erode',e)"
+        />
+        <CVswitch
+                v-model="value.dilate"
+                name="Dilate"
+                @input="handleData('dilate')"
+                @rollback="e => rollback('dilate',e)"
+        />
+    </div>
 </template>
 
 <script>
@@ -124,10 +124,12 @@
                     this.value.value = [hsvArray[0][2], hsvArray[1][2]];
                     this.value.isBinary = this.currentBinaryState;
                     let msg = this.$msgPack.encode({
-                        'hue': this.value.hue,
-                        'saturation': this.value.saturation,
-                        'value': this.value.value,
-                        'isBinary': this.value.isBinary
+                        "changePipelineSetting": {
+                            'hue': this.value.hue,
+                            'saturation': this.value.saturation,
+                            'value': this.value.value,
+                            'isBinary': this.value.isBinary
+                        }
                     });
                     this.$socket.send(msg);
                     this.$emit('update');
