@@ -1,0 +1,19 @@
+[ "DriverModePipelineSettings", {
+  "pipelineIndex" : 0,
+  "pipelineType" : "DriverMode",
+  "inputImageFlipMode" : "NONE",
+  "inputImageRotationMode" : "DEG_0",
+  "pipelineNickname" : "New Pipeline",
+  "cameraExposure" : 50.0,
+  "cameraBrightness" : 50.0,
+  "cameraGain" : 50.0,
+  "cameraVideoModeIndex" : 0,
+  "inputFrameDivisor" : "NONE",
+  "outputFrameDivisor" : "NONE",
+  "ledMode" : false,
+  "offsetPointMode" : "None",
+  "offsetPoint" : {
+    "first" : 0.0,
+    "second" : 0.0
+  }
+} ]
