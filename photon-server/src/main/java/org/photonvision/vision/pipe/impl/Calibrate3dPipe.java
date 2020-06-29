@@ -10,10 +10,9 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.JsonMat;
 import org.photonvision.vision.pipe.CVPipe;
 
-
 public class Calibrate3dPipe
         extends CVPipe<
-                        List<List<Mat>>, CameraCalibrationCoefficients, Calibrate3dPipe.CalibratePipeParams> {
+                List<List<Mat>>, CameraCalibrationCoefficients, Calibrate3dPipe.CalibratePipeParams> {
 
     // Camera matrix stores the center of the image and focal length across the x and y-axis in a 3x3
     // matrix

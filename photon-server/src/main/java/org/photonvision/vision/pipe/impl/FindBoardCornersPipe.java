@@ -2,7 +2,6 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
@@ -28,7 +27,7 @@ public class FindBoardCornersPipe
     private boolean objectPointsCreated = false;
 
     public void createObjectPoints() {
-        if(objectPointsCreated) return;
+        if (objectPointsCreated) return;
 
         /*If using a chessboard, then the pattern size if the inner corners of the board. For example, the pattern size of a 9x9 chessboard would be 8x8
         If using a dot board, then the pattern size width is the sum of the bottom 2 rows and the height is the left or right most column
@@ -57,7 +56,6 @@ public class FindBoardCornersPipe
             }
         }
         objectPointsCreated = true;
-
     }
 
     /**
@@ -69,7 +67,7 @@ public class FindBoardCornersPipe
     @Override
     protected List<List<Mat>> process(List<Mat> in) {
         // If we have less than 20 snapshots we need to return null
-        if(in.size() < 20) return null;
+        if (in.size() < 20) return null;
         // Contains all valid Mats where a chessboard or dot board have been found
         List<Mat> outputMats = new ArrayList<>();
 
@@ -81,7 +79,8 @@ public class FindBoardCornersPipe
                 outputMats.add(board);
             }
         }
-        // Contains the list of valid Mats, object points and images points where objectPoints.size() = imagePoints.size()
+        // Contains the list of valid Mats, object points and images points where objectPoints.size() =
+        // imagePoints.size()
         return List.of(outputMats, listOfObjectPoints, listOfImagePoints);
     }
 
