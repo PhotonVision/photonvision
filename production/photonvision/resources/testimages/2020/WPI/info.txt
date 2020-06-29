@@ -1,0 +1,3 @@
+Taken on Microsoft LifeCam HD-3000
+FOV = 68.5
+Credit to WPILib for these images.

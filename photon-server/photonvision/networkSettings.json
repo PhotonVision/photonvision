@@ -1,0 +1,8 @@
+{
+  "teamNumber" : 1577,
+  "connectionType" : "DHCP",
+  "ip" : "",
+  "gateway" : "",
+  "netmask" : "",
+  "hostname" : "photonvision"
+}
