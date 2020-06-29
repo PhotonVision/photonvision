@@ -2,6 +2,7 @@ package org.photonvision.vision.pipeline.result;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import org.photonvision.vision.target.TrackedTarget;
 
 import java.util.Objects;
 
@@ -21,6 +22,10 @@ public class SimpleTrackedTarget extends BytePackable {
         this.pitch = pitch;
         this.area = area;
         robotRelativePose = pose;
+    }
+
+    public SimpleTrackedTarget(TrackedTarget t) {
+        this(t.getYaw(), t.getPitch(), t.getArea(), t.getRobotRelativePose());
     }
 
     public double getYaw() {

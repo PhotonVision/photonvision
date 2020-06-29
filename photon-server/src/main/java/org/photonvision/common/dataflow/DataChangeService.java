@@ -55,11 +55,11 @@ public class DataChangeService {
         }
     }
 
-    public void subscribe(DataChangeSubscriber subscriber) {
+    public void addSubscriber(DataChangeSubscriber subscriber) {
         if (!subscribers.addIfAbsent(subscriber)) {
             logger.warn("Attempted to add already added subscriber!");
         } else {
-            if (logger.shouldLog(Level.TRACE, LogGroup.Data)) {
+            if (Logger.shouldLog(Level.TRACE, LogGroup.Data)) {
                 var sources =
                         subscriber.wantedSources.stream().map(Enum::toString).collect(Collectors.joining(", "));
                 var dests =

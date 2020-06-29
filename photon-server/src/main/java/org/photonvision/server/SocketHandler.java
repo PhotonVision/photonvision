@@ -19,11 +19,7 @@ package org.photonvision.server;
 
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.DataChangeSource;
-import org.photonvision.common.dataflow.DataChangeSubscriber;
-import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
-import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.PipelineType;
@@ -47,51 +43,11 @@ public class SocketHandler {
     private final DataChangeService dcService = DataChangeService.getInstance();
 
     @SuppressWarnings("FieldCanBeLocal")
-    private final UIOutboundSubscriber uiOutboundSubscriber = new UIOutboundSubscriber();
+    private final UIOutboundSubscriber uiOutboundSubscriber = new UIOutboundSubscriber(this);
 
     public static class UIMap extends HashMap<String, Object> {}
 
-    private abstract static class SelectiveBroadcastPair extends Pair<UIMap, WsContext> {}
-
-    @SuppressWarnings("rawtypes")
-    private class UIOutboundSubscriber extends DataChangeSubscriber {
-
-        public UIOutboundSubscriber() {
-            super(DataChangeSource.AllSources, Collections.singletonList(DataChangeDestination.DCD_UI));
-        }
-
-        @Override
-        public void onDataChangeEvent(DataChangeEvent event) {
-            if (event instanceof OutgoingUIEvent) {
-                var thisEvent = (OutgoingUIEvent) event;
-                try {
-                    switch (thisEvent.updateType) {
-                        case BROADCAST:
-                        {
-                            if (event.data instanceof HashMap) {
-                                var data = (UIMap) event.data;
-                                broadcastMessage(data, null);
-                            } else {
-                                broadcastMessage(event.data, null);
-                            }
-                            break;
-                        }
-                        case SINGLEUSER:
-                        {
-                            if (event.data instanceof Pair) {
-                                var pair = (SelectiveBroadcastPair) event.data;
-                                broadcastMessage(pair.getLeft(), pair.getRight());
-                            }
-                            break;
-                        }
-                    }
-                } catch (JsonProcessingException e) {
-                    // TODO: Log
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+    abstract static class SelectiveBroadcastPair extends Pair<UIMap, WsContext> {}
 
     private static class ThreadSafeSingleton {
         private static final SocketHandler INSTANCE = new SocketHandler();
@@ -102,7 +58,7 @@ public class SocketHandler {
     }
 
     private SocketHandler() {
-        dcService.subscribe(uiOutboundSubscriber);
+        dcService.addSubscriber(uiOutboundSubscriber); // Subscribe outgoing messages to the data change service
     }
 
     public void onConnect(WsConnectContext context) {
@@ -277,7 +233,7 @@ public class SocketHandler {
     }
 
     // TODO: change to use the DataFlow system
-    private void broadcastMessage(Object message, WsContext userToSkip)
+    void broadcastMessage(Object message, WsContext userToSkip)
         throws JsonProcessingException {
         for (WsContext user : users) {
             if (user != userToSkip) {
