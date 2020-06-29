@@ -35,15 +35,22 @@ import java.util.List;
 
 public class Calibration3dPipeline extends CVPipeline<CVPipelineResult, Calibration3dPipelineSettings> {
 
+    //Only 2 pipes needed, one for finding the board corners and one for actually calibrating
     private final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
     private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
 
+    //Getter methods have been set for calibrate and takeSnapshot
     private int numSnapshots = 0;
     private boolean calibrate = false;
     private boolean takeSnapshot = false;
 
+    //BoardSnapshots is a list of all valid snapshots taken
     private ArrayList<Mat> boardSnapshots;
+
+    //Output of the corners
     private CVPipeResult<List<List<Mat>>> findCornersPipeOutput;
+
+    ///Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
 
@@ -64,13 +71,19 @@ public class Calibration3dPipeline extends CVPipeline<CVPipelineResult, Calibrat
 
     @Override
     protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
+        //Set the pipe parameters
         setPipeParams(frame.frameStaticProperties, settings);
 
         long sumPipeNanosElapsed = 0L;
 
+        //hasEnough() is a getter method for numSnapshots that checks if there are more than 25 snapshots
+        //calibrate will be true when it is get by it's putter method
         if (hasEnough() && calibrate) {
 
+            /*Pass the board corners to the pipe, which will check again to see if all boards are valid
+            and returns the corresponding image and object points*/
             findCornersPipeOutput = findBoardCornersPipe.apply(boardSnapshots);
+            //Increment the time it took to process all board pics to total elapsed time
             sumPipeNanosElapsed += findCornersPipeOutput.nanosElapsed;
 
 
