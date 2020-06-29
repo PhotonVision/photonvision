@@ -11,6 +11,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -70,7 +71,8 @@ public class Calibrate3dPipeTest {
 
         for (var file : directoryListing) {
             calibration3dPipeline.takeSnapshot();
-            calibration3dPipeline.run(new Frame(new CVMat(Imgcodecs.imread(file.getAbsolutePath())), new FrameStaticProperties(640, 480, 60)));
+            var output = calibration3dPipeline.run(new Frame(new CVMat(Imgcodecs.imread(file.getAbsolutePath())), new FrameStaticProperties(640, 480, 60)));
+            HighGui.imshow("Calibration Output Frame", output.outputFrame.image.getMat());
         }
 
         calibration3dPipeline.startCalibration();

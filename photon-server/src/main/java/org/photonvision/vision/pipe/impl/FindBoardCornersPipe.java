@@ -2,6 +2,8 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -75,7 +77,7 @@ public class FindBoardCornersPipe
         createObjectPoints();
 
         for (Mat board : in) {
-            if (findBoardCorners(board)) {
+            if (findBoardCorners(board).getLeft()) {
                 outputMats.add(board);
             }
         }
@@ -83,7 +85,7 @@ public class FindBoardCornersPipe
         return List.of(outputMats, listOfObjectPoints, listOfImagePoints);
     }
 
-    public boolean findBoardCorners(Mat frame) {
+    public Pair<Boolean, Mat> findBoardCorners(Mat frame) {
         createObjectPoints();
 
         // Convert the frame to grayscale to increase contrast
@@ -104,7 +106,7 @@ public class FindBoardCornersPipe
             // If we can't find a chessboard/dot board, convert the frame back to BGR and return false.
             Imgproc.cvtColor(frame, frame, Imgproc.COLOR_GRAY2BGR);
 
-            return false;
+            return Pair.of(false, null);
         }
         // Get the size of the frame
         this.imageSize = new Size(frame.width(), frame.height());
@@ -120,9 +122,11 @@ public class FindBoardCornersPipe
         Imgproc.cvtColor(frame, frame, Imgproc.COLOR_GRAY2BGR);
         // draw the chessboard, doesn't have to be different for a dot board since it just re projects
         // the corners we found
-        Calib3d.drawChessboardCorners(frame, patternSize, boardCorners, true);
+        Mat chessboardDrawn = new Mat();
+        frame.copyTo(chessboardDrawn);
+        Calib3d.drawChessboardCorners(chessboardDrawn, patternSize, boardCorners, true);
         boardCorners = new MatOfPoint2f();
-        return true;
+        return Pair.of(true, chessboardDrawn);
     }
 
     public static class FindCornersPipeParams {

@@ -18,10 +18,12 @@
 package org.photonvision.vision.pipeline;
 
 import org.opencv.core.Mat;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
@@ -40,15 +42,16 @@ public class Calibration3dPipeline extends CVPipeline<CVPipelineResult, Calibrat
     private boolean calibrate = false;
     private boolean takeSnapshot = false;
 
-    private List<Mat> boardSnapshots = new ArrayList<>();
+    private ArrayList<Mat> boardSnapshots;
     private CVPipeResult<List<List<Mat>>> findCornersPipeOutput;
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
-    public Calibration3dPipeline() {
-        settings = new CVPipelineSettings();
-        settings.pipelineIndex = PipelineManager.CAL_3D_INDEX;
-    }
 
+    public Calibration3dPipeline() {
+        this.settings = new Calibration3dPipelineSettings();
+        this.boardSnapshots = new ArrayList<>();
+    }
+    
 
     @Override
     protected void setPipeParams(FrameStaticProperties frameStaticProperties, Calibration3dPipelineSettings settings) {
@@ -65,10 +68,11 @@ public class Calibration3dPipeline extends CVPipeline<CVPipelineResult, Calibrat
 
         long sumPipeNanosElapsed = 0L;
 
-        if(hasEnough() && calibrate) {
+        if (hasEnough() && calibrate) {
 
             findCornersPipeOutput = findBoardCornersPipe.apply(boardSnapshots);
             sumPipeNanosElapsed += findCornersPipeOutput.nanosElapsed;
+
 
             calibrationOutput = calibrate3dPipe.apply(findCornersPipeOutput.result);
             sumPipeNanosElapsed += calibrationOutput.nanosElapsed;
@@ -76,15 +80,22 @@ public class Calibration3dPipeline extends CVPipeline<CVPipelineResult, Calibrat
             calibrate = false;
             numSnapshots = 0;
             boardSnapshots.clear();
-        } else if(findBoardCornersPipe.findBoardCorners(frame.image.getMat()) && takeSnapshot){
 
-            //See if mat is empty
-            System.out.println(frame.image.getMat().empty()); //Prints False
-            boardSnapshots.add(frame.image.getMat());
-            System.out.println(boardSnapshots.get(0).empty()); //Prints True
+        } else if (takeSnapshot) {
+            var hasBoard = findBoardCornersPipe.findBoardCorners(frame.image.getMat());
+            if (hasBoard.getLeft()) {
+                Mat board = new Mat();
+                frame.image.getMat().copyTo(board);
+                //See if mat is empty
+                boardSnapshots.add(board);
 
-            takeSnapshot = false;
-            numSnapshots++;
+                takeSnapshot = false;
+                numSnapshots++;
+                return new CVPipelineResult(
+                        MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                        null,
+                        new Frame(new CVMat(hasBoard.getRight()), frame.frameStaticProperties));
+            }
         }
 
         return new CVPipelineResult(
