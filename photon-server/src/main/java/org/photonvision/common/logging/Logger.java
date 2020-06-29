@@ -81,6 +81,7 @@ public class Logger {
         levelMap.put(LogGroup.Camera, Level.INFO);
         levelMap.put(LogGroup.General, Level.INFO);
         levelMap.put(LogGroup.Server, Level.INFO);
+        levelMap.put(LogGroup.Data, Level.INFO);
         levelMap.put(LogGroup.VisionProcess, Level.INFO);
     }
 
@@ -113,7 +114,7 @@ public class Logger {
         }
     }
 
-    private static boolean shouldLog(Level logLevel, LogGroup group) {
+    public static boolean shouldLog(Level logLevel, LogGroup group) {
         return logLevel.code <= levelMap.get(group).code;
     }
 

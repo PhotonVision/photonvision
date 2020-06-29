@@ -29,13 +29,16 @@ public class Server {
                             javalinConfig.addStaticFiles("web");
                             javalinConfig.enableCorsForAllOrigins();
                         });
+
+        var socketHandler = SocketHandler.getInstance();
+
         /*Web Socket Events */
         app.ws(
                 "/websocket",
                 ws -> {
-                    ws.onConnect(SocketHandler::onConnect);
-                    ws.onClose(SocketHandler::onClose);
-                    ws.onBinaryMessage(SocketHandler::onBinaryMessage);
+                    ws.onConnect(socketHandler::onConnect);
+                    ws.onClose(socketHandler::onClose);
+                    ws.onBinaryMessage(socketHandler::onBinaryMessage);
                 });
         /*API Events*/
         app.post("/api/settings/general", RequestHandler::onGeneralSettings);

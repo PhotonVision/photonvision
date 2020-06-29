@@ -17,56 +17,272 @@
 
 package org.photonvision.server;
 
+import org.photonvision.common.dataflow.DataChangeDestination;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.DataChangeSource;
+import org.photonvision.common.dataflow.DataChangeSubscriber;
+import org.photonvision.common.dataflow.events.DataChangeEvent;
+import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.pipeline.PipelineType;
+import org.photonvision.vision.processes.PipelineManager;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.websocket.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import org.apache.commons.lang3.tuple.Pair;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 
+@SuppressWarnings("rawtypes")
 public class SocketHandler {
-    static List<WsContext> users = new ArrayList<>();
-    static ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
 
-    public static void onConnect(WsConnectContext context) {
+    private final Logger logger = new Logger(SocketHandler.class, LogGroup.Server);
+    private final List<WsContext> users = new ArrayList<>();
+    private final ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
+    private final DataChangeService dcService = DataChangeService.getInstance();
+
+    @SuppressWarnings("FieldCanBeLocal")
+    private final UIOutboundSubscriber uiOutboundSubscriber = new UIOutboundSubscriber();
+
+    public static class UIMap extends HashMap<String, Object> {}
+
+    private abstract static class SelectiveBroadcastPair extends Pair<UIMap, WsContext> {}
+
+    @SuppressWarnings("rawtypes")
+    private class UIOutboundSubscriber extends DataChangeSubscriber {
+
+        public UIOutboundSubscriber() {
+            super(DataChangeSource.AllSources, Collections.singletonList(DataChangeDestination.DCD_UI));
+        }
+
+        @Override
+        public void onDataChangeEvent(DataChangeEvent event) {
+            if (event instanceof OutgoingUIEvent) {
+                var thisEvent = (OutgoingUIEvent) event;
+                try {
+                    switch (thisEvent.updateType) {
+                        case BROADCAST:
+                        {
+                            if (event.data instanceof HashMap) {
+                                var data = (UIMap) event.data;
+                                broadcastMessage(data, null);
+                            } else {
+                                broadcastMessage(event.data, null);
+                            }
+                            break;
+                        }
+                        case SINGLEUSER:
+                        {
+                            if (event.data instanceof Pair) {
+                                var pair = (SelectiveBroadcastPair) event.data;
+                                broadcastMessage(pair.getLeft(), pair.getRight());
+                            }
+                            break;
+                        }
+                    }
+                } catch (JsonProcessingException e) {
+                    // TODO: Log
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private static class ThreadSafeSingleton {
+        private static final SocketHandler INSTANCE = new SocketHandler();
+    }
+
+    public static SocketHandler getInstance() {
+        return SocketHandler.ThreadSafeSingleton.INSTANCE;
+    }
+
+    private SocketHandler() {
+        dcService.subscribe(uiOutboundSubscriber);
+    }
+
+    public void onConnect(WsConnectContext context) {
         users.add(context);
     }
 
-    static void onClose(WsCloseContext context) {
+    protected void onClose(WsCloseContext context) {
         users.remove(context);
     }
 
-    public static void onBinaryMessage(WsBinaryMessageContext context) {
+    @SuppressWarnings({"unchecked"})
+    public void onBinaryMessage(WsBinaryMessageContext context) {
         try {
-            Map<String, Object> data =
-                    objectMapper.readValue(context.data(), new TypeReference<Map<String, Object>>() {});
-            // TODO pass data to ui data provider
-            return;
+            Map<String, Object> deserializedData =
+                objectMapper.readValue(context.data(), new TypeReference<>() {});
+
+            for (Map.Entry<String, Object> entry : deserializedData.entrySet()) {
+                try {
+                    var entryKey = entry.getKey();
+                    var entryValue = entry.getValue();
+                    var socketMessageType = SocketMessageType.fromEntryKey(entryKey);
+
+                    if (socketMessageType == null) {
+                        logger.error("Got unknown socket message type: " + entryKey);
+                        continue;
+                    }
+
+                    switch (socketMessageType) {
+                        case SMT_DRIVERMODE:
+                        {
+                            var data = (HashMap<String, Object>) entryValue;
+                            var dmExpEvent =
+                                new IncomingWebSocketEvent<Integer>(
+                                    DataChangeDestination.DCD_ACTIVEMODULE, "driverExposure", data);
+                            var dmBrightEvent =
+                                new IncomingWebSocketEvent<Integer>(
+                                    DataChangeDestination.DCD_ACTIVEMODULE, "driverBrightness", data);
+                            var dmIsDriverEvent =
+                                new IncomingWebSocketEvent<Boolean>(
+                                    DataChangeDestination.DCD_ACTIVEMODULE, "isDriver", data);
+
+                            dcService.publishEvents(dmExpEvent, dmBrightEvent, dmIsDriverEvent);
+                            break;
+                        }
+                        case SMT_CHANGECAMERANAME:
+                        {
+                            var ccnEvent =
+                                new IncomingWebSocketEvent<>(
+                                    DataChangeDestination.DCD_ACTIVEMODULE,
+                                    "cameraNickname",
+                                    (String) entryValue);
+                            dcService.publishEvent(ccnEvent);
+                            break;
+                        }
+                        case SMT_CHANGEPIPELINENAME:
+                        {
+                            var cpnEvent =
+                                new IncomingWebSocketEvent<>(
+                                    DataChangeDestination.DCD_ACTIVEMODULE,
+                                    "pipelineName",
+                                    (String) entryValue);
+                            dcService.publishEvent(cpnEvent);
+                            break;
+                        }
+                        case SMT_ADDNEWPIPELINE:
+                        {
+                            HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
+                            var type = (PipelineType) data.get("pipelineType");
+                            var name = (String) data.get("pipelineName");
+
+                            var newPipelineEvent =
+                                new IncomingWebSocketEvent<>(
+                                    DataChangeDestination.DCD_ACTIVEMODULE,
+                                    "newPipelineInfo",
+                                    Pair.of(name, type));
+                            dcService.publishEvent(newPipelineEvent);
+                            break;
+                        }
+                        case SMT_COMMAND:
+                        {
+                            var cmd = SocketMessageCommandType.fromEntryKey((String) entryValue);
+                            var foo = 1;
+                            switch (cmd) {
+                                case SMCT_DELETECURRENTPIPELINE:
+                                {
+                                    var deleteCurrentPipelineEvent =
+                                        new IncomingWebSocketEvent<>(
+                                            DataChangeDestination.DCD_ACTIVEMODULE, "deleteCurrPipeline", 0);
+                                    dcService.publishEvent(deleteCurrentPipelineEvent);
+                                    break;
+                                }
+                                case SMCT_SAVE:
+                                {
+                                    var saveEvent =
+                                        new IncomingWebSocketEvent<>(DataChangeDestination.DCD_OTHER, "save", 0);
+                                    dcService.publishEvent(saveEvent);
+                                    break;
+                                }
+                            }
+                        }
+                        case SMT_CURRENTCAMERA:
+                        {
+                            var changeCurrentCameraEvent =
+                                new IncomingWebSocketEvent<>(
+                                    DataChangeDestination.DCD_OTHER, "changeUICamera", (Integer) entryValue);
+                            dcService.publishEvent(changeCurrentCameraEvent);
+                            break;
+                        }
+                        case SMT_CURRENTPIPELINE:
+                        {
+                            var changePipelineEvent =
+                                new IncomingWebSocketEvent<>(
+                                    DataChangeDestination.DCD_ACTIVEMODULE,
+                                    "changePipeline",
+                                    (Integer) entryValue);
+                            dcService.publishEvent(changePipelineEvent);
+                            break;
+                        }
+                        case SMT_ISPNPCALIBRATION:
+                        {
+                            var changePipelineEvent =
+                                new IncomingWebSocketEvent<>(
+                                    DataChangeDestination.DCD_ACTIVEMODULE,
+                                    "changePipeline",
+                                    PipelineManager.CAL_3D_INDEX);
+                            dcService.publishEvent(changePipelineEvent);
+                            break;
+                        }
+                        case SMT_TAKECALIBRATIONSNAPSHOT:
+                        {
+                            var takeCalSnapshotEvent =
+                                new IncomingWebSocketEvent<>(
+                                    DataChangeDestination.DCD_ACTIVEMODULE, "takeCalSnapshot", 0);
+                            dcService.publishEvent(takeCalSnapshotEvent);
+                            break;
+                        }
+                        case SMT_PIPELINESETTINGCHANGE:
+                        {
+                            HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
+
+                            // there shall only be one.
+                            Map.Entry<String, Object> thisEntry = data.entrySet().iterator().next();
+
+                            var pipelineSettingChangeEvent =
+                                new IncomingWebSocketEvent<>(
+                                    DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS,
+                                    thisEntry.getKey(),
+                                    thisEntry.getValue());
+
+                            dcService.publishEvent(pipelineSettingChangeEvent);
+                        }
+                        default:
+                        {
+                            logger.warn("Unknown Socket Message - Name: " + entryKey);
+                            break;
+                        }
+                    }
+                } catch (Exception ex) {
+                    // ignored
+                }
+            }
         } catch (IOException e) {
+            // TODO: log
             e.printStackTrace();
         }
     }
 
-    public static void sendMessage(Object message, WsContext user) throws JsonProcessingException {
+    // TODO: change to use the DataFlow system
+    private void sendMessage(Object message, WsContext user) throws JsonProcessingException {
         ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(message));
         user.send(b);
     }
 
-    public static void broadcastMessage(Object message, WsContext userToSkip)
-            throws JsonProcessingException {
+    // TODO: change to use the DataFlow system
+    private void broadcastMessage(Object message, WsContext userToSkip)
+        throws JsonProcessingException {
         for (WsContext user : users) {
             if (user != userToSkip) {
                 sendMessage(message, user);
             }
         }
-        return;
-    }
-
-    public static void broadcastMessage(Object message) throws JsonProcessingException {
-        broadcastMessage(message, null);
     }
 }

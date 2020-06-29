@@ -21,5 +21,6 @@ public enum LogGroup {
     Camera,
     Server,
     VisionProcess,
+    Data,
     General
 }
