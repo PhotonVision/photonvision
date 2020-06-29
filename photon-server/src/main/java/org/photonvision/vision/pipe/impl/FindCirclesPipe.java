@@ -90,7 +90,6 @@ public class FindCirclesPipe
                 }
             }
         }
-
         return output;
     }
 

@@ -1,0 +1,10 @@
+{
+  "baseName" : "TestCamera",
+  "uniqueName" : "TestCamera",
+  "nickname" : "TestCamera",
+  "FOV" : 70.0,
+  "path" : "/dev/video420",
+  "cameraType" : "UsbCamera",
+  "calibration" : null,
+  "CameraLEDs" : [ ]
+}

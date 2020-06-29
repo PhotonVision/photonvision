@@ -85,7 +85,6 @@ public class FindPolygonPipe
     public static class FindPolygonPipeParams {
         private final double accuracyPercentage;
         // Should be a value between 0-100
-
         public FindPolygonPipeParams(double accuracyPercentage) {
             this.accuracyPercentage = accuracyPercentage;
         }
