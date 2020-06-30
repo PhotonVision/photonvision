@@ -1,7 +1,7 @@
 <template>
     <div>
         <CVrangeSlider
-                v-model="value.hue"
+                v-model="currentHue"
                 name="Hue"
                 :min="0"
                 :max="180"
@@ -9,7 +9,7 @@
                 @rollback="e => rollback('hue',e)"
         />
         <CVrangeSlider
-                v-model="value.saturation"
+                v-model="currentSaturation"
                 name="Saturation"
                 :min="0"
                 :max="255"
@@ -17,7 +17,7 @@
                 @rollback="e => rollback('saturation',e)"
         />
         <CVrangeSlider
-                v-model="value.value"
+                v-model="currentValue"
                 name="Value"
                 :min="0"
                 :max="255"
@@ -59,13 +59,13 @@
         </v-row>
         <v-divider color="black"/>
         <CVswitch
-                v-model="value.erode"
+                v-model="shouldErode"
                 name="Erode"
                 @input="handleData('erode')"
                 @rollback="e => rollback('erode',e)"
         />
         <CVswitch
-                v-model="value.dilate"
+                v-model="shouldDilate"
                 name="Dilate"
                 @input="handleData('dilate')"
                 @rollback="e => rollback('dilate',e)"
@@ -86,6 +86,18 @@
         props: ['value'],
         data() {
             return {
+                currentHue: [0, 40],
+                currentSaturation: [0, 30],
+                currentValue: [20, 30],
+                shouldErode: false,
+                shouldDilate: false,
+
+                // currentHue: this.$store.getters.currentPipelineSettings.hue,
+                // currentSaturation: this.$store.getters.currentPipelineSettings.saturation,
+                // currentValue: this.$store.getters.currentPipelineSettings.value,
+                // shouldErode: this.$store.getters.currentPipelineSettings.erode,
+                // shouldDilate: this.$store.getters.currentPipelineSettings.dilate,
+
                 currentFunction: undefined,
                 colorPicker: undefined,
                 currentBinaryState: 0
