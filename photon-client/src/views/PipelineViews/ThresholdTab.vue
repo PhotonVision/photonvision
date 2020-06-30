@@ -59,13 +59,13 @@
         </v-row>
         <v-divider color="black"/>
         <CVswitch
-                v-model="shouldErode"
+                v-model="erode"
                 name="Erode"
                 @input="handleData('erode')"
                 @rollback="e => rollback('erode',e)"
         />
         <CVswitch
-                v-model="shouldDilate"
+                v-model="dilate"
                 name="Dilate"
                 @input="handleData('dilate')"
                 @rollback="e => rollback('dilate',e)"
@@ -86,8 +86,8 @@
         props: ['value'],
         data() {
             return {
-                shouldErode: false,
-                shouldDilate: false,
+                erode: false,
+                dilate: false,
 
                 // currentHue: this.$store.getters.currentPipelineSettings.hue,
                 // currentSaturation: this.$store.getters.currentPipelineSettings.saturation,
