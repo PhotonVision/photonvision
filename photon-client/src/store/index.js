@@ -1,9 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import pipeline from "./modules/pipeline";
-import generalSettings from "./modules/generalSettings";
-import cameraSettings from "./modules/cameraSettings";
+import networkSettings from "./modules/networkSettings"
 import undoRedo from "./modules/undoRedo";
 
 Vue.use(Vuex);
@@ -14,33 +12,44 @@ const set = key => (state, val) => {
 
 export default new Vuex.Store({
     modules: {
-        pipeline: pipeline,
-        settings: generalSettings,
-        cameraSettings: cameraSettings,
+        networkSettings: networkSettings,
         undoRedo: undoRedo
     },
     state: {
-        resolutionList: [],
-        port: 1181,
         currentCameraIndex: 0,
-        currentPipelineIndex: 0,
-        cameraList: [],
-        pipelineList: [],
-        point: {},
-        saveBar: false
+        saveBar: false,
+        cameraSettings: [ // This is a list of objects representing the settings of all cameras
+            {
+                tiltDegrees: 0.0,
+                currentPipelineIndex: 0,
+                pipelineNicknames: ["Unknown"],
+                streamPort: 1181,
+                nickname: "Unknown",
+                resolutionList: [],
+                fov: 70.0,
+                currentPipelineSettings: {}
+            }
+        ],
+        pipelineResults: [
+            // {
+            //     fps: 254,
+            //     targets: [{
+            //         pitch: 0,
+            //         yaw: 1,
+            //         skew: 2,
+            //         pose: {x: 1, y: 2, rot: 4},
+            //     }]
+            // }
+        ]
     },
     mutations: {
         settings: set('settings'),
         pipeline: set('pipeline'),
         cameraSettings: set('cameraSettings'),
-        resolutionList: set('resolutionList'),
         port: set('port'),
         currentCameraIndex: set('currentCameraIndex'),
         currentPipelineIndex: set('currentPipelineIndex'),
         cameraList: set('cameraList'),
-        pipelineList: set('pipelineList'),
-        point: set('point'),
-        driverMode: set('driverMode'),
         saveBar: set("saveBar")
     },
     getters: {
@@ -48,10 +57,10 @@ export default new Vuex.Store({
             return "http://" + location.hostname + ":" + state.port + "/stream.mjpg";
         },
         targets: state => {
-            return state.point['targets']
+            return state.pipelineResults.length
         },
         cameraList: state => {
-            return state.cameraList
+            return state.cameraSettings.map(it => it.nickname)
         },
         pipelineList: state => {
             return state.pipelineList
@@ -60,7 +69,10 @@ export default new Vuex.Store({
             return state.currentCameraIndex
         },
         currentPipelineIndex: state => {
-            return state.currentPipelineIndex
+            return state.cameraSettings[state.currentCameraIndex].currentPipelineIndex
+        },
+        resolutionList: state => {
+            return state.cameraSettings[state.currentCameraIndex].resolutionList
         }
     }
 })

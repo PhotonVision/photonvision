@@ -14,7 +14,7 @@ import java.util.Collections;
 public class UIInboundSubscriber extends DataChangeSubscriber {
 
     public UIInboundSubscriber() {
-        super(Collections.singletonList(DataChangeSource.DCS_WEBSOCKET), Collections.singletonList(DataChangeDestination.DCD_OTHER));
+        super(Collections.singletonList(DataChangeSource.DCS_WEBSOCKET), Collections.singletonList(DataChangeDestination.DCD_GENSETTINGS));
     }
 
     @Override

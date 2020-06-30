@@ -106,7 +106,7 @@
         computed: {
             targets: {
                 get() {
-                    return this.$store.state.point.targets;
+                    return 330; // TODO fix
                 }
             },
             horizontalFOV: {

@@ -67,8 +67,7 @@ public class SocketHandler {
     }
 
     private SocketHandler() {
-        dcService.addSubscriber(uiOutboundSubscriber); // Subscribe outgoing messages to the data change service
-        dcService.addSubscriber(cameraChangeSubscriber);
+        dcService.addSubscribers(uiOutboundSubscriber, cameraChangeSubscriber, new UIInboundSubscriber()); // Subscribe outgoing messages to the data change service
     }
 
     public void onConnect(WsConnectContext context) {

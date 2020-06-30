@@ -106,7 +106,7 @@
             },
             rawPoint: {
                 get() {
-                    return this.$store.state.point.rawPoint;
+                    return undefined; // TODO fix
                 }
             }
         },

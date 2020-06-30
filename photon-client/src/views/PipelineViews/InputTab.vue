@@ -1,52 +1,52 @@
 <template>
-  <div>
-    <CVslider
-      v-model="value.exposure"
-      name="Exposure"
-      :min="0"
-      :max="100"
-      @input="handleData('exposure')"
-      @rollback="e => rollback('exposure', e)"
-    />
-    <CVslider
-      v-model="value.brightness"
-      name="Brightness"
-      :min="0"
-      :max="100"
-      @input="handleData('brightness')"
-      @rollback="e => rollback('brightness', e)"
-    />
-    <CVslider
-      v-if="value.gain !== -1"
-      v-model="value.gain"
-      name="Gain"
-      :min="0"
-      :max="100"
-      @input="handleData('gain')"
-      @rollback="e => rollback('gain', e)"
-    />
-    <CVselect
-      v-model="value.rotationMode"
-      name="Orientation"
-      :list="['Normal','90° CW','180°','90° CCW']"
-      @input="handleData('rotationMode')"
-      @rollback="e => e => rollback('rotationMode',e)"
-    />
-    <CVselect
-      v-model="value.videoModeIndex"
-      name="Resolution"
-      :list="resolutionList"
-      @input="handleData('videoModeIndex')"
-      @rollback="e => rollback('videoModeIndex', e)"
-    />
-    <CVselect
-      v-model="value.streamDivisor"
-      name="Stream Resolution"
-      :list="streamResolutionList"
-      @input="handleData('streamDivisor')"
-      @rollback="e => rollback('streamDivisor', e)"
-    />
-  </div>
+    <div>
+        <CVslider
+                v-model="value.exposure"
+                name="Exposure"
+                :min="0"
+                :max="100"
+                @input="handleData('exposure')"
+                @rollback="e => rollback('exposure', e)"
+        />
+        <CVslider
+                v-model="value.brightness"
+                name="Brightness"
+                :min="0"
+                :max="100"
+                @input="handleData('brightness')"
+                @rollback="e => rollback('brightness', e)"
+        />
+        <CVslider
+                v-if="value.gain !== -1"
+                v-model="value.gain"
+                name="Gain"
+                :min="0"
+                :max="100"
+                @input="handleData('gain')"
+                @rollback="e => rollback('gain', e)"
+        />
+        <CVselect
+                v-model="value.rotationMode"
+                name="Orientation"
+                :list="['Normal','90° CW','180°','90° CCW']"
+                @input="handleData('rotationMode')"
+                @rollback="e => e => rollback('rotationMode',e)"
+        />
+        <CVselect
+                v-model="value.videoModeIndex"
+                name="Resolution"
+                :list="resolutionList"
+                @input="handleData('videoModeIndex')"
+                @rollback="e => rollback('videoModeIndex', e)"
+        />
+        <CVselect
+                v-model="value.streamDivisor"
+                name="Stream Resolution"
+                :list="streamResolutionList"
+                @input="handleData('streamDivisor')"
+                @rollback="e => rollback('streamDivisor', e)"
+        />
+    </div>
 </template>
 
 <script>
@@ -59,7 +59,7 @@
             CVslider,
             CVselect,
         },
-      // eslint-disable-next-line vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
         data() {
             return {}
@@ -76,7 +76,9 @@
             },
             streamResolutionList: {
                 get() {
-                    let cam_res = this.$store.state.resolutionList[this.value.videoModeIndex];
+                    console.log(this.$store.state)
+                    let cam_res = this.$store.state.cameraSettings[this.$store.state.currentCameraIndex]
+                        .resolutionList[this.value.videoModeIndex];
                     let tmp_list = [];
                     tmp_list.push(`${Math.floor(cam_res['width'])} X ${Math.floor(cam_res['height'])}`);
                     for (let x = 2; x <= 6; x += 2) {

@@ -7,12 +7,15 @@ import org.photonvision.common.dataflow.DataChangeSource;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 import java.util.Collections;
 import java.util.HashMap;
 
 @SuppressWarnings("rawtypes")
 class UIOutboundSubscriber extends DataChangeSubscriber {
+    Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.Server);
 
     private final SocketHandler socketHandler;
 
@@ -28,8 +31,9 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
             try {
                 switch (thisEvent.updateType) {
                     case BROADCAST: {
+                        logger.debug("Broadcasting message");
                         if (event.data instanceof HashMap) {
-                            var data = (SocketHandler.UIMap) event.data;
+                            var data = (HashMap) event.data;
                             socketHandler.broadcastMessage(data, null);
                         } else {
                             socketHandler.broadcastMessage(event.data, null);
@@ -37,6 +41,7 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
                         break;
                     }
                     case SINGLEUSER: {
+                        logger.debug("Sending single user message");
                         if (event.data instanceof Pair) {
                             var pair = (SocketHandler.SelectiveBroadcastPair) event.data;
                             socketHandler.broadcastMessage(pair.getLeft(), pair.getRight());

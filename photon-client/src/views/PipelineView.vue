@@ -184,7 +184,7 @@
             },
             fps: {
                 get() {
-                    return this.$store.state.point.fps;
+                    return this.$store.state.fps
                 }
             }
         },

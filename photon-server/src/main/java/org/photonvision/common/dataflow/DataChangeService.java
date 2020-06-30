@@ -4,6 +4,7 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.logging.Level;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -69,6 +70,12 @@ public class DataChangeService {
 
                 logger.trace("Added subscriber - " + "Sources: " + sources + ", Destinations: " + dests);
             }
+        }
+    }
+
+    public void addSubscribers(DataChangeSubscriber... subs) {
+        for(var sub: subs) {
+            addSubscriber(sub);
         }
     }
 
