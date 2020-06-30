@@ -43,18 +43,14 @@ export default new Vuex.Store({
         ]
     },
     mutations: {
-        settings: set('settings'),
-        pipeline: set('pipeline'),
         cameraSettings: set('cameraSettings'),
-        port: set('port'),
+        saveBar: set('saveBar'),
         currentCameraIndex: set('currentCameraIndex'),
-        currentPipelineIndex: set('currentPipelineIndex'),
-        cameraList: set('cameraList'),
-        saveBar: set("saveBar")
+        pipelineResults: set('pipelineResults')
     },
     getters: {
         streamAddress: state => {
-            return "http://" + location.hostname + ":" + state.port + "/stream.mjpg";
+            return "http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].streamPort + "/stream.mjpg";
         },
         targets: state => {
             return state.pipelineResults.length
