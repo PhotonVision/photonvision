@@ -42,6 +42,12 @@ public class PhotonConfiguration {
         return cameraConfigurations;
     }
 
+    public void addCameraConfigs(List<CameraConfiguration> config) {
+        for(var c: config) {
+            addCameraConfig(c);
+        }
+    }
+
     public void addCameraConfig(CameraConfiguration config) {
         addCameraConfig(config.uniqueName, config);
     }

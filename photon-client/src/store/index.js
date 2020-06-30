@@ -51,9 +51,9 @@ export default new Vuex.Store({
                     brightness: 0,
                     gain: 0,
                     rotationMode: 0,
-                    hue: [0, 15],
-                    saturation: [0, 15],
-                    value: [0, 25],
+                    hsvHue: [0, 15],
+                    hsvSaturation: [0, 15],
+                    hsvValue: [0, 25],
                     erode: false,
                     dilate: false,
                     area: [0, 12],
@@ -99,19 +99,19 @@ export default new Vuex.Store({
         networkSettings: set('networkSettings'),
 
         hsvHue(state, value) {
-            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hue;
+            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvHue;
             if (typeof setting !== 'undefined')
-                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hue = value;
+                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvHue = value;
         },
         hsvSat(state, value) {
-            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.saturation;
+            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvSaturation;
             if (typeof setting !== 'undefined')
-                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.saturation = value;
+                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvSaturation = value;
         },
         hsvVal(state, value) {
-            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.value;
+            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvValue;
             if (typeof setting !== 'undefined')
-                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.value = value;
+                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvValue = value;
         }
     },
     getters: {

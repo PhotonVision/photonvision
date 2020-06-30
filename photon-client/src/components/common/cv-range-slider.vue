@@ -75,7 +75,7 @@
         computed: {
             localValue: {
                 get() {
-                    return this.value;
+                    return Object.values(this.value);
                 },
                 set(value) {
                     this.$emit('input', value)

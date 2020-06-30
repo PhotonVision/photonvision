@@ -5,13 +5,13 @@ export const dataHandleMixin = {
             this.$socket.send(msg);
         },
         handleData(val) {
-            this.handleInput(val, this.value[val]);
+            this.handleInput(val, this[val]);
             this.$emit('update')
         },
         handlePipelineData(val) {
             let msg = this.$msgPack.encode({
                 ["changePipelineSetting"]: {
-                    [val]: this.value[val],
+                    [val]: this[val],
                     ["cameraIndex"]: this.$store.getters.currentCameraIndex
                 }
             });

@@ -1,7 +1,7 @@
 <template>
     <div>
         <CVrangeSlider
-                v-model="currentHue"
+                v-model="hsvHue"
                 name="Hue"
                 :min="0"
                 :max="180"
@@ -9,7 +9,7 @@
                 @rollback="e => rollback('hue',e)"
         />
         <CVrangeSlider
-                v-model="currentSaturation"
+                v-model="hsvSaturation"
                 name="Saturation"
                 :min="0"
                 :max="255"
@@ -17,7 +17,7 @@
                 @rollback="e => rollback('saturation',e)"
         />
         <CVrangeSlider
-                v-model="currentValue"
+                v-model="hsvValue"
                 name="Value"
                 :min="0"
                 :max="255"
@@ -101,25 +101,25 @@
             }
         },
         computed: {
-            currentHue: {
+            hsvHue: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.hue
+                    return this.$store.getters.currentPipelineSettings.hsvHue
                 },
                 set(val) {
                     this.$store.commit("hsvHue", val)
                 }
             },
-            currentSaturation: {
+            hsvSaturation: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.saturation
+                    return this.$store.getters.currentPipelineSettings.hsvSaturation
                 },
                 set(val) {
                     this.$store.commit("hsvSat", val)
                 }
             },
-            currentValue: {
+            hsvValue: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.value
+                    return this.$store.getters.currentPipelineSettings.hsvValue
                 },
                 set(val) {
                     this.$store.commit("hsvVal", val)

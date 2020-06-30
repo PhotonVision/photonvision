@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class Main {
+    private static final Logger logger = new Logger(Main.class, LogGroup.General);
 
     public static final int DEFAULT_WEBPORT = 5800;
 
@@ -35,7 +36,8 @@ public class Main {
         NetworkTablesManager.setClientMode("127.0.0.1");
 
         HashMap<String, CameraConfiguration> camConfigs = ConfigManager.getInstance().getConfig().getCameraConfigurations();
-        var sources = VisionSourceManager.LoadAllSources(camConfigs.values());
+        logger.info("Loaded " + camConfigs.size() + " configs from disk!");
+        List<VisionSource> sources = VisionSourceManager.loadAllSources(camConfigs.values());
 
         var collectedSources = new HashMap<VisionSource, List<CVPipelineSettings>>();
         for (var src : sources) {
@@ -43,7 +45,9 @@ public class Main {
             collectedSources.put(usbSrc, usbSrc.configuration.pipelineSettings);
         }
 
+        logger.info("Adding " + collectedSources.size() + " configs to VMM");
         VisionModuleManager.getInstance().addSources(collectedSources);
+        ConfigManager.getInstance().addCameraConfigurations(collectedSources);
 
         VisionModuleManager.getInstance().startModules();
         Server.main(DEFAULT_WEBPORT);
