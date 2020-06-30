@@ -72,7 +72,6 @@ dependencies {
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:windowsx86-64"
 
     compile "org.slf4j:slf4j-simple:1.8.0-beta4"
-    compile 'com.pi4j:pi4j-parent:1.2'
 
     // test stuff
     testImplementation('org.junit.jupiter:junit-jupiter:5.6.0')
