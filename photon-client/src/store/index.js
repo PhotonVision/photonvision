@@ -17,8 +17,6 @@ export default new Vuex.Store({
                 currentResolutionIndex: 0,
             },
         },
-
-
         networkSettings: networkSettings,
         undoRedo: undoRedo
     },
@@ -41,11 +39,12 @@ export default new Vuex.Store({
                     }
                 ],
                 fov: 70.0,
+                calibrated: false,
                 currentPipelineSettings: {
                     pipelineType: "reflective", // One of "driver", "reflective", "shape"
 
                     // Settings that apply to all pipeline types
-                    currentVideoFormatIndex: 0,
+                    cameraVideoModeIndex: 0,
 
                     // Settings that apply to reflective
                     exposure: 0,
@@ -96,7 +95,8 @@ export default new Vuex.Store({
         cameraSettings: set('cameraSettings'),
         saveBar: set('saveBar'),
         currentCameraIndex: set('currentCameraIndex'),
-        pipelineResults: set('pipelineResults')
+        pipelineResults: set('pipelineResults'),
+        networkSettings: set('networkSettings')
     },
     getters: {
         pipelineSettings: state => state.pipelineSettings,
@@ -107,9 +107,11 @@ export default new Vuex.Store({
             state.pipelineResults[state.cameraSettings[state.currentCameraIndex].currentPipelineIndex],
         cameraList: state => state.cameraSettings.map(it => it.nickname),
         currentCameraSettings: state => state.cameraSettings[state.currentCameraIndex],
-        currentCameraIndex: state =>  state.currentCameraIndex,
+        currentCameraIndex: state => state.currentCameraIndex,
         currentPipelineIndex: state => state.cameraSettings[state.currentCameraIndex].currentPipelineIndex,
-        videoFormatList: state => state.cameraSettings[state.currentCameraIndex].videoFormatList,
+        videoFormatList: state => {
+            return Object.values(state.cameraSettings[state.currentCameraIndex].videoFormatList); // convert to a list
+        },
         pipelineList: state => state.cameraSettings[state.currentCameraIndex].pipelineNicknames,
     }
 })

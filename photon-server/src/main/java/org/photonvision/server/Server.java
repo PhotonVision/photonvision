@@ -42,8 +42,7 @@ public class Server {
                     logger.debug("Got WebSockets message: " + ctx.message())));
 
                 config.wsLogger(ws -> ws.onBinaryMessage(ctx ->
-                    logger.debug("Got WebSockets binary message from host " + ctx.host() + " with contents "
-                        + new ObjectMapper().readValue(ctx.data(), new TypeReference<Map<String, Object>>(){}))));
+                    logger.debug("Got WebSockets binary message from host " + ctx.host())));
             });
 
         var socketHandler = SocketHandler.getInstance();

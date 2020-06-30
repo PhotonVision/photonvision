@@ -158,7 +158,7 @@ public class VisionModule {
 
             temp.put(k, internalMap);
         }
-        ret.resolutionList = temp;
+        ret.videoFormatList = temp;
         ret.streamPort = streamer.getCurrentStreamPort();
 
         return ret;

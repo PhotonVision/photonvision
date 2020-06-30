@@ -113,7 +113,7 @@
                 get() {
                     let index = this.$store.state.cameraSettings.resolution;
                     let FOV = this.$store.state.cameraSettings.fov;
-                    let resolution = this.$store.state.resolutionList[index];
+                    let resolution = this.$store.getters.videoFormatList[index];
                     let diagonalView = FOV * (Math.PI / 180);
                     let diagonalAspect = Math.hypot(resolution.width, resolution.height);
                     return Math.atan(Math.tan(diagonalView / 2) * (resolution.width / diagonalAspect)) * 2 * (180 / Math.PI)
@@ -121,8 +121,9 @@
             },
             allow3D: {
                 get() {
-                    let currentRes = this.$store.state.resolutionList[this.$store.state.pipeline.videoModeIndex];
-                    for (let res of this.$store.state.cameraSettings.calibration) {
+                    let index = this.$store.state.cameraSettings.resolution;
+                    let currentRes = this.$store.getters.videoFormatList[index];
+                    for (let res of this.$store.state.cameraSettings.calibrated) {
                         if (currentRes.width === res.width && currentRes.height === res.height) {
                             return false;
                         }

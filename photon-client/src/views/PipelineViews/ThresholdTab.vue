@@ -5,7 +5,7 @@
                 name="Hue"
                 :min="0"
                 :max="180"
-                @input="handlePipelineData('hue')"
+                @input="handlePipelineData('hsvHue')"
                 @rollback="e => rollback('hue',e)"
         />
         <CVrangeSlider
@@ -13,7 +13,7 @@
                 name="Saturation"
                 :min="0"
                 :max="255"
-                @input="handlePipelineData('saturation')"
+                @input="handlePipelineData('hsvSaturation')"
                 @rollback="e => rollback('saturation',e)"
         />
         <CVrangeSlider
@@ -21,7 +21,7 @@
                 name="Value"
                 :min="0"
                 :max="255"
-                @input="handlePipelineData('value')"
+                @input="handlePipelineData('hsvValue')"
                 @rollback="e => rollback('value',e)"
         />
         <v-divider

@@ -5,7 +5,7 @@
                 name="Exposure"
                 :min="0"
                 :max="100"
-                @input="handleData('exposure')"
+                @input="handlePipelineData('exposure')"
                 @rollback="e => rollback('exposure', e)"
         />
         <CVslider
@@ -13,7 +13,7 @@
                 name="Brightness"
                 :min="0"
                 :max="100"
-                @input="handleData('brightness')"
+                @input="handlePipelineData('brightness')"
                 @rollback="e => rollback('brightness', e)"
         />
         <CVslider
@@ -22,28 +22,28 @@
                 name="Gain"
                 :min="0"
                 :max="100"
-                @input="handleData('gain')"
+                @input="handlePipelineData('gain')"
                 @rollback="e => rollback('gain', e)"
         />
         <CVselect
                 v-model="value.rotationMode"
                 name="Orientation"
                 :list="['Normal','90° CW','180°','90° CCW']"
-                @input="handleData('rotationMode')"
+                @input="handlePipelineData('rotationMode')"
                 @rollback="e => e => rollback('rotationMode',e)"
         />
         <CVselect
                 v-model="value.videoModeIndex"
                 name="Resolution"
                 :list="resolutionList"
-                @input="handleData('videoModeIndex')"
+                @input="handlePipelineData('videoModeIndex')"
                 @rollback="e => rollback('videoModeIndex', e)"
         />
         <CVselect
                 v-model="value.streamDivisor"
                 name="Stream Resolution"
                 :list="streamResolutionList"
-                @input="handleData('streamDivisor')"
+                @input="handlePipelineData('streamDivisor')"
                 @rollback="e => rollback('streamDivisor', e)"
         />
     </div>
@@ -76,11 +76,8 @@
             },
             streamResolutionList: {
                 get() {
-                    console.log(this.$store.state.cameraSettings[this.$store.state.currentCameraIndex]);
-                    console.log("ASDFJ;SDAFJ;ASFDJKL;ASDFJKL;ASFDJKL;FDSA");
-                    console.log(this.$store);
-                    let cam_res = this.$store.getters.currentCameraSettings
-                        .videoFormatList[this.$store.getters.currentCameraSettings.currentPipelineSettings.currentVideoFormatIndex];
+                    let cam_res = this.$store.getters.videoFormatList[
+                        this.$store.getters.currentCameraSettings.currentPipelineSettings.cameraVideoModeIndex]
                     let tmp_list = [];
                     tmp_list.push(`${Math.floor(cam_res['width'])} X ${Math.floor(cam_res['height'])}`);
                     for (let x = 2; x <= 6; x += 2) {
