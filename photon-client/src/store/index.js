@@ -113,5 +113,6 @@ export default new Vuex.Store({
             return Object.values(state.cameraSettings[state.currentCameraIndex].videoFormatList); // convert to a list
         },
         pipelineList: state => state.cameraSettings[state.currentCameraIndex].pipelineNicknames,
+        currentCameraFPS: state => state.pipelineResults[state.currentCameraIndex].fps
     }
 })

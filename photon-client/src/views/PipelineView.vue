@@ -165,13 +165,12 @@
             return {
                 selectedTab: 0,
                 snackbar: false,
-
             }
         },
         computed: {
             isBinaryNumber: {
                 get() {
-                    return this.$store.getters.pipeline.isBinary ? 1 : 0
+                    return this.$store.getters.pipeline.isBinary ? 1 : 0;
                 },
                 set(value) {
                     this.$store.commit('isBinary', !!value);
@@ -184,7 +183,7 @@
             },
             fps: {
                 get() {
-                    return this.$store.state.fps
+                  return this.$store.getters.currentCameraFPS;
                 }
             }
         },
