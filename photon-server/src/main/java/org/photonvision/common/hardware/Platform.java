@@ -1,9 +1,8 @@
 package org.photonvision.common.hardware;
 
 import edu.wpi.first.wpiutil.RuntimeDetector;
-import org.photonvision.common.util.ShellExec;
-
 import java.io.IOException;
+import org.photonvision.common.util.ShellExec;
 
 @SuppressWarnings("unused")
 public enum Platform {

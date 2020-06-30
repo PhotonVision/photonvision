@@ -1,7 +1,5 @@
 package org.photonvision.common.hardware.PWM;
 
-import org.photonvision.common.hardware.PWM.PWMBase;
-
 public class CustomPWM extends PWMBase {
     private int pwmRate = 0;
     private int pwmRange = 0;

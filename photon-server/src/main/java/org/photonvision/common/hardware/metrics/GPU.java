@@ -1,6 +1,5 @@
 package org.photonvision.common.hardware.metrics;
 
-
 public class GPU extends MetricsBase {
     private static final String memoryCommand = "sudo vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
     private static final String temperatureCommand =

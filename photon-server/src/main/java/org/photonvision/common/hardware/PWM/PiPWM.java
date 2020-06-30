@@ -3,7 +3,6 @@ package org.photonvision.common.hardware.PWM;
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.exception.UnsupportedPinModeException;
 import com.pi4j.util.CommandArgumentParser;
-import org.photonvision.common.hardware.PWM.PWMBase;
 
 public class PiPWM extends PWMBase {
     private static final GpioController gpio = GpioFactory.getInstance();

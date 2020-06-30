@@ -1,8 +1,7 @@
 package org.photonvision.common.hardware.PWM;
 
-import org.photonvision.common.util.ShellExec;
-
 import java.util.HashMap;
+import org.photonvision.common.util.ShellExec;
 
 public abstract class PWMBase {
     HashMap<String, String> commands =

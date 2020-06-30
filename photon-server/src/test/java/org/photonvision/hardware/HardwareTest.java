@@ -2,7 +2,6 @@ package org.photonvision.hardware;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
 import com.pi4j.io.gpio.exception.UnsupportedPinModeException;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
@@ -67,7 +66,7 @@ public class HardwareTest {
 
         gpio.setState(false); // LOW
         assertFalse(gpio.getState());
-        
+
         var success = gpio.shutdown();
         assertTrue(success);
     }
