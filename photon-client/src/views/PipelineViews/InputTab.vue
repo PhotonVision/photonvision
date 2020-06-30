@@ -68,7 +68,7 @@
             resolutionList: {
                 get() {
                     let tmp_list = [];
-                    for (let i of this.$store.state.resolutionList) {
+                    for (let i of this.$store.getters.resolutionList) {
                         tmp_list.push(`${i['width']} X ${i['height']} at ${i['fps']} FPS, ${i['pixelFormat']}`)
                     }
                     return tmp_list;
@@ -76,7 +76,9 @@
             },
             streamResolutionList: {
                 get() {
-                    console.log(this.$store.state)
+                    console.log(this.$store.state.cameraSettings[this.$store.state.currentCameraIndex])
+                    console.log("ASDFJ;SDAFJ;ASFDJKL;ASDFJKL;ASFDJKL;FDSA")
+                    console.log(this.value.videoModeIndex)
                     let cam_res = this.$store.state.cameraSettings[this.$store.state.currentCameraIndex]
                         .resolutionList[this.value.videoModeIndex];
                     let tmp_list = [];

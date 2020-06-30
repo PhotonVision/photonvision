@@ -58,9 +58,6 @@ export default new Vuex.Store({
         cameraList: state => {
             return state.cameraSettings.map(it => it.nickname)
         },
-        pipelineList: state => {
-            return state.pipelineList
-        },
         currentCameraIndex: state => {
             return state.currentCameraIndex
         },
@@ -69,6 +66,9 @@ export default new Vuex.Store({
         },
         resolutionList: state => {
             return state.cameraSettings[state.currentCameraIndex].resolutionList
+        },
+        pipelineList: state => {
+            return state.cameraSettings[state.currentCameraIndex].pipelineNicknames
         }
     }
 })
