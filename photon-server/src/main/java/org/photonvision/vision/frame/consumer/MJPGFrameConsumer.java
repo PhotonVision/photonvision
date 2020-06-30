@@ -48,7 +48,9 @@ public class MJPGFrameConsumer implements FrameConsumer {
 
     @Override
     public void accept(Frame frame) {
-        cvSource.putFrame(frame.image.getMat());
+        if (!frame.image.getMat().empty()) {
+            cvSource.putFrame(frame.image.getMat());
+        }
     }
 
     public int getCurrentStreamPort() {

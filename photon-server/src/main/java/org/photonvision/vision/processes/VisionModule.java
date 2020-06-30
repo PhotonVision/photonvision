@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,11 +33,11 @@ import org.photonvision.common.datatransfer.DataConsumer;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
-import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 /**
@@ -72,8 +73,8 @@ public class VisionModule {
         this.ntConsumer = new NTDataConsumer(NetworkTableInstance.getDefault().getTable("photonvision"),
             visionSource.getSettables().getConfiguration().nickname);
 
-        this.frameConsumers.add(streamer);
-        this.dataConsumers.add(ntConsumer);
+        addFrameConsumer(streamer);
+        addDataConsumer(ntConsumer);
 
         this.moduleIndex = index;
     }
@@ -98,30 +99,39 @@ public class VisionModule {
                     var propName = wsEvent.propertyName;
                     var newValue = wsEvent.data;
 
-                    switch (propName) {
-                        case "hue": {
-                            var hueList = (List<Integer>) newValue;
-                            var currentSettings = pipelineManager.getCurrentPipeline().getSettings();
-                            var newHue = new IntegerCouple(hueList.get(0), hueList.get(1));
+                    var currentSettings = pipelineManager.getCurrentPipeline().getSettings();
 
-                            setField("hsvHue", newHue, currentSettings);
-                            break;
+                    try {
+                        var propField =  currentSettings.getClass().getField(propName);
+
+                        if (propField.getType().isAssignableFrom(IntegerCouple.class)) {
+                            var orig = (ArrayList<Integer>)newValue;
+                            var actual = new IntegerCouple(orig.get(0), orig.get(1));
+                            propField.set(currentSettings, actual);
+                            return;
                         }
-                        default: {
-                            break;
+
+                        if (propField.getType().isAssignableFrom(DoubleCouple.class)) {
+                            var orig = (ArrayList<Double>)newValue;
+                            var actual = new DoubleCouple(orig.get(0), orig.get(1));
+                            propField.set(currentSettings, actual);
+                            return;
                         }
+
+                        if (!propField.getType().isEnum()) { // if the field is not an enum, get it based on the current pipeline
+                            propField.set(newValue, newValue);
+                        } else {
+                            // TODO: Enums!
+                            var enumType = propField.getType();
+                            logger.error("Could not set prop. Enums not implemented - " + enumType.getCanonicalName());
+                        }
+
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        logger.error("Could not set prop " + propName + " with value " + newValue + " on " + currentSettings);
+                        e.printStackTrace();
                     }
                 }
             }
-        }
-    }
-
-    private static void setField(String name, Object value, Object target) {
-        try {
-            target.getClass().getField(name).set(target, value);
-        } catch (IllegalAccessException | NoSuchFieldException e) {
-            logger.error("Could not set prop " + name + " with value " + value + " on " + target);
-            e.printStackTrace();
         }
     }
 

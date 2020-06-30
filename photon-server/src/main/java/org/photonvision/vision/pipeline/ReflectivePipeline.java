@@ -72,6 +72,10 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         settings = new ReflectivePipelineSettings();
     }
 
+    public ReflectivePipeline(ReflectivePipelineSettings settings) {
+        this.settings = settings;
+    }
+
     @Override
     protected void setPipeParams(
             FrameStaticProperties frameStaticProperties, ReflectivePipelineSettings settings) {

@@ -68,9 +68,15 @@ public class SimpleTrackedTarget extends BytePackable {
         bufferData(yaw, data);
         bufferData(pitch, data);
         bufferData(area, data);
-        bufferData(robotRelativePose.getTranslation().getX(), data);
-        bufferData(robotRelativePose.getTranslation().getY(), data);
-        bufferData(robotRelativePose.getRotation().getDegrees(), data);
+        if (robotRelativePose != null) {
+            bufferData(robotRelativePose.getTranslation().getX(), data);
+            bufferData(robotRelativePose.getTranslation().getY(), data);
+            bufferData(robotRelativePose.getRotation().getDegrees(), data);
+        } else {
+            bufferData((double) 0, data);
+            bufferData((double) 0, data);
+            bufferData((double) 0, data);
+        }
 
         return data;
     }

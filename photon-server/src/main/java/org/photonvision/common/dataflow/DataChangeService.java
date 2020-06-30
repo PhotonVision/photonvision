@@ -50,7 +50,8 @@ public class DataChangeService {
                         sub.onDataChangeEvent(taken);
                     }
                 }
-            } catch (InterruptedException e) {
+            } catch (Exception e) {
+                logger.error("Exception when dispatching event!");
                 e.printStackTrace();
             }
         }

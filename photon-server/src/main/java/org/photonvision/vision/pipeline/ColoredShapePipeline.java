@@ -65,6 +65,10 @@ public class ColoredShapePipeline
         settings = new ColoredShapePipelineSettings();
     }
 
+    public ColoredShapePipeline(ColoredShapePipelineSettings settings) {
+        this.settings = settings;
+    }
+
     @Override
     protected void setPipeParams(
             FrameStaticProperties frameStaticProperties, ColoredShapePipelineSettings settings) {

@@ -54,14 +54,9 @@ public class PipelineManager {
     */
     public PipelineManager(List<CVPipelineSettings> userPipelines) {
         this.userPipelineSettings = userPipelines;
-        userPipelineSettings.add(new ReflectivePipelineSettings());
+        addPipeline(PipelineType.Reflective);
+        setPipelineInternal(0);
     }
-
-    /** Creates a PipelineManager with a DriverModePipeline, and a Calibration3dPipeline. */
-    public PipelineManager() {
-        this(List.of());
-    }
-
     /**
     * Get the settings for a pipeline by index.
     *
@@ -103,6 +98,25 @@ public class PipelineManager {
     * @return The currently active pipeline.
     */
     public CVPipeline getCurrentPipeline() {
+        if (currentPipelineIndex < 0) {
+            switch (currentPipelineIndex) {
+                case CAL_3D_INDEX: return calibration3dPipeline;
+                case DRIVERMODE_INDEX: return driverModePipeline;
+            }
+        }
+
+        var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
+        if (currentPipeline.getSettings().pipelineIndex != desiredPipelineSettings.pipelineIndex) {
+            switch (desiredPipelineSettings.pipelineType) {
+                case Reflective:
+                    currentPipeline = new ReflectivePipeline((ReflectivePipelineSettings)desiredPipelineSettings);
+                    break;
+                case ColoredShape:
+                    currentPipeline = new ColoredShapePipeline((ColoredShapePipelineSettings)desiredPipelineSettings);
+                    break;
+            }
+        }
+
         return currentPipeline;
     }
 
@@ -156,5 +170,24 @@ public class PipelineManager {
         }
     }
 
-    // TODO: adding/removing pipelines
+    public void addPipeline(PipelineType type) {
+        switch (type) {
+            case Reflective:
+                userPipelineSettings.add(new ReflectivePipelineSettings());
+                break;
+            case ColoredShape:
+                userPipelineSettings.add(new ColoredShapePipelineSettings());
+                break;
+        }
+    }
+
+    private void addPipelineInternal(CVPipelineSettings settings) {
+        settings.pipelineIndex = userPipelineSettings.size();
+        userPipelineSettings.add(settings);
+    }
+
+    private void removePipelineInternal(int index) {
+        userPipelineSettings.remove(index);
+        reassignIndexes();
+    }
 }

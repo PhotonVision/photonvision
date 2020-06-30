@@ -25,6 +25,7 @@ import edu.wpi.first.cameraserver.CameraServer;
 import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -88,6 +89,8 @@ public class USBCameraSource implements VisionSource {
         protected USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
             getAllVideoModes();
+            setCurrentVideoMode(videoModes.get(0));
+            frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
         }
 
         @Override

@@ -95,7 +95,7 @@ public class SocketHandler {
                     var socketMessageType = SocketMessageType.fromEntryKey(entryKey);
 
                     if (socketMessageType == null) {
-                        logger.error("Got unknown socket message type: " + entryKey);
+                        logger.warn("Got unknown socket message type: " + entryKey);
                         continue;
                     }
 
@@ -214,13 +214,10 @@ public class SocketHandler {
                             dcService.publishEvent(pipelineSettingChangeEvent);
                             break;
                         }
-                        default: {
-                            logger.warn("Unknown Socket Message - Name: " + entryKey);
-                            break;
-                        }
                     }
                 } catch (Exception ex) {
-                    // ignored
+                    logger.error("unknown booboo");
+                    ex.printStackTrace();
                 }
             }
         } catch (IOException e) {
