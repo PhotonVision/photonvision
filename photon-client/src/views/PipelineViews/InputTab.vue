@@ -68,7 +68,7 @@
             resolutionList: {
                 get() {
                     let tmp_list = [];
-                    for (let i of this.$store.getters.resolutionList) {
+                    for (let i of this.$store.getters.videoFormatList) {
                         tmp_list.push(`${i['width']} X ${i['height']} at ${i['fps']} FPS, ${i['pixelFormat']}`)
                     }
                     return tmp_list;
@@ -76,11 +76,11 @@
             },
             streamResolutionList: {
                 get() {
-                    console.log(this.$store.state.cameraSettings[this.$store.state.currentCameraIndex])
-                    console.log("ASDFJ;SDAFJ;ASFDJKL;ASDFJKL;ASFDJKL;FDSA")
-                    console.log(this.value.videoModeIndex)
-                    let cam_res = this.$store.state.cameraSettings[this.$store.state.currentCameraIndex]
-                        .resolutionList[this.value.videoModeIndex];
+                    console.log(this.$store.state.cameraSettings[this.$store.state.currentCameraIndex]);
+                    console.log("ASDFJ;SDAFJ;ASFDJKL;ASDFJKL;ASFDJKL;FDSA");
+                    console.log(this.$store);
+                    let cam_res = this.$store.getters.currentCameraSettings
+                        .videoFormatList[this.$store.getters.currentCameraSettings.currentPipelineSettings.currentVideoFormatIndex];
                     let tmp_list = [];
                     tmp_list.push(`${Math.floor(cam_res['width'])} X ${Math.floor(cam_res['height'])}`);
                     for (let x = 2; x <= 6; x += 2) {

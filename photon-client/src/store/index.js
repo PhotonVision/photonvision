@@ -12,6 +12,13 @@ const set = key => (state, val) => {
 
 export default new Vuex.Store({
     modules: {
+        reflectivePipelineSettings: {
+            state: {
+                currentResolutionIndex: 0,
+            },
+        },
+
+
         networkSettings: networkSettings,
         undoRedo: undoRedo
     },
@@ -25,21 +32,64 @@ export default new Vuex.Store({
                 pipelineNicknames: ["Unknown"],
                 streamPort: 1181,
                 nickname: "Unknown",
-                resolutionList: [],
+                videoFormatList: [
+                    {
+                        "width": 1920,
+                        "height": 1080,
+                        "fps": 30,
+                        "pixelFormat": "BGR"
+                    }
+                ],
                 fov: 70.0,
-                currentPipelineSettings: {}
+                currentPipelineSettings: {
+                    pipelineType: "reflective", // One of "driver", "reflective", "shape"
+
+                    // Settings that apply to all pipeline types
+                    currentVideoFormatIndex: 0,
+
+                    // Settings that apply to reflective
+                    exposure: 0,
+                    brightness: 0,
+                    gain: 0,
+                    rotationMode: 0,
+                    hue: [0, 15],
+                    saturation: [0, 15],
+                    value: [0, 25],
+                    erode: false,
+                    dilate: false,
+                    area: [0, 12],
+                    ratio: [0, 12],
+                    extent: [0, 12],
+                    speckle: 5,
+                    targetGrouping: 0,
+                    targetIntersection: 0,
+                    sortMode: 0,
+                    multiple: false,
+                    isBinary: 0,
+                    calibrationMode: 0,
+                    videoModeIndex: 0,
+                    streamDivisor: 0,
+                    is3D: false,
+                    targetRegion: 0,
+                    targetOrientation: 1
+
+                    // Settings that apply to shape
+                }
             }
         ],
         pipelineResults: [
-            // {
-            //     fps: 254,
-            //     targets: [{
-            //         pitch: 0,
-            //         yaw: 1,
-            //         skew: 2,
-            //         pose: {x: 1, y: 2, rot: 4},
-            //     }]
-            // }
+            {
+                fps: 0,
+                targets: [{
+                    // Available in both 2D and 3D
+                    pitch: 0,
+                    yaw: 0,
+                    skew: 0,
+                    area: 0,
+                    // 3D only
+                    pose: {x: 0, y: 0, rot: 0},
+                }]
+            }
         ]
     },
     mutations: {
@@ -49,26 +99,17 @@ export default new Vuex.Store({
         pipelineResults: set('pipelineResults')
     },
     getters: {
-        streamAddress: state => {
-            return "http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].streamPort + "/stream.mjpg";
-        },
-        targets: state => {
-            return state.pipelineResults.length
-        },
-        cameraList: state => {
-            return state.cameraSettings.map(it => it.nickname)
-        },
-        currentCameraIndex: state => {
-            return state.currentCameraIndex
-        },
-        currentPipelineIndex: state => {
-            return state.cameraSettings[state.currentCameraIndex].currentPipelineIndex
-        },
-        resolutionList: state => {
-            return state.cameraSettings[state.currentCameraIndex].resolutionList
-        },
-        pipelineList: state => {
-            return state.cameraSettings[state.currentCameraIndex].pipelineNicknames
-        }
+        pipelineSettings: state => state.pipelineSettings,
+        streamAddress: state =>
+            "http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].streamPort + "/stream.mjpg",
+        targets: state => state.pipelineResults.length,
+        currentPipelineResults: state =>
+            state.pipelineResults[state.cameraSettings[state.currentCameraIndex].currentPipelineIndex],
+        cameraList: state => state.cameraSettings.map(it => it.nickname),
+        currentCameraSettings: state => state.cameraSettings[state.currentCameraIndex],
+        currentCameraIndex: state =>  state.currentCameraIndex,
+        currentPipelineIndex: state => state.cameraSettings[state.currentCameraIndex].currentPipelineIndex,
+        videoFormatList: state => state.cameraSettings[state.currentCameraIndex].videoFormatList,
+        pipelineList: state => state.cameraSettings[state.currentCameraIndex].pipelineNicknames,
     }
 })

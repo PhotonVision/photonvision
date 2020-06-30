@@ -106,7 +106,7 @@
                   </thead>
                   <tbody>
                     <tr
-                      v-for="(value, index) in $store.getters.targets"
+                      v-for="(value, index) in $store.getters.currentPipelineResults.targets"
                       :key="index"
                     >
                       <td>{{ index }}</td>
