@@ -96,7 +96,23 @@ export default new Vuex.Store({
         saveBar: set('saveBar'),
         currentCameraIndex: set('currentCameraIndex'),
         pipelineResults: set('pipelineResults'),
-        networkSettings: set('networkSettings')
+        networkSettings: set('networkSettings'),
+
+        hsvHue(state, value) {
+            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hue;
+            if (typeof setting !== 'undefined')
+                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hue = value;
+        },
+        hsvSat(state, value) {
+            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.saturation;
+            if (typeof setting !== 'undefined')
+                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.saturation = value;
+        },
+        hsvVal(state, value) {
+            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.value;
+            if (typeof setting !== 'undefined')
+                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.value = value;
+        }
     },
     getters: {
         pipelineSettings: state => state.pipelineSettings,

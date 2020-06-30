@@ -86,9 +86,6 @@
         props: ['value'],
         data() {
             return {
-                currentHue: [0, 40],
-                currentSaturation: [0, 30],
-                currentValue: [20, 30],
                 shouldErode: false,
                 shouldDilate: false,
 
@@ -104,6 +101,30 @@
             }
         },
         computed: {
+            currentHue: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.hue
+                },
+                set(val) {
+                    this.$store.commit("hsvHue", val)
+                }
+            },
+            currentSaturation: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.saturation
+                },
+                set(val) {
+                    this.$store.commit("hsvSat", val)
+                }
+            },
+            currentValue: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.value
+                },
+                set(val) {
+                    this.$store.commit("hsvVal", val)
+                }
+            },
             pipeline: {
                 get() {
                     return this.$store.state.pipeline;
