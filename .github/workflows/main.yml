@@ -76,7 +76,7 @@ jobs:
       # Generate Coverage Report.
       - run: ./gradlew jacocoTestReport
 
-      -run: ls ./build/reports/jacoco/test
+      - run: ls ./build/reports/jacoco/test
       
       # Publish Coverage Report.
       - uses: codecov/codecov-action@v1
