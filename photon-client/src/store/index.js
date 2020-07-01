@@ -47,7 +47,8 @@ export default new Vuex.Store({
                 fov: 70.0,
                 calibrated: false,
                 currentPipelineSettings: {
-                    pipelineType: "reflective", // One of "driver", "reflective", "shape"
+                    pipelineType: 2, // One of "driver", "reflective", "shape"
+                    // 2 is reflective
 
                     // Settings that apply to all pipeline types
                     cameraExposure: 1,

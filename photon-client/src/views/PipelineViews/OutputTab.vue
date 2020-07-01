@@ -82,7 +82,7 @@
             DualCalibration,
 
         },
-      // eslint-disable-next-line vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
 
         data() {
@@ -92,7 +92,9 @@
             }
         },
         computed: {
+
             contourSortMode: {
+
                 get() {
                     return this.$store.getters.currentPipelineSettings.contourSortMode
                 },

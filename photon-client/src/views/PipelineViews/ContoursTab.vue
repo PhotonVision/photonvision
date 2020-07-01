@@ -1,55 +1,55 @@
 <template>
-  <div>
-    <CVrangeSlider
-      v-model="contourArea"
-      name="Area"
-      :min="0"
-      :max="100"
-      :step="0.1"
-      @input="handlePipelineData('contourArea')"
-      @rollback="e=> rollback('contourArea',e)"
-    />
-    <CVrangeSlider
-      v-model="contourRatio"
-      name="Ratio (W/H)"
-      :min="0"
-      :max="100"
-      :step="0.1"
-      @input="handlePipelineData('contourRatio')"
-      @rollback="e=> rollback('contourRatio',e)"
-    />
-    <CVrangeSlider
-      v-model="contourExtent"
-      name="Extent"
-      :min="0"
-      :max="100"
-      @input="handlePipelineData('contourExtent')"
-      @rollback="e=> rollback('contourExtent',e)"
-    />
-    <CVslider
-      v-model="contourSpecklePercentage"
-      name="Speckle Rejection"
-      :min="0"
-      :max="100"
-      @input="handlePipelineData('contourSpecklePercentage')"
-      @rollback="e=> rollback('contourSpecklePercentage',e)"
-    />
-    <CVselect
-      v-model="contourGroupingMode"
-      name="Target Group"
-      :list="['Single','Dual']"
-      @input="handlePipelineData('targetGroup')"
-      @rollback="e=> rollback('targetGroup',e)"
-    />
-    <CVselect
-      v-model="contourIntersection"
-      name="Target Intersection"
-      :list="['None','Up','Down','Left','Right']"
-      :disabled="contourGroupingMode === 0"
-      @input="handlePipelineData('contourIntersection')"
-      @rollback="e=> rollback('contourIntersection',e)"
-    />
-  </div>
+    <div>
+        <CVrangeSlider
+                v-model="contourArea"
+                name="Area"
+                :min="0"
+                :max="100"
+                :step="0.1"
+                @input="handlePipelineData('contourArea')"
+                @rollback="e=> rollback('contourArea',e)"
+        />
+        <CVrangeSlider
+                v-model="contourRatio"
+                name="Ratio (W/H)"
+                :min="0"
+                :max="100"
+                :step="0.1"
+                @input="handlePipelineData('contourRatio')"
+                @rollback="e=> rollback('contourRatio',e)"
+        />
+        <CVrangeSlider
+                v-model="contourExtent"
+                name="Extent"
+                :min="0"
+                :max="100"
+                @input="handlePipelineData('contourExtent')"
+                @rollback="e=> rollback('contourExtent',e)"
+        />
+        <CVslider
+                v-model="contourSpecklePercentage"
+                name="Speckle Rejection"
+                :min="0"
+                :max="100"
+                @input="handlePipelineData('contourSpecklePercentage')"
+                @rollback="e=> rollback('contourSpecklePercentage',e)"
+        />
+        <CVselect
+                v-model="contourGroupingMode"
+                name="Target Group"
+                :list="['Single','Dual']"
+                @input="handlePipelineData('targetGroup')"
+                @rollback="e=> rollback('targetGroup',e)"
+        />
+        <CVselect
+                v-model="contourIntersection"
+                name="Target Intersection"
+                :list="['None','Up','Down','Left','Right']"
+                :disabled="contourGroupingMode === 0"
+                @input="handlePipelineData('contourIntersection')"
+                @rollback="e=> rollback('contourIntersection',e)"
+        />
+    </div>
 </template>
 
 <script>
@@ -64,7 +64,7 @@
             CVselect,
             CVslider
         },
-      // eslint-disable-next-line vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
 
         data() {
