@@ -1,9 +1,6 @@
 <template>
   <div>
-    <v-row
-      dense
-      align="center"
-    >
+    <v-row dense align="center">
       <v-col :cols="2">
         <span>{{ name }}</span>
       </v-col>
@@ -19,7 +16,7 @@
           :step="step"
           @start="isClicked = true"
           @end="isClicked = false"
-          @change="handleclick"
+          @change="handleClick"
           @input="handleInput"
           @mousedown="$emit('rollback', localValue)"
         >
@@ -47,47 +44,51 @@
 </template>
 
 <script>
-    export default {
-        name: 'Slider',
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['min', 'max', 'name', 'value', 'step'],
-        data() {
-            return {
-                isFocused: false,
-                isClicked: false
-            }
-        },
-        computed: {
-            localValue: {
-                get() {
-                    return this.value;
-                },
-                set(value) {
-                    this.$emit('input', value)
-                }
-            }
-        },
-        methods: {
-            handleChange(val) {
-                if (this.isFocused) {
-                    this.localValue = parseFloat(val);
-                    this.$emit('rollback', this.localValue)
-                }
-            },
-            handleInput(val) {
-                if (!this.isFocused && this.isClicked) {
-                    this.localValue = val;
-                }
-            },
-            handleclick(val) {
-                if (!this.isFocused) {
-                    this.localValue = val;
-                }
-            }
-        }
+export default {
+  name: "Slider",
+  // eslint-disable-next-line vue/require-prop-types
+  props: ["min", "max", "name", "value", "step"],
+  data() {
+    return {
+      isFocused: false,
+      isClicked: false,
+      currentBoxVal: null
+    };
+  },
+  computed: {
+    localValue: {
+      get() {
+        return this.value;
+      },
+      set(value) {
+        this.$emit("input", value);
+      }
     }
+  },
+  methods: {
+    handleChange(val) {
+      this.currentBoxVal = val;
+      setTimeout(() => {
+        if (this.currentBoxVal !== val) return;
+        // if (this.isFocused) {
+        this.localValue = parseFloat(val);
+        this.$emit("rollback", this.localValue);
+        // }
+      }, 200);
+    },
+    handleInput(val) {
+      if (!this.isFocused && this.isClicked) {
+        this.localValue = val;
+      }
+    },
+    handleClick(val) {
+      if (!this.isFocused) {
+        this.localValue = val;
+      }
+    }
+  }
+};
 </script>
 
 <style lang="" scoped>
-
 </style>
