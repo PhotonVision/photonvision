@@ -17,8 +17,8 @@ public class IncomingCameraCommandSubscriber extends DataChangeSubscriber {
 
     @Override
     public void onDataChangeEvent(DataChangeEvent event) {
-        logger.de_pest("Got event from [" + event.sourceType + "] and dest [" + event.destType
-            + "] with property name [" + event.propertyName
-            + "] and value [" + event.data + "]");
+//        logger.de_pest("Got event from [" + event.sourceType + "] and dest [" + event.destType
+//            + "] with property name [" + event.propertyName
+//            + "] and value [" + event.data + "]");
     }
 }

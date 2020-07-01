@@ -17,6 +17,10 @@
 
 package org.photonvision.common.logging;
 
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.server.UIUpdateType;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -87,6 +91,7 @@ public class Logger {
 
     static {
         currentAppenders.add(new ConsoleAppender());
+        currentAppenders.add(new UILogAppender());
     }
 
     public static void addFileAppender(Path logFilePath) {
@@ -150,6 +155,19 @@ public class Logger {
         @Override
         void log(String message) {
             System.out.println(message);
+        }
+    }
+
+    private static class UILogAppender extends Appender {
+
+        @Override
+        void log(String message) {
+            var message_ = new HashMap<>();
+            message_.put("logMessage", message);
+            DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>(
+                UIUpdateType.BROADCAST,
+                "log", message_
+            ));
         }
     }
 

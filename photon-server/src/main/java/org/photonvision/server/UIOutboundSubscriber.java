@@ -14,6 +14,9 @@ import java.util.Collections;
 import java.util.HashMap;
 
 @SuppressWarnings("rawtypes")
+/*
+ * DO NOT use logging in this class. If you do, the logs will recuse forever!
+ */
 class UIOutboundSubscriber extends DataChangeSubscriber {
     Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.Server);
 
@@ -31,7 +34,7 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
             try {
                 switch (thisEvent.updateType) {
                     case BROADCAST: {
-                        logger.debug("Broadcasting message");
+//                        logger.debug("Broadcasting message");
                         if (event.data instanceof HashMap) {
                             var data = (HashMap) event.data;
                             socketHandler.broadcastMessage(data, null);
@@ -41,7 +44,7 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
                         break;
                     }
                     case SINGLEUSER: {
-                        logger.debug("Sending single user message");
+//                        logger.debug("Sending single user message");
                         if (event.data instanceof Pair) {
                             var pair = (SocketHandler.SelectiveBroadcastPair) event.data;
                             socketHandler.broadcastMessage(pair.getLeft(), pair.getRight());
