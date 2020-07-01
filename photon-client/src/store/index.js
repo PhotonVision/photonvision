@@ -104,6 +104,9 @@ export default new Vuex.Store({
         pipelineResults: set('pipelineResults'),
         networkSettings: set('networkSettings'),
 
+        // camera view
+        outputShowThresholded: setCurrPipeProp('outputShowThresholded'),
+
         // threshold tab
         hsvHue: setCurrPipeProp('hsvHue'),
         hsvSaturation: setCurrPipeProp('hsvSaturation'),

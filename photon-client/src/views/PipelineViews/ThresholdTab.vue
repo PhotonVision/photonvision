@@ -89,7 +89,7 @@
             return {
                 currentFunction: undefined,
                 colorPicker: undefined,
-                currentBinaryState: 0
+                showThresholdState: 0
             }
         },
         computed: {
@@ -152,7 +152,7 @@
                         'hsvHue': [hsvArray[0][0], hsvArray[1][0]],
                         'hsvSaturation': [hsvArray[0][1], hsvArray[1][1]],
                         'hsvValue': [hsvArray[0][2], hsvArray[1][2]],
-                        'outputShowThresholded': this.currentBinaryState,
+                        'outputShowThresholded': this.showThresholdState,
                         'cameraIndex': this.$store.state.currentCameraIndex
                       }
                     });
@@ -161,10 +161,10 @@
                 }
             },
             setFunction(index) {
-                this.currentBinaryState = this.value.isBinary;
-                if (this.currentBinaryState === true) {
-                    this.value.isBinary = false;
-                    this.handlePipelineData('isBinary')
+                this.showThresholdState = this.value.outputShowThresholded;
+                if (this.showThresholdState === true) {
+                    this.value.outputShowThresholded = false;
+                    this.handlePipelineData('outputShowThresholded')
                 }
                 switch (index) {
                     case 0:

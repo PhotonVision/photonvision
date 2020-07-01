@@ -213,6 +213,8 @@ public class SocketHandler {
                                                     cameraIndex);
                                     dcService.publishEvent(pipelineSettingChangeEvent);
                                 }
+                            } else {
+                                logger.warn("Unknown message for PSC: " + data.keySet().iterator().next());
                             }
                             break;
                         }

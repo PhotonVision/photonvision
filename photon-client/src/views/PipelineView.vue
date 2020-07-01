@@ -52,14 +52,14 @@
           <!-- camera image tabs -->
           <v-tabs
             v-if="($store.getters.currentPipelineIndex + 1) !== 0"
-            v-model="isBinaryNumber"
+            v-model="outputShowThresholded"
             background-color="#232c37"
             dark
             height="48"
             slider-color="#ffd843"
             centered
             style="padding-bottom:10px"
-            @change="handleInput('isBinary',$store.getters.pipeline.isBinary)"
+            @change="handleInput('outputShowThresholded', $store.state.outputShowThresholded)"
           >
             <v-tab>Normal</v-tab>
             <v-tab>Threshold</v-tab>
@@ -168,12 +168,12 @@
             }
         },
         computed: {
-            isBinaryNumber: {
+            outputShowThresholded: {
                 get() {
-                    return this.$store.getters.pipeline.isBinary ? 1 : 0;
+                    return this.$store.getters.currentPipelineSettings.outputShowThresholded ? 1 : 0;
                 },
                 set(value) {
-                    this.$store.commit('isBinary', !!value);
+                    this.$store.commit('outputShowThresholded', !!value);
                 }
             },
             selectedComponent: {
