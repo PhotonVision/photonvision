@@ -64,6 +64,7 @@
 <script>
     export default {
         name: 'RangeSlider',
+      // eslint-disable-next-line vue/require-prop-types
         props: ['name', 'min', 'max', 'value', 'step'],
         data() {
             return {

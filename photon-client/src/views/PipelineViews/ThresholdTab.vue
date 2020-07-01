@@ -83,6 +83,7 @@
             CVrangeSlider,
             CVswitch
         },
+      // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
         data() {
             return {
@@ -105,7 +106,7 @@
                     return this.$store.getters.currentPipelineSettings.hsvSaturation
                 },
                 set(val) {
-                    this.$store.commit("hsvSat", val)
+                    this.$store.commit("hsvSaturation", val)
                 }
             },
             hsvValue: {
@@ -113,7 +114,7 @@
                     return this.$store.getters.currentPipelineSettings.hsvValue
                 },
                 set(val) {
-                    this.$store.commit("hsvVal", val)
+                    this.$store.commit("hsvValue", val)
                 }
             },
             erode: {
@@ -146,17 +147,14 @@
                     let hsvArray = this.colorPicker.colorPickerClick(event, this.currentFunction,
                         [[this.value.hue[0], this.value.saturation[0], this.value.value[0]], [this.value.hue[1], this.value.saturation[1], this.value.value[1]]]);
                     this.currentFunction = undefined;
-                    this.value.hue = [hsvArray[0][0], hsvArray[1][0]];
-                    this.value.saturation = [hsvArray[0][1], hsvArray[1][1]];
-                    this.value.value = [hsvArray[0][2], hsvArray[1][2]];
-                    this.value.isBinary = this.currentBinaryState;
                     let msg = this.$msgPack.encode({
-                        "changePipelineSetting": {
-                            'hue': this.value.hue,
-                            'saturation': this.value.saturation,
-                            'value': this.value.value,
-                            'isBinary': this.value.isBinary
-                        }
+                      "changePipelineSetting": {
+                        'hsvHue': [hsvArray[0][0], hsvArray[1][0]],
+                        'hsvSaturation': [hsvArray[0][1], hsvArray[1][1]],
+                        'hsvValue': [hsvArray[0][2], hsvArray[1][2]],
+                        'outputShowThresholded': this.currentBinaryState,
+                        'cameraIndex': this.$store.state.currentCameraIndex
+                      }
                     });
                     this.$socket.send(msg);
                     this.$emit('update');

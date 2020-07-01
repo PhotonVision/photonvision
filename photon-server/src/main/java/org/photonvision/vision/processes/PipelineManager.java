@@ -54,6 +54,7 @@ public class PipelineManager {
     */
     public PipelineManager(List<CVPipelineSettings> userPipelines) {
         this.userPipelineSettings = userPipelines;
+        // TODO: this is a hack until the UI can add/remove pipelines
         addPipeline(PipelineType.Reflective);
         setPipelineInternal(0);
     }

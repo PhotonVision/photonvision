@@ -27,6 +27,7 @@
 <script>
     export default {
         name: 'Select',
+      // eslint-disable-next-line vue/require-prop-types
         props: ['list', 'name', 'value', 'disabled'],
         data() {
             return {}

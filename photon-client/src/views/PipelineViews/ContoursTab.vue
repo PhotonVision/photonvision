@@ -1,38 +1,38 @@
 <template>
   <div>
     <CVrangeSlider
-      v-model="area"
+      v-model="contourArea"
       name="Area"
       :min="0"
       :max="100"
       :step="0.1"
-      @input="handlePipelineData('area')"
-      @rollback="e=> rollback('area',e)"
+      @input="handlePipelineData('contourArea')"
+      @rollback="e=> rollback('contourArea',e)"
     />
     <CVrangeSlider
-      v-model="ratio"
+      v-model="contourRatio"
       name="Ratio (W/H)"
       :min="0"
       :max="100"
       :step="0.1"
-      @input="handlePipelineData('ratio')"
-      @rollback="e=> rollback('ratio',e)"
+      @input="handlePipelineData('contourRatio')"
+      @rollback="e=> rollback('contourRatio',e)"
     />
     <CVrangeSlider
-      v-model="extent"
+      v-model="contourExtent"
       name="Extent"
       :min="0"
       :max="100"
-      @input="handlePipelineData('extent')"
-      @rollback="e=> rollback('extent',e)"
+      @input="handlePipelineData('contourExtent')"
+      @rollback="e=> rollback('contourExtent',e)"
     />
     <CVslider
-      v-model="speckle"
+      v-model="contourSpecklePercentage"
       name="Speckle Rejection"
       :min="0"
       :max="100"
-      @input="handlePipelineData('speckle')"
-      @rollback="e=> rollback('speckle',e)"
+      @input="handlePipelineData('contourSpecklePercentage')"
+      @rollback="e=> rollback('contourSpecklePercentage',e)"
     />
     <CVselect
       v-model="contourGroupingMode"
@@ -42,12 +42,12 @@
       @rollback="e=> rollback('targetGroup',e)"
     />
     <CVselect
-      v-model="targetIntersection"
+      v-model="contourIntersection"
       name="Target Intersection"
       :list="['None','Up','Down','Left','Right']"
-      :disabled="isDisabled"
-      @input="handlePipelineData('targetIntersection')"
-      @rollback="e=> rollback('targetIntersection',e)"
+      :disabled="contourGroupingMode === 0"
+      @input="handlePipelineData('contourIntersection')"
+      @rollback="e=> rollback('contourIntersection',e)"
     />
   </div>
 </template>
@@ -64,42 +64,43 @@
             CVselect,
             CVslider
         },
+      // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
 
         data() {
             return {}
         },
         computed: {
-            area: {
+            contourArea: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.area
+                    return this.$store.getters.currentPipelineSettings.contourArea
                 },
                 set(val) {
-                    this.$store.commit("area", val);
+                    this.$store.commit("contourArea", val);
                 }
             },
-            ratio: {
+            contourRatio: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.ratio
+                    return this.$store.getters.currentPipelineSettings.contourRatio
                 },
                 set(val) {
-                    this.$store.commit("ratio", val);
+                    this.$store.commit("contourRatio", val);
                 }
             },
-            extent: {
+            contourExtent: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.extent
+                    return this.$store.getters.currentPipelineSettings.contourExtent
                 },
                 set(val) {
-                    this.$store.commit("extent", val);
+                    this.$store.commit("contourExtent", val);
                 }
             },
-            speckle: {
+            contourSpecklePercentage: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.speckle
+                    return this.$store.getters.currentPipelineSettings.contourSpecklePercentage
                 },
                 set(val) {
-                    this.$store.commit("speckle", val);
+                    this.$store.commit("contourSpecklePercentage", val);
                 }
             },
             contourGroupingMode: {
@@ -110,18 +111,13 @@
                     this.$store.commit("contourGroupingMode", val);
                 }
             },
-            targetIntersection: {
+            contourIntersection: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.targetIntersection
+                    return this.$store.getters.currentPipelineSettings.contourIntersection
                 },
                 set(val) {
-                    this.$store.commit("targetIntersection", val);
+                    this.$store.commit("contourIntersection", val);
                 }
-            },
-
-            isDisabled() {
-                return this.value.targetGroup === 0;
-
             }
         },
         methods: {},

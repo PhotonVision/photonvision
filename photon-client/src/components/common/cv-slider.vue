@@ -49,6 +49,7 @@
 <script>
     export default {
         name: 'Slider',
+      // eslint-disable-next-line vue/require-prop-types
         props: ['min', 'max', 'name', 'value', 'step'],
         data() {
             return {

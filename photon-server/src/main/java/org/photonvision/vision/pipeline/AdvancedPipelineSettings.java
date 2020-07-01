@@ -35,7 +35,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public IntegerCouple hsvSaturation = new IntegerCouple(50, 255);
     public IntegerCouple hsvValue = new IntegerCouple(50, 255);
 
-    public boolean outputShowThresholded = true;
+    public boolean outputShowThresholded = false;
     public boolean outputShowMultipleTargets = false;
 
     public boolean erode = false;

@@ -26,6 +26,7 @@
 <script>
     export default {
         name: 'NumberInput',
+      // eslint-disable-next-line vue/require-prop-types
         props: ['name', 'value', 'step'],
         data() {
             return {}

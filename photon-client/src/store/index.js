@@ -50,32 +50,32 @@ export default new Vuex.Store({
                     pipelineType: "reflective", // One of "driver", "reflective", "shape"
 
                     // Settings that apply to all pipeline types
-                    cameraVideoModeIndex: 0,
-
-                    // Settings that apply to reflective
                     cameraExposure: 1,
                     cameraBrightness: 2,
                     cameraGain: 3,
                     inputImageRotationMode: 0,
+                    cameraVideoModeIndex: 0,
+                    outputFrameDivisor: 0,
+
+                    // Settings that apply to reflective
                     hsvHue: [0, 15],
                     hsvSaturation: [0, 15],
                     hsvValue: [0, 25],
                     erode: false,
                     dilate: false,
-                    area: [0, 12],
-                    ratio: [0, 12],
-                    extent: [0, 12],
-                    speckle: 5,
+                    contourArea: [0, 12],
+                    contourRatio: [0, 12],
+                    contourExtent: [0, 12],
+                    contourSpecklePercentage: 5,
                     contourGroupingMode: 0,
-                    targetIntersection: 0,
-                    sortMode: 0,
-                    multiple: false,
-                    isBinary: 0,
-                    calibrationMode: 0,
-                    streamDivisor: 0,
-                    is3D: false,
+                    contourIntersection: 0,
+                    contourSortMode: 0,
+                    outputShowMultipleTargets: false,
+                    outputShowThresholded: 0,
+                    offsetRobotOffsetMode: 0,
+                    solvePNPEnabled: false,
                     targetRegion: 0,
-                    targetOrientation: 1
+                    contourTargetOrientation: 1
 
                     // Settings that apply to shape
                 }
@@ -119,19 +119,19 @@ export default new Vuex.Store({
         inputFrameDivisor: setCurrPipeProp('inputFrameDivisor'),
 
         // contours tab
-        area: setCurrPipeProp('area'),
-        ratio: setCurrPipeProp('ratio'),
-        extent: setCurrPipeProp('extent'),
-        speckle: setCurrPipeProp('speckle'),
+        contourArea: setCurrPipeProp('contourArea'),
+        contourRatio: setCurrPipeProp('contourRatio'),
+        contourExtent: setCurrPipeProp('contourExtent'),
+        contourSpecklePercentage: setCurrPipeProp('contourSpecklePercentage'),
         contourGroupingMode: setCurrPipeProp('contourGroupingMode'),
-        targetIntersection: setCurrPipeProp('targetIntersection'),
+        contourIntersection: setCurrPipeProp('contourIntersection'),
 
         // output tab
-        sortMode: setCurrPipeProp('sortMode'),
-        targetRegion: setCurrPipeProp('targetRegion'),
-        targetOrientation: setCurrPipeProp('targetOrientation'),
-        multiple: setCurrPipeProp('multiple'),
-        calibrationMode: setCurrPipeProp('calibrationMode'),
+        contourSortMode: setCurrPipeProp('contourSortMode'),
+        contourTargetOffsetPointEdge: setCurrPipeProp('contourTargetOffsetPointEdge'),
+        contourTargetOrientation: setCurrPipeProp('contourTargetOrientation'),
+        outputShowMultipleTargets: setCurrPipeProp('outputShowMultipleTargets'),
+        offsetRobotOffsetMode: setCurrPipeProp('offsetRobotOffsetMode'),
     },
     getters: {
         pipelineSettings: state => state.pipelineSettings,

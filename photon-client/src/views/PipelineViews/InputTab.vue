@@ -1,52 +1,52 @@
 <template>
-    <div>
-        <CVslider
-                v-model="cameraExposure"
-                name="Exposure"
-                :min="0"
-                :max="100"
-                @input="handlePipelineData('cameraExposure')"
-                @rollback="e => rollback('cameraExposure', e)"
-        />
-        <CVslider
-                v-model="cameraBrightness"
-                name="Brightness"
-                :min="0"
-                :max="100"
-                @input="handlePipelineData('cameraBrightness')"
-                @rollback="e => rollback('cameraBrightness', e)"
-        />
-        <CVslider
-                v-if="cameraGain !== -1"
-                v-model="cameraGain"
-                name="Gain"
-                :min="0"
-                :max="100"
-                @input="handlePipelineData('cameraGain')"
-                @rollback="e => rollback('cameraGain', e)"
-        />
-        <CVselect
-                v-model="inputImageRotationMode"
-                name="Orientation"
-                :list="['Normal','90° CW','180°','90° CCW']"
-                @input="handlePipelineData('inputImageRotationMode')"
-                @rollback="e => e => rollback('inputImageRotationMode',e)"
-        />
-        <CVselect
-                v-model="cameraVideoModeIndex"
-                name="Resolution"
-                :list="resolutionList"
-                @input="handlePipelineData('cameraVideoModeIndex')"
-                @rollback="e => rollback('cameraVideoModeIndex', e)"
-        />
-        <CVselect
-                v-model="inputFrameDivisor"
-                name="Stream Resolution"
-                :list="streamResolutionList"
-                @input="handlePipelineData('inputFrameDivisor')"
-                @rollback="e => rollback('inputFrameDivisor', e)"
-        />
-    </div>
+  <div>
+    <CVslider
+      v-model="cameraExposure"
+      name="Exposure"
+      :min="0"
+      :max="100"
+      @input="handlePipelineData('cameraExposure')"
+      @rollback="e => rollback('cameraExposure', e)"
+    />
+    <CVslider
+      v-model="cameraBrightness"
+      name="Brightness"
+      :min="0"
+      :max="100"
+      @input="handlePipelineData('cameraBrightness')"
+      @rollback="e => rollback('cameraBrightness', e)"
+    />
+    <CVslider
+      v-if="cameraGain !== -1"
+      v-model="cameraGain"
+      name="Gain"
+      :min="0"
+      :max="100"
+      @input="handlePipelineData('cameraGain')"
+      @rollback="e => rollback('cameraGain', e)"
+    />
+    <CVselect
+      v-model="inputImageRotationMode"
+      name="Orientation"
+      :list="['Normal','90° CW','180°','90° CCW']"
+      @input="handlePipelineData('inputImageRotationMode')"
+      @rollback="e => rollback('inputImageRotationMode',e)"
+    />
+    <CVselect
+      v-model="cameraVideoModeIndex"
+      name="Resolution"
+      :list="resolutionList"
+      @input="handlePipelineData('cameraVideoModeIndex')"
+      @rollback="e => rollback('cameraVideoModeIndex', e)"
+    />
+    <CVselect
+      v-model="inputFrameDivisor"
+      name="Stream Resolution"
+      :list="streamResolutionList"
+      @input="handlePipelineData('inputFrameDivisor')"
+      @rollback="e => rollback('inputFrameDivisor', e)"
+    />
+  </div>
 </template>
 
 <script>

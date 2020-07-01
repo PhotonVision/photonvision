@@ -199,17 +199,21 @@ public class SocketHandler {
                         case SMT_PIPELINESETTINGCHANGE: {
                             HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
 
-                            // there shall only be one.
-                            Map.Entry<String, Object> thisEntry = data.entrySet().iterator().next();
-
-                            var pipelineSettingChangeEvent =
-                                new IncomingWebSocketEvent<>(
-                                    DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS,
-                                    thisEntry.getKey(),
-                                    thisEntry.getValue(),
-                                    (Integer) data.get("cameraIndex"));
-
-                            dcService.publishEvent(pipelineSettingChangeEvent);
+                            if (data.size() >= 2) {
+                                var cameraIndex = (int)data.get("cameraIndex");
+                                for (var dataEntry : data.entrySet()) {
+                                    if (dataEntry.getKey().equals("cameraIndex")) {
+                                        continue;
+                                    }
+                                    var pipelineSettingChangeEvent =
+                                            new IncomingWebSocketEvent(
+                                                    DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS,
+                                                    dataEntry.getKey(),
+                                                    dataEntry.getValue(),
+                                                    cameraIndex);
+                                    dcService.publishEvent(pipelineSettingChangeEvent);
+                                }
+                            }
                             break;
                         }
                     }

@@ -23,6 +23,7 @@
 <script>
     export default {
         name: 'Icon',
+      // eslint-disable-next-line vue/require-prop-types
         props: ['color', 'tooltip', 'text', 'right', 'hover'],
         data() {
             return {}

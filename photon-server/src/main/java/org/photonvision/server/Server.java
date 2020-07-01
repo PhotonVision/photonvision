@@ -17,18 +17,15 @@
 
 package org.photonvision.server;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.Javalin;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-
-import java.util.Map;
 
 public class Server {
     private static final Logger logger = new Logger(Server.class, LogGroup.Server);
 
     public static void main(int port) {
+
         Javalin app = Javalin.create(
             config -> {
                 config.showJavalinBanner = false;
@@ -36,7 +33,7 @@ public class Server {
                 config.enableCorsForAllOrigins();
 
                 config.requestLogger((ctx, ms) ->
-                    logger.debug("Got HTTP " + ctx.req.getMethod() + " request at " + ms.toString()));
+                    logger.debug("Handled HTTP " + ctx.req.getMethod() + " request from " + ctx.req.getRemoteHost() +  " in " + ms.toString() + "ms"));
 
                 config.wsLogger(ws -> ws.onMessage(ctx ->
                     logger.debug("Got WebSockets message: " + ctx.message())));

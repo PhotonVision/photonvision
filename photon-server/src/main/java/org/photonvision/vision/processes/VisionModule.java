@@ -90,6 +90,7 @@ public class VisionModule {
             super();
         }
 
+        @SuppressWarnings("unchecked")
         @Override
         public void onDataChangeEvent(DataChangeEvent event) {
             if (event instanceof IncomingWebSocketEvent) {
@@ -98,45 +99,40 @@ public class VisionModule {
                     logger.debug("Got WS event: \n-->" + wsEvent.toString());
 
                     var propName = wsEvent.propertyName;
-                    var newValue = wsEvent.data;
-
+                    var newPropValue = wsEvent.data;
                     var currentSettings = pipelineManager.getCurrentPipeline().getSettings();
 
                     try {
                         var propField =  currentSettings.getClass().getField(propName);
+                        var propType = propField.getType();
 
-                        if (propField.getType().isAssignableFrom(IntegerCouple.class)) {
-                            var orig = (ArrayList<Integer>)newValue;
-                            var actual = new IntegerCouple(orig.get(0), orig.get(1));
+                        if (propType.isEnum()) {
+                            var actual = propType.getEnumConstants()[(int)newPropValue];
                             propField.set(currentSettings, actual);
-                        }
-                        else if (propField.getType().isAssignableFrom(DoubleCouple.class)) {
-                            var orig = (ArrayList<Double>)newValue;
+                        } else if (propType.isAssignableFrom(DoubleCouple.class)) {
+                            var orig = (ArrayList<Double>)newPropValue;
                             var actual = new DoubleCouple(orig.get(0), orig.get(1));
                             propField.set(currentSettings, actual);
-                        }
-                        else if (propField.getType().equals(Integer.TYPE)) {
-                            propField.set(currentSettings, (Integer) newValue);
-                        }
-                        else if (propField.getType().equals(Double.TYPE)) {
-                            propField.set(currentSettings, (Double) newValue);
-                        }
-                        else if (!propField.getType().isEnum()) { // if the field is not an enum, get it based on the current pipeline
-                            propField.set(newValue, newValue);
-                            return;
+                        } else if (propType.isAssignableFrom(IntegerCouple.class)) {
+                            var orig = (ArrayList<Integer>)newPropValue;
+                            var actual = new IntegerCouple(orig.get(0), orig.get(1));
+                            propField.set(currentSettings, actual);
+                        } else if (propType.equals(Double.TYPE)) {
+                            propField.setDouble(currentSettings, (Double) newPropValue);
+                        } else if (propType.equals(Integer.TYPE)) {
+                            propField.setInt(currentSettings, (Integer) newPropValue);
+                        } else if (propType.equals(Boolean.TYPE)) {
+                            propField.setBoolean(currentSettings, (Boolean) newPropValue);
                         } else {
-                            // TODO: Enums!
-                            var enumType = propField.getType();
-                            logger.error("Could not set prop. Enums not implemented - " + enumType.getCanonicalName());
+                            propField.set(newPropValue, newPropValue);
                         }
-
                     } catch (NoSuchFieldException | IllegalAccessException e) {
-                        logger.error("Could not set prop " + propName + " with value " + newValue + " on " + currentSettings);
+                        logger.error("Could not set prop " + propName + " with value " + newPropValue + " on " + currentSettings);
                         e.printStackTrace();
                     }
                 }
+                ConfigManager.getInstance().save();
             }
-            ConfigManager.getInstance().save();
         }
     }
 

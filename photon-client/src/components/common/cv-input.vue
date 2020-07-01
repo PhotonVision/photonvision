@@ -24,6 +24,7 @@ s
 <script>
     export default {
         name: 'Input',
+      // eslint-disable-next-line vue/require-prop-types
         props: ['name', 'value', 'disabled', 'errorMessage'],
         data() {
             return {}
