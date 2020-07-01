@@ -47,16 +47,14 @@ public class SocketHandler {
     private final DataChangeService dcService = DataChangeService.getInstance();
 
     @SuppressWarnings("FieldCanBeLocal")
-    private final UIOutboundSubscriber uiOutboundSubscriber
-        = new UIOutboundSubscriber(this);
-    private final IncomingCameraCommandSubscriber cameraChangeSubscriber
-        = new IncomingCameraCommandSubscriber(VisionModuleManager.getInstance());
+    private final UIOutboundSubscriber uiOutboundSubscriber = new UIOutboundSubscriber(this);
 
-    public static class UIMap extends HashMap<String, Object> {
-    }
+    private final IncomingCameraCommandSubscriber cameraChangeSubscriber =
+            new IncomingCameraCommandSubscriber(VisionModuleManager.getInstance());
 
-    abstract static class SelectiveBroadcastPair extends Pair<UIMap, WsContext> {
-    }
+    public static class UIMap extends HashMap<String, Object> {}
+
+    abstract static class SelectiveBroadcastPair extends Pair<UIMap, WsContext> {}
 
     private static class ThreadSafeSingleton {
         private static final SocketHandler INSTANCE = new SocketHandler();

@@ -40,39 +40,13 @@ public class USBCameraSource implements VisionSource {
     private final QuirkyCamera cameraQuirks;
 
     public USBCameraSource(CameraConfiguration config) {
-        this.configuration = config;
-        this.camera = new UsbCamera(config.nickname, config.path);
-        this.cameraQuirks =
-                new QuirkyCamera(camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
+        configuration = config;
+        camera = new UsbCamera(config.nickname, config.path);
+        cameraQuirks = QuirkyCamera.getQuirkyCamera(camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
         cvSink = CameraServer.getInstance().getVideo(this.camera);
-        camera.setConnectionStrategy(VideoSource.ConnectionStrategy.kKeepOpen);
-        var err = cvSink.getError();
-        this.usbCameraSettables = new USBCameraSettables(config);
-        this.usbFrameProvider =
+        usbCameraSettables = new USBCameraSettables(config);
+        usbFrameProvider =
                 new USBFrameProvider(cvSink, usbCameraSettables.getFrameStaticProperties());
-    }
-
-    public UsbCamera getCamera() {
-        return camera;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj.getClass() != USBCameraSource.class) {
-            return false;
-        }
-        USBCameraSource tmp = (USBCameraSource) obj;
-        boolean i = this.cameraQuirks.quirks.equals(tmp.cameraQuirks.quirks);
-
-        boolean r = this.configuration.uniqueName.equals(tmp.configuration.uniqueName);
-        boolean c = this.configuration.baseName.equals(tmp.configuration.baseName);
-        boolean j = this.configuration.nickname.equals(tmp.configuration.nickname);
-
-        boolean k = this.camera.getInfo().name.equals(tmp.camera.getInfo().name);
-        boolean x = this.camera.getInfo().productId == tmp.camera.getInfo().productId;
-        boolean y = this.camera.getInfo().vendorId == tmp.camera.getInfo().vendorId;
-        var t = i && r && c && j && k && x && y;
-        return t;
     }
 
     @Override
@@ -115,12 +89,12 @@ public class USBCameraSource implements VisionSource {
 
         @Override
         public int getGain() {
-            return camera.getProperty("gain").get();
+            return !cameraQuirks.hasQuirk(CameraQuirk.Gain) ? -1 : camera.getProperty("gain").get();
         }
 
         @Override
         public void setGain(int gain) {
-            if (cameraQuirks.quirks.contains(CameraQuirks.Gain)) {
+            if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
                 camera.getProperty("gain_automatic").set(0);
                 camera.getProperty("gain").set(gain);
             }
@@ -147,5 +121,21 @@ public class USBCameraSource implements VisionSource {
             }
             return videoModes;
         }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        USBCameraSource that = (USBCameraSource) o;
+        return Objects.equals(camera, that.camera) &&
+                Objects.equals(usbFrameProvider, that.usbFrameProvider) &&
+                Objects.equals(configuration, that.configuration) &&
+                cameraQuirks.equals(that.cameraQuirks);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(camera, usbCameraSettables, usbFrameProvider, configuration, cvSink, cameraQuirks);
     }
 }

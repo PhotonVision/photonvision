@@ -7,4 +7,4 @@ bin/*
 .gradle/*
 build
 build/*
-photonvision
+photonvision/*
