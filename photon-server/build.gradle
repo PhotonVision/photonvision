@@ -111,6 +111,15 @@ buildAndCopyUI.dependsOn copyClientUIToResources
 copyClientUIToResources.dependsOn runNpmOnClient
 copyClientUIToResources.shouldRunAfter runNpmOnClient
 
+
+task generateDocs(type: Javadoc) {
+    source = sourceSets.main.allJava
+    classpath = sourceSets.main.compileClasspath
+    destinationDir = file("${projectDir}/build/docs/testjavadoc")
+
+}
+
+
 spotless {
   java {
     googleJavaFormat()
