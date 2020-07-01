@@ -6,7 +6,7 @@
       :min="0"
       :max="100"
       :step="0.1"
-      @input="handleData('area')"
+      @input="handlePipelineData('area')"
       @rollback="e=> rollback('area',e)"
     />
     <CVrangeSlider
@@ -15,7 +15,7 @@
       :min="0"
       :max="100"
       :step="0.1"
-      @input="handleData('ratio')"
+      @input="handlePipelineData('ratio')"
       @rollback="e=> rollback('ratio',e)"
     />
     <CVrangeSlider
@@ -23,7 +23,7 @@
       name="Extent"
       :min="0"
       :max="100"
-      @input="handleData('extent')"
+      @input="handlePipelineData('extent')"
       @rollback="e=> rollback('extent',e)"
     />
     <CVslider
@@ -31,14 +31,14 @@
       name="Speckle Rejection"
       :min="0"
       :max="100"
-      @input="handleData('speckle')"
+      @input="handlePipelineData('speckle')"
       @rollback="e=> rollback('speckle',e)"
     />
     <CVselect
       v-model="contourGroupingMode"
       name="Target Group"
       :list="['Single','Dual']"
-      @input="handleData('targetGroup')"
+      @input="handlePipelineData('targetGroup')"
       @rollback="e=> rollback('targetGroup',e)"
     />
     <CVselect
@@ -46,7 +46,7 @@
       name="Target Intersection"
       :list="['None','Up','Down','Left','Right']"
       :disabled="isDisabled"
-      @input="handleData('targetIntersection')"
+      @input="handlePipelineData('targetIntersection')"
       @rollback="e=> rollback('targetIntersection',e)"
     />
   </div>
