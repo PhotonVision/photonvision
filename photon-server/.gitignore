@@ -3,7 +3,7 @@ bin/*
 .project
 .classpath
 *.prefs
-chameleon-vision
+photonvision
 .gradle
 .gradle/*
 build

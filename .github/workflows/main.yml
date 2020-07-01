@@ -70,6 +70,15 @@ jobs:
           chmod +x gradlew
           ./gradlew test
 
+      # Generate Coverage Report
+      - run: ./gradlew jacocoTestReport
+      
+      # Publish Coverage Report
+      - uses: codecov/codecov-action@v1.0.7
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./build/reports/jacoco/test/jacocoTestReport.xml
+
   build-package:
     needs: [build-client, build-server]
 
