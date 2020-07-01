@@ -1,50 +1,50 @@
 <template>
     <div>
         <CVslider
-                v-model="exposure"
+                v-model="cameraExposure"
                 name="Exposure"
                 :min="0"
                 :max="100"
-                @input="handlePipelineData('exposure')"
-                @rollback="e => rollback('exposure', e)"
+                @input="handlePipelineData('cameraExposure')"
+                @rollback="e => rollback('cameraExposure', e)"
         />
         <CVslider
-                v-model="brightness"
+                v-model="cameraBrightness"
                 name="Brightness"
                 :min="0"
                 :max="100"
-                @input="handlePipelineData('brightness')"
-                @rollback="e => rollback('brightness', e)"
+                @input="handlePipelineData('cameraBrightness')"
+                @rollback="e => rollback('cameraBrightness', e)"
         />
         <CVslider
-                v-if="gain !== -1"
-                v-model="gain"
+                v-if="cameraGain !== -1"
+                v-model="cameraGain"
                 name="Gain"
                 :min="0"
                 :max="100"
-                @input="handlePipelineData('gain')"
-                @rollback="e => rollback('gain', e)"
+                @input="handlePipelineData('cameraGain')"
+                @rollback="e => rollback('cameraGain', e)"
         />
         <CVselect
-                v-model="orientationMode"
+                v-model="inputImageRotationMode"
                 name="Orientation"
                 :list="['Normal','90° CW','180°','90° CCW']"
-                @input="handlePipelineData('rotationMode')"
-                @rollback="e => e => rollback('rotationMode',e)"
+                @input="handlePipelineData('inputImageRotationMode')"
+                @rollback="e => e => rollback('inputImageRotationMode',e)"
         />
         <CVselect
-                v-model="videoModeIndex"
+                v-model="cameraVideoModeIndex"
                 name="Resolution"
                 :list="resolutionList"
-                @input="handlePipelineData('videoModeIndex')"
-                @rollback="e => rollback('videoModeIndex', e)"
+                @input="handlePipelineData('cameraVideoModeIndex')"
+                @rollback="e => rollback('cameraVideoModeIndex', e)"
         />
         <CVselect
-                v-model="streamDivisor"
+                v-model="inputFrameDivisor"
                 name="Stream Resolution"
                 :list="streamResolutionList"
-                @input="handlePipelineData('streamDivisor')"
-                @rollback="e => rollback('streamDivisor', e)"
+                @input="handlePipelineData('inputFrameDivisor')"
+                @rollback="e => rollback('inputFrameDivisor', e)"
         />
     </div>
 </template>
@@ -65,52 +65,52 @@
             return {}
         },
         computed: {
-            exposure: {
+            cameraExposure: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.exposure
+                    return this.$store.getters.currentPipelineSettings.cameraExposure
                 },
                 set(val) {
-                    this.$store.commit("exposure", val);
+                    this.$store.commit("cameraExposure", val);
                 }
             },
-            brightness: {
+            cameraBrightness: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.brightness
+                    return this.$store.getters.currentPipelineSettings.cameraBrightness
                 },
                 set(val) {
-                    this.$store.commit("brightness", val);
+                    this.$store.commit("cameraBrightness", val);
                 }
             },
-            gain: {
+            cameraGain: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.gain
+                    return this.$store.getters.currentPipelineSettings.cameraGain
                 },
                 set(val) {
-                    this.$store.commit("gain", val);
+                    this.$store.commit("cameraGain", val);
                 }
             },
-            orientationMode: {
+            inputImageRotationMode: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.rotationMode
+                    return this.$store.getters.currentPipelineSettings.inputImageRotationMode
                 },
                 set(val) {
-                    this.$store.commit("rotationMode", val);
+                    this.$store.commit("inputImageRotationMode", val);
                 }
             },
-            videoModeIndex: {
+            cameraVideoModeIndex: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.videoModeIndex
+                    return this.$store.getters.currentPipelineSettings.cameraVideoModeIndex
                 },
                 set(val) {
-                    this.$store.commit("videoModeIndex", val);
+                    this.$store.commit("cameraVideoModeIndex", val);
                 }
             },
-            streamDivisor: {
+            inputFrameDivisor: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.streamDivisor
+                    return this.$store.getters.currentPipelineSettings.inputFrameDivisor
                 },
                 set(val) {
-                    this.$store.commit("streamDivisor", val);
+                    this.$store.commit("inputFrameDivisor", val);
                 }
             },
 

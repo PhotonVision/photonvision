@@ -35,6 +35,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         return settings;
     }
 
+    // TODO (BANKS) ACTUALLY SET THE CAMERA RESOLUTION
     public R run(Frame frame) {
         long pipelineStartNanos = System.nanoTime();
 

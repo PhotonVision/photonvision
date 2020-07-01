@@ -53,10 +53,10 @@ export default new Vuex.Store({
                     cameraVideoModeIndex: 0,
 
                     // Settings that apply to reflective
-                    exposure: 1,
-                    brightness: 2,
-                    gain: 3,
-                    rotationMode: 0,
+                    cameraExposure: 1,
+                    cameraBrightness: 2,
+                    cameraGain: 3,
+                    inputImageRotationMode: 0,
                     hsvHue: [0, 15],
                     hsvSaturation: [0, 15],
                     hsvValue: [0, 25],
@@ -72,7 +72,6 @@ export default new Vuex.Store({
                     multiple: false,
                     isBinary: 0,
                     calibrationMode: 0,
-                    videoModeIndex: 0,
                     streamDivisor: 0,
                     is3D: false,
                     targetRegion: 0,
@@ -112,12 +111,12 @@ export default new Vuex.Store({
         dilate: setCurrPipeProp('dilate'),
 
         // input tab
-        exposure: setCurrPipeProp('exposure'),
-        brightness: setCurrPipeProp('brightness'),
-        gain: setCurrPipeProp('gain'),
-        rotationMode: setCurrPipeProp('rotationMode'),
-        videoModeIndex: setCurrPipeProp('videoModeIndex'),
-        streamDivisor: setCurrPipeProp('streamDivisor'),
+        cameraExposure: setCurrPipeProp('cameraExposure'),
+        cameraBrightness: setCurrPipeProp('cameraBrightness'),
+        cameraGain: setCurrPipeProp('cameraGain'),
+        inputImageRotationMode: setCurrPipeProp('inputImageRotationMode'),
+        cameraVideoModeIndex: setCurrPipeProp('cameraVideoModeIndex'),
+        inputFrameDivisor: setCurrPipeProp('inputFrameDivisor'),
 
         // contours tab
         area: setCurrPipeProp('area'),
