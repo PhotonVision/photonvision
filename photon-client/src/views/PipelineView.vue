@@ -59,7 +59,7 @@
             slider-color="#ffd843"
             centered
             style="padding-bottom:10px"
-            @change="handleInput('outputShowThresholded', $store.state.outputShowThresholded)"
+            @change="handleTruthyPipelineData('outputShowThresholded')"
           >
             <v-tab>Normal</v-tab>
             <v-tab>Threshold</v-tab>

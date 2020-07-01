@@ -96,7 +96,7 @@ public class VisionModule {
             if (event instanceof IncomingWebSocketEvent) {
                 var wsEvent = (IncomingWebSocketEvent<?>) event;
                 if (wsEvent.cameraIndex != null && wsEvent.cameraIndex == moduleIndex) {
-                    logger.debug("Got WS event: \n-->" + wsEvent.toString());
+                    logger.debug("Got WS event");
 
                     var propName = wsEvent.propertyName;
                     var newPropValue = wsEvent.data;
