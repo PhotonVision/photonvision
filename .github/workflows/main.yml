@@ -65,19 +65,23 @@ jobs:
         with:
           java-version: 11
 
-      # Run Gradle tests.
+      # Run Gradle build.
       - run: |
           chmod +x gradlew
-          ./gradlew test
+          ./gradlew build
 
-      # Generate Coverage Report
+      # Run Gradle tests.
+      - run: ./gradlew test
+
+      # Generate Coverage Report.
       - run: ./gradlew jacocoTestReport
       
-      # Publish Coverage Report
-      - uses: codecov/codecov-action@v1.0.7
+      # Publish Coverage Report.
+      - uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: ./build/reports/jacoco/test/jacocoTestReport.xml
+          fail_ci_if_error: true
 
   build-package:
     needs: [build-client, build-server]
