@@ -34,8 +34,6 @@ import java.util.List;
 
 public class Logger {
 
-    private final String className;
-
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -46,11 +44,18 @@ public class Logger {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
 
-    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private final String className;
     private final LogGroup group;
 
     public Logger(Class<?> clazz, LogGroup group) {
         this.className = clazz.getSimpleName();
+        this.group = group;
+    }
+
+    public Logger(Class<?> clazz, String suffix, LogGroup group) {
+        this.className = clazz.getSimpleName() + " - " + suffix;
         this.group = group;
     }
 
@@ -159,7 +164,6 @@ public class Logger {
     }
 
     private static class UILogAppender extends Appender {
-
         @Override
         void log(String message) {
             var message_ = new HashMap<>();
@@ -172,7 +176,7 @@ public class Logger {
     }
 
     private static class AsyncFileAppender extends Appender {
-        private Path filePath;
+        private final Path filePath;
 
         public AsyncFileAppender(Path logFilePath) {
             this.filePath = logFilePath;

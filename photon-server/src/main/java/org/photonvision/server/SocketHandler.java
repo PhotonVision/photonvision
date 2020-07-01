@@ -92,7 +92,7 @@ public class SocketHandler {
                     var entryValue = entry.getValue();
                     var socketMessageType = SocketMessageType.fromEntryKey(entryKey);
 
-                    logger.debug("Got WS message: [" + socketMessageType + "]\n  ==> [" + entryKey + "], [" + entryValue + "]");
+                    logger.debug("Got WS message: [" + socketMessageType + "] ==> [" + entryKey + "], [" + entryValue + "]");
 
                     if (socketMessageType == null) {
                         logger.warn("Got unknown socket message type: " + entryKey);

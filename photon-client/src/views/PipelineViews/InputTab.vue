@@ -67,26 +67,26 @@
         computed: {
             cameraExposure: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.cameraExposure
+                    return parseInt(this.$store.getters.currentPipelineSettings.cameraExposure);
                 },
                 set(val) {
-                    this.$store.commit("cameraExposure", val);
+                    this.$store.commit("cameraExposure", parseInt(val));
                 }
             },
             cameraBrightness: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.cameraBrightness
+                    return parseInt(this.$store.getters.currentPipelineSettings.cameraBrightness)
                 },
                 set(val) {
-                    this.$store.commit("cameraBrightness", val);
+                    this.$store.commit("cameraBrightness", parseInt(val));
                 }
             },
             cameraGain: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.cameraGain
+                    return parseInt(this.$store.getters.currentPipelineSettings.cameraGain)
                 },
                 set(val) {
-                    this.$store.commit("cameraGain", val);
+                    this.$store.commit("cameraGain", parseInt(val));
                 }
             },
             inputImageRotationMode: {

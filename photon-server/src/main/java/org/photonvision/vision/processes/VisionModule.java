@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -36,6 +37,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
@@ -48,8 +50,8 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
  * provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
  */
 public class VisionModule {
-    private static final Logger logger = new Logger(VisionModule.class, LogGroup.VisionProcess);
 
+    private final Logger logger;
     private final PipelineManager pipelineManager;
     private final VisionSource visionSource;
     private final VisionRunner visionRunner;
@@ -57,9 +59,10 @@ public class VisionModule {
     private final LinkedList<FrameConsumer> frameConsumers = new LinkedList<>();
     private final NTDataConsumer ntConsumer;
     private MJPGFrameConsumer streamer;
-    private int moduleIndex;
+    private final int moduleIndex;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
+        logger = new Logger(VisionModule.class, ((USBCameraSource)visionSource).configuration.nickname, LogGroup.VisionProcess);
         this.pipelineManager = pipelineManager;
         this.visionSource = visionSource;
         this.visionRunner =
@@ -70,8 +73,8 @@ public class VisionModule {
 
         DataChangeService.getInstance().addSubscriber(new VisionSettingChangeSubscriber());
 
-        this.streamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
-        this.ntConsumer = new NTDataConsumer(NetworkTableInstance.getDefault().getTable("photonvision"),
+        streamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
+        ntConsumer = new NTDataConsumer(NetworkTableInstance.getDefault().getTable("photonvision"),
             visionSource.getSettables().getConfiguration().nickname);
 
         addFrameConsumer(streamer);
@@ -96,7 +99,7 @@ public class VisionModule {
             if (event instanceof IncomingWebSocketEvent) {
                 var wsEvent = (IncomingWebSocketEvent<?>) event;
                 if (wsEvent.cameraIndex != null && wsEvent.cameraIndex == moduleIndex) {
-                    logger.debug("Got WS event");
+                    logger.debug("Got PSC event - propName: " + wsEvent.propertyName);
 
                     var propName = wsEvent.propertyName;
                     var newPropValue = wsEvent.data;
@@ -122,13 +125,36 @@ public class VisionModule {
                         } else if (propType.equals(Integer.TYPE)) {
                             propField.setInt(currentSettings, (Integer) newPropValue);
                         } else if (propType.equals(Boolean.TYPE)) {
-                            propField.setBoolean(currentSettings, (Boolean) newPropValue);
+                            if (newPropValue instanceof Integer) {
+                                propField.setBoolean(currentSettings, (Integer)newPropValue != 0);
+                            } else {
+                                propField.setBoolean(currentSettings, (Boolean) newPropValue);
+                            }
                         } else {
                             propField.set(newPropValue, newPropValue);
                         }
+                        logger.trace("Set prop " + propName + " to value " + newPropValue);
                     } catch (NoSuchFieldException | IllegalAccessException e) {
                         logger.error("Could not set prop " + propName + " with value " + newPropValue + " on " + currentSettings);
                         e.printStackTrace();
+                    } catch (Exception e) {
+                        logger.error("Unknown exception when setting PSC prop!");
+                        e.printStackTrace();
+                    }
+
+                    if (propName.startsWith("camera")) {
+                        var propMethodName = "set" + propName.replace("camera", "");
+                        var methods = visionSource.getSettables().getClass().getMethods();
+                        for (var method : methods) {
+                            if (method.getName().equalsIgnoreCase(propMethodName)) {
+                                try {
+                                    method.invoke(visionSource.getSettables(), (int)newPropValue);
+                                } catch (Exception e) {
+                                    logger.error("Failed to invoke camera settable method: " + method.getName());
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
                     }
                 }
                 ConfigManager.getInstance().save();

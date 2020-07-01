@@ -33,6 +33,7 @@ public class DataChangeService {
     private DataChangeService() {
         subscribers = new CopyOnWriteArrayList<>();
         dispatchThread = new Thread(this::dispatchFromQueue);
+        dispatchThread.setName("EventDispatchThread");
         dispatchThread.start();
     }
 
