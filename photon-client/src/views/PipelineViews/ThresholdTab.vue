@@ -86,15 +86,6 @@
         props: ['value'],
         data() {
             return {
-                erode: false,
-                dilate: false,
-
-                // currentHue: this.$store.getters.currentPipelineSettings.hue,
-                // currentSaturation: this.$store.getters.currentPipelineSettings.saturation,
-                // currentValue: this.$store.getters.currentPipelineSettings.value,
-                // shouldErode: this.$store.getters.currentPipelineSettings.erode,
-                // shouldDilate: this.$store.getters.currentPipelineSettings.dilate,
-
                 currentFunction: undefined,
                 colorPicker: undefined,
                 currentBinaryState: 0
@@ -125,19 +116,22 @@
                     this.$store.commit("hsvVal", val)
                 }
             },
-            pipeline: {
+            erode: {
                 get() {
-                    return this.$store.state.pipeline;
-                }
-            },
-            driverState: {
-                get() {
-                    return this.$store.state.driverMode;
+                    return this.$store.getters.currentPipelineSettings.erode
                 },
                 set(val) {
-                    this.$store.commit("driverMode", val);
+                    this.$store.commit("erode", val);
                 }
-            }
+            },
+            dilate: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.dilate
+                },
+                set(val) {
+                    this.$store.commit("dilate", val);
+                }
+            },
         },
         mounted: function () {
             const self = this;

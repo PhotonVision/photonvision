@@ -1,69 +1,69 @@
 <template>
-  <div>
-    <CVselect
-      v-model="value.sortMode"
-      name="Sort Mode"
-      :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
-      @input="handleData('sortMode')"
-      @rollback="rollback('sortMode',e)"
-    />
+    <div>
+        <CVselect
+                v-model="sortMode"
+                name="Sort Mode"
+                :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
+                @input="handleData('sortMode')"
+                @rollback="rollback('sortMode',e)"
+        />
 
-    <CVselect
-      v-model="value.targetRegion"
-      name="Target Region"
-      :list="['Center','Top','Bottom','Left','Right']"
-      @input="handleData('targetRegion')"
-      @rollback="e=> rollback('targetRegion',e)"
-    />
+        <CVselect
+                v-model="targetRegion"
+                name="Target Region"
+                :list="['Center','Top','Bottom','Left','Right']"
+                @input="handleData('targetRegion')"
+                @rollback="e=> rollback('targetRegion',e)"
+        />
 
-    <CVselect
-      v-model="value.targetOrientation"
-      name="Target Orientation"
-      :list="['Portrait', 'Landscape']"
-      @input="handleData('targetOrientation')"
-      @rollback="e=> rollback('targetOrientation',e)"
-    />
+        <CVselect
+                v-model="targetOrientation"
+                name="Target Orientation"
+                :list="['Portrait', 'Landscape']"
+                @input="handleData('targetOrientation')"
+                @rollback="e=> rollback('targetOrientation',e)"
+        />
 
-    <CVswitch
-      v-model="value.multiple"
-      name="Output multiple"
-      @input="handleData('multiple')"
-      @rollback="e=> rollback('multiple',e)"
-    />
-    <span>Calibrate:</span>
-    <v-divider
-      dark
-      color="white"
-    />
-    <CVselect
-      v-model="value.calibrationMode"
-      name="Calibration Mode"
-      :list="['None','Single point','Dual point']"
-      @input="handleData('calibrationMode')"
-      @rollback="e=> rollback('calibrationMode',e)"
-    />
-    <component
-      :is="selectedComponent"
-      :raw-point="rawPoint"
-      @update="doUpdate"
-      @snackbar="showSnackbar"
-    />
-    <v-snackbar
-      v-model="snackbar"
-      :timeout="3000"
-      top
-      color="error"
-    >
-      <span style="color:#000">{{ snackbarText }}</span>
-      <v-btn
-        color="black"
-        text
-        @click="snackbar = false"
-      >
-        Close
-      </v-btn>
-    </v-snackbar>
-  </div>
+        <CVswitch
+                v-model="multiple"
+                name="Output multiple"
+                @input="handleData('multiple')"
+                @rollback="e=> rollback('multiple',e)"
+        />
+        <span>Calibrate:</span>
+        <v-divider
+                dark
+                color="white"
+        />
+        <CVselect
+                v-model="calibrationMode"
+                name="Calibration Mode"
+                :list="['None','Single point','Dual point']"
+                @input="handleData('calibrationMode')"
+                @rollback="e=> rollback('calibrationMode',e)"
+        />
+        <component
+                :is="selectedComponent"
+                :raw-point="rawPoint"
+                @update="doUpdate"
+                @snackbar="showSnackbar"
+        />
+        <v-snackbar
+                v-model="snackbar"
+                :timeout="3000"
+                top
+                color="error"
+        >
+            <span style="color:#000">{{ snackbarText }}</span>
+            <v-btn
+                    color="black"
+                    text
+                    @click="snackbar = false"
+            >
+                Close
+            </v-btn>
+        </v-snackbar>
+    </div>
 </template>
 
 <script>
@@ -91,6 +91,47 @@
             }
         },
         computed: {
+            sortMode: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.sortMode
+                },
+                set(val) {
+                    this.$store.commit("sortMode", val);
+                }
+            },
+            targetRegion: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.targetRegion
+                },
+                set(val) {
+                    this.$store.commit("targetRegion", val);
+                }
+            },
+            targetOrientation: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.targetOrientation
+                },
+                set(val) {
+                    this.$store.commit("targetOrientation", val);
+                }
+            },
+            multiple: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.multiple
+                },
+                set(val) {
+                    this.$store.commit("multiple", val);
+                }
+            },
+            calibrationMode: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.calibrationMode
+                },
+                set(val) {
+                    this.$store.commit("calibrationMode", val);
+                }
+            },
+
             selectedComponent: {
                 get() {
                     switch (this.value.calibrationMode) {

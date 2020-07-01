@@ -10,6 +10,12 @@ const set = key => (state, val) => {
     Vue.set(state, key, val);
 };
 
+const setCurrPipeProp = key => (state, val) => {
+    const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings[key];
+    if (typeof setting !== 'undefined')
+        state.cameraSettings[state.currentCameraIndex].currentPipelineSettings[key] = val;
+};
+
 export default new Vuex.Store({
     modules: {
         reflectivePipelineSettings: {
@@ -47,9 +53,9 @@ export default new Vuex.Store({
                     cameraVideoModeIndex: 0,
 
                     // Settings that apply to reflective
-                    exposure: 0,
-                    brightness: 0,
-                    gain: 0,
+                    exposure: 1,
+                    brightness: 2,
+                    gain: 3,
                     rotationMode: 0,
                     hsvHue: [0, 15],
                     hsvSaturation: [0, 15],
@@ -60,7 +66,7 @@ export default new Vuex.Store({
                     ratio: [0, 12],
                     extent: [0, 12],
                     speckle: 5,
-                    targetGrouping: 0,
+                    contourGroupingMode: 0,
                     targetIntersection: 0,
                     sortMode: 0,
                     multiple: false,
@@ -98,21 +104,35 @@ export default new Vuex.Store({
         pipelineResults: set('pipelineResults'),
         networkSettings: set('networkSettings'),
 
-        hsvHue(state, value) {
-            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvHue;
-            if (typeof setting !== 'undefined')
-                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvHue = value;
-        },
-        hsvSat(state, value) {
-            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvSaturation;
-            if (typeof setting !== 'undefined')
-                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvSaturation = value;
-        },
-        hsvVal(state, value) {
-            const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvValue;
-            if (typeof setting !== 'undefined')
-                state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.hsvValue = value;
-        }
+        // threshold tab
+        hsvHue: setCurrPipeProp('hsvHue'),
+        hsvSat: setCurrPipeProp('hsvSaturation'),
+        hsvVal: setCurrPipeProp('hsvValue'),
+        erode: setCurrPipeProp('erode'),
+        dilate: setCurrPipeProp('dilate'),
+
+        // input tab
+        exposure: setCurrPipeProp('exposure'),
+        brightness: setCurrPipeProp('brightness'),
+        gain: setCurrPipeProp('gain'),
+        rotationMode: setCurrPipeProp('rotationMode'),
+        videoModeIndex: setCurrPipeProp('videoModeIndex'),
+        streamDivisor: setCurrPipeProp('streamDivisor'),
+
+        // contours tab
+        area: setCurrPipeProp('area'),
+        ratio: setCurrPipeProp('ratio'),
+        extent: setCurrPipeProp('extent'),
+        speckle: setCurrPipeProp('speckle'),
+        contourGroupingMode: setCurrPipeProp('contourGroupingMode'),
+        targetIntersection: setCurrPipeProp('targetIntersection'),
+
+        // output tab
+        sortMode: setCurrPipeProp('sortMode'),
+        targetRegion: setCurrPipeProp('targetRegion'),
+        targetOrientation: setCurrPipeProp('targetOrientation'),
+        multiple: setCurrPipeProp('multiple'),
+        calibrationMode: setCurrPipeProp('calibrationMode'),
     },
     getters: {
         pipelineSettings: state => state.pipelineSettings,

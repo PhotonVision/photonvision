@@ -1,7 +1,7 @@
 <template>
     <div>
         <CVslider
-                v-model="value.exposure"
+                v-model="exposure"
                 name="Exposure"
                 :min="0"
                 :max="100"
@@ -9,7 +9,7 @@
                 @rollback="e => rollback('exposure', e)"
         />
         <CVslider
-                v-model="value.brightness"
+                v-model="brightness"
                 name="Brightness"
                 :min="0"
                 :max="100"
@@ -17,8 +17,8 @@
                 @rollback="e => rollback('brightness', e)"
         />
         <CVslider
-                v-if="value.gain !== -1"
-                v-model="value.gain"
+                v-if="gain !== -1"
+                v-model="gain"
                 name="Gain"
                 :min="0"
                 :max="100"
@@ -26,21 +26,21 @@
                 @rollback="e => rollback('gain', e)"
         />
         <CVselect
-                v-model="value.rotationMode"
+                v-model="orientationMode"
                 name="Orientation"
                 :list="['Normal','90° CW','180°','90° CCW']"
                 @input="handlePipelineData('rotationMode')"
                 @rollback="e => e => rollback('rotationMode',e)"
         />
         <CVselect
-                v-model="value.videoModeIndex"
+                v-model="videoModeIndex"
                 name="Resolution"
                 :list="resolutionList"
                 @input="handlePipelineData('videoModeIndex')"
                 @rollback="e => rollback('videoModeIndex', e)"
         />
         <CVselect
-                v-model="value.streamDivisor"
+                v-model="streamDivisor"
                 name="Stream Resolution"
                 :list="streamResolutionList"
                 @input="handlePipelineData('streamDivisor')"
@@ -65,6 +65,55 @@
             return {}
         },
         computed: {
+            exposure: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.exposure
+                },
+                set(val) {
+                    this.$store.commit("exposure", val);
+                }
+            },
+            brightness: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.brightness
+                },
+                set(val) {
+                    this.$store.commit("brightness", val);
+                }
+            },
+            gain: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.gain
+                },
+                set(val) {
+                    this.$store.commit("gain", val);
+                }
+            },
+            orientationMode: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.rotationMode
+                },
+                set(val) {
+                    this.$store.commit("rotationMode", val);
+                }
+            },
+            videoModeIndex: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.videoModeIndex
+                },
+                set(val) {
+                    this.$store.commit("videoModeIndex", val);
+                }
+            },
+            streamDivisor: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.streamDivisor
+                },
+                set(val) {
+                    this.$store.commit("streamDivisor", val);
+                }
+            },
+
             resolutionList: {
                 get() {
                     let tmp_list = [];
@@ -74,6 +123,7 @@
                     return tmp_list;
                 }
             },
+
             streamResolutionList: {
                 get() {
                     let cam_res = this.$store.getters.videoFormatList[
