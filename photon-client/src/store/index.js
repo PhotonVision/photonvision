@@ -106,8 +106,8 @@ export default new Vuex.Store({
 
         // threshold tab
         hsvHue: setCurrPipeProp('hsvHue'),
-        hsvSat: setCurrPipeProp('hsvSaturation'),
-        hsvVal: setCurrPipeProp('hsvValue'),
+        hsvSaturation: setCurrPipeProp('hsvSaturation'),
+        hsvValue: setCurrPipeProp('hsvValue'),
         erode: setCurrPipeProp('erode'),
         dilate: setCurrPipeProp('dilate'),
 
