@@ -171,15 +171,20 @@ public class PipelineManager {
         }
     }
 
-    public void addPipeline(PipelineType type) {
+    public CVPipelineSettings addPipeline(PipelineType type) {
         switch (type) {
-            case Reflective:
-                userPipelineSettings.add(new ReflectivePipelineSettings());
-                break;
-            case ColoredShape:
-                userPipelineSettings.add(new ColoredShapePipelineSettings());
-                break;
+            case Reflective: {
+                var added = new ReflectivePipelineSettings();
+                userPipelineSettings.add(added);
+                return added;
+            }
+            case ColoredShape: {
+                var added = new ColoredShapePipelineSettings();
+                userPipelineSettings.add(added);
+                return added;
+            }
         }
+        return null;
     }
 
     private void addPipelineInternal(CVPipelineSettings settings) {
@@ -190,5 +195,9 @@ public class PipelineManager {
     private void removePipelineInternal(int index) {
         userPipelineSettings.remove(index);
         reassignIndexes();
+    }
+
+    public void setIndex(int index) {
+        this.setPipelineInternal(index);
     }
 }

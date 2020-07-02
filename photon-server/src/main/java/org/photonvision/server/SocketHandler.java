@@ -50,11 +50,13 @@ public class SocketHandler {
     private final UIOutboundSubscriber uiOutboundSubscriber = new UIOutboundSubscriber(this);
 
     private final IncomingCameraCommandSubscriber cameraChangeSubscriber =
-            new IncomingCameraCommandSubscriber(VisionModuleManager.getInstance());
+        new IncomingCameraCommandSubscriber(VisionModuleManager.getInstance());
 
-    public static class UIMap extends HashMap<String, Object> {}
+    public static class UIMap extends HashMap<String, Object> {
+    }
 
-    abstract static class SelectiveBroadcastPair extends Pair<UIMap, WsContext> {}
+    abstract static class SelectiveBroadcastPair extends Pair<UIMap, WsContext> {
+    }
 
     private static class ThreadSafeSingleton {
         private static final SocketHandler INSTANCE = new SocketHandler();
@@ -85,6 +87,14 @@ public class SocketHandler {
             Map<String, Object> deserializedData =
                 objectMapper.readValue(context.data(), new TypeReference<>() {
                 });
+
+            // Special case the current camera index
+            var camIndexValue = deserializedData.get("cameraIndex");
+            Integer cameraIndex = null;
+            if(camIndexValue instanceof Integer) {
+                cameraIndex = (Integer) camIndexValue;
+                deserializedData.remove("cameraIndex");
+            }
 
             for (Map.Entry<String, Object> entry : deserializedData.entrySet()) {
                 try {
@@ -120,7 +130,8 @@ public class SocketHandler {
                                 new IncomingWebSocketEvent<>(
                                     DataChangeDestination.DCD_ACTIVEMODULE,
                                     "cameraNickname",
-                                    (String) entryValue);
+                                    (String) entryValue,
+                                    cameraIndex);
                             dcService.publishEvent(ccnEvent);
                             break;
                         }
@@ -129,7 +140,8 @@ public class SocketHandler {
                                 new IncomingWebSocketEvent<>(
                                     DataChangeDestination.DCD_ACTIVEMODULE,
                                     "pipelineName",
-                                    (String) entryValue);
+                                    (String) entryValue,
+                                    cameraIndex);
                             dcService.publishEvent(cpnEvent);
                             break;
                         }
@@ -142,7 +154,8 @@ public class SocketHandler {
                                 new IncomingWebSocketEvent<>(
                                     DataChangeDestination.DCD_ACTIVEMODULE,
                                     "newPipelineInfo",
-                                    Pair.of(name, type));
+                                    Pair.of(name, type),
+                                    cameraIndex);
                             dcService.publishEvent(newPipelineEvent);
                             break;
                         }
@@ -178,7 +191,8 @@ public class SocketHandler {
                                 new IncomingWebSocketEvent<>(
                                     DataChangeDestination.DCD_ACTIVEMODULE,
                                     "changePipeline",
-                                    (Integer) entryValue);
+                                    (Integer) entryValue,
+                                    cameraIndex);
                             dcService.publishEvent(changePipelineEvent);
                             break;
                         }
@@ -187,14 +201,16 @@ public class SocketHandler {
                                 new IncomingWebSocketEvent<>(
                                     DataChangeDestination.DCD_ACTIVEMODULE,
                                     "changePipeline",
-                                    PipelineManager.CAL_3D_INDEX);
+                                    PipelineManager.CAL_3D_INDEX,
+                                    cameraIndex);
                             dcService.publishEvent(changePipelineEvent);
                             break;
                         }
                         case SMT_TAKECALIBRATIONSNAPSHOT: {
                             var takeCalSnapshotEvent =
                                 new IncomingWebSocketEvent<>(
-                                    DataChangeDestination.DCD_ACTIVEMODULE, "takeCalSnapshot", 0);
+                                    DataChangeDestination.DCD_ACTIVEMODULE, "takeCalSnapshot", 0,
+                                    cameraIndex);
                             dcService.publishEvent(takeCalSnapshotEvent);
                             break;
                         }
@@ -202,17 +218,17 @@ public class SocketHandler {
                             HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
 
                             if (data.size() >= 2) {
-                                var cameraIndex = (int)data.get("cameraIndex");
+                                var cameraIndex2 = (int) data.get("cameraIndex");
                                 for (var dataEntry : data.entrySet()) {
                                     if (dataEntry.getKey().equals("cameraIndex")) {
                                         continue;
                                     }
                                     var pipelineSettingChangeEvent =
-                                            new IncomingWebSocketEvent(
-                                                    DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS,
-                                                    dataEntry.getKey(),
-                                                    dataEntry.getValue(),
-                                                    cameraIndex);
+                                        new IncomingWebSocketEvent(
+                                            DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS,
+                                            dataEntry.getKey(),
+                                            dataEntry.getValue(),
+                                            cameraIndex2);
                                     dcService.publishEvent(pipelineSettingChangeEvent);
                                 }
                             } else {

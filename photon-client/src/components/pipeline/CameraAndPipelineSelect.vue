@@ -58,7 +58,7 @@
           v-model="currentPipelineIndex"
           name="Pipeline"
           :list="['Driver Mode'].concat($store.getters.pipelineList)"
-          @input="handleInput('currentPipeline',currentPipelineIndex - 1)"
+          @input="handleInputWithIndex('currentPipeline',currentPipelineIndex - 1)"
         />
       </v-col>
       <v-col
@@ -350,9 +350,9 @@
             savePipelineNameChange() {
                 if (this.checkPipelineName === "") {
                     if (this.isPipelineNameEdit) {
-                        this.handleInput("changePipelineName", this.newPipelineName);
+                        this.handleInputWithIndex("changePipelineName", this.newPipelineName);
                     } else {
-                        this.handleInput("addNewPipeline", this.newPipelineName);
+                        this.handleInputWithIndex("addNewPipeline", this.newPipelineName);
                     }
                     this.discardPipelineNameChange();
                 }

@@ -4,6 +4,13 @@ export const dataHandleMixin = {
             let msg = this.$msgPack.encode({[key]: value});
             this.$socket.send(msg);
         },
+        handleInputWithIndex(key, value) {
+            let msg = this.$msgPack.encode({
+                [key]: value,
+                ["cameraIndex"]: this.$store.getters.currentCameraIndex
+            });
+            this.$socket.send(msg);
+        },
         handleData(val) {
             this.handleInput(val, this[val]);
             this.$emit('update')

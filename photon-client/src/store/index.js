@@ -104,6 +104,8 @@ export default new Vuex.Store({
         pipelineResults: set('pipelineResults'),
         networkSettings: set('networkSettings'),
 
+        currentPipelineIndex: (state, val) => state.cameraSettings[state.currentCameraIndex].currentPipelineIndex = val,
+
         // camera view
         outputShowThresholded: setCurrPipeProp('outputShowThresholded'),
 
