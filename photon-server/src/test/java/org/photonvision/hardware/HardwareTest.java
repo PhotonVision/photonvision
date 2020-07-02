@@ -19,21 +19,25 @@ public class HardwareTest {
 
     @Test
     public void testHardware() {
+        CPU cpu = CPU.getInstance();
+        RAM ram = RAM.getInstance();
+        GPU gpu = GPU.getInstance();
+
         if (!Platform.isRaspberryPi()) return;
 
         System.out.println("Testing on platform: " + Platform.CurrentPlatform);
 
         System.out.println("Printing CPU Info:");
-        System.out.println("Memory: " + CPU.getMemory() + "MB");
-        System.out.println("Temperature: " + CPU.getTemp() + "C");
-        System.out.println("Utilization: : " + CPU.getUtilization() + "%");
+        System.out.println("Memory: " + cpu.getMemory() + "MB");
+        System.out.println("Temperature: " + cpu.getTemp() + "C");
+        System.out.println("Utilization: : " + cpu.getUtilization() + "%");
 
         System.out.println("Printing GPU Info:");
-        System.out.println("Memory: " + GPU.getMemory() + "MB");
-        System.out.println("Temperature: " + GPU.getTemp() + "C");
+        System.out.println("Memory: " + gpu.getMemory() + "MB");
+        System.out.println("Temperature: " + gpu.getTemp() + "C");
 
         System.out.println("Printing RAM Info: ");
-        System.out.println("Used RAM: : " + RAM.getUsedRam() + "MB");
+        System.out.println("Used RAM: : " + ram.getUsedRam() + "MB");
     }
 
     @Test
