@@ -52,6 +52,10 @@ public abstract class VisionSourceSettables {
 
     public abstract void setCurrentVideoMode(VideoMode videoMode);
 
+    public void setVideoModeIndex(int index) {
+        setCurrentVideoMode(videoModes.get(index));
+    }
+
     public abstract HashMap<Integer, VideoMode> getAllVideoModes();
 
     public double getFOV() {
