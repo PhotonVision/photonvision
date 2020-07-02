@@ -17,18 +17,19 @@
 
 package org.photonvision.vision.processes;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import org.apache.commons.lang3.tuple.Pair;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
+import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataConsumer;
 import org.photonvision.common.datatransfer.DataConsumer;
 import org.photonvision.common.logging.LogGroup;
@@ -36,6 +37,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.server.UIUpdateType;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
@@ -51,213 +53,246 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
  */
 public class VisionModule {
 
-  private final Logger logger;
-  private final PipelineManager pipelineManager;
-  private final VisionSource visionSource;
-  private final VisionRunner visionRunner;
-  private final LinkedList<DataConsumer> dataConsumers = new LinkedList<>();
-  private final LinkedList<FrameConsumer> frameConsumers = new LinkedList<>();
-  private final NTDataConsumer ntConsumer;
-  private MJPGFrameConsumer streamer;
-  private final int moduleIndex;
+    private final Logger logger;
+    private final PipelineManager pipelineManager;
+    private final VisionSource visionSource;
+    private final VisionRunner visionRunner;
+    private final LinkedList<DataConsumer> dataConsumers = new LinkedList<>();
+    private final LinkedList<FrameConsumer> frameConsumers = new LinkedList<>();
+    private final NTDataConsumer ntConsumer;
+    private MJPGFrameConsumer streamer;
+    private final int moduleIndex;
 
-  public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
-    logger = new Logger(VisionModule.class, ((USBCameraSource) visionSource).configuration.nickname, LogGroup.VisionProcess);
-    this.pipelineManager = pipelineManager;
-    this.visionSource = visionSource;
-    this.visionRunner =
-      new VisionRunner(
-        this.visionSource.getFrameProvider(),
-        this.pipelineManager::getCurrentPipeline,
-        this::consumeResult);
+    public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
+        logger = new Logger(VisionModule.class, ((USBCameraSource) visionSource).configuration.nickname, LogGroup.VisionProcess);
+        this.pipelineManager = pipelineManager;
+        this.visionSource = visionSource;
+        this.visionRunner =
+            new VisionRunner(
+                this.visionSource.getFrameProvider(),
+                this.pipelineManager::getCurrentPipeline,
+                this::consumeResult);
 
-    DataChangeService.getInstance().addSubscriber(new VisionSettingChangeSubscriber());
+        DataChangeService.getInstance().addSubscriber(new VisionSettingChangeSubscriber());
 
-    streamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
-    ntConsumer = new NTDataConsumer(NetworkTableInstance.getDefault().getTable("photonvision"),
-      visionSource.getSettables().getConfiguration().nickname);
+        streamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
+        ntConsumer = new NTDataConsumer(NetworkTableInstance.getDefault().getTable("photonvision"),
+            visionSource.getSettables().getConfiguration().nickname);
 
-    addFrameConsumer(streamer);
-    addDataConsumer(ntConsumer);
+        addFrameConsumer(streamer);
+        addDataConsumer(ntConsumer);
 
-    this.moduleIndex = index;
-  }
+        this.moduleIndex = index;
 
-  public void start() {
-    visionRunner.startProcess();
-  }
-
-  private class VisionSettingChangeSubscriber extends DataChangeSubscriber {
-
-    private VisionSettingChangeSubscriber() {
-      super();
+        setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
     }
 
-    @SuppressWarnings("unchecked")
-    @Override
-    public void onDataChangeEvent(DataChangeEvent event) {
-      if (event instanceof IncomingWebSocketEvent) {
-        var wsEvent = (IncomingWebSocketEvent<?>) event;
-        if (wsEvent.cameraIndex != null && wsEvent.cameraIndex == moduleIndex) {
-          logger.debug("Got PSC event - propName: " + wsEvent.propertyName);
+    public void start() {
+        visionRunner.startProcess();
+    }
 
-          var propName = wsEvent.propertyName;
-          var newPropValue = wsEvent.data;
-          var currentSettings = pipelineManager.getCurrentPipeline().getSettings();
+    private class VisionSettingChangeSubscriber extends DataChangeSubscriber {
 
-          if (propName.equals("cameraNickname")) {
-            var newNickname = (String) newPropValue;
-            logger.info("Changing nickname to " + newNickname);
-            // TODO change camera nickname
-            return;
-          } else if (propName.equals("pipelineName")) {
-            logger.info("Changing nick to " + newPropValue);
-            pipelineManager.getCurrentPipelineSettings().pipelineNickname = (String) newPropValue;
-            return;
-          } else if (propName.equals("newPipelineInfo")) {
-            // add new pipeline
-
-            var typeName = (Pair<PipelineType, String>) newPropValue;
-            var type = typeName.getLeft();
-            var name = typeName.getRight();
-
-            logger.info("Adding a " + type + " with name " + name);
-
-            var addedSettings = pipelineManager.addPipeline(type);
-            addedSettings.pipelineNickname = name;
-            return;
-          } else if (propName.equals("changePipeline")) {
-            var index = (Integer) newPropValue;
-            logger.debug("Setting pipeline index to " + index);
-            pipelineManager.setIndex(index);
-            return;
-          }
-
-          try {
-            var propField = currentSettings.getClass().getField(propName);
-            var propType = propField.getType();
-
-            if (propType.isEnum()) {
-              var actual = propType.getEnumConstants()[(int) newPropValue];
-              propField.set(currentSettings, actual);
-            } else if (propType.isAssignableFrom(DoubleCouple.class)) {
-              var orig = (ArrayList<Double>) newPropValue;
-              var actual = new DoubleCouple(orig.get(0), orig.get(1));
-              propField.set(currentSettings, actual);
-            } else if (propType.isAssignableFrom(IntegerCouple.class)) {
-              var orig = (ArrayList<Integer>) newPropValue;
-              var actual = new IntegerCouple(orig.get(0), orig.get(1));
-              propField.set(currentSettings, actual);
-            } else if (propType.equals(Double.TYPE)) {
-              propField.setDouble(currentSettings, (Double) newPropValue);
-            } else if (propType.equals(Integer.TYPE)) {
-              propField.setInt(currentSettings, (Integer) newPropValue);
-            } else if (propType.equals(Boolean.TYPE)) {
-              if (newPropValue instanceof Integer) {
-                propField.setBoolean(currentSettings, (Integer) newPropValue != 0);
-              } else {
-                propField.setBoolean(currentSettings, (Boolean) newPropValue);
-              }
-            } else {
-              propField.set(newPropValue, newPropValue);
-            }
-            logger.trace("Set prop " + propName + " to value " + newPropValue);
-          } catch (NoSuchFieldException | IllegalAccessException e) {
-            logger.error("Could not set prop " + propName + " with value " + newPropValue + " on " + currentSettings);
-            e.printStackTrace();
-          } catch (Exception e) {
-            logger.error("Unknown exception when setting PSC prop!");
-            e.printStackTrace();
-          }
-
-          if (propName.startsWith("camera")) {
-            var propMethodName = "set" + propName.replace("camera", "");
-            var methods = visionSource.getSettables().getClass().getMethods();
-            for (var method : methods) {
-              if (method.getName().equalsIgnoreCase(propMethodName)) {
-                try {
-                  method.invoke(visionSource.getSettables(), (int) newPropValue);
-                } catch (Exception e) {
-                  logger.error("Failed to invoke camera settable method: " + method.getName());
-                  e.printStackTrace();
-                }
-              }
-            }
-          }
+        private VisionSettingChangeSubscriber() {
+            super();
         }
-        ConfigManager.getInstance().save();
-      }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public void onDataChangeEvent(DataChangeEvent event) {
+            if (event instanceof IncomingWebSocketEvent) {
+                var wsEvent = (IncomingWebSocketEvent<?>) event;
+
+                if (wsEvent.propertyName.equals("save")) {
+                    logger.debug("Saving module settings...");
+                    ConfigManager.getInstance().saveModule(getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
+                    return;
+                }
+
+                if (wsEvent.cameraIndex != null && wsEvent.cameraIndex == moduleIndex) {
+                    logger.debug("Got PSC event - propName: " + wsEvent.propertyName);
+
+                    var propName = wsEvent.propertyName;
+                    var newPropValue = wsEvent.data;
+                    var currentSettings = pipelineManager.getCurrentPipeline().getSettings();
+
+                    if (propName.equals("cameraNickname")) {
+                        var newNickname = (String) newPropValue;
+                        logger.info("Changing nickname to " + newNickname);
+                        // TODO change camera nickname
+                        return;
+                    } else if (propName.equals("pipelineName")) {
+                        logger.info("Changing nick to " + newPropValue);
+                        pipelineManager.getCurrentPipelineSettings().pipelineNickname = (String) newPropValue;
+                        return;
+                    } else if (propName.equals("newPipelineInfo")) {
+                        // add new pipeline
+
+                        var typeName = (Pair<PipelineType, String>) newPropValue;
+                        var type = typeName.getLeft();
+                        var name = typeName.getRight();
+
+                        logger.info("Adding a " + type + " with name " + name);
+
+                        var addedSettings = pipelineManager.addPipeline(type);
+                        addedSettings.pipelineNickname = name;
+                        return;
+                    } else if (propName.equals("changePipeline")) {
+                        var index = (Integer) newPropValue;
+                        logger.debug("Setting pipeline index to " + index);
+                        setPipeline(index);
+                        return;
+                    }
+
+                    try {
+                        var propField = currentSettings.getClass().getField(propName);
+                        var propType = propField.getType();
+
+                        if (propType.isEnum()) {
+                            var actual = propType.getEnumConstants()[(int) newPropValue];
+                            propField.set(currentSettings, actual);
+                        } else if (propType.isAssignableFrom(DoubleCouple.class)) {
+                            var orig = (ArrayList<Double>) newPropValue;
+                            var actual = new DoubleCouple(orig.get(0), orig.get(1));
+                            propField.set(currentSettings, actual);
+                        } else if (propType.isAssignableFrom(IntegerCouple.class)) {
+                            var orig = (ArrayList<Integer>) newPropValue;
+                            var actual = new IntegerCouple(orig.get(0), orig.get(1));
+                            propField.set(currentSettings, actual);
+                        } else if (propType.equals(Double.TYPE)) {
+                            propField.setDouble(currentSettings, (Double) newPropValue);
+                        } else if (propType.equals(Integer.TYPE)) {
+                            propField.setInt(currentSettings, (Integer) newPropValue);
+                        } else if (propType.equals(Boolean.TYPE)) {
+                            if (newPropValue instanceof Integer) {
+                                propField.setBoolean(currentSettings, (Integer) newPropValue != 0);
+                            } else {
+                                propField.setBoolean(currentSettings, (Boolean) newPropValue);
+                            }
+                        } else {
+                            propField.set(newPropValue, newPropValue);
+                        }
+                        logger.trace("Set prop " + propName + " to value " + newPropValue);
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        logger.error("Could not set prop " + propName + " with value " + newPropValue + " on " + currentSettings);
+                        e.printStackTrace();
+                    } catch (Exception e) {
+                        logger.error("Unknown exception when setting PSC prop!");
+                        e.printStackTrace();
+                    }
+
+                    if (propName.startsWith("camera")) {
+                        var propMethodName = "set" + propName.replace("camera", "");
+                        var methods = visionSource.getSettables().getClass().getMethods();
+                        for (var method : methods) {
+                            if (method.getName().equalsIgnoreCase(propMethodName)) {
+                                try {
+                                    method.invoke(visionSource.getSettables(), (int) newPropValue);
+                                } catch (Exception e) {
+                                    logger.error("Failed to invoke camera settable method: " + method.getName());
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    }
+                }
+                ConfigManager.getInstance().save();
+            }
+        }
     }
-  }
 
-  public void setCameraNickname(String newName) {
-    visionSource.getSettables().getConfiguration().nickname = newName;
-    ntConsumer.setCameraName(newName);
+    private void setPipeline(int index) {
+        logger.info("Setting pipeline to " + index);
+        pipelineManager.setIndex(index);
+        var config = pipelineManager.getPipelineSettings(index);
+        visionSource.getSettables().setCurrentVideoMode(config.cameraVideoModeIndex);
+        visionSource.getSettables().setBrightness(config.cameraBrightness);
+        visionSource.getSettables().setExposure(config.cameraExposure);
+        visionSource.getSettables().setGain(config.cameraGain);
+        visionSource.getSettables().getConfiguration().currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
 
-    frameConsumers.remove(streamer);
-    this.streamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
-    this.frameConsumers.add(streamer);
-  }
+        ConfigManager.getInstance().saveModule(getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
+        DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST,
+            "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+    }
 
-  public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
-    // TODO
-    var ret = new PhotonConfiguration.UICameraConfiguration();
+    public void setCameraNickname(String newName) {
+        visionSource.getSettables().getConfiguration().nickname = newName;
+        ntConsumer.setCameraName(newName);
 
-    ret.fov = this.visionSource.getSettables().getFOV();
+        frameConsumers.remove(streamer);
+        this.streamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
+        this.frameConsumers.add(streamer);
+    }
+
+    public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
+        // TODO
+        var ret = new PhotonConfiguration.UICameraConfiguration();
+
+        ret.fov = this.visionSource.getSettables().getFOV();
 //        ret.tiltDegrees = this.visionSource.getSettables() // TODO implement tilt in camera settings
-    ret.nickname = visionSource.getSettables().getConfiguration().nickname;
-    ret.currentPipelineSettings = SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
-    ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
-    ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
+        ret.nickname = visionSource.getSettables().getConfiguration().nickname;
+        ret.currentPipelineSettings = SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
+        ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
+        ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
 
-    // TODO refactor into helper method
-    var temp = new HashMap<Integer, HashMap<String, Object>>();
-    var videoModes = visionSource.getSettables().getAllVideoModes();
-    for (var k : videoModes.keySet()) {
-      var internalMap = new HashMap<String, Object>();
+        // TODO refactor into helper method
+        var temp = new HashMap<Integer, HashMap<String, Object>>();
+        var videoModes = visionSource.getSettables().getAllVideoModes();
+        for (var k : videoModes.keySet()) {
+            var internalMap = new HashMap<String, Object>();
 
-      internalMap.put("width", videoModes.get(k).width);
-      internalMap.put("height", videoModes.get(k).height);
-      internalMap.put("fps", videoModes.get(k).fps);
-      internalMap.put("pixelFormat", videoModes.get(k).pixelFormat.toString());
+            internalMap.put("width", videoModes.get(k).width);
+            internalMap.put("height", videoModes.get(k).height);
+            internalMap.put("fps", videoModes.get(k).fps);
+            internalMap.put("pixelFormat", videoModes.get(k).pixelFormat.toString());
 
-      temp.put(k, internalMap);
+            temp.put(k, internalMap);
+        }
+        ret.videoFormatList = temp;
+        ret.streamPort = streamer.getCurrentStreamPort();
+
+        return ret;
     }
-    ret.videoFormatList = temp;
-    ret.streamPort = streamer.getCurrentStreamPort();
 
-    return ret;
-  }
+    public CameraConfiguration getStateAsCameraConfig() {
+        var config = visionSource.getSettables().getConfiguration();
+        config.setPipelineSettings(pipelineManager.userPipelineSettings);
+        config.driveModeSettings = pipelineManager.driverModePipeline.getSettings();
+        config.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
 
-  public void addDataConsumer(DataConsumer dataConsumer) {
-    dataConsumers.add(dataConsumer);
-  }
-
-  void addFrameConsumer(FrameConsumer consumer) {
-    frameConsumers.add(consumer);
-  }
-
-  void consumeResult(CVPipelineResult result) {
-    // TODO: put result in to Data (not this way!)
-    var data = new Data();
-    data.result = result;
-    consumeData(data);
-
-    var frame = result.outputFrame;
-    consumeFrame(frame);
-
-    data.release();
-  }
-
-  void consumeData(Data data) {
-    for (var dataConsumer : dataConsumers) {
-      dataConsumer.accept(data);
+        return config;
     }
-  }
 
-  void consumeFrame(Frame frame) {
-    for (var frameConsumer : frameConsumers) {
-      frameConsumer.accept(frame);
+    public void addDataConsumer(DataConsumer dataConsumer) {
+        dataConsumers.add(dataConsumer);
     }
-  }
+
+    void addFrameConsumer(FrameConsumer consumer) {
+        frameConsumers.add(consumer);
+    }
+
+    void consumeResult(CVPipelineResult result) {
+        // TODO: put result in to Data (not this way!)
+        var data = new Data();
+        data.result = result;
+        consumeData(data);
+
+        var frame = result.outputFrame;
+        consumeFrame(frame);
+
+        data.release();
+    }
+
+    void consumeData(Data data) {
+        for (var dataConsumer : dataConsumers) {
+            dataConsumer.accept(data);
+        }
+    }
+
+    void consumeFrame(Frame frame) {
+        for (var frameConsumer : frameConsumers) {
+            frameConsumer.accept(frame);
+        }
+    }
 }

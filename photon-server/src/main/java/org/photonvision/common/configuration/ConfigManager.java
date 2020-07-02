@@ -38,6 +38,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
+import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSource;
 
 public class ConfigManager {
@@ -77,9 +78,9 @@ public class ConfigManager {
             @Override
             public void onDataChangeEvent(DataChangeEvent event) {
                 if (event instanceof IncomingWebSocketEvent) {
-                    if (((IncomingWebSocketEvent<?>) event).propertyName.equals("save")) {
-                        save();
-                    }
+//                    if (((IncomingWebSocketEvent<?>) event).propertyName.equals("save")) {
+//                        save();
+//                    }
                 }
             }
         });
@@ -284,6 +285,11 @@ public class ConfigManager {
         List<CameraConfiguration> list = sources.keySet().stream()
             .map(it -> it.getSettables().getConfiguration()).collect(Collectors.toList());
         getConfig().addCameraConfigs(list);
+        save();
+    }
+
+    public void saveModule(CameraConfiguration config, String uniqueName) {
+        getConfig().addCameraConfig(uniqueName, config);
         save();
     }
 }

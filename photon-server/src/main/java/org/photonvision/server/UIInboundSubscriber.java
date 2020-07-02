@@ -21,7 +21,8 @@ public class UIInboundSubscriber extends DataChangeSubscriber {
     public void onDataChangeEvent(DataChangeEvent event) {
         if (event instanceof IncomingWebSocketEvent) {
             var incomingWSEvent = (IncomingWebSocketEvent) event;
-            if (incomingWSEvent.propertyName.equals("userConnected")) {
+            if (incomingWSEvent.propertyName.equals("userConnected") ||
+                incomingWSEvent.propertyName.equals("sendFullSettings")) {
                 // Send full settings
                 var settings = ConfigManager.getInstance().getConfig().toHashMap();
                 var message = new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "fullsettings", settings);

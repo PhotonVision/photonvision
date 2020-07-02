@@ -296,7 +296,7 @@
                     return this.$store.getters.currentCameraIndex;
                 },
                 set(value) {
-                    this.$store.commit('currentPipelineIndex', value - 1);
+                    this.$store.commit('currentCameraIndex', value);
                 }
             },
             currentPipelineIndex: {

@@ -50,8 +50,13 @@ public abstract class VisionSourceSettables {
 
     public abstract VideoMode getCurrentVideoMode();
 
+    public void setCurrentVideoMode(int index) {
+        setCurrentVideoMode(getAllVideoModes().get(index));
+    }
+
     public abstract void setCurrentVideoMode(VideoMode videoMode);
 
+    @SuppressWarnings("unused")
     public void setVideoModeIndex(int index) {
         setCurrentVideoMode(videoModes.get(index));
     }
