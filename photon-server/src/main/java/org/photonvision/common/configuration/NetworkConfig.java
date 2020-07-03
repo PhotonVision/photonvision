@@ -22,7 +22,7 @@ import org.photonvision.common.networking.NetworkMode;
 import java.util.HashMap;
 
 public class NetworkConfig {
-    public int teamNumber = 1577;
+    public int teamNumber = 1;
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String ip = "";
     public String gateway = "";
