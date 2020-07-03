@@ -118,5 +118,6 @@ spotless {
     indentWithTabs(2)
     indentWithSpaces(4)
     removeUnusedImports()
+    licenseHeaderFile "$rootDir/LicenseHeader.txt"
   }
 }

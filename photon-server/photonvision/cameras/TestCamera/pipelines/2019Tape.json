@@ -1,0 +1,85 @@
+[ "ReflectivePipelineSettings", {
+  "pipelineIndex" : 0,
+  "pipelineType" : "Reflective",
+  "inputImageFlipMode" : "NONE",
+  "inputImageRotationMode" : "DEG_0",
+  "pipelineNickname" : "2019Tape",
+  "cameraExposure" : 50.0,
+  "cameraBrightness" : 50.0,
+  "cameraGain" : 50.0,
+  "cameraVideoModeIndex" : 0,
+  "inputFrameDivisor" : "NONE",
+  "outputFrameDivisor" : "NONE",
+  "ledMode" : true,
+  "hsvHue" : {
+    "first" : 50,
+    "second" : 180
+  },
+  "hsvSaturation" : {
+    "first" : 50,
+    "second" : 255
+  },
+  "hsvValue" : {
+    "first" : 50,
+    "second" : 255
+  },
+  "outputShowThresholded" : false,
+  "outputShowMultipleTargets" : false,
+  "erode" : false,
+  "dilate" : false,
+  "contourArea" : {
+    "first" : 0.0,
+    "second" : 100.0
+  },
+  "contourRatio" : {
+    "first" : 0.0,
+    "second" : 20.0
+  },
+  "contourExtent" : {
+    "first" : 0.0,
+    "second" : 100.0
+  },
+  "contourSpecklePercentage" : 5,
+  "contourSortMode" : "Largest",
+  "contourTargetOffsetPointEdge" : "Center",
+  "contourTargetOrientation" : "Landscape",
+  "offsetRobotOffsetMode" : "None",
+  "offsetCalibrationPoint" : {
+    "first" : 0.0,
+    "second" : 0.0
+  },
+  "offsetDualLineM" : 1.0,
+  "offsetDualLineB" : 0.0,
+  "contourGroupingMode" : "Single",
+  "contourIntersection" : "Up",
+  "solvePNPEnabled" : false,
+  "cameraCalibration" : null,
+  "targetModel" : {
+    "realWorldCoordinatesArray" : [ {
+      "x" : -5.935999870300293,
+      "y" : 2.6619999408721924,
+      "z" : 0.0
+    }, {
+      "x" : -7.313000202178955,
+      "y" : -2.6619999408721924,
+      "z" : 0.0
+    }, {
+      "x" : 7.313000202178955,
+      "y" : -2.6619999408721924,
+      "z" : 0.0
+    }, {
+      "x" : 5.935999870300293,
+      "y" : 2.6619999408721924,
+      "z" : 0.0
+    } ],
+    "boxHeight" : 4.0
+  },
+  "cameraPitch" : {
+    "radians" : 0.0
+  },
+  "cornerDetectionStrategy" : "APPROX_POLY_DP_AND_EXTREME_CORNERS",
+  "cornerDetectionUseConvexHulls" : true,
+  "cornerDetectionExactSideCount" : false,
+  "cornerDetectionSideCount" : 4,
+  "cornerDetectionAccuracyPercentage" : 10.0
+} ]
