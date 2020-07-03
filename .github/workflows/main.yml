@@ -79,9 +79,7 @@ jobs:
       # Publish Coverage Report.
       - uses: codecov/codecov-action@v1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
           file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
-          fail_ci_if_error: true
 
   build-package:
     needs: [build-client, build-server]
