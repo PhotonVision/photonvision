@@ -211,7 +211,7 @@ public class VisionModule {
                             var actual = propType.getEnumConstants()[(int) newPropValue];
                             propField.set(currentSettings, actual);
                         } else if (propType.isAssignableFrom(DoubleCouple.class)) {
-                            var orig = (ArrayList<Double>) newPropValue;
+                            var orig = (ArrayList<Number>) newPropValue;
                             var actual = new DoubleCouple(orig.get(0), orig.get(1));
                             propField.set(currentSettings, actual);
                         } else if (propType.isAssignableFrom(IntegerCouple.class)) {

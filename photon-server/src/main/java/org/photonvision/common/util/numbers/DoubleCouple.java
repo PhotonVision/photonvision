@@ -25,6 +25,10 @@ public class DoubleCouple extends NumberCouple<Double> {
         super(0.0, 0.0);
     }
 
+    public DoubleCouple(Number first, Number second) {
+        super(first.doubleValue(), second.doubleValue());
+    }
+
     public DoubleCouple(Double first, Double second) {
         super(first, second);
     }
