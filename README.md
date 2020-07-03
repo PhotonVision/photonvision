@@ -1,3 +1,5 @@
+![CI](https://github.com/PhotonVision/photonvision/workflows/CI/badge.svg)
+
 # Photon Vision
 
 This is fork of [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/), a free open-source software for FRC teams to use for vision processing on their robots. Thank you to everyone who worked on the original project.
