@@ -3,6 +3,7 @@ plugins {
     id 'com.github.johnrengelman.shadow' version '5.2.0'
     id "com.diffplug.gradle.spotless" version "3.28.0"
     id "application"
+    id "jacoco"
 }
 
 group 'org.photonvision'
@@ -19,6 +20,7 @@ repositories {
         url = 'https://frcmaven.wpi.edu:443/artifactory/development'
     }
 }
+
 ext {
     wpilibVersion = '2020.3.2-75-g1557a4c'
     openCVVersion = '3.4.7-2'
@@ -122,5 +124,13 @@ spotless {
     java {
         target "src/*/java/org/**/*.java"
         licenseHeaderFile "$rootDir/LicenseHeader.txt"
+    }
+}
+
+jacocoTestReport {
+    dependsOn test // Tests are required to run before generating the report
+    
+    reports {
+        xml.enabled true
     }
 }
