@@ -1,64 +1,64 @@
 <template>
-  <v-app>
-    <v-app-bar
-      app
-      dense
-      clipped-left
-      color="#006492"
-      dark
-    >
-      <img
-        class="imgClass"
-        src="./assets/logo.png"
-      >
-      <div class="flex-grow-1" />
-      <v-toolbar-items>
-        <v-tabs
-          background-color="#006492"
-          dark
-          height="48"
-          slider-color="#ffd843"
+    <v-app>
+        <v-app-bar
+                app
+                dense
+                clipped-left
+                color="#006492"
+                dark
         >
-          <v-tab to="vision">
-            Vision
-          </v-tab>
-          <v-tab to="settings">
-            Settings
-          </v-tab>
-        </v-tabs>
-      </v-toolbar-items>
-    </v-app-bar>
-    <v-content>
-      <v-container
-        fluid
-        fill-height
-      >
-        <v-layout>
-          <v-flex>
-            <router-view @save="startTimer" />
-            <v-snackbar
-              v-model="saveSnackbar"
-              :timeout="1000"
-              top
-              color="#ffd843"
+            <img
+                    class="imgClass"
+                    src="./assets/logo.png"
             >
-              <div style="text-align: center;width: 100%;">
-                <h4>Saved All changes</h4>
-              </div>
-            </v-snackbar>
-            <div v-if="isLogger">
-              <keep-alive>
-                <log-view
-                  class="loggerClass"
-                  :log="log"
-                />
-              </keep-alive>
-            </div>
-          </v-flex>
-        </v-layout>
-      </v-container>
-    </v-content>
-  </v-app>
+            <div class="flex-grow-1"/>
+            <v-toolbar-items>
+                <v-tabs
+                        background-color="#006492"
+                        dark
+                        height="48"
+                        slider-color="#ffd843"
+                >
+                    <v-tab to="vision">
+                        Vision
+                    </v-tab>
+                    <v-tab to="settings">
+                        Settings
+                    </v-tab>
+                </v-tabs>
+            </v-toolbar-items>
+        </v-app-bar>
+        <v-content>
+            <v-container
+                    fluid
+                    fill-height
+            >
+                <v-layout>
+                    <v-flex>
+                        <router-view @save="startTimer"/>
+                        <v-snackbar
+                                v-model="saveSnackbar"
+                                :timeout="1000"
+                                top
+                                color="#ffd843"
+                        >
+                            <div style="text-align: center;width: 100%;">
+                                <h4>Saved All changes</h4>
+                            </div>
+                        </v-snackbar>
+                        <div v-if="isLogger">
+                            <keep-alive>
+                                <log-view
+                                        class="loggerClass"
+                                        :log="log"
+                                />
+                            </keep-alive>
+                        </div>
+                    </v-flex>
+                </v-layout>
+            </v-container>
+        </v-content>
+    </v-app>
 </template>
 
 <script>
@@ -121,9 +121,11 @@
                 if (key === "logMessage") {
                     console.log(value)
                     this.logMessage(value, 0)
+                } else if (key === "updatePipelineResult") {
+                    this.$store.commit('mutatePipelineResults', value)
                 } else if (this.$store.state.hasOwnProperty(key)) {
                     this.$store.commit(key, value);
-                } else if (this.$store.state.pipeline.hasOwnProperty(key)) {
+                } else if (this.$store.getters.currentPipelineSettings.hasOwnProperty(key)) {
                     this.$store.commit('mutatePipeline', {'key': key, 'value': value});
                 } else {
                     switch (key) {

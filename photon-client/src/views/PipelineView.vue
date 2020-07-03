@@ -173,7 +173,7 @@
                     return this.$store.getters.currentPipelineSettings.outputShowThresholded ? 1 : 0;
                 },
                 set(value) {
-                    this.$store.commit('outputShowThresholded', !!value);
+                    this.$store.commit('mutatePipeline', {'outputShowThresholded': !!value});
                 }
             },
             selectedComponent: {
@@ -183,7 +183,7 @@
             },
             fps: {
                 get() {
-                  return this.$store.getters.currentCameraFPS;
+                    return this.$store.getters.currentCameraFPS;
                 }
             }
         },

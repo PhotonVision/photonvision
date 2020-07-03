@@ -19,6 +19,7 @@ package org.photonvision.vision.processes;
 
 import java.util.*;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -36,6 +37,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.server.SocketHandler;
 import org.photonvision.server.UIUpdateType;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.Frame;
@@ -61,6 +63,7 @@ public class VisionModule {
     private final NTDataConsumer ntConsumer;
     private final int moduleIndex;
     private final MJPGFrameConsumer uiStreamer;
+    private long lastUpdateTimestamp = -1;
 
     private MJPGFrameConsumer dashboardStreamer;
 
@@ -85,7 +88,34 @@ public class VisionModule {
         ntConsumer = new NTDataConsumer(NetworkTableInstance.getDefault().getTable("photonvision"),
             visionSource.getSettables().getConfiguration().nickname);
         addDataConsumer(ntConsumer);
-        
+        addDataConsumer(data -> {
+            var now = System.currentTimeMillis();
+            if(lastUpdateTimestamp + 1000 > now) return;
+
+            var uiMap = new HashMap<Integer, HashMap<String, Object>>();
+            var dataMap = new HashMap<String, Object>();
+            dataMap.put("fps", 1000.0 / data.result.getLatencyMillis());
+            var targets = data.result.targets;
+            var uiTargets = new ArrayList<HashMap<String, Object>>();
+            for (var t : targets) {
+                uiTargets.add(t.toHashMap());
+            }
+            dataMap.put("targets", uiTargets);
+
+            uiMap.put(index, dataMap);
+            var retMap = new HashMap<String, Object>();
+            retMap.put("updatePipelineResult", uiMap);
+
+            try {
+                SocketHandler.getInstance().broadcastMessage(retMap, null);
+            } catch (JsonProcessingException e) {
+                logger.error(e.getMessage());
+                logger.error(Arrays.toString(e.getStackTrace()));
+            }
+
+            lastUpdateTimestamp = now;
+        });
+
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 
         dashboardStreamer.setFrameDivisor(pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
@@ -235,7 +265,11 @@ public class VisionModule {
     private void saveAndBroadcast() {
         ConfigManager.getInstance().saveModule(getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
         DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST,
-                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+            "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+    }
+
+    private void save() {
+        ConfigManager.getInstance().saveModule(getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
     }
 
     private void setCameraNickname(String newName) {

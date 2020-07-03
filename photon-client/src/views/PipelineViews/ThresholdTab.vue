@@ -1,76 +1,76 @@
 <template>
-  <div>
-    <CVrangeSlider
-      v-model="hsvHue"
-      name="Hue"
-      :min="0"
-      :max="180"
-      @input="handlePipelineData('hsvHue')"
-      @rollback="e => rollback('hue',e)"
-    />
-    <CVrangeSlider
-      v-model="hsvSaturation"
-      name="Saturation"
-      :min="0"
-      :max="255"
-      @input="handlePipelineData('hsvSaturation')"
-      @rollback="e => rollback('saturation',e)"
-    />
-    <CVrangeSlider
-      v-model="hsvValue"
-      name="Value"
-      :min="0"
-      :max="255"
-      @input="handlePipelineData('hsvValue')"
-      @rollback="e => rollback('value',e)"
-    />
-    <v-divider
-      color="black"
-      style="margin-top: 5px"
-    />
-    <v-row justify="center">
-      <v-btn
-        style="margin: 20px;"
-        color="#ffd843"
-        small
-        @click="setFunction(1)"
-      >
-        <v-icon>colorize</v-icon>
-        Eye drop
-      </v-btn>
-      <v-btn
-        style="margin: 20px;"
-        color="#ffd843"
-        small
-        @click="setFunction(2)"
-      >
-        <v-icon>add</v-icon>
-        Expand Selection
-      </v-btn>
-      <v-btn
-        style="margin: 20px;"
-        color="#ffd843"
-        small
-        @click="setFunction(3)"
-      >
-        <v-icon>remove</v-icon>
-        Shrink Selection
-      </v-btn>
-    </v-row>
-    <v-divider color="black" />
-    <CVswitch
-      v-model="erode"
-      name="Erode"
-      @input="handlePipelineData('erode')"
-      @rollback="e => rollback('erode',e)"
-    />
-    <CVswitch
-      v-model="dilate"
-      name="Dilate"
-      @input="handlePipelineData('dilate')"
-      @rollback="e => rollback('dilate',e)"
-    />
-  </div>
+    <div>
+        <CVrangeSlider
+                v-model="hsvHue"
+                name="Hue"
+                :min="0"
+                :max="180"
+                @input="handlePipelineData('hsvHue')"
+                @rollback="e => rollback('hue',e)"
+        />
+        <CVrangeSlider
+                v-model="hsvSaturation"
+                name="Saturation"
+                :min="0"
+                :max="255"
+                @input="handlePipelineData('hsvSaturation')"
+                @rollback="e => rollback('saturation',e)"
+        />
+        <CVrangeSlider
+                v-model="hsvValue"
+                name="Value"
+                :min="0"
+                :max="255"
+                @input="handlePipelineData('hsvValue')"
+                @rollback="e => rollback('value',e)"
+        />
+        <v-divider
+                color="black"
+                style="margin-top: 5px"
+        />
+        <v-row justify="center">
+            <v-btn
+                    style="margin: 20px;"
+                    color="#ffd843"
+                    small
+                    @click="setFunction(1)"
+            >
+                <v-icon>colorize</v-icon>
+                Eye drop
+            </v-btn>
+            <v-btn
+                    style="margin: 20px;"
+                    color="#ffd843"
+                    small
+                    @click="setFunction(2)"
+            >
+                <v-icon>add</v-icon>
+                Expand Selection
+            </v-btn>
+            <v-btn
+                    style="margin: 20px;"
+                    color="#ffd843"
+                    small
+                    @click="setFunction(3)"
+            >
+                <v-icon>remove</v-icon>
+                Shrink Selection
+            </v-btn>
+        </v-row>
+        <v-divider color="black"/>
+        <CVswitch
+                v-model="erode"
+                name="Erode"
+                @input="handlePipelineData('erode')"
+                @rollback="e => rollback('erode',e)"
+        />
+        <CVswitch
+                v-model="dilate"
+                name="Dilate"
+                @input="handlePipelineData('dilate')"
+                @rollback="e => rollback('dilate',e)"
+        />
+    </div>
 </template>
 
 <script>
@@ -83,7 +83,7 @@
             CVrangeSlider,
             CVswitch
         },
-      // eslint-disable-next-line vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
         data() {
             return {
@@ -98,7 +98,7 @@
                     return this.$store.getters.currentPipelineSettings.hsvHue
                 },
                 set(val) {
-                    this.$store.commit("hsvHue", val)
+                    this.$store.commit("mutatePipeline", {"hsvHue": val})
                 }
             },
             hsvSaturation: {
@@ -106,7 +106,7 @@
                     return this.$store.getters.currentPipelineSettings.hsvSaturation
                 },
                 set(val) {
-                    this.$store.commit("hsvSaturation", val)
+                    this.$store.commit("mutatePipeline", {"hsvSaturation": val})
                 }
             },
             hsvValue: {
@@ -114,7 +114,7 @@
                     return this.$store.getters.currentPipelineSettings.hsvValue
                 },
                 set(val) {
-                    this.$store.commit("hsvValue", val)
+                    this.$store.commit("mutatePipeline", {"hsvValue": val})
                 }
             },
             erode: {
@@ -122,7 +122,7 @@
                     return this.$store.getters.currentPipelineSettings.erode
                 },
                 set(val) {
-                    this.$store.commit("erode", val);
+                    this.$store.commit("mutatePipeline", {"erode": val});
                 }
             },
             dilate: {
@@ -130,7 +130,7 @@
                     return this.$store.getters.currentPipelineSettings.dilate
                 },
                 set(val) {
-                    this.$store.commit("dilate", val);
+                    this.$store.commit("mutatePipeline", {"dilate": val});
                 }
             },
         },
@@ -148,13 +148,13 @@
                         [[this.value.hue[0], this.value.saturation[0], this.value.value[0]], [this.value.hue[1], this.value.saturation[1], this.value.value[1]]]);
                     this.currentFunction = undefined;
                     let msg = this.$msgPack.encode({
-                      "changePipelineSetting": {
-                        'hsvHue': [hsvArray[0][0], hsvArray[1][0]],
-                        'hsvSaturation': [hsvArray[0][1], hsvArray[1][1]],
-                        'hsvValue': [hsvArray[0][2], hsvArray[1][2]],
-                        'outputShowThresholded': this.showThresholdState,
-                        'cameraIndex': this.$store.state.currentCameraIndex
-                      }
+                        "changePipelineSetting": {
+                            'hsvHue': [hsvArray[0][0], hsvArray[1][0]],
+                            'hsvSaturation': [hsvArray[0][1], hsvArray[1][1]],
+                            'hsvValue': [hsvArray[0][2], hsvArray[1][2]],
+                            'outputShowThresholded': this.showThresholdState,
+                            'cameraIndex': this.$store.state.currentCameraIndex
+                        }
                     });
                     this.$socket.send(msg);
                     this.$emit('update');

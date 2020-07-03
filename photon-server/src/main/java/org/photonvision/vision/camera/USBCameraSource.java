@@ -75,6 +75,7 @@ public class USBCameraSource implements VisionSource {
         @Override
         public void setExposure(int exposure) {
             camera.setExposureManual(exposure);
+            camera.setExposureManual(exposure);
         }
 
         @Override
@@ -84,6 +85,7 @@ public class USBCameraSource implements VisionSource {
 
         @Override
         public void setBrightness(int brightness) {
+            camera.setBrightness(brightness);
             camera.setBrightness(brightness);
         }
 

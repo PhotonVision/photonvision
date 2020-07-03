@@ -70,7 +70,7 @@
                     return parseInt(this.$store.getters.currentPipelineSettings.cameraExposure);
                 },
                 set(val) {
-                    this.$store.commit("cameraExposure", parseInt(val));
+                    this.$store.commit("mutatePipeline", {"cameraExposure": parseInt(val)});
                 }
             },
             cameraBrightness: {
@@ -78,7 +78,7 @@
                     return parseInt(this.$store.getters.currentPipelineSettings.cameraBrightness)
                 },
                 set(val) {
-                    this.$store.commit("cameraBrightness", parseInt(val));
+                    this.$store.commit("mutatePipeline", {"cameraBrightness": parseInt(val)});
                 }
             },
             cameraGain: {
@@ -86,7 +86,7 @@
                     return parseInt(this.$store.getters.currentPipelineSettings.cameraGain)
                 },
                 set(val) {
-                    this.$store.commit("cameraGain", parseInt(val));
+                    this.$store.commit("mutatePipeline", {"cameraGain": parseInt(val)});
                 }
             },
             inputImageRotationMode: {
@@ -94,7 +94,7 @@
                     return this.$store.getters.currentPipelineSettings.inputImageRotationMode
                 },
                 set(val) {
-                    this.$store.commit("inputImageRotationMode", val);
+                    this.$store.commit("mutatePipeline", {"inputImageRotationMode": val});
                 }
             },
             cameraVideoModeIndex: {
@@ -102,7 +102,7 @@
                     return this.$store.getters.currentPipelineSettings.cameraVideoModeIndex
                 },
                 set(val) {
-                    this.$store.commit("cameraVideoModeIndex", val);
+                    this.$store.commit("mutatePipeline", {"cameraVideoModeIndex": val});
                 }
             },
             outputFrameDivisor: {
@@ -110,7 +110,7 @@
                     return this.$store.getters.currentPipelineSettings.outputFrameDivisor
                 },
                 set(val) {
-                    this.$store.commit("outputFrameDivisor", val);
+                    this.$store.commit("mutatePipeline", {"outputFrameDivisor": val});
                 }
             },
 

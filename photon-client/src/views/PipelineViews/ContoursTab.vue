@@ -76,7 +76,7 @@
                     return this.$store.getters.currentPipelineSettings.contourArea
                 },
                 set(val) {
-                    this.$store.commit("contourArea", val);
+                    this.$store.commit("mutatePipeline", {"contourArea": val});
                 }
             },
             contourRatio: {
@@ -84,7 +84,7 @@
                     return this.$store.getters.currentPipelineSettings.contourRatio
                 },
                 set(val) {
-                    this.$store.commit("contourRatio", val);
+                    this.$store.commit("mutatePipeline", {"contourRatio": val});
                 }
             },
             contourExtent: {
@@ -92,7 +92,7 @@
                     return this.$store.getters.currentPipelineSettings.contourExtent
                 },
                 set(val) {
-                    this.$store.commit("contourExtent", val);
+                    this.$store.commit("mutatePipeline", {"contourExtent": val});
                 }
             },
             contourSpecklePercentage: {
@@ -100,7 +100,7 @@
                     return this.$store.getters.currentPipelineSettings.contourSpecklePercentage
                 },
                 set(val) {
-                    this.$store.commit("contourSpecklePercentage", val);
+                    this.$store.commit("mutatePipeline", {"contourSpecklePercentage": val});
                 }
             },
             contourGroupingMode: {
@@ -108,7 +108,7 @@
                     return this.$store.getters.currentPipelineSettings.contourGroupingMode
                 },
                 set(val) {
-                    this.$store.commit("contourGroupingMode", val);
+                    this.$store.commit("mutatePipeline", {"contourGroupingMode": val});
                 }
             },
             contourIntersection: {
@@ -116,7 +116,7 @@
                     return this.$store.getters.currentPipelineSettings.contourIntersection
                 },
                 set(val) {
-                    this.$store.commit("contourIntersection", val);
+                    this.$store.commit("mutatePipeline", {"contourIntersection": val});
                 }
             }
         },

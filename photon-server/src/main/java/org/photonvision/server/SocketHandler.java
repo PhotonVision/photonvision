@@ -259,7 +259,7 @@ public class SocketHandler {
     }
 
     // TODO: change to use the DataFlow system
-    void broadcastMessage(Object message, WsContext userToSkip)
+    public void broadcastMessage(Object message, WsContext userToSkip)
         throws JsonProcessingException {
         for (WsContext user : users) {
             if (user != userToSkip) {

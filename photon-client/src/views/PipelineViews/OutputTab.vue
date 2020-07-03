@@ -99,7 +99,7 @@
                     return this.$store.getters.currentPipelineSettings.contourSortMode
                 },
                 set(val) {
-                    this.$store.commit("contourSortMode", val);
+                    this.$store.commit("mutatePipeline", {"contourSortMode": val});
                 }
             },
             contourTargetOffsetPointEdge: {
@@ -107,7 +107,7 @@
                     return this.$store.getters.currentPipelineSettings.contourTargetOffsetPointEdge
                 },
                 set(val) {
-                    this.$store.commit("contourTargetOffsetPointEdge", val);
+                    this.$store.commit("mutatePipeline", {"contourTargetOffsetPointEdge": val});
                 }
             },
             contourTargetOrientation: {
@@ -115,7 +115,7 @@
                     return this.$store.getters.currentPipelineSettings.contourTargetOrientation
                 },
                 set(val) {
-                    this.$store.commit("contourTargetOrientation", val);
+                    this.$store.commit("mutatePipeline", {"contourTargetOrientation": val});
                 }
             },
             outputShowMultipleTargets: {
@@ -123,7 +123,7 @@
                     return this.$store.getters.currentPipelineSettings.outputShowMultipleTargets
                 },
                 set(val) {
-                    this.$store.commit("outputShowMultipleTargets", val);
+                    this.$store.commit("mutatePipeline", {"outputShowMultipleTargets": val});
                 }
             },
             offsetRobotOffsetMode: {
@@ -131,7 +131,7 @@
                     return this.$store.getters.currentPipelineSettings.offsetRobotOffsetMode
                 },
                 set(val) {
-                    this.$store.commit("offsetRobotOffsetMode", val);
+                    this.$store.commit("mutatePipeline", {"offsetRobotOffsetMode": val});
                 }
             },
 

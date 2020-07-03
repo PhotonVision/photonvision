@@ -10,12 +10,6 @@ const set = key => (state, val) => {
     Vue.set(state, key, val);
 };
 
-const setCurrPipeProp = key => (state, val) => {
-    const setting = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings[key];
-    if (typeof setting !== 'undefined')
-        state.cameraSettings[state.currentCameraIndex].currentPipelineSettings[key] = val;
-};
-
 export default new Vuex.Store({
     modules: {
         reflectivePipelineSettings: {
@@ -106,39 +100,26 @@ export default new Vuex.Store({
 
         currentPipelineIndex: (state, val) => state.cameraSettings[state.currentCameraIndex].currentPipelineIndex = val,
 
-        // camera view
-        outputShowThresholded: setCurrPipeProp('outputShowThresholded'),
+        // TODO change everything to use this
+        mutatePipeline: (state, payload) => {
+            for (let key in payload) {
+                if (!payload.hasOwnProperty(key)) continue;
+                const value = payload[key];
+                const settings = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings;
+                if (settings.hasOwnProperty(key)) {
+                    settings[key] = value;
+                }
+            }
+        },
 
-        // threshold tab
-        hsvHue: setCurrPipeProp('hsvHue'),
-        hsvSaturation: setCurrPipeProp('hsvSaturation'),
-        hsvValue: setCurrPipeProp('hsvValue'),
-        erode: setCurrPipeProp('erode'),
-        dilate: setCurrPipeProp('dilate'),
-
-        // input tab
-        cameraExposure: setCurrPipeProp('cameraExposure'),
-        cameraBrightness: setCurrPipeProp('cameraBrightness'),
-        cameraGain: setCurrPipeProp('cameraGain'),
-        inputImageRotationMode: setCurrPipeProp('inputImageRotationMode'),
-        cameraVideoModeIndex: setCurrPipeProp('cameraVideoModeIndex'),
-        inputFrameDivisor: setCurrPipeProp('inputFrameDivisor'),
-        outputFrameDivisor: setCurrPipeProp('outputFrameDivisor'),
-
-        // contours tab
-        contourArea: setCurrPipeProp('contourArea'),
-        contourRatio: setCurrPipeProp('contourRatio'),
-        contourExtent: setCurrPipeProp('contourExtent'),
-        contourSpecklePercentage: setCurrPipeProp('contourSpecklePercentage'),
-        contourGroupingMode: setCurrPipeProp('contourGroupingMode'),
-        contourIntersection: setCurrPipeProp('contourIntersection'),
-
-        // output tab
-        contourSortMode: setCurrPipeProp('contourSortMode'),
-        contourTargetOffsetPointEdge: setCurrPipeProp('contourTargetOffsetPointEdge'),
-        contourTargetOrientation: setCurrPipeProp('contourTargetOrientation'),
-        outputShowMultipleTargets: setCurrPipeProp('outputShowMultipleTargets'),
-        offsetRobotOffsetMode: setCurrPipeProp('offsetRobotOffsetMode'),
+        mutatePipelineResults(state, payload) {
+            // Key: index, value: result
+            for (let key in payload) {
+                if (!payload.hasOwnProperty(key)) continue;
+                const index = parseInt(key);
+                state.pipelineResults[index] = payload[key];
+            }
+        }
     },
     getters: {
         pipelineSettings: state => state.pipelineSettings,
