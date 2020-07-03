@@ -75,14 +75,12 @@ jobs:
 
       # Generate Coverage Report.
       - run: ./gradlew jacocoTestReport
-
-      - run: ls ./build/reports/jacoco/test
       
       # Publish Coverage Report.
       - uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./build/reports/jacoco/test/jacocoTestReport.xml
+          file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
           fail_ci_if_error: true
 
   build-package:
