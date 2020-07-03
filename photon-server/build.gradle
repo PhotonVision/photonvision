@@ -114,13 +114,17 @@ copyClientUIToResources.dependsOn runNpmOnClient
 copyClientUIToResources.shouldRunAfter runNpmOnClient
 
 spotless {
-  java {
-    googleJavaFormat()
-    paddedCell()
-    indentWithTabs(2)
-    indentWithSpaces(4)
-    removeUnusedImports()
-  }
+    java {
+        googleJavaFormat()
+        paddedCell()
+        indentWithTabs(2)
+        indentWithSpaces(4)
+        removeUnusedImports()
+    }
+    java {
+        target "src/*/java/org/**/*.java"
+        licenseHeaderFile "$rootDir/LicenseHeader.txt"
+    }
 }
 
 jacocoTestReport {
