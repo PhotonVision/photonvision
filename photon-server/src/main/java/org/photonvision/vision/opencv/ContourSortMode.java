@@ -26,7 +26,7 @@ public enum ContourSortMode {
     Smallest(Largest.getComparator().reversed()),
     Highest(Comparator.comparingDouble(rect -> rect.getMinAreaRect().center.y)),
     Lowest(Highest.getComparator().reversed()),
-    Leftmost(Comparator.comparingDouble(target -> target.getMinAreaRect().center.x)),
+    Leftmost(Comparator.comparingDouble(target -> target.getMinAreaRect().center.x * -1)),
     Rightmost(Leftmost.getComparator().reversed()),
     Centermost(
             Comparator.comparingDouble(
