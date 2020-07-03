@@ -29,16 +29,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.DataChangeSubscriber;
-import org.photonvision.common.dataflow.events.DataChangeEvent;
-import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
-import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionSource;
 
 public class ConfigManager {
@@ -73,17 +68,6 @@ public class ConfigManager {
         this.networkConfigFile =
             new File(Path.of(rootFolder.toString(), "networkSettings.json").toUri());
         this.camerasFolder = new File(Path.of(rootFolder.toString(), "cameras").toUri());
-
-        DataChangeService.getInstance().addSubscriber(new DataChangeSubscriber() {
-            @Override
-            public void onDataChangeEvent(DataChangeEvent event) {
-                if (event instanceof IncomingWebSocketEvent) {
-//                    if (((IncomingWebSocketEvent<?>) event).propertyName.equals("save")) {
-//                        save();
-//                    }
-                }
-            }
-        });
 
         load();
     }
@@ -170,6 +154,7 @@ public class ConfigManager {
             var subdir = Path.of(camerasFolder.toPath().toString(), subdirName);
 
             if (!subdir.toFile().exists()) {
+                // TODO: check for error
                 subdir.toFile().mkdirs();
             }
 
@@ -190,6 +175,7 @@ public class ConfigManager {
                 var pipePath = Path.of(subdir.toString(), "pipelines", pipe.pipelineNickname + ".json");
 
                 if (!pipePath.getParent().toFile().exists()) {
+                    // TODO: check for error
                     pipePath.getParent().toFile().mkdirs();
                 }
 
@@ -255,9 +241,7 @@ public class ConfigManager {
                                 var relativizedFilePath =
                                     getRootFolder().toAbsolutePath().relativize(p).toString();
                                 try {
-                                    var ret = JacksonUtils.deserialize(p, CVPipelineSettings.class);
-                                    return ret;
-
+                                    return JacksonUtils.deserialize(p, CVPipelineSettings.class);
                                 } catch (JsonProcessingException e) {
                                     logger.error("Exception while deserializing " + relativizedFilePath);
                                     e.printStackTrace();

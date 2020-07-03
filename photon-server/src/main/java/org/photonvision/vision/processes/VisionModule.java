@@ -24,7 +24,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
-import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
@@ -60,8 +59,10 @@ public class VisionModule {
     private final LinkedList<DataConsumer> dataConsumers = new LinkedList<>();
     private final LinkedList<FrameConsumer> frameConsumers = new LinkedList<>();
     private final NTDataConsumer ntConsumer;
-    private MJPGFrameConsumer streamer;
     private final int moduleIndex;
+    private final MJPGFrameConsumer uiStreamer;
+
+    private MJPGFrameConsumer dashboardStreamer;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger = new Logger(VisionModule.class, ((USBCameraSource) visionSource).configuration.nickname, LogGroup.VisionProcess);
@@ -72,19 +73,22 @@ public class VisionModule {
                 this.visionSource.getFrameProvider(),
                 this.pipelineManager::getCurrentPipeline,
                 this::consumeResult);
+        this.moduleIndex = index;
 
         DataChangeService.getInstance().addSubscriber(new VisionSettingChangeSubscriber());
 
-        streamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
+        dashboardStreamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName);
+        uiStreamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
+        addFrameConsumer(dashboardStreamer);
+        addFrameConsumer(uiStreamer);
+
         ntConsumer = new NTDataConsumer(NetworkTableInstance.getDefault().getTable("photonvision"),
             visionSource.getSettables().getConfiguration().nickname);
-
-        addFrameConsumer(streamer);
         addDataConsumer(ntConsumer);
-
-        this.moduleIndex = index;
-
+        
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
+
+        dashboardStreamer.setFrameDivisor(pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
     }
 
     public void start() {
@@ -97,15 +101,16 @@ public class VisionModule {
             super();
         }
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({"unchecked", "rawtypes"})
         @Override
         public void onDataChangeEvent(DataChangeEvent event) {
             if (event instanceof IncomingWebSocketEvent) {
                 var wsEvent = (IncomingWebSocketEvent<?>) event;
 
+                // TODO: remove?
                 if (wsEvent.propertyName.equals("save")) {
-                    logger.debug("Saving module settings...");
-                    ConfigManager.getInstance().saveModule(getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
+                    logger.debug("UI-based saving deprecated, ignoring");
+                    // saveAndBroadcast();
                     return;
                 }
 
@@ -116,32 +121,56 @@ public class VisionModule {
                     var newPropValue = wsEvent.data;
                     var currentSettings = pipelineManager.getCurrentPipeline().getSettings();
 
-                    if (propName.equals("cameraNickname")) {
-                        var newNickname = (String) newPropValue;
-                        logger.info("Changing nickname to " + newNickname);
-                        // TODO change camera nickname
-                        return;
-                    } else if (propName.equals("pipelineName")) {
-                        logger.info("Changing nick to " + newPropValue);
-                        pipelineManager.getCurrentPipelineSettings().pipelineNickname = (String) newPropValue;
-                        return;
-                    } else if (propName.equals("newPipelineInfo")) {
-                        // add new pipeline
+                    // special case for non-PipelineSetting changes
+                    switch (propName) {
+                        case "cameraNickname":  // rename camera
+                            var newNickname = (String) newPropValue;
+                            logger.info("Changing nickname to " + newNickname);
+                            setCameraNickname(newNickname);
+                            saveAndBroadcast();
+                            return;
+                        case "pipelineName":  // rename current pipeline
+                            logger.info("Changing nick to " + newPropValue);
+                            pipelineManager.getCurrentPipelineSettings().pipelineNickname = (String) newPropValue;
+                            saveAndBroadcast();
+                            return;
+                        case "newPipelineInfo":  // add new pipeline
+                            var typeName = (Pair<PipelineType, String>) newPropValue;
+                            var type = typeName.getLeft();
+                            var name = typeName.getRight();
 
-                        var typeName = (Pair<PipelineType, String>) newPropValue;
-                        var type = typeName.getLeft();
-                        var name = typeName.getRight();
+                            logger.info("Adding a " + type + " pipeline with name " + name);
 
-                        logger.info("Adding a " + type + " with name " + name);
+                            var addedSettings = pipelineManager.addPipeline(type);
+                            addedSettings.pipelineNickname = name;
+                            saveAndBroadcast();
+                            return;
+                        case "changePipeline": // change active pipeline
+                            var index = (Integer) newPropValue;
+                            if (index == pipelineManager.getCurrentPipelineIndex()) {
+                                logger.debug("Skipping pipeline change, index " + index + " already active");
+                                return;
+                            }
+                            logger.debug("Setting pipeline index to " + index);
+                            setPipeline(index);
+                            saveAndBroadcast();
+                            return;
+                    }
 
-                        var addedSettings = pipelineManager.addPipeline(type);
-                        addedSettings.pipelineNickname = name;
-                        return;
-                    } else if (propName.equals("changePipeline")) {
-                        var index = (Integer) newPropValue;
-                        logger.debug("Setting pipeline index to " + index);
-                        setPipeline(index);
-                        return;
+                    // special case for camera settables
+                    if (propName.startsWith("camera")) {
+                        var propMethodName = "set" + propName.replace("camera", "");
+                        var methods = visionSource.getSettables().getClass().getMethods();
+                        for (var method : methods) {
+                            if (method.getName().equalsIgnoreCase(propMethodName)) {
+                                try {
+                                    method.invoke(visionSource.getSettables(), newPropValue);
+                                } catch (Exception e) {
+                                    logger.error("Failed to invoke camera settable method: " + method.getName());
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
                     }
 
                     try {
@@ -173,6 +202,12 @@ public class VisionModule {
                             propField.set(newPropValue, newPropValue);
                         }
                         logger.trace("Set prop " + propName + " to value " + newPropValue);
+
+                        // special case for extra tasks to perform after setting PipelineSettings
+                        if (propName.equals("outputFrameDivisor")) {
+                            dashboardStreamer.setFrameDivisor(pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
+                        }
+
                     } catch (NoSuchFieldException | IllegalAccessException e) {
                         logger.error("Could not set prop " + propName + " with value " + newPropValue + " on " + currentSettings);
                         e.printStackTrace();
@@ -180,23 +215,8 @@ public class VisionModule {
                         logger.error("Unknown exception when setting PSC prop!");
                         e.printStackTrace();
                     }
-
-                    if (propName.startsWith("camera")) {
-                        var propMethodName = "set" + propName.replace("camera", "");
-                        var methods = visionSource.getSettables().getClass().getMethods();
-                        for (var method : methods) {
-                            if (method.getName().equalsIgnoreCase(propMethodName)) {
-                                try {
-                                    method.invoke(visionSource.getSettables(), (int) newPropValue);
-                                } catch (Exception e) {
-                                    logger.error("Failed to invoke camera settable method: " + method.getName());
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                    }
                 }
-                ConfigManager.getInstance().save();
+                saveAndBroadcast();
             }
         }
     }
@@ -210,26 +230,27 @@ public class VisionModule {
         visionSource.getSettables().setExposure(config.cameraExposure);
         visionSource.getSettables().setGain(config.cameraGain);
         visionSource.getSettables().getConfiguration().currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
-
-        ConfigManager.getInstance().saveModule(getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
-        DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST,
-            "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
-    public void setCameraNickname(String newName) {
+    private void saveAndBroadcast() {
+        ConfigManager.getInstance().saveModule(getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
+        DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST,
+                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+    }
+
+    private void setCameraNickname(String newName) {
         visionSource.getSettables().getConfiguration().nickname = newName;
         ntConsumer.setCameraName(newName);
 
-        frameConsumers.remove(streamer);
-        this.streamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
-        this.frameConsumers.add(streamer);
+        frameConsumers.remove(dashboardStreamer);
+        dashboardStreamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
+        frameConsumers.add(dashboardStreamer);
     }
 
     public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
-        // TODO
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
-        ret.fov = this.visionSource.getSettables().getFOV();
+        ret.fov = visionSource.getSettables().getFOV();
 //        ret.tiltDegrees = this.visionSource.getSettables() // TODO implement tilt in camera settings
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
         ret.currentPipelineSettings = SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
@@ -250,7 +271,8 @@ public class VisionModule {
             temp.put(k, internalMap);
         }
         ret.videoFormatList = temp;
-        ret.streamPort = streamer.getCurrentStreamPort();
+        ret.streamPort = dashboardStreamer.getCurrentStreamPort();
+        // ret.uiStreamPort = uiStreamer.getCurrentStreamPort();
 
         return ret;
     }

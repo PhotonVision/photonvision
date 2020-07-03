@@ -71,13 +71,18 @@ public class SocketHandler {
     }
 
     public void onConnect(WsConnectContext context) {
+        context.session.setIdleTimeout(Long.MAX_VALUE); // TODO: determine better value
+        var host = context.session.getRemote().getInetSocketAddress().getHostName();
+        logger.info("New websocket connection from " + host);
         users.add(context);
         dcService.publishEvent(new IncomingWebSocketEvent<>(DataChangeDestination.DCD_GENSETTINGS,
             "userConnected", context));
     }
 
     protected void onClose(WsCloseContext context) {
-        logger.info("Closing for reason:\n    " + context.reason());
+        var host = context.session.getRemote().getInetSocketAddress().getHostName();
+        var reason  = context.reason() != null ? context.reason() : "Connection closed by client";
+        logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         users.remove(context);
     }
 
@@ -161,7 +166,6 @@ public class SocketHandler {
                         }
                         case SMT_COMMAND: {
                             var cmd = SocketMessageCommandType.fromEntryKey((String) entryValue);
-                            var foo = 1;
                             switch (cmd) {
                                 case SMCT_DELETECURRENTPIPELINE: {
                                     var deleteCurrentPipelineEvent =

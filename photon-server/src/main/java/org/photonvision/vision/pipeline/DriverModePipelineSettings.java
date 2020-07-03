@@ -29,6 +29,7 @@ public class DriverModePipelineSettings extends CVPipelineSettings {
 
     public DriverModePipelineSettings() {
         super();
+        pipelineNickname = "Driver Mode";
         pipelineIndex = PipelineManager.DRIVERMODE_INDEX;
         pipelineType = PipelineType.DriverMode;
     }

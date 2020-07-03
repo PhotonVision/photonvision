@@ -123,6 +123,7 @@ export default new Vuex.Store({
         inputImageRotationMode: setCurrPipeProp('inputImageRotationMode'),
         cameraVideoModeIndex: setCurrPipeProp('cameraVideoModeIndex'),
         inputFrameDivisor: setCurrPipeProp('inputFrameDivisor'),
+        outputFrameDivisor: setCurrPipeProp('outputFrameDivisor'),
 
         // contours tab
         contourArea: setCurrPipeProp('contourArea'),

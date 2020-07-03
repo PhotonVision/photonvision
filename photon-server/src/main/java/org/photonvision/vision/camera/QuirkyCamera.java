@@ -25,12 +25,18 @@ import java.util.Set;
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
-                    new QuirkyCamera(0x1415, 0x2000, "PS3Eye", List.of(CameraQuirk.Gain)));
+                    new QuirkyCamera(0x1415, 0x2000, "PS3Eye", CameraQuirk.Gain),
+                    new QuirkyCamera(0x72E, 0x45D, "LifeCam VX-5500", CameraQuirk.DoubleSet)
+            );
 
     public final int usbVid;
     public final int usbPid;
     public final String baseName;
     public final HashMap<CameraQuirk, Boolean> quirks;
+
+    private QuirkyCamera(int usbVid, int usbPid, String baseName, CameraQuirk quirk) {
+        this(usbVid, usbPid, baseName, List.of(quirk));
+    }
 
     private QuirkyCamera(int usbVid, int usbPid, String baseName, List<CameraQuirk> quirks) {
         this.usbVid = usbVid;
