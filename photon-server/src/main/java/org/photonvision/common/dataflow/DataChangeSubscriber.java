@@ -1,9 +1,8 @@
 package org.photonvision.common.dataflow;
 
-import org.photonvision.common.dataflow.events.DataChangeEvent;
-
 import java.util.List;
 import java.util.Objects;
+import org.photonvision.common.dataflow.events.DataChangeEvent;
 
 @SuppressWarnings("rawtypes")
 public abstract class DataChangeSubscriber {

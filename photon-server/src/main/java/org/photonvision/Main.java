@@ -1,5 +1,7 @@
 package org.photonvision;
 
+import java.util.HashMap;
+import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.datatransfer.networktables.NetworkTablesManager;
@@ -14,9 +16,6 @@ import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
-
-import java.util.HashMap;
-import java.util.List;
 
 public class Main {
     private static final Logger logger = new Logger(Main.class, LogGroup.General);
@@ -35,13 +34,14 @@ public class Main {
         NetworkManager.getInstance().initialize(false); // basically empty. todo: link to ConfigManager?
         NetworkTablesManager.setClientMode("127.0.0.1");
 
-        HashMap<String, CameraConfiguration> camConfigs = ConfigManager.getInstance().getConfig().getCameraConfigurations();
+        HashMap<String, CameraConfiguration> camConfigs =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations();
         logger.info("Loaded " + camConfigs.size() + " configs from disk!");
         List<VisionSource> sources = VisionSourceManager.loadAllSources(camConfigs.values());
 
         var collectedSources = new HashMap<VisionSource, List<CVPipelineSettings>>();
         for (var src : sources) {
-            var usbSrc = (USBCameraSource)src;
+            var usbSrc = (USBCameraSource) src;
             collectedSources.put(usbSrc, usbSrc.configuration.pipelineSettings);
         }
 

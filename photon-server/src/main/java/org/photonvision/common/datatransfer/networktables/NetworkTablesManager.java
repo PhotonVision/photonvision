@@ -21,7 +21,6 @@ import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.function.Consumer;
-
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;

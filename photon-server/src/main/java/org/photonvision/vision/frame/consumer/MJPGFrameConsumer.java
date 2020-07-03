@@ -24,7 +24,6 @@ import edu.wpi.first.cameraserver.CameraServer;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
 import org.photonvision.vision.frame.FrameDivisor;
@@ -54,7 +53,8 @@ public class MJPGFrameConsumer implements FrameConsumer {
         if (!frame.image.getMat().empty()) {
             if (divisor != FrameDivisor.NONE) {
                 var tempMat = new Mat();
-                Imgproc.resize(frame.image.getMat(), tempMat, getScaledSize(frame.image.getMat().size(), divisor));
+                Imgproc.resize(
+                        frame.image.getMat(), tempMat, getScaledSize(frame.image.getMat().size(), divisor));
                 cvSource.putFrame(tempMat);
                 tempMat.release();
             } else {

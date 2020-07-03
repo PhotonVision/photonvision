@@ -18,7 +18,6 @@
 package org.photonvision.vision.target;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
-
 import java.util.HashMap;
 import java.util.List;
 import org.opencv.core.Mat;
@@ -169,18 +168,18 @@ public class TrackedTarget implements Releasable {
     }
 
     public HashMap<String, Object> toHashMap() {
-//                pitch: 0,
-//                    yaw: 0,
-//                    skew: 0,
-//                    area: 0,
-//                    // 3D only
-//                    pose: {x: 0, y: 0, rot: 0},
+        //                pitch: 0,
+        //                    yaw: 0,
+        //                    skew: 0,
+        //                    area: 0,
+        //                    // 3D only
+        //                    pose: {x: 0, y: 0, rot: 0},
         var ret = new HashMap<String, Object>();
         ret.put("pitch", getPitch());
         ret.put("yaw", getYaw());
         ret.put("skew", getSkew());
         ret.put("area", getPitch());
-        if(getRobotRelativePose() != null) {
+        if (getRobotRelativePose() != null) {
             ret.put("pose", getRobotRelativePose().toHashMap());
         }
         return ret;

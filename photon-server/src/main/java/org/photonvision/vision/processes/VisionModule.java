@@ -17,10 +17,9 @@
 
 package org.photonvision.vision.processes;
 
-import java.util.*;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -47,11 +46,11 @@ import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 /**
- * This is the God Class
- *
- * <p>VisionModule has a pipeline manager, vision runner, and data providers. The data providers
- * provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
- */
+* This is the God Class
+*
+* <p>VisionModule has a pipeline manager, vision runner, and data providers. The data providers
+* provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
+*/
 public class VisionModule {
 
     private final Logger logger;
@@ -68,57 +67,66 @@ public class VisionModule {
     private MJPGFrameConsumer dashboardStreamer;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
-        logger = new Logger(VisionModule.class, ((USBCameraSource) visionSource).configuration.nickname, LogGroup.VisionProcess);
+        logger =
+                new Logger(
+                        VisionModule.class,
+                        ((USBCameraSource) visionSource).configuration.nickname,
+                        LogGroup.VisionProcess);
         this.pipelineManager = pipelineManager;
         this.visionSource = visionSource;
         this.visionRunner =
-            new VisionRunner(
-                this.visionSource.getFrameProvider(),
-                this.pipelineManager::getCurrentPipeline,
-                this::consumeResult);
+                new VisionRunner(
+                        this.visionSource.getFrameProvider(),
+                        this.pipelineManager::getCurrentPipeline,
+                        this::consumeResult);
         this.moduleIndex = index;
 
         DataChangeService.getInstance().addSubscriber(new VisionSettingChangeSubscriber());
 
-        dashboardStreamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName);
+        dashboardStreamer =
+                new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName);
         uiStreamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
         addFrameConsumer(dashboardStreamer);
         addFrameConsumer(uiStreamer);
 
-        ntConsumer = new NTDataConsumer(NetworkTableInstance.getDefault().getTable("photonvision"),
-            visionSource.getSettables().getConfiguration().nickname);
+        ntConsumer =
+                new NTDataConsumer(
+                        NetworkTableInstance.getDefault().getTable("photonvision"),
+                        visionSource.getSettables().getConfiguration().nickname);
         addDataConsumer(ntConsumer);
-        addDataConsumer(data -> {
-            var now = System.currentTimeMillis();
-            if(lastUpdateTimestamp + 1000 > now) return;
+        addDataConsumer(
+                data -> {
+                    var now = System.currentTimeMillis();
+                    if (lastUpdateTimestamp + 1000 > now) return;
 
-            var uiMap = new HashMap<Integer, HashMap<String, Object>>();
-            var dataMap = new HashMap<String, Object>();
-            dataMap.put("fps", 1000.0 / data.result.getLatencyMillis());
-            var targets = data.result.targets;
-            var uiTargets = new ArrayList<HashMap<String, Object>>();
-            for (var t : targets) {
-                uiTargets.add(t.toHashMap());
-            }
-            dataMap.put("targets", uiTargets);
+                    var uiMap = new HashMap<Integer, HashMap<String, Object>>();
+                    var dataMap = new HashMap<String, Object>();
+                    dataMap.put("fps", 1000.0 / data.result.getLatencyMillis());
+                    var targets = data.result.targets;
+                    var uiTargets = new ArrayList<HashMap<String, Object>>();
+                    for (var t : targets) {
+                        uiTargets.add(t.toHashMap());
+                    }
+                    dataMap.put("targets", uiTargets);
 
-            uiMap.put(index, dataMap);
-            var retMap = new HashMap<String, Object>();
-            retMap.put("updatePipelineResult", uiMap);
+                    uiMap.put(index, dataMap);
+                    var retMap = new HashMap<String, Object>();
+                    retMap.put("updatePipelineResult", uiMap);
 
-            try {
-                SocketHandler.getInstance().broadcastMessage(retMap, null);
-            } catch (JsonProcessingException e) {
-                logger.error(e.getMessage());
-                logger.error(Arrays.toString(e.getStackTrace()));
-            }
+                    try {
+                        SocketHandler.getInstance().broadcastMessage(retMap, null);
+                    } catch (JsonProcessingException e) {
+                        logger.error(e.getMessage());
+                        logger.error(Arrays.toString(e.getStackTrace()));
+                    }
 
-            lastUpdateTimestamp = now;
-        });
+                    lastUpdateTimestamp = now;
+                });
 
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 
-        dashboardStreamer.setFrameDivisor(pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
+        dashboardStreamer.setFrameDivisor(
+                pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
     }
 
     public void start() {
@@ -153,18 +161,18 @@ public class VisionModule {
 
                     // special case for non-PipelineSetting changes
                     switch (propName) {
-                        case "cameraNickname":  // rename camera
+                        case "cameraNickname": // rename camera
                             var newNickname = (String) newPropValue;
                             logger.info("Changing nickname to " + newNickname);
                             setCameraNickname(newNickname);
                             saveAndBroadcast();
                             return;
-                        case "pipelineName":  // rename current pipeline
+                        case "pipelineName": // rename current pipeline
                             logger.info("Changing nick to " + newPropValue);
                             pipelineManager.getCurrentPipelineSettings().pipelineNickname = (String) newPropValue;
                             saveAndBroadcast();
                             return;
-                        case "newPipelineInfo":  // add new pipeline
+                        case "newPipelineInfo": // add new pipeline
                             var typeName = (Pair<PipelineType, String>) newPropValue;
                             var type = typeName.getLeft();
                             var name = typeName.getRight();
@@ -235,11 +243,18 @@ public class VisionModule {
 
                         // special case for extra tasks to perform after setting PipelineSettings
                         if (propName.equals("outputFrameDivisor")) {
-                            dashboardStreamer.setFrameDivisor(pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
+                            dashboardStreamer.setFrameDivisor(
+                                    pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
                         }
 
                     } catch (NoSuchFieldException | IllegalAccessException e) {
-                        logger.error("Could not set prop " + propName + " with value " + newPropValue + " on " + currentSettings);
+                        logger.error(
+                                "Could not set prop "
+                                        + propName
+                                        + " with value "
+                                        + newPropValue
+                                        + " on "
+                                        + currentSettings);
                         e.printStackTrace();
                     } catch (Exception e) {
                         logger.error("Unknown exception when setting PSC prop!");
@@ -259,17 +274,26 @@ public class VisionModule {
         visionSource.getSettables().setBrightness(config.cameraBrightness);
         visionSource.getSettables().setExposure(config.cameraExposure);
         visionSource.getSettables().setGain(config.cameraGain);
-        visionSource.getSettables().getConfiguration().currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
+        visionSource.getSettables().getConfiguration().currentPipelineIndex =
+                pipelineManager.getCurrentPipelineIndex();
     }
 
     private void saveAndBroadcast() {
-        ConfigManager.getInstance().saveModule(getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
-        DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST,
-            "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+        ConfigManager.getInstance()
+                .saveModule(
+                        getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                UIUpdateType.BROADCAST,
+                                "fullsettings",
+                                ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
     private void save() {
-        ConfigManager.getInstance().saveModule(getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
+        ConfigManager.getInstance()
+                .saveModule(
+                        getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
     }
 
     private void setCameraNickname(String newName) {
@@ -277,7 +301,8 @@ public class VisionModule {
         ntConsumer.setCameraName(newName);
 
         frameConsumers.remove(dashboardStreamer);
-        dashboardStreamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
+        dashboardStreamer =
+                new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
         frameConsumers.add(dashboardStreamer);
     }
 
@@ -285,9 +310,11 @@ public class VisionModule {
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
         ret.fov = visionSource.getSettables().getFOV();
-//        ret.tiltDegrees = this.visionSource.getSettables() // TODO implement tilt in camera settings
+        //        ret.tiltDegrees = this.visionSource.getSettables() // TODO implement tilt in camera
+        // settings
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
-        ret.currentPipelineSettings = SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
+        ret.currentPipelineSettings =
+                SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
         ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
         ret.pipelineNicknames = pipelineManager.getPipelineNicknames();
 

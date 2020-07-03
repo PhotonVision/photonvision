@@ -1,8 +1,8 @@
 package org.photonvision.common.dataflow.events;
 
+import java.util.HashMap;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeSource;
-import java.util.HashMap;
 
 public class IncomingWebSocketEvent<T> extends DataChangeEvent<T> {
 
@@ -12,7 +12,8 @@ public class IncomingWebSocketEvent<T> extends DataChangeEvent<T> {
         this(destType, propertyName, newValue, null);
     }
 
-    public IncomingWebSocketEvent(DataChangeDestination destType, String propertyName, T newValue, Integer cameraIndex) {
+    public IncomingWebSocketEvent(
+            DataChangeDestination destType, String propertyName, T newValue, Integer cameraIndex) {
         super(DataChangeSource.DCS_WEBSOCKET, destType, propertyName, newValue);
         this.cameraIndex = cameraIndex;
     }
@@ -25,12 +26,18 @@ public class IncomingWebSocketEvent<T> extends DataChangeEvent<T> {
 
     @Override
     public String toString() {
-        return "IncomingWebSocketEvent{" +
-            "cameraIndex=" + cameraIndex +
-            ", sourceType=" + sourceType +
-            ", destType=" + destType +
-            ", propertyName='" + propertyName + '\'' +
-            ", data=" + data +
-            '}';
+        return "IncomingWebSocketEvent{"
+                + "cameraIndex="
+                + cameraIndex
+                + ", sourceType="
+                + sourceType
+                + ", destType="
+                + destType
+                + ", propertyName='"
+                + propertyName
+                + '\''
+                + ", data="
+                + data
+                + '}';
     }
 }

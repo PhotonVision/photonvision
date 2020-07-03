@@ -19,7 +19,6 @@ package org.photonvision.vision.processes;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.Frame;

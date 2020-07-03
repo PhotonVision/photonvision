@@ -22,11 +22,16 @@ public class DataChangeEvent<T> {
 
     @Override
     public String toString() {
-        return "DataChangeEvent{" +
-            "sourceType=" + sourceType +
-            ", destType=" + destType +
-            ", propertyName='" + propertyName + '\'' +
-            ", data=" + data +
-            '}';
+        return "DataChangeEvent{"
+                + "sourceType="
+                + sourceType
+                + ", destType="
+                + destType
+                + ", propertyName='"
+                + propertyName
+                + '\''
+                + ", data="
+                + data
+                + '}';
     }
 }

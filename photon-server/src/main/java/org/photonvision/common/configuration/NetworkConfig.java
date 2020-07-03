@@ -17,9 +17,8 @@
 
 package org.photonvision.common.configuration;
 
-import org.photonvision.common.networking.NetworkMode;
-
 import java.util.HashMap;
+import org.photonvision.common.networking.NetworkMode;
 
 public class NetworkConfig {
     public int teamNumber = 1;

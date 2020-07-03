@@ -18,18 +18,16 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.cscore.VideoMode;
-
 import java.util.HashMap;
 import java.util.List;
-
 import org.junit.jupiter.api.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.datatransfer.DataConsumer;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
-import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class VisionModuleManagerTest {
 
@@ -122,7 +120,8 @@ public class VisionModuleManagerTest {
                 new TestSource(
                         new FileFrameProvider(
                                 TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
-                                TestUtils.WPI2019Image.FOV)), List.of());
+                                TestUtils.WPI2019Image.FOV)),
+                List.of());
 
         VisionModuleManager.getInstance().addSources(sources);
         var module0DataConsumer = new TestDataConsumer();

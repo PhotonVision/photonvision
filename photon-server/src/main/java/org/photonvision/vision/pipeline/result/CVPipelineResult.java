@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline.result;
 
 import java.util.List;
-
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;

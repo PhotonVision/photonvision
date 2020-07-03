@@ -7,7 +7,8 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.processes.VisionModuleManager;
 
 public class IncomingCameraCommandSubscriber extends DataChangeSubscriber {
-    private static final Logger logger = new Logger(IncomingCameraCommandSubscriber.class, LogGroup.Camera);
+    private static final Logger logger =
+            new Logger(IncomingCameraCommandSubscriber.class, LogGroup.Camera);
 
     private final VisionModuleManager vmm;
 
@@ -17,8 +18,8 @@ public class IncomingCameraCommandSubscriber extends DataChangeSubscriber {
 
     @Override
     public void onDataChangeEvent(DataChangeEvent event) {
-//        logger.de_pest("Got event from [" + event.sourceType + "] and dest [" + event.destType
-//            + "] with property name [" + event.propertyName
-//            + "] and value [" + event.data + "]");
+        //        logger.de_pest("Got event from [" + event.sourceType + "] and dest [" + event.destType
+        //            + "] with property name [" + event.propertyName
+        //            + "] and value [" + event.data + "]");
     }
 }

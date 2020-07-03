@@ -22,7 +22,6 @@ package org.photonvision.vision.pipeline.result;
 >>>>>>> 673ecb3... rename camera config to USBCameraConfiguration, add name:photon-server/src/main/java/org/photonvision/vision/pipeline/result/DriverModePipelineResult.java
 
 import java.util.List;
-
 import org.photonvision.vision.frame.Frame;
 
 public class DriverModePipelineResult extends CVPipelineResult {

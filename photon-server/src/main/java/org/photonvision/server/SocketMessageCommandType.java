@@ -11,7 +11,7 @@ public enum SocketMessageCommandType {
     }
 
     public static SocketMessageCommandType fromEntryKey(String entryValue) {
-        if(entryValue.equalsIgnoreCase(SMCT_SAVE.entryValue)) return SMCT_SAVE;
+        if (entryValue.equalsIgnoreCase(SMCT_SAVE.entryValue)) return SMCT_SAVE;
         else return SMCT_DELETECURRENTPIPELINE;
     }
 }

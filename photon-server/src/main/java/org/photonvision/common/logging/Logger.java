@@ -17,10 +17,6 @@
 
 package org.photonvision.common.logging;
 
-import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.events.OutgoingUIEvent;
-import org.photonvision.server.UIUpdateType;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
@@ -31,6 +27,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.server.UIUpdateType;
 
 public class Logger {
 
@@ -44,7 +43,8 @@ public class Logger {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
 
-    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat simpleDateFormat =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     private final String className;
     private final LogGroup group;
@@ -168,10 +168,8 @@ public class Logger {
         void log(String message) {
             var message_ = new HashMap<>();
             message_.put("logMessage", message);
-            DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>(
-                UIUpdateType.BROADCAST,
-                "log", message_
-            ));
+            DataChangeService.getInstance()
+                    .publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "log", message_));
         }
     }
 

@@ -1,9 +1,9 @@
 package org.photonvision.common.dataflow.events;
 
+import java.util.HashMap;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeSource;
 import org.photonvision.server.UIUpdateType;
-import java.util.HashMap;
 
 public class OutgoingUIEvent<T> extends DataChangeEvent<T> {
     public final UIUpdateType updateType;

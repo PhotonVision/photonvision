@@ -2,9 +2,8 @@ package org.photonvision.common.dataflow.structures;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import org.photonvision.vision.target.TrackedTarget;
-
 import java.util.Objects;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class SimpleTrackedTarget extends BytePackable {
     public static final int PACK_SIZE_BYTES = Double.BYTES * 6;

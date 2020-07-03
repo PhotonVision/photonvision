@@ -20,7 +20,6 @@ package org.photonvision.vision.camera;
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
-import edu.wpi.cscore.VideoSource;
 import edu.wpi.first.cameraserver.CameraServer;
 import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -42,11 +41,12 @@ public class USBCameraSource implements VisionSource {
     public USBCameraSource(CameraConfiguration config) {
         configuration = config;
         camera = new UsbCamera(config.nickname, config.path);
-        cameraQuirks = QuirkyCamera.getQuirkyCamera(camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
+        cameraQuirks =
+                QuirkyCamera.getQuirkyCamera(
+                        camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
         cvSink = CameraServer.getInstance().getVideo(this.camera);
         usbCameraSettables = new USBCameraSettables(config);
-        usbFrameProvider =
-                new USBFrameProvider(cvSink, usbCameraSettables.getFrameStaticProperties());
+        usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables.getFrameStaticProperties());
     }
 
     @Override
@@ -130,14 +130,15 @@ public class USBCameraSource implements VisionSource {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         USBCameraSource that = (USBCameraSource) o;
-        return Objects.equals(camera, that.camera) &&
-                Objects.equals(usbFrameProvider, that.usbFrameProvider) &&
-                Objects.equals(configuration, that.configuration) &&
-                cameraQuirks.equals(that.cameraQuirks);
+        return Objects.equals(camera, that.camera)
+                && Objects.equals(usbFrameProvider, that.usbFrameProvider)
+                && Objects.equals(configuration, that.configuration)
+                && cameraQuirks.equals(that.cameraQuirks);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(camera, usbCameraSettables, usbFrameProvider, configuration, cvSink, cameraQuirks);
+        return Objects.hash(
+                camera, usbCameraSettables, usbFrameProvider, configuration, cvSink, cameraQuirks);
     }
 }

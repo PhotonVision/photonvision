@@ -22,7 +22,7 @@ public abstract class BytePackable {
     }
 
     protected void bufferData(byte src, byte[] dest) {
-        System.arraycopy(new byte[]{src}, 0, dest, bufferPosition, 1);
+        System.arraycopy(new byte[] {src}, 0, dest, bufferPosition, 1);
         bufferPosition++;
     }
 
@@ -75,20 +75,20 @@ public abstract class BytePackable {
 
     private static int toInt(byte[] src, int pos) {
         return (0xff & src[pos]) << 24
-            | (0xff & src[pos + 1]) << 16
-            | (0xff & src[pos + 2]) << 8
-            | (0xff & src[pos + 3]) << 0;
+                | (0xff & src[pos + 1]) << 16
+                | (0xff & src[pos + 2]) << 8
+                | (0xff & src[pos + 3]) << 0;
     }
 
     private static long toLong(byte[] src, int pos) {
         return (long) (0xff & src[pos]) << 56
-            | (long) (0xff & src[pos + 1]) << 48
-            | (long) (0xff & src[pos + 2]) << 40
-            | (long) (0xff & src[pos + 3]) << 32
-            | (long) (0xff & src[pos + 4]) << 24
-            | (long) (0xff & src[pos + 5]) << 16
-            | (long) (0xff & src[pos + 6]) << 8
-            | (long) (0xff & src[pos + 7]) << 0;
+                | (long) (0xff & src[pos + 1]) << 48
+                | (long) (0xff & src[pos + 2]) << 40
+                | (long) (0xff & src[pos + 3]) << 32
+                | (long) (0xff & src[pos + 4]) << 24
+                | (long) (0xff & src[pos + 5]) << 16
+                | (long) (0xff & src[pos + 6]) << 8
+                | (long) (0xff & src[pos + 7]) << 0;
     }
 
     private static double toDouble(byte[] src, int pos) {
@@ -97,7 +97,7 @@ public abstract class BytePackable {
 
     protected byte[] toBytes(double value) {
         long data = Double.doubleToRawLongBits(value);
-        return new byte[]{
+        return new byte[] {
             (byte) ((data >> 56) & 0xff),
             (byte) ((data >> 48) & 0xff),
             (byte) ((data >> 40) & 0xff),
@@ -110,7 +110,7 @@ public abstract class BytePackable {
     }
 
     protected byte[] toBytes(int value) {
-        return new byte[]{
+        return new byte[] {
             (byte) ((value >> 24) & 0xff),
             (byte) ((value >> 16) & 0xff),
             (byte) ((value >> 8) & 0xff),
@@ -119,6 +119,6 @@ public abstract class BytePackable {
     }
 
     protected byte[] toBytes(boolean value) {
-        return new byte[]{(byte) (value ? 1 : 0)};
+        return new byte[] {(byte) (value ? 1 : 0)};
     }
 }

@@ -20,14 +20,12 @@ package org.photonvision.vision.camera;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
                     new QuirkyCamera(0x1415, 0x2000, "PS3Eye", CameraQuirk.Gain),
-                    new QuirkyCamera(0x72E, 0x45D, "LifeCam VX-5500", CameraQuirk.DoubleSet)
-            );
+                    new QuirkyCamera(0x72E, 0x45D, "LifeCam VX-5500", CameraQuirk.DoubleSet));
 
     public final int usbVid;
     public final int usbPid;
@@ -47,7 +45,7 @@ public class QuirkyCamera {
         for (var q : quirks) {
             this.quirks.put(q, true);
         }
-        for (var q: CameraQuirk.values()) {
+        for (var q : CameraQuirk.values()) {
             this.quirks.putIfAbsent(q, false);
         }
     }
@@ -70,10 +68,10 @@ public class QuirkyCamera {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         QuirkyCamera that = (QuirkyCamera) o;
-        return usbVid == that.usbVid &&
-                usbPid == that.usbPid &&
-                Objects.equals(baseName, that.baseName) &&
-                Objects.equals(quirks, that.quirks);
+        return usbVid == that.usbVid
+                && usbPid == that.usbPid
+                && Objects.equals(baseName, that.baseName)
+                && Objects.equals(quirks, that.quirks);
     }
 
     @Override

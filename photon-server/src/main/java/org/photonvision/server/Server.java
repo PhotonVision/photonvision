@@ -26,32 +26,47 @@ public class Server {
 
     public static void main(int port) {
 
-        Javalin app = Javalin.create(
-            config -> {
-                config.showJavalinBanner = false;
-                config.addStaticFiles("web");
-                config.enableCorsForAllOrigins();
+        Javalin app =
+                Javalin.create(
+                        config -> {
+                            config.showJavalinBanner = false;
+                            config.addStaticFiles("web");
+                            config.enableCorsForAllOrigins();
 
-                config.requestLogger((ctx, ms) ->
-                    logger.debug("Handled HTTP " + ctx.req.getMethod() + " request from " + ctx.req.getRemoteHost() +  " in " + ms.toString() + "ms"));
+                            config.requestLogger(
+                                    (ctx, ms) ->
+                                            logger.debug(
+                                                    "Handled HTTP "
+                                                            + ctx.req.getMethod()
+                                                            + " request from "
+                                                            + ctx.req.getRemoteHost()
+                                                            + " in "
+                                                            + ms.toString()
+                                                            + "ms"));
 
-                config.wsLogger(ws -> ws.onMessage(ctx ->
-                    logger.debug("Got WebSockets message: " + ctx.message())));
+                            config.wsLogger(
+                                    ws ->
+                                            ws.onMessage(
+                                                    ctx -> logger.debug("Got WebSockets message: " + ctx.message())));
 
-                config.wsLogger(ws -> ws.onBinaryMessage(ctx ->
-                    logger.debug("Got WebSockets binary message from host " + ctx.host())));
-            });
+                            config.wsLogger(
+                                    ws ->
+                                            ws.onBinaryMessage(
+                                                    ctx ->
+                                                            logger.debug(
+                                                                    "Got WebSockets binary message from host " + ctx.host())));
+                        });
 
         var socketHandler = SocketHandler.getInstance();
 
         /*Web Socket Events */
         app.ws(
-            "/websocket",
-            ws -> {
-                ws.onConnect(socketHandler::onConnect);
-                ws.onClose(socketHandler::onClose);
-                ws.onBinaryMessage(socketHandler::onBinaryMessage);
-            });
+                "/websocket",
+                ws -> {
+                    ws.onConnect(socketHandler::onConnect);
+                    ws.onClose(socketHandler::onClose);
+                    ws.onBinaryMessage(socketHandler::onBinaryMessage);
+                });
         /*API Events*/
         app.post("/api/settings/general", RequestHandler::onGeneralSettings);
         app.post("/api/settings/camera", RequestHandler::onCameraSettings);

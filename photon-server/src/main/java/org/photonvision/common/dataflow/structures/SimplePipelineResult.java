@@ -1,10 +1,9 @@
 package org.photonvision.common.dataflow.structures;
 
-import org.photonvision.vision.pipeline.result.CVPipelineResult;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class SimplePipelineResult extends BytePackable {
 

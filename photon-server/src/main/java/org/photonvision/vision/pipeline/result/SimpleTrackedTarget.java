@@ -2,9 +2,8 @@ package org.photonvision.vision.pipeline.result;
 
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import org.photonvision.vision.target.TrackedTarget;
-
 import java.util.Objects;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class SimpleTrackedTarget extends BytePackable {
     public static final int PACK_SIZE_BYTES = Double.BYTES * 6;
@@ -14,8 +13,7 @@ public class SimpleTrackedTarget extends BytePackable {
     private double area;
     private Pose2d robotRelativePose = new Pose2d();
 
-    public SimpleTrackedTarget() {
-    }
+    public SimpleTrackedTarget() {}
 
     public SimpleTrackedTarget(double yaw, double pitch, double area, Pose2d pose) {
         this.yaw = yaw;
@@ -50,9 +48,9 @@ public class SimpleTrackedTarget extends BytePackable {
         if (o == null || getClass() != o.getClass()) return false;
         SimpleTrackedTarget that = (SimpleTrackedTarget) o;
         return Double.compare(that.yaw, yaw) == 0
-            && Double.compare(that.pitch, pitch) == 0
-            && Double.compare(that.area, area) == 0
-            && Objects.equals(robotRelativePose, that.robotRelativePose);
+                && Double.compare(that.pitch, pitch) == 0
+                && Double.compare(that.area, area) == 0
+                && Objects.equals(robotRelativePose, that.robotRelativePose);
     }
 
     @Override

@@ -17,16 +17,13 @@
 
 package org.photonvision.common.configuration;
 
-import org.photonvision.common.util.SerializationUtils;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
-import org.photonvision.vision.processes.VisionModule;
-import org.photonvision.vision.processes.VisionModuleManager;
-
-import javax.sql.rowset.serial.SerialJavaObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.vision.processes.VisionModule;
+import org.photonvision.vision.processes.VisionModuleManager;
 
 // TODO rename this class
 public class PhotonConfiguration {
@@ -43,7 +40,7 @@ public class PhotonConfiguration {
     }
 
     public void addCameraConfigs(List<CameraConfiguration> config) {
-        for(var c: config) {
+        for (var c : config) {
             addCameraConfig(c);
         }
     }
@@ -66,9 +63,9 @@ public class PhotonConfiguration {
     }
 
     public PhotonConfiguration(
-        HardwareConfig hardwareConfig,
-        NetworkConfig networkConfig,
-        HashMap<String, CameraConfiguration> cameraConfigurations) {
+            HardwareConfig hardwareConfig,
+            NetworkConfig networkConfig,
+            HashMap<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
         this.networkConfig = networkConfig;
         this.cameraConfigurations = cameraConfigurations;
@@ -78,9 +75,12 @@ public class PhotonConfiguration {
         Map<String, Object> map = new HashMap<>();
 
         map.put("networkSettings", networkConfig.toHashMap());
-        map.put("cameraSettings", VisionModuleManager.getInstance()
-            .getModules().stream().map(VisionModule::toUICameraConfig)
-            .map(SerializationUtils::objectToHashMap).collect(Collectors.toList()));
+        map.put(
+                "cameraSettings",
+                VisionModuleManager.getInstance().getModules().stream()
+                        .map(VisionModule::toUICameraConfig)
+                        .map(SerializationUtils::objectToHashMap)
+                        .collect(Collectors.toList()));
 
         return map;
     }
@@ -95,5 +95,4 @@ public class PhotonConfiguration {
         public HashMap<Integer, HashMap<String, Object>> videoFormatList;
         public int streamPort;
     }
-
 }

@@ -1,10 +1,9 @@
 package org.photonvision.vision.pipeline.result;
 
-import org.photonvision.vision.target.TrackedTarget;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class SimplePipelineResult extends BytePackable {
 
@@ -12,11 +11,10 @@ public class SimplePipelineResult extends BytePackable {
     private boolean hasTargets;
     public final List<SimpleTrackedTarget> targets = new ArrayList<>();
 
-    public SimplePipelineResult() {
-    }
+    public SimplePipelineResult() {}
 
     public SimplePipelineResult(
-        double latencyMillis, boolean hasTargets, List<SimpleTrackedTarget> targets) {
+            double latencyMillis, boolean hasTargets, List<SimpleTrackedTarget> targets) {
         this.latencyMillis = latencyMillis;
         this.hasTargets = hasTargets;
         this.targets.addAll(targets);
@@ -54,7 +52,7 @@ public class SimplePipelineResult extends BytePackable {
     public byte[] toByteArray() {
         bufferPosition = 0;
         int bufferSize =
-            8 + 1 + 1 + (targets.size() * 48); // latencyMillis + hasTargets + targetCount + targets
+                8 + 1 + 1 + (targets.size() * 48); // latencyMillis + hasTargets + targetCount + targets
         var buff = new byte[bufferSize];
 
         bufferData(latencyMillis, buff);

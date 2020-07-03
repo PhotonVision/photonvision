@@ -1,6 +1,8 @@
 package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.Collections;
+import java.util.HashMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeSource;
@@ -10,13 +12,10 @@ import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
-import java.util.Collections;
-import java.util.HashMap;
-
 @SuppressWarnings("rawtypes")
 /*
- * DO NOT use logging in this class. If you do, the logs will recuse forever!
- */
+* DO NOT use logging in this class. If you do, the logs will recuse forever!
+*/
 class UIOutboundSubscriber extends DataChangeSubscriber {
     Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.Server);
 
@@ -33,24 +32,26 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
             var thisEvent = (OutgoingUIEvent) event;
             try {
                 switch (thisEvent.updateType) {
-                    case BROADCAST: {
-//                        logger.debug("Broadcasting message");
-                        if (event.data instanceof HashMap) {
-                            var data = (HashMap) event.data;
-                            socketHandler.broadcastMessage(data, null);
-                        } else {
-                            socketHandler.broadcastMessage(event.data, null);
+                    case BROADCAST:
+                        {
+                            //                        logger.debug("Broadcasting message");
+                            if (event.data instanceof HashMap) {
+                                var data = (HashMap) event.data;
+                                socketHandler.broadcastMessage(data, null);
+                            } else {
+                                socketHandler.broadcastMessage(event.data, null);
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    case SINGLEUSER: {
-//                        logger.debug("Sending single user message");
-                        if (event.data instanceof Pair) {
-                            var pair = (SocketHandler.SelectiveBroadcastPair) event.data;
-                            socketHandler.broadcastMessage(pair.getLeft(), pair.getRight());
+                    case SINGLEUSER:
+                        {
+                            //                        logger.debug("Sending single user message");
+                            if (event.data instanceof Pair) {
+                                var pair = (SocketHandler.SelectiveBroadcastPair) event.data;
+                                socketHandler.broadcastMessage(pair.getLeft(), pair.getRight());
+                            }
+                            break;
                         }
-                        break;
-                    }
                 }
             } catch (JsonProcessingException e) {
                 // TODO: Log

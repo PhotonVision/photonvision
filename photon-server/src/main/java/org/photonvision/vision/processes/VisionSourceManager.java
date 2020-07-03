@@ -32,12 +32,13 @@ import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.provider.NetworkFrameProvider;
 
 public class VisionSourceManager {
-    public static List<VisionSource> loadAllSources(Collection<CameraConfiguration> camerasConfiguration) {
+    public static List<VisionSource> loadAllSources(
+            Collection<CameraConfiguration> camerasConfiguration) {
         return LoadAllSources(camerasConfiguration, Arrays.asList(UsbCamera.enumerateUsbCameras()));
     }
 
     public static List<VisionSource> LoadAllSources(
-        Collection<CameraConfiguration> camerasConfiguration, List<UsbCameraInfo> usbCameraInfos) {
+            Collection<CameraConfiguration> camerasConfiguration, List<UsbCameraInfo> usbCameraInfos) {
         var UsbCamerasConfiguration =
                 camerasConfiguration.stream()
                         .filter(configuration -> configuration.cameraType == CameraType.UsbCamera)

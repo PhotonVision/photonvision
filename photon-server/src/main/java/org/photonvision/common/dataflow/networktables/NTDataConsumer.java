@@ -2,7 +2,6 @@ package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import org.photonvision.common.datatransfer.DataConsumer;
 import org.photonvision.vision.pipeline.result.SimplePipelineResult;
 import org.photonvision.vision.processes.Data;

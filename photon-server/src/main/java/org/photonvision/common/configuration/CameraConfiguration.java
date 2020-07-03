@@ -59,7 +59,14 @@ public class CameraConfiguration {
         this.nickname = nickname;
         this.path = path;
 
-        logger.debug("Creating USB camera configuration for " + cameraType + baseName + " (AKA " + nickname + ") at " + path);
+        logger.debug(
+                "Creating USB camera configuration for "
+                        + cameraType
+                        + baseName
+                        + " (AKA "
+                        + nickname
+                        + ") at "
+                        + path);
     }
 
     @JsonCreator
@@ -83,7 +90,14 @@ public class CameraConfiguration {
         this.cameraLeds = cameraLeds;
         this.currentPipelineIndex = currentPipelineIndex;
 
-        logger.debug("Creating camera configuration for " + cameraType + baseName + " (AKA " + nickname + ") at " + path);
+        logger.debug(
+                "Creating camera configuration for "
+                        + cameraType
+                        + baseName
+                        + " (AKA "
+                        + nickname
+                        + ") at "
+                        + path);
     }
 
     public void addPipelineSettings(List<CVPipelineSettings> settings) {
