@@ -25,6 +25,7 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.datatransfer.DataConsumer;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -92,7 +93,9 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public void setCurrentVideoMode(VideoMode videoMode) {}
+        public void setCurrentVideoMode(VideoMode videoMode) {
+            this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
+        }
 
         @Override
         public HashMap<Integer, VideoMode> getAllVideoModes() {

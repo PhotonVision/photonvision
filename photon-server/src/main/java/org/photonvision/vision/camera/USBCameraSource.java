@@ -110,6 +110,7 @@ public class USBCameraSource implements VisionSource {
         @Override
         public void setCurrentVideoMode(VideoMode videoMode) {
             camera.setVideoMode(videoMode);
+            this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
         }
 
         @Override

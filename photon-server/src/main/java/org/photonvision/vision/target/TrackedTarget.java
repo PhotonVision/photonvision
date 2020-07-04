@@ -178,7 +178,7 @@ public class TrackedTarget implements Releasable {
         ret.put("pitch", getPitch());
         ret.put("yaw", getYaw());
         ret.put("skew", getSkew());
-        ret.put("area", getPitch());
+        ret.put("area", getArea());
         if (getRobotRelativePose() != null) {
             ret.put("pose", getRobotRelativePose().toHashMap());
         }
