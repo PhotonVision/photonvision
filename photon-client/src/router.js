@@ -2,8 +2,8 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Camera from "./views/PipelineView";
 import Settings from "./views/SettingsView";
+import Docs from "./views/DocsView";
 Vue.use(Router);
-
 
 export default new Router({
     // mode: 'history',
@@ -19,5 +19,9 @@ export default new Router({
         path: '/settings',
         name: 'Settings',
         component: Settings
+    }, {
+        path: '/docs',
+        name: 'Docs',
+        component: Docs
     }]
 })

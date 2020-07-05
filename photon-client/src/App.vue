@@ -25,6 +25,9 @@
           <v-tab to="settings">
             Settings
           </v-tab>
+          <v-tab to="docs">
+            Docs
+          </v-tab>
         </v-tabs>
       </v-toolbar-items>
     </v-app-bar>
