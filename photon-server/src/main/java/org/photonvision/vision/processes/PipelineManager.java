@@ -20,10 +20,14 @@ package org.photonvision.vision.processes;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
 
 @SuppressWarnings({"rawtypes", "unused"})
 public class PipelineManager {
+    private static final Logger logger = new Logger(PipelineManager.class, LogGroup.VisionProcess);
 
     public static final int DRIVERMODE_INDEX = -1;
     public static final int CAL_3D_INDEX = -2;
@@ -213,5 +217,15 @@ public class PipelineManager {
 
     public void setIndex(int index) {
         this.setPipelineInternal(index);
+    }
+
+    public void removePipeline(int index) {
+        if(index < 0) {
+            logger.debug("Could not remove preset pipes!");
+            return;
+        }
+        // TODO should we block/lock on a mutex?
+        removePipelineInternal(index);
+        currentPipelineIndex = Math.max(userPipelineSettings.size() - 1, currentPipelineIndex);
     }
 }
