@@ -97,7 +97,7 @@ public class VisionModule {
         addDataConsumer(
                 data -> {
                     var now = System.currentTimeMillis();
-                    if (lastUpdateTimestamp + 100 > now) return;
+                    if (lastUpdateTimestamp + 1000.0 / 15.0 > now) return;
 
                     var uiMap = new HashMap<Integer, HashMap<String, Object>>();
                     var dataMap = new HashMap<String, Object>();

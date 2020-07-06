@@ -22,7 +22,9 @@ import org.apache.commons.math3.util.FastMath;
 import org.photonvision.vision.target.PotentialTarget;
 
 public enum ContourSortMode {
-    Largest(Comparator.comparingDouble(PotentialTarget::getArea).reversed()), // reversed so that zero index has the largest size
+    Largest(
+            Comparator.comparingDouble(PotentialTarget::getArea)
+                    .reversed()), // reversed so that zero index has the largest size
     Smallest(Largest.getComparator().reversed()),
     Highest(Comparator.comparingDouble(rect -> rect.getMinAreaRect().center.y)),
     Lowest(Highest.getComparator().reversed()),
