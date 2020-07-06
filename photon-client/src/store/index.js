@@ -98,7 +98,10 @@ export default new Vuex.Store({
         pipelineResults: set('pipelineResults'),
         networkSettings: set('networkSettings'),
 
-        currentPipelineIndex: (state, val) => state.cameraSettings[state.currentCameraIndex].currentPipelineIndex = val,
+        currentPipelineIndex: (state, val) => {
+            const settings = state.cameraSettings[state.currentCameraIndex];
+            Vue.set(settings, 'currentPipelineIndex', val);
+        },
 
         // TODO change everything to use this
         mutatePipeline: (state, payload) => {
@@ -107,18 +110,21 @@ export default new Vuex.Store({
                 const value = payload[key];
                 const settings = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings;
                 if (settings.hasOwnProperty(key)) {
-                    settings[key] = value;
+                    Vue.set(settings, key, value);
                 }
             }
         },
 
         mutatePipelineResults(state, payload) {
             // Key: index, value: result
+            let newResultArray = [];
             for (let key in payload) {
                 if (!payload.hasOwnProperty(key)) continue;
                 const index = parseInt(key);
-                state.pipelineResults[index] = payload[key];
+                newResultArray[index] = payload[key];
             }
+
+            Vue.set(state, 'pipelineResults', newResultArray)
         }
     },
     getters: {
