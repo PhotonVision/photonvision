@@ -173,9 +173,9 @@ public class VisionModule {
                             saveAndBroadcast();
                             return;
                         case "newPipelineInfo": // add new pipeline
-                            var typeName = (Pair<PipelineType, String>) newPropValue;
-                            var type = typeName.getLeft();
-                            var name = typeName.getRight();
+                            var typeName = (Pair<String, PipelineType>) newPropValue;
+                            var type = typeName.getRight();
+                            var name = typeName.getLeft();
 
                             logger.info("Adding a " + type + " pipeline with name " + name);
 
@@ -183,6 +183,9 @@ public class VisionModule {
                             addedSettings.pipelineNickname = name;
                             saveAndBroadcast();
                             return;
+                        case "deleteCurrPipeline":
+                            // TODO
+                            break;
                         case "changePipeline": // change active pipeline
                             var index = (Integer) newPropValue;
                             if (index == pipelineManager.getCurrentPipelineIndex()) {
