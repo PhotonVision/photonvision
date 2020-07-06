@@ -193,8 +193,12 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                 speckleRejectPipe.apply(findContoursResult.result);
         sumPipeNanosElapsed += speckleRejectResult.nanosElapsed;
 
+        CVPipeResult<List<Contour>> filterContoursResult =
+                filterContoursPipe.apply(speckleRejectResult.result);
+        sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
+
         CVPipeResult<List<PotentialTarget>> groupContoursResult =
-                groupContoursPipe.apply(speckleRejectResult.result);
+                groupContoursPipe.apply(filterContoursResult.result);
         sumPipeNanosElapsed += groupContoursResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =

@@ -265,7 +265,7 @@
                         for (let cam in this.cameraList) {
                             if (this.cameraList.hasOwnProperty(cam)) {
                                 if (this.newCameraName === this.cameraList[cam]) {
-                                    return "Camera by that name already Exists"
+                                    return "Camera by that name already exists"
                                 }
                             }
                         }
@@ -315,7 +315,7 @@
             },
             saveCameraNameChange() {
                 if (this.checkCameraName === "") {
-                    this.handleInput("changeCameraName", this.newCameraName);
+                    this.handleInputWithIndex("changeCameraName", this.newCameraName);
                     this.discardCameraNameChange();
                 }
             },

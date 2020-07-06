@@ -123,6 +123,7 @@ public class SocketHandler {
                     switch (socketMessageType) {
                         case SMT_DRIVERMODE:
                             {
+                                // TODO: what is this event?
                                 var data = (HashMap<String, Object>) entryValue;
                                 var dmExpEvent =
                                         new IncomingWebSocketEvent<Integer>(

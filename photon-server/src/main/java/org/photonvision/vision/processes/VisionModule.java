@@ -319,6 +319,7 @@ public class VisionModule {
         dashboardStreamer =
             new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
         frameConsumers.add(dashboardStreamer);
+        saveAndBroadcast();
     }
 
     public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
