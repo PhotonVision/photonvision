@@ -123,5 +123,4 @@ New client/photon-client/*
 # *.iml
 photon-server/build
 photon-server/photon-vision
-photon-client/src/views/ReadTheDocs
 photon-server/src/main/resources
