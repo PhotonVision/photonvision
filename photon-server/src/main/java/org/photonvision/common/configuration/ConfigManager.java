@@ -169,6 +169,15 @@ public class ConfigManager {
                 logger.error("Could not save drivermode.json for " + subdir);
             }
 
+            // Delete old pipe configs so that we don't get any conflicts
+            try {
+                var pipelineFolder = Path.of(subdir.toString(), "pipelines");
+                Files.list(pipelineFolder).forEach(it -> it.toFile().delete());
+            } catch (IOException e) {
+                logger.error("Exception while deleting old configs!");
+                e.printStackTrace();
+            }
+
             for (var pipe : camConfig.pipelineSettings) {
                 var pipePath = Path.of(subdir.toString(), "pipelines", pipe.pipelineNickname + ".json");
 

@@ -170,6 +170,7 @@ public class VisionModule {
                         case "pipelineName": // rename current pipeline
                             logger.info("Changing nick to " + newPropValue);
                             pipelineManager.getCurrentPipelineSettings().pipelineNickname = (String) newPropValue;
+                            // TODO rename config file
                             saveAndBroadcast();
                             return;
                         case "newPipelineInfo": // add new pipeline
@@ -273,6 +274,12 @@ public class VisionModule {
         logger.info("Setting pipeline to " + index);
         pipelineManager.setIndex(index);
         var config = pipelineManager.getPipelineSettings(index);
+
+        if(config == null) {
+            logger.error("Config for index " + index + " was null!");
+            return;
+        }
+
         visionSource.getSettables().setCurrentVideoMode(config.cameraVideoModeIndex);
         visionSource.getSettables().setBrightness(config.cameraBrightness);
         visionSource.getSettables().setExposure(config.cameraExposure);
