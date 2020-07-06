@@ -1,31 +1,9 @@
 <template>
-  <div>
-      <p>{{"ReadTheDocs/index.html"}}</p>
+  <div style="overflow:hidden;height:100%;width:100%" height="100%" width="100%">
+      <iframe src="https://docs.photonvision.org/en/latest/" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%"></iframe>
+      <!-- <iframe src="ReadTheDocs/index.html" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%"></iframe> -->
   </div>
 </template>
-
-<script>
-    import axios from 'axios';
-    
-    export default {
-        name: 'DocsTab',
-        components: {},
-        data() {
-            return {
-            fileName: "index.html",
-            }
-        },
-    methods: {
-        loadFile() {
-          axios({
-            method: "get",
-            url: "ReadTheDocs/" + this.fileName
-          })
-        }
-      }
-    }
-</script>
-
 
 <style scoped>
     .videoClass {
