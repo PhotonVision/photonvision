@@ -88,7 +88,7 @@ jobs:
       # Checkout docs.
       - uses: actions/checkout@v2
         with:
-          repository: 'vatanaksoytezer/photonvision-docs.git'
+          repository: 'PhotonVision/photonvision-docs.git'
           ref: master
 
       # Install Python.
