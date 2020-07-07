@@ -20,7 +20,6 @@ package org.photonvision.vision.processes;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
@@ -220,7 +219,7 @@ public class PipelineManager {
     }
 
     public void removePipeline(int index) {
-        if(index < 0) {
+        if (index < 0) {
             logger.debug("Could not remove preset pipes!");
             return;
         }

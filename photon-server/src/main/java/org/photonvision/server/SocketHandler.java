@@ -162,9 +162,11 @@ public class SocketHandler {
                             }
                         case SMT_ADDNEWPIPELINE:
                             {
-//                                HashMap<String, Object> data = (HashMap<String, Object>) entryValue;
-//                                var type = (PipelineType) data.get("pipelineType");
-//                                var name = (String) data.get("pipelineName");
+                                //                                HashMap<String, Object> data = (HashMap<String,
+                                // Object>) entryValue;
+                                //                                var type = (PipelineType)
+                                // data.get("pipelineType");
+                                //                                var name = (String) data.get("pipelineName");
                                 var type = PipelineType.Reflective;
                                 var name = (String) entryValue;
 
@@ -185,7 +187,10 @@ public class SocketHandler {
                                         {
                                             var deleteCurrentPipelineEvent =
                                                     new IncomingWebSocketEvent<>(
-                                                            DataChangeDestination.DCD_ACTIVEMODULE, "deleteCurrPipeline", 0, cameraIndex);
+                                                            DataChangeDestination.DCD_ACTIVEMODULE,
+                                                            "deleteCurrPipeline",
+                                                            0,
+                                                            cameraIndex);
                                             dcService.publishEvent(deleteCurrentPipelineEvent);
                                             break;
                                         }

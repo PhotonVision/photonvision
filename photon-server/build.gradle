@@ -3,7 +3,6 @@ plugins {
     id 'application'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
     id "com.diffplug.gradle.spotless" version "3.28.0"
-    id "application"
     id "jacoco"
 }
 
