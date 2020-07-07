@@ -18,15 +18,17 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.cscore.VideoMode;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import org.junit.jupiter.api.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.datatransfer.DataConsumer;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
-import org.photonvision.vision.pipeline.CVPipelineResult;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class VisionModuleManagerTest {
 
@@ -87,15 +89,19 @@ public class VisionModuleManagerTest {
 
         @Override
         public VideoMode getCurrentVideoMode() {
-            return null;
+            return new VideoMode(0, 320, 240, 254);
         }
 
         @Override
-        public void setCurrentVideoMode(VideoMode videoMode) {}
+        public void setCurrentVideoMode(VideoMode videoMode) {
+            this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
+        }
 
         @Override
         public HashMap<Integer, VideoMode> getAllVideoModes() {
-            return null;
+            var ret = new HashMap<Integer, VideoMode>();
+            ret.put(0, getCurrentVideoMode());
+            return ret;
         }
     }
 
@@ -114,19 +120,20 @@ public class VisionModuleManagerTest {
 
     @Test
     public void setupManager() {
-        var sources = new ArrayList<VisionSource>();
-        sources.add(
+        var sources = new HashMap<VisionSource, List<CVPipelineSettings>>();
+        sources.put(
                 new TestSource(
                         new FileFrameProvider(
                                 TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
-                                TestUtils.WPI2019Image.FOV)));
+                                TestUtils.WPI2019Image.FOV)),
+                List.of());
 
-        var moduleManager = new VisionModuleManager(sources);
+        VisionModuleManager.getInstance().addSources(sources);
         var module0DataConsumer = new TestDataConsumer();
 
-        moduleManager.visionModules.get(0).addDataConsumer(module0DataConsumer);
+        VisionModuleManager.getInstance().visionModules.get(0).addDataConsumer(module0DataConsumer);
 
-        moduleManager.startModules();
+        VisionModuleManager.getInstance().startModules();
 
         sleep(500);
 

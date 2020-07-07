@@ -52,7 +52,7 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     public boolean solvePNPEnabled = false;
     public CameraCalibrationCoefficients cameraCalibration;
     public TargetModel targetModel;
-    public Rotation2d cameraPitch = Rotation2d.fromDegrees(0.0);
+    public Rotation2d cameraPitch = Rotation2d.fromDegrees(0.0); // TODO where should pitch live?
 
     // Corner detection settings
     public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =

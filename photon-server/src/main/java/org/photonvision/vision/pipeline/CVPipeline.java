@@ -17,9 +17,11 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.util.List;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
     protected S settings;
@@ -32,6 +34,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         return settings;
     }
 
+    // TODO (BANKS) ACTUALLY SET THE CAMERA RESOLUTION
     public R run(Frame frame) {
         long pipelineStartNanos = System.nanoTime();
 
@@ -40,6 +43,9 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         }
         setPipeParams(frame.frameStaticProperties, settings);
 
+        if (frame.image.getMat().empty()) {
+            return (R) new CVPipelineResult(0, List.of(), frame);
+        }
         R result = process(frame, settings);
 
         result.setLatencyMillis(MathUtils.nanosToMillis(System.nanoTime() - pipelineStartNanos));

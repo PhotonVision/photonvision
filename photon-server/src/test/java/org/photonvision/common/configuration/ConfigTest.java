@@ -90,7 +90,6 @@ public class ConfigTest {
     @Test
     @Order(2)
     public void deserializeConfig() {
-        configMgr.load();
 
         var reflectivePipelineSettings =
                 configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(0);

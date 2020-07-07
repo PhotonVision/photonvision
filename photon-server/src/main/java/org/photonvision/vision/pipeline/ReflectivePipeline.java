@@ -42,6 +42,7 @@ import org.photonvision.vision.pipe.impl.RotateImagePipe;
 import org.photonvision.vision.pipe.impl.SolvePNPPipe;
 import org.photonvision.vision.pipe.impl.SortContoursPipe;
 import org.photonvision.vision.pipe.impl.SpeckleRejectPipe;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -69,6 +70,10 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
     public ReflectivePipeline() {
         settings = new ReflectivePipelineSettings();
+    }
+
+    public ReflectivePipeline(ReflectivePipelineSettings settings) {
+        this.settings = settings;
     }
 
     @Override
@@ -162,6 +167,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         long sumPipeNanosElapsed = 0L;
 
+        rawInputMat.release();
         frame.image.getMat().copyTo(rawInputMat);
 
         CVPipeResult<Mat> rotateImageResult = rotateImagePipe.apply(frame.image.getMat());
@@ -187,8 +193,12 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                 speckleRejectPipe.apply(findContoursResult.result);
         sumPipeNanosElapsed += speckleRejectResult.nanosElapsed;
 
+        CVPipeResult<List<Contour>> filterContoursResult =
+                filterContoursPipe.apply(speckleRejectResult.result);
+        sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
+
         CVPipeResult<List<PotentialTarget>> groupContoursResult =
-                groupContoursPipe.apply(speckleRejectResult.result);
+                groupContoursPipe.apply(filterContoursResult.result);
         sumPipeNanosElapsed += groupContoursResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
@@ -232,11 +242,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             sumPipeNanosElapsed += result.nanosElapsed;
         } else {
             result = draw2dContoursResult;
-        }
-
-        // TODO: better way?
-        if (settings.outputShowThresholded) {
-            rawInputMat.release();
         }
 
         // TODO: Implement all the things

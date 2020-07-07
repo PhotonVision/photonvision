@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.HashMap;
 import java.util.Objects;
 
 /** Represents a 2d pose containing translational and rotational elements. */
@@ -227,5 +228,13 @@ public class Pose2d {
     @Override
     public int hashCode() {
         return Objects.hash(m_translation, m_rotation);
+    }
+
+    public HashMap<String, Object> toHashMap() {
+        var ret = new HashMap<String, Object>();
+        ret.put("x", getTranslation().getX());
+        ret.put("y", getTranslation().getY());
+        ret.put("rot", getRotation().getDegrees());
+        return ret;
     }
 }

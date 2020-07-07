@@ -23,6 +23,7 @@
 <script>
     export default {
         name: 'CVSwitch',
+      // eslint-disable-next-line vue/require-prop-types
         props: ['name', 'value', 'disabled'],
         data() {
             return {}

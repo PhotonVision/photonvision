@@ -27,10 +27,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.server.UIUpdateType;
 
 public class Logger {
-
-    private final String className;
 
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
@@ -42,11 +43,19 @@ public class Logger {
     public static final String ANSI_CYAN = "\u001B[36m";
     public static final String ANSI_WHITE = "\u001B[37m";
 
-    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat simpleDateFormat =
+            new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private final String className;
     private final LogGroup group;
 
     public Logger(Class<?> clazz, LogGroup group) {
         this.className = clazz.getSimpleName();
+        this.group = group;
+    }
+
+    public Logger(Class<?> clazz, String suffix, LogGroup group) {
+        this.className = clazz.getSimpleName() + " - " + suffix;
         this.group = group;
     }
 
@@ -81,11 +90,13 @@ public class Logger {
         levelMap.put(LogGroup.Camera, Level.INFO);
         levelMap.put(LogGroup.General, Level.INFO);
         levelMap.put(LogGroup.Server, Level.INFO);
+        levelMap.put(LogGroup.Data, Level.INFO);
         levelMap.put(LogGroup.VisionProcess, Level.INFO);
     }
 
     static {
         currentAppenders.add(new ConsoleAppender());
+        currentAppenders.add(new UILogAppender());
     }
 
     public static void addFileAppender(Path logFilePath) {
@@ -113,7 +124,7 @@ public class Logger {
         }
     }
 
-    private static boolean shouldLog(Level logLevel, LogGroup group) {
+    public static boolean shouldLog(Level logLevel, LogGroup group) {
         return logLevel.code <= levelMap.get(group).code;
     }
 
@@ -152,8 +163,18 @@ public class Logger {
         }
     }
 
+    private static class UILogAppender extends Appender {
+        @Override
+        void log(String message) {
+            var message_ = new HashMap<>();
+            message_.put("logMessage", message);
+            DataChangeService.getInstance()
+                    .publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "log", message_));
+        }
+    }
+
     private static class AsyncFileAppender extends Appender {
-        private Path filePath;
+        private final Path filePath;
 
         public AsyncFileAppender(Path logFilePath) {
             this.filePath = logFilePath;

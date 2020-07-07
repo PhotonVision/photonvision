@@ -3,8 +3,8 @@ bin/*
 .project
 .classpath
 *.prefs
-photonvision
 .gradle
 .gradle/*
 build
 build/*
+photonvision/*

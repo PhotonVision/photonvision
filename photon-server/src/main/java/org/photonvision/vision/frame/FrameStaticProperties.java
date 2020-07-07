@@ -41,7 +41,7 @@ public class FrameStaticProperties {
     * @param fov The fov of the image.
     */
     public FrameStaticProperties(VideoMode mode, double fov) {
-        this(mode.width, mode.height, fov);
+        this(mode != null ? mode.width : 1, mode != null ? mode.height : 1, fov);
     }
 
     /**

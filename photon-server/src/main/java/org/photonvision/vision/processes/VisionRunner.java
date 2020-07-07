@@ -19,15 +19,18 @@ package org.photonvision.vision.processes;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.pipeline.CVPipeline;
-import org.photonvision.vision.pipeline.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 /** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
 @SuppressWarnings("rawtypes")
 public class VisionRunner {
 
+    private final Logger logger;
     private final Thread visionProcessThread;
     private final Supplier<Frame> frameSupplier;
     private final Supplier<CVPipeline> pipelineSupplier;
@@ -51,19 +54,17 @@ public class VisionRunner {
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
 
-        this.visionProcessThread = new Thread(this::update);
-        this.visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
+        visionProcessThread = new Thread(this::update);
+        visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
+        logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionProcess);
     }
 
     public void startProcess() {
         visionProcessThread.start();
     }
 
-    private boolean hasThrown;
-
     private void update() {
         while (!Thread.interrupted()) {
-            loopCount++;
             var pipeline = pipelineSupplier.get();
             var frame = frameSupplier.get();
 
@@ -71,13 +72,10 @@ public class VisionRunner {
                 var pipelineResult = pipeline.run(frame);
                 pipelineResultConsumer.accept(pipelineResult);
             } catch (Exception ex) {
-                if (hasThrown) {
-                    System.err.println(
-                            "Exception in thread \"" + visionProcessThread.getName() + "\", loop " + loopCount);
-                    ex.printStackTrace();
-                    hasThrown = true;
-                }
+                logger.error("Exception on loop " + loopCount);
+                ex.printStackTrace();
             }
+            loopCount++;
         }
     }
 }

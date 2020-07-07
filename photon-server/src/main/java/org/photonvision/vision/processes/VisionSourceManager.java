@@ -21,6 +21,7 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.NotImplementedException;
@@ -31,12 +32,13 @@ import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.provider.NetworkFrameProvider;
 
 public class VisionSourceManager {
-    public List<VisionSource> LoadAllSources(List<CameraConfiguration> camerasConfiguration) {
+    public static List<VisionSource> loadAllSources(
+            Collection<CameraConfiguration> camerasConfiguration) {
         return LoadAllSources(camerasConfiguration, Arrays.asList(UsbCamera.enumerateUsbCameras()));
     }
 
-    public List<VisionSource> LoadAllSources(
-            List<CameraConfiguration> camerasConfiguration, List<UsbCameraInfo> usbCameraInfos) {
+    public static List<VisionSource> LoadAllSources(
+            Collection<CameraConfiguration> camerasConfiguration, List<UsbCameraInfo> usbCameraInfos) {
         var UsbCamerasConfiguration =
                 camerasConfiguration.stream()
                         .filter(configuration -> configuration.cameraType == CameraType.UsbCamera)
@@ -47,11 +49,11 @@ public class VisionSourceManager {
         return loadUSBCameraSources(matchedCameras);
     }
 
-    private NetworkFrameProvider loadHTTPCamera(CameraConfiguration config) {
+    private static NetworkFrameProvider loadHTTPCamera(CameraConfiguration config) {
         throw new NotImplementedException("");
     }
 
-    private List<CameraConfiguration> matchUSBCameras(
+    private static List<CameraConfiguration> matchUSBCameras(
             List<UsbCameraInfo> infos, List<CameraConfiguration> cameraConfigurationList) {
         ArrayList<UsbCameraInfo> loopableInfo = new ArrayList<>(infos);
         List<CameraConfiguration> cameraConfigurations = new ArrayList<>();
@@ -91,21 +93,21 @@ public class VisionSourceManager {
             }
 
             CameraConfiguration configuration =
-                    new CameraConfiguration(name, uniqueName, uniqueName, ((Integer) info.dev).toString());
+                    new CameraConfiguration(name, uniqueName, uniqueName, info.path);
             cameraConfigurations.add(configuration);
         }
 
         return cameraConfigurations;
     }
 
-    private List<VisionSource> loadUSBCameraSources(List<CameraConfiguration> configurations) {
+    private static List<VisionSource> loadUSBCameraSources(List<CameraConfiguration> configurations) {
         List<VisionSource> usbCameraSources = new ArrayList<>();
         configurations.forEach(
                 configuration -> usbCameraSources.add(new USBCameraSource(configuration)));
         return usbCameraSources;
     }
 
-    private boolean containsName(final List<CameraConfiguration> list, final String name) {
+    private static boolean containsName(final List<CameraConfiguration> list, final String name) {
         return list.stream().anyMatch(configuration -> configuration.uniqueName.equals(name));
     }
 }

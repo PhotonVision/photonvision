@@ -18,6 +18,12 @@
 package org.photonvision.common.configuration;
 
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.vision.processes.VisionModule;
+import org.photonvision.vision.processes.VisionModuleManager;
 
 // TODO rename this class
 public class PhotonConfiguration {
@@ -31,6 +37,12 @@ public class PhotonConfiguration {
 
     public HashMap<String, CameraConfiguration> getCameraConfigurations() {
         return cameraConfigurations;
+    }
+
+    public void addCameraConfigs(List<CameraConfiguration> config) {
+        for (var c : config) {
+            addCameraConfig(c);
+        }
     }
 
     public void addCameraConfig(CameraConfiguration config) {
@@ -57,5 +69,30 @@ public class PhotonConfiguration {
         this.hardwareConfig = hardwareConfig;
         this.networkConfig = networkConfig;
         this.cameraConfigurations = cameraConfigurations;
+    }
+
+    public Map<String, Object> toHashMap() {
+        Map<String, Object> map = new HashMap<>();
+
+        map.put("networkSettings", networkConfig.toHashMap());
+        map.put(
+                "cameraSettings",
+                VisionModuleManager.getInstance().getModules().stream()
+                        .map(VisionModule::toUICameraConfig)
+                        .map(SerializationUtils::objectToHashMap)
+                        .collect(Collectors.toList()));
+
+        return map;
+    }
+
+    public static class UICameraConfiguration {
+        @SuppressWarnings("unused")
+        public double fov, tiltDegrees;
+        public String nickname;
+        public HashMap<String, Object> currentPipelineSettings;
+        public int currentPipelineIndex;
+        public List<String> pipelineNicknames;
+        public HashMap<Integer, HashMap<String, Object>> videoFormatList;
+        public int streamPort;
     }
 }

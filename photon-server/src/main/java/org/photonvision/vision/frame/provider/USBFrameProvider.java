@@ -24,20 +24,20 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 
 public class USBFrameProvider implements FrameProvider {
-    private static int count = 0;
-    private CvSink cvSink;
-    private FrameStaticProperties frameStaticProperties;
-    private CVMat mat;
+    private final CvSink cvSink;
+    private final FrameStaticProperties frameStaticProperties;
+    private final CVMat mat;
 
     public USBFrameProvider(CvSink sink, FrameStaticProperties frameStaticProperties) {
         cvSink = sink;
+        cvSink.setEnabled(true);
         this.frameStaticProperties = frameStaticProperties;
         mat = new CVMat();
     }
 
     @Override
     public Frame get() {
-        if (mat != null && mat.getMat() != null) {
+        if (mat.getMat() != null) {
             mat.release();
         }
         long time = cvSink.grabFrame(mat.getMat());
@@ -46,6 +46,6 @@ public class USBFrameProvider implements FrameProvider {
 
     @Override
     public String getName() {
-        return "USBFrameProvider" + count++;
+        return "USBFrameProvider - " + cvSink.getName();
     }
 }

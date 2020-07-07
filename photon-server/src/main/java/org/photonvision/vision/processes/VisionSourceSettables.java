@@ -23,14 +23,18 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameStaticProperties;
 
 public abstract class VisionSourceSettables {
-    private CameraConfiguration configuration;
+    private final CameraConfiguration configuration;
 
     protected VisionSourceSettables(CameraConfiguration configuration) {
         this.configuration = configuration;
     }
 
-    FrameStaticProperties frameStaticProperties;
+    protected FrameStaticProperties frameStaticProperties;
     protected HashMap<Integer, VideoMode> videoModes;
+
+    public CameraConfiguration getConfiguration() {
+        return configuration;
+    }
 
     public abstract int getExposure();
 
@@ -46,7 +50,16 @@ public abstract class VisionSourceSettables {
 
     public abstract VideoMode getCurrentVideoMode();
 
+    public void setCurrentVideoMode(int index) {
+        setCurrentVideoMode(getAllVideoModes().get(index));
+    }
+
     public abstract void setCurrentVideoMode(VideoMode videoMode);
+
+    @SuppressWarnings("unused")
+    public void setVideoModeIndex(int index) {
+        setCurrentVideoMode(videoModes.get(index));
+    }
 
     public abstract HashMap<Integer, VideoMode> getAllVideoModes();
 

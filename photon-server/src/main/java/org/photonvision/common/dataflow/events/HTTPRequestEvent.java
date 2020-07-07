@@ -15,13 +15,17 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.common.dataflow.events;
 
-import java.util.List;
-import org.photonvision.vision.frame.Frame;
+import org.photonvision.common.dataflow.DataChangeDestination;
+import org.photonvision.common.dataflow.DataChangeSource;
 
-public class DriverModePipelineResult extends CVPipelineResult {
-    public DriverModePipelineResult(double latencyMillis, Frame outputFrame) {
-        super(latencyMillis, List.of(), outputFrame);
+public class HTTPRequestEvent<T> extends DataChangeEvent<T> {
+    public HTTPRequestEvent(
+            DataChangeSource sourceType,
+            DataChangeDestination destType,
+            String propertyName,
+            T newValue) {
+        super(sourceType, destType, propertyName, newValue);
     }
 }

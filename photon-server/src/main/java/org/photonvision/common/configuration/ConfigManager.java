@@ -32,6 +32,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
+import org.photonvision.vision.processes.VisionSource;
 
 public class ConfigManager {
     private static final Logger logger = new Logger(ConfigManager.class, LogGroup.General);
@@ -65,10 +66,11 @@ public class ConfigManager {
         this.networkConfigFile =
                 new File(Path.of(rootFolder.toString(), "networkSettings.json").toUri());
         this.camerasFolder = new File(Path.of(rootFolder.toString(), "cameras").toUri());
+
         load();
     }
 
-    public void load() {
+    private void load() {
         logger.info("Loading settings...");
         if (!rootFolder.exists()) {
             if (rootFolder.mkdirs()) {
@@ -150,6 +152,7 @@ public class ConfigManager {
             var subdir = Path.of(camerasFolder.toPath().toString(), subdirName);
 
             if (!subdir.toFile().exists()) {
+                // TODO: check for error
                 subdir.toFile().mkdirs();
             }
 
@@ -166,10 +169,20 @@ public class ConfigManager {
                 logger.error("Could not save drivermode.json for " + subdir);
             }
 
+            // Delete old pipe configs so that we don't get any conflicts
+            try {
+                var pipelineFolder = Path.of(subdir.toString(), "pipelines");
+                Files.list(pipelineFolder).forEach(it -> it.toFile().delete());
+            } catch (IOException e) {
+                logger.error("Exception while deleting old configs!");
+                e.printStackTrace();
+            }
+
             for (var pipe : camConfig.pipelineSettings) {
                 var pipePath = Path.of(subdir.toString(), "pipelines", pipe.pipelineNickname + ".json");
 
                 if (!pipePath.getParent().toFile().exists()) {
+                    // TODO: check for error
                     pipePath.getParent().toFile().mkdirs();
                 }
 
@@ -235,9 +248,7 @@ public class ConfigManager {
                                             var relativizedFilePath =
                                                     getRootFolder().toAbsolutePath().relativize(p).toString();
                                             try {
-                                                var ret = JacksonUtils.deserialize(p, CVPipelineSettings.class);
-                                                return ret;
-
+                                                return JacksonUtils.deserialize(p, CVPipelineSettings.class);
                                             } catch (JsonProcessingException e) {
                                                 logger.error("Exception while deserializing " + relativizedFilePath);
                                                 e.printStackTrace();
@@ -259,5 +270,19 @@ public class ConfigManager {
             e.printStackTrace();
         }
         return loadedConfigurations;
+    }
+
+    public void addCameraConfigurations(HashMap<VisionSource, List<CVPipelineSettings>> sources) {
+        List<CameraConfiguration> list =
+                sources.keySet().stream()
+                        .map(it -> it.getSettables().getConfiguration())
+                        .collect(Collectors.toList());
+        getConfig().addCameraConfigs(list);
+        save();
+    }
+
+    public void saveModule(CameraConfiguration config, String uniqueName) {
+        getConfig().addCameraConfig(uniqueName, config);
+        save();
     }
 }
