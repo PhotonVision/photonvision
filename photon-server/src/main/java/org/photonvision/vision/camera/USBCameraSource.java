@@ -148,10 +148,7 @@ public class USBCameraSource implements VisionSource {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         USBCameraSource that = (USBCameraSource) o;
-        return Objects.equals(camera, that.camera)
-            && Objects.equals(usbFrameProvider, that.usbFrameProvider)
-            && Objects.equals(configuration, that.configuration)
-            && cameraQuirks.equals(that.cameraQuirks);
+        return cameraQuirks.equals(that.cameraQuirks);
     }
 
     @Override
