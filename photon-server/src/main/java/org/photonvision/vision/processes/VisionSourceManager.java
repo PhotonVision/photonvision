@@ -27,14 +27,26 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.provider.NetworkFrameProvider;
 
 public class VisionSourceManager {
+
+    private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
+
     public static List<VisionSource> loadAllSources(
             Collection<CameraConfiguration> camerasConfiguration) {
-        return LoadAllSources(camerasConfiguration, Arrays.asList(UsbCamera.enumerateUsbCameras()));
+        List<UsbCameraInfo> usbCamInfos = Arrays.asList(UsbCamera.enumerateUsbCameras());
+
+        for (var usbCamInfo : usbCamInfos) {
+            logger.info(
+                    "Adding local video device - \"" + usbCamInfo.name + "\" at \"" + usbCamInfo.path + "\"");
+        }
+
+        return LoadAllSources(camerasConfiguration, usbCamInfos);
     }
 
     public static List<VisionSource> LoadAllSources(
