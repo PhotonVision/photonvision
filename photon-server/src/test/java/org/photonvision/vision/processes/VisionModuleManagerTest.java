@@ -89,7 +89,7 @@ public class VisionModuleManagerTest {
 
         @Override
         public VideoMode getCurrentVideoMode() {
-            return null;
+            return new VideoMode(0, 320, 240, 254);
         }
 
         @Override
@@ -99,7 +99,9 @@ public class VisionModuleManagerTest {
 
         @Override
         public HashMap<Integer, VideoMode> getAllVideoModes() {
-            return null;
+            var ret = new HashMap<Integer, VideoMode>();
+            ret.put(0, getCurrentVideoMode());
+            return ret;
         }
     }
 
