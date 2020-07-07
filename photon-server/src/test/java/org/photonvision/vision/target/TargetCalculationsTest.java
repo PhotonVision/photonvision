@@ -79,7 +79,7 @@ public class TargetCalculationsTest {
                 TargetCalculations.calculatePitch(
                         imageCenterPoint.y, targetCenterPoint.y, params.verticalFocalLength);
 
-        assertEquals(FastMath.toDegrees(truePitch), pitch, 0.025, "Pitch not as expected");
+        assertEquals(FastMath.toDegrees(truePitch) * -1, pitch, 0.025, "Pitch not as expected");
     }
 
     @Test

@@ -21,8 +21,12 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
+
 import java.util.*;
+
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
@@ -30,6 +34,7 @@ import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class USBCameraSource implements VisionSource {
+    private final Logger logger;
     private final UsbCamera camera;
     private final USBCameraSettables usbCameraSettables;
     private final USBFrameProvider usbFrameProvider;
@@ -39,11 +44,12 @@ public class USBCameraSource implements VisionSource {
     private final QuirkyCamera cameraQuirks;
 
     public USBCameraSource(CameraConfiguration config) {
+        logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
         configuration = config;
         camera = new UsbCamera(config.nickname, config.path);
         cameraQuirks =
-                QuirkyCamera.getQuirkyCamera(
-                        camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
+            QuirkyCamera.getQuirkyCamera(
+                camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
         cvSink = CameraServer.getInstance().getVideo(this.camera);
         usbCameraSettables = new USBCameraSettables(config);
         usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables.getFrameStaticProperties());
@@ -104,11 +110,15 @@ public class USBCameraSource implements VisionSource {
 
         @Override
         public VideoMode getCurrentVideoMode() {
-            return camera.getVideoMode();
+            return camera.isConnected() ? camera.getVideoMode() : null;
         }
 
         @Override
         public void setCurrentVideoMode(VideoMode videoMode) {
+            if (videoMode == null) {
+                logger.error("Got a null video mode! Doing nothing...");
+                return;
+            }
             camera.setVideoMode(videoMode);
             this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
         }
@@ -117,7 +127,14 @@ public class USBCameraSource implements VisionSource {
         public HashMap<Integer, VideoMode> getAllVideoModes() {
             if (videoModes == null) {
                 videoModes = new HashMap<>();
-                List<VideoMode> videoModesList = Arrays.asList(camera.enumerateVideoModes());
+                List<VideoMode> videoModesList;
+                try {
+                    videoModesList = Arrays.asList(camera.enumerateVideoModes());
+                } catch (Exception e) {
+                    logger.error("Exception while enumerating video modes!");
+                    e.printStackTrace();
+                    videoModesList = List.of();
+                }
                 for (VideoMode videoMode : videoModesList) {
                     videoModes.put(videoModesList.indexOf(videoMode), videoMode);
                 }
@@ -132,14 +149,14 @@ public class USBCameraSource implements VisionSource {
         if (o == null || getClass() != o.getClass()) return false;
         USBCameraSource that = (USBCameraSource) o;
         return Objects.equals(camera, that.camera)
-                && Objects.equals(usbFrameProvider, that.usbFrameProvider)
-                && Objects.equals(configuration, that.configuration)
-                && cameraQuirks.equals(that.cameraQuirks);
+            && Objects.equals(usbFrameProvider, that.usbFrameProvider)
+            && Objects.equals(configuration, that.configuration)
+            && cameraQuirks.equals(that.cameraQuirks);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
-                camera, usbCameraSettables, usbFrameProvider, configuration, cvSink, cameraQuirks);
+            camera, usbCameraSettables, usbFrameProvider, configuration, cvSink, cameraQuirks);
     }
 }
