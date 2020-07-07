@@ -12,6 +12,7 @@
 <script>
     export default {
         name: "CvImage",
+      // eslint-disable-next-line vue/require-prop-types
         props: ['address', 'scale'],
         data: () => {
             return {}

@@ -44,6 +44,7 @@
 <script>
     export default {
         name: "DualCalibration",
+      // eslint-disable-next-line vue/require-prop-types
         props: ['rawPoint'],
         data() {
             return {

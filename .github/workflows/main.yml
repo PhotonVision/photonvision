@@ -65,10 +65,21 @@ jobs:
         with:
           java-version: 11
 
-      # Run Gradle tests.
+      # Run Gradle build.
       - run: |
           chmod +x gradlew
-          ./gradlew test
+          ./gradlew build
+
+      # Run Gradle tests.
+      - run: ./gradlew test
+
+      # Generate Coverage Report.
+      - run: ./gradlew jacocoTestReport
+      
+      # Publish Coverage Report.
+      - uses: codecov/codecov-action@v1
+        with:
+          file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
 
   build-package:
     needs: [build-client, build-server]

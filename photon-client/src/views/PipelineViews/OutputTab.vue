@@ -1,46 +1,46 @@
 <template>
   <div>
     <CVselect
-      v-model="value.sortMode"
+      v-model="contourSortMode"
       name="Sort Mode"
       :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
-      @input="handleData('sortMode')"
-      @rollback="rollback('sortMode',e)"
+      @input="handlePipelineData('contourSortMode')"
+      @rollback="e => rollback('contourSortMode', e)"
     />
 
     <CVselect
-      v-model="value.targetRegion"
-      name="Target Region"
+      v-model="contourTargetOffsetPointEdge"
+      name="Target Offset Point"
       :list="['Center','Top','Bottom','Left','Right']"
-      @input="handleData('targetRegion')"
-      @rollback="e=> rollback('targetRegion',e)"
+      @input="handlePipelineData('contourTargetOffsetPointEdge')"
+      @rollback="e=> rollback('contourTargetOffsetPointEdge', e)"
     />
 
     <CVselect
-      v-model="value.targetOrientation"
+      v-model="contourTargetOrientation"
       name="Target Orientation"
       :list="['Portrait', 'Landscape']"
-      @input="handleData('targetOrientation')"
-      @rollback="e=> rollback('targetOrientation',e)"
+      @input="handlePipelineData('contourTargetOrientation')"
+      @rollback="e=> rollback('contourTargetOrientation', e)"
     />
 
     <CVswitch
-      v-model="value.multiple"
-      name="Output multiple"
-      @input="handleData('multiple')"
-      @rollback="e=> rollback('multiple',e)"
+      v-model="outputShowMultipleTargets"
+      name="Show Multiple Targets"
+      @input="handlePipelineData('outputShowMultipleTargets')"
+      @rollback="e=> rollback('outputShowMultipleTargets', e)"
     />
-    <span>Calibrate:</span>
+    <span>Robot Offset:</span>
     <v-divider
       dark
       color="white"
     />
     <CVselect
-      v-model="value.calibrationMode"
-      name="Calibration Mode"
-      :list="['None','Single point','Dual point']"
-      @input="handleData('calibrationMode')"
-      @rollback="e=> rollback('calibrationMode',e)"
+      v-model="offsetRobotOffsetMode"
+      name="Robot Offset Mode"
+      :list="['None','Single Point','Dual Point']"
+      @input="handlePipelineData('offsetRobotOffsetMode')"
+      @rollback="e=> rollback('offsetRobotOffsetMode',e)"
     />
     <component
       :is="selectedComponent"
@@ -82,6 +82,7 @@
             DualCalibration,
 
         },
+        // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
 
         data() {
@@ -91,22 +92,65 @@
             }
         },
         computed: {
+
+            contourSortMode: {
+
+                get() {
+                    return this.$store.getters.currentPipelineSettings.contourSortMode
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"contourSortMode": val});
+                }
+            },
+            contourTargetOffsetPointEdge: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.contourTargetOffsetPointEdge
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"contourTargetOffsetPointEdge": val});
+                }
+            },
+            contourTargetOrientation: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.contourTargetOrientation
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"contourTargetOrientation": val});
+                }
+            },
+            outputShowMultipleTargets: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.outputShowMultipleTargets
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"outputShowMultipleTargets": val});
+                }
+            },
+            offsetRobotOffsetMode: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.offsetRobotOffsetMode
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"offsetRobotOffsetMode": val});
+                }
+            },
+
             selectedComponent: {
                 get() {
                     switch (this.value.calibrationMode) {
                         case 0:
                             return "";
                         case 1:
-                            return "SingleCalibration";
+                            return "Single Point";
                         case 2:
-                            return "DualCalibration"
+                            return "Dual Point"
                     }
                     return ""
                 }
             },
             rawPoint: {
                 get() {
-                    return this.$store.state.point.rawPoint;
+                    return undefined; // TODO fix
                 }
             }
         },

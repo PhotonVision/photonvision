@@ -58,7 +58,7 @@
           v-model="currentPipelineIndex"
           name="Pipeline"
           :list="['Driver Mode'].concat($store.getters.pipelineList)"
-          @input="handleInput('currentPipeline',currentPipelineIndex - 1)"
+          @input="handleInputWithIndex('currentPipeline',currentPipelineIndex - 1)"
         />
       </v-col>
       <v-col
@@ -265,7 +265,7 @@
                         for (let cam in this.cameraList) {
                             if (this.cameraList.hasOwnProperty(cam)) {
                                 if (this.newCameraName === this.cameraList[cam]) {
-                                    return "Camera by that name already Exists"
+                                    return "Camera by that name already exists"
                                 }
                             }
                         }
@@ -296,7 +296,7 @@
                     return this.$store.getters.currentCameraIndex;
                 },
                 set(value) {
-                    this.$store.commit('currentPipelineIndex', value - 1);
+                    this.$store.commit('currentCameraIndex', value);
                 }
             },
             currentPipelineIndex: {
@@ -315,7 +315,7 @@
             },
             saveCameraNameChange() {
                 if (this.checkCameraName === "") {
-                    this.handleInput("changeCameraName", this.newCameraName);
+                    this.handleInputWithIndex("changeCameraName", this.newCameraName);
                     this.discardCameraNameChange();
                 }
             },
@@ -342,7 +342,7 @@
             },
             deleteCurrentPipeline() {
                 if (this.$store.getters.pipelineList.length > 1) {
-                    this.handleInput('command', 'deleteCurrentPipeline');
+                    this.handleInputWithIndex('command', 'deleteCurrentPipeline');
                 } else {
                     this.snackbar = true;
                 }
@@ -350,9 +350,9 @@
             savePipelineNameChange() {
                 if (this.checkPipelineName === "") {
                     if (this.isPipelineNameEdit) {
-                        this.handleInput("changePipelineName", this.newPipelineName);
+                        this.handleInputWithIndex("changePipelineName", this.newPipelineName);
                     } else {
-                        this.handleInput("addNewPipeline", this.newPipelineName);
+                        this.handleInputWithIndex("addNewPipeline", this.newPipelineName);
                     }
                     this.discardPipelineNameChange();
                 }

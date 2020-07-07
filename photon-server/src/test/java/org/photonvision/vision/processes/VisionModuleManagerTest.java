@@ -1,15 +1,34 @@
+/*
+ * Copyright (C) 2020 Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.vision.processes;
 
 import edu.wpi.cscore.VideoMode;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import org.junit.jupiter.api.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.datatransfer.DataConsumer;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
-import org.photonvision.vision.pipeline.CVPipelineResult;
+import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class VisionModuleManagerTest {
 
@@ -70,15 +89,19 @@ public class VisionModuleManagerTest {
 
         @Override
         public VideoMode getCurrentVideoMode() {
-            return null;
+            return new VideoMode(0, 320, 240, 254);
         }
 
         @Override
-        public void setCurrentVideoMode(VideoMode videoMode) {}
+        public void setCurrentVideoMode(VideoMode videoMode) {
+            this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
+        }
 
         @Override
         public HashMap<Integer, VideoMode> getAllVideoModes() {
-            return null;
+            var ret = new HashMap<Integer, VideoMode>();
+            ret.put(0, getCurrentVideoMode());
+            return ret;
         }
     }
 
@@ -97,19 +120,20 @@ public class VisionModuleManagerTest {
 
     @Test
     public void setupManager() {
-        var sources = new ArrayList<VisionSource>();
-        sources.add(
+        var sources = new HashMap<VisionSource, List<CVPipelineSettings>>();
+        sources.put(
                 new TestSource(
                         new FileFrameProvider(
                                 TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
-                                TestUtils.WPI2019Image.FOV)));
+                                TestUtils.WPI2019Image.FOV)),
+                List.of());
 
-        var moduleManager = new VisionModuleManager(sources);
+        VisionModuleManager.getInstance().addSources(sources);
         var module0DataConsumer = new TestDataConsumer();
 
-        moduleManager.visionModules.get(0).addDataConsumer(module0DataConsumer);
+        VisionModuleManager.getInstance().visionModules.get(0).addDataConsumer(module0DataConsumer);
 
-        moduleManager.startModules();
+        VisionModuleManager.getInstance().startModules();
 
         sleep(500);
 

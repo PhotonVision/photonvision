@@ -1,14 +1,15 @@
 plugins {
     id 'java'
+    id 'application'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
     id "com.diffplug.gradle.spotless" version "3.28.0"
-    id "application"
+    id "jacoco"
 }
+
+mainClassName = 'org.photonvision.Main'
 
 group 'org.photonvision'
 version '2020.6.1'
-
-mainClassName = "org.photonvision.server.Main"
 
 sourceCompatibility = 11
 
@@ -19,6 +20,7 @@ repositories {
         url = 'https://frcmaven.wpi.edu:443/artifactory/development'
     }
 }
+
 ext {
     wpilibVersion = '2020.3.2-75-g1557a4c'
     openCVVersion = '3.4.7-2'
@@ -95,9 +97,8 @@ task runNpmOnClient(type: Exec) {
     if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
         commandLine 'cmd', '/c', 'npm run build'
     } else {
-        commandLine 'npm run build'
+        commandLine 'npm', 'run', 'build'
     }
-
 }
 
 task copyClientUIToResources(type: Copy) {
@@ -118,11 +119,31 @@ task generateJavaDocs(type: Javadoc) {
 }
 
 spotless {
-  java {
-    googleJavaFormat()
-    paddedCell()
-    indentWithTabs(2)
-    indentWithSpaces(4)
-    removeUnusedImports()
-  }
+    java {
+        googleJavaFormat()
+        paddedCell()
+        indentWithTabs(2)
+        indentWithSpaces(4)
+        removeUnusedImports()
+    }
+    java {
+        target "src/*/java/org/**/*.java"
+        licenseHeaderFile "$rootDir/LicenseHeader.txt"
+    }
+}
+
+jacocoTestReport {
+    dependsOn test // Tests are required to run before generating the report
+    
+    reports {
+        xml.enabled true
+    }
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it,
+                    exclude: 'edu/wpi/**'
+            )
+        }))
+    }
 }

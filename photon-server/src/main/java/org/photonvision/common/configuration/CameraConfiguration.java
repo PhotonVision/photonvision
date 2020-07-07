@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2020 Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -23,7 +40,14 @@ public class CameraConfiguration {
     public String path = "";
     public CameraType cameraType = CameraType.UsbCamera;
     public CameraCalibrationCoefficients calibration;
-    public List<Integer> CameraLEDs = new ArrayList<>();
+    public List<Integer> cameraLeds = new ArrayList<>();
+    public int currentPipelineIndex = -1;
+
+    @JsonIgnore // this ignores the pipes as we serialize them to their own subfolder
+    public List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
+
+    @JsonIgnore
+    public DriverModePipelineSettings driveModeSettings = new DriverModePipelineSettings();
 
     public CameraConfiguration(String baseName, String path) {
         this(baseName, baseName, baseName, path);
@@ -34,6 +58,15 @@ public class CameraConfiguration {
         this.uniqueName = uniqueName;
         this.nickname = nickname;
         this.path = path;
+
+        logger.debug(
+                "Creating USB camera configuration for "
+                        + cameraType
+                        + baseName
+                        + " (AKA "
+                        + nickname
+                        + ") at "
+                        + path);
     }
 
     @JsonCreator
@@ -45,7 +78,8 @@ public class CameraConfiguration {
             @JsonProperty("path") String path,
             @JsonProperty("cameraType") CameraType cameraType,
             @JsonProperty("calibration") CameraCalibrationCoefficients calibration,
-            @JsonProperty("CameraLEDs") List<Integer> cameraLEDs) {
+            @JsonProperty("cameraLEDs") List<Integer> cameraLeds,
+            @JsonProperty("currentPipelineIndex") int currentPipelineIndex) {
         this.baseName = baseName;
         this.uniqueName = uniqueName;
         this.nickname = nickname;
@@ -53,14 +87,18 @@ public class CameraConfiguration {
         this.path = path;
         this.cameraType = cameraType;
         this.calibration = calibration;
-        this.CameraLEDs = cameraLEDs;
+        this.cameraLeds = cameraLeds;
+        this.currentPipelineIndex = currentPipelineIndex;
+
+        logger.debug(
+                "Creating camera configuration for "
+                        + cameraType
+                        + baseName
+                        + " (AKA "
+                        + nickname
+                        + ") at "
+                        + path);
     }
-
-    @JsonIgnore // this ignores the pipes as we serialize them to their own subfolder
-    public final List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
-
-    @JsonIgnore
-    public DriverModePipelineSettings driveModeSettings = new DriverModePipelineSettings();
 
     public void addPipelineSettings(List<CVPipelineSettings> settings) {
         for (var setting : settings) {
@@ -83,5 +121,9 @@ public class CameraConfiguration {
 
         pipelineSettings.add(setting);
         pipelineSettings.sort(PipelineManager.PipelineSettingsIndexComparator);
+    }
+
+    public void setPipelineSettings(List<CVPipelineSettings> settings) {
+        pipelineSettings = settings;
     }
 }

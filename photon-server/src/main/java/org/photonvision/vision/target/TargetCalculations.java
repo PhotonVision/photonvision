@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2020 Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.vision.target;
 
 import org.apache.commons.math3.util.FastMath;
@@ -8,12 +25,14 @@ import org.photonvision.common.util.numbers.DoubleCouple;
 public class TargetCalculations {
     public static double calculateYaw(
             double offsetCenterX, double targetCenterX, double horizontalFocalLength) {
-        return FastMath.toDegrees(FastMath.atan(offsetCenterX - targetCenterX) / horizontalFocalLength);
+        return FastMath.toDegrees(
+                FastMath.atan((offsetCenterX - targetCenterX) / horizontalFocalLength));
     }
 
     public static double calculatePitch(
             double offsetCenterY, double targetCenterY, double verticalFocalLength) {
-        return -FastMath.toDegrees(FastMath.atan(offsetCenterY - targetCenterY) / verticalFocalLength);
+        return -FastMath.toDegrees(
+                FastMath.atan((offsetCenterY - targetCenterY) / verticalFocalLength));
     }
 
     public static Point calculateTargetOffsetPoint(

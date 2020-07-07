@@ -32,6 +32,7 @@
 <script>
     export default {
         name: "SingleCalibration",
+      // eslint-disable-next-line vue/require-prop-types
         props: ['rawPoint'],
         methods: {
             clearPoint() {

@@ -31,6 +31,7 @@ Vue.prototype.$msgPack = msgPack(true);
 import {dataHandleMixin} from './mixins/global/dataHandleMixin'
 
 Vue.mixin(dataHandleMixin);
+
 new Vue({
     router,
     store,

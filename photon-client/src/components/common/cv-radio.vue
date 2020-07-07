@@ -20,6 +20,7 @@
 <script>
     export default {
         name: 'Radio',
+      // eslint-disable-next-line vue/require-prop-types
         props: ['value', 'list'],
         data() {
             return {}

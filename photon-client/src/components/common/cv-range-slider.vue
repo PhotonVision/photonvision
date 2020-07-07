@@ -1,9 +1,6 @@
 <template>
   <div>
-    <v-row
-      dense
-      align="center"
-    >
+    <v-row dense align="center">
       <v-col :cols="2">
         <span>{{ name }}</span>
       </v-col>
@@ -62,46 +59,65 @@
 </template>
 
 <script>
-    export default {
-        name: 'RangeSlider',
-        props: ['name', 'min', 'max', 'value', 'step'],
-        data() {
-            return {
-                prependFocused: false,
-                appendFocused: false
-
-            }
-        },
-        computed: {
-            localValue: {
-                get() {
-                    return this.value;
-                },
-                set(value) {
-                    this.$emit('input', value)
-                }
-            }
-        },
-        methods: {
-            handleChange(val) {
-                let i = 0;
-                if (this.prependFocused === false && this.appendFocused === true) {
-                    i = 1;
-                }
-                if (this.prependFocused || this.appendFocused) {
-                    this.$set(this.localValue, i, val);
-                    this.$emit('rollback', this.localValue)
-                }
-            },
-            handleInput(val) {
-                if (!this.prependFocused || !this.appendFocused) {
-                    this.localValue = val;
-                }
-            }
-        }
+export default {
+  name: "RangeSlider",
+  // eslint-disable-next-line vue/require-prop-types
+  props: ["name", "min", "max", "value", "step"],
+  data() {
+    return {
+      prependFocused: false,
+      appendFocused: false,
+      currentBoxVals: [null, null]
+    };
+  },
+  computed: {
+    localValue: {
+      get() {
+        return Object.values(this.value);
+      },
+      set(value) {
+        this.$emit("input", value);
+      }
     }
+  },
+  methods: {
+    // handleChange(val) {
+    //     let i = 0;
+    //     if (this.prependFocused === false && this.appendFocused === true) {
+    //         i = 1;
+    //     }
+    //     if (this.prependFocused || this.appendFocused) {
+    //         this.$set(this.localValue, i, val);
+    //         this.$emit('rollback', this.localValue)
+    //     }
+    // },
+    handleChange(val) {
+      let i = 0;
+      if (this.prependFocused === false && this.appendFocused === true) {
+        i = 1;
+      }
+
+      this.currentBoxVals[i] = val;
+      setTimeout(() => {
+        if (this.currentBoxVals[i] !== val) return;
+        //if (this.prependFocused || this.appendFocused) {
+        let tmp = this.localValue;
+        let parsed = parseFloat(val);
+        if (isNaN(parsed)) return;
+        tmp[i] = parsed;
+        this.localValue = tmp;
+        this.$emit("rollback", this.localValue);
+        //}
+      }, 200);
+    },
+    handleInput(val) {
+      if (!this.prependFocused || !this.appendFocused) {
+        this.localValue = val;
+      }
+    }
+  }
+};
 </script>
 
 <style lang="" scoped>
-
 </style>

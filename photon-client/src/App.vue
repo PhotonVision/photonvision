@@ -121,14 +121,19 @@
         },
         methods: {
             handleMessage(key, value) {
-                if (this.$store.state.hasOwnProperty(key)) {
+                if (key === "logMessage") {
+                    console.log(value)
+                    this.logMessage(value, 0)
+                } else if (key === "updatePipelineResult") {
+                    this.$store.commit('mutatePipelineResults', value)
+                } else if (this.$store.state.hasOwnProperty(key)) {
                     this.$store.commit(key, value);
-                } else if (this.$store.state.pipeline.hasOwnProperty(key)) {
+                } else if (this.$store.getters.currentPipelineSettings.hasOwnProperty(key)) {
                     this.$store.commit('mutatePipeline', {'key': key, 'value': value});
                 } else {
                     switch (key) {
                         default: {
-                            console.log(key + " : " + value);
+                            console.log(value);
                         }
                     }
                 }
@@ -144,7 +149,7 @@
                 }
                 this.timer = setInterval(this.saveSettings, 4000);
             },
-            logMessage({message, level}) {
+            logMessage(message, level) {
                 const colors = ["\u001b[31m", "\u001b[32m", "\u001b[33m", "\u001b[34m"]
                 const reset = "\u001b[0m"
                 this.log += `${colors[level]}${message}${reset}\n`

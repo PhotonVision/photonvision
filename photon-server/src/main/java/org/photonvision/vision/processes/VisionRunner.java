@@ -1,16 +1,36 @@
+/*
+ * Copyright (C) 2020 Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.vision.processes;
 
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.pipeline.CVPipeline;
-import org.photonvision.vision.pipeline.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 /** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
 @SuppressWarnings("rawtypes")
 public class VisionRunner {
 
+    private final Logger logger;
     private final Thread visionProcessThread;
     private final Supplier<Frame> frameSupplier;
     private final Supplier<CVPipeline> pipelineSupplier;
@@ -34,19 +54,17 @@ public class VisionRunner {
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
 
-        this.visionProcessThread = new Thread(this::update);
-        this.visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
+        visionProcessThread = new Thread(this::update);
+        visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
+        logger = new Logger(VisionRunner.class, frameSupplier.getName(), LogGroup.VisionProcess);
     }
 
     public void startProcess() {
         visionProcessThread.start();
     }
 
-    private boolean hasThrown;
-
     private void update() {
         while (!Thread.interrupted()) {
-            loopCount++;
             var pipeline = pipelineSupplier.get();
             var frame = frameSupplier.get();
 
@@ -54,13 +72,10 @@ public class VisionRunner {
                 var pipelineResult = pipeline.run(frame);
                 pipelineResultConsumer.accept(pipelineResult);
             } catch (Exception ex) {
-                if (hasThrown) {
-                    System.err.println(
-                            "Exception in thread \"" + visionProcessThread.getName() + "\", loop " + loopCount);
-                    ex.printStackTrace();
-                    hasThrown = true;
-                }
+                logger.error("Exception on loop " + loopCount);
+                ex.printStackTrace();
             }
+            loopCount++;
         }
     }
 }
