@@ -37,7 +37,7 @@ public class ShellExec {
 
     /**
     * Execute a bash command. We can handle complex bash commands including multiple executions (; |
-    * && ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
+    * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
     *
     * @param command Bash command to execute
     * @return true if bash got started, but your command may have failed.
