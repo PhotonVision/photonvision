@@ -22,7 +22,7 @@ repositories {
 }
 
 ext {
-    wpilibVersion = '2020.3.2-75-g1557a4c'
+    wpilibVersion = '2020.3.2-99-g9f4de91'
     openCVVersion = '3.4.7-2'
 }
 
