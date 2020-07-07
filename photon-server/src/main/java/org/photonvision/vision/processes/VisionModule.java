@@ -38,7 +38,6 @@ import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.server.SocketHandler;
 import org.photonvision.server.UIUpdateType;
-import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
@@ -70,7 +69,7 @@ public class VisionModule {
         logger =
                 new Logger(
                         VisionModule.class,
-                        ((USBCameraSource) visionSource).configuration.nickname,
+                        visionSource.getSettables().getConfiguration().nickname,
                         LogGroup.VisionProcess);
         this.pipelineManager = pipelineManager;
         this.visionSource = visionSource;

@@ -19,17 +19,33 @@ package org.photonvision.vision.target;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.apache.commons.math3.util.FastMath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.*;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.util.numbers.DoubleCouple;
+import org.photonvision.vision.frame.FrameStaticProperties;
 
 public class TargetCalculationsTest {
 
     private static Size imageSize = new Size(800, 600);
     private static Point imageCenterPoint = new Point(imageSize.width / 2, imageSize.height / 2);
-    private static double CameraHorizontalFocalLength = 61;
-    private static double CameraVerticalFocalLength = 34.3;
+    private static final double diagFOV = Math.toRadians(70.0);
+
+    private static final FrameStaticProperties props =
+            new FrameStaticProperties((int) imageSize.width, (int) imageSize.height, diagFOV);
+    private static final TrackedTarget.TargetCalculationParameters params =
+            new TrackedTarget.TargetCalculationParameters(
+                    true,
+                    TargetOffsetPointEdge.Center,
+                    new Point(),
+                    imageCenterPoint,
+                    new DoubleCouple(1.0, 0.0),
+                    RobotOffsetPointMode.None,
+                    props.horizontalFocalLength,
+                    props.verticalFocalLength,
+                    imageSize.width * imageSize.height);
 
     @BeforeEach
     public void Init() {
@@ -41,11 +57,14 @@ public class TargetCalculationsTest {
         var targetPixelOffsetX = 100;
         var targetCenterPoint = new Point(imageCenterPoint.x + targetPixelOffsetX, imageCenterPoint.y);
 
+        var trueYaw =
+                Math.atan((imageCenterPoint.x - targetCenterPoint.x) / params.horizontalFocalLength);
+
         var yaw =
                 TargetCalculations.calculateYaw(
-                        imageCenterPoint.x, targetCenterPoint.x, CameraHorizontalFocalLength);
+                        imageCenterPoint.x, targetCenterPoint.x, params.horizontalFocalLength);
 
-        assertEquals(-1.466, yaw, 0.025, "Yaw not as expected");
+        assertEquals(FastMath.toDegrees(trueYaw), yaw, 0.025, "Yaw not as expected");
     }
 
     @Test
@@ -53,11 +72,14 @@ public class TargetCalculationsTest {
         var targetPixelOffsetY = 100;
         var targetCenterPoint = new Point(imageCenterPoint.x, imageCenterPoint.y + targetPixelOffsetY);
 
+        var truePitch =
+                Math.atan((imageCenterPoint.y - targetCenterPoint.y) / params.verticalFocalLength);
+
         var pitch =
                 TargetCalculations.calculatePitch(
-                        imageCenterPoint.y, targetCenterPoint.y, CameraVerticalFocalLength);
+                        imageCenterPoint.y, targetCenterPoint.y, params.verticalFocalLength);
 
-        assertEquals(2.607, pitch, 0.025, "Pitch not as expected");
+        assertEquals(FastMath.toDegrees(truePitch), pitch, 0.025, "Pitch not as expected");
     }
 
     @Test
