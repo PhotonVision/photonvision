@@ -81,8 +81,41 @@ jobs:
         with:
           file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
 
+  build-offline-docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout docs.
+      - uses: actions/checkout@v2
+        with:
+          repository: 'https://github.com/PhotonVision/photonvision-docs'
+
+      # Install Python.
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx_rtd_theme sphinx-tabs
+          sudo apt install -y texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra latexmk texlive-lang-greek texlive-luatex texlive-xetex texlive-fonts-extra dvipng graphviz
+      - name: Check the docs
+        run: |
+          make lint
+          make linkcheck
+      - name: Build the docs
+        run: |
+          make html
+
+      # Upload docs artifact.
+      - uses: actions/upload-artifact@master
+        with:
+          name: built-docs
+          path: build/html
+      
+
   build-package:
-    needs: [build-client, build-server]
+    needs: [build-client, build-server, build-offline-docs]
 
     # Let all steps run within the photon-server dir.
     defaults:
@@ -104,13 +137,20 @@ jobs:
       # Clear any existing web resources.
       - run: |
           rm -rf src/main/resources/web/*
-          mkdir -p src/main/resources/web/
+          mkdir -p src/main/resources/web/docs
 
       # Download client artifact to resources folder.
       - uses: actions/download-artifact@v2
         with:
           name: built-client
           path: photon-server/src/main/resources/web/
+
+      # Download docs artifact to resources folder.
+      - uses: actions/download-artifact@v2
+        with:
+          name: built-docs
+          path: photon-server/src/main/resources/web/docs     
+
 
       # Print folder contents.
       - run: ls
