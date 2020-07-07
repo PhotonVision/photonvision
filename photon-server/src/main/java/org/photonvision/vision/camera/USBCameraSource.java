@@ -21,9 +21,7 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
-
 import java.util.*;
-
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -48,8 +46,8 @@ public class USBCameraSource implements VisionSource {
         configuration = config;
         camera = new UsbCamera(config.nickname, config.path);
         cameraQuirks =
-            QuirkyCamera.getQuirkyCamera(
-                camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
+                QuirkyCamera.getQuirkyCamera(
+                        camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
         cvSink = CameraServer.getInstance().getVideo(this.camera);
         usbCameraSettables = new USBCameraSettables(config);
         usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables.getFrameStaticProperties());
@@ -154,6 +152,6 @@ public class USBCameraSource implements VisionSource {
     @Override
     public int hashCode() {
         return Objects.hash(
-            camera, usbCameraSettables, usbFrameProvider, configuration, cvSink, cameraQuirks);
+                camera, usbCameraSettables, usbFrameProvider, configuration, cvSink, cameraQuirks);
     }
 }
