@@ -91,7 +91,6 @@ jobs:
           repository: 'vatanaksoytezer/photonvision.git'
           ref: master
 
-
       # Install Python.
       - uses: actions/setup-python@v2
         with:
@@ -103,6 +102,7 @@ jobs:
           sudo apt install -y texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra latexmk texlive-lang-greek texlive-luatex texlive-xetex texlive-fonts-extra dvipng graphviz
       - name: Check the docs
         run: |
+          ls
           make linkcheck
       - name: Build the docs
         run: |
