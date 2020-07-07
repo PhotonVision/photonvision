@@ -103,7 +103,6 @@ jobs:
           sudo apt install -y texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra latexmk texlive-lang-greek texlive-luatex texlive-xetex texlive-fonts-extra dvipng graphviz
       - name: Check the docs
         run: |
-          make lint
           make linkcheck
       - name: Build the docs
         run: |
