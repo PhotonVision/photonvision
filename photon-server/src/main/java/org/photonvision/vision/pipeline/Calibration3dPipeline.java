@@ -29,7 +29,6 @@ import org.photonvision.vision.pipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.processes.PipelineManager;
 
 public class Calibration3dPipeline
         extends CVPipeline<CVPipelineResult, Calibration3dPipelineSettings> {
@@ -56,6 +55,7 @@ public class Calibration3dPipeline
         this.settings = new Calibration3dPipelineSettings();
         this.boardSnapshots = new ArrayList<>();
     }
+
     @Override
     protected void setPipeParams(
             FrameStaticProperties frameStaticProperties, Calibration3dPipelineSettings settings) {
