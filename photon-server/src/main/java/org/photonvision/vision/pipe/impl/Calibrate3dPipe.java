@@ -20,9 +20,12 @@ package org.photonvision.vision.pipe.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.JsonMat;
 import org.photonvision.vision.pipe.CVPipe;
@@ -36,6 +39,9 @@ public class Calibrate3dPipe
     private Mat cameraMatrix = new Mat();
     // Stores the radical and tangential distortion in a 5x1 matrix
     private MatOfDouble distortionCoefficients = new MatOfDouble();
+
+    // For loggging
+    private static final Logger logger = new Logger(Calibrate3dPipe.class, LogGroup.General);
 
     // Translational and rotational matrices
     private List<Mat> rvecs = new ArrayList<>();
@@ -82,13 +88,16 @@ public class Calibrate3dPipe
         JsonMat distortionCoefficientsMat = JsonMat.fromMat(distortionCoefficients);
         try {
             // Print calibration successful
-            System.out.printf(
-                    "CALIBRATION SUCCESS (with accuracy %s)! camMatrix: \n%s\ndistortionCoeffs:\n%s\n",
-                    calibrationAccuracy,
-                    new ObjectMapper().writeValueAsString(cameraMatrixMat),
-                    new ObjectMapper().writeValueAsString(distortionCoefficientsMat));
+            logger.info(
+                    "CALIBRATION SUCCESS (with accuracy "
+                            + calibrationAccuracy
+                            + ")! camMatrix: \n"
+                            + new ObjectMapper().writeValueAsString(cameraMatrixMat)
+                            + "\ndistortionCoeffs:\n"
+                            + new ObjectMapper().writeValueAsString(distortionCoefficientsMat)
+                            + "\n");
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
         }
         // Create a new CameraCalibrationCoefficients object to pass onto SolvePnP
         double[] perViewErrorsArray =
