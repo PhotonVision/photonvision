@@ -168,6 +168,14 @@ jobs:
         with:
           name: jar
           path: photon-server/build/libs
+    
+      - uses: eine/tip@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: 'Dev'
+          files: |
+            photon-server/build/libs/*.jar
+        if: github.event_name == 'push'
 
   check-lint:
     # Let all steps run within the photon-server dir.
@@ -191,22 +199,4 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew spotlessCheck
-  
-  # Publishes the latest commit to master to the Dev tag.
-  publish-dev-release:
-    needs: [build-package]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: jar
-          path: ./
-      
-      - uses: eine/tip@master
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          tag: Dev
-          files: |
-            ./*.jar
             
