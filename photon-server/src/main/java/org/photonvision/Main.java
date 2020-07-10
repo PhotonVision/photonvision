@@ -22,7 +22,7 @@ import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.datatransfer.networktables.NetworkTablesManager;
-import org.photonvision.common.logging.Level;
+import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
@@ -40,11 +40,11 @@ public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
     public static void main(String[] args) {
-        Logger.setLevel(LogGroup.Camera, Level.TRACE);
-        Logger.setLevel(LogGroup.WebServer, Level.TRACE);
-        Logger.setLevel(LogGroup.VisionModule, Level.TRACE);
-        Logger.setLevel(LogGroup.Data, Level.TRACE);
-        Logger.setLevel(LogGroup.General, Level.TRACE);
+        Logger.setLevel(LogGroup.Camera, LogLevel.TRACE);
+        Logger.setLevel(LogGroup.WebServer, LogLevel.TRACE);
+        Logger.setLevel(LogGroup.VisionModule, LogLevel.TRACE);
+        Logger.setLevel(LogGroup.Data, LogLevel.TRACE);
+        Logger.setLevel(LogGroup.General, LogLevel.TRACE);
 
         TestUtils.loadLibraries();
         ConfigManager.getInstance(); // init config manager

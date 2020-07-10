@@ -22,7 +22,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.stream.Collectors;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
-import org.photonvision.common.logging.Level;
+import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -78,7 +78,7 @@ public class DataChangeService {
         if (!subscribers.addIfAbsent(subscriber)) {
             logger.warn("Attempted to add already added subscriber!");
         } else {
-            if (logger.shouldLog(Level.TRACE)) {
+            if (logger.shouldLog(LogLevel.TRACE)) {
                 var sources =
                         subscriber.wantedSources.stream().map(Enum::toString).collect(Collectors.joining(", "));
                 var dests =

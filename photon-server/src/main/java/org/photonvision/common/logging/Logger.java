@@ -87,11 +87,11 @@ public class Logger {
     private static List<Appender> currentAppenders = new ArrayList<>();
 
     static {
-        levelMap.put(LogGroup.Camera, Level.INFO);
-        levelMap.put(LogGroup.General, Level.INFO);
-        levelMap.put(LogGroup.WebServer, Level.INFO);
-        levelMap.put(LogGroup.Data, Level.INFO);
-        levelMap.put(LogGroup.VisionModule, Level.INFO);
+        levelMap.put(LogGroup.Camera, LogLevel.INFO);
+        levelMap.put(LogGroup.General, LogLevel.INFO);
+        levelMap.put(LogGroup.WebServer, LogLevel.INFO);
+        levelMap.put(LogGroup.Data, LogLevel.INFO);
+        levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
     }
 
     static {
@@ -112,11 +112,12 @@ public class Logger {
         currentAppenders.add(new AsyncFileAppender(logFilePath));
     }
 
-    public static void setLevel(LogGroup group, Level newLevel) {
+    public static void setLevel(LogGroup group, LogLevel newLevel) {
         levelMap.put(group, newLevel);
     }
 
-    private static void log(String message, Level level, LogGroup group, String clazz) {
+    // TODO: profile
+    private static void log(String message, LogLevel level, LogGroup group, String clazz) {
         for (var a : currentAppenders) {
             var shouldColor = a instanceof ConsoleAppender;
             var formattedMessage = format(message, level, group, clazz, shouldColor);
@@ -133,23 +134,23 @@ public class Logger {
     }
 
     public void error(String message) {
-        if (shouldLog(Level.ERROR, group)) log(message, Level.ERROR, group, className);
+        if (shouldLog(LogLevel.ERROR, group)) log(message, LogLevel.ERROR, group, className);
     }
 
     public void warn(String message) {
-        if (shouldLog(Level.WARN, group)) log(message, Level.WARN, group, className);
+        if (shouldLog(LogLevel.WARN, group)) log(message, LogLevel.WARN, group, className);
     }
 
     public void info(String message) {
-        if (shouldLog(Level.INFO, group)) log(message, Level.INFO, group, className);
+        if (shouldLog(LogLevel.INFO, group)) log(message, LogLevel.INFO, group, className);
     }
 
     public void debug(String message) {
-        if (shouldLog(Level.DEBUG, group)) log(message, Level.DEBUG, group, className);
+        if (shouldLog(LogLevel.DEBUG, group)) log(message, LogLevel.DEBUG, group, className);
     }
 
     public void trace(String message) {
-        if (shouldLog(Level.TRACE, group)) log(message, Level.TRACE, group, className);
+        if (shouldLog(LogLevel.TRACE, group)) log(message, LogLevel.TRACE, group, className);
     }
 
     private abstract static class Appender {
