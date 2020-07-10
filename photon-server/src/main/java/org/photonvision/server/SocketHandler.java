@@ -39,7 +39,7 @@ import org.photonvision.vision.processes.VisionModuleManager;
 @SuppressWarnings("rawtypes")
 public class SocketHandler {
 
-    private final Logger logger = new Logger(SocketHandler.class, LogGroup.Server);
+    private final Logger logger = new Logger(SocketHandler.class, LogGroup.WebServer);
     private final List<WsContext> users = new ArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
     private final DataChangeService dcService = DataChangeService.getInstance();

@@ -22,7 +22,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class Server {
-    private static final Logger logger = new Logger(Server.class, LogGroup.Server);
+    private static final Logger logger = new Logger(Server.class, LogGroup.WebServer);
 
     public static void main(int port) {
 

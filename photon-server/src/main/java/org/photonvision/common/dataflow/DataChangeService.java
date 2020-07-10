@@ -29,7 +29,7 @@ import org.photonvision.common.logging.Logger;
 @SuppressWarnings("rawtypes")
 public class DataChangeService {
 
-    private static final Logger logger = new Logger(DataChangeService.class, LogGroup.Server);
+    private static final Logger logger = new Logger(DataChangeService.class, LogGroup.WebServer);
 
     private static class ThreadSafeSingleton {
         private static final DataChangeService INSTANCE = new DataChangeService();

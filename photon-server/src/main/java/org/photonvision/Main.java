@@ -41,8 +41,8 @@ public class Main {
 
     public static void main(String[] args) {
         Logger.setLevel(LogGroup.Camera, Level.TRACE);
-        Logger.setLevel(LogGroup.Server, Level.TRACE);
-        Logger.setLevel(LogGroup.VisionProcess, Level.TRACE);
+        Logger.setLevel(LogGroup.WebServer, Level.TRACE);
+        Logger.setLevel(LogGroup.VisionModule, Level.TRACE);
         Logger.setLevel(LogGroup.Data, Level.TRACE);
         Logger.setLevel(LogGroup.General, Level.TRACE);
 

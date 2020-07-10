@@ -89,9 +89,9 @@ public class Logger {
     static {
         levelMap.put(LogGroup.Camera, Level.INFO);
         levelMap.put(LogGroup.General, Level.INFO);
-        levelMap.put(LogGroup.Server, Level.INFO);
+        levelMap.put(LogGroup.WebServer, Level.INFO);
         levelMap.put(LogGroup.Data, Level.INFO);
-        levelMap.put(LogGroup.VisionProcess, Level.INFO);
+        levelMap.put(LogGroup.VisionModule, Level.INFO);
     }
 
     static {

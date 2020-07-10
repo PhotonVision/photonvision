@@ -19,8 +19,8 @@ package org.photonvision.common.logging;
 
 public enum LogGroup {
     Camera,
-    Server,
-    VisionProcess,
+    WebServer,
+    VisionModule,
     Data,
     General
 }
