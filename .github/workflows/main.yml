@@ -169,7 +169,7 @@ jobs:
           name: jar
           path: photon-server/build/libs
     
-      - uses: eine/tip@v2
+      - uses: eine/tip@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'Dev'
