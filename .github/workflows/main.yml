@@ -172,7 +172,7 @@ jobs:
       - uses: eine/tip@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          tag: 'Dev'
+          tag: 'test'
           files: |
             photon-server/build/libs/*.jar
         if: github.event_name == 'push'
