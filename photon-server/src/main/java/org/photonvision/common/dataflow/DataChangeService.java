@@ -78,7 +78,8 @@ public class DataChangeService {
         if (!subscribers.addIfAbsent(subscriber)) {
             logger.warn("Attempted to add already added subscriber!");
         } else {
-            if (logger.shouldLog(LogLevel.TRACE)) {
+            logger.trace(() ->
+            {
                 var sources =
                         subscriber.wantedSources.stream().map(Enum::toString).collect(Collectors.joining(", "));
                 var dests =
@@ -86,7 +87,8 @@ public class DataChangeService {
                                 .map(Enum::toString)
                                 .collect(Collectors.joining(", "));
 
-                logger.trace("Added subscriber - " + "Sources: " + sources + ", Destinations: " + dests);
+                return "Added subscriber - " + "Sources: " + sources + ", Destinations: " + dests;
+            });
             }
         }
     }
