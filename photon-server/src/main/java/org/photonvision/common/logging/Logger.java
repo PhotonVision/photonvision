@@ -109,7 +109,7 @@ public class Logger {
                 e.printStackTrace();
             }
         }
-        currentAppenders.add(new AsyncFileAppender(logFilePath));
+        currentAppenders.add(new AsyncFileLogAppender(logFilePath));
     }
 
     public static void setLevel(LogGroup group, LogLevel newLevel) {
@@ -205,7 +205,7 @@ public class Logger {
     private static class AsyncFileLogAppender implements LogAppender {
         private final Path filePath;
 
-        public AsyncFileAppender(Path logFilePath) {
+        public AsyncFileLogAppender(Path logFilePath) {
             this.filePath = logFilePath;
         }
 
