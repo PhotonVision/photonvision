@@ -50,7 +50,7 @@ public class ConfigTest {
     @BeforeAll
     public static void init() {
         TestUtils.loadLibraries();
-        Logger.setLevel(LogGroup.General, Level.DE_PEST);
+        Logger.setLevel(LogGroup.General, Level.TRACE);
 
         REFLECTIVE_PIPELINE_SETTINGS.pipelineNickname = "2019Tape";
         REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.get2019Target();
@@ -68,7 +68,7 @@ public class ConfigTest {
         TestUtils.loadLibraries();
         JacksonUtils.serializer(Path.of("settings.json"), REFLECTIVE_PIPELINE_SETTINGS);
 
-        Logger.setLevel(LogGroup.General, Level.DE_PEST);
+        Logger.setLevel(LogGroup.General, Level.TRACE);
         configMgr.getConfig().addCameraConfig(cameraConfig);
         configMgr.save();
 

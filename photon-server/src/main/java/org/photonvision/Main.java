@@ -40,11 +40,11 @@ public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
     public static void main(String[] args) {
-        Logger.setLevel(LogGroup.Camera, Level.DE_PEST);
-        Logger.setLevel(LogGroup.Server, Level.DE_PEST);
-        Logger.setLevel(LogGroup.VisionProcess, Level.DE_PEST);
-        Logger.setLevel(LogGroup.Data, Level.DE_PEST);
-        Logger.setLevel(LogGroup.General, Level.DE_PEST);
+        Logger.setLevel(LogGroup.Camera, Level.TRACE);
+        Logger.setLevel(LogGroup.Server, Level.TRACE);
+        Logger.setLevel(LogGroup.VisionProcess, Level.TRACE);
+        Logger.setLevel(LogGroup.Data, Level.TRACE);
+        Logger.setLevel(LogGroup.General, Level.TRACE);
 
         TestUtils.loadLibraries();
         ConfigManager.getInstance(); // init config manager

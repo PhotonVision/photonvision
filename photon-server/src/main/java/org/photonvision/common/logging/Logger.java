@@ -124,7 +124,11 @@ public class Logger {
         }
     }
 
-    public static boolean shouldLog(Level logLevel, LogGroup group) {
+    public boolean shouldLog(Level logLevel) {
+        return shouldLog(logLevel, group);
+    }
+
+    private static boolean shouldLog(Level logLevel, LogGroup group) {
         return logLevel.code <= levelMap.get(group).code;
     }
 
@@ -146,10 +150,6 @@ public class Logger {
 
     public void trace(String message) {
         if (shouldLog(Level.TRACE, group)) log(message, Level.TRACE, group, className);
-    }
-
-    public void de_pest(String message) {
-        if (shouldLog(Level.DE_PEST, group)) log(message, Level.DE_PEST, group, className);
     }
 
     private abstract static class Appender {

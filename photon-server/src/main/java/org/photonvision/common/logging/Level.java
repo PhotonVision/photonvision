@@ -23,8 +23,7 @@ public enum Level {
     WARN(2, Logger.ANSI_YELLOW),
     INFO(3, Logger.ANSI_GREEN),
     DEBUG(4, Logger.ANSI_WHITE),
-    TRACE(5, Logger.ANSI_CYAN),
-    DE_PEST(6, Logger.ANSI_WHITE);
+    TRACE(5, Logger.ANSI_CYAN);
 
     public final String colorCode;
     public final int code;
