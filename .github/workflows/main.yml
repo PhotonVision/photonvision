@@ -194,7 +194,9 @@ jobs:
   
   # Publishes the latest commit to master to the Dev tag.
   publish-dev-release:
-    runs-on: ubuntu-latet
+    needs: [build-package]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
     steps:
       - uses: actions/download-artifact@v2
         with:
