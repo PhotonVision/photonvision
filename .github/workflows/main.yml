@@ -168,6 +168,14 @@ jobs:
         with:
           name: jar
           path: photon-server/build/libs
+    
+      - uses: eine/tip@master
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: 'Dev'
+          files: |
+            photon-server/build/libs/*.jar
+        if: github.event_name == 'push'
 
   check-lint:
     # Let all steps run within the photon-server dir.
@@ -191,3 +199,4 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew spotlessCheck
+            
