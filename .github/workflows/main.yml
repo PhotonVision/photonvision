@@ -100,10 +100,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install sphinx sphinx_rtd_theme sphinx-tabs
           sudo apt install -y texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra latexmk texlive-lang-greek texlive-luatex texlive-xetex texlive-fonts-extra dvipng graphviz
-      - name: Check the docs
-        run: |
-          ls
-          make linkcheck
+      #- name: Check the docs
+      #  run: |
+      #    ls
+      #    make linkcheck
       - name: Build the docs
         run: |
           make html
