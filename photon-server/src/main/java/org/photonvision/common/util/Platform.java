@@ -19,6 +19,7 @@ package org.photonvision.common.util;
 
 import edu.wpi.first.wpiutil.RuntimeDetector;
 import java.io.IOException;
+import org.apache.commons.lang3.SystemUtils;
 
 @SuppressWarnings("unused")
 public enum Platform {
@@ -28,7 +29,11 @@ public enum Platform {
     LINUX_64("Linux x64"),
     LINUX_RASPBIAN("Linux Raspbian"), // TODO: check that RaspiOS reports the same way
     LINUX_AARCH64BIONIC("Linux Aarch64 Bionic"),
-    UNSUPPORTED(UnsupportedPlatformString);
+    UNSUPPORTED(
+            "Unsupported Platform - OS: "
+                    + SystemUtils.OS_NAME
+                    + ", Architecture: "
+                    + SystemUtils.OS_ARCH);
 
     public final String value;
     public final boolean isRoot = checkForRoot();
@@ -36,9 +41,6 @@ public enum Platform {
     Platform(String value) {
         this.value = value;
     }
-
-    private static String UnsupportedPlatformString =
-            "Unsupported Platform - OS: " + OS_NAME + ", Architecture: " + OS_ARCH;
 
     public static final Platform CurrentPlatform = getCurrentPlatform();
 

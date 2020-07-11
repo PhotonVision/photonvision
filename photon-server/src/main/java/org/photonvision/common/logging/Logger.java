@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.server.UIUpdateType;
@@ -64,7 +65,7 @@ public class Logger {
     }
 
     public static String format(
-            String logMessage, Level level, LogGroup group, String clazz, boolean color) {
+            String logMessage, LogLevel level, LogGroup group, String clazz, boolean color) {
         var date = getDate();
         var builder = new StringBuilder();
         if (color) builder.append(level.colorCode);
@@ -83,8 +84,8 @@ public class Logger {
         return builder.toString();
     }
 
-    private static HashMap<LogGroup, Level> levelMap = new HashMap<>();
-    private static List<Appender> currentAppenders = new ArrayList<>();
+    private static HashMap<LogGroup, LogLevel> levelMap = new HashMap<>();
+    private static List<LogAppender> currentAppenders = new ArrayList<>();
 
     static {
         levelMap.put(LogGroup.Camera, LogLevel.INFO);
@@ -187,14 +188,14 @@ public class Logger {
 
     private static class ConsoleLogAppender implements LogAppender {
         @Override
-        void log(String message) {
+        public void log(String message) {
             System.out.println(message);
         }
     }
 
     private static class UILogAppender implements LogAppender {
         @Override
-        void log(String message) {
+        public void log(String message) {
             var message_ = new HashMap<>();
             message_.put("logMessage", message);
             DataChangeService.getInstance()
@@ -210,7 +211,7 @@ public class Logger {
         }
 
         @Override
-        void log(String message) {
+        public void log(String message) {
             try (AsynchronousFileChannel asyncFile =
                     AsynchronousFileChannel.open(
                             filePath, StandardOpenOption.WRITE, StandardOpenOption.CREATE)) {

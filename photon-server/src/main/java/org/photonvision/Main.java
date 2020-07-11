@@ -17,13 +17,14 @@
 
 package org.photonvision;
 
+import edu.wpi.cscore.CameraServerCvJNI;
 import java.util.HashMap;
 import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.datatransfer.networktables.NetworkTablesManager;
-import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.Platform;
@@ -38,7 +39,7 @@ public class Main {
     private static final Logger logger = new Logger(Main.class, LogGroup.General);
     public static final int DEFAULT_WEBPORT = 5800;
 
-    private String getVersion() {
+    private static String getVersion() {
         return "2020.7.1"; // TODO: grab from gradle/resource somehow
     }
 
@@ -49,20 +50,21 @@ public class Main {
         Logger.setLevel(LogGroup.Data, LogLevel.TRACE);
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
 
-        logger.info("Logging initialized!")
+        logger.info("Logging initialized!");
 
-
-        logger.info("Starting PhotonVision version " + getVersion()
-                + " on " + Platform.CurrentPlatform.toString();
+        logger.info(
+                "Starting PhotonVision version "
+                        + getVersion()
+                        + " on "
+                        + Platform.CurrentPlatform.toString());
         try {
-            logger.info("Loading native libraries...")
+            logger.info("Loading native libraries...");
             CameraServerCvJNI.forceLoad();
-        }
-        catch(Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to load native libraries!");
             e.printStackTrace(); // TODO: redirect stacktrace to Logger stream somehow
         }
-        logger.info("Native libaries loaded.")
+        logger.info("Native libaries loaded.");
 
         ConfigManager.getInstance(); // init config manager
         NetworkManager.getInstance().initialize(false); // basically empty. todo: link to ConfigManager?
@@ -77,10 +79,14 @@ public class Main {
         for (var src : sources) {
             var usbSrc = (USBCameraSource) src;
             collectedSources.put(usbSrc, usbSrc.configuration.pipelineSettings);
-            logger.trace(() -> {
-                return "Matched config for camera \"" + src.getFrameProvider().getName() + "\" and loaded "
-                        + usbSrc.configuration.pipelineSettings.size() + " pipelines");
-            });
+            logger.trace(
+                    () -> {
+                        return "Matched config for camera \""
+                                + src.getFrameProvider().getName()
+                                + "\" and loaded "
+                                + usbSrc.configuration.pipelineSettings.size()
+                                + " pipelines";
+                    });
         }
 
         logger.info("Adding " + collectedSources.size() + " configs to VMM.");
