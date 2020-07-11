@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/PhotonVision/photonvision/workflows/CI/badge.svg)](https://github.com/PhotonVision/photonvision/actions?query=workflow%3ACI) [![codecov](https://codecov.io/gh/PhotonVision/photonvision/branch/master/graph/badge.svg)](https://codecov.io/gh/PhotonVision/photonvision)
 
+A copy of the latest development release is available [here](https://github.com/PhotonVision/photonvision/releases/tag/Dev).
 
 PhotonVision is a fork of [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/), a free open-source software for FRC teams to use for vision processing on their robots. Thank you to everyone who worked on the original project.
 
