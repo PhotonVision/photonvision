@@ -28,8 +28,8 @@ jobs:
 
     steps:
     # Checkout code.
-    - uses: actions/checkout@v2
-
+    - uses: actions/checkout@v1
+    
     # Setup Node.js
     - name: Setup Node.js
       uses: actions/setup-node@v1
@@ -58,8 +58,8 @@ jobs:
 
     steps:
       # Checkout code.
-      - uses: actions/checkout@v2
-
+      - uses: actions/checkout@v1
+        
       # Install Java 11.
       - uses: actions/setup-java@v1
         with:
@@ -98,7 +98,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install sphinx sphinx_rtd_theme sphinx-tabs
+          pip install sphinx sphinx_rtd_theme sphinx-tabs sphinxext-opengraph
           sudo apt install -y texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra latexmk texlive-lang-greek texlive-luatex texlive-xetex texlive-fonts-extra dvipng graphviz
       - name: Check the docs
         run: |
@@ -128,8 +128,8 @@ jobs:
 
     steps:
       # Checkout code.
-      - uses: actions/checkout@v2
-
+      - uses: actions/checkout@v1
+      
       # Install Java 11.
       - uses: actions/setup-java@v1
         with:
@@ -188,7 +188,7 @@ jobs:
     
     steps:
       # Checkout code.
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
 
       # Install Java 11.
       - uses: actions/setup-java@v1
