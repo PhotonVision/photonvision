@@ -28,13 +28,7 @@ jobs:
 
     steps:
     # Checkout code.
-    # - uses: actions/checkout@v2
-    - name: Checkout
-      run: |
-          echo $GITHUB_REF $GITHUB_SHA
-          git clone --depth 1 https://github.com/$GITHUB_REPOSITORY.git
-          git fetch origin $GITHUB_SHA
-          git checkout $GITHUB_SHA || (git fetch && git checkout $GITHUB_SHA)
+    - uses: actions/checkout@v1
     
     # Setup Node.js
     - name: Setup Node.js
@@ -64,13 +58,8 @@ jobs:
 
     steps:
       # Checkout code.
-      # - uses: actions/checkout@v2
-      - name: Checkout
-        run: |
-          git clone --depth 1 https://github.com/$GITHUB_REPOSITORY.git
-          git fetch origin $GITHUB_SHA
-          git checkout $GITHUB_SHA || (git fetch && git checkout $GITHUB_SHA)
-
+      - uses: actions/checkout@v1
+        
       # Install Java 11.
       - uses: actions/setup-java@v1
         with:
@@ -97,7 +86,7 @@ jobs:
 
     steps:
       # Checkout docs.
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
         with:
           repository: 'PhotonVision/photonvision-docs.git'
           ref: master
@@ -139,13 +128,8 @@ jobs:
 
     steps:
       # Checkout code.
-      - name: Checkout
-        run: |
-          echo $GITHUB_REF $GITHUB_SHA
-          git clone --depth 1 https://github.com/$GITHUB_REPOSITORY.git
-          git fetch origin $GITHUB_SHA
-          git checkout $GITHUB_SHA || (git fetch && git checkout $GITHUB_SHA)
-
+      - uses: actions/checkout@v1
+      
       # Install Java 11.
       - uses: actions/setup-java@v1
         with:
@@ -204,7 +188,7 @@ jobs:
     
     steps:
       # Checkout code.
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
 
       # Install Java 11.
       - uses: actions/setup-java@v1
