@@ -17,6 +17,8 @@
 
 package org.photonvision.common.util.file;
 
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.json.JsonMapper;
@@ -51,6 +53,7 @@ public class JacksonUtils {
                 BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
         ObjectMapper objectMapper =
                 JsonMapper.builder()
+                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
                         .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
                         .build();
         File jsonFile = new File(path.toString());
