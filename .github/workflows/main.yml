@@ -32,7 +32,7 @@ jobs:
     - name: Checkout
       run: |
           echo $GITHUB_REF $GITHUB_SHA
-          git clone --depth 1 https://github.com/$GITHUB_REPOSITORY.git .
+          git clone --depth 1 https://github.com/$GITHUB_REPOSITORY.git
           git fetch origin $GITHUB_SHA
           git checkout $GITHUB_SHA || (git fetch && git checkout $GITHUB_SHA)
     
@@ -67,7 +67,7 @@ jobs:
       # - uses: actions/checkout@v2
       - name: Checkout
         run: |
-          git clone --depth 1 https://github.com/$GITHUB_REPOSITORY.git .
+          git clone --depth 1 https://github.com/$GITHUB_REPOSITORY.git
           git fetch origin $GITHUB_SHA
           git checkout $GITHUB_SHA || (git fetch && git checkout $GITHUB_SHA)
 
@@ -142,8 +142,8 @@ jobs:
       - name: Checkout
         run: |
           echo $GITHUB_REF $GITHUB_SHA
-          git clone --depth 1 https://github.com/$GITHUB_REPOSITORY.git .
-          git fetch origin $GITHUB_SHA:temporary-ci-branch
+          git clone --depth 1 https://github.com/$GITHUB_REPOSITORY.git
+          git fetch origin $GITHUB_SHA
           git checkout $GITHUB_SHA || (git fetch && git checkout $GITHUB_SHA)
 
       # Install Java 11.
