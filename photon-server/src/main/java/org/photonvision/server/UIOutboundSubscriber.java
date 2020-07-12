@@ -34,7 +34,7 @@ import org.photonvision.common.logging.Logger;
 * DO NOT use logging in this class. If you do, the logs will recuse forever!
 */
 class UIOutboundSubscriber extends DataChangeSubscriber {
-    Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.Server);
+    Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.WebServer);
 
     private final SocketHandler socketHandler;
 

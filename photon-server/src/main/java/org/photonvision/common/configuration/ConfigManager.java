@@ -229,7 +229,7 @@ public class ConfigManager {
                                     driverModeFile.toAbsolutePath(), DriverModePipelineSettings.class);
                 } catch (JsonProcessingException e) {
                     logger.error("Could not deserialize drivermode.json! Loading defaults");
-                    logger.de_pest(Arrays.toString(e.getStackTrace()));
+                    logger.trace(Arrays.toString(e.getStackTrace()));
                     driverMode = new DriverModePipelineSettings();
                 }
                 if (driverMode == null) {

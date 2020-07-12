@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.function.Supplier;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.server.UIUpdateType;
@@ -64,7 +65,7 @@ public class Logger {
     }
 
     public static String format(
-            String logMessage, Level level, LogGroup group, String clazz, boolean color) {
+            String logMessage, LogLevel level, LogGroup group, String clazz, boolean color) {
         var date = getDate();
         var builder = new StringBuilder();
         if (color) builder.append(level.colorCode);
@@ -83,19 +84,19 @@ public class Logger {
         return builder.toString();
     }
 
-    private static HashMap<LogGroup, Level> levelMap = new HashMap<>();
-    private static List<Appender> currentAppenders = new ArrayList<>();
+    private static HashMap<LogGroup, LogLevel> levelMap = new HashMap<>();
+    private static List<LogAppender> currentAppenders = new ArrayList<>();
 
     static {
-        levelMap.put(LogGroup.Camera, Level.INFO);
-        levelMap.put(LogGroup.General, Level.INFO);
-        levelMap.put(LogGroup.Server, Level.INFO);
-        levelMap.put(LogGroup.Data, Level.INFO);
-        levelMap.put(LogGroup.VisionProcess, Level.INFO);
+        levelMap.put(LogGroup.Camera, LogLevel.INFO);
+        levelMap.put(LogGroup.General, LogLevel.INFO);
+        levelMap.put(LogGroup.WebServer, LogLevel.INFO);
+        levelMap.put(LogGroup.Data, LogLevel.INFO);
+        levelMap.put(LogGroup.VisionModule, LogLevel.INFO);
     }
 
     static {
-        currentAppenders.add(new ConsoleAppender());
+        currentAppenders.add(new ConsoleLogAppender());
         currentAppenders.add(new UILogAppender());
     }
 
@@ -109,63 +110,92 @@ public class Logger {
                 e.printStackTrace();
             }
         }
-        currentAppenders.add(new AsyncFileAppender(logFilePath));
+        currentAppenders.add(new AsyncFileLogAppender(logFilePath));
     }
 
-    public static void setLevel(LogGroup group, Level newLevel) {
+    public static void setLevel(LogGroup group, LogLevel newLevel) {
         levelMap.put(group, newLevel);
     }
 
-    private static void log(String message, Level level, LogGroup group, String clazz) {
+    // TODO: profile
+    private static void log(String message, LogLevel level, LogGroup group, String clazz) {
         for (var a : currentAppenders) {
-            var shouldColor = a instanceof ConsoleAppender;
+            var shouldColor = a instanceof ConsoleLogAppender;
             var formattedMessage = format(message, level, group, clazz, shouldColor);
             a.log(formattedMessage);
         }
     }
 
-    public static boolean shouldLog(Level logLevel, LogGroup group) {
+    public boolean shouldLog(LogLevel logLevel) {
         return logLevel.code <= levelMap.get(group).code;
     }
 
+    private void log(String message, LogLevel level) {
+        if (shouldLog(level)) {
+            log(message, level, group, className);
+        }
+    }
+
+    private void log(Supplier<String> messageSupplier, LogLevel level) {
+        if (shouldLog(level)) {
+            log(messageSupplier.get(), level, group, className);
+        }
+    }
+
+    public void error(Supplier<String> messageSupplier) {
+        log(messageSupplier, LogLevel.ERROR);
+    }
+
     public void error(String message) {
-        if (shouldLog(Level.ERROR, group)) log(message, Level.ERROR, group, className);
+        log(message, LogLevel.ERROR);
+    }
+
+    public void warn(Supplier<String> messageSupplier) {
+        log(messageSupplier, LogLevel.WARN);
     }
 
     public void warn(String message) {
-        if (shouldLog(Level.WARN, group)) log(message, Level.WARN, group, className);
+        log(message, LogLevel.WARN);
+    }
+
+    public void info(Supplier<String> messageSupplier) {
+        log(messageSupplier, LogLevel.INFO);
     }
 
     public void info(String message) {
-        if (shouldLog(Level.INFO, group)) log(message, Level.INFO, group, className);
+        log(message, LogLevel.INFO);
+    }
+
+    public void debug(Supplier<String> messageSupplier) {
+        log(messageSupplier, LogLevel.DEBUG);
     }
 
     public void debug(String message) {
-        if (shouldLog(Level.DEBUG, group)) log(message, Level.DEBUG, group, className);
+        log(message, LogLevel.DEBUG);
+    }
+
+    public void trace(Supplier<String> messageSupplier) {
+        log(messageSupplier, LogLevel.TRACE);
     }
 
     public void trace(String message) {
-        if (shouldLog(Level.TRACE, group)) log(message, Level.TRACE, group, className);
+        log(message, LogLevel.TRACE);
     }
 
-    public void de_pest(String message) {
-        if (shouldLog(Level.DE_PEST, group)) log(message, Level.DE_PEST, group, className);
+    private interface LogAppender {
+        void log(String message);
     }
 
-    private abstract static class Appender {
-        abstract void log(String message);
-    }
-
-    private static class ConsoleAppender extends Appender {
+    private static class ConsoleLogAppender implements LogAppender {
         @Override
-        void log(String message) {
+        public void log(String message) {
             System.out.println(message);
         }
     }
 
-    private static class UILogAppender extends Appender {
+    private static class UILogAppender implements LogAppender {
         @Override
-        void log(String message) {
+        public void log(String message) {
             var message_ = new HashMap<>();
             message_.put("logMessage", message);
             DataChangeService.getInstance()
@@ -173,15 +203,15 @@ public class Logger {
         }
     }
 
-    private static class AsyncFileAppender extends Appender {
+    private static class AsyncFileLogAppender implements LogAppender {
         private final Path filePath;
 
-        public AsyncFileAppender(Path logFilePath) {
+        public AsyncFileLogAppender(Path logFilePath) {
             this.filePath = logFilePath;
         }
 
         @Override
-        void log(String message) {
+        public void log(String message) {
             try (AsynchronousFileChannel asyncFile =
                     AsynchronousFileChannel.open(
                             filePath, StandardOpenOption.WRITE, StandardOpenOption.CREATE)) {

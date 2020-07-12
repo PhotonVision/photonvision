@@ -70,7 +70,7 @@ public class VisionModule {
                 new Logger(
                         VisionModule.class,
                         visionSource.getSettables().getConfiguration().nickname,
-                        LogGroup.VisionProcess);
+                        LogGroup.VisionModule);
         this.pipelineManager = pipelineManager;
         this.visionSource = visionSource;
         this.visionRunner =

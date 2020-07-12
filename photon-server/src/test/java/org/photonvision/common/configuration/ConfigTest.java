@@ -23,8 +23,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.*;
-import org.photonvision.common.logging.Level;
 import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
@@ -50,7 +50,7 @@ public class ConfigTest {
     @BeforeAll
     public static void init() {
         TestUtils.loadLibraries();
-        Logger.setLevel(LogGroup.General, Level.DE_PEST);
+        Logger.setLevel(LogGroup.General, LogLevel.TRACE);
 
         REFLECTIVE_PIPELINE_SETTINGS.pipelineNickname = "2019Tape";
         REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.get2019Target();
@@ -68,7 +68,7 @@ public class ConfigTest {
         TestUtils.loadLibraries();
         JacksonUtils.serializer(Path.of("settings.json"), REFLECTIVE_PIPELINE_SETTINGS);
 
-        Logger.setLevel(LogGroup.General, Level.DE_PEST);
+        Logger.setLevel(LogGroup.General, LogLevel.TRACE);
         configMgr.getConfig().addCameraConfig(cameraConfig);
         configMgr.save();
 
