@@ -20,13 +20,12 @@ package org.photonvision.common.dataflow.networktables;
 import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
-import org.photonvision.common.dataflow.CVPipelineResultConsumer;
-import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.pipeline.result.SimplePipelineResult;
-
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import org.photonvision.common.dataflow.CVPipelineResultConsumer;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.pipeline.result.SimplePipelineResult;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
 
@@ -54,11 +53,11 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private String currentCameraNickname;
 
     public NTDataPublisher(
-                           String cameraNickname,
-                           Supplier<Integer> pipelineIndexSupplier,
-                           Consumer<Integer> pipelineIndexConsumer,
-                           BooleanSupplier driverModeSupplier,
-                           Consumer<Boolean> driverModeConsumer) {
+            String cameraNickname,
+            Supplier<Integer> pipelineIndexSupplier,
+            Consumer<Integer> pipelineIndexConsumer,
+            BooleanSupplier driverModeSupplier,
+            Consumer<Boolean> driverModeConsumer) {
         this.pipelineIndexSupplier = pipelineIndexSupplier;
         this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
@@ -107,7 +106,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             pipelineIndexListener.remove();
         }
         pipelineIndexEntry = subTable.getEntry("pipelineIndex");
-        pipelineIndexListener = new NTDataChangeListener(pipelineIndexEntry, this::onPipelineIndexChange);
+        pipelineIndexListener =
+                new NTDataChangeListener(pipelineIndexEntry, this::onPipelineIndexChange);
 
         if (driverModeListener != null) {
             driverModeListener.remove();
@@ -157,13 +157,12 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             var poseX = bestTarget.getRobotRelativePose().getTranslation().getX();
             var poseY = bestTarget.getRobotRelativePose().getTranslation().getY();
             var poseRot = bestTarget.getRobotRelativePose().getRotation().getDegrees();
-            targetPoseEntry.forceSetDoubleArray(new double[] { poseX, poseY, poseRot });
+            targetPoseEntry.forceSetDoubleArray(new double[] {poseX, poseY, poseRot});
         } else {
             targetPitchEntry.forceSetDouble(0);
             targetYawEntry.forceSetDouble(0);
             targetAreaEntry.forceSetDouble(0);
-            targetPoseEntry.forceSetDoubleArray(new double[] { 0, 0, 0 });
+            targetPoseEntry.forceSetDoubleArray(new double[] {0, 0, 0});
         }
-
     }
 }

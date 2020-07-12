@@ -18,7 +18,6 @@
 package org.photonvision.vision.processes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
 import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -94,8 +93,9 @@ public class VisionModule {
                         pipelineManager::getCurrentPipelineIndex,
                         pipelineManager::setIndex,
                         () -> pipelineManager.getCurrentPipelineIndex() == -1,
-                        (driverMode) -> { /* TODO: switch to driver mode */ }
-                );
+                        (driverMode) -> {
+                            /* TODO: switch to driver mode */
+                        });
         addResultConsumer(ntConsumer);
         addResultConsumer(
                 result -> {

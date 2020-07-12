@@ -21,7 +21,6 @@ import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.function.Consumer;
-
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -56,7 +55,8 @@ public class NetworkTablesManager {
             if (!hasReportedConnectionFailure && logMessage.message.contains("timed out")) {
                 logger.error("NT Connection has failed! Will retry in background.");
                 hasReportedConnectionFailure = true;
-            } else if (logMessage.message.contains("connected") && System.currentTimeMillis() - lastConnectMessageMillis > 125) {
+            } else if (logMessage.message.contains("connected")
+                    && System.currentTimeMillis() - lastConnectMessageMillis > 125) {
                 logger.info("NT Connected!");
                 hasReportedConnectionFailure = false;
                 lastConnectMessageMillis = System.currentTimeMillis();
