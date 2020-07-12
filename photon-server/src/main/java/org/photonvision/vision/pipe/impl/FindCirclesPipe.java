@@ -93,7 +93,6 @@ public class FindCirclesPipe
         return output;
     }
 
-
     public static class FindCirclePipeParams {
         private final int allowableThreshold;
         private final int minRadius;
