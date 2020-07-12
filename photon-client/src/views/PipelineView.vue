@@ -77,7 +77,8 @@
                   :scale="75"
                   @click="onImageClick"
                 />
-                <span style=" position: absolute; top: 0.2%; left: 13%;">FPS:{{ parseFloat(fps).toFixed(2) }}</span>
+                <span style=" position: absolute; top: 0.2%; left: 13%;">FPS: {{ parseFloat(fps).toFixed(2) }}</span>
+                <span style=" position: absolute; top: 0.2%; right: 13%;">Latency: {{ parseFloat(latency).toFixed(2) }}ms</span>
               </div>
             </v-row>
 
@@ -184,6 +185,11 @@
             fps: {
                 get() {
                     return this.$store.getters.currentCameraFPS;
+                }
+            },
+            latency: {
+                get() {
+                    return this.$store.getters.currentPipelineResults.latency;
                 }
             }
         },

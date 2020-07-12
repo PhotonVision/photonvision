@@ -18,6 +18,7 @@
 package org.photonvision.vision.processes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.wpi.first.wpilibj.MedianFilter;
 import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -60,7 +61,9 @@ public class VisionModule {
     private final NTDataPublisher ntConsumer;
     private final int moduleIndex;
     private final MJPGFrameConsumer uiStreamer;
-    private long lastUpdateTimestamp = -1;
+    private long lastUIResultUpdateTime = 0;
+    private long lastRunTime = 0;
+    private MedianFilter fpsAverager = new MedianFilter(10);
 
     private MJPGFrameConsumer dashboardStreamer;
 
@@ -100,12 +103,21 @@ public class VisionModule {
         addResultConsumer(
                 result -> {
                     var now = System.currentTimeMillis();
-                    if (lastUpdateTimestamp + 1000.0 / 15.0 > now) return;
+
+                    var fps = fpsAverager.calculate(1000.0 / (now - lastRunTime));
+                    lastRunTime = now;
+
+                    // only update the UI at 15hz
+                    if (lastUIResultUpdateTime + 1000.0 / 15.0 > now) return;
 
                     var uiMap = new HashMap<Integer, HashMap<String, Object>>();
                     var dataMap = new HashMap<String, Object>();
-                    dataMap.put("fps", 1000.0 / result.getLatencyMillis());
+
+                    dataMap.put("fps", fps);
+                    dataMap.put("latency", result.getLatencyMillis());
+
                     var targets = result.targets;
+
                     var uiTargets = new ArrayList<HashMap<String, Object>>();
                     for (var t : targets) {
                         uiTargets.add(t.toHashMap());
@@ -123,7 +135,7 @@ public class VisionModule {
                         logger.error(Arrays.toString(e.getStackTrace()));
                     }
 
-                    lastUpdateTimestamp = now;
+                    lastUIResultUpdateTime = now;
                 });
 
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);

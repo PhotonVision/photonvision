@@ -79,6 +79,7 @@ export default new Vuex.Store({
         pipelineResults: [
             {
                 fps: 0,
+                latency: 0,
                 targets: [{
                     // Available in both 2D and 3D
                     pitch: 0,
