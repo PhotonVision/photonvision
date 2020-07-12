@@ -51,6 +51,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Supplier<Integer> pipelineIndexSupplier;
     private final BooleanSupplier driverModeSupplier;
 
+    private String currentCameraNickname;
+
     public NTDataPublisher(
                            String cameraNickname,
                            Supplier<Integer> pipelineIndexSupplier,
@@ -62,6 +64,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         this.driverModeSupplier = driverModeSupplier;
         this.driverModeConsumer = driverModeConsumer;
 
+        currentCameraNickname = cameraNickname;
         updateCameraNickname(cameraNickname);
         updateEntries();
     }
@@ -121,9 +124,11 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         targetPoseEntry = subTable.getEntry("targetPose");
     }
 
-    public void updateCameraNickname(String cameraNickname) {
-        subTable = rootTable.getSubTable(cameraNickname);
+    public void updateCameraNickname(String newCameraNickname) {
+        rootTable.delete(currentCameraNickname); // TODO: make this actually work (if possible)
+        subTable = rootTable.getSubTable(newCameraNickname);
         updateEntries();
+        currentCameraNickname = newCameraNickname;
     }
 
     @Override
@@ -142,16 +147,23 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         latencyMillisEntry.forceSetDouble(result.getLatencyMillis());
         hasTargetEntry.forceSetBoolean(result.hasTargets());
 
-        // TODO: send all zeroes if no targets?
-        var bestTarget = result.targets.get(0);
+        if (result.hasTargets()) {
+            var bestTarget = result.targets.get(0);
 
-        targetPitchEntry.forceSetDouble(bestTarget.getPitch());
-        targetYawEntry.forceSetDouble(bestTarget.getYaw());
-        targetAreaEntry.forceSetDouble(bestTarget.getArea());
+            targetPitchEntry.forceSetDouble(bestTarget.getPitch());
+            targetYawEntry.forceSetDouble(bestTarget.getYaw());
+            targetAreaEntry.forceSetDouble(bestTarget.getArea());
 
-        var poseX = bestTarget.getRobotRelativePose().getTranslation().getX();
-        var poseY = bestTarget.getRobotRelativePose().getTranslation().getY();
-        var poseRot = bestTarget.getRobotRelativePose().getRotation().getDegrees();
-        targetPoseEntry.forceSetDoubleArray(new double[] { poseX, poseY, poseRot });
+            var poseX = bestTarget.getRobotRelativePose().getTranslation().getX();
+            var poseY = bestTarget.getRobotRelativePose().getTranslation().getY();
+            var poseRot = bestTarget.getRobotRelativePose().getRotation().getDegrees();
+            targetPoseEntry.forceSetDoubleArray(new double[] { poseX, poseY, poseRot });
+        } else {
+            targetPitchEntry.forceSetDouble(0);
+            targetYawEntry.forceSetDouble(0);
+            targetAreaEntry.forceSetDouble(0);
+            targetPoseEntry.forceSetDoubleArray(new double[] { 0, 0, 0 });
+        }
+
     }
 }
