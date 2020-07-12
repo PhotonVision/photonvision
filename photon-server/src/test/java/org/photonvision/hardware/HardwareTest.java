@@ -27,10 +27,10 @@ import org.photonvision.common.hardware.GPIO.PiGPIO;
 import org.photonvision.common.hardware.PWM.CustomPWM;
 import org.photonvision.common.hardware.PWM.PWMBase;
 import org.photonvision.common.hardware.PWM.PiPWM;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.metrics.CPU;
 import org.photonvision.common.hardware.metrics.GPU;
 import org.photonvision.common.hardware.metrics.RAM;
-import org.photonvision.common.util.Platform;
 
 public class HardwareTest {
 
@@ -101,9 +101,8 @@ public class HardwareTest {
         } else {
             pwm = new CustomPWM(1);
         }
-        pwm.setPwmRange(new int[] {0, 100});
-        assertEquals(pwm.getPwmRange()[0], 0);
-        assertEquals(pwm.getPwmRange()[1], 100);
+        pwm.setPwmRange(100);
+        assertEquals(pwm.getPwmRange(), 100);
 
         pwm.setPwmRate(10);
         assertEquals(pwm.getPwmRate(), 10);

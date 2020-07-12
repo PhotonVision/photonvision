@@ -18,6 +18,7 @@
 package org.photonvision.common.hardware.GPIO;
 
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.hardware.Platform;
 
 public class CustomGPIO extends GPIOBase {
 
@@ -100,6 +101,7 @@ public class CustomGPIO extends GPIOBase {
     }
 
     public static void setConfig(HardwareConfig config) {
+        if (Platform.isRaspberryPi()) return;
         commands.replace("setState", config.getLedSetCommand());
         commands.replace("blink", config.getLedBlinkCommand());
         commands.replace("pulse", config.getLedPulseCommand());

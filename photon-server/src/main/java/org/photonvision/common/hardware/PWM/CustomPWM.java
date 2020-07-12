@@ -18,10 +18,11 @@
 package org.photonvision.common.hardware.PWM;
 
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.hardware.Platform;
 
 public class CustomPWM extends PWMBase {
     private int pwmRate = 0;
-    private int[] pwmRange = new int[2];
+    private int pwmRange = 0;
     private int port = 0;
 
     public CustomPWM(int port) {
@@ -39,12 +40,11 @@ public class CustomPWM extends PWMBase {
     }
 
     @Override
-    public void setPwmRange(int[] range) {
+    public void setPwmRange(int range) {
         execute(
                 commands
                         .get("setRange")
-                        .replace("{lower_range}", String.valueOf(range[0]))
-                        .replace("{upper_range}", String.valueOf(range[1]))
+                        .replace("{range}", String.valueOf(range))
                         .replace("{p}", String.valueOf(port)));
         pwmRange = range;
     }
@@ -55,7 +55,7 @@ public class CustomPWM extends PWMBase {
     }
 
     @Override
-    public int[] getPwmRange() {
+    public int getPwmRange() {
         return pwmRange;
     }
 
@@ -66,6 +66,7 @@ public class CustomPWM extends PWMBase {
     }
 
     public static void setConfig(HardwareConfig config) {
+        if (Platform.isRaspberryPi()) return;
         commands.replace("setRange", config.getLedPWMSetRange());
         commands.replace("setRate", config.getLedPWMSetRate());
     }

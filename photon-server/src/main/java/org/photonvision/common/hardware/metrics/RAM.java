@@ -24,6 +24,7 @@ public class RAM extends MetricsBase {
         return Singleton.INSTANCE;
     }
 
+    // TODO: Output in MBs for consistency
     public double getUsedRam() {
         return execute(ramUsageCommand) / 1000;
     }

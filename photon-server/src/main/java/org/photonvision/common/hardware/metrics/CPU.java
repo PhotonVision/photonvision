@@ -29,6 +29,7 @@ public class CPU extends MetricsBase {
         return execute(cpuMemoryCommand);
     }
 
+    // TODO: Command should return in Celsius
     public double getTemp() {
         return execute(cpuTemperatureCommand) / 1000;
     }

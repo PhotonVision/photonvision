@@ -43,11 +43,11 @@ public abstract class PWMBase {
 
     public abstract void setPwmRate(int rate);
 
-    public abstract void setPwmRange(int[] range);
+    public abstract void setPwmRange(int range);
 
     public abstract int getPwmRate();
 
-    public abstract int[] getPwmRange();
+    public abstract int getPwmRange();
 
     public abstract boolean shutdown();
 }
