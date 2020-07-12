@@ -30,14 +30,10 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class FindCirclesPipe
         extends CVPipe<Pair<Mat, List<Contour>>, List<CVShape>, FindCirclesPipe.FindCirclePipeParams> {
-    double[] c;
 
     // Output vector of found circles. Each vector is encoded as 3 or 4 element floating-point vector
     // (x,y,radius) or (x,y,radius,votes) .
     Mat circles = new Mat();
-    Moments mu;
-    double x_center;
-    double y_center;
     /**
     * Runs the process for the pipe. The reason we need a separate pipe for circles is because if we
     * were to use the FindShapes pipe, we would have to assume that any shape more than 10-20+ sides
