@@ -18,7 +18,7 @@
 package org.photonvision.vision.processes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import edu.wpi.first.networktables.NetworkTableInstance;
+
 import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -31,7 +31,6 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
-import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -91,10 +90,12 @@ public class VisionModule {
 
         ntConsumer =
                 new NTDataPublisher(
-                        NetworkTablesManager.kRootTable,
                         visionSource.getSettables().getConfiguration().nickname,
                         pipelineManager::getCurrentPipelineIndex,
-                        () -> pipelineManager.getCurrentPipelineIndex() == -1);
+                        pipelineManager::setIndex,
+                        () -> pipelineManager.getCurrentPipelineIndex() == -1,
+                        (driverMode) -> { /* TODO: switch to driver mode */ }
+                );
         addResultConsumer(ntConsumer);
         addResultConsumer(
                 result -> {
@@ -307,7 +308,7 @@ public class VisionModule {
 
     private void setCameraNickname(String newName) {
         visionSource.getSettables().getConfiguration().nickname = newName;
-        ntConsumer.setCameraName(newName);
+        ntConsumer.updateCameraNickname(newName);
 
         frameConsumers.remove(dashboardStreamer);
         dashboardStreamer =

@@ -17,6 +17,7 @@
 
 package org.photonvision.common.dataflow.networktables;
 
+import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
@@ -24,17 +25,22 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.SimplePipelineResult;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
 
-    private final NetworkTable rootTable;
+    private final NetworkTable rootTable = NetworkTablesManager.kRootTable;
     private NetworkTable subTable;
     private NetworkTableEntry rawDataEntry;
+
     private NetworkTableEntry pipelineIndexEntry;
-    public NetworkTableEntry driverModeEntry;
-    //private int ntDriveModeListenerID; // TODO: NTDataPublisher
-    //private int ntPipelineListenerID; // TODO: NTDataPublisher
+    private final Consumer<Integer> pipelineIndexConsumer;
+    private NTDataChangeListener pipelineIndexListener;
+    private NetworkTableEntry driverModeEntry;
+    private final Consumer<Boolean> driverModeConsumer;
+    private NTDataChangeListener driverModeListener;
+
     private NetworkTableEntry latencyMillisEntry;
     private NetworkTableEntry hasTargetEntry;
     private NetworkTableEntry targetPitchEntry;
@@ -42,50 +48,70 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private NetworkTableEntry targetAreaEntry;
     private NetworkTableEntry targetPoseEntry;
 
-    // TODO: what are these, and do we need them?
-    private NetworkTableEntry targetFittedHeightEntry;
-    private NetworkTableEntry targetFittedWidthEntry;
-    private NetworkTableEntry targetBoundingHeightEntry;
-    private NetworkTableEntry targetBoundingWidthEntry;
-    private NetworkTableEntry targetRotationEntry;
-
     private final Supplier<Integer> pipelineIndexSupplier;
     private final BooleanSupplier driverModeSupplier;
 
-    public NTDataPublisher(NetworkTable root,
-                           String camName,
+    public NTDataPublisher(
+                           String cameraNickname,
                            Supplier<Integer> pipelineIndexSupplier,
-                           BooleanSupplier driverModeSupplier) {
-        rootTable = root;
-        subTable = root.getSubTable(camName);
-
+                           Consumer<Integer> pipelineIndexConsumer,
+                           BooleanSupplier driverModeSupplier,
+                           Consumer<Boolean> driverModeConsumer) {
         this.pipelineIndexSupplier = pipelineIndexSupplier;
+        this.pipelineIndexConsumer = pipelineIndexConsumer;
         this.driverModeSupplier = driverModeSupplier;
+        this.driverModeConsumer = driverModeConsumer;
 
-        rawDataEntry = subTable.getEntry("rawData");
-
-        pipelineIndexEntry = subTable.getEntry("pipelineIndex");
-        driverModeEntry = subTable.getEntry("driverMode");
-        latencyMillisEntry = subTable.getEntry("latencyMillis");
-        hasTargetEntry = subTable.getEntry("hasTarget");
-
-        targetPitchEntry = subTable.getEntry("targetPitch");
-        targetAreaEntry = subTable.getEntry("targetArea");
-        targetYawEntry = subTable.getEntry("targetYaw");
-        targetPoseEntry = subTable.getEntry("targetPose");
-//        targetFittedHeightEntry = subTable.getEntry("targetFittedHeight");
-//        targetFittedWidthEntry = subTable.getEntry("targetFittedWidth");
-//        targetBoundingHeightEntry = subTable.getEntry("targetBoundingHeight");
-//        targetBoundingWidthEntry = subTable.getEntry("targetBoundingWidth");
-//        targetRotationEntry = subTable.getEntry("targetRotation");
+        updateCameraNickname(cameraNickname);
+        updateEntries();
     }
 
-    public void setCameraName(String camName) {
-        subTable = rootTable.getSubTable(camName);
+    private void onPipelineIndexChange(EntryNotification entryNotification) {
+        var newIndex = (int) entryNotification.value.getDouble();
+        var originalIndex = pipelineIndexSupplier.get();
+
+        if (newIndex == originalIndex) {
+            // TODO: Log
+            return;
+        }
+
+        pipelineIndexConsumer.accept(newIndex);
+        var setIndex = pipelineIndexSupplier.get();
+        if (newIndex != setIndex) { // set failed
+            pipelineIndexEntry.forceSetNumber(setIndex);
+            // TODO: Log
+        }
+        // TODO: Log
+    }
+
+    private void onDriverModeChange(EntryNotification entryNotification) {
+        var newDriverMode = entryNotification.value.getBoolean();
+        var originalDriverMode = driverModeSupplier.getAsBoolean();
+
+        if (newDriverMode == originalDriverMode) {
+            // TODO: Log
+            return;
+        }
+
+        driverModeConsumer.accept(newDriverMode);
+        // TODO: Log
+    }
+
+    private void updateEntries() {
         rawDataEntry = subTable.getEntry("rawData");
 
+        if (pipelineIndexListener != null) {
+            pipelineIndexListener.remove();
+        }
         pipelineIndexEntry = subTable.getEntry("pipelineIndex");
+        pipelineIndexListener = new NTDataChangeListener(pipelineIndexEntry, this::onPipelineIndexChange);
+
+        if (driverModeListener != null) {
+            driverModeListener.remove();
+        }
         driverModeEntry = subTable.getEntry("driverMode");
+        driverModeListener = new NTDataChangeListener(driverModeEntry, this::onDriverModeChange);
+
         latencyMillisEntry = subTable.getEntry("latencyMillis");
         hasTargetEntry = subTable.getEntry("hasTarget");
 
@@ -93,11 +119,11 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         targetAreaEntry = subTable.getEntry("targetArea");
         targetYawEntry = subTable.getEntry("targetYaw");
         targetPoseEntry = subTable.getEntry("targetPose");
-//        targetFittedHeightEntry = subTable.getEntry("targetFittedHeight");
-//        targetFittedWidthEntry = subTable.getEntry("targetFittedWidth");
-//        targetBoundingHeightEntry = subTable.getEntry("targetBoundingHeight");
-//        targetBoundingWidthEntry = subTable.getEntry("targetBoundingWidth");
-        //targetRotationEntry = subTable.getEntry("targetRotation")
+    }
+
+    public void updateCameraNickname(String cameraNickname) {
+        subTable = rootTable.getSubTable(cameraNickname);
+        updateEntries();
     }
 
     @Override
