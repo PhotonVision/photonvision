@@ -19,37 +19,36 @@ package org.photonvision.common.hardware.PWM;
 
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.exception.UnsupportedPinModeException;
-import com.pi4j.util.CommandArgumentParser;
+import com.pi4j.wiringpi.SoftPwm;
 
 public class PiPWM extends PWMBase {
     private static final GpioController gpio = GpioFactory.getInstance();
-    private final GpioPinPwmOutput pwm;
-    private int pwmRange = 0;
+    private int[] pwmRange = new int[2];
+    private int pwmRate = 0;
+    private int pin;
 
-    public PiPWM(int address) throws UnsupportedPinModeException {
-        this.pwm =
-                gpio.provisionPwmOutputPin(
-                        CommandArgumentParser.getPin(RaspiPin.class, RaspiPin.getPinByAddress(address)));
+    public PiPWM(int pin, int value, int range) throws UnsupportedPinModeException {
+        this.pin = pin;
+        SoftPwm.softPwmCreate(pin, value, range);
     }
 
     @Override
     public void setPwmRate(int rate) {
-        pwm.setPwm(rate);
+        this.pwmRate = rate;
     }
 
     @Override
-    public void setPwmRange(int range) {
-        pwm.setPwmRange(range);
+    public void setPwmRange(int[] range) {
         pwmRange = range;
     }
 
     @Override
     public int getPwmRate() {
-        return pwm.getPwm();
+        return pwmRate;
     }
 
     @Override
-    public int getPwmRange() {
+    public int[] getPwmRange() {
         return pwmRange;
     }
 
@@ -57,5 +56,12 @@ public class PiPWM extends PWMBase {
     public boolean shutdown() {
         gpio.shutdown();
         return gpio.isShutdown();
+    }
+
+    @Override
+    public void dimLED(int dimPercentage) {
+        // Check to see if dimPercentage is within the range
+        if (dimPercentage < pwmRange[0] || dimPercentage > pwmRange[1]) return;
+        SoftPwm.softPwmWrite(pin, dimPercentage);
     }
 }

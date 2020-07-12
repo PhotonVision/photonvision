@@ -93,7 +93,7 @@ public class HardwareTest {
         PWMBase pwm;
         if (Platform.isRaspberryPi()) {
             try {
-                pwm = new PiPWM(1);
+                pwm = new PiPWM(1, 0, 100);
             } catch (UnsupportedPinModeException e) {
                 System.out.println("Invalid PWN port.");
                 return;
@@ -101,8 +101,9 @@ public class HardwareTest {
         } else {
             pwm = new CustomPWM(1);
         }
-        pwm.setPwmRange(100);
-        assertEquals(pwm.getPwmRange(), 100);
+        pwm.setPwmRange(new int[] {0, 100});
+        assertEquals(pwm.getPwmRange()[0], 0);
+        assertEquals(pwm.getPwmRange()[1], 100);
 
         pwm.setPwmRate(10);
         assertEquals(pwm.getPwmRate(), 10);
