@@ -156,6 +156,11 @@ public class PipelineManager {
             lastPipelineIndex = currentPipelineIndex;
         }
 
+        if (userPipelineSettings.size() - 1 < index) {
+            logger.warn("User attempted to set index to non-existent pipeline!");
+            return;
+        }
+
         currentPipelineIndex = index;
     }
 

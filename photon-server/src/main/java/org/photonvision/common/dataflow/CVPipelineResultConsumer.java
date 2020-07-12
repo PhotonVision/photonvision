@@ -17,4 +17,7 @@
 
 package org.photonvision.common.dataflow;
 
-public interface DataProvider {}
+import java.util.function.Consumer;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+
+public interface CVPipelineResultConsumer extends Consumer<CVPipelineResult> {}

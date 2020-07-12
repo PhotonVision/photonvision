@@ -18,19 +18,18 @@
 package org.photonvision.vision.processes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
+import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
-import org.photonvision.common.dataflow.networktables.NTDataConsumer;
-import org.photonvision.common.datatransfer.DataConsumer;
+import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -56,9 +55,9 @@ public class VisionModule {
     private final PipelineManager pipelineManager;
     private final VisionSource visionSource;
     private final VisionRunner visionRunner;
-    private final LinkedList<DataConsumer> dataConsumers = new LinkedList<>();
+    private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     private final LinkedList<FrameConsumer> frameConsumers = new LinkedList<>();
-    private final NTDataConsumer ntConsumer;
+    private final NTDataPublisher ntConsumer;
     private final int moduleIndex;
     private final MJPGFrameConsumer uiStreamer;
     private long lastUpdateTimestamp = -1;
@@ -89,19 +88,24 @@ public class VisionModule {
         addFrameConsumer(uiStreamer);
 
         ntConsumer =
-                new NTDataConsumer(
-                        NetworkTableInstance.getDefault().getTable("photonvision"),
-                        visionSource.getSettables().getConfiguration().nickname);
-        addDataConsumer(ntConsumer);
-        addDataConsumer(
-                data -> {
+                new NTDataPublisher(
+                        visionSource.getSettables().getConfiguration().nickname,
+                        pipelineManager::getCurrentPipelineIndex,
+                        pipelineManager::setIndex,
+                        () -> pipelineManager.getCurrentPipelineIndex() == -1,
+                        (driverMode) -> {
+                            /* TODO: switch to driver mode */
+                        });
+        addResultConsumer(ntConsumer);
+        addResultConsumer(
+                result -> {
                     var now = System.currentTimeMillis();
                     if (lastUpdateTimestamp + 1000.0 / 15.0 > now) return;
 
                     var uiMap = new HashMap<Integer, HashMap<String, Object>>();
                     var dataMap = new HashMap<String, Object>();
-                    dataMap.put("fps", 1000.0 / data.result.getLatencyMillis());
-                    var targets = data.result.targets;
+                    dataMap.put("fps", 1000.0 / result.getLatencyMillis());
+                    var targets = result.targets;
                     var uiTargets = new ArrayList<HashMap<String, Object>>();
                     for (var t : targets) {
                         uiTargets.add(t.toHashMap());
@@ -302,15 +306,9 @@ public class VisionModule {
                                 ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
-    private void save() {
-        ConfigManager.getInstance()
-                .saveModule(
-                        getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
-    }
-
     private void setCameraNickname(String newName) {
         visionSource.getSettables().getConfiguration().nickname = newName;
-        ntConsumer.setCameraName(newName);
+        ntConsumer.updateCameraNickname(newName);
 
         frameConsumers.remove(dashboardStreamer);
         dashboardStreamer =
@@ -360,8 +358,8 @@ public class VisionModule {
         return config;
     }
 
-    public void addDataConsumer(DataConsumer dataConsumer) {
-        dataConsumers.add(dataConsumer);
+    public void addResultConsumer(CVPipelineResultConsumer dataConsumer) {
+        resultConsumers.add(dataConsumer);
     }
 
     void addFrameConsumer(FrameConsumer consumer) {
@@ -369,20 +367,17 @@ public class VisionModule {
     }
 
     void consumeResult(CVPipelineResult result) {
-        // TODO: put result in to Data (not this way!)
-        var data = new Data();
-        data.result = result;
-        consumeData(data);
+        consumePipelineResult(result);
 
         var frame = result.outputFrame;
         consumeFrame(frame);
 
-        data.release();
+        result.release();
     }
 
-    void consumeData(Data data) {
-        for (var dataConsumer : dataConsumers) {
-            dataConsumer.accept(data);
+    void consumePipelineResult(CVPipelineResult result) {
+        for (var dataConsumer : resultConsumers) {
+            dataConsumer.accept(result);
         }
     }
 
