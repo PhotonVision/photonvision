@@ -49,15 +49,17 @@ public class NetworkTablesManager {
     private static class NTLogger implements Consumer<LogMessage> {
 
         private boolean hasReportedConnectionFailure = false;
+        private long lastConnectMessageMillis = 0;
 
         @Override
         public void accept(LogMessage logMessage) {
             if (!hasReportedConnectionFailure && logMessage.message.contains("timed out")) {
                 logger.error("NT Connection has failed! Will retry in background.");
                 hasReportedConnectionFailure = true;
-            } else if (logMessage.message.contains("connected")) {
+            } else if (logMessage.message.contains("connected") && System.currentTimeMillis() - lastConnectMessageMillis > 125) {
                 logger.info("NT Connected!");
                 hasReportedConnectionFailure = false;
+                lastConnectMessageMillis = System.currentTimeMillis();
                 ScriptManager.queueEvent(ScriptEventType.kNTConnected);
             }
         }
