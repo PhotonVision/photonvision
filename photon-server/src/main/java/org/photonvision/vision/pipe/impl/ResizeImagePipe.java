@@ -30,10 +30,6 @@ public class ResizeImagePipe extends CVPipe<Mat, Mat, ResizeImagePipe.ResizeImag
         setParams(ResizeImageParams.DEFAULT);
     }
 
-    public ResizeImagePipe(ResizeImageParams params) {
-        setParams(params);
-    }
-
     /**
     * Process this pipe
     *
@@ -58,17 +54,9 @@ public class ResizeImagePipe extends CVPipe<Mat, Mat, ResizeImagePipe.ResizeImag
         public static ResizeImageParams DEFAULT = new ResizeImageParams(320, 240);
 
         private Size size;
-        private int width;
-        private int height;
         private FrameDivisor divisor;
 
-        public ResizeImageParams() {
-            this(DEFAULT.width, DEFAULT.height);
-        }
-
         public ResizeImageParams(int width, int height) {
-            this.width = width;
-            this.height = height;
             size = new Size(new double[] {width, height});
         }
 

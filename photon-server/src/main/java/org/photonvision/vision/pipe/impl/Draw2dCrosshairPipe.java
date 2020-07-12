@@ -65,10 +65,10 @@ public class Draw2dCrosshairPipe
     }
 
     public static class Draw2dCrosshairParams {
-        private RobotOffsetPointMode m_calibrationMode;
-        private DoubleCouple m_calibrationPoint;
-        public boolean m_showCrosshair = true;
-        public Color m_crosshairColor = Color.GREEN;
+        private final RobotOffsetPointMode m_calibrationMode;
+        private final DoubleCouple m_calibrationPoint;
+        private final boolean m_showCrosshair = true;
+        private final Color m_crosshairColor = Color.GREEN;
 
         public Draw2dCrosshairParams(
                 RobotOffsetPointMode calibrationMode, DoubleCouple calibrationPoint) {

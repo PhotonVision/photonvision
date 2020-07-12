@@ -29,8 +29,8 @@ import org.photonvision.vision.opencv.DualMat;
 import org.photonvision.vision.pipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.Collect2dTargetsPipe;
 import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
-import org.photonvision.vision.pipe.impl.Draw2dContoursPipe;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
+import org.photonvision.vision.pipe.impl.Draw2dTargetsPipe;
 import org.photonvision.vision.pipe.impl.Draw3dTargetsPipe;
 import org.photonvision.vision.pipe.impl.ErodeDilatePipe;
 import org.photonvision.vision.pipe.impl.FilterContoursPipe;
@@ -62,7 +62,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private final CornerDetectionPipe cornerDetectionPipe = new CornerDetectionPipe();
     private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
-    private final Draw2dContoursPipe draw2dContoursPipe = new Draw2dContoursPipe();
+    private final Draw2dTargetsPipe draw2DTargetsPipe = new Draw2dTargetsPipe();
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
 
     private Mat rawInputMat = new Mat();
@@ -141,9 +141,9 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         settings.cornerDetectionAccuracyPercentage);
         cornerDetectionPipe.setParams(params);
 
-        Draw2dContoursPipe.Draw2dContoursParams draw2dContoursParams =
-                new Draw2dContoursPipe.Draw2dContoursParams(settings.outputShowMultipleTargets);
-        draw2dContoursPipe.setParams(draw2dContoursParams);
+        Draw2dTargetsPipe.Draw2dContoursParams draw2dContoursParams =
+                new Draw2dTargetsPipe.Draw2dContoursParams(settings.outputShowMultipleTargets);
+        draw2DTargetsPipe.setParams(draw2dContoursParams);
 
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
@@ -231,7 +231,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         sumPipeNanosElapsed += draw2dCrosshairResult.nanosElapsed;
 
         CVPipeResult<Mat> draw2dContoursResult =
-                draw2dContoursPipe.apply(
+                draw2DTargetsPipe.apply(
                         Pair.of(draw2dCrosshairResult.result, collect2dTargetsResult.result));
         sumPipeNanosElapsed += draw2dContoursResult.nanosElapsed;
 

@@ -25,7 +25,7 @@ import org.photonvision.vision.pipe.CVPipe;
 /** Represents a pipeline that blurs the image. */
 public class BlurPipe extends CVPipe<Mat, Mat, BlurPipe.BlurParams> {
     /**
-    * Processes thos pipe.
+    * Processes this pipe.
     *
     * @param in Input for pipe processing.
     * @return The processed frame.
@@ -41,7 +41,7 @@ public class BlurPipe extends CVPipe<Mat, Mat, BlurPipe.BlurParams> {
         public static BlurParams DEFAULT = new BlurParams(0);
 
         // Member to store the blur size.
-        private int m_blurSize;
+        private final int m_blurSize;
 
         /**
         * Constructs a new BlurImageParams.

@@ -29,7 +29,7 @@ import org.photonvision.vision.target.PotentialTarget;
 public class GroupContoursPipe
         extends CVPipe<List<Contour>, List<PotentialTarget>, GroupContoursPipe.GroupContoursParams> {
 
-    private List<PotentialTarget> m_targets = new ArrayList<>();
+    private final List<PotentialTarget> m_targets = new ArrayList<>();
 
     @Override
     protected List<PotentialTarget> process(List<Contour> input) {
@@ -49,19 +49,20 @@ public class GroupContoursPipe
             if (input.size() > groupingCount) {
                 input.sort(Contour.SortByMomentsX);
                 // also why reverse? shouldn't the sort comparator just get reversed?
+                // TODO: Matt, see this
                 Collections.reverse(input);
-                // find out next time on Code Mysteries...
 
                 for (int i = 0; i < input.size() - 1; i++) {
                     // make a list of the desired count of contours to group
                     List<Contour> groupingSet;
+
+                    // TODO: are these try/catch avoidable?
                     try {
                         groupingSet = input.subList(i, i + groupingCount);
                     } catch (IndexOutOfBoundsException e) {
                         continue;
                     }
                     try {
-
                         // FYI: This method only takes 2 contours!
                         Contour groupedContour =
                                 Contour.groupContoursByIntersection(
@@ -81,8 +82,8 @@ public class GroupContoursPipe
     }
 
     public static class GroupContoursParams {
-        private ContourGroupingMode m_group;
-        private ContourIntersectionDirection m_intersection;
+        private final ContourGroupingMode m_group;
+        private final ContourIntersectionDirection m_intersection;
 
         public GroupContoursParams(
                 ContourGroupingMode group, ContourIntersectionDirection intersectionDirection) {

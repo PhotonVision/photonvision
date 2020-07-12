@@ -31,11 +31,8 @@ import org.photonvision.vision.pipe.CVPipe;
 public class FindCirclesPipe
         extends CVPipe<Pair<Mat, List<Contour>>, List<CVShape>, FindCirclesPipe.FindCirclePipeParams> {
 
-    double[] c;
-    Mat circles = new Mat();
-    Moments mu;
-    double x_center;
-    double y_center;
+    private final Mat circles = new Mat();
+
     /**
     * Runs the process for the pipe.
     *
@@ -58,11 +55,12 @@ public class FindCirclesPipe
                 params.minRadius,
                 params.maxRadius);
         for (int x = 0; x < circles.cols(); x++) {
-            c = circles.get(0, x);
-            x_center = c[0];
-            y_center = c[1];
+            double[] c = circles.get(0, x);
+            double x_center = c[0];
+            double y_center = c[1];
+
             for (Contour contour : in.getRight()) {
-                mu = contour.getMoments();
+                Moments mu = contour.getMoments();
                 if (Math.abs(x_center - (mu.m10 / mu.m00)) <= params.allowableThreshold
                         && Math.abs(y_center - (mu.m01 / mu.m00)) <= params.allowableThreshold) {
                     output.add(new CVShape(contour, ContourShape.Circle));
@@ -74,12 +72,12 @@ public class FindCirclesPipe
     }
 
     public static class FindCirclePipeParams {
-        public int allowableThreshold;
-        public int minRadius;
-        public int maxRadius;
-        public int minDist;
-        public int maxCannyThresh;
-        public int accuracy;
+        private final int allowableThreshold;
+        private final int minRadius;
+        private final int maxRadius;
+        private final int minDist;
+        private final int maxCannyThresh;
+        private final int accuracy;
 
         public FindCirclePipeParams(
                 int allowableThreshold,

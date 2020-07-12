@@ -35,7 +35,7 @@ import org.photonvision.vision.target.TrackedTarget;
 public class SolvePNPPipe
         extends CVPipe<List<TrackedTarget>, List<TrackedTarget>, SolvePNPPipe.SolvePNPPipeParams> {
 
-    private MatOfPoint2f imagePoints = new MatOfPoint2f();
+    private final MatOfPoint2f imagePoints = new MatOfPoint2f();
 
     @Override
     protected List<TrackedTarget> process(List<TrackedTarget> targetList) {
@@ -53,7 +53,6 @@ public class SolvePNPPipe
                 || corners.isEmpty()
                 || params.cameraCoefficients.getCameraIntrinsicsMat() == null
                 || params.cameraCoefficients.getCameraExtrinsicsMat() == null) {
-            targetPose = new Pose2d();
             return;
         }
         this.imagePoints.fromList(corners);
@@ -120,7 +119,6 @@ public class SolvePNPPipe
         // We have a Z_field (out of the camera projected onto the field), and an X left/right.
         // so Z_field becomes X, and X becomes Y
 
-        //noinspection SuspiciousNameCombination
         var targetLocation = new Translation2d(zField, -x);
         return new Pose2d(targetLocation, new Rotation2d(targetRotation));
     }
@@ -132,6 +130,7 @@ public class SolvePNPPipe
     * @param factor by how much to scale each element
     * @return the scaled matrix
     */
+    @SuppressWarnings("SameParameterValue")
     private static Mat matScale(Mat src, double factor) {
         Mat dst = new Mat(src.rows(), src.cols(), src.type());
         Scalar s = new Scalar(factor);

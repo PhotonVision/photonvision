@@ -36,12 +36,7 @@ public class FilterContoursPipe
     protected List<Contour> process(List<Contour> in) {
         m_filteredContours.clear();
         for (Contour contour : in) {
-            try {
-                filterContour(contour);
-            } catch (Exception e) {
-                System.err.println("An error occurred while filtering contours.");
-                e.printStackTrace();
-            }
+            filterContour(contour);
         }
         return m_filteredContours;
     }
@@ -49,15 +44,15 @@ public class FilterContoursPipe
     private void filterContour(Contour contour) {
         // Area Filtering.
         double contourArea = contour.getArea();
-        double areaRatio = (contourArea / params.getCamProperties().imageArea);
+        double areaRatio = (contourArea / params.getFrameStaticProperties().imageArea);
         double minArea = MathUtils.sigmoid(params.getArea().getFirst());
         double maxArea = MathUtils.sigmoid(params.getArea().getSecond());
         if (areaRatio < minArea || areaRatio > maxArea) return;
 
         // Extent Filtering.
         RotatedRect minAreaRect = contour.getMinAreaRect();
-        double minExtent = params.getExtent().getFirst() * minAreaRect.size.area() / 100;
-        double maxExtent = params.getExtent().getSecond() * minAreaRect.size.area() / 100;
+        double minExtent = params.getFullness().getFirst() * minAreaRect.size.area() / 100;
+        double maxExtent = params.getFullness().getSecond() * minAreaRect.size.area() / 100;
         if (contourArea <= minExtent || contourArea >= maxExtent) return;
 
         // Aspect Ratio Filtering.
@@ -70,10 +65,10 @@ public class FilterContoursPipe
     }
 
     public static class FilterContoursParams {
-        private DoubleCouple m_area;
-        private DoubleCouple m_ratio;
-        private DoubleCouple m_extent;
-        private FrameStaticProperties m_camProperties;
+        private final DoubleCouple m_area;
+        private final DoubleCouple m_ratio;
+        private final DoubleCouple m_fullness;
+        private final FrameStaticProperties m_frameStaticProperties;
 
         public FilterContoursParams(
                 DoubleCouple area,
@@ -82,8 +77,8 @@ public class FilterContoursPipe
                 FrameStaticProperties camProperties) {
             this.m_area = area;
             this.m_ratio = ratio;
-            this.m_extent = extent;
-            this.m_camProperties = camProperties;
+            this.m_fullness = extent;
+            this.m_frameStaticProperties = camProperties;
         }
 
         public DoubleCouple getArea() {
@@ -94,12 +89,12 @@ public class FilterContoursPipe
             return m_ratio;
         }
 
-        public DoubleCouple getExtent() {
-            return m_extent;
+        public DoubleCouple getFullness() {
+            return m_fullness;
         }
 
-        public FrameStaticProperties getCamProperties() {
-            return m_camProperties;
+        public FrameStaticProperties getFrameStaticProperties() {
+            return m_frameStaticProperties;
         }
     }
 }

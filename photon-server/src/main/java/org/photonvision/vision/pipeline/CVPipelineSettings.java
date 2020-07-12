@@ -21,8 +21,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Objects;
 import org.photonvision.vision.frame.FrameDivisor;
-import org.photonvision.vision.pipe.ImageFlipMode;
-import org.photonvision.vision.pipe.ImageRotationMode;
+import org.photonvision.vision.opencv.ImageFlipMode;
+import org.photonvision.vision.opencv.ImageRotationMode;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,

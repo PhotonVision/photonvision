@@ -29,7 +29,7 @@ import org.photonvision.vision.pipe.CVPipe;
 public class FindContoursPipe
         extends CVPipe<Mat, List<Contour>, FindContoursPipe.FindContoursParams> {
 
-    private List<MatOfPoint> m_foundContours = new ArrayList<>();
+    private final List<MatOfPoint> m_foundContours = new ArrayList<>();
 
     @Override
     protected List<Contour> process(Mat in) {

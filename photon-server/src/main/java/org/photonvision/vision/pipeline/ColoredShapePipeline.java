@@ -51,7 +51,7 @@ public class ColoredShapePipeline
     private final CornerDetectionPipe cornerDetectionPipe = new CornerDetectionPipe();
     private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
-    private final Draw2dContoursPipe draw2dContoursPipe = new Draw2dContoursPipe();
+    private final Draw2dTargetsPipe draw2DTargetsPipe = new Draw2dTargetsPipe();
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
 
     private final Mat rawInputMat = new Mat();
@@ -155,13 +155,13 @@ public class ColoredShapePipeline
                         settings.cameraCalibration, settings.cameraPitch, settings.targetModel);
         solvePNPPipe.setParams(solvePNPParams);
 
-        Draw2dContoursPipe.Draw2dContoursParams draw2dContoursParams =
-                new Draw2dContoursPipe.Draw2dContoursParams(settings.outputShowMultipleTargets);
+        Draw2dTargetsPipe.Draw2dContoursParams draw2dContoursParams =
+                new Draw2dTargetsPipe.Draw2dContoursParams(settings.outputShowMultipleTargets);
         draw2dContoursParams.showShape = true;
         draw2dContoursParams.showMaximumBox = false;
         draw2dContoursParams.showRotatedBox = false;
         draw2dContoursParams.boxOutlineSize = 2;
-        draw2dContoursPipe.setParams(draw2dContoursParams);
+        draw2DTargetsPipe.setParams(draw2dContoursParams);
 
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
@@ -256,7 +256,7 @@ public class ColoredShapePipeline
         sumPipeNanosElapsed += draw2dCrosshairResult.nanosElapsed;
 
         CVPipeResult<Mat> draw2dContoursResult =
-                draw2dContoursPipe.apply(
+                draw2DTargetsPipe.apply(
                         Pair.of(draw2dCrosshairResult.result, collect2dTargetsResult.result));
         sumPipeNanosElapsed += draw2dContoursResult.nanosElapsed;
 

@@ -28,8 +28,7 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class FindPolygonPipe
         extends CVPipe<List<Contour>, List<CVShape>, FindPolygonPipe.FindPolygonPipeParams> {
-    private int corners;
-    private MatOfPoint2f approx = new MatOfPoint2f();
+    private final MatOfPoint2f approx = new MatOfPoint2f();
 
     /*
     * Runs the process for the pipe.
@@ -49,7 +48,7 @@ public class FindPolygonPipe
 
     private CVShape getShape(Contour in) {
 
-        corners = getCorners(in);
+        int corners = getCorners(in);
         if (ContourShape.fromSides(corners) == null) {
             return new CVShape(in, ContourShape.Custom);
         }
@@ -76,7 +75,7 @@ public class FindPolygonPipe
     }
 
     public static class FindPolygonPipeParams {
-        double accuracyPercentage;
+        private final double accuracyPercentage;
 
         public FindPolygonPipeParams(double accuracyPercentage) {
             this.accuracyPercentage = accuracyPercentage;

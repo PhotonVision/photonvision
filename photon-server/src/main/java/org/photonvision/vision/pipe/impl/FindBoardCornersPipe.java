@@ -28,8 +28,8 @@ import org.photonvision.vision.pipe.CVPipe;
 public class FindBoardCornersPipe
         extends CVPipe<List<Mat>, List<List<Mat>>, FindBoardCornersPipe.FindCornersPipeParams> {
     MatOfPoint3f objectPoints = new MatOfPoint3f();
-    private List<Mat> listOfObjectPoints = new ArrayList<>();
-    private List<Mat> listOfImagePoints = new ArrayList<>();
+    private final List<Mat> listOfObjectPoints = new ArrayList<>();
+    private final List<Mat> listOfImagePoints = new ArrayList<>();
 
     Size imageSize;
     Size patternSize;

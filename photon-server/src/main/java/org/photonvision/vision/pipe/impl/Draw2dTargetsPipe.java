@@ -27,8 +27,8 @@ import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
-public class Draw2dContoursPipe
-        extends CVPipe<Pair<Mat, List<TrackedTarget>>, Mat, Draw2dContoursPipe.Draw2dContoursParams> {
+public class Draw2dTargetsPipe
+        extends CVPipe<Pair<Mat, List<TrackedTarget>>, Mat, Draw2dTargetsPipe.Draw2dContoursParams> {
 
     private List<MatOfPoint> m_drawnContours = new ArrayList<>();
 
@@ -101,7 +101,7 @@ public class Draw2dContoursPipe
 
     public static class Draw2dContoursParams {
         public boolean showCentroid = true;
-        public boolean showMultiple = true;
+        public boolean showMultiple;
         public int boxOutlineSize = 1;
         public boolean showRotatedBox = true;
         public boolean showShape = false;
