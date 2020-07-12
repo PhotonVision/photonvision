@@ -125,9 +125,15 @@ public class USBCameraSource implements VisionSource {
         public HashMap<Integer, VideoMode> getAllVideoModes() {
             if (videoModes == null) {
                 videoModes = new HashMap<>();
-                List<VideoMode> videoModesList;
+                List<VideoMode> videoModesList = new ArrayList<>();
                 try {
-                    videoModesList = Arrays.asList(camera.enumerateVideoModes());
+                    for (var videoMode : camera.enumerateVideoModes()) {
+                        if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray
+                                || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {
+                            continue;
+                        }
+                        videoModesList.add(videoMode);
+                    }
                 } catch (Exception e) {
                     logger.error("Exception while enumerating video modes!");
                     e.printStackTrace();
