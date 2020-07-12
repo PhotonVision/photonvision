@@ -28,13 +28,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.camera.IncomingCameraCommandSubscriber;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.processes.PipelineManager;
-import org.photonvision.vision.processes.VisionModuleManager;
 
 @SuppressWarnings("rawtypes")
 public class SocketHandler {
@@ -46,9 +44,6 @@ public class SocketHandler {
 
     @SuppressWarnings("FieldCanBeLocal")
     private final UIOutboundSubscriber uiOutboundSubscriber = new UIOutboundSubscriber(this);
-
-    private final IncomingCameraCommandSubscriber cameraChangeSubscriber =
-            new IncomingCameraCommandSubscriber(VisionModuleManager.getInstance());
 
     public static class UIMap extends HashMap<String, Object> {}
 
@@ -65,7 +60,6 @@ public class SocketHandler {
     private SocketHandler() {
         dcService.addSubscribers(
                 uiOutboundSubscriber,
-                cameraChangeSubscriber,
                 new UIInboundSubscriber()); // Subscribe outgoing messages to the data change service
     }
 

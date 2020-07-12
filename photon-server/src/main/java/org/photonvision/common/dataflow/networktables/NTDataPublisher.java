@@ -19,11 +19,14 @@ package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
-import org.photonvision.common.datatransfer.DataConsumer;
+import org.photonvision.common.dataflow.CVPipelineResultConsumer;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.SimplePipelineResult;
-import org.photonvision.vision.processes.Data;
 
-public class NTDataConsumer implements DataConsumer {
+import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
+
+public class NTDataPublisher implements CVPipelineResultConsumer {
 
     private final NetworkTable rootTable;
     private NetworkTable subTable;
@@ -46,9 +49,19 @@ public class NTDataConsumer implements DataConsumer {
     private NetworkTableEntry targetBoundingWidthEntry;
     private NetworkTableEntry targetRotationEntry;
 
-    public NTDataConsumer(NetworkTable root, String camName) {
+    private final Supplier<Integer> pipelineIndexSupplier;
+    private final BooleanSupplier driverModeSupplier;
+
+    public NTDataPublisher(NetworkTable root,
+                           String camName,
+                           Supplier<Integer> pipelineIndexSupplier,
+                           BooleanSupplier driverModeSupplier) {
         rootTable = root;
         subTable = root.getSubTable(camName);
+
+        this.pipelineIndexSupplier = pipelineIndexSupplier;
+        this.driverModeSupplier = driverModeSupplier;
+
         rawDataEntry = subTable.getEntry("rawData");
 
         pipelineIndexEntry = subTable.getEntry("pipelineIndex");
@@ -88,8 +101,7 @@ public class NTDataConsumer implements DataConsumer {
     }
 
     @Override
-    public void accept(Data data) {
-        var result = data.result;
+    public void accept(CVPipelineResult result) {
         // send raw data immediately
         var simplified = new SimplePipelineResult(result);
         var bytes = simplified.toByteArray();
@@ -99,6 +111,8 @@ public class NTDataConsumer implements DataConsumer {
         // send keyed data after raw
         // TODO: get pipelineIndex, driverMode
 
+        pipelineIndexEntry.forceSetNumber(pipelineIndexSupplier.get());
+        driverModeEntry.forceSetBoolean(driverModeSupplier.getAsBoolean());
         latencyMillisEntry.forceSetDouble(result.getLatencyMillis());
         hasTargetEntry.forceSetBoolean(result.hasTargets());
 

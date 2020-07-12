@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.*;
 import org.photonvision.common.configuration.CameraConfiguration;
-import org.photonvision.common.datatransfer.DataConsumer;
+import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -105,16 +105,12 @@ public class VisionModuleManagerTest {
         }
     }
 
-    private static class TestDataConsumer implements DataConsumer {
-        private Data data;
+    private static class TestDataConsumer implements CVPipelineResultConsumer {
+        private CVPipelineResult result;
 
         @Override
-        public void accept(Data data) {
-            this.data = data;
-        }
-
-        public Data getData() {
-            return data;
+        public void accept(CVPipelineResult result) {
+            this.result = result;
         }
     }
 
@@ -131,15 +127,14 @@ public class VisionModuleManagerTest {
         VisionModuleManager.getInstance().addSources(sources);
         var module0DataConsumer = new TestDataConsumer();
 
-        VisionModuleManager.getInstance().visionModules.get(0).addDataConsumer(module0DataConsumer);
+        VisionModuleManager.getInstance().visionModules.get(0).addResultConsumer(module0DataConsumer);
 
         VisionModuleManager.getInstance().startModules();
 
         sleep(500);
 
-        Assertions.assertNotNull(module0DataConsumer.data);
-        Assertions.assertNotNull(module0DataConsumer.data.result);
-        printTestResults(module0DataConsumer.data.result);
+        Assertions.assertNotNull(module0DataConsumer.result);
+        printTestResults(module0DataConsumer.result);
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {
