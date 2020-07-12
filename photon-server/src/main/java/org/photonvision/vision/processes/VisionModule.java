@@ -31,6 +31,7 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -90,7 +91,7 @@ public class VisionModule {
 
         ntConsumer =
                 new NTDataPublisher(
-                        NetworkTableInstance.getDefault().getTable("photonvision"),
+                        NetworkTablesManager.kRootTable,
                         visionSource.getSettables().getConfiguration().nickname,
                         pipelineManager::getCurrentPipelineIndex,
                         () -> pipelineManager.getCurrentPipelineIndex() == -1);

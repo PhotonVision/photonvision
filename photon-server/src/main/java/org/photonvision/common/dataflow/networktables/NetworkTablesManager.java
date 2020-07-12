@@ -21,6 +21,8 @@ import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.function.Consumer;
+
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
@@ -34,16 +36,14 @@ public class NetworkTablesManager {
 
     private static final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
 
-    public static final String kRootTableName = "/chameleon-vision";
+    public static final String kRootTableName = "/photonvision";
     public static final NetworkTable kRootTable =
             NetworkTableInstance.getDefault().getTable(kRootTableName);
 
     public static boolean isServer = false;
 
     private static int getTeamNumber() {
-        // TODO: FIX
-        return 0;
-        //        return ConfigManager.settings.teamNumber;
+        return ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber;
     }
 
     private static class NTLogger implements Consumer<LogMessage> {
