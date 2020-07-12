@@ -33,7 +33,7 @@ public class FindCirclesPipe
 
     // Output vector of found circles. Each vector is encoded as 3 or 4 element floating-point vector
     // (x,y,radius) or (x,y,radius,votes) .
-    Mat circles = new Mat();
+    private final Mat circles = new Mat();
     /**
     * Runs the process for the pipe. The reason we need a separate pipe for circles is because if we
     * were to use the FindShapes pipe, we would have to assume that any shape more than 10-20+ sides
