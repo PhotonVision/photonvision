@@ -31,7 +31,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     private final NetworkTable rootTable = NetworkTablesManager.kRootTable;
     private NetworkTable subTable;
-    private NetworkTableEntry rawDataEntry;
+    private NetworkTableEntry rawBytesEntry;
 
     private NetworkTableEntry pipelineIndexEntry;
     private final Consumer<Integer> pipelineIndexConsumer;
@@ -100,7 +100,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     }
 
     private void updateEntries() {
-        rawDataEntry = subTable.getEntry("rawData");
+        rawBytesEntry = subTable.getEntry("rawBytes");
 
         if (pipelineIndexListener != null) {
             pipelineIndexListener.remove();
@@ -133,14 +133,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     @Override
     public void accept(CVPipelineResult result) {
-        // send raw data immediately
         var simplified = new SimplePipelineResult(result);
         var bytes = simplified.toByteArray();
-        rawDataEntry.forceSetRaw(bytes);
-        rootTable.getInstance().flush();
-
-        // send keyed data after raw
-        // TODO: get pipelineIndex, driverMode
+        rawBytesEntry.forceSetRaw(bytes);
 
         pipelineIndexEntry.forceSetNumber(pipelineIndexSupplier.get());
         driverModeEntry.forceSetBoolean(driverModeSupplier.getAsBoolean());
@@ -164,5 +159,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             targetAreaEntry.forceSetDouble(0);
             targetPoseEntry.forceSetDoubleArray(new double[] {0, 0, 0});
         }
+        rootTable.getInstance().flush();
     }
 }
