@@ -43,11 +43,11 @@ public class FilterShapesPipe
     }
 
     public static class FilterShapesPipeParams {
-        ContourShape desiredShape;
-        double minArea;
-        double maxArea;
-        double minPeri;
-        double maxPeri;
+        private final ContourShape desiredShape;
+        private final double minArea;
+        private final double maxArea;
+        private final double minPeri;
+        private final double maxPeri;
 
         public FilterShapesPipeParams(
                 ContourShape desiredShape, double minArea, double maxArea, double minPeri, double maxPeri) {

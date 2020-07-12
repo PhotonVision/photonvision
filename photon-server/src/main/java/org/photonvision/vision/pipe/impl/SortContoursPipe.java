@@ -30,11 +30,15 @@ public class SortContoursPipe
         extends CVPipe<
                 List<PotentialTarget>, List<PotentialTarget>, SortContoursPipe.SortContoursParams> {
 
-    private List<PotentialTarget> m_sortedContours = new ArrayList<>();
+    private final List<PotentialTarget> m_sortedContours = new ArrayList<>();
 
     @Override
     protected List<PotentialTarget> process(List<PotentialTarget> in) {
+        for (var oldTarget : m_sortedContours) {
+            oldTarget.release();
+        }
         m_sortedContours.clear();
+
         if (in.size() > 0) {
             m_sortedContours.addAll(in);
             if (params.getSortMode() != ContourSortMode.Centermost) {
@@ -55,14 +59,14 @@ public class SortContoursPipe
     }
 
     public static class SortContoursParams {
-        private ContourSortMode m_sortMode;
-        private FrameStaticProperties m_camProperties;
-        private int m_maxTargets;
+        private final ContourSortMode m_sortMode;
+        private final FrameStaticProperties m_frameStaticProperties;
+        private final int m_maxTargets;
 
         public SortContoursParams(
                 ContourSortMode sortMode, FrameStaticProperties camProperties, int maxTargets) {
             m_sortMode = sortMode;
-            m_camProperties = camProperties;
+            m_frameStaticProperties = camProperties;
             m_maxTargets = maxTargets;
         }
 
@@ -71,7 +75,7 @@ public class SortContoursPipe
         }
 
         public FrameStaticProperties getCamProperties() {
-            return m_camProperties;
+            return m_frameStaticProperties;
         }
 
         public int getMaxTargets() {

@@ -25,7 +25,7 @@ import org.photonvision.vision.pipe.CVPipe;
 public class SpeckleRejectPipe
         extends CVPipe<List<Contour>, List<Contour>, SpeckleRejectPipe.SpeckleRejectParams> {
 
-    private List<Contour> m_despeckledContours = new ArrayList<>();
+    private final List<Contour> m_despeckledContours = new ArrayList<>();
 
     @Override
     protected List<Contour> process(List<Contour> in) {
@@ -53,7 +53,7 @@ public class SpeckleRejectPipe
     }
 
     public static class SpeckleRejectParams {
-        private double m_minPercentOfAvg;
+        private final double m_minPercentOfAvg;
 
         public SpeckleRejectParams(double minPercentOfAvg) {
             m_minPercentOfAvg = minPercentOfAvg;

@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipe;
+package org.photonvision.vision.opencv;
 
 public enum ImageFlipMode {
     NONE(Integer.MIN_VALUE),

@@ -35,9 +35,9 @@ public class ErodeDilatePipe extends CVPipe<Mat, Mat, ErodeDilatePipe.ErodeDilat
     }
 
     public static class ErodeDilateParams {
-        private boolean m_erode;
-        private boolean m_dilate;
-        private Mat m_kernel;
+        private final boolean m_erode;
+        private final boolean m_dilate;
+        private final Mat m_kernel;
 
         public ErodeDilateParams(boolean erode, boolean dilate, int kernelSize) {
             m_erode = erode;

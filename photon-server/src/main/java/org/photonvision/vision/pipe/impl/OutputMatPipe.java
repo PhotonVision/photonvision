@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import org.opencv.core.CvException;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.opencv.DualMat;
@@ -33,12 +32,8 @@ public class OutputMatPipe extends CVPipe<DualMat, Mat, OutputMatPipe.OutputMatP
         Mat hsv = in.second;
         if (params.showThreshold()) {
             // convert input mat
-            try {
-                hsv.copyTo(m_outputMat);
-                Imgproc.cvtColor(m_outputMat, m_outputMat, Imgproc.COLOR_GRAY2BGR, 3);
-            } catch (CvException e) {
-                System.err.println("(OutputMatPipe) Exception thrown by OpenCV: \n" + e.getMessage());
-            }
+            hsv.copyTo(m_outputMat);
+            Imgproc.cvtColor(m_outputMat, m_outputMat, Imgproc.COLOR_GRAY2BGR, 3);
         } else {
             m_outputMat = rawCam;
         }
@@ -47,7 +42,7 @@ public class OutputMatPipe extends CVPipe<DualMat, Mat, OutputMatPipe.OutputMatP
     }
 
     public static class OutputMatParams {
-        private boolean m_showThreshold;
+        private final boolean m_showThreshold;
 
         public OutputMatParams(boolean showThreshold) {
             m_showThreshold = showThreshold;

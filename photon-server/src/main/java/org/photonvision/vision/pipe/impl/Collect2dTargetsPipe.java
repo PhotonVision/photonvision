@@ -60,22 +60,23 @@ public class Collect2dTargetsPipe
     }
 
     public static class Collect2dTargetsParams {
-        private FrameStaticProperties m_captureStaticProperties;
-        private RobotOffsetPointMode m_offsetMode;
-        private double m_calibrationM, m_calibrationB;
-        private Point m_userOffsetPoint;
-        private TargetOffsetPointEdge m_region;
-        private TargetOrientation m_orientation;
+        private final FrameStaticProperties m_frameStaticProperties;
+        private final RobotOffsetPointMode m_offsetMode;
+        private final double m_calibrationM;
+        private final double m_calibrationB;
+        private final Point m_userOffsetPoint;
+        private final TargetOffsetPointEdge m_region;
+        private final TargetOrientation m_orientation;
 
         public Collect2dTargetsParams(
-                FrameStaticProperties captureStaticProperties,
+                FrameStaticProperties frameStaticProperties,
                 RobotOffsetPointMode offsetMode,
                 double calibrationM,
                 double calibrationB,
                 Point calibrationPoint,
                 TargetOffsetPointEdge region,
                 TargetOrientation orientation) {
-            m_captureStaticProperties = captureStaticProperties;
+            this.m_frameStaticProperties = frameStaticProperties;
             m_offsetMode = offsetMode;
             m_calibrationM = calibrationM;
             m_calibrationB = calibrationB;
@@ -85,7 +86,7 @@ public class Collect2dTargetsPipe
         }
 
         public FrameStaticProperties getFrameStaticProperties() {
-            return m_captureStaticProperties;
+            return m_frameStaticProperties;
         }
 
         public RobotOffsetPointMode getOffsetMode() {
