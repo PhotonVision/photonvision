@@ -22,18 +22,18 @@ public class GPU extends MetricsBase {
     private GPU() {}
 
     public static GPU getInstance() {
-        return new GPU();
+        return Singleton.INSTANCE;
     }
 
-    private static final String memoryCommand = "sudo vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
-    private static final String temperatureCommand =
-            "sudo vcgencmd measure_temp | sed 's/[^0-9]*//g'\n";
-
     public double getMemory() {
-        return execute(memoryCommand);
+        return execute(gpuMemoryCommand);
     }
 
     public double getTemp() {
-        return execute(temperatureCommand) / 10;
+        return execute(gpuTemperatureCommand) / 10;
+    }
+
+    private static class Singleton {
+        public static final GPU INSTANCE = new GPU();
     }
 }

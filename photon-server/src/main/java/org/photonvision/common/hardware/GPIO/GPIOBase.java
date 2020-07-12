@@ -21,7 +21,7 @@ import java.util.HashMap;
 import org.photonvision.common.util.ShellExec;
 
 public abstract class GPIOBase {
-    public HashMap<String, String> commands =
+    public static HashMap<String, String> commands =
             new HashMap<>() {
                 {
                     put("setState", "");
@@ -40,22 +40,6 @@ public abstract class GPIOBase {
             return "";
         }
         return runCommand.getOutput();
-    }
-
-    public void setStateCommand(String command) {
-        commands.replace("setState", command);
-    }
-
-    public void setBlinkCommand(String command) {
-        commands.replace("blink", command);
-    }
-
-    public void setPulseCommand(String command) {
-        commands.replace("pulse", command);
-    }
-
-    public void setShutdownCommand(String command) {
-        commands.replace("shutdown", command);
     }
 
     public abstract void togglePin();

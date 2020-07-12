@@ -22,24 +22,22 @@ public class CPU extends MetricsBase {
     private CPU() {}
 
     public static CPU getInstance() {
-        return new CPU();
+        return Singleton.INSTANCE;
     }
 
-    private static final String memoryCommand = "sudo vcgencmd get_mem arm | grep -Eo '[0-9]+'";
-    private static final String temperatureCommand =
-            "sudo cat /sys/class/thermal/thermal_zone0/temp | grep -x -E '[0-9]+'";
-    private static final String utilizationCommand =
-            "sudo top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'";
-
     public double getMemory() {
-        return execute(memoryCommand);
+        return execute(cpuMemoryCommand);
     }
 
     public double getTemp() {
-        return execute(temperatureCommand) / 1000;
+        return execute(cpuTemperatureCommand) / 1000;
     }
 
     public double getUtilization() {
-        return execute(utilizationCommand);
+        return execute(cpuUtilizationCommand);
+    }
+
+    private static class Singleton {
+        public static final CPU INSTANCE = new CPU();
     }
 }

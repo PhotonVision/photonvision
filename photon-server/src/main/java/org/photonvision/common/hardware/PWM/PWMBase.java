@@ -21,7 +21,7 @@ import java.util.HashMap;
 import org.photonvision.common.util.ShellExec;
 
 public abstract class PWMBase {
-    HashMap<String, String> commands =
+    public static HashMap<String, String> commands =
             new HashMap<>() {
                 {
                     put("setRate", "");
@@ -41,21 +41,13 @@ public abstract class PWMBase {
         return runCommand.getOutput();
     }
 
-    public void setPwmRateCommand(String command) {
-        commands.replace("setRate", command);
-    }
-
-    public void setPwmRangeCommand(String command) {
-        commands.replace("setRange", command);
-    }
-
     public abstract void setPwmRate(int rate);
 
-    public abstract void setPwmRange(int range);
+    public abstract void setPwmRange(int[] range);
 
     public abstract int getPwmRate();
 
-    public abstract int getPwmRange();
+    public abstract int[] getPwmRange();
 
     public abstract boolean shutdown();
 }

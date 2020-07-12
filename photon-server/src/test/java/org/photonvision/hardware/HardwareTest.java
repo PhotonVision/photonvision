@@ -64,10 +64,6 @@ public class HardwareTest {
             gpio = new PiGPIO(5);
         } else {
             gpio = new CustomGPIO(5);
-            gpio.setStateCommand("gpio setState {p} {s}");
-            gpio.setBlinkCommand("gpio blink {p} {delay} {duration}");
-            gpio.setPulseCommand("gpio pulse {p} {blocking} {duration}");
-            gpio.setShutdownCommand("gpio shutdown");
         }
 
         gpio.setHigh(); // HIGH
@@ -104,11 +100,10 @@ public class HardwareTest {
             }
         } else {
             pwm = new CustomPWM(1);
-            pwm.setPwmRateCommand("pwm setRate {p} {rate}");
-            pwm.setPwmRangeCommand("pwm setRange {p} {range}");
         }
-        pwm.setPwmRange(100);
-        assertEquals(pwm.getPwmRange(), 100);
+        pwm.setPwmRange(new int[] {0, 100});
+        assertEquals(pwm.getPwmRange()[0], 0);
+        assertEquals(pwm.getPwmRange()[1], 100);
 
         pwm.setPwmRate(10);
         assertEquals(pwm.getPwmRate(), 10);

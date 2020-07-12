@@ -17,6 +17,8 @@
 
 package org.photonvision.common.hardware.GPIO;
 
+import org.photonvision.common.configuration.HardwareConfig;
+
 public class CustomGPIO extends GPIOBase {
 
     private boolean currentState;
@@ -70,7 +72,7 @@ public class CustomGPIO extends GPIOBase {
     public void blink(long delay, long duration) {
         execute(
                 commands
-                        .get("setState")
+                        .get("blink")
                         .replace("{delay}", String.valueOf(delay))
                         .replace("{duration}", String.valueOf(duration))
                         .replace("{p}", String.valueOf(this.port)));
@@ -95,5 +97,11 @@ public class CustomGPIO extends GPIOBase {
     @Override
     public boolean getState() {
         return currentState;
+    }
+
+    public static void setConfig(HardwareConfig config) {
+        commands.replace("setState", config.getLedSetCommand());
+        commands.replace("blink", config.getLedBlinkCommand());
+        commands.replace("pulse", config.getLedPulseCommand());
     }
 }

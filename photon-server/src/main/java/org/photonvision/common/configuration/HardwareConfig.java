@@ -23,24 +23,28 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @SuppressWarnings("unused")
 public class HardwareConfig {
 
-    public final String deviceName;
-    public final String deviceLogoPath;
-    public final String supportURL;
+    private final String deviceName;
+    private final String deviceLogoPath;
+    private final String supportURL;
 
     // LED control
-    public final int[] ledPins;
-    public final String ledSetCommand;
-    public final boolean ledsCanDim;
-    public final int[] ledPWMRange;
-    public final String ledDimCommand;
+    private final int[] ledPins;
+    private final String ledSetCommand;
+    private final boolean ledsCanDim;
+    private final int[] ledPWMRange;
+    private final String ledPWMSetRange;
+    private final String ledPWMSetRate;
+    private final String ledDimCommand;
+    private final String ledBlinkCommand;
+    private final String ledPulseCommand;
 
     // Metrics
-    public final String cpuTempCommand;
-    public final String cpuMemoryCommand;
-    public final String cpuUtilCommand;
-    public final String gpuMemoryCommand;
-    public final String gpuUtilCommand;
-    public final String ramUtilCommand;
+    private final String cpuTempCommand;
+    private final String cpuMemoryCommand;
+    private final String cpuUtilCommand;
+    private final String gpuMemoryCommand;
+    private final String gpuTempCommand;
+    private final String ramUtilCommand;
 
     public HardwareConfig() {
         deviceName = "";
@@ -50,14 +54,18 @@ public class HardwareConfig {
         ledSetCommand = "";
         ledsCanDim = false;
         ledPWMRange = new int[0];
+        ledPWMSetRange = "";
+        ledPWMSetRate = "";
         ledDimCommand = "";
 
         cpuTempCommand = "";
         cpuMemoryCommand = "";
         cpuUtilCommand = "";
         gpuMemoryCommand = "";
-        gpuUtilCommand = "";
+        gpuTempCommand = "";
         ramUtilCommand = "";
+        ledBlinkCommand = "";
+        ledPulseCommand = "";
     }
 
     @JsonCreator
@@ -69,14 +77,17 @@ public class HardwareConfig {
             @JsonProperty("ledSetCommand") String ledSetCommand,
             @JsonProperty("ledsCanDim") boolean ledsCanDim,
             @JsonProperty("ledPWMRange") int[] ledPWMRange,
+            @JsonProperty("ledPWMSetRange") String ledPWMSetRange,
+            @JsonProperty("ledPWMSetRate") String ledPWMSetRate,
             @JsonProperty("ledDimCommand") String ledDimCommand,
+            @JsonProperty("ledBlinkCommand") String ledBlinkCommand,
+            @JsonProperty("ledPulseCommand") String ledPulseCommand,
             @JsonProperty("cpuTempCommand") String cpuTempCommand,
             @JsonProperty("cpuMemoryCommand") String cpuMemoryCommand,
             @JsonProperty("cpuUtilCommand") String cpuUtilCommand,
             @JsonProperty("gpuMemoryCommand") String gpuMemoryCommand,
-            @JsonProperty("gpuUtilCommand") String gpuUtilCommand,
-            @JsonProperty("ramUtilCommand") String ramUtilCommand
-            ) {
+            @JsonProperty("gpuTempCommand") String gpuTempCommand,
+            @JsonProperty("ramUtilCommand") String ramUtilCommand) {
         this.deviceName = deviceName;
         this.deviceLogoPath = deviceLogoPath;
         this.supportURL = supportURL;
@@ -85,13 +96,17 @@ public class HardwareConfig {
         this.ledSetCommand = ledSetCommand;
         this.ledsCanDim = ledsCanDim;
         this.ledPWMRange = ledPWMRange;
+        this.ledPWMSetRange = ledPWMSetRange;
+        this.ledPWMSetRate = ledPWMSetRate;
         this.ledDimCommand = ledDimCommand;
+        this.ledBlinkCommand = ledBlinkCommand;
+        this.ledPulseCommand = ledPulseCommand;
 
         this.cpuTempCommand = cpuTempCommand;
         this.cpuMemoryCommand = cpuMemoryCommand;
         this.cpuUtilCommand = cpuUtilCommand;
         this.gpuMemoryCommand = gpuMemoryCommand;
-        this.gpuUtilCommand = gpuUtilCommand;
+        this.gpuTempCommand = gpuTempCommand;
         this.ramUtilCommand = ramUtilCommand;
     }
 
@@ -115,12 +130,28 @@ public class HardwareConfig {
         return ledSetCommand;
     }
 
+    public String getLedBlinkCommand() {
+        return ledBlinkCommand;
+    }
+
+    public String getLedPulseCommand() {
+        return ledPulseCommand;
+    }
+
     public boolean isLedsCanDim() {
         return ledsCanDim;
     }
 
     public int[] getLedPWMRange() {
         return ledPWMRange;
+    }
+
+    public String getLedPWMSetRange() {
+        return ledPWMSetRange;
+    }
+
+    public String getLedPWMSetRate() {
+        return ledPWMSetRate;
     }
 
     public String getLedDimCommand() {
@@ -143,8 +174,8 @@ public class HardwareConfig {
         return gpuMemoryCommand;
     }
 
-    public String getGpuUtilCommand() {
-        return gpuUtilCommand;
+    public String getGpuTempCommand() {
+        return gpuTempCommand;
     }
 
     public String getRamUtilCommand() {

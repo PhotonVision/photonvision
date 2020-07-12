@@ -24,7 +24,7 @@ import com.pi4j.util.CommandArgumentParser;
 public class PiPWM extends PWMBase {
     private static final GpioController gpio = GpioFactory.getInstance();
     private final GpioPinPwmOutput pwm;
-    private int pwmRange = 0;
+    private int[] pwmRange = new int[2];
 
     public PiPWM(int address) throws UnsupportedPinModeException {
         this.pwm =
@@ -38,8 +38,8 @@ public class PiPWM extends PWMBase {
     }
 
     @Override
-    public void setPwmRange(int range) {
-        pwm.setPwmRange(range);
+    public void setPwmRange(int[] range) {
+        pwm.setPwmRange(range[0]);
         pwmRange = range;
     }
 
@@ -49,7 +49,7 @@ public class PiPWM extends PWMBase {
     }
 
     @Override
-    public int getPwmRange() {
+    public int[] getPwmRange() {
         return pwmRange;
     }
 
