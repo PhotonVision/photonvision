@@ -284,8 +284,8 @@ public class VisionModule {
                         logger.error("Unknown exception when setting PSC prop!");
                         e.printStackTrace();
                     }
+                    saveAndBroadcast(propName, newPropValue);
                 }
-                saveAndBroadcast();
             }
         }
     }
@@ -318,6 +318,16 @@ public class VisionModule {
                                 UIUpdateType.BROADCAST,
                                 "fullsettings",
                                 ConfigManager.getInstance().getConfig().toHashMap()));
+    }
+
+    private void saveAndBroadcast(String propertyName, Object value) {
+        ConfigManager.getInstance()
+                .saveModule(
+                        getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
+        DataChangeService.getInstance()
+                .publishEvent(
+                        OutgoingUIEvent.wrappedOf(
+                                UIUpdateType.BROADCAST, "singlesetting", propertyName, value));
     }
 
     private void setCameraNickname(String newName) {

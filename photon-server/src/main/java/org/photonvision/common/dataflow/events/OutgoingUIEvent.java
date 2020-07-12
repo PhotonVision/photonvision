@@ -30,8 +30,11 @@ public class OutgoingUIEvent<T> extends DataChangeEvent<T> {
         this.updateType = updateType;
     }
 
-    @SuppressWarnings("unchecked")
-    public OutgoingUIEvent(UIUpdateType updateType, String dataKey, HashMap<String, Object> data) {
-        this(updateType, dataKey, (T) data.get(dataKey));
+    public static OutgoingUIEvent<HashMap<String, Object>> wrappedOf(
+            UIUpdateType uiUpdateType, String commandName, String propertyName, Object value) {
+        HashMap<String, Object> data = new HashMap<>();
+        data.put(propertyName, value);
+
+        return new OutgoingUIEvent<>(uiUpdateType, commandName, data);
     }
 }
