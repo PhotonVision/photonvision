@@ -49,6 +49,11 @@ public class FindPolygonPipe
     private CVShape getShape(Contour in) {
 
         int corners = getCorners(in);
+        corners = getCorners(in);
+
+        /*The contourShape enum has predefined shapes for Circles, Triangles, and Quads
+        meaning any shape not fitting in those predefined shapes must be a custom shape.
+        */
         if (ContourShape.fromSides(corners) == null) {
             return new CVShape(in, ContourShape.Custom);
         }
@@ -65,18 +70,21 @@ public class FindPolygonPipe
     }
 
     private int getCorners(Contour contour) {
+        // Release previous approx
         approx.release();
         Imgproc.approxPolyDP(
                 contour.getMat2f(),
                 approx,
+                // Converts an accuracy percentage between 1-100 to an epsilon
                 params.accuracyPercentage / 600.0 * Imgproc.arcLength(contour.getMat2f(), true),
                 true);
+        // The height of the resultant approximation is the number of vertices
         return (int) approx.size().height;
     }
 
     public static class FindPolygonPipeParams {
         private final double accuracyPercentage;
-
+        // Should be a value between 0-100
         public FindPolygonPipeParams(double accuracyPercentage) {
             this.accuracyPercentage = accuracyPercentage;
         }
