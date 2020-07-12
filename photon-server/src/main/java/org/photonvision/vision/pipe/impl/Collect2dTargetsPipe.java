@@ -76,7 +76,7 @@ public class Collect2dTargetsPipe
                 Point calibrationPoint,
                 TargetOffsetPointEdge region,
                 TargetOrientation orientation) {
-            this.m_frameStaticProperties = frameStaticProperties;
+            m_frameStaticProperties = frameStaticProperties;
             m_offsetMode = offsetMode;
             m_calibrationM = calibrationM;
             m_calibrationB = calibrationB;
