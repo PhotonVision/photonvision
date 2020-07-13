@@ -72,7 +72,9 @@ public class VisionSourceManager {
         // var HttpCamerasConfiguration = camerasConfiguration.stream().filter(configuration ->
         // configuration.cameraType == CameraType.HttpCamera);
         var matchedCameras = matchUSBCameras(detectedCamInfos, loadedUsbCamConfigs);
-        return loadUSBCameraSources(matchedCameras);
+
+        // turn the matched cameras into VisionSources
+        return loadVisionSourcesFromCamConfigs(matchedCameras);
     }
 
     private static NetworkFrameProvider loadHTTPCamera(CameraConfiguration config) {
@@ -98,13 +100,17 @@ public class VisionSourceManager {
             // Load by path vs by index -- if the path is numeric we'll match by index
             if (StringUtils.isNumeric(config.path)) {
                 // match by index
+                var index = Integer.parseInt(config.path);
+                logger.trace("Trying to find a match for loaded camera " + config.baseName + " with index " + index);
                 cameraInfo =
                         detectedCameraList.stream()
-                                .filter(usbCameraInfo -> usbCameraInfo.dev == Integer.parseInt(config.path))
+                                .filter(usbCameraInfo -> usbCameraInfo.dev == index)
                                 .findFirst()
                                 .orElse(null);
             } else {
                 // matching by path
+                logger.trace(
+                        "Trying to find a match for loaded camera " + config.baseName + " with path " + config.path);
                 cameraInfo =
                         detectedCameraList.stream()
                                 .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path))
@@ -115,12 +121,15 @@ public class VisionSourceManager {
             // If we actually matched a camera to a config, remove that camera from the list and add it to
             // the output
             if (cameraInfo != null) {
+                logger.trace("Matched the config for " + config.baseName + " to a physical camera!");
                 detectedCameraList.remove(cameraInfo);
                 cameraConfigurations.add(config);
             }
         }
 
         // If we have any unmatched cameras left, create a new CameraConfiguration for them here.
+        logger.trace(
+                "After matching loaded configs " + detectedCameraList.size() + " cameras were unmatched.");
         for (UsbCameraInfo info : detectedCameraList) {
             // create new camera config for all new cameras
             String baseName =
@@ -133,18 +142,21 @@ public class VisionSourceManager {
                 uniqueName = String.format("%s (%d)", uniqueName, suffix);
             }
 
+            logger.info("Creating a new camera config for camera " + uniqueName);
+
             CameraConfiguration configuration =
                     new CameraConfiguration(baseName, uniqueName, uniqueName, info.path);
             cameraConfigurations.add(configuration);
         }
 
+        logger.trace("Matched or created " + cameraConfigurations.size() + " camera configs!");
         return cameraConfigurations;
     }
 
-    private static List<VisionSource> loadUSBCameraSources(List<CameraConfiguration> configurations) {
+    private static List<VisionSource> loadVisionSourcesFromCamConfigs(
+            List<CameraConfiguration> camConfigs) {
         List<VisionSource> usbCameraSources = new ArrayList<>();
-        configurations.forEach(
-                configuration -> usbCameraSources.add(new USBCameraSource(configuration)));
+        camConfigs.forEach(configuration -> usbCameraSources.add(new USBCameraSource(configuration)));
         return usbCameraSources;
     }
 
