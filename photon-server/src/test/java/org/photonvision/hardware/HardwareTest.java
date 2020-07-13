@@ -32,6 +32,8 @@ import org.photonvision.common.hardware.metrics.CPU;
 import org.photonvision.common.hardware.metrics.GPU;
 import org.photonvision.common.hardware.metrics.RAM;
 
+import java.util.List;
+
 public class HardwareTest {
 
     @Test
@@ -84,6 +86,8 @@ public class HardwareTest {
         gpio.setState(false); // LOW
         assertFalse(gpio.getState());
 
+        gpio.blink(10, 100);
+
         var success = gpio.shutdown();
         assertTrue(success);
     }
@@ -101,10 +105,12 @@ public class HardwareTest {
         } else {
             pwm = new CustomPWM(1);
         }
-        pwm.setPwmRange(new int[] {0, 100});
-        assertEquals(pwm.getPwmRange()[0], 0);
-        assertEquals(pwm.getPwmRange()[1], 100);
+        pwm.setPwmRange(List.of(0, 100));
+        assertEquals(pwm.getPwmRange().get(0), 0);
+        assertEquals(pwm.getPwmRange().get(1), 100);
 
+        pwm.dimLED(40);
+        pwm.shutdown();
         var success = pwm.shutdown();
         assertTrue(success);
     }

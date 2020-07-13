@@ -18,6 +18,7 @@
 package org.photonvision.common.hardware.PWM;
 
 import java.util.HashMap;
+import java.util.List;
 import org.photonvision.common.util.ShellExec;
 
 public abstract class PWMBase {
@@ -41,9 +42,9 @@ public abstract class PWMBase {
         return runCommand.getOutput();
     }
 
-    public abstract void setPwmRange(int[] range);
+    public abstract void setPwmRange(List<Integer> range);
 
-    public abstract int[] getPwmRange();
+    public abstract List<Integer> getPwmRange();
 
     public abstract boolean shutdown();
 

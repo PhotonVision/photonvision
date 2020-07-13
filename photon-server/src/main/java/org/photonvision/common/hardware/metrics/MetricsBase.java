@@ -20,7 +20,7 @@ package org.photonvision.common.hardware.metrics;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.util.ShellExec;
 
-abstract class MetricsBase {
+public abstract class MetricsBase {
     // CPU
     public static String cpuMemoryCommand = "sudo vcgencmd get_mem arm | grep -Eo '[0-9]+'";
     public static String cpuTemperatureCommand =

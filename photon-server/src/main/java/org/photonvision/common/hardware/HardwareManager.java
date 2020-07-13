@@ -17,4 +17,51 @@
 
 package org.photonvision.common.hardware;
 
-public class HardwareManager {}
+import java.util.HashMap;
+import org.apache.commons.lang3.tuple.Pair;
+import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.hardware.GPIO.CustomGPIO;
+import org.photonvision.common.hardware.GPIO.GPIOBase;
+import org.photonvision.common.hardware.GPIO.PiGPIO;
+import org.photonvision.common.hardware.PWM.CustomPWM;
+import org.photonvision.common.hardware.PWM.PWMBase;
+import org.photonvision.common.hardware.PWM.PiPWM;
+import org.photonvision.common.hardware.metrics.MetricsBase;
+
+public class HardwareManager {
+    HardwareConfig hardwareConfig;
+    public static HashMap<Integer, Pair<? extends GPIOBase, ? extends PWMBase>> LEDs =
+            new HashMap<>();
+
+    public static HardwareManager getInstance() {
+        return Singleton.INSTANCE;
+    }
+
+    public void setConfig(HardwareConfig hardwareConfig) {
+        this.hardwareConfig = hardwareConfig;
+        CustomPWM.setConfig(hardwareConfig);
+        CustomGPIO.setConfig(hardwareConfig);
+        MetricsBase.setConfig(hardwareConfig);
+
+        hardwareConfig
+                .getLedPins()
+                .forEach(
+                        pin -> {
+                            if (Platform.isRaspberryPi()) {
+                                LEDs.put(
+                                        pin,
+                                        Pair.of(
+                                                new PiGPIO(pin),
+                                                new PiPWM(pin, 0, hardwareConfig.getLedPWMRange().get(1))));
+                            } else {
+                                var pwm = new CustomPWM(pin);
+                                pwm.setPwmRange(hardwareConfig.getLedPWMRange());
+                                LEDs.put(pin, Pair.of(new CustomGPIO(pin), pwm));
+                            }
+                        });
+    }
+
+    private static class Singleton {
+        private static final HardwareManager INSTANCE = new HardwareManager();
+    }
+}

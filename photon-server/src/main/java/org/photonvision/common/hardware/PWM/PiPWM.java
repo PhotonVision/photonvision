@@ -21,6 +21,8 @@ import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.exception.UnsupportedPinModeException;
 import com.pi4j.wiringpi.Gpio;
 import com.pi4j.wiringpi.SoftPwm;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PiPWM extends PWMBase {
 
@@ -29,7 +31,7 @@ public class PiPWM extends PWMBase {
         Gpio.wiringPiSetup();
     }
 
-    private int[] pwmRange = new int[2];
+    private List<Integer> pwmRange = new ArrayList<>();
     private final int pin;
 
     public PiPWM(int pin, int value, int range) throws UnsupportedPinModeException {
@@ -38,14 +40,14 @@ public class PiPWM extends PWMBase {
     }
 
     @Override
-    public void setPwmRange(int[] range) {
+    public void setPwmRange(List<Integer> range) {
         SoftPwm.softPwmStop(pin);
-        SoftPwm.softPwmCreate(pin, 0, range[1]);
+        SoftPwm.softPwmCreate(pin, 0, range.get(1));
         pwmRange = range;
     }
 
     @Override
-    public int[] getPwmRange() {
+    public List<Integer> getPwmRange() {
         return pwmRange;
     }
 
@@ -58,7 +60,7 @@ public class PiPWM extends PWMBase {
     @Override
     public void dimLED(int dimPercentage) {
         // Check to see if dimPercentage is within the range
-        if (dimPercentage < pwmRange[0] || dimPercentage > pwmRange[1]) return;
+        if (dimPercentage < pwmRange.get(0) || dimPercentage > pwmRange.get(1)) return;
         SoftPwm.softPwmWrite(pin, dimPercentage);
     }
 }

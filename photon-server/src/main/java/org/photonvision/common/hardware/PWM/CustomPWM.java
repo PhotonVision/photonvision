@@ -17,11 +17,13 @@
 
 package org.photonvision.common.hardware.PWM;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.Platform;
 
 public class CustomPWM extends PWMBase {
-    private int[] pwmRange = new int[2];
+    private List<Integer> pwmRange = new ArrayList<>();
     private int port = 0;
 
     public CustomPWM(int port) {
@@ -29,18 +31,18 @@ public class CustomPWM extends PWMBase {
     }
 
     @Override
-    public void setPwmRange(int[] range) {
+    public void setPwmRange(List<Integer> range) {
         execute(
                 commands
                         .get("setRange")
-                        .replace("{lower_range}", String.valueOf(range[0]))
-                        .replace("{upper_range}", String.valueOf(range[1]))
+                        .replace("{lower_range}", String.valueOf(range.get(0)))
+                        .replace("{upper_range}", String.valueOf(range.get(1)))
                         .replace("{p}", String.valueOf(port)));
         pwmRange = range;
     }
 
     @Override
-    public int[] getPwmRange() {
+    public List<Integer> getPwmRange() {
         return pwmRange;
     }
 
@@ -53,7 +55,7 @@ public class CustomPWM extends PWMBase {
     @Override
     public void dimLED(int dimPercentage) {
         // Check to see if dimPercentage is within the range
-        if (dimPercentage < pwmRange[0] || dimPercentage > pwmRange[1]) return;
+        if (dimPercentage < pwmRange.get(0) || dimPercentage > pwmRange.get(1)) return;
         execute(
                 commands
                         .get("dim")
