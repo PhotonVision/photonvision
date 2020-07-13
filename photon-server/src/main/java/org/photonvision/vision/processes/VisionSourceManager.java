@@ -101,7 +101,8 @@ public class VisionSourceManager {
             if (StringUtils.isNumeric(config.path)) {
                 // match by index
                 var index = Integer.parseInt(config.path);
-                logger.trace("Trying to find a match for loaded camera " + config.baseName + " with index " + index);
+                logger.trace(
+                        "Trying to find a match for loaded camera " + config.baseName + " with index " + index);
                 cameraInfo =
                         detectedCameraList.stream()
                                 .filter(usbCameraInfo -> usbCameraInfo.dev == index)
@@ -110,7 +111,10 @@ public class VisionSourceManager {
             } else {
                 // matching by path
                 logger.trace(
-                        "Trying to find a match for loaded camera " + config.baseName + " with path " + config.path);
+                        "Trying to find a match for loaded camera "
+                                + config.baseName
+                                + " with path "
+                                + config.path);
                 cameraInfo =
                         detectedCameraList.stream()
                                 .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path))
