@@ -80,13 +80,12 @@ public class Main {
             var usbSrc = (USBCameraSource) src;
             collectedSources.put(usbSrc, usbSrc.configuration.pipelineSettings);
             logger.trace(
-                    () -> {
-                        return "Matched config for camera \""
-                                + src.getFrameProvider().getName()
-                                + "\" and loaded "
-                                + usbSrc.configuration.pipelineSettings.size()
-                                + " pipelines";
-                    });
+                    () ->
+                            "Matched config for camera \""
+                                    + src.getFrameProvider().getName()
+                                    + "\" and loaded "
+                                    + usbSrc.configuration.pipelineSettings.size()
+                                    + " pipelines");
         }
 
         logger.info("Adding " + collectedSources.size() + " configs to VMM.");

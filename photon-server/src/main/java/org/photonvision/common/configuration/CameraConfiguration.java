@@ -33,12 +33,20 @@ import org.photonvision.vision.processes.PipelineManager;
 public class CameraConfiguration {
     private static final Logger logger = new Logger(CameraConfiguration.class, LogGroup.Camera);
 
+    /** Name as reported by CSCore */
     public String baseName = "";
+
+    /** Name used to title the subfolder of this config */
     public String uniqueName = "";
+
+    /** User-set nickname */
     public String nickname = "";
-    public double FOV = 70;
+
+    /** Can be either path (ex /dev/videoX) or index (ex 1). */
     public String path = "";
+
     public CameraType cameraType = CameraType.UsbCamera;
+    public double FOV = 70;
     public CameraCalibrationCoefficients calibration;
     public List<Integer> cameraLeds = new ArrayList<>();
     public int currentPipelineIndex = -1;

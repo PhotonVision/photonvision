@@ -22,10 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -172,7 +169,8 @@ public class ConfigManager {
             // Delete old pipe configs so that we don't get any conflicts
             try {
                 var pipelineFolder = Path.of(subdir.toString(), "pipelines");
-                Files.list(pipelineFolder).forEach(it -> it.toFile().delete());
+                if (pipelineFolder.toFile().exists())
+                    Files.list(pipelineFolder).map(Path::toFile).filter(File::exists).forEach(File::delete);
             } catch (IOException e) {
                 logger.error("Exception while deleting old configs!");
                 e.printStackTrace();
@@ -240,26 +238,31 @@ public class ConfigManager {
 
                 // Load pipelines by mapping the files within the pipelines subdir
                 // to their deserialized equivalents
+                var pipelineSubdirectory = Path.of(subdir.toString(), "pipelines");
                 List<CVPipelineSettings> settings =
-                        Files.list(Path.of(subdir.toString(), "pipelines"))
-                                .filter(p -> p.toFile().isFile())
-                                .map(
-                                        p -> {
-                                            var relativizedFilePath =
-                                                    getRootFolder().toAbsolutePath().relativize(p).toString();
-                                            try {
-                                                return JacksonUtils.deserialize(p, CVPipelineSettings.class);
-                                            } catch (JsonProcessingException e) {
-                                                logger.error("Exception while deserializing " + relativizedFilePath);
-                                                e.printStackTrace();
-                                            } catch (IOException e) {
-                                                logger.warn(
-                                                        "Could not load pipeline at " + relativizedFilePath + "! Skipping...");
-                                            }
-                                            return null;
-                                        })
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toList());
+                        pipelineSubdirectory.toFile().exists()
+                                ? Files.list(pipelineSubdirectory)
+                                        .filter(p -> p.toFile().isFile())
+                                        .map(
+                                                p -> {
+                                                    var relativizedFilePath =
+                                                            getRootFolder().toAbsolutePath().relativize(p).toString();
+                                                    try {
+                                                        return JacksonUtils.deserialize(p, CVPipelineSettings.class);
+                                                    } catch (JsonProcessingException e) {
+                                                        logger.error("Exception while deserializing " + relativizedFilePath);
+                                                        e.printStackTrace();
+                                                    } catch (IOException e) {
+                                                        logger.warn(
+                                                                "Could not load pipeline at "
+                                                                        + relativizedFilePath
+                                                                        + "! Skipping...");
+                                                    }
+                                                    return null;
+                                                })
+                                        .filter(Objects::nonNull)
+                                        .collect(Collectors.toList())
+                                : Collections.emptyList();
 
                 loadedConfig.driveModeSettings = driverMode;
                 loadedConfig.addPipelineSettings(settings);
