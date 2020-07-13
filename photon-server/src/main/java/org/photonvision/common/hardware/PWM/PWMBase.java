@@ -24,7 +24,6 @@ public abstract class PWMBase {
     public static HashMap<String, String> commands =
             new HashMap<>() {
                 {
-                    put("setRate", "");
                     put("setRange", "");
                     put("shutdown", "");
                     put("dim", "");
@@ -42,11 +41,7 @@ public abstract class PWMBase {
         return runCommand.getOutput();
     }
 
-    public abstract void setPwmRate(int rate);
-
     public abstract void setPwmRange(int[] range);
-
-    public abstract int getPwmRate();
 
     public abstract int[] getPwmRange();
 

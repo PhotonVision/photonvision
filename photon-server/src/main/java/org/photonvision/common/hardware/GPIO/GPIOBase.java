@@ -26,7 +26,6 @@ public abstract class GPIOBase {
                 {
                     put("setState", "");
                     put("blink", "");
-                    put("pulse", "");
                     put("shutdown", "");
                 }
             };
@@ -51,8 +50,6 @@ public abstract class GPIOBase {
     public abstract void setState(boolean state);
 
     public abstract void blink(long delay, long duration);
-
-    public abstract void pulse(long duration, boolean blocking);
 
     public abstract boolean shutdown();
 

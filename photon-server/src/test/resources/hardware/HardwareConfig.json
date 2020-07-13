@@ -1,0 +1,23 @@
+{
+  "deviceName": "EyeBox",
+  "deviceLogoPath": "eyeBoxLogo.png",
+  "supportURL": "https://support.eyebox.com",
+  "hardware": {
+    "leds": [1,5],
+    "ledSetCommand": "",
+    "ledsCanDim": true,
+    "ledPWMRange": [0, 100],
+    "ledPWMSetRange": "",
+    "ledDimCommand": "",
+    "ledBlinkCommand": ""
+  },
+
+  "metrics": {
+    "cpuTemp": "",
+    "cpuMemory": "",
+    "cpuUtil": "",
+    "gpuMemory": "",
+    "gpuUtil": "",
+    "ramUtil": ""
+  }
+}

@@ -105,9 +105,6 @@ public class HardwareTest {
         assertEquals(pwm.getPwmRange()[0], 0);
         assertEquals(pwm.getPwmRange()[1], 100);
 
-        pwm.setPwmRate(10);
-        assertEquals(pwm.getPwmRate(), 10);
-
         var success = pwm.shutdown();
         assertTrue(success);
     }

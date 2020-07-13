@@ -53,11 +53,6 @@ public class PiGPIO extends GPIOBase {
     }
 
     @Override
-    public void pulse(long duration, boolean blocking) {
-        pin.pulse(duration, blocking);
-    }
-
-    @Override
     public boolean shutdown() {
         gpio.shutdown();
         return gpio.isShutdown();

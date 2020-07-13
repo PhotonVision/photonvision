@@ -19,13 +19,18 @@ package org.photonvision.common.hardware.PWM;
 
 import com.pi4j.io.gpio.*;
 import com.pi4j.io.gpio.exception.UnsupportedPinModeException;
+import com.pi4j.wiringpi.Gpio;
 import com.pi4j.wiringpi.SoftPwm;
 
 public class PiPWM extends PWMBase {
-    private static final GpioController gpio = GpioFactory.getInstance();
+
+    static {
+        // Initialize wiringPi Library
+        Gpio.wiringPiSetup();
+    }
+
     private int[] pwmRange = new int[2];
-    private int pwmRate = 0;
-    private int pin;
+    private final int pin;
 
     public PiPWM(int pin, int value, int range) throws UnsupportedPinModeException {
         this.pin = pin;
@@ -33,18 +38,10 @@ public class PiPWM extends PWMBase {
     }
 
     @Override
-    public void setPwmRate(int rate) {
-        this.pwmRate = rate;
-    }
-
-    @Override
     public void setPwmRange(int[] range) {
+        SoftPwm.softPwmStop(pin);
+        SoftPwm.softPwmCreate(pin, 0, range[1]);
         pwmRange = range;
-    }
-
-    @Override
-    public int getPwmRate() {
-        return pwmRate;
     }
 
     @Override
@@ -54,8 +51,8 @@ public class PiPWM extends PWMBase {
 
     @Override
     public boolean shutdown() {
-        gpio.shutdown();
-        return gpio.isShutdown();
+        SoftPwm.softPwmStop(pin);
+        return true;
     }
 
     @Override

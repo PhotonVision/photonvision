@@ -19,6 +19,8 @@ package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public class HardwareConfig {
@@ -28,15 +30,13 @@ public class HardwareConfig {
     private final String supportURL;
 
     // LED control
-    private final int[] ledPins;
+    private final ArrayList<Integer> ledPins;
     private final String ledSetCommand;
     private final boolean ledsCanDim;
-    private final int[] ledPWMRange;
+    private final ArrayList<Integer> ledPWMRange;
     private final String ledPWMSetRange;
-    private final String ledPWMSetRate;
     private final String ledDimCommand;
     private final String ledBlinkCommand;
-    private final String ledPulseCommand;
 
     // Metrics
     private final String cpuTempCommand;
@@ -50,12 +50,11 @@ public class HardwareConfig {
         deviceName = "";
         deviceLogoPath = "";
         supportURL = "";
-        ledPins = new int[0];
+        ledPins = new ArrayList<>();
         ledSetCommand = "";
         ledsCanDim = false;
-        ledPWMRange = new int[0];
+        ledPWMRange = new ArrayList<>();
         ledPWMSetRange = "";
-        ledPWMSetRate = "";
         ledDimCommand = "";
 
         cpuTempCommand = "";
@@ -65,7 +64,6 @@ public class HardwareConfig {
         gpuTempCommand = "";
         ramUtilCommand = "";
         ledBlinkCommand = "";
-        ledPulseCommand = "";
     }
 
     @JsonCreator
@@ -73,41 +71,25 @@ public class HardwareConfig {
             @JsonProperty("deviceName") String deviceName,
             @JsonProperty("deviceLogoPath") String deviceLogoPath,
             @JsonProperty("supportURL") String supportURL,
-            @JsonProperty("ledPins") int[] ledPins,
-            @JsonProperty("ledSetCommand") String ledSetCommand,
-            @JsonProperty("ledsCanDim") boolean ledsCanDim,
-            @JsonProperty("ledPWMRange") int[] ledPWMRange,
-            @JsonProperty("ledPWMSetRange") String ledPWMSetRange,
-            @JsonProperty("ledPWMSetRate") String ledPWMSetRate,
-            @JsonProperty("ledDimCommand") String ledDimCommand,
-            @JsonProperty("ledBlinkCommand") String ledBlinkCommand,
-            @JsonProperty("ledPulseCommand") String ledPulseCommand,
-            @JsonProperty("cpuTempCommand") String cpuTempCommand,
-            @JsonProperty("cpuMemoryCommand") String cpuMemoryCommand,
-            @JsonProperty("cpuUtilCommand") String cpuUtilCommand,
-            @JsonProperty("gpuMemoryCommand") String gpuMemoryCommand,
-            @JsonProperty("gpuTempCommand") String gpuTempCommand,
-            @JsonProperty("ramUtilCommand") String ramUtilCommand) {
+            @JsonProperty("hardware") Map<String, ?> hardware,
+            @JsonProperty("metrics") Map<String, ?> metrics) {
         this.deviceName = deviceName;
         this.deviceLogoPath = deviceLogoPath;
         this.supportURL = supportURL;
+        this.ledPins = (ArrayList<Integer>) hardware.get("leds");
+        this.ledSetCommand = (String) hardware.get("ledSetCommand");
+        this.ledsCanDim = (Boolean) hardware.get("ledsCanDim");
+        this.ledPWMRange = (ArrayList<Integer>) hardware.get("ledPWMRange");
+        this.ledPWMSetRange = (String) hardware.get("ledPWMSetRange");
+        this.ledDimCommand = (String) hardware.get("ledDimCommand");
+        this.ledBlinkCommand = (String) hardware.get("ledBlinkCommand");
 
-        this.ledPins = ledPins;
-        this.ledSetCommand = ledSetCommand;
-        this.ledsCanDim = ledsCanDim;
-        this.ledPWMRange = ledPWMRange;
-        this.ledPWMSetRange = ledPWMSetRange;
-        this.ledPWMSetRate = ledPWMSetRate;
-        this.ledDimCommand = ledDimCommand;
-        this.ledBlinkCommand = ledBlinkCommand;
-        this.ledPulseCommand = ledPulseCommand;
-
-        this.cpuTempCommand = cpuTempCommand;
-        this.cpuMemoryCommand = cpuMemoryCommand;
-        this.cpuUtilCommand = cpuUtilCommand;
-        this.gpuMemoryCommand = gpuMemoryCommand;
-        this.gpuTempCommand = gpuTempCommand;
-        this.ramUtilCommand = ramUtilCommand;
+        this.cpuTempCommand = (String) metrics.get("cpuTemp");
+        this.cpuMemoryCommand = (String) metrics.get("cpuMemory");
+        this.cpuUtilCommand = (String) metrics.get("cpuUtil");
+        this.gpuMemoryCommand = (String) metrics.get("gpuMemory");
+        this.gpuTempCommand = (String) metrics.get("gpuUtil");
+        this.ramUtilCommand = (String) metrics.get("ramUtil");
     }
 
     public String getDeviceName() {
@@ -122,7 +104,7 @@ public class HardwareConfig {
         return supportURL;
     }
 
-    public int[] getLedPins() {
+    public ArrayList<Integer> getLedPins() {
         return ledPins;
     }
 
@@ -134,24 +116,16 @@ public class HardwareConfig {
         return ledBlinkCommand;
     }
 
-    public String getLedPulseCommand() {
-        return ledPulseCommand;
-    }
-
     public boolean isLedsCanDim() {
         return ledsCanDim;
     }
 
-    public int[] getLedPWMRange() {
+    public ArrayList<Integer> getLedPWMRange() {
         return ledPWMRange;
     }
 
     public String getLedPWMSetRange() {
         return ledPWMSetRange;
-    }
-
-    public String getLedPWMSetRate() {
-        return ledPWMSetRate;
     }
 
     public String getLedDimCommand() {

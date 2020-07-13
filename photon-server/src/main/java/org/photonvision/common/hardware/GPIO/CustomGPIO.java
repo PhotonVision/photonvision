@@ -80,16 +80,6 @@ public class CustomGPIO extends GPIOBase {
     }
 
     @Override
-    public void pulse(long duration, boolean blocking) {
-        execute(
-                commands
-                        .get("pulse")
-                        .replace("{blocking}", String.valueOf(blocking))
-                        .replace("{duration}", String.valueOf(duration))
-                        .replace("{p}", String.valueOf(this.port)));
-    }
-
-    @Override
     public boolean shutdown() {
         execute(commands.get("shutdown"));
         return true;
@@ -104,6 +94,5 @@ public class CustomGPIO extends GPIOBase {
         if (Platform.isRaspberryPi()) return;
         commands.replace("setState", config.getLedSetCommand());
         commands.replace("blink", config.getLedBlinkCommand());
-        commands.replace("pulse", config.getLedPulseCommand());
     }
 }
