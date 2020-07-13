@@ -18,15 +18,14 @@
 package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
+
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.JacksonUtils;
@@ -62,9 +61,9 @@ public class ConfigManager {
     private ConfigManager(Path rootFolder) {
         this.rootFolder = new File(rootFolder.toUri());
         this.hardwareConfigFile =
-                new File(Path.of(rootFolder.toString(), "hardwareConfig.json").toUri());
+            new File(Path.of(rootFolder.toString(), "hardwareConfig.json").toUri());
         this.networkConfigFile =
-                new File(Path.of(rootFolder.toString(), "networkSettings.json").toUri());
+            new File(Path.of(rootFolder.toString(), "networkSettings.json").toUri());
         this.camerasFolder = new File(Path.of(rootFolder.toString(), "cameras").toUri());
 
         load();
@@ -86,7 +85,7 @@ public class ConfigManager {
         if (hardwareConfigFile.exists()) {
             try {
                 hardwareConfig =
-                        JacksonUtils.deserialize(hardwareConfigFile.toPath(), HardwareConfig.class);
+                    JacksonUtils.deserialize(hardwareConfigFile.toPath(), HardwareConfig.class);
                 if (hardwareConfig == null) {
                     logger.error("Could not deserialize hardware config! Loading defaults");
                     hardwareConfig = new HardwareConfig();
@@ -164,7 +163,7 @@ public class ConfigManager {
 
             try {
                 JacksonUtils.serializer(
-                        Path.of(subdir.toString(), "drivermode.json"), camConfig.driveModeSettings);
+                    Path.of(subdir.toString(), "drivermode.json"), camConfig.driveModeSettings);
             } catch (IOException e) {
                 logger.error("Could not save drivermode.json for " + subdir);
             }
@@ -172,7 +171,8 @@ public class ConfigManager {
             // Delete old pipe configs so that we don't get any conflicts
             try {
                 var pipelineFolder = Path.of(subdir.toString(), "pipelines");
-                Files.list(pipelineFolder).forEach(it -> it.toFile().delete());
+                if (pipelineFolder.toFile().exists())
+                    Files.list(pipelineFolder).map(Path::toFile).filter(File::exists).forEach(File::delete);
             } catch (IOException e) {
                 logger.error("Exception while deleting old configs!");
                 e.printStackTrace();
@@ -199,17 +199,17 @@ public class ConfigManager {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
         try {
             var subdirectories =
-                    Files.list(camerasFolder.toPath())
-                            .filter(f -> f.toFile().isDirectory())
-                            .collect(Collectors.toList());
+                Files.list(camerasFolder.toPath())
+                    .filter(f -> f.toFile().isDirectory())
+                    .collect(Collectors.toList());
 
             for (var subdir : subdirectories) {
                 var cameraConfigPath = Path.of(subdir.toString(), "config.json");
                 CameraConfiguration loadedConfig = null;
                 try {
                     loadedConfig =
-                            JacksonUtils.deserialize(
-                                    cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
+                        JacksonUtils.deserialize(
+                            cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
                 } catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
@@ -225,8 +225,8 @@ public class ConfigManager {
                 DriverModePipelineSettings driverMode;
                 try {
                     driverMode =
-                            JacksonUtils.deserialize(
-                                    driverModeFile.toAbsolutePath(), DriverModePipelineSettings.class);
+                        JacksonUtils.deserialize(
+                            driverModeFile.toAbsolutePath(), DriverModePipelineSettings.class);
                 } catch (JsonProcessingException e) {
                     logger.error("Could not deserialize drivermode.json! Loading defaults");
                     logger.trace(Arrays.toString(e.getStackTrace()));
@@ -234,32 +234,33 @@ public class ConfigManager {
                 }
                 if (driverMode == null) {
                     logger.warn(
-                            "Could not load camera " + subdir + "'s drivermode.json! Loading" + " default");
+                        "Could not load camera " + subdir + "'s drivermode.json! Loading" + " default");
                     driverMode = new DriverModePipelineSettings();
                 }
 
                 // Load pipelines by mapping the files within the pipelines subdir
                 // to their deserialized equivalents
-                List<CVPipelineSettings> settings =
-                        Files.list(Path.of(subdir.toString(), "pipelines"))
-                                .filter(p -> p.toFile().isFile())
-                                .map(
-                                        p -> {
-                                            var relativizedFilePath =
-                                                    getRootFolder().toAbsolutePath().relativize(p).toString();
-                                            try {
-                                                return JacksonUtils.deserialize(p, CVPipelineSettings.class);
-                                            } catch (JsonProcessingException e) {
-                                                logger.error("Exception while deserializing " + relativizedFilePath);
-                                                e.printStackTrace();
-                                            } catch (IOException e) {
-                                                logger.warn(
-                                                        "Could not load pipeline at " + relativizedFilePath + "! Skipping...");
-                                            }
-                                            return null;
-                                        })
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toList());
+                var pipelineSubdirectory = Path.of(subdir.toString(), "pipelines");
+                List<CVPipelineSettings> settings = pipelineSubdirectory.toFile().exists() ?
+                    Files.list(pipelineSubdirectory)
+                        .filter(p -> p.toFile().isFile())
+                        .map(
+                            p -> {
+                                var relativizedFilePath =
+                                    getRootFolder().toAbsolutePath().relativize(p).toString();
+                                try {
+                                    return JacksonUtils.deserialize(p, CVPipelineSettings.class);
+                                } catch (JsonProcessingException e) {
+                                    logger.error("Exception while deserializing " + relativizedFilePath);
+                                    e.printStackTrace();
+                                } catch (IOException e) {
+                                    logger.warn(
+                                        "Could not load pipeline at " + relativizedFilePath + "! Skipping...");
+                                }
+                                return null;
+                            })
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList()) : Collections.emptyList();
 
                 loadedConfig.driveModeSettings = driverMode;
                 loadedConfig.addPipelineSettings(settings);
@@ -274,9 +275,9 @@ public class ConfigManager {
 
     public void addCameraConfigurations(HashMap<VisionSource, List<CVPipelineSettings>> sources) {
         List<CameraConfiguration> list =
-                sources.keySet().stream()
-                        .map(it -> it.getSettables().getConfiguration())
-                        .collect(Collectors.toList());
+            sources.keySet().stream()
+                .map(it -> it.getSettables().getConfiguration())
+                .collect(Collectors.toList());
         getConfig().addCameraConfigs(list);
         save();
     }

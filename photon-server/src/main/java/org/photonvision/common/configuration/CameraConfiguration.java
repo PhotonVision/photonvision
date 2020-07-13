@@ -20,8 +20,10 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -33,12 +35,28 @@ import org.photonvision.vision.processes.PipelineManager;
 public class CameraConfiguration {
     private static final Logger logger = new Logger(CameraConfiguration.class, LogGroup.Camera);
 
+    /**
+     * Name as reported by CSCore
+     */
     public String baseName = "";
+
+    /**
+     * Name used to title the subfolder of this config
+     */
     public String uniqueName = "";
+
+    /**
+     * User-set nickname
+     */
     public String nickname = "";
-    public double FOV = 70;
+
+    /**
+     * Can be either path (ex /dev/videoX) or index (ex 1).
+     */
     public String path = "";
+
     public CameraType cameraType = CameraType.UsbCamera;
+    public double FOV = 70;
     public CameraCalibrationCoefficients calibration;
     public List<Integer> cameraLeds = new ArrayList<>();
     public int currentPipelineIndex = -1;
@@ -60,26 +78,26 @@ public class CameraConfiguration {
         this.path = path;
 
         logger.debug(
-                "Creating USB camera configuration for "
-                        + cameraType
-                        + baseName
-                        + " (AKA "
-                        + nickname
-                        + ") at "
-                        + path);
+            "Creating USB camera configuration for "
+                + cameraType
+                + baseName
+                + " (AKA "
+                + nickname
+                + ") at "
+                + path);
     }
 
     @JsonCreator
     public CameraConfiguration(
-            @JsonProperty("baseName") String baseName,
-            @JsonProperty("uniqueName") String uniqueName,
-            @JsonProperty("nickname") String nickname,
-            @JsonProperty("FOV") double FOV,
-            @JsonProperty("path") String path,
-            @JsonProperty("cameraType") CameraType cameraType,
-            @JsonProperty("calibration") CameraCalibrationCoefficients calibration,
-            @JsonProperty("cameraLEDs") List<Integer> cameraLeds,
-            @JsonProperty("currentPipelineIndex") int currentPipelineIndex) {
+        @JsonProperty("baseName") String baseName,
+        @JsonProperty("uniqueName") String uniqueName,
+        @JsonProperty("nickname") String nickname,
+        @JsonProperty("FOV") double FOV,
+        @JsonProperty("path") String path,
+        @JsonProperty("cameraType") CameraType cameraType,
+        @JsonProperty("calibration") CameraCalibrationCoefficients calibration,
+        @JsonProperty("cameraLEDs") List<Integer> cameraLeds,
+        @JsonProperty("currentPipelineIndex") int currentPipelineIndex) {
         this.baseName = baseName;
         this.uniqueName = uniqueName;
         this.nickname = nickname;
@@ -91,13 +109,13 @@ public class CameraConfiguration {
         this.currentPipelineIndex = currentPipelineIndex;
 
         logger.debug(
-                "Creating camera configuration for "
-                        + cameraType
-                        + baseName
-                        + " (AKA "
-                        + nickname
-                        + ") at "
-                        + path);
+            "Creating camera configuration for "
+                + cameraType
+                + baseName
+                + " (AKA "
+                + nickname
+                + ") at "
+                + path);
     }
 
     public void addPipelineSettings(List<CVPipelineSettings> settings) {
@@ -108,7 +126,7 @@ public class CameraConfiguration {
 
     public void addPipelineSetting(CVPipelineSettings setting) {
         if (pipelineSettings.stream()
-                .anyMatch(s -> s.pipelineNickname.equalsIgnoreCase(setting.pipelineNickname))) {
+            .anyMatch(s -> s.pipelineNickname.equalsIgnoreCase(setting.pipelineNickname))) {
             logger.error("Could not name two pipelines the same thing! Renaming");
             setting.pipelineNickname += "_1"; // TODO verify this logic
         }

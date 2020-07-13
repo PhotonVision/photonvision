@@ -19,11 +19,13 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -37,27 +39,39 @@ public class VisionSourceManager {
 
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
 
-    public static List<VisionSource> loadAllSources(
-            Collection<CameraConfiguration> camerasConfiguration) {
+    /**
+     * Load vision sources based on currently connected hardware.
+     *
+     * @param loadedConfigs The {@link CameraConfiguration}s loaded from disk.
+     */
+    public static List<VisionSource> loadAllSources(Collection<CameraConfiguration> loadedConfigs) {
+        logger.trace(() -> "Loading all sources...");
+
         List<UsbCameraInfo> usbCamInfos = Arrays.asList(UsbCamera.enumerateUsbCameras());
+        logger.trace(() -> "CSCore detected " + usbCamInfos.size() + " USB cameras!");
 
         for (var usbCamInfo : usbCamInfos) {
-            logger.info(
-                    "Adding local video device - \"" + usbCamInfo.name + "\" at \"" + usbCamInfo.path + "\"");
+            logger.info("Adding local video device - \"" + usbCamInfo.name + "\" at \"" + usbCamInfo.path + "\"");
         }
 
-        return LoadAllSources(camerasConfiguration, usbCamInfos);
+        return LoadAllSources(loadedConfigs, usbCamInfos);
     }
 
+    /**
+     * Load vision sources based on currently connected hardware and preexisting configs.
+     *
+     * @param loadedConfigs    The configs loaded from disk.
+     * @param detectedCamInfos The {@link UsbCameraInfo}s detected by {@link UsbCamera#enumerateUsbCameras()}.
+     */
     public static List<VisionSource> LoadAllSources(
-            Collection<CameraConfiguration> camerasConfiguration, List<UsbCameraInfo> usbCameraInfos) {
-        var UsbCamerasConfiguration =
-                camerasConfiguration.stream()
-                        .filter(configuration -> configuration.cameraType == CameraType.UsbCamera)
-                        .collect(Collectors.toList());
+        Collection<CameraConfiguration> loadedConfigs, List<UsbCameraInfo> detectedCamInfos) {
+        var loadedUsbCamConfigs =
+            loadedConfigs.stream()
+                .filter(configuration -> configuration.cameraType == CameraType.UsbCamera)
+                .collect(Collectors.toList());
         // var HttpCamerasConfiguration = camerasConfiguration.stream().filter(configuration ->
         // configuration.cameraType == CameraType.HttpCamera);
-        var matchedCameras = matchUSBCameras(usbCameraInfos, UsbCamerasConfiguration);
+        var matchedCameras = matchUSBCameras(detectedCamInfos, loadedUsbCamConfigs);
         return loadUSBCameraSources(matchedCameras);
     }
 
@@ -65,47 +79,61 @@ public class VisionSourceManager {
         throw new NotImplementedException("");
     }
 
-    private static List<CameraConfiguration> matchUSBCameras(
-            List<UsbCameraInfo> infos, List<CameraConfiguration> cameraConfigurationList) {
-        ArrayList<UsbCameraInfo> loopableInfo = new ArrayList<>(infos);
+    /**
+     * Create {@link CameraConfiguration}s based on a list of detected USB cameras and the configs on disk.
+     *
+     * @param detectedCamInfos    Information about currently connected USB cameras.
+     * @param loadedUsbCamConfigs The USB {@link CameraConfiguration}s loaded from disk.
+     */
+    private static List<CameraConfiguration> matchUSBCameras(List<UsbCameraInfo> detectedCamInfos,
+                                                             List<CameraConfiguration> loadedUsbCamConfigs) {
+        ArrayList<UsbCameraInfo> detectedCameraList = new ArrayList<>(detectedCamInfos);
         List<CameraConfiguration> cameraConfigurations = new ArrayList<>();
 
-        for (CameraConfiguration config : cameraConfigurationList) {
+        // loop over all the configs loaded from disk
+        for (CameraConfiguration config : loadedUsbCamConfigs) {
             UsbCameraInfo cameraInfo;
-            if (!StringUtils.isNumeric(config.path)) {
-                // matching by path
-                cameraInfo =
-                        loopableInfo.stream()
-                                .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path))
-                                .findFirst()
-                                .orElse(null);
-            } else {
+
+            // Load by path vs by index -- if the path is numeric we'll match by index
+            if (StringUtils.isNumeric(config.path)) {
                 // match by index
                 cameraInfo =
-                        loopableInfo.stream()
-                                .filter(usbCameraInfo -> usbCameraInfo.dev == Integer.parseInt(config.path))
-                                .findFirst()
-                                .orElse(null);
+                    detectedCameraList.stream()
+                        .filter(usbCameraInfo -> usbCameraInfo.dev == Integer.parseInt(config.path))
+                        .findFirst()
+                        .orElse(null);
+            } else {
+                // matching by path
+                cameraInfo =
+                    detectedCameraList.stream()
+                        .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path))
+                        .findFirst()
+                        .orElse(null);
             }
 
+            // If we actually matched a camera to a config, remove that camera from the list and add it to
+            // the output
             if (cameraInfo != null) {
-                loopableInfo.remove(cameraInfo);
+                detectedCameraList.remove(cameraInfo);
                 cameraConfigurations.add(config);
             }
         }
-        for (UsbCameraInfo info : loopableInfo) {
-            // create new camera config for all new cameras
-            String name = info.name.replaceAll("[^\\x00-\\x7F]", "");
-            String uniqueName = name;
-            int suffix = 0;
 
+        // If we have any unmatched cameras left, create a new CameraConfiguration for them here.
+        for (UsbCameraInfo info : detectedCameraList) {
+            // create new camera config for all new cameras
+            String baseName = info.name
+                .replaceAll("[^\\x00-\\x7F]", ""); // Remove all non-ASCII characters
+            String uniqueName = baseName.replaceAll(" ", "_"); // Replace spaces with underscores;
+
+            int suffix = 0;
             while (containsName(cameraConfigurations, uniqueName)) {
                 suffix++;
                 uniqueName = String.format("%s (%d)", uniqueName, suffix);
             }
 
             CameraConfiguration configuration =
-                    new CameraConfiguration(name, uniqueName, uniqueName, info.path);
+                new CameraConfiguration(baseName, uniqueName, uniqueName, info.path);
             cameraConfigurations.add(configuration);
         }
 
@@ -115,11 +143,18 @@ public class VisionSourceManager {
     private static List<VisionSource> loadUSBCameraSources(List<CameraConfiguration> configurations) {
         List<VisionSource> usbCameraSources = new ArrayList<>();
         configurations.forEach(
-                configuration -> usbCameraSources.add(new USBCameraSource(configuration)));
+            configuration -> usbCameraSources.add(new USBCameraSource(configuration)));
         return usbCameraSources;
     }
 
-    private static boolean containsName(final List<CameraConfiguration> list, final String name) {
-        return list.stream().anyMatch(configuration -> configuration.uniqueName.equals(name));
+    /**
+     * Check if a given config list contains the given unique name.
+     *
+     * @param configList A list of camera configs.
+     * @param uniqueName The unique name.
+     * @return If the list of configs contains the unique name.
+     */
+    private static boolean containsName(final List<CameraConfiguration> configList, final String uniqueName) {
+        return configList.stream().anyMatch(configuration -> configuration.uniqueName.equals(uniqueName));
     }
 }
