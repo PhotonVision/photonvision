@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline.result;
 
 import java.util.List;
-
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;
@@ -30,7 +29,8 @@ public class CVPipelineResult implements Releasable {
     public final Frame outputFrame;
     public final Frame inputFrame;
 
-    public CVPipelineResult(double processingMillis, List<TrackedTarget> targets, Frame outputFrame, Frame inputFrame) {
+    public CVPipelineResult(
+            double processingMillis, List<TrackedTarget> targets, Frame outputFrame, Frame inputFrame) {
         this.processingMillis = processingMillis;
         this.targets = targets;
 
@@ -51,7 +51,7 @@ public class CVPipelineResult implements Releasable {
             tt.release();
         }
         outputFrame.release();
-        if(inputFrame != null) inputFrame.release();
+        if (inputFrame != null) inputFrame.release();
     }
 
     public double getLatencyMillis() {

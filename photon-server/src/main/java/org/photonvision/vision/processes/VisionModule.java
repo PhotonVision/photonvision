@@ -21,7 +21,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.wpilibj.MedianFilter;
 import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
@@ -92,12 +91,14 @@ public class VisionModule {
         dashboardInputStreamer =
                 new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input");
 
-        addResultConsumer(result -> {
-            dashboardInputStreamer.accept(result.inputFrame);
-        });
-        addResultConsumer(result -> {
-            dashboardOutputStreamer.accept(result.outputFrame);
-        });
+        addResultConsumer(
+                result -> {
+                    dashboardInputStreamer.accept(result.inputFrame);
+                });
+        addResultConsumer(
+                result -> {
+                    dashboardOutputStreamer.accept(result.outputFrame);
+                });
 
         ntConsumer =
                 new NTDataPublisher(
