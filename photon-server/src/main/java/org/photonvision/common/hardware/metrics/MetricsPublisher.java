@@ -63,7 +63,7 @@ public class MetricsPublisher {
                         });
     }
 
-    private void startThread() {
+    public void startThread() {
         metricsThread.start();
     }
 

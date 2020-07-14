@@ -20,6 +20,7 @@ package org.photonvision.hardware;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.pi4j.io.gpio.exception.UnsupportedPinModeException;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
@@ -31,8 +32,6 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.metrics.CPU;
 import org.photonvision.common.hardware.metrics.GPU;
 import org.photonvision.common.hardware.metrics.RAM;
-
-import java.util.List;
 
 public class HardwareTest {
 

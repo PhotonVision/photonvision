@@ -53,14 +53,14 @@ public class CustomPWM extends PWMBase {
     }
 
     @Override
-    public void dimLED(int dimPercentage) {
+    public void dimLED(int dimValue) {
         // Check to see if dimPercentage is within the range
-        if (dimPercentage < pwmRange.get(0) || dimPercentage > pwmRange.get(1)) return;
+        if (dimValue < pwmRange.get(0) || dimValue > pwmRange.get(1)) return;
         execute(
                 commands
                         .get("dim")
                         .replace("{p}", String.valueOf(port))
-                        .replace("{v}", String.valueOf(dimPercentage)));
+                        .replace("{v}", String.valueOf(dimValue)));
     }
 
     public static void setConfig(HardwareConfig config) {

@@ -27,10 +27,11 @@ import org.photonvision.common.hardware.PWM.CustomPWM;
 import org.photonvision.common.hardware.PWM.PWMBase;
 import org.photonvision.common.hardware.PWM.PiPWM;
 import org.photonvision.common.hardware.metrics.MetricsBase;
+import org.photonvision.common.hardware.metrics.MetricsPublisher;
 
 public class HardwareManager {
     HardwareConfig hardwareConfig;
-    public static HashMap<Integer, Pair<? extends GPIOBase, ? extends PWMBase>> LEDs =
+    private static final HashMap<Integer, Pair<? extends GPIOBase, ? extends PWMBase>> LEDs =
             new HashMap<>();
 
     public static HardwareManager getInstance() {
@@ -59,6 +60,17 @@ public class HardwareManager {
                                 LEDs.put(pin, Pair.of(new CustomGPIO(pin), pwm));
                             }
                         });
+
+        // Start hardware metrics thread
+        MetricsPublisher.getInstance().startThread();
+    }
+    /** Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue); */
+    public PWMBase getPWM(int pin) {
+        return LEDs.get(pin).getRight();
+    }
+
+    public GPIOBase getGPIO(int pin) {
+        return LEDs.get(pin).getLeft();
     }
 
     private static class Singleton {
