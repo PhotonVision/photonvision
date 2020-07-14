@@ -1,6 +1,9 @@
 <template>
   <div>
-    <v-row dense align="center">
+    <v-row
+      dense
+      align="center"
+    >
       <v-col :cols="2">
         <span>{{ name }}</span>
       </v-col>

@@ -2,27 +2,31 @@
   <div>
     <v-row align="center">
       <v-col
-        :cols="3"
-        class=""
+        cols="10"
+        md="5"
+        lg="10"
+        class="pt-0 pb-0 pl-6"
       >
-        <div style="padding-left:30px">
-          <CVselect
-            v-if="isCameraNameEdit === false"
-            v-model="currentCameraIndex"
-            name="Camera"
-            :list="$store.getters.cameraList"
-            @input="handleInput('currentCamera',currentCameraIndex)"
-          />
-          <CVinput
-            v-else
-            v-model="newCameraName"
-            name="Camera"
-            :error-message="checkCameraName"
-            @Enter="saveCameraNameChange"
-          />
-        </div>
+        <CVselect
+          v-if="isCameraNameEdit === false"
+          v-model="currentCameraIndex"
+          name="Camera"
+          :list="$store.getters.cameraList"
+          @input="handleInput('currentCamera',currentCameraIndex)"
+        />
+        <CVinput
+          v-else
+          v-model="newCameraName"
+          name="Camera"
+          :error-message="checkCameraName"
+          @Enter="saveCameraNameChange"
+        />
       </v-col>
-      <v-col :cols="1">
+      <v-col
+        cols="2"
+        md="1"
+        lg="2"
+      >
         <CVicon
           v-if="isCameraNameEdit === false"
           color="#c5c5c5"
@@ -51,8 +55,10 @@
         </div>
       </v-col>
       <v-col
-        :cols="3"
-        class=""
+        cols="10"
+        md="5"
+        lg="10"
+        class="pt-0 pb-0 pl-6"
       >
         <CVselect
           v-model="currentPipelineIndex"
@@ -62,14 +68,12 @@
         />
       </v-col>
       <v-col
-        v-if="currentPipelineIndex !== 0"
-        :cols="1"
-        class=""
-        md="3"
+        cols="2"
+        md="1"
+        lg="2"
       >
         <v-menu
           offset-y
-          dark
           auto
         >
           <template v-slot:activator="{ on }">
@@ -125,14 +129,14 @@
         </v-menu>
       </v-col>
 
-      <v-btn
-        outlined
-        color="#ffd843"
-        @click="handleInput('command','save')"
-      >
-        <v-icon>save</v-icon>
-        Save
-      </v-btn>
+      <!--      <v-btn-->
+      <!--        outlined-->
+      <!--        color="accent"-->
+      <!--        @click="handleInput('command','save')"-->
+      <!--      >-->
+      <!--        <v-icon>save</v-icon>-->
+      <!--        Save-->
+      <!--      </v-btn>-->
     </v-row>
     <!--pipeline duplicate dialog-->
     <v-dialog
@@ -265,15 +269,15 @@
                         for (let cam in this.cameraList) {
                             if (this.cameraList.hasOwnProperty(cam)) {
                                 if (this.newCameraName === this.cameraList[cam]) {
-                                    return "Camera by that name already exists"
+                                    return "A camera by that name already Exists"
                                 }
                             }
                         }
                     } else {
-                        return "Camera name can only contain letters, numbers and spaces"
+                        return "A camera name can only contain letters, numbers and spaces"
                     }
                 }
-                return ""
+                return "";
             },
             checkPipelineName() {
                 if (this.newPipelineName !== this.$store.getters.pipelineList[this.currentPipelineIndex - 1] || this.isPipelineNameEdit === false) {
@@ -286,7 +290,7 @@
                             }
                         }
                     } else {
-                        return "Pipeline name can only contain letters, numbers, and spaces"
+                        return "A pipeline name can only contain letters, numbers, and spaces"
                     }
                 }
                 return ""

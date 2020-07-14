@@ -43,7 +43,7 @@ public class TrackedTarget implements Releasable {
     private double m_yaw;
     private double m_area;
 
-    private Pose2d m_robotRelativePose;
+    private Pose2d m_robotRelativePose = new Pose2d();
 
     private Mat m_cameraRelativeTvec, m_cameraRelativeRvec;
 

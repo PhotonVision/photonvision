@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Camera from "./views/PipelineView";
+import Dashboard from "./views/PipelineView";
 import Settings from "./views/SettingsView";
 import Docs from "./views/DocsView";
 Vue.use(Router);
@@ -10,11 +10,11 @@ export default new Router({
     base: process.env.BASE_URL,
     routes: [{
         path: '/',
-        redirect: '/vision'
+        redirect: '/dashboard'
     }, {
-        path: '/vision',
-        name: 'Vision',
-        component: Camera
+        path: '/dashboard',
+        name: 'Dashboard',
+        component: Dashboard
     }, {
         path: '/settings',
         name: 'Settings',

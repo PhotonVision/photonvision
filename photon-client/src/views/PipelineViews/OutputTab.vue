@@ -1,5 +1,7 @@
 <template>
   <div>
+    <span>Contour Sorting</span>
+    <v-divider class="mt-2" />
     <CVselect
       v-model="contourSortMode"
       name="Sort Mode"
@@ -27,14 +29,13 @@
     <CVswitch
       v-model="outputShowMultipleTargets"
       name="Show Multiple Targets"
+      class="mb-4"
       @input="handlePipelineData('outputShowMultipleTargets')"
+
       @rollback="e=> rollback('outputShowMultipleTargets', e)"
     />
-    <span>Robot Offset:</span>
-    <v-divider
-      dark
-      color="white"
-    />
+    <span>Robot Offset</span>
+    <v-divider class="mt-2" />
     <CVselect
       v-model="offsetRobotOffsetMode"
       name="Robot Offset Mode"

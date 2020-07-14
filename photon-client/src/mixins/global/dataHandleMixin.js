@@ -25,6 +25,16 @@ export const dataHandleMixin = {
             this.$socket.send(msg);
             this.$emit('update')
         },
+        handlePipelineUpdate(key, val) {
+            let msg = this.$msgPack.encode({
+                ["changePipelineSetting"]: {
+                    [key]: val,
+                    ["cameraIndex"]: this.$store.getters.currentCameraIndex
+                }
+            });
+            this.$socket.send(msg);
+            this.$emit('update')
+        },
         handleTruthyPipelineData(val) {
             let msg = this.$msgPack.encode({
                 ["changePipelineSetting"]: {

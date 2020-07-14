@@ -1,36 +1,86 @@
 <template>
   <v-app>
-    <v-app-bar
-      app
-      dense
-      clipped-left
-      color="#006492"
+    <!-- Although most of the app runs with the "light" theme, the navigation drawer needs to have white text and icons so it uses the dark theme-->
+    <v-navigation-drawer
       dark
+      app
+      permanent
+      :mini-variant="compact"
+      color="primary"
     >
-      <img
-        class="imgClass"
-        src="./assets/logo.png"
-      >
-      <div class="flex-grow-1" />
-      <v-toolbar-items>
-        <v-tabs
-          background-color="#006492"
-          dark
-          height="48"
-          slider-color="#ffd843"
+      <v-list>
+        <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
+        <v-list-item :class="compact ? 'pr-0 pl-0' : ''">
+          <v-list-item-icon class="mr-0">
+            <img
+              v-if="!compact"
+              class="logo"
+              src="./assets/logoLarge.png"
+            >
+            <img
+              v-else
+              class="logo"
+              src="./assets/logoSmall.png"
+            >
+          </v-list-item-icon>
+        </v-list-item>
+
+        <v-divider />
+
+        <v-list-item
+          link
+          to="dashboard"
         >
-          <v-tab to="vision">
-            Vision
-          </v-tab>
-          <v-tab to="settings">
-            Settings
-          </v-tab>
-          <v-tab to="docs">
-            Docs
-          </v-tab>
-        </v-tabs>
-      </v-toolbar-items>
-    </v-app-bar>
+          <v-list-item-icon>
+            <v-icon>mdi-view-dashboard</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Dashboard</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+          link
+          to="settings"
+        >
+          <!-- TODO: Expandable sub-elements? -->
+          <v-list-item-icon>
+            <v-icon>mdi-settings</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Settings</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+          link
+          to="docs"
+        >
+          <v-list-item-icon>
+            <v-icon>mdi-bookshelf</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Documentation</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item
+          v-if="this.$vuetify.breakpoint.mdAndUp"
+          link
+          @click.stop="toggleCompactMode"
+        >
+          <v-list-item-icon>
+            <v-icon v-if="compact">
+              mdi-chevron-right
+            </v-icon>
+            <v-icon v-else>
+              mdi-chevron-left
+            </v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Advanced Mode</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
     <v-content>
       <v-container
         fluid
@@ -43,7 +93,7 @@
               v-model="saveSnackbar"
               :timeout="1000"
               top
-              color="#ffd843"
+              color="accent"
             >
               <div style="text-align: center;width: 100%;">
                 <h4>Saved All changes</h4>
@@ -65,7 +115,7 @@
 </template>
 
 <script>
-    import logView from '@femessage/log-viewer'
+    import logView from '@femessage/log-viewer';
 
     export default {
         name: 'App',
@@ -75,7 +125,7 @@
         data: () => ({
             timer: undefined,
             isLogger: false,
-            log: ""
+            log: "",
         }),
         computed: {
             saveSnackbar: {
@@ -85,6 +135,15 @@
                 set(value) {
                     this.$store.commit("saveBar", value);
                 }
+            },
+            compact: {
+                get() {
+                    return this.$store.state.compactMode === undefined ? this.$vuetify.breakpoint.smAndDown : this.$store.state.compactMode || this.$vuetify.breakpoint.smAndDown;
+                },
+                set(value) {
+                    // compactMode is the user's preference for compact mode; it overrides screen size
+                    this.$store.commit("compactMode", value);
+                },
             }
         },
         created() {
@@ -138,6 +197,9 @@
                     }
                 }
             },
+            toggleCompactMode() {
+                this.compact = !this.compact;
+            },
             saveSettings() {
                 clearInterval(this.timer);
                 this.saveSnackbar = true;
@@ -163,12 +225,10 @@
 </style>
 
 <style>
-    
-    .imgClass {
-        width: auto;
-        height: 45px;
-        vertical-align: middle;
-        padding-right: 5px;
+    .logo {
+        width: 100%;
+        height: 70px;
+        object-fit: contain;
     }
 
     .loggerClass {
@@ -209,4 +269,11 @@
     span {
         color: white;
     }
+</style>
+
+<style>
+  /* Hack */
+  .v-divider {
+    border-color: #23add9 !important;
+  }
 </style>

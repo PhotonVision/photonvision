@@ -21,6 +21,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.wpilibj.MedianFilter;
 import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
@@ -60,12 +61,13 @@ public class VisionModule {
     private final LinkedList<FrameConsumer> frameConsumers = new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final int moduleIndex;
-    private final MJPGFrameConsumer uiStreamer;
+
     private long lastUIResultUpdateTime = 0;
     private long lastRunTime = 0;
     private MedianFilter fpsAverager = new MedianFilter(10);
 
-    private MJPGFrameConsumer dashboardStreamer;
+    private MJPGFrameConsumer dashboardOutputStreamer;
+    private MJPGFrameConsumer dashboardInputStreamer;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
@@ -84,11 +86,18 @@ public class VisionModule {
 
         DataChangeService.getInstance().addSubscriber(new VisionSettingChangeSubscriber());
 
-        dashboardStreamer =
-                new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName);
-        uiStreamer = new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
-        addFrameConsumer(dashboardStreamer);
-        addFrameConsumer(uiStreamer);
+        dashboardOutputStreamer =
+                new MJPGFrameConsumer(
+                        visionSource.getSettables().getConfiguration().uniqueName + "-output");
+        dashboardInputStreamer =
+                new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input");
+
+        addResultConsumer(result -> {
+            dashboardInputStreamer.accept(result.inputFrame);
+        });
+        addResultConsumer(result -> {
+            dashboardOutputStreamer.accept(result.outputFrame);
+        });
 
         ntConsumer =
                 new NTDataPublisher(
@@ -140,7 +149,7 @@ public class VisionModule {
 
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 
-        dashboardStreamer.setFrameDivisor(
+        dashboardOutputStreamer.setFrameDivisor(
                 pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
     }
 
@@ -215,6 +224,11 @@ public class VisionModule {
                             setPipeline(index);
                             saveAndBroadcast();
                             return;
+                        case "selectedOutputs":
+                            // 0 indicates normal, 1 indicates thresholded
+                            var outputs = (ArrayList<Integer>) newPropValue;
+                            // TODO
+                            return;
                     }
 
                     // special case for camera settables
@@ -265,7 +279,7 @@ public class VisionModule {
 
                         // special case for extra tasks to perform after setting PipelineSettings
                         if (propName.equals("outputFrameDivisor")) {
-                            dashboardStreamer.setFrameDivisor(
+                            dashboardOutputStreamer.setFrameDivisor(
                                     pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
                         }
 
@@ -322,10 +336,10 @@ public class VisionModule {
         visionSource.getSettables().getConfiguration().nickname = newName;
         ntConsumer.updateCameraNickname(newName);
 
-        frameConsumers.remove(dashboardStreamer);
-        dashboardStreamer =
+        frameConsumers.remove(dashboardOutputStreamer);
+        dashboardOutputStreamer =
                 new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
-        frameConsumers.add(dashboardStreamer);
+        frameConsumers.add(dashboardOutputStreamer);
         saveAndBroadcast();
     }
 
@@ -355,8 +369,9 @@ public class VisionModule {
             temp.put(k, internalMap);
         }
         ret.videoFormatList = temp;
-        ret.streamPort = dashboardStreamer.getCurrentStreamPort();
-        // ret.uiStreamPort = uiStreamer.getCurrentStreamPort();
+        ret.outputStreamPort = dashboardOutputStreamer.getCurrentStreamPort();
+        ret.inputStreamPort = dashboardInputStreamer.getCurrentStreamPort();
+        //         ret.uiStreamPort = uiStreamer.getCurrentStreamPort();
 
         return ret;
     }

@@ -1,76 +1,75 @@
 <template>
-    <div>
-        <CVrangeSlider
-                v-model="hsvHue"
-                name="Hue"
-                :min="0"
-                :max="180"
-                @input="handlePipelineData('hsvHue')"
-                @rollback="e => rollback('hue',e)"
-        />
-        <CVrangeSlider
-                v-model="hsvSaturation"
-                name="Saturation"
-                :min="0"
-                :max="255"
-                @input="handlePipelineData('hsvSaturation')"
-                @rollback="e => rollback('saturation',e)"
-        />
-        <CVrangeSlider
-                v-model="hsvValue"
-                name="Value"
-                :min="0"
-                :max="255"
-                @input="handlePipelineData('hsvValue')"
-                @rollback="e => rollback('value',e)"
-        />
-        <v-divider
-                color="black"
-                style="margin-top: 5px"
-        />
-        <v-row justify="center">
-            <v-btn
-                    style="margin: 20px;"
-                    color="#ffd843"
-                    small
-                    @click="setFunction(1)"
-            >
-                <v-icon>colorize</v-icon>
-                Eye drop
-            </v-btn>
-            <v-btn
-                    style="margin: 20px;"
-                    color="#ffd843"
-                    small
-                    @click="setFunction(2)"
-            >
-                <v-icon>add</v-icon>
-                Expand Selection
-            </v-btn>
-            <v-btn
-                    style="margin: 20px;"
-                    color="#ffd843"
-                    small
-                    @click="setFunction(3)"
-            >
-                <v-icon>remove</v-icon>
-                Shrink Selection
-            </v-btn>
-        </v-row>
-        <v-divider color="black"/>
-        <CVswitch
-                v-model="erode"
-                name="Erode"
-                @input="handlePipelineData('erode')"
-                @rollback="e => rollback('erode',e)"
-        />
-        <CVswitch
-                v-model="dilate"
-                name="Dilate"
-                @input="handlePipelineData('dilate')"
-                @rollback="e => rollback('dilate',e)"
-        />
-    </div>
+  <div>
+    <CVrangeSlider
+      v-model="hsvHue"
+      name="Hue"
+      :min="0"
+      :max="180"
+      @input="handlePipelineData('hsvHue')"
+      @rollback="e => rollback('hue',e)"
+    />
+    <CVrangeSlider
+      v-model="hsvSaturation"
+      name="Saturation"
+      :min="0"
+      :max="255"
+      @input="handlePipelineData('hsvSaturation')"
+      @rollback="e => rollback('saturation',e)"
+    />
+    <CVrangeSlider
+      v-model="hsvValue"
+      name="Value"
+      :min="0"
+      :max="255"
+      @input="handlePipelineData('hsvValue')"
+      @rollback="e => rollback('value',e)"
+    />
+    <v-divider
+      class="mt-3"
+    />
+    <v-row justify="center">
+      <v-btn
+        color="accent"
+        class="ma-5 black--text"
+        small
+        @click="setFunction(1)"
+      >
+        <v-icon>colorize</v-icon>
+        Eye drop
+      </v-btn>
+      <v-btn
+        color="accent"
+        class="ma-5 black--text"
+        small
+        @click="setFunction(2)"
+      >
+        <v-icon>add</v-icon>
+        Expand Selection
+      </v-btn>
+      <v-btn
+        color="accent"
+        class="ma-5 black--text"
+        small
+        @click="setFunction(3)"
+      >
+        <v-icon>remove</v-icon>
+        Shrink Selection
+      </v-btn>
+    </v-row>
+    <v-divider />
+    <CVswitch
+      v-model="erode"
+      name="Erode"
+      @input="handlePipelineData('erode')"
+      @rollback="e => rollback('erode',e)"
+    />
+    <CVswitch
+      v-model="dilate"
+      name="Dilate"
+      @input="handlePipelineData('dilate')"
+      @rollback="e => rollback('dilate',e)"
+    />
+  </div>
 </template>
 
 <script>
@@ -185,7 +184,3 @@
     }
 
 </script>
-
-<style lang="" scoped>
-
-</style>

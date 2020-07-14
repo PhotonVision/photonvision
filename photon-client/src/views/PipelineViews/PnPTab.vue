@@ -1,71 +1,44 @@
 <template>
   <div>
-    <v-row
-      align="center"
-      justify="start"
-      dense
+    <!-- Special hidden upload input that gets 'clicked' when the user selects the right dropdown item' -->
+    <input
+      ref="file"
+      type="file"
+      accept=".csv"
+      style="display: none;"
+
+      @change="readFile"
     >
-      <v-col :cols="6">
-        <CVswitch
-          v-model="value.is3D"
-          :disabled="allow3D"
-          name="Enable 3D"
-          @input="handleData('is3D')"
-          @rollback="e=> rollback('is3D',e)"
-        />
-      </v-col>
-      <v-col>
-        <input
-          ref="file"
-          type="file"
-          style="display: none"
-          accept=".csv"
-          @change="readFile"
-        >
-        <v-btn
-          small
-          @click="$refs.file.click()"
-        >
-          <v-icon>mdi-upload</v-icon>
-          upload model
-        </v-btn>
-      </v-col>
-    </v-row>
+
+    <v-select
+      v-model="selectedModel"
+      dark
+      color="accent"
+      item-color="secondary"
+      label="Select a target model"
+      :items="FRCtargets"
+      item-text="name"
+      item-value="data"
+      @change="onModelSelect"
+    />
+    <v-divider />
     <CVslider
       v-model="value.accuracy"
-      name="Contour simplification"
-      :min="0"
-      :max="100"
+      class="pt-2"
+      slider-cols="12"
+      name="Contour simplification amount"
+      :disabled="selectedModel === null"
+      min="0"
+      max="100"
       @input="handleData('accuracy')"
-      @rollback="e=> rollback('accuracy',e)"
+      @rollback="e => rollback('accuracy', e)"
     />
-    <v-row>
-      <v-col>
-        <mini-map
-          class="miniMapClass"
-          :targets="targets"
-          :horizontal-f-o-v="horizontalFOV"
-        />
-      </v-col>
-      <v-col>
-        <v-select
-          v-model="selectedModel"
-          :items="FRCtargets"
-          item-text="name"
-          item-value="data"
-          dark
-          color="#ffd843"
-          item-color="green"
-        />
-        <v-btn
-          v-if="selectedModel !== null"
-          small
-          @click="uploadPremade"
-        >
-          Upload Premade
-        </v-btn>
-      </v-col>
-    </v-row>
+    <v-divider class="pb-2" />
+    <mini-map
+      class="miniMapClass"
+      :targets="targets"
+      :horizontal-f-o-v="horizontalFOV"
+    />
     <v-snackbar
       v-model="snack"
       top
@@ -79,14 +52,12 @@
 <script>
     import Papa from 'papaparse';
     import miniMap from '../../components/pipeline/3D/MiniMap';
-    import CVswitch from '../../components/common/cv-switch';
     import CVslider from '../../components/common/cv-slider'
     import FRCtargetsConfig from '../../assets/FRCtargets'
 
     export default {
         name: "SolvePNP",
         components: {
-            CVswitch,
             CVslider,
             miniMap
         },
@@ -94,7 +65,6 @@
         props: ['value'],
         data() {
             return {
-                is3D: false,
                 selectedModel: null,
                 FRCtargets: null,
                 snackbar: {
@@ -107,13 +77,13 @@
         computed: {
             targets: {
                 get() {
-                    return 330; // TODO fix
+                    return "FIXME"; // TODO fix
                 }
             },
             horizontalFOV: {
                 get() {
-                    let index = this.$store.state.cameraSettings.resolution;
-                    let FOV = this.$store.state.cameraSettings.fov;
+                    let index = this.$store.getters.currentPipelineSettings.cameraVideoModeIndex;
+                    let FOV = this.$store.getters.currentCameraSettings.fov;
                     let resolution = this.$store.getters.videoFormatList[index];
                     let diagonalView = FOV * (Math.PI / 180);
                     let diagonalAspect = Math.hypot(resolution.width, resolution.height);
@@ -122,14 +92,7 @@
             },
             allow3D: {
                 get() {
-                    let index = this.$store.state.cameraSettings.resolution;
-                    let currentRes = this.$store.getters.videoFormatList[index];
-                    for (let res of this.$store.state.cameraSettings.calibrated) {
-                        if (currentRes.width === res.width && currentRes.height === res.height) {
-                            return false;
-                        }
-                    }
-                    return true;
+                    return this.$store.getters.currentCameraSettings.calibrated;
                 }
             }
         },
@@ -140,6 +103,11 @@
                     tmp.push({name: t, data: FRCtargetsConfig[t]})
                 }
             }
+
+            // Special dropdown item for uploading your own model
+            // data is what gets put in selectedMode, so we add a special field
+            tmp.push({name: "Custom model", data: {isCustom: true}});
+
             this.FRCtargets = tmp;
         },
         methods: {
@@ -150,21 +118,30 @@
                     skipEmptyLines: true
                 });
             },
+            onModelSelect() {
+              if (this.selectedModel.isCustom) {
+                this.$refs.file.click();
+              } else {
+                this.uploadPremade();
+              }
+            },
             onParse(result) {
                 if (result.data.length > 0) {
-
-
                     let data = [];
-                    for (let item of result.data) {
+                    for (let i = 0; i < result.data.length; i++) {
+                        let item = result.data[i];
+
                         let tmp = [];
                         tmp.push(Number(item[0]));
                         tmp.push(Number(item[1]));
                         if (isNaN(tmp[0]) || isNaN(tmp[1])) {
                             this.snackbar = {
                                 color: "error",
-                                text: "Error: cvs did parse correctly"
+                                text: `Error: custom target CSV contained a non-numeric value on line ${i + 1}`
                             };
                             this.snack = true;
+
+                            this.selectedModel = null;
                             return;
                         }
                         data.push(tmp);
@@ -173,28 +150,32 @@
                 } else {
                     this.snackbar = {
                         color: "error",
-                        text: "Error: cvs did not contain any data"
+                        text: "Error: custom target CSV was empty"
                     };
                     this.snack = true;
+
+                    this.selectedModel = null;
                 }
             },
             uploadPremade() {
-                this.uploadModel(this.selectedModel);
+                this.uploadModel(this.selectedModel, true);
             },
-            uploadModel(model) {
+            uploadModel(model, premade = false) {
                 this.axios.post("http://" + this.$address + "/api/vision/pnpModel", model).then(() => {
                     this.snackbar = {
                         color: "success",
-                        text: "File uploaded successfully"
+                        text: premade ? "Target model changed successfully" : "Custom target model uploaded and selected successfully"
                     };
                     this.snack = true;
                 }).catch(() => {
                     this.snackbar = {
                         color: "error",
-                        text: "An error occurred"
+                        text: "An error occurred selecting a target model"
                     };
                     this.snack = true;
-                })
+
+                    this.selectedModel = null;
+                });
             }
         }
     }
@@ -202,7 +183,10 @@
 
 <style scoped>
     .miniMapClass {
-        width: 50% !important;
-        height: 50% !important;
+        width: 400px !important;
+        height: 100% !important;
+
+        margin-left: auto;
+        margin-right: auto;
     }
 </style>
