@@ -4,10 +4,10 @@
       dense
       align="center"
     >
-      <v-col :cols="3">
-        <span>{{ name }}</span>
+      <v-col cols="4">
+        <span class="ml-2">{{ name }}</span>
       </v-col>
-      <v-col :cols="9">
+      <v-col cols="8">
         <v-text-field
           v-model="localValue"
           dark

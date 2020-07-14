@@ -1,6 +1,16 @@
 <template>
-  <div style="overflow:hidden;height:100%;width:100%" height="100%" width="100%">
-      <iframe src="docs/index.html" frameborder="0" style="overflow:hidden;height:100%;width:100%" height="100%" width="100%"></iframe>
+  <div
+    style="overflow:hidden;height:100%;width:100%"
+    height="100%"
+    width="100%"
+  >
+    <iframe
+      src="docs/index.html"
+      frameborder="0"
+      style="overflow:hidden;height:100%;width:100%"
+      height="100%"
+      width="100%"
+    />
   </div>
 </template>
 

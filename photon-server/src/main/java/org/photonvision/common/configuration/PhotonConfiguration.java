@@ -93,6 +93,7 @@ public class PhotonConfiguration {
         public int currentPipelineIndex;
         public List<String> pipelineNicknames;
         public HashMap<Integer, HashMap<String, Object>> videoFormatList;
-        public int streamPort;
+        public int outputStreamPort;
+        public int inputStreamPort;
     }
 }

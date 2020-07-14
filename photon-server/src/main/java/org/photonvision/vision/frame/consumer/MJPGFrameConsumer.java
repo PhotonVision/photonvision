@@ -50,7 +50,7 @@ public class MJPGFrameConsumer implements FrameConsumer {
 
     @Override
     public void accept(Frame frame) {
-        if (!frame.image.getMat().empty()) {
+        if (frame != null && !frame.image.getMat().empty()) {
             if (divisor != FrameDivisor.NONE) {
                 var tempMat = new Mat();
                 Imgproc.resize(

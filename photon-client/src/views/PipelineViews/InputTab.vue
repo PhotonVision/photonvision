@@ -3,16 +3,18 @@
     <CVslider
       v-model="cameraExposure"
       name="Exposure"
-      :min="0"
-      :max="100"
+      min="0"
+      max="100"
+      :slider-cols="largeBox"
       @input="handlePipelineData('cameraExposure')"
       @rollback="e => rollback('cameraExposure', e)"
     />
     <CVslider
       v-model="cameraBrightness"
       name="Brightness"
-      :min="0"
-      :max="100"
+      min="0"
+      max="100"
+      :slider-cols="largeBox"
       @input="handlePipelineData('cameraBrightness')"
       @rollback="e => rollback('cameraBrightness', e)"
     />
@@ -20,8 +22,9 @@
       v-if="cameraGain !== -1"
       v-model="cameraGain"
       name="Gain"
-      :min="0"
-      :max="100"
+      min="0"
+      max="100"
+      :slider-cols="largeBox"
       @input="handlePipelineData('cameraGain')"
       @rollback="e => rollback('cameraGain', e)"
     />
@@ -29,6 +32,7 @@
       v-model="inputImageRotationMode"
       name="Orientation"
       :list="['Normal','90° CW','180°','90° CCW']"
+      :select-cols="largeBox"
       @input="handlePipelineData('inputImageRotationMode')"
       @rollback="e => rollback('inputImageRotationMode',e)"
     />
@@ -36,6 +40,7 @@
       v-model="cameraVideoModeIndex"
       name="Resolution"
       :list="resolutionList"
+      :select-cols="largeBox"
       @input="handlePipelineData('cameraVideoModeIndex')"
       @rollback="e => rollback('cameraVideoModeIndex', e)"
     />
@@ -43,6 +48,7 @@
       v-model="outputFrameDivisor"
       name="Stream Resolution"
       :list="streamResolutionList"
+      :select-cols="largeBox"
       @input="handlePipelineData('outputFrameDivisor')"
       @rollback="e => rollback('outputFrameDivisor', e)"
     />
@@ -65,6 +71,14 @@
             return {}
         },
         computed: {
+            largeBox: {
+              get() {
+                // Sliders and selectors should be fuller width if we're on screen size medium and
+                // up and either not in compact mode (because the tab will be 100% screen width),
+                // or in driver mode (where the card will also be 100% screen width).
+                return this.$vuetify.breakpoint.mdAndUp && (!this.$store.state.compactMode || this.$store.getters.isDriverMode) ? 10 : 8;
+              }
+            },
             cameraExposure: {
                 get() {
                     return parseInt(this.$store.getters.currentPipelineSettings.cameraExposure);

@@ -1,59 +1,25 @@
 <template>
   <div>
-    <v-row
-      style="width: 400px;"
-      align="center"
-    >
-      <canvas
-        id="canvasId"
-        width="800"
-        height="800"
-      />
-    </v-row>
-    <v-row
-      style="width: 400px;"
-      align="center"
-    >
-      <v-simple-table
-        style="text-align: center;background-color: transparent; display: block;margin: auto"
-        dense
-        dark
+    <v-row>
+      <v-col
+        align="center"
+        cols="12"
       >
-        <template v-slot:default>
-          <thead>
-            <tr>
-              <th class="text-center">
-                Target
-              </th>
-              <th class="text-center">
-                X
-              </th>
-              <th class="text-center">
-                Y
-              </th>
-              <th class="text-center">
-                Angle
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(target, index) in targets"
-              :key="index"
-            >
-              <td>{{ index }}</td>
-              <td>{{ target.pose.translation.x.toFixed(2) }}</td>
-              <td>{{ target.pose.translation.y.toFixed(2) }}</td>
-              <td>{{ target.pose.rotation.radians.toFixed(2) }}</td>
-            </tr>
-          </tbody>
-        </template>
-      </v-simple-table>
+        <span class="text--white">Target Location</span>
+        <canvas
+          id="canvasId"
+          class="mt-2"
+          width="800"
+          height="800"
+        />
+      </v-col>
     </v-row>
   </div>
 </template>
 
 <script>
+    import theme from "../../../theme";
+
     export default {
         name: "MiniMap",
         props: {
@@ -136,7 +102,7 @@
                 //       so the rect needs to be offset accordingly when drawn
                 this.ctx.rect(-this.targetWidth / 2, -this.targetHeight / 2, this.targetWidth, this.targetHeight);
 
-                this.ctx.fillStyle = "#01a209";
+                this.ctx.fillStyle = theme.accent;
                 this.ctx.fill();
 
                 // restore the context to its untranslated/unrotated state
@@ -176,7 +142,7 @@
     #canvasId {
         width: 400px;
         height: 400px;
-        background-color: #2b2b2b;
+        background-color: #232C37;
         border-radius: 5px;
         border: 2px solid grey;
         box-shadow: 0 0 5px 1px;
