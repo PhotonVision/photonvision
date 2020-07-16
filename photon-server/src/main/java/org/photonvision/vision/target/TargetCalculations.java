@@ -35,6 +35,17 @@ public class TargetCalculations {
                 FastMath.atan((offsetCenterY - targetCenterY) / verticalFocalLength));
     }
 
+    @SuppressWarnings("DuplicatedCode")
+    public static double calculateSkew(boolean isLandscape, RotatedRect minAreaRect) {
+        // https://namkeenman.wordpress.com/2015/12/18/open-cv-determine-angle-of-rotatedrect-minarearect/
+        var angle = minAreaRect.angle;
+
+        if (isLandscape && minAreaRect.size.width < minAreaRect.size.height) angle += 90;
+        else if (!isLandscape && minAreaRect.size.height < minAreaRect.size.width) angle += 90;
+
+        return angle;
+    }
+
     public static Point calculateTargetOffsetPoint(
             boolean isLandscape, TargetOffsetPointEdge offsetRegion, RotatedRect minAreaRect) {
         Point[] vertices = new Point[4];

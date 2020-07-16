@@ -23,24 +23,26 @@ import java.util.Objects;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class SimpleTrackedTarget extends BytePackable {
-    public static final int PACK_SIZE_BYTES = Double.BYTES * 6;
+    public static final int PACK_SIZE_BYTES = Double.BYTES * 7;
 
     private double yaw;
     private double pitch;
     private double area;
+    private double skew;
     private Pose2d robotRelativePose = new Pose2d();
 
     public SimpleTrackedTarget() {}
 
-    public SimpleTrackedTarget(double yaw, double pitch, double area, Pose2d pose) {
+    public SimpleTrackedTarget(double yaw, double pitch, double area, double skew, Pose2d pose) {
         this.yaw = yaw;
         this.pitch = pitch;
         this.area = area;
+        this.skew = skew;
         robotRelativePose = pose;
     }
 
     public SimpleTrackedTarget(TrackedTarget t) {
-        this(t.getYaw(), t.getPitch(), t.getArea(), t.getRobotRelativePose());
+        this(t.getYaw(), t.getPitch(), t.getArea(), t.getSkew(), t.getRobotRelativePose());
     }
 
     public double getYaw() {
@@ -83,6 +85,7 @@ public class SimpleTrackedTarget extends BytePackable {
         bufferData(yaw, data);
         bufferData(pitch, data);
         bufferData(area, data);
+        bufferData(skew, data);
         if (robotRelativePose != null) {
             bufferData(robotRelativePose.getTranslation().getX(), data);
             bufferData(robotRelativePose.getTranslation().getY(), data);
@@ -107,6 +110,7 @@ public class SimpleTrackedTarget extends BytePackable {
         yaw = unbufferDouble(src);
         pitch = unbufferDouble(src);
         area = unbufferDouble(src);
+        skew = unbufferByte(src);
 
         var poseX = unbufferDouble(src);
         var poseY = unbufferDouble(src);

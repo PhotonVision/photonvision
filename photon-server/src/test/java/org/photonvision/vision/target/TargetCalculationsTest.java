@@ -23,6 +23,7 @@ import org.apache.commons.math3.util.FastMath;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.*;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -92,5 +93,82 @@ public class TargetCalculationsTest {
                 TargetCalculations.calculateTargetOffsetPoint(false, TargetOffsetPointEdge.Top, rect);
         assertEquals(4.3, result.x, 0.33, "Target offset x not as expected");
         assertEquals(2.5, result.y, 0.05, "Target offset Y not as expected");
+    }
+
+    @Test
+    public void testSkewCalculation() {
+        // Setup
+        var isLandscape = true;
+        var rect = new RotatedRect(new Point(), new Size(10, 5), -10);
+
+        // Compute min area rect
+        var points = new Point[4];
+        rect.points(points);
+        var mat2f = new MatOfPoint2f(points);
+        var minAreaRect = Imgproc.minAreaRect(mat2f);
+
+        // Assert result
+        var result = TargetCalculations.calculateSkew(isLandscape, minAreaRect);
+        assertEquals(-10, result, 0.01);
+
+        // Setup
+        isLandscape = true;
+        rect = new RotatedRect(new Point(), new Size(10, 5), -70);
+
+        // Compute min area rect
+        points = new Point[4];
+        rect.points(points);
+        mat2f.release();
+        mat2f = new MatOfPoint2f(points);
+        minAreaRect = Imgproc.minAreaRect(mat2f);
+
+        // Assert result
+        result = TargetCalculations.calculateSkew(isLandscape, minAreaRect);
+        assertEquals(-70, result, 0.01);
+
+        // Setup
+        isLandscape = false;
+        rect = new RotatedRect(new Point(), new Size(5, 10), 10);
+
+        // Compute min area rect
+        points = new Point[4];
+        rect.points(points);
+        mat2f.release();
+        mat2f = new MatOfPoint2f(points);
+        minAreaRect = Imgproc.minAreaRect(mat2f);
+
+        // Assert result
+        result = TargetCalculations.calculateSkew(isLandscape, minAreaRect);
+        assertEquals(10, result, 0.01);
+
+        // Setup
+        isLandscape = false;
+        rect = new RotatedRect(new Point(), new Size(5, 10), 70);
+
+        // Compute min area rect
+        points = new Point[4];
+        rect.points(points);
+        mat2f.release();
+        mat2f = new MatOfPoint2f(points);
+        minAreaRect = Imgproc.minAreaRect(mat2f);
+
+        // Assert result
+        result = TargetCalculations.calculateSkew(isLandscape, minAreaRect);
+        assertEquals(70, result, 0.01);
+
+        // Setup
+        isLandscape = false;
+        rect = new RotatedRect(new Point(), new Size(5, 10), -70);
+
+        // Compute min area rect
+        points = new Point[4];
+        rect.points(points);
+        mat2f.release();
+        mat2f = new MatOfPoint2f(points);
+        minAreaRect = Imgproc.minAreaRect(mat2f);
+
+        // Assert result
+        result = TargetCalculations.calculateSkew(isLandscape, minAreaRect);
+        assertEquals(-70, result, 0.01);
     }
 }
