@@ -55,7 +55,9 @@ public class PipelineManager {
     * @param userPipelines Pipelines to add to the manager.
     */
     public PipelineManager(List<CVPipelineSettings> userPipelines) {
-        this.userPipelineSettings = userPipelines;
+        this.userPipelineSettings = new ArrayList<>(userPipelines);
+
+        if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
     }
 
     /**
