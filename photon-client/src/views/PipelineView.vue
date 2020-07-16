@@ -283,9 +283,11 @@
                 // All this logic exists to deal with the reality that the output select buttons sometimes need an array and sometimes need a number (depending on whether or not they're exclusive)
                 get() {
                     // We switch the selector to single-select only on sm-and-down size devices, so we have to return a Number instead of an Array in that state
-                    let ret = 0;
+                    let ret;
                     if (!this.$store.getters.isDriverMode) {
                         ret = this.$store.state.selectedOutputs || [0];
+                    } else {
+                        ret = [1]; // We want the output stream in driver mode
                     }
 
                     if (this.$vuetify.breakpoint.mdAndUp) {
