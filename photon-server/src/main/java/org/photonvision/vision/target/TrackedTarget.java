@@ -42,6 +42,7 @@ public class TrackedTarget implements Releasable {
     private double m_pitch;
     private double m_yaw;
     private double m_area;
+    private double m_skew;
 
     private Pose2d m_robotRelativePose = new Pose2d();
 
@@ -79,9 +80,8 @@ public class TrackedTarget implements Releasable {
         return m_yaw;
     }
 
-    private double getSkew() {
-        // TODO skew;
-        return 5940;
+    public double getSkew() {
+        return m_skew;
     }
 
     public double getArea() {
@@ -116,6 +116,8 @@ public class TrackedTarget implements Releasable {
                 TargetCalculations.calculateYaw(
                         m_targetOffsetPoint.x, m_robotOffsetPoint.x, params.horizontalFocalLength);
         m_area = m_mainContour.getMinAreaRect().size.area() / params.imageArea;
+
+        m_skew = TargetCalculations.calculateSkew(params.isLandscape, getMinAreaRect());
     }
 
     @Override
