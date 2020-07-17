@@ -165,7 +165,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         long sumPipeNanosElapsed = 0L;
 
-
         CVPipeResult<Mat> rotateImageResult = rotateImagePipe.apply(frame.image.getMat());
         sumPipeNanosElapsed += rotateImageResult.nanosElapsed;
 
