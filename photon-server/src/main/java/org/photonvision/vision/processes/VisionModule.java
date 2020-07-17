@@ -63,10 +63,10 @@ public class VisionModule {
 
     private long lastUIResultUpdateTime = 0;
     private long lastRunTime = 0;
-    private MedianFilter fpsAverager = new MedianFilter(10);
+    private final MedianFilter fpsAverager = new MedianFilter(10);
 
+    private final MJPGFrameConsumer dashboardInputStreamer;
     private MJPGFrameConsumer dashboardOutputStreamer;
-    private MJPGFrameConsumer dashboardInputStreamer;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
@@ -91,24 +91,16 @@ public class VisionModule {
         dashboardInputStreamer =
                 new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input");
 
-        addResultConsumer(
-                result -> {
-                    dashboardInputStreamer.accept(result.inputFrame);
-                });
-        addResultConsumer(
-                result -> {
-                    dashboardOutputStreamer.accept(result.outputFrame);
-                });
+        addResultConsumer(result -> dashboardInputStreamer.accept(result.inputFrame));
+        addResultConsumer(result -> dashboardOutputStreamer.accept(result.outputFrame));
 
         ntConsumer =
                 new NTDataPublisher(
                         visionSource.getSettables().getConfiguration().nickname,
                         pipelineManager::getCurrentPipelineIndex,
                         pipelineManager::setIndex,
-                        () -> pipelineManager.getCurrentPipelineIndex() == -1,
-                        (driverMode) -> {
-                            /* TODO: switch to driver mode */
-                        });
+                        pipelineManager::getDriverMode,
+                        pipelineManager::setDriverMode);
         addResultConsumer(ntConsumer);
         addResultConsumer(
                 result -> {
@@ -224,11 +216,6 @@ public class VisionModule {
                             logger.debug("Setting pipeline index to " + index);
                             setPipeline(index);
                             saveAndBroadcast();
-                            return;
-                        case "selectedOutputs":
-                            // 0 indicates normal, 1 indicates thresholded
-                            var outputs = (ArrayList<Integer>) newPropValue;
-                            // TODO
                             return;
                     }
 
@@ -390,11 +377,7 @@ public class VisionModule {
         resultConsumers.add(dataConsumer);
     }
 
-    void addFrameConsumer(FrameConsumer consumer) {
-        frameConsumers.add(consumer);
-    }
-
-    void consumeResult(CVPipelineResult result) {
+    private void consumeResult(CVPipelineResult result) {
         consumePipelineResult(result);
 
         var frame = result.outputFrame;
@@ -403,13 +386,13 @@ public class VisionModule {
         result.release();
     }
 
-    void consumePipelineResult(CVPipelineResult result) {
+    private void consumePipelineResult(CVPipelineResult result) {
         for (var dataConsumer : resultConsumers) {
             dataConsumer.accept(result);
         }
     }
 
-    void consumeFrame(Frame frame) {
+    private void consumeFrame(Frame frame) {
         for (var frameConsumer : frameConsumers) {
             frameConsumer.accept(frame);
         }

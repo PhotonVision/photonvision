@@ -167,13 +167,23 @@ public class PipelineManager {
     }
 
     /**
-    * Leaves the current built-in pipeline, if applicable, and sets the active pipeline to the most
-    * recently active user-created pipeline.
+    * Enters or exits driver mode based on the parameter. <br>
+    * <br>
+    * Exiting returns to the last used user pipeline.
+    *
+    * @param state True to enter driver mode, false to exit driver mode.
     */
-    public void exitAuxiliaryPipeline() {
-        if (currentPipelineIndex < 0) {
-            setPipelineInternal(lastPipelineIndex);
-        }
+    public void setDriverMode(boolean state) {
+        setPipelineInternal(state ? DRIVERMODE_INDEX : lastPipelineIndex);
+    }
+
+    /**
+    * Returns whether or not driver mode is active.
+    *
+    * @return Whether or not driver mode is active.
+    */
+    public boolean getDriverMode() {
+        return currentPipelineIndex == DRIVERMODE_INDEX;
     }
 
     public static final Comparator<CVPipelineSettings> PipelineSettingsIndexComparator =
