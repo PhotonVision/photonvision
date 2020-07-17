@@ -100,6 +100,29 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         // TODO: Log
     }
 
+    private void removeEntries() {
+        rawBytesEntry.delete();
+
+        if (pipelineIndexListener != null) {
+            pipelineIndexListener.remove();
+        }
+        pipelineIndexEntry.delete();
+
+        if (driverModeListener != null) {
+            driverModeListener.remove();
+        }
+        driverModeEntry.delete();
+
+        latencyMillisEntry.delete();
+        hasTargetEntry.delete();
+
+        targetPitchEntry.delete();
+        targetAreaEntry.delete();
+        targetYawEntry.delete();
+        targetPoseEntry.delete();
+        targetSkewEntry.delete();
+    }
+
     private void updateEntries() {
         rawBytesEntry = subTable.getEntry("rawBytes");
 
@@ -127,7 +150,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     }
 
     public void updateCameraNickname(String newCameraNickname) {
-        rootTable.delete(currentCameraNickname); // TODO: make this actually work (if possible)
+        removeEntries();
         subTable = rootTable.getSubTable(newCameraNickname);
         updateEntries();
         currentCameraNickname = newCameraNickname;
