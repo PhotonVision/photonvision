@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.Contour;
@@ -45,7 +44,8 @@ public class FilterContoursPipe
         RotatedRect minAreaRect = contour.getMinAreaRect();
 
         // Area Filtering.
-        double areaPercentage = minAreaRect.size.area() / params.getFrameStaticProperties().imageArea * 100.0;
+        double areaPercentage =
+                minAreaRect.size.area() / params.getFrameStaticProperties().imageArea * 100.0;
         double minAreaPercentage = params.getArea().getFirst();
         double maxAreaPercentage = params.getArea().getSecond();
         if (areaPercentage < minAreaPercentage || areaPercentage > maxAreaPercentage) return;

@@ -107,7 +107,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 dilate,
                 contourArea,
                 contourRatio,
-            contourFullness,
+                contourFullness,
                 contourSpecklePercentage,
                 contourSortMode,
                 contourTargetOffsetPointEdge,
