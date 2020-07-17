@@ -25,6 +25,9 @@
                 <th class="text-center">
                   Yaw
                 </th>
+                <th class="text-center">
+                  Skew
+                </th>
               </template>
               <th class="text-center">
                 Area
@@ -51,6 +54,7 @@
               <template v-if="!is3D">
                 <td>{{ parseFloat(value.pitch).toFixed(2) }}</td>
                 <td>{{ parseFloat(value.yaw).toFixed(2) }}</td>
+                <td>{{ parseFloat(value.skew).toFixed(2) }}</td>
               </template>
               <td>{{ parseFloat(value.area).toFixed(2) }}</td>
               <template v-if="is3D">
