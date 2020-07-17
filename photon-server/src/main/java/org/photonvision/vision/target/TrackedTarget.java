@@ -115,7 +115,7 @@ public class TrackedTarget implements Releasable {
         m_yaw =
                 TargetCalculations.calculateYaw(
                         m_targetOffsetPoint.x, m_robotOffsetPoint.x, params.horizontalFocalLength);
-        m_area = m_mainContour.getMinAreaRect().size.area() / params.imageArea;
+        m_area = m_mainContour.getMinAreaRect().size.area() / params.imageArea * 100;
 
         m_skew = TargetCalculations.calculateSkew(params.isLandscape, getMinAreaRect());
     }

@@ -45,10 +45,10 @@ public class FilterContoursPipe
         RotatedRect minAreaRect = contour.getMinAreaRect();
 
         // Area Filtering.
-        double areaRatio = (minAreaRect.size.area()/ params.getFrameStaticProperties().imageArea);
-        double minArea = MathUtils.sigmoid(params.getArea().getFirst());
-        double maxArea = MathUtils.sigmoid(params.getArea().getSecond());
-        if (areaRatio < minArea || areaRatio > maxArea) return;
+        double areaPercentage = minAreaRect.size.area() / params.getFrameStaticProperties().imageArea * 100.0;
+        double minAreaPercentage = params.getArea().getFirst();
+        double maxAreaPercentage = params.getArea().getSecond();
+        if (areaPercentage < minAreaPercentage || areaPercentage > maxAreaPercentage) return;
 
         // Fullness Filtering.
         double contourArea = contour.getArea();
