@@ -97,7 +97,7 @@ public class VisionModule {
                         pipelineManager::getCurrentPipelineIndex,
                         pipelineManager::setIndex,
                         pipelineManager::getDriverMode,
-                        pipelineManager::setDriverMode);
+                        this::setDriverMode);
         uiDataConsumer = new UIDataPublisher(index);
         addResultConsumer(ntConsumer);
         addResultConsumer(uiDataConsumer);
@@ -122,6 +122,11 @@ public class VisionModule {
 
         dashboardOutputStreamer.setFrameDivisor(
                 pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
+    }
+
+    private void setDriverMode(boolean isDriverMode) {
+        pipelineManager.setDriverMode(isDriverMode);
+        saveAndBroadcast();
     }
 
     public void start() {
