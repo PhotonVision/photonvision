@@ -46,6 +46,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private NetworkTableEntry targetYawEntry;
     private NetworkTableEntry targetAreaEntry;
     private NetworkTableEntry targetPoseEntry;
+    private NetworkTableEntry targetSkewEntry;
 
     private final Supplier<Integer> pipelineIndexSupplier;
     private final BooleanSupplier driverModeSupplier;
@@ -99,6 +100,21 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         // TODO: Log
     }
 
+    private void removeEntries() {
+        if (rawBytesEntry != null) rawBytesEntry.delete();
+        if (pipelineIndexListener != null) pipelineIndexListener.remove();
+        if (pipelineIndexEntry != null) pipelineIndexEntry.delete();
+        if (driverModeListener != null) driverModeListener.remove();
+        if (driverModeEntry != null) driverModeEntry.delete();
+        if (latencyMillisEntry != null) latencyMillisEntry.delete();
+        if (hasTargetEntry != null) hasTargetEntry.delete();
+        if (targetPitchEntry != null) targetPitchEntry.delete();
+        if (targetAreaEntry != null) targetAreaEntry.delete();
+        if (targetYawEntry != null) targetYawEntry.delete();
+        if (targetPoseEntry != null) targetPoseEntry.delete();
+        if (targetSkewEntry != null) targetSkewEntry.delete();
+    }
+
     private void updateEntries() {
         rawBytesEntry = subTable.getEntry("rawBytes");
 
@@ -122,10 +138,11 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         targetAreaEntry = subTable.getEntry("targetArea");
         targetYawEntry = subTable.getEntry("targetYaw");
         targetPoseEntry = subTable.getEntry("targetPose");
+        targetSkewEntry = subTable.getEntry("targetSkew");
     }
 
     public void updateCameraNickname(String newCameraNickname) {
-        rootTable.delete(currentCameraNickname); // TODO: make this actually work (if possible)
+        removeEntries();
         subTable = rootTable.getSubTable(newCameraNickname);
         updateEntries();
         currentCameraNickname = newCameraNickname;
@@ -148,6 +165,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             targetPitchEntry.forceSetDouble(bestTarget.getPitch());
             targetYawEntry.forceSetDouble(bestTarget.getYaw());
             targetAreaEntry.forceSetDouble(bestTarget.getArea());
+            targetSkewEntry.forceSetDouble(bestTarget.getSkew());
 
             var poseX = bestTarget.getRobotRelativePose().getTranslation().getX();
             var poseY = bestTarget.getRobotRelativePose().getTranslation().getY();
@@ -157,6 +175,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             targetPitchEntry.forceSetDouble(0);
             targetYawEntry.forceSetDouble(0);
             targetAreaEntry.forceSetDouble(0);
+            targetSkewEntry.forceSetDouble(0);
             targetPoseEntry.forceSetDoubleArray(new double[] {0, 0, 0});
         }
         rootTable.getInstance().flush();
