@@ -188,7 +188,7 @@
                 } else if (this.$store.state.hasOwnProperty(key)) {
                     this.$store.commit(key, value);
                 } else if (this.$store.getters.currentPipelineSettings.hasOwnProperty(key)) {
-                    this.$store.commit('mutatePipeline', {'key': key, 'value': value});
+                    this.$store.commit('mutatePipeline', {[key]: value});
                 } else {
                     switch (key) {
                         default: {
