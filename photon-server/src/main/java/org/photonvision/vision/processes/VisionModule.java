@@ -321,13 +321,14 @@ public class VisionModule {
     }
 
     private void saveAndBroadcast(String propertyName, Object value) {
+        logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         ConfigManager.getInstance()
                 .saveModule(
                         getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
         DataChangeService.getInstance()
                 .publishEvent(
                         OutgoingUIEvent.wrappedOf(
-                                UIUpdateType.BROADCAST, "singlesetting", propertyName, value));
+                                UIUpdateType.BROADCAST, "mutatePipeline", propertyName, value));
     }
 
     private void setCameraNickname(String newName) {
