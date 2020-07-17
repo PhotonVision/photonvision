@@ -62,7 +62,7 @@ public class VisionModule {
 
     private long lastSettingChangeTimestamp = 0;
 
-    private final MJPGFrameConsumer dashboardInputStreamer;
+    private MJPGFrameConsumer dashboardInputStreamer;
     private MJPGFrameConsumer dashboardOutputStreamer;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
@@ -120,8 +120,10 @@ public class VisionModule {
 
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 
+        dashboardInputStreamer.setFrameDivisor(
+                pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
         dashboardOutputStreamer.setFrameDivisor(
-                pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
+                pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
     }
 
     private void setDriverMode(boolean isDriverMode) {
@@ -249,9 +251,11 @@ public class VisionModule {
                         logger.trace("Set prop " + propName + " to value " + newPropValue);
 
                         // special case for extra tasks to perform after setting PipelineSettings
-                        if (propName.equals("outputFrameDivisor")) {
+                        if (propName.equals("streamingFrameDivisor")) {
+                            dashboardInputStreamer.setFrameDivisor(
+                                    pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
                             dashboardOutputStreamer.setFrameDivisor(
-                                    pipelineManager.getCurrentPipelineSettings().outputFrameDivisor);
+                                    pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
                         }
 
                     } catch (NoSuchFieldException | IllegalAccessException e) {
@@ -323,10 +327,17 @@ public class VisionModule {
         visionSource.getSettables().getConfiguration().nickname = newName;
         ntConsumer.updateCameraNickname(newName);
 
+        // rename streams
         frameConsumers.remove(dashboardOutputStreamer);
+        frameConsumers.remove(dashboardInputStreamer);
         dashboardOutputStreamer =
-                new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().nickname);
+                new MJPGFrameConsumer(
+                        visionSource.getSettables().getConfiguration().uniqueName + "-output");
+        dashboardInputStreamer =
+                new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input");
         frameConsumers.add(dashboardOutputStreamer);
+        frameConsumers.add(dashboardInputStreamer);
+
         saveAndBroadcast();
     }
 

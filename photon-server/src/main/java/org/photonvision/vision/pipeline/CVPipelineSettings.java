@@ -43,8 +43,7 @@ public class CVPipelineSettings {
     public int cameraBrightness = 50;
     public int cameraGain = 50;
     public int cameraVideoModeIndex = 0;
-    public FrameDivisor inputFrameDivisor = FrameDivisor.NONE;
-    public FrameDivisor outputFrameDivisor = FrameDivisor.NONE;
+    public FrameDivisor streamingFrameDivisor = FrameDivisor.NONE;
     public boolean ledMode = false;
 
     @Override
@@ -62,8 +61,7 @@ public class CVPipelineSettings {
                 && inputImageFlipMode == that.inputImageFlipMode
                 && inputImageRotationMode == that.inputImageRotationMode
                 && pipelineNickname.equals(that.pipelineNickname)
-                && inputFrameDivisor == that.inputFrameDivisor
-                && outputFrameDivisor == that.outputFrameDivisor;
+                && streamingFrameDivisor == that.streamingFrameDivisor;
     }
 
     @Override
@@ -78,8 +76,7 @@ public class CVPipelineSettings {
                 cameraBrightness,
                 cameraGain,
                 cameraVideoModeIndex,
-                inputFrameDivisor,
-                outputFrameDivisor,
+                streamingFrameDivisor,
                 ledMode);
     }
 }

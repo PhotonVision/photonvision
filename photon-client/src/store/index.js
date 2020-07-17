@@ -53,7 +53,7 @@ export default new Vuex.Store({
                     cameraGain: 3,
                     inputImageRotationMode: 0,
                     cameraVideoModeIndex: 0,
-                    outputFrameDivisor: 0,
+                    streamingFrameDivisor: 0,
 
                     // Settings that apply to reflective
                     hsvHue: [0, 15],

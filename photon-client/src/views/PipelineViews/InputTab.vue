@@ -45,12 +45,12 @@
       @rollback="e => rollback('cameraVideoModeIndex', e)"
     />
     <CVselect
-      v-model="outputFrameDivisor"
+      v-model="streamingFrameDivisor"
       name="Stream Resolution"
       :list="streamResolutionList"
       :select-cols="largeBox"
-      @input="handlePipelineData('outputFrameDivisor')"
-      @rollback="e => rollback('outputFrameDivisor', e)"
+      @input="handlePipelineData('streamingFrameDivisor')"
+      @rollback="e => rollback('streamingFrameDivisor', e)"
     />
   </div>
 </template>
@@ -119,12 +119,12 @@
                     this.$store.commit("mutatePipeline", {"cameraVideoModeIndex": val});
                 }
             },
-            outputFrameDivisor: {
+            streamingFrameDivisor: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.outputFrameDivisor
+                    return this.$store.getters.currentPipelineSettings.streamingFrameDivisor
                 },
                 set(val) {
-                    this.$store.commit("mutatePipeline", {"outputFrameDivisor": val});
+                    this.$store.commit("mutatePipeline", {"streamingFrameDivisor": val});
                 }
             },
 
