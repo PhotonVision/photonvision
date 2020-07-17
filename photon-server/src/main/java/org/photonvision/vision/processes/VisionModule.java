@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.processes;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.wpilibj.MedianFilter;
 import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,12 +30,12 @@ import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
+import org.photonvision.common.dataflow.websocket.UIDataPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
-import org.photonvision.server.SocketHandler;
 import org.photonvision.server.UIUpdateType;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
@@ -59,11 +58,10 @@ public class VisionModule {
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     private final LinkedList<FrameConsumer> frameConsumers = new LinkedList<>();
     private final NTDataPublisher ntConsumer;
+    private final UIDataPublisher uiDataConsumer;
     private final int moduleIndex;
 
-    private long lastUIResultUpdateTime = 0;
-    private long lastRunTime = 0;
-    private final MedianFilter fpsAverager = new MedianFilter(10);
+    private long lastSettingChangeTimestamp = 0;
 
     private final MJPGFrameConsumer dashboardInputStreamer;
     private MJPGFrameConsumer dashboardOutputStreamer;
@@ -101,44 +99,24 @@ public class VisionModule {
                         pipelineManager::setIndex,
                         pipelineManager::getDriverMode,
                         pipelineManager::setDriverMode);
+        uiDataConsumer = new UIDataPublisher(index);
         addResultConsumer(ntConsumer);
-        addResultConsumer(
-                result -> {
-                    var now = System.currentTimeMillis();
+        addResultConsumer(uiDataConsumer);
 
-                    var fps = fpsAverager.calculate(1000.0 / (now - lastRunTime));
-                    lastRunTime = now;
-
-                    // only update the UI at 15hz
-                    if (lastUIResultUpdateTime + 1000.0 / 15.0 > now) return;
-
-                    var uiMap = new HashMap<Integer, HashMap<String, Object>>();
-                    var dataMap = new HashMap<String, Object>();
-
-                    dataMap.put("fps", fps);
-                    dataMap.put("latency", result.getLatencyMillis());
-
-                    var targets = result.targets;
-
-                    var uiTargets = new ArrayList<HashMap<String, Object>>();
-                    for (var t : targets) {
-                        uiTargets.add(t.toHashMap());
-                    }
-                    dataMap.put("targets", uiTargets);
-
-                    uiMap.put(index, dataMap);
-                    var retMap = new HashMap<String, Object>();
-                    retMap.put("updatePipelineResult", uiMap);
-
-                    try {
-                        SocketHandler.getInstance().broadcastMessage(retMap, null);
-                    } catch (JsonProcessingException e) {
-                        logger.error(e.getMessage());
-                        logger.error(Arrays.toString(e.getStackTrace()));
-                    }
-
-                    lastUIResultUpdateTime = now;
-                });
+        // TODO is this the right spot to do this? OR should it be its own thread?
+        addResultConsumer(result -> {
+            var now = System.currentTimeMillis();
+            // Wait 0.5 seconds after last change to send full settings
+            if (lastSettingChangeTimestamp > 0 && now - lastSettingChangeTimestamp > 500) {
+                DataChangeService.getInstance()
+                    .publishEvent(
+                        new OutgoingUIEvent<>(
+                            UIUpdateType.BROADCAST,
+                            "fullsettings",
+                            ConfigManager.getInstance().getConfig().toHashMap()));
+                lastSettingChangeTimestamp = -1;
+            }
+        });
 
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 
@@ -284,7 +262,10 @@ public class VisionModule {
                         logger.error("Unknown exception when setting PSC prop!");
                         e.printStackTrace();
                     }
-                    saveAndBroadcast(propName, newPropValue);
+
+                    saveModule();
+
+                    VisionModule.this.lastSettingChangeTimestamp = System.currentTimeMillis();
                 }
             }
         }
@@ -308,10 +289,14 @@ public class VisionModule {
                 pipelineManager.getCurrentPipelineIndex();
     }
 
-    private void saveAndBroadcast() {
+    private void saveModule() {
         ConfigManager.getInstance()
                 .saveModule(
                         getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
+    }
+
+    private void saveAndBroadcast() {
+        saveModule();
         DataChangeService.getInstance()
                 .publishEvent(
                         new OutgoingUIEvent<>(
@@ -320,11 +305,9 @@ public class VisionModule {
                                 ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
-    private void saveAndBroadcast(String propertyName, Object value) {
+    private void saveAndBroadcastSelective(String propertyName, Object value) {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
-        ConfigManager.getInstance()
-                .saveModule(
-                        getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
+        saveModule();
         DataChangeService.getInstance()
                 .publishEvent(
                         OutgoingUIEvent.wrappedOf(
