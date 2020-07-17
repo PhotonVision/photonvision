@@ -42,18 +42,19 @@ public class FilterContoursPipe
     }
 
     private void filterContour(Contour contour) {
+        RotatedRect minAreaRect = contour.getMinAreaRect();
+
         // Area Filtering.
-        double contourArea = contour.getArea();
-        double areaRatio = (contourArea / params.getFrameStaticProperties().imageArea);
+        double areaRatio = (minAreaRect.size.area()/ params.getFrameStaticProperties().imageArea);
         double minArea = MathUtils.sigmoid(params.getArea().getFirst());
         double maxArea = MathUtils.sigmoid(params.getArea().getSecond());
         if (areaRatio < minArea || areaRatio > maxArea) return;
 
-        // Extent Filtering.
-        RotatedRect minAreaRect = contour.getMinAreaRect();
-        double minExtent = params.getFullness().getFirst() * minAreaRect.size.area() / 100;
-        double maxExtent = params.getFullness().getSecond() * minAreaRect.size.area() / 100;
-        if (contourArea <= minExtent || contourArea >= maxExtent) return;
+        // Fullness Filtering.
+        double contourArea = contour.getArea();
+        double minFullness = params.getFullness().getFirst() * minAreaRect.size.area() / 100;
+        double maxFullness = params.getFullness().getSecond() * minAreaRect.size.area() / 100;
+        if (contourArea <= minFullness || contourArea >= maxFullness) return;
 
         // Aspect Ratio Filtering.
         Rect boundingRect = contour.getBoundingRect();

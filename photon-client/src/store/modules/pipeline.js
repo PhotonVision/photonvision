@@ -13,7 +13,7 @@ export default {
         dilate: false,
         area: [0, 12],
         ratio: [0, 12],
-        extent: [0, 12],
+        fullness: [0, 12],
         speckle: 5,
         targetGrouping: 0,
         targetIntersection: 0,

@@ -63,7 +63,7 @@ export default new Vuex.Store({
                     dilate: false,
                     contourArea: [0, 12],
                     contourRatio: [0, 12],
-                    contourExtent: [0, 12],
+                    contourFullness: [0, 12],
                     contourSpecklePercentage: 5,
                     contourGroupingMode: 0,
                     contourIntersection: 0,

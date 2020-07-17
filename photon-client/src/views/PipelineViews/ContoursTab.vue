@@ -19,12 +19,12 @@
       @rollback="e=> rollback('contourRatio',e)"
     />
     <CVrangeSlider
-      v-model="contourExtent"
-      name="Extent"
+      v-model="contourFullness"
+      name="Fullness"
       min="0"
       max="100"
-      @input="handlePipelineData('contourExtent')"
-      @rollback="e=> rollback('contourExtent',e)"
+      @input="handlePipelineData('contourFullness')"
+      @rollback="e=> rollback('contourFullness',e)"
     />
     <CVslider
       v-model="contourSpecklePercentage"
@@ -98,12 +98,12 @@
                     this.$store.commit("mutatePipeline", {"contourRatio": val});
                 }
             },
-            contourExtent: {
+            contourFullness: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.contourExtent
+                    return this.$store.getters.currentPipelineSettings.contourFullness
                 },
                 set(val) {
-                    this.$store.commit("mutatePipeline", {"contourExtent": val});
+                    this.$store.commit("mutatePipeline", {"contourFullness": val});
                 }
             },
             contourSpecklePercentage: {
