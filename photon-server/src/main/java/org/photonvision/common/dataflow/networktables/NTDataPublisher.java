@@ -101,26 +101,18 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     }
 
     private void removeEntries() {
-        rawBytesEntry.delete();
-
-        if (pipelineIndexListener != null) {
-            pipelineIndexListener.remove();
-        }
-        pipelineIndexEntry.delete();
-
-        if (driverModeListener != null) {
-            driverModeListener.remove();
-        }
-        driverModeEntry.delete();
-
-        latencyMillisEntry.delete();
-        hasTargetEntry.delete();
-
-        targetPitchEntry.delete();
-        targetAreaEntry.delete();
-        targetYawEntry.delete();
-        targetPoseEntry.delete();
-        targetSkewEntry.delete();
+        if (rawBytesEntry != null) rawBytesEntry.delete();
+        if (pipelineIndexListener != null) pipelineIndexListener.remove();
+        if (pipelineIndexEntry != null) pipelineIndexEntry.delete();
+        if (driverModeListener != null) driverModeListener.remove();
+        if (driverModeEntry != null) driverModeEntry.delete();
+        if (latencyMillisEntry != null) latencyMillisEntry.delete();
+        if (hasTargetEntry != null) hasTargetEntry.delete();
+        if (targetPitchEntry != null) targetPitchEntry.delete();
+        if (targetAreaEntry != null) targetAreaEntry.delete();
+        if (targetYawEntry != null) targetYawEntry.delete();
+        if (targetPoseEntry != null) targetPoseEntry.delete();
+        if (targetSkewEntry != null) targetSkewEntry.delete();
     }
 
     private void updateEntries() {
