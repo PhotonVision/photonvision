@@ -68,8 +68,8 @@ public class SimplePipelineResult extends BytePackable {
     @Override
     public byte[] toByteArray() {
         bufferPosition = 0;
-        int bufferSize =
-                8 + 1 + 1 + (targets.size() * 8 * SimpleTrackedTarget.PACK_SIZE_BYTES); // latencyMillis + hasTargets + targetCount + targets
+        // latencyMillis + hasTargets + targetCount + targets
+        int bufferSize = 8 + 1 + 1 + (targets.size() * 8 * SimpleTrackedTarget.PACK_SIZE_BYTES);
         var buff = new byte[bufferSize];
 
         bufferData(latencyMillis, buff);
