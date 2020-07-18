@@ -52,14 +52,17 @@ public class VisionModuleManager {
         return visionModules.get(i);
     }
 
-    public void addSources(HashMap<VisionSource, List<CVPipelineSettings>> visionSources) {
+    public List<VisionModule> addSources(
+            HashMap<VisionSource, List<CVPipelineSettings>> visionSources) {
+        var addedModules = new ArrayList<VisionModule>();
         for (var entry : visionSources.entrySet()) {
             var visionSource = entry.getKey();
             var pipelineManager = new PipelineManager(entry.getValue());
             var module = new VisionModule(pipelineManager, visionSource, visionModules.size());
             visionModules.add(module);
-            // todo: logging
+            addedModules.add(module);
         }
+        return addedModules;
     }
 
     public void startModules() {
