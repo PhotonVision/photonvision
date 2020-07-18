@@ -124,3 +124,4 @@ New client/photon-client/*
 photon-server/build
 photon-server/photon-vision
 photon-server/src/main/resources/web
+photon-server/src/main/java/org/photonvision/PhotonVersion.java

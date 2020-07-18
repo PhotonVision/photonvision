@@ -6,10 +6,12 @@ plugins {
     id "jacoco"
 }
 
+apply from: 'versioningHelper.gradle'
+
 mainClassName = 'org.photonvision.Main'
 
 group 'org.photonvision'
-version '2020.6.1'
+version getCurrentVersion()
 
 sourceCompatibility = 11
 
@@ -129,6 +131,8 @@ spotless {
     java {
         target "src/*/java/org/**/*.java"
         licenseHeaderFile "$rootDir/LicenseHeader.txt"
+
+        targetExclude("src/main/java/org/photonvision/PhotonVersion.java")
     }
 }
 
