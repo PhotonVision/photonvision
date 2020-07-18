@@ -93,6 +93,25 @@ public class Draw2dTargetsPipe
                 if (params.showCentroid) {
                     Imgproc.circle(in.getLeft(), target.getTargetOffsetPoint(), 3, centroidColour, 2);
                 }
+
+                if (params.showContourNumber) {
+                    var textSize = params.kPixelsToText * in.getLeft().rows();
+                    var thickness = params.kPixelsToThickness * in.getLeft().rows();
+                    var center = target.m_mainContour.getCenterPoint();
+                    var textPos =
+                            new Point(
+                                    center.x + params.kPixelsToOffset * in.getLeft().rows(),
+                                    center.y - params.kPixelsToOffset * in.getLeft().rows());
+
+                    Imgproc.putText(
+                            in.getLeft(),
+                            String.valueOf(i),
+                            textPos,
+                            0,
+                            textSize,
+                            ColorHelper.colorToScalar(params.textColor),
+                            (int) thickness);
+                }
             }
         }
 
@@ -100,16 +119,21 @@ public class Draw2dTargetsPipe
     }
 
     public static class Draw2dContoursParams {
+        public final double kPixelsToText = 0.003;
+        public final double kPixelsToThickness = 0.008;
+        public final double kPixelsToOffset = 0.02;
         public boolean showCentroid = true;
         public boolean showMultiple;
         public int boxOutlineSize = 1;
         public boolean showRotatedBox = true;
         public boolean showShape = false;
         public boolean showMaximumBox = true;
+        public boolean showContourNumber = true;
         public Color centroidColor = Color.GREEN;
         public Color rotatedBoxColor = Color.BLUE;
         public Color maximumBoxColor = Color.RED;
         public Color shapeOutlineColour = Color.MAGENTA;
+        public Color textColor = Color.GREEN;
 
         // TODO: set other params from UI/settings file?
         public Draw2dContoursParams(boolean showMultipleTargets) {

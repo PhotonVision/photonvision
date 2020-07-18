@@ -50,7 +50,7 @@ public class USBCameraSource implements VisionSource {
                         camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
         cvSink = CameraServer.getInstance().getVideo(this.camera);
         usbCameraSettables = new USBCameraSettables(config);
-        usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables.getFrameStaticProperties());
+        usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
     }
 
     @Override
