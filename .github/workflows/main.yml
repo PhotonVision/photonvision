@@ -179,6 +179,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'Dev'
+          rm: true
           files: |
             photon-server/build/libs/*.jar
         if: github.event_name == 'push'
