@@ -48,6 +48,7 @@ import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
 
 /** Represents a pipeline for tracking retro-reflective targets. */
+@SuppressWarnings({"UnusedAssignment", "DuplicatedCode"})
 public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectivePipelineSettings> {
 
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
@@ -66,8 +67,8 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private final Draw2dTargetsPipe draw2DTargetsPipe = new Draw2dTargetsPipe();
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
 
-    private Mat rawInputMat = new Mat();
-    private DualMat outputMats = new DualMat();
+    private final Mat rawInputMat = new Mat();
+    private final DualMat outputMats = new DualMat();
 
     public ReflectivePipeline() {
         settings = new ReflectivePipelineSettings();
@@ -161,7 +162,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         solvePNPPipe.setParams(solvePNPParams);
     }
 
-    @SuppressWarnings("DuplicatedCode")
     @Override
     public CVPipelineResult process(Frame frame, ReflectivePipelineSettings settings) {
         setPipeParams(frame.frameStaticProperties, settings);
@@ -208,7 +208,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                 collect2dTargetsPipe.apply(sortContoursResult.result);
         sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
 
-        CVPipeResult<List<TrackedTarget>> targetList;
+        List<TrackedTarget> targetList;
 
         // 3d stuff
         if (settings.solvePNPEnabled) {
@@ -218,18 +218,17 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             var solvePNPResult = solvePNPPipe.apply(cornerDetectionResult.result);
             sumPipeNanosElapsed += solvePNPResult.nanosElapsed;
 
-            targetList = solvePNPResult;
+            targetList = solvePNPResult.result;
         } else {
-            targetList = collect2dTargetsResult;
+            targetList = collect2dTargetsResult.result;
         }
 
+        // the first is the raw input mat, the second is the hsvpipe result
         CVPipeResult<Mat> drawOnInputResult, drawOnOutputResult;
 
-        // the first is the raw input mat, the second is the hsvpipe result
         // Draw on input
-
         CVPipeResult<Mat> draw2dCrosshairResultOnInput =
-                draw2dCrosshairPipe.apply(Pair.of(outputMats.first, targetList.result));
+                draw2dCrosshairPipe.apply(Pair.of(outputMats.first, targetList));
         sumPipeNanosElapsed += draw2dCrosshairResultOnInput.nanosElapsed;
 
         CVPipeResult<Mat> draw2dContoursResultOnInput =
@@ -247,10 +246,11 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         }
 
         // Draw on output
-
-        Imgproc.cvtColor(outputMats.second, outputMats.second, Imgproc.COLOR_GRAY2BGR, 3);
+        CVPipeResult<Mat> outputMatPipeResult = outputMatPipe.apply(outputMats.second);
+        sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
+        
         CVPipeResult<Mat> draw2dCrosshairResultOnOutput =
-                draw2dCrosshairPipe.apply(Pair.of(outputMats.second, targetList.result));
+                draw2dCrosshairPipe.apply(Pair.of(outputMats.second, targetList));
         sumPipeNanosElapsed += draw2dCrosshairResultOnOutput.nanosElapsed;
 
         CVPipeResult<Mat> draw2dContoursResultOnOutput =
@@ -269,7 +269,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
-                collect2dTargetsResult.result,
+                targetList,
                 new Frame(new CVMat(outputMats.second), frame.frameStaticProperties),
                 new Frame(new CVMat(outputMats.first), frame.frameStaticProperties));
     }
