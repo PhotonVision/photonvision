@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.server.SocketHandler;
 import org.photonvision.server.UIUpdateType;
 
 public class Logger {
@@ -122,7 +123,7 @@ public class Logger {
         for (var a : currentAppenders) {
             var shouldColor = a instanceof ConsoleLogAppender;
             var formattedMessage = format(message, level, group, clazz, shouldColor);
-            a.log(formattedMessage);
+            a.log(formattedMessage, level);
         }
     }
 
@@ -183,23 +184,24 @@ public class Logger {
     }
 
     private interface LogAppender {
-        void log(String message);
+        void log(String message, LogLevel level);
     }
 
     private static class ConsoleLogAppender implements LogAppender {
         @Override
-        public void log(String message) {
+        public void log(String message, LogLevel level) {
             System.out.println(message);
         }
     }
 
     private static class UILogAppender implements LogAppender {
         @Override
-        public void log(String message) {
-            var message_ = new HashMap<>();
-            message_.put("logMessage", message);
+        public void log(String message, LogLevel level) {
+            var messageMap = new SocketHandler.UIMap();
+            messageMap.put("logMessage", message);
+            messageMap.put("logLevel", level.code);
             DataChangeService.getInstance()
-                    .publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "log", message_));
+                    .publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "log", messageMap, null));
         }
     }
 
@@ -211,7 +213,7 @@ public class Logger {
         }
 
         @Override
-        public void log(String message) {
+        public void log(String message, LogLevel level) {
             try (AsynchronousFileChannel asyncFile =
                     AsynchronousFileChannel.open(
                             filePath, StandardOpenOption.WRITE, StandardOpenOption.CREATE)) {

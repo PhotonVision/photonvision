@@ -43,7 +43,7 @@ public class UIInboundSubscriber extends DataChangeSubscriber {
                     || incomingWSEvent.propertyName.equals("sendFullSettings")) {
                 // Send full settings
                 var settings = ConfigManager.getInstance().getConfig().toHashMap();
-                var message = new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "fullsettings", settings);
+                var message = new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "fullsettings", settings, incomingWSEvent.originContext);
                 DataChangeService.getInstance().publishEvent(message);
             }
         }

@@ -139,7 +139,8 @@ public class SocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "cameraNickname",
                                                 (String) entryValue,
-                                                cameraIndex);
+                                                cameraIndex,
+                                                context);
                                 dcService.publishEvent(ccnEvent);
                                 break;
                             }
@@ -150,7 +151,8 @@ public class SocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "pipelineName",
                                                 (String) entryValue,
-                                                cameraIndex);
+                                                cameraIndex,
+                                                context);
                                 dcService.publishEvent(cpnEvent);
                                 break;
                             }
@@ -169,7 +171,8 @@ public class SocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "newPipelineInfo",
                                                 Pair.of(name, type),
-                                                cameraIndex);
+                                                cameraIndex,
+                                                context);
                                 dcService.publishEvent(newPipelineEvent);
                                 break;
                             }
@@ -184,7 +187,8 @@ public class SocketHandler {
                                                             DataChangeDestination.DCD_ACTIVEMODULE,
                                                             "deleteCurrPipeline",
                                                             0,
-                                                            cameraIndex);
+                                                            cameraIndex,
+                                                            context);
                                             dcService.publishEvent(deleteCurrentPipelineEvent);
                                             break;
                                         }
@@ -213,7 +217,8 @@ public class SocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "changePipeline",
                                                 (Integer) entryValue,
-                                                cameraIndex);
+                                                cameraIndex,
+                                                context);
                                 dcService.publishEvent(changePipelineEvent);
                                 break;
                             }
@@ -224,7 +229,8 @@ public class SocketHandler {
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
                                                 "changePipeline",
                                                 PipelineManager.CAL_3D_INDEX,
-                                                cameraIndex);
+                                                cameraIndex,
+                                                context);
                                 dcService.publishEvent(changePipelineEvent);
                                 break;
                             }
@@ -232,7 +238,7 @@ public class SocketHandler {
                             {
                                 var takeCalSnapshotEvent =
                                         new IncomingWebSocketEvent<>(
-                                                DataChangeDestination.DCD_ACTIVEMODULE, "takeCalSnapshot", 0, cameraIndex);
+                                                DataChangeDestination.DCD_ACTIVEMODULE, "takeCalSnapshot", 0, cameraIndex, context);
                                 dcService.publishEvent(takeCalSnapshotEvent);
                                 break;
                             }
@@ -251,7 +257,8 @@ public class SocketHandler {
                                                         DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS,
                                                         dataEntry.getKey(),
                                                         dataEntry.getValue(),
-                                                        cameraIndex2);
+                                                        cameraIndex2,
+                                                        context);
                                         dcService.publishEvent(pipelineSettingChangeEvent);
                                     }
                                 } else {
