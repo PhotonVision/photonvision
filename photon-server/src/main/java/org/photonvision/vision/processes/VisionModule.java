@@ -17,9 +17,8 @@
 
 package org.photonvision.vision.processes;
 
-import java.util.*;
-
 import io.javalin.websocket.WsContext;
+import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -300,7 +299,8 @@ public class VisionModule {
                                 null));
     }
 
-    private void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
+    private void saveAndBroadcastSelective(
+            WsContext originContext, String propertyName, Object value) {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
         DataChangeService.getInstance()

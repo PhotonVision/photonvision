@@ -238,7 +238,11 @@ public class SocketHandler {
                             {
                                 var takeCalSnapshotEvent =
                                         new IncomingWebSocketEvent<>(
-                                                DataChangeDestination.DCD_ACTIVEMODULE, "takeCalSnapshot", 0, cameraIndex, context);
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "takeCalSnapshot",
+                                                0,
+                                                cameraIndex,
+                                                context);
                                 dcService.publishEvent(takeCalSnapshotEvent);
                                 break;
                             }
