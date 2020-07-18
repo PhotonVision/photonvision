@@ -24,6 +24,7 @@ import io.javalin.websocket.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.commons.lang3.tuple.Pair;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.photonvision.common.dataflow.DataChangeDestination;
@@ -38,7 +39,7 @@ import org.photonvision.vision.processes.PipelineManager;
 public class SocketHandler {
 
     private final Logger logger = new Logger(SocketHandler.class, LogGroup.WebServer);
-    private final List<WsContext> users = new ArrayList<>();
+    private final List<WsContext> users = new CopyOnWriteArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
     private final DataChangeService dcService = DataChangeService.getInstance();
 
