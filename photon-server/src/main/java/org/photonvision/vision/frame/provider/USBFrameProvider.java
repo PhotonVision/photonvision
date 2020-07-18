@@ -22,16 +22,19 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class USBFrameProvider implements FrameProvider {
     private final CvSink cvSink;
-    private final FrameStaticProperties frameStaticProperties;
+    @SuppressWarnings("SpellCheckingInspection")
+    private final VisionSourceSettables settables;
     private final CVMat mat;
 
-    public USBFrameProvider(CvSink sink, FrameStaticProperties frameStaticProperties) {
+    @SuppressWarnings("SpellCheckingInspection")
+    public USBFrameProvider(CvSink sink, VisionSourceSettables visionSettables) {
         cvSink = sink;
         cvSink.setEnabled(true);
-        this.frameStaticProperties = frameStaticProperties;
+        this.settables = visionSettables;
         mat = new CVMat();
     }
 
@@ -41,7 +44,7 @@ public class USBFrameProvider implements FrameProvider {
             mat.release();
         }
         long time = cvSink.grabFrame(mat.getMat());
-        return new Frame(mat, time, frameStaticProperties);
+        return new Frame(mat, time, settables.getFrameStaticProperties());
     }
 
     @Override
