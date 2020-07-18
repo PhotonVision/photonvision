@@ -26,14 +26,15 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.RobotOffsetPointMode;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dCrosshairPipe
-        extends CVPipe<Pair<Mat, List<TrackedTarget>>, Mat, Draw2dCrosshairPipe.Draw2dCrosshairParams> {
+        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dCrosshairPipe.Draw2dCrosshairParams> {
 
     @Override
-    protected Mat process(Pair<Mat, List<TrackedTarget>> in) {
+    protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         Mat image = in.getLeft();
 
         if (params.m_showCrosshair) {
@@ -61,7 +62,7 @@ public class Draw2dCrosshairPipe
             Imgproc.line(image, xMax, xMin, ColorHelper.colorToScalar(params.m_crosshairColor));
             Imgproc.line(image, yMax, yMin, ColorHelper.colorToScalar(params.m_crosshairColor));
         }
-        return image;
+        return null;
     }
 
     public static class Draw2dCrosshairParams {

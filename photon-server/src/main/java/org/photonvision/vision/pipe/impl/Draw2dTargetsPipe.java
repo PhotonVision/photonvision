@@ -25,15 +25,16 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dTargetsPipe
-        extends CVPipe<Pair<Mat, List<TrackedTarget>>, Mat, Draw2dTargetsPipe.Draw2dContoursParams> {
+        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dContoursParams> {
 
     private List<MatOfPoint> m_drawnContours = new ArrayList<>();
 
     @Override
-    protected Mat process(Pair<Mat, List<TrackedTarget>> in) {
+    protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         if (!in.getRight().isEmpty()
                 && (params.showCentroid
                         || params.showMaximumBox
@@ -115,7 +116,7 @@ public class Draw2dTargetsPipe
             }
         }
 
-        return in.getLeft();
+        return null;
     }
 
     public static class Draw2dContoursParams {

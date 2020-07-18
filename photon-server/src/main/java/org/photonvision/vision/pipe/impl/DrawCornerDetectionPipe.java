@@ -23,13 +23,14 @@ import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class DrawCornerDetectionPipe
-        extends CVPipe<Pair<Mat, List<TrackedTarget>>, Mat, DrawCornerDetectionPipe.DrawCornerParams> {
+        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, DrawCornerDetectionPipe.DrawCornerParams> {
 
     @Override
-    protected Mat process(Pair<Mat, List<TrackedTarget>> in) {
+    protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         Mat image = in.getLeft();
 
         for (var target : in.getRight()) {
@@ -39,7 +40,7 @@ public class DrawCornerDetectionPipe
             }
         }
 
-        return image;
+        return null;
     }
 
     public static class DrawCornerParams {

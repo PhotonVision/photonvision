@@ -25,7 +25,8 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.pipe.CVPipeResult;
+import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -86,11 +87,11 @@ public class Calibration3dPipeline
 
             /*Pass the board corners to the pipe, which will check again to see if all boards are valid
             and returns the corresponding image and object points*/
-            findCornersPipeOutput = findBoardCornersPipe.apply(boardSnapshots);
+            findCornersPipeOutput = findBoardCornersPipe.run(boardSnapshots);
             // Increment the time it took to process all board pics to total elapsed time
             sumPipeNanosElapsed += findCornersPipeOutput.nanosElapsed;
 
-            calibrationOutput = calibrate3dPipe.apply(findCornersPipeOutput.result);
+            calibrationOutput = calibrate3dPipe.run(findCornersPipeOutput.output);
             sumPipeNanosElapsed += calibrationOutput.nanosElapsed;
 
             calibrate = false;
@@ -131,10 +132,10 @@ public class Calibration3dPipeline
     }
 
     public double[] perViewErrors() {
-        return calibrationOutput.result.perViewErrors;
+        return calibrationOutput.output.perViewErrors;
     }
 
     public CameraCalibrationCoefficients cameraCalibrationCoefficients() {
-        return calibrationOutput.result;
+        return calibrationOutput.output;
     }
 }

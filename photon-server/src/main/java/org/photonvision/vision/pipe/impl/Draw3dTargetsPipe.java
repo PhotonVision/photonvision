@@ -29,14 +29,15 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw3dTargetsPipe
-        extends CVPipe<Pair<Mat, List<TrackedTarget>>, Mat, Draw3dTargetsPipe.Draw3dContoursParams> {
+        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw3dTargetsPipe.Draw3dContoursParams> {
 
     @Override
-    protected Mat process(Pair<Mat, List<TrackedTarget>> in) {
+    protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         for (var target : in.getRight()) {
 
             // draw convex hull
@@ -121,7 +122,7 @@ public class Draw3dTargetsPipe
             }
         }
 
-        return in.getLeft();
+        return null;
     }
 
     public static class Draw3dContoursParams {

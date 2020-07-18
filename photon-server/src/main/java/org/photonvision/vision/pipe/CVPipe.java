@@ -17,8 +17,6 @@
 
 package org.photonvision.vision.pipe;
 
-import java.util.function.Function;
-
 /**
 * Defines a pipe. A pipe is a single step in a pipeline. This class is to be extended, never used
 * on its own.
@@ -27,7 +25,7 @@ import java.util.function.Function;
 * @param <O> Output type for the pipe
 * @param <P> Parameters type for the pipe
 */
-public abstract class CVPipe<I, O, P> implements Function<I, CVPipeResult<O>> {
+public abstract class CVPipe<I, O, P> {
 
     protected CVPipeResult<O> result = new CVPipeResult<>();
     protected P params;
@@ -48,11 +46,15 @@ public abstract class CVPipe<I, O, P> implements Function<I, CVPipeResult<O>> {
     * @param in Input for pipe processing.
     * @return Result of processing.
     */
-    @Override
-    public CVPipeResult<O> apply(I in) {
+    public CVPipeResult<O> run(I in) {
         long pipeStartNanos = System.nanoTime();
-        result.result = process(in);
+        result.output = process(in);
         result.nanosElapsed = System.nanoTime() - pipeStartNanos;
         return result;
+    }
+
+    public static class CVPipeResult<O> {
+        public O output;
+        public long nanosElapsed;
     }
 }

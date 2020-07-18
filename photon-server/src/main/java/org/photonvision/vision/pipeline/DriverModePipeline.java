@@ -53,15 +53,17 @@ public class DriverModePipeline
     @Override
     public DriverModePipelineResult process(Frame frame, DriverModePipelineSettings settings) {
         // apply pipes
-        var rotateImageResult = rotateImagePipe.apply(frame.image.getMat());
+        var inputMat = frame.image.getMat();
+
+        var rotateImageResult = rotateImagePipe.run(inputMat);
         var draw2dCrosshairResult =
-                draw2dCrosshairPipe.apply(Pair.of(rotateImageResult.result, List.of()));
+                draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
 
         // calculate elapsed nanoseconds
         long totalNanos = rotateImageResult.nanosElapsed + draw2dCrosshairResult.nanosElapsed;
 
         return new DriverModePipelineResult(
                 MathUtils.nanosToMillis(totalNanos),
-                new Frame(new CVMat(draw2dCrosshairResult.result), frame.frameStaticProperties));
+                new Frame(new CVMat(inputMat), frame.frameStaticProperties));
     }
 }

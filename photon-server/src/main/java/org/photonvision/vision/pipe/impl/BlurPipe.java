@@ -21,9 +21,10 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.MutatingPipe;
 
 /** Represents a pipeline that blurs the image. */
-public class BlurPipe extends CVPipe<Mat, Mat, BlurPipe.BlurParams> {
+public class BlurPipe extends MutatingPipe<Mat, BlurPipe.BlurParams> {
     /**
     * Processes this pipe.
     *
@@ -31,9 +32,9 @@ public class BlurPipe extends CVPipe<Mat, Mat, BlurPipe.BlurParams> {
     * @return The processed frame.
     */
     @Override
-    protected Mat process(Mat in) {
+    protected Void process(Mat in) {
         Imgproc.blur(in, in, params.getBlurSize());
-        return in;
+        return null;
     }
 
     public static class BlurParams {

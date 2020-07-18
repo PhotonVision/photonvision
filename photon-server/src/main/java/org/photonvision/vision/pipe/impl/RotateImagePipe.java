@@ -21,9 +21,10 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.MutatingPipe;
 
 /** Pipe that rotates an image to a given orientation */
-public class RotateImagePipe extends CVPipe<Mat, Mat, RotateImagePipe.RotateImageParams> {
+public class RotateImagePipe extends MutatingPipe<Mat, RotateImagePipe.RotateImageParams> {
 
     public RotateImagePipe() {
         setParams(RotateImageParams.DEFAULT);
@@ -40,9 +41,9 @@ public class RotateImagePipe extends CVPipe<Mat, Mat, RotateImagePipe.RotateImag
     * @return Rotated {@link Mat}
     */
     @Override
-    protected Mat process(Mat in) {
+    protected Void process(Mat in) {
         Core.rotate(in, in, params.rotation.value);
-        return in;
+        return null;
     }
 
     public static class RotateImageParams {

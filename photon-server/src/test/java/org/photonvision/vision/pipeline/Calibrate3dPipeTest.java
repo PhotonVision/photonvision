@@ -34,7 +34,6 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.pipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 
@@ -57,16 +56,16 @@ public class Calibrate3dPipeTest {
         FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
         findBoardCornersPipe.setParams(
                 new FindBoardCornersPipe.FindCornersPipeParams(11, 4, false, 15));
-        CVPipeResult<List<List<Mat>>> findBoardCornersPipeOutput = findBoardCornersPipe.apply(frames);
+        var findBoardCornersPipeOutput = findBoardCornersPipe.run(frames);
 
         Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
         calibrate3dPipe.setParams(new Calibrate3dPipe.CalibratePipeParams(new Size(640, 480)));
 
-        CVPipeResult<CameraCalibrationCoefficients> calibrate3dPipeOutput =
-                calibrate3dPipe.apply(findBoardCornersPipeOutput.result);
-        assertTrue(calibrate3dPipeOutput.result.perViewErrors.length > 0);
+        var calibrate3dPipeOutput =
+                calibrate3dPipe.run(findBoardCornersPipeOutput.output);
+        assertTrue(calibrate3dPipeOutput.output.perViewErrors.length > 0);
         System.out.println(
-                "Per View Errors: " + Arrays.toString(calibrate3dPipeOutput.result.perViewErrors));
+                "Per View Errors: " + Arrays.toString(calibrate3dPipeOutput.output.perViewErrors));
     }
 
     @Test
