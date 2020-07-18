@@ -25,13 +25,13 @@ import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.common.util.numbers.DoubleCouple;
-import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.RobotOffsetPointMode;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dCrosshairPipe
-        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dCrosshairPipe.Draw2dCrosshairParams> {
+        extends MutatingPipe<
+                Pair<Mat, List<TrackedTarget>>, Draw2dCrosshairPipe.Draw2dCrosshairParams> {
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {

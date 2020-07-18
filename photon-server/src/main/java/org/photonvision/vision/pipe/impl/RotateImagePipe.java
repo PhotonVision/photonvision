@@ -20,7 +20,6 @@ package org.photonvision.vision.pipe.impl;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.photonvision.vision.opencv.ImageRotationMode;
-import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipe.MutatingPipe;
 
 /** Pipe that rotates an image to a given orientation */

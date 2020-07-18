@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipe.MutatingPipe;
 
 public class OutputMatPipe extends MutatingPipe<Mat, OutputMatPipe.OutputMatParams> {

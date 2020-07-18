@@ -30,7 +30,6 @@ import org.opencv.core.Size;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
@@ -61,8 +60,7 @@ public class Calibrate3dPipeTest {
         Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
         calibrate3dPipe.setParams(new Calibrate3dPipe.CalibratePipeParams(new Size(640, 480)));
 
-        var calibrate3dPipeOutput =
-                calibrate3dPipe.run(findBoardCornersPipeOutput.output);
+        var calibrate3dPipeOutput = calibrate3dPipe.run(findBoardCornersPipeOutput.output);
         assertTrue(calibrate3dPipeOutput.output.perViewErrors.length > 0);
         System.out.println(
                 "Per View Errors: " + Arrays.toString(calibrate3dPipeOutput.output.perViewErrors));

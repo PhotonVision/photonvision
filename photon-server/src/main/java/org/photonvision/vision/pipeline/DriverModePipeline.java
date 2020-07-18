@@ -56,8 +56,7 @@ public class DriverModePipeline
         var inputMat = frame.image.getMat();
 
         var rotateImageResult = rotateImagePipe.run(inputMat);
-        var draw2dCrosshairResult =
-                draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
+        var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
 
         // calculate elapsed nanoseconds
         long totalNanos = rotateImageResult.nanosElapsed + draw2dCrosshairResult.nanosElapsed;

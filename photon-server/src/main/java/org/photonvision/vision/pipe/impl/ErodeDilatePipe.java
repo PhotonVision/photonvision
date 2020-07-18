@@ -20,7 +20,6 @@ package org.photonvision.vision.pipe.impl;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipe.MutatingPipe;
 
 public class ErodeDilatePipe extends MutatingPipe<Mat, ErodeDilatePipe.ErodeDilateParams> {

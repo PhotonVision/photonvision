@@ -216,8 +216,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         }
 
         // Draw 2D Crosshair on input and output
-        var draw2dCrosshairResultOnInput =
-                draw2dCrosshairPipe.run(Pair.of(rawInputMat, targetList));
+        var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(rawInputMat, targetList));
         sumPipeNanosElapsed += draw2dCrosshairResultOnInput.nanosElapsed;
 
         var draw2dCrosshairResultOnOutput =
@@ -226,25 +225,21 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         // Draw 2D contours on input and output
         var draw2dContoursResultOnInput =
-                draw2DTargetsPipe.run(
-                        Pair.of(rawInputMat, collect2dTargetsResult.output));
+                draw2DTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
         sumPipeNanosElapsed += draw2dContoursResultOnInput.nanosElapsed;
 
         var draw2dContoursResultOnOutput =
-                draw2DTargetsPipe.run(
-                        Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
+                draw2DTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
         sumPipeNanosElapsed += draw2dContoursResultOnOutput.nanosElapsed;
 
         // Draw 3D Targets on input and output if necessary
         if (settings.solvePNPEnabled) {
             var drawOnInputResult =
-                    draw3dTargetsPipe.run(
-                            Pair.of(rawInputMat, collect2dTargetsResult.output));
+                    draw3dTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
             sumPipeNanosElapsed += drawOnInputResult.nanosElapsed;
 
             var drawOnOutputResult =
-                    draw3dTargetsPipe.run(
-                            Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
+                    draw3dTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
             sumPipeNanosElapsed += drawOnOutputResult.nanosElapsed;
         }
 
