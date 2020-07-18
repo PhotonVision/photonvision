@@ -95,12 +95,13 @@ public class Draw2dTargetsPipe
                 }
 
                 if (params.showContourNumber) {
-                    var textSize = 0.003 * in.getLeft().rows();
-                    var thickness = 0.008 * in.getLeft().rows();
+                    var textSize = params.kPixelsToText * in.getLeft().rows();
+                    var thickness = params.kPixelsToThickness * in.getLeft().rows();
                     var center = target.m_mainContour.getCenterPoint();
                     var textPos =
                             new Point(
-                                    center.x + 0.02 * in.getLeft().rows(), center.y - 0.02 * in.getLeft().rows());
+                                    center.x + params.kPixelsToOffset * in.getLeft().rows(),
+                                    center.y - params.kPixelsToOffset * in.getLeft().rows());
 
                     Imgproc.putText(
                             in.getLeft(),
@@ -118,6 +119,9 @@ public class Draw2dTargetsPipe
     }
 
     public static class Draw2dContoursParams {
+        public final double kPixelsToText = 0.003;
+        public final double kPixelsToThickness = 0.008;
+        public final double kPixelsToOffset = 0.02;
         public boolean showCentroid = true;
         public boolean showMultiple;
         public int boxOutlineSize = 1;
