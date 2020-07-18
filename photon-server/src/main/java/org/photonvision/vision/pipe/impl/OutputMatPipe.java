@@ -19,37 +19,16 @@ package org.photonvision.vision.pipe.impl;
 
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.vision.opencv.DualMat;
 import org.photonvision.vision.pipe.CVPipe;
 
-public class OutputMatPipe extends CVPipe<DualMat, Mat, OutputMatPipe.OutputMatParams> {
-
-    private Mat m_outputMat = new Mat();
+public class OutputMatPipe extends CVPipe<Mat, Mat, OutputMatPipe.OutputMatParams> {
 
     @Override
-    protected Mat process(DualMat in) {
-        Mat rawCam = in.first;
-        Mat hsv = in.second;
-        if (params.showThreshold()) {
-            // convert input mat
-            hsv.copyTo(m_outputMat);
-            Imgproc.cvtColor(m_outputMat, m_outputMat, Imgproc.COLOR_GRAY2BGR, 3);
-        } else {
-            m_outputMat = rawCam;
-        }
-
-        return m_outputMat;
+    protected Mat process(Mat in) {
+        // convert input mat
+        Imgproc.cvtColor(in, in, Imgproc.COLOR_GRAY2BGR, 3);
+        return in;
     }
 
-    public static class OutputMatParams {
-        private final boolean m_showThreshold;
-
-        public OutputMatParams(boolean showThreshold) {
-            m_showThreshold = showThreshold;
-        }
-
-        public boolean showThreshold() {
-            return m_showThreshold;
-        }
-    }
+    public static class OutputMatParams {}
 }
