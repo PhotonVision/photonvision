@@ -20,14 +20,15 @@ package org.photonvision.vision.frame.provider;
 import edu.wpi.cscore.CvSink;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
-import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class USBFrameProvider implements FrameProvider {
     private final CvSink cvSink;
+
     @SuppressWarnings("SpellCheckingInspection")
     private final VisionSourceSettables settables;
+
     private final CVMat mat;
 
     @SuppressWarnings("SpellCheckingInspection")

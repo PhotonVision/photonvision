@@ -93,6 +93,24 @@ public class Draw2dTargetsPipe
                 if (params.showCentroid) {
                     Imgproc.circle(in.getLeft(), target.getTargetOffsetPoint(), 3, centroidColour, 2);
                 }
+
+                if (params.showContourNumber) {
+                    var textSize = 0.003 * in.getLeft().rows();
+                    var thickness = 0.008 * in.getLeft().rows();
+                    var center = target.m_mainContour.getCenterPoint();
+                    var textPos =
+                            new Point(
+                                    center.x + 0.02 * in.getLeft().rows(), center.y - 0.02 * in.getLeft().rows());
+
+                    Imgproc.putText(
+                            in.getLeft(),
+                            String.valueOf(i),
+                            textPos,
+                            0,
+                            textSize,
+                            ColorHelper.colorToScalar(params.textColor),
+                            (int) thickness);
+                }
             }
         }
 
@@ -106,10 +124,12 @@ public class Draw2dTargetsPipe
         public boolean showRotatedBox = true;
         public boolean showShape = false;
         public boolean showMaximumBox = true;
+        public boolean showContourNumber = true;
         public Color centroidColor = Color.GREEN;
         public Color rotatedBoxColor = Color.BLUE;
         public Color maximumBoxColor = Color.RED;
         public Color shapeOutlineColour = Color.MAGENTA;
+        public Color textColor = Color.GREEN;
 
         // TODO: set other params from UI/settings file?
         public Draw2dContoursParams(boolean showMultipleTargets) {
