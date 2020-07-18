@@ -17,6 +17,7 @@
 
 package org.photonvision.common.dataflow.events;
 
+import io.javalin.websocket.WsContext;
 import java.util.HashMap;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeSource;
@@ -24,15 +25,21 @@ import org.photonvision.common.dataflow.DataChangeSource;
 public class IncomingWebSocketEvent<T> extends DataChangeEvent<T> {
 
     public final Integer cameraIndex;
+    public final WsContext originContext;
 
     public IncomingWebSocketEvent(DataChangeDestination destType, String propertyName, T newValue) {
-        this(destType, propertyName, newValue, null);
+        this(destType, propertyName, newValue, null, null);
     }
 
     public IncomingWebSocketEvent(
-            DataChangeDestination destType, String propertyName, T newValue, Integer cameraIndex) {
+            DataChangeDestination destType,
+            String propertyName,
+            T newValue,
+            Integer cameraIndex,
+            WsContext originContext) {
         super(DataChangeSource.DCS_WEBSOCKET, destType, propertyName, newValue);
         this.cameraIndex = cameraIndex;
+        this.originContext = originContext;
     }
 
     @SuppressWarnings("unchecked")

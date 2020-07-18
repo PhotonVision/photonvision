@@ -17,6 +17,7 @@
 
 package org.photonvision.common.dataflow.events;
 
+import io.javalin.websocket.WsContext;
 import java.util.HashMap;
 import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeSource;
@@ -24,17 +25,24 @@ import org.photonvision.server.UIUpdateType;
 
 public class OutgoingUIEvent<T> extends DataChangeEvent<T> {
     public final UIUpdateType updateType;
+    public final WsContext originContext;
 
-    public OutgoingUIEvent(UIUpdateType updateType, String propertyName, T newValue) {
+    public OutgoingUIEvent(
+            UIUpdateType updateType, String propertyName, T newValue, WsContext originContext) {
         super(DataChangeSource.DCS_WEBSOCKET, DataChangeDestination.DCD_UI, propertyName, newValue);
         this.updateType = updateType;
+        this.originContext = originContext;
     }
 
     public static OutgoingUIEvent<HashMap<String, Object>> wrappedOf(
-            UIUpdateType uiUpdateType, String commandName, String propertyName, Object value) {
+            UIUpdateType uiUpdateType,
+            String commandName,
+            String propertyName,
+            Object value,
+            WsContext originContext) {
         HashMap<String, Object> data = new HashMap<>();
         data.put(propertyName, value);
 
-        return new OutgoingUIEvent<>(uiUpdateType, commandName, data);
+        return new OutgoingUIEvent<>(uiUpdateType, commandName, data, originContext);
     }
 }

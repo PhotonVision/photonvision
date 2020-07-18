@@ -49,7 +49,7 @@ public class SortContoursPipe
         }
 
         return new ArrayList<>(
-                m_sortedContours.subList(0, Math.min(in.size(), params.getMaxTargets() - 1)));
+                m_sortedContours.subList(0, Math.min(in.size(), params.getMaxTargets())));
     }
 
     private double calcSquareCenterDistance(PotentialTarget rect) {

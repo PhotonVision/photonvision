@@ -43,7 +43,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
 
     public DoubleCouple contourArea = new DoubleCouple(0.0, 100.0);
     public DoubleCouple contourRatio = new DoubleCouple(0.0, 20.0);
-    public DoubleCouple contourExtent = new DoubleCouple(0.0, 100.0);
+    public DoubleCouple contourFullness = new DoubleCouple(0.0, 100.0);
     public int contourSpecklePercentage = 5;
 
     // the order in which to sort contours to find the most desirable
@@ -86,7 +86,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 && hsvValue.equals(that.hsvValue)
                 && contourArea.equals(that.contourArea)
                 && contourRatio.equals(that.contourRatio)
-                && contourExtent.equals(that.contourExtent)
+                && contourFullness.equals(that.contourFullness)
                 && contourSortMode == that.contourSortMode
                 && contourTargetOffsetPointEdge == that.contourTargetOffsetPointEdge
                 && contourTargetOrientation == that.contourTargetOrientation
@@ -107,7 +107,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 dilate,
                 contourArea,
                 contourRatio,
-                contourExtent,
+                contourFullness,
                 contourSpecklePercentage,
                 contourSortMode,
                 contourTargetOffsetPointEdge,

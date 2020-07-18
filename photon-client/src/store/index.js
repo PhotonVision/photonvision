@@ -53,7 +53,7 @@ export default new Vuex.Store({
                     cameraGain: 3,
                     inputImageRotationMode: 0,
                     cameraVideoModeIndex: 0,
-                    outputFrameDivisor: 0,
+                    streamingFrameDivisor: 0,
 
                     // Settings that apply to reflective
                     hsvHue: [0, 15],
@@ -63,7 +63,7 @@ export default new Vuex.Store({
                     dilate: false,
                     contourArea: [0, 12],
                     contourRatio: [0, 12],
-                    contourExtent: [0, 12],
+                    contourFullness: [0, 12],
                     contourSpecklePercentage: 5,
                     contourGroupingMode: 0,
                     contourIntersection: 0,

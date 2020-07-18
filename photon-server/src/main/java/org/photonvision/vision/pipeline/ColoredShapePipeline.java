@@ -127,7 +127,10 @@ public class ColoredShapePipeline
         groupContoursPipe.setParams(groupContoursParams);
 
         SortContoursPipe.SortContoursParams sortContoursParams =
-                new SortContoursPipe.SortContoursParams(settings.contourSortMode, frameStaticProperties, 5);
+                new SortContoursPipe.SortContoursParams(
+                        settings.contourSortMode,
+                        frameStaticProperties,
+                        settings.outputShowMultipleTargets ? 5 : 1); // TODO don't hardcode?
         sortContoursPipe.setParams(sortContoursParams);
 
         Collect2dTargetsPipe.Collect2dTargetsParams collect2dTargetsParams =
