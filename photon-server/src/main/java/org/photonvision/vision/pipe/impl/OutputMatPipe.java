@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.vision.opencv.DualMat;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class OutputMatPipe extends CVPipe<Mat, Mat, OutputMatPipe.OutputMatParams> {

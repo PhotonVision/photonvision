@@ -20,7 +20,6 @@ package org.photonvision.vision.pipeline;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
-import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -180,8 +179,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         CVPipeResult<Mat> hsvPipeResult = hsvPipe.apply(erodeDilateResult.result);
         sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
 
-        // mat leak fix attempt
-        // the first is the raw input mat, the second is the hsvpipe result
+        // the first is the raw input mat, the second is the HSVPipe result
         outputMats.first = rawInputMat;
         outputMats.second = hsvPipeResult.result;
 
@@ -223,49 +221,48 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             targetList = collect2dTargetsResult.result;
         }
 
-        // the first is the raw input mat, the second is the hsvpipe result
+        // the first is the raw input mat, the second is the HSVPipe result
         CVPipeResult<Mat> drawOnInputResult, drawOnOutputResult;
 
-        // Draw on input
+        // Draw 2D Crosshair on input and output
         CVPipeResult<Mat> draw2dCrosshairResultOnInput =
                 draw2dCrosshairPipe.apply(Pair.of(outputMats.first, targetList));
         sumPipeNanosElapsed += draw2dCrosshairResultOnInput.nanosElapsed;
 
+        CVPipeResult<Mat> draw2dCrosshairResultOnOutput =
+                draw2dCrosshairPipe.apply(Pair.of(outputMats.second, targetList));
+        sumPipeNanosElapsed += draw2dCrosshairResultOnOutput.nanosElapsed;
+
+        // Draw 2D contours on input and output
         CVPipeResult<Mat> draw2dContoursResultOnInput =
                 draw2DTargetsPipe.apply(
                         Pair.of(draw2dCrosshairResultOnInput.result, collect2dTargetsResult.result));
         sumPipeNanosElapsed += draw2dCrosshairResultOnInput.nanosElapsed;
-
-        if (settings.solvePNPEnabled) {
-            drawOnInputResult =
-                    draw3dTargetsPipe.apply(
-                            Pair.of(draw2dContoursResultOnInput.result, collect2dTargetsResult.result));
-            sumPipeNanosElapsed += drawOnInputResult.nanosElapsed;
-        } else {
-            drawOnInputResult = draw2dContoursResultOnInput;
-        }
-
-        // Draw on output
-        CVPipeResult<Mat> outputMatPipeResult = outputMatPipe.apply(outputMats.second);
-        sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
-        
-        CVPipeResult<Mat> draw2dCrosshairResultOnOutput =
-                draw2dCrosshairPipe.apply(Pair.of(outputMats.second, targetList));
-        sumPipeNanosElapsed += draw2dCrosshairResultOnOutput.nanosElapsed;
 
         CVPipeResult<Mat> draw2dContoursResultOnOutput =
                 draw2DTargetsPipe.apply(
                         Pair.of(draw2dCrosshairResultOnOutput.result, collect2dTargetsResult.result));
         sumPipeNanosElapsed += draw2dContoursResultOnOutput.nanosElapsed;
 
+        // Draw 3D Targets on input and output if necessary
         if (settings.solvePNPEnabled) {
+            drawOnInputResult =
+                    draw3dTargetsPipe.apply(
+                            Pair.of(draw2dContoursResultOnInput.result, collect2dTargetsResult.result));
+            sumPipeNanosElapsed += drawOnInputResult.nanosElapsed;
+
             drawOnOutputResult =
                     draw3dTargetsPipe.apply(
                             Pair.of(draw2dContoursResultOnOutput.result, collect2dTargetsResult.result));
             sumPipeNanosElapsed += drawOnOutputResult.nanosElapsed;
         } else {
+            drawOnInputResult = draw2dContoursResultOnInput;
             drawOnOutputResult = draw2dContoursResultOnOutput;
         }
+
+        // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
+        CVPipeResult<Mat> outputMatPipeResult = outputMatPipe.apply(outputMats.second);
+        sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
 
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
