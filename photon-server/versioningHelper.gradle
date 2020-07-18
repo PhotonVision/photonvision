@@ -1,3 +1,6 @@
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
 gradle.allprojects {
     ext.getCurrentVersion = { ->
         def stdout = new ByteArrayOutputStream()
@@ -5,8 +8,14 @@ gradle.allprojects {
             commandLine 'git', 'describe', '--tags'
             standardOutput = stdout
         }
-        return stdout.toString().trim().toLowerCase()
+        String ret = DateTimeFormatter.ofPattern("yyyy.M.d").format(LocalDateTime.now())
+        String tagIsh = stdout.toString().trim().toLowerCase()
+        boolean shouldIncludeTagish = tagIsh.startsWith("dev")
+        if(shouldIncludeTagish) ret = ret + "-" + tagIsh
+        println("Picked up version: " + ret)
+        return ret
     }
+    ext.versionString = getCurrentVersion()
 }
 
 task writeCurrentVersionJava {
@@ -19,7 +28,7 @@ task writeCurrentVersionJava {
             " * any time the publish task is run, or when this file is deleted.\n" +
             " */\n\n" +
             "public class PhotonVersion {\n" +
-            String.format("    public static final String versionString = \"%s\";\n", getCurrentVersion()) +
+            String.format("    public static final String versionString = \"%s\";\n", versionString) +
             "}"
 }
 
