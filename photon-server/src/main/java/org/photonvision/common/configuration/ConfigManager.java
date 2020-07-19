@@ -36,7 +36,7 @@ public class ConfigManager {
     private static ConfigManager INSTANCE;
 
     private PhotonConfiguration config;
-    private final File rootFolder;
+    final File rootFolder;
     private final File hardwareConfigFile;
     private final File networkConfigFile;
     private final File camerasFolder;
@@ -52,11 +52,11 @@ public class ConfigManager {
         return config;
     }
 
-    protected static Path getRootFolder() {
+    private static Path getRootFolder() {
         return Path.of("photonvision");
     }
 
-    private ConfigManager(Path rootFolder) {
+    ConfigManager(Path rootFolder) {
         this.rootFolder = new File(rootFolder.toUri());
         this.hardwareConfigFile =
                 new File(Path.of(rootFolder.toString(), "hardwareConfig.json").toUri());
@@ -246,7 +246,7 @@ public class ConfigManager {
                                         .map(
                                                 p -> {
                                                     var relativizedFilePath =
-                                                            getRootFolder().toAbsolutePath().relativize(p).toString();
+                                                            rootFolder.toPath().toAbsolutePath().relativize(p).toString();
                                                     try {
                                                         return JacksonUtils.deserialize(p, CVPipelineSettings.class);
                                                     } catch (JsonProcessingException e) {
