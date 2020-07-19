@@ -61,7 +61,7 @@ public class PipelineProfiler {
                 "Draw3dTargetsOutput",
             };
 
-    private static String getReflectiveProfileString(long[] nanos) {
+    protected static String getReflectiveProfileString(long[] nanos) {
         if (nanos.length != ReflectivePipeCount) {
             return "Invalid data";
         }
