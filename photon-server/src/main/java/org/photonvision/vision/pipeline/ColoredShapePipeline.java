@@ -56,7 +56,6 @@ public class ColoredShapePipeline
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
 
     private final Mat rawInputMat = new Mat();
-    private final DualMat outputMats = new DualMat();
     private final Point[] rectPoints = new Point[4];
 
     public ColoredShapePipeline() {
@@ -283,7 +282,7 @@ public class ColoredShapePipeline
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
                 targetList,
-                new Frame(new CVMat(outputMats.second), frame.frameStaticProperties),
-                new Frame(new CVMat(outputMats.first), frame.frameStaticProperties));
+                new Frame(new CVMat(hsvPipeResult.output), frame.frameStaticProperties),
+                new Frame(new CVMat(rawInputMat), frame.frameStaticProperties));
     }
 }
