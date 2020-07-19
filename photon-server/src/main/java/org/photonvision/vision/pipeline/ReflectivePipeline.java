@@ -215,6 +215,10 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             targetList = collect2dTargetsResult.output;
         }
 
+        // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
+        var outputMatPipeResult = outputMatPipe.run(hsvPipeResult.output);
+        sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
+
         // Draw 2D Crosshair on input and output
         var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(rawInputMat, targetList));
         sumPipeNanosElapsed += draw2dCrosshairResultOnInput.nanosElapsed;
@@ -242,10 +246,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                     draw3dTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
             sumPipeNanosElapsed += drawOnOutputResult.nanosElapsed;
         }
-
-        // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
-        var outputMatPipeResult = outputMatPipe.run(hsvPipeResult.output);
-        sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
 
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
