@@ -17,7 +17,4 @@
 
 package org.photonvision.vision.pipe;
 
-public class CVPipeResult<O> {
-    public O result;
-    public long nanosElapsed;
-}
+public abstract class MutatingPipe<I, P> extends CVPipe<I, Void, P> {}

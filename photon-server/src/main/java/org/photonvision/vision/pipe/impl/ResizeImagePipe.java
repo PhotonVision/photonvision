@@ -21,10 +21,10 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.frame.FrameDivisor;
-import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.MutatingPipe;
 
 /** Pipe that resizes an image to a given resolution */
-public class ResizeImagePipe extends CVPipe<Mat, Mat, ResizeImagePipe.ResizeImageParams> {
+public class ResizeImagePipe extends MutatingPipe<Mat, ResizeImagePipe.ResizeImageParams> {
 
     public ResizeImagePipe() {
         setParams(ResizeImageParams.DEFAULT);
@@ -34,10 +34,9 @@ public class ResizeImagePipe extends CVPipe<Mat, Mat, ResizeImagePipe.ResizeImag
     * Process this pipe
     *
     * @param in {@link Mat} to be resized
-    * @return Resized {@link Mat}
     */
     @Override
-    protected Mat process(Mat in) {
+    protected Void process(Mat in) {
 
         // if a divisor is set, use that instead of a size.
         if (params.getDivisor() != null) {
@@ -47,7 +46,7 @@ public class ResizeImagePipe extends CVPipe<Mat, Mat, ResizeImagePipe.ResizeImag
         }
 
         Imgproc.resize(in, in, params.getSize());
-        return in;
+        return null;
     }
 
     public static class ResizeImageParams {

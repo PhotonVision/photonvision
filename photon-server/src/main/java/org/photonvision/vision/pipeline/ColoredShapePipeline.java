@@ -27,13 +27,13 @@ import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.*;
-import org.photonvision.vision.pipe.CVPipeResult;
+import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
 
-@SuppressWarnings({"DuplicatedCode", "UnusedAssignment"})
+@SuppressWarnings({"DuplicatedCode"})
 public class ColoredShapePipeline
         extends CVPipeline<CVPipelineResult, ColoredShapePipelineSettings> {
 
@@ -56,7 +56,6 @@ public class ColoredShapePipeline
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
 
     private final Mat rawInputMat = new Mat();
-    private final DualMat outputMats = new DualMat();
     private final Point[] rectPoints = new Point[4];
 
     public ColoredShapePipeline() {
@@ -180,123 +179,110 @@ public class ColoredShapePipeline
 
         long sumPipeNanosElapsed = 0L;
 
-        CVPipeResult<Mat> rotateImageResult = rotateImagePipe.apply(frame.image.getMat());
+        var rotateImageResult = rotateImagePipe.run(frame.image.getMat());
         sumPipeNanosElapsed += rotateImageResult.nanosElapsed;
 
         rawInputMat.release();
         frame.image.getMat().copyTo(rawInputMat);
 
-        CVPipeResult<Mat> erodeDilateResult = erodeDilatePipe.apply(rotateImageResult.result);
+        var erodeDilateResult = erodeDilatePipe.run(rawInputMat);
         sumPipeNanosElapsed += erodeDilateResult.nanosElapsed;
 
-        CVPipeResult<Mat> hsvPipeResult = hsvPipe.apply(erodeDilateResult.result);
+        CVPipeResult<Mat> hsvPipeResult = hsvPipe.run(rawInputMat);
         sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
 
-        // the first is the raw input mat, the second is the HSVPipe result
-        outputMats.first = rawInputMat;
-        outputMats.second = hsvPipeResult.result;
-
-        CVPipeResult<List<Contour>> findContoursResult = findContoursPipe.apply(hsvPipeResult.result);
+        CVPipeResult<List<Contour>> findContoursResult = findContoursPipe.run(hsvPipeResult.output);
         sumPipeNanosElapsed += findContoursResult.nanosElapsed;
 
         CVPipeResult<List<Contour>> speckleRejectResult =
-                speckleRejectPipe.apply(findContoursResult.result);
+                speckleRejectPipe.run(findContoursResult.output);
         sumPipeNanosElapsed += speckleRejectResult.nanosElapsed;
 
         List<CVShape> shapes;
         if (settings.desiredShape == ContourShape.Circle) {
             CVPipeResult<List<CVShape>> findCirclesResult =
-                    findCirclesPipe.apply(Pair.of(hsvPipeResult.result, speckleRejectResult.result));
+                    findCirclesPipe.run(Pair.of(hsvPipeResult.output, speckleRejectResult.output));
             sumPipeNanosElapsed += findCirclesResult.nanosElapsed;
-            shapes = findCirclesResult.result;
+            shapes = findCirclesResult.output;
         } else {
             CVPipeResult<List<CVShape>> findPolygonsResult =
-                    findPolygonPipe.apply(speckleRejectResult.result);
+                    findPolygonPipe.run(speckleRejectResult.output);
             sumPipeNanosElapsed += findPolygonsResult.nanosElapsed;
-            shapes = findPolygonsResult.result;
+            shapes = findPolygonsResult.output;
         }
 
-        CVPipeResult<List<CVShape>> filterShapeResult = filterShapesPipe.apply(shapes);
+        CVPipeResult<List<CVShape>> filterShapeResult = filterShapesPipe.run(shapes);
         sumPipeNanosElapsed += filterShapeResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> groupContoursResult =
-                groupContoursPipe.apply(
-                        filterShapeResult.result.stream()
+                groupContoursPipe.run(
+                        filterShapeResult.output.stream()
                                 .map(CVShape::getContour)
                                 .collect(Collectors.toList()));
         sumPipeNanosElapsed += groupContoursResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
-                sortContoursPipe.apply(groupContoursResult.result);
+                sortContoursPipe.run(groupContoursResult.output);
         sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
 
         CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
-                collect2dTargetsPipe.apply(sortContoursResult.result);
+                collect2dTargetsPipe.run(sortContoursResult.output);
         sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
 
         List<TrackedTarget> targetList;
 
         if (settings.solvePNPEnabled && settings.desiredShape == ContourShape.Circle) {
-            var cornerDetectionResult = cornerDetectionPipe.apply(collect2dTargetsResult.result);
-            collect2dTargetsResult.result.forEach(
+            var cornerDetectionResult = cornerDetectionPipe.run(collect2dTargetsResult.output);
+            collect2dTargetsResult.output.forEach(
                     shape -> {
                         shape.getMinAreaRect().points(rectPoints);
                         shape.setCorners(Arrays.asList(rectPoints));
                     });
             sumPipeNanosElapsed += cornerDetectionResult.nanosElapsed;
 
-            var solvePNPResult = solvePNPPipe.apply(cornerDetectionResult.result);
+            var solvePNPResult = solvePNPPipe.run(cornerDetectionResult.output);
             sumPipeNanosElapsed += solvePNPResult.nanosElapsed;
 
-            targetList = solvePNPResult.result;
+            targetList = solvePNPResult.output;
         } else {
-            targetList = collect2dTargetsResult.result;
+            targetList = collect2dTargetsResult.output;
         }
 
-        // the first is the raw input mat, the second is the HSVPipe result
-        CVPipeResult<Mat> drawOnInputResult, drawOnOutputResult;
-
-        CVPipeResult<Mat> draw2dCrosshairResultOnInput =
-                draw2dCrosshairPipe.apply(Pair.of(outputMats.first, targetList));
+        // Draw 2D Crosshair on input and output
+        var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(rawInputMat, targetList));
         sumPipeNanosElapsed += draw2dCrosshairResultOnInput.nanosElapsed;
 
-        CVPipeResult<Mat> draw2dCrosshairResultOnOutput =
-                draw2dCrosshairPipe.apply(Pair.of(outputMats.second, targetList));
+        var draw2dCrosshairResultOnOutput =
+                draw2dCrosshairPipe.run(Pair.of(hsvPipeResult.output, targetList));
         sumPipeNanosElapsed += draw2dCrosshairResultOnOutput.nanosElapsed;
 
-        CVPipeResult<Mat> draw2dContoursResultOnInput =
-                draw2DTargetsPipe.apply(
-                        Pair.of(draw2dCrosshairResultOnInput.result, collect2dTargetsResult.result));
+        // Draw 2D contours on input and output
+        var draw2dContoursResultOnInput =
+                draw2DTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
         sumPipeNanosElapsed += draw2dContoursResultOnInput.nanosElapsed;
 
-        CVPipeResult<Mat> draw2dContoursResultOnOutput =
-                draw2DTargetsPipe.apply(
-                        Pair.of(draw2dCrosshairResultOnOutput.result, collect2dTargetsResult.result));
+        var draw2dContoursResultOnOutput =
+                draw2DTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
         sumPipeNanosElapsed += draw2dContoursResultOnOutput.nanosElapsed;
 
         if (settings.solvePNPEnabled && settings.desiredShape == ContourShape.Circle) {
-            drawOnInputResult =
-                    draw3dTargetsPipe.apply(
-                            Pair.of(draw2dContoursResultOnInput.result, collect2dTargetsResult.result));
+            var drawOnInputResult =
+                    draw3dTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
             sumPipeNanosElapsed += drawOnInputResult.nanosElapsed;
 
-            drawOnOutputResult =
-                    draw3dTargetsPipe.apply(
-                            Pair.of(draw2dContoursResultOnOutput.result, collect2dTargetsResult.result));
+            var drawOnOutputResult =
+                    draw3dTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
             sumPipeNanosElapsed += drawOnOutputResult.nanosElapsed;
-        } else {
-            drawOnInputResult = draw2dContoursResultOnInput;
-            drawOnOutputResult = draw2dContoursResultOnOutput;
         }
 
         // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
-        CVPipeResult<Mat> outputMatPipeResult = outputMatPipe.apply(outputMats.second);
+        var outputMatPipeResult = outputMatPipe.run(hsvPipeResult.output);
         sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
 
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
                 targetList,
-                new Frame(new CVMat(outputMats.second), frame.frameStaticProperties),
-                new Frame(new CVMat(outputMats.first), frame.frameStaticProperties));
+                new Frame(new CVMat(hsvPipeResult.output), frame.frameStaticProperties),
+                new Frame(new CVMat(rawInputMat), frame.frameStaticProperties));
     }
 }

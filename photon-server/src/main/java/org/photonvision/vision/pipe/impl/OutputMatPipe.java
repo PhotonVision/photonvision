@@ -19,15 +19,15 @@ package org.photonvision.vision.pipe.impl;
 
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.MutatingPipe;
 
-public class OutputMatPipe extends CVPipe<Mat, Mat, OutputMatPipe.OutputMatParams> {
+public class OutputMatPipe extends MutatingPipe<Mat, OutputMatPipe.OutputMatParams> {
 
     @Override
-    protected Mat process(Mat in) {
+    protected Void process(Mat in) {
         // convert input mat
         Imgproc.cvtColor(in, in, Imgproc.COLOR_GRAY2BGR, 3);
-        return in;
+        return null;
     }
 
     public static class OutputMatParams {}

@@ -20,18 +20,18 @@ package org.photonvision.vision.pipe.impl;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipe.MutatingPipe;
 
-public class ErodeDilatePipe extends CVPipe<Mat, Mat, ErodeDilatePipe.ErodeDilateParams> {
+public class ErodeDilatePipe extends MutatingPipe<Mat, ErodeDilatePipe.ErodeDilateParams> {
     @Override
-    protected Mat process(Mat in) {
+    protected Void process(Mat in) {
         if (params.shouldErode()) {
             Imgproc.erode(in, in, params.getKernel());
         }
         if (params.shouldDilate()) {
             Imgproc.dilate(in, in, params.getKernel());
         }
-        return in;
+        return null;
     }
 
     public static class ErodeDilateParams {
