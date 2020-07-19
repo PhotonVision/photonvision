@@ -181,7 +181,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         CVPipeResult<Mat> hsvPipeResult = hsvPipe.run(rawInputMat);
         sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
-        pipeProfileNanos[3] =  pipeProfileNanos[3] = hsvPipeResult.nanosElapsed;
+        pipeProfileNanos[3] = pipeProfileNanos[3] = hsvPipeResult.nanosElapsed;
 
         CVPipeResult<List<Contour>> findContoursResult = findContoursPipe.run(hsvPipeResult.output);
         sumPipeNanosElapsed += pipeProfileNanos[4] = findContoursResult.nanosElapsed;
@@ -228,8 +228,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         sumPipeNanosElapsed += pipeProfileNanos[12] = outputMatPipeResult.nanosElapsed;
 
         // Draw 2D Crosshair on input and output
-        var draw2dCrosshairResultOnInput =
-                draw2dCrosshairPipe.run(Pair.of(rawInputMat, targetList));
+        var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(rawInputMat, targetList));
         sumPipeNanosElapsed += pipeProfileNanos[13] = draw2dCrosshairResultOnInput.nanosElapsed;
 
         var draw2dCrosshairResultOnOutput =
