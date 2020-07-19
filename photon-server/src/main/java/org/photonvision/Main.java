@@ -39,10 +39,6 @@ public class Main {
     private static final Logger logger = new Logger(Main.class, LogGroup.General);
     public static final int DEFAULT_WEBPORT = 5800;
 
-    private static String getVersion() {
-        return "2020.7.1"; // TODO: grab from gradle/resource somehow
-    }
-
     public static void main(String[] args) {
         Logger.setLevel(LogGroup.Camera, LogLevel.TRACE);
         Logger.setLevel(LogGroup.WebServer, LogLevel.TRACE);
@@ -54,7 +50,7 @@ public class Main {
 
         logger.info(
                 "Starting PhotonVision version "
-                        + getVersion()
+                        + PhotonVersion.versionString
                         + " on "
                         + Platform.CurrentPlatform.toString());
         try {
