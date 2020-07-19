@@ -16,7 +16,7 @@ gradle.allprojects {
 }
 
 task writeCurrentVersionJava {
-    String date = DateTimeFormatter.ofPattern("yyyy-M-d h:m:s").format(LocalDateTime.now())
+    String date = DateTimeFormatter.ofPattern("yyyy-M-d hh:mm:ss").format(LocalDateTime.now())
     File versionFile = new File("src/main/java/org/photonvision/PhotonVersion.java")
     versionFile.delete()
     versionFile << "package org.photonvision;\n" +
