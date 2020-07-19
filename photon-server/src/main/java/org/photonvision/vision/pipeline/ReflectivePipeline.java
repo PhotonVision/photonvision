@@ -52,7 +52,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final ErodeDilatePipe erodeDilatePipe = new ErodeDilatePipe();
     private final HSVPipe hsvPipe = new HSVPipe();
-    private final OutputMatPipe outputMatPipe = new OutputMatPipe();
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
     private final FilterContoursPipe filterContoursPipe = new FilterContoursPipe();
@@ -61,11 +60,13 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
     private final CornerDetectionPipe cornerDetectionPipe = new CornerDetectionPipe();
     private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
+    private final OutputMatPipe outputMatPipe = new OutputMatPipe();
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
-    private final Draw2dTargetsPipe draw2DTargetsPipe = new Draw2dTargetsPipe();
+    private final Draw2dTargetsPipe draw2dTargetsPipe = new Draw2dTargetsPipe();
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
 
     private final Mat rawInputMat = new Mat();
+    private final long[] pipeProfileNanos = new long[PipelineProfiler.ReflectivePipeCount];
 
     public ReflectivePipeline() {
         settings = new ReflectivePipelineSettings();
@@ -141,7 +142,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         Draw2dTargetsPipe.Draw2dContoursParams draw2dContoursParams =
                 new Draw2dTargetsPipe.Draw2dContoursParams(settings.outputShowMultipleTargets);
-        draw2DTargetsPipe.setParams(draw2dContoursParams);
+        draw2dTargetsPipe.setParams(draw2dContoursParams);
 
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
@@ -166,86 +167,99 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         long sumPipeNanosElapsed = 0L;
 
         var rotateImageResult = rotateImagePipe.run(frame.image.getMat());
-        sumPipeNanosElapsed += rotateImageResult.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[0] = rotateImageResult.nanosElapsed;
 
+        // TODO: make this a pipe?
+        long inputCopyStartNanos = System.nanoTime();
         rawInputMat.release();
         frame.image.getMat().copyTo(rawInputMat);
+        long inputCopyElapsedNanos = System.nanoTime() - inputCopyStartNanos;
+        sumPipeNanosElapsed += pipeProfileNanos[1] = inputCopyElapsedNanos;
 
         var erodeDilateResult = erodeDilatePipe.run(rawInputMat);
-        sumPipeNanosElapsed += erodeDilateResult.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[2] = erodeDilateResult.nanosElapsed;
 
         CVPipeResult<Mat> hsvPipeResult = hsvPipe.run(rawInputMat);
         sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
+        pipeProfileNanos[3] =  pipeProfileNanos[3] = hsvPipeResult.nanosElapsed;
 
         CVPipeResult<List<Contour>> findContoursResult = findContoursPipe.run(hsvPipeResult.output);
-        sumPipeNanosElapsed += findContoursResult.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[4] = findContoursResult.nanosElapsed;
 
         CVPipeResult<List<Contour>> speckleRejectResult =
                 speckleRejectPipe.run(findContoursResult.output);
-        sumPipeNanosElapsed += speckleRejectResult.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[5] = speckleRejectResult.nanosElapsed;
 
         CVPipeResult<List<Contour>> filterContoursResult =
                 filterContoursPipe.run(speckleRejectResult.output);
-        sumPipeNanosElapsed += filterContoursResult.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[6] = filterContoursResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> groupContoursResult =
                 groupContoursPipe.run(filterContoursResult.output);
-        sumPipeNanosElapsed += groupContoursResult.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[7] = groupContoursResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
                 sortContoursPipe.run(groupContoursResult.output);
-        sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[8] = sortContoursResult.nanosElapsed;
 
         CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
                 collect2dTargetsPipe.run(sortContoursResult.output);
-        sumPipeNanosElapsed += collect2dTargetsResult.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[9] = collect2dTargetsResult.nanosElapsed;
 
         List<TrackedTarget> targetList;
 
         // 3d stuff
         if (settings.solvePNPEnabled) {
             var cornerDetectionResult = cornerDetectionPipe.run(collect2dTargetsResult.output);
-            sumPipeNanosElapsed += cornerDetectionResult.nanosElapsed;
+            sumPipeNanosElapsed += pipeProfileNanos[10] = cornerDetectionResult.nanosElapsed;
 
             var solvePNPResult = solvePNPPipe.run(cornerDetectionResult.output);
-            sumPipeNanosElapsed += solvePNPResult.nanosElapsed;
+            sumPipeNanosElapsed += pipeProfileNanos[11] = solvePNPResult.nanosElapsed;
 
             targetList = solvePNPResult.output;
         } else {
+            pipeProfileNanos[10] = 0;
+            pipeProfileNanos[11] = 0;
             targetList = collect2dTargetsResult.output;
         }
 
         // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
         var outputMatPipeResult = outputMatPipe.run(hsvPipeResult.output);
-        sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[12] = outputMatPipeResult.nanosElapsed;
 
         // Draw 2D Crosshair on input and output
-        var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(rawInputMat, targetList));
-        sumPipeNanosElapsed += draw2dCrosshairResultOnInput.nanosElapsed;
+        var draw2dCrosshairResultOnInput =
+                draw2dCrosshairPipe.run(Pair.of(rawInputMat, targetList));
+        sumPipeNanosElapsed += pipeProfileNanos[13] = draw2dCrosshairResultOnInput.nanosElapsed;
 
         var draw2dCrosshairResultOnOutput =
                 draw2dCrosshairPipe.run(Pair.of(hsvPipeResult.output, targetList));
-        sumPipeNanosElapsed += draw2dCrosshairResultOnOutput.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[14] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
         // Draw 2D contours on input and output
-        var draw2dContoursResultOnInput =
-                draw2DTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
-        sumPipeNanosElapsed += draw2dContoursResultOnInput.nanosElapsed;
+        var draw2dTargetsOnInput =
+                draw2dTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
+        sumPipeNanosElapsed += pipeProfileNanos[15] = draw2dTargetsOnInput.nanosElapsed;
 
-        var draw2dContoursResultOnOutput =
-                draw2DTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
-        sumPipeNanosElapsed += draw2dContoursResultOnOutput.nanosElapsed;
+        var draw2dTargetsOnOutput =
+                draw2dTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
+        sumPipeNanosElapsed += pipeProfileNanos[16] = draw2dTargetsOnOutput.nanosElapsed;
 
         // Draw 3D Targets on input and output if necessary
         if (settings.solvePNPEnabled) {
             var drawOnInputResult =
                     draw3dTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
-            sumPipeNanosElapsed += drawOnInputResult.nanosElapsed;
+            sumPipeNanosElapsed += pipeProfileNanos[17] = drawOnInputResult.nanosElapsed;
 
             var drawOnOutputResult =
                     draw3dTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
-            sumPipeNanosElapsed += drawOnOutputResult.nanosElapsed;
+            sumPipeNanosElapsed += pipeProfileNanos[18] = drawOnOutputResult.nanosElapsed;
+        } else {
+            pipeProfileNanos[17] = 0;
+            pipeProfileNanos[18] = 0;
         }
+
+        PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
