@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -44,7 +45,7 @@ public class ConfigTest {
 
     static {
         TestUtils.loadLibraries();
-        configMgr = ConfigManager.getInstance();
+        configMgr = new ConfigManager(Path.of("testconfigdir"));
     }
 
     @BeforeAll
@@ -74,16 +75,16 @@ public class ConfigTest {
 
         var camConfDir =
                 new File(
-                        Path.of(ConfigManager.getRootFolder().toString(), "cameras", "TestCamera")
+                        Path.of(configMgr.rootFolder.toString(), "cameras", "TestCamera")
                                 .toAbsolutePath()
                                 .toString());
         Assertions.assertTrue(camConfDir.exists(), "TestCamera config folder not found!");
 
         Assertions.assertTrue(
-                Files.exists(Path.of(ConfigManager.getRootFolder().toString(), "hardwareConfig.json")),
+                Files.exists(Path.of(configMgr.rootFolder.toString(), "hardwareConfig.json")),
                 "hardwareConfig.json file not found!");
         Assertions.assertTrue(
-                Files.exists(Path.of(ConfigManager.getRootFolder().toString(), "networkSettings.json")),
+                Files.exists(Path.of(configMgr.rootFolder.toString(), "networkSettings.json")),
                 "networkSettings.json file not found!");
     }
 
@@ -108,13 +109,14 @@ public class ConfigTest {
     }
 
     @AfterAll
-    public static void cleanup() {
+    public static void cleanup() throws IOException {
         try {
             Files.deleteIfExists(Paths.get("settings.json"));
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        new File(ConfigManager.getRootFolder().toAbsolutePath().toString()).delete();
+        FileUtils.cleanDirectory(configMgr.rootFolder);
+        configMgr.rootFolder.delete();
     }
 }
