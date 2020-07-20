@@ -20,9 +20,10 @@ package org.photonvision.vision.pipeline.result;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.Objects;
+import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.target.TrackedTarget;
 
-public class SimpleTrackedTarget extends BytePackable {
+public class SimpleTrackedTarget {
     public static final int PACK_SIZE_BYTES = Double.BYTES * 7;
 
     private double yaw;
@@ -77,44 +78,42 @@ public class SimpleTrackedTarget extends BytePackable {
         return Objects.hash(yaw, pitch, area, robotRelativePose);
     }
 
-    @Override
-    public byte[] toByteArray() {
-        resetBufferPosition();
-        byte[] data = new byte[PACK_SIZE_BYTES];
+    /**
+    * Populates the fields of this class with information from the incoming packet.
+    *
+    * @param packet The incoming packet.
+    * @return The incoming packet.
+    */
+    public Packet createFromPacket(Packet packet) {
+        yaw = packet.decodeDouble();
+        pitch = packet.decodeDouble();
+        area = packet.decodeDouble();
+        skew = packet.decodeDouble();
 
-        bufferData(yaw, data);
-        bufferData(pitch, data);
-        bufferData(area, data);
-        bufferData(skew, data);
-        if (robotRelativePose != null) {
-            bufferData(robotRelativePose.getTranslation().getX(), data);
-            bufferData(robotRelativePose.getTranslation().getY(), data);
-            bufferData(robotRelativePose.getRotation().getDegrees(), data);
-        } else {
-            bufferData((double) 0, data);
-            bufferData((double) 0, data);
-            bufferData((double) 0, data);
-        }
+        double x = packet.decodeDouble();
+        double y = packet.decodeDouble();
+        double r = packet.decodeDouble();
 
-        return data;
+        robotRelativePose = new Pose2d(x, y, Rotation2d.fromDegrees(r));
+
+        return packet;
     }
 
-    @Override
-    public void fromByteArray(byte[] src) {
-        resetBufferPosition();
-        if (src.length < PACK_SIZE_BYTES) {
-            // TODO: log error?
-            return;
-        }
+    /**
+    * Populates the outgoing packet with information from the current target.
+    *
+    * @param packet The outgoing packet.
+    * @return The outgoing packet.
+    */
+    public Packet populatePacket(Packet packet) {
+        packet.encode(yaw);
+        packet.encode(pitch);
+        packet.encode(area);
+        packet.encode(skew);
+        packet.encode(robotRelativePose.getTranslation().getX());
+        packet.encode(robotRelativePose.getTranslation().getY());
+        packet.encode(robotRelativePose.getRotation().getDegrees());
 
-        yaw = unbufferDouble(src);
-        pitch = unbufferDouble(src);
-        area = unbufferDouble(src);
-        skew = unbufferByte(src);
-
-        var poseX = unbufferDouble(src);
-        var poseY = unbufferDouble(src);
-        var poseR = unbufferDouble(src);
-        robotRelativePose = new Pose2d(poseX, poseY, Rotation2d.fromDegrees(poseR));
+        return packet;
     }
 }

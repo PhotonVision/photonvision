@@ -24,6 +24,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
+import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.pipeline.result.SimplePipelineResult;
 
@@ -151,8 +152,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     @Override
     public void accept(CVPipelineResult result) {
         var simplified = new SimplePipelineResult(result);
-        var bytes = simplified.toByteArray();
-        rawBytesEntry.forceSetRaw(bytes);
+        Packet packet = new Packet(simplified.getPacketSize());
+        simplified.populatePacket(packet);
+
+        rawBytesEntry.forceSetRaw(packet.getData());
 
         pipelineIndexEntry.forceSetNumber(pipelineIndexSupplier.get());
         driverModeEntry.forceSetBoolean(driverModeSupplier.getAsBoolean());
