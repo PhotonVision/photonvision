@@ -20,9 +20,10 @@ package org.photonvision.vision.pipeline.result;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.target.TrackedTarget;
 
-public class SimplePipelineResult extends BytePackable {
+public class SimplePipelineResult {
 
     private double latencyMillis;
     private boolean hasTargets;
@@ -39,6 +40,15 @@ public class SimplePipelineResult extends BytePackable {
 
     public SimplePipelineResult(CVPipelineResult r) {
         this(r.processingMillis, r.hasTargets(), simpleFromTrackedTargets(r.targets));
+    }
+
+    /**
+    * Returns the size of the packet needed to store this pipeline result.
+    *
+    * @return The size of the packet needed to store this pipeline result.
+    */
+    public int getPacketSize() {
+        return targets.size() * SimpleTrackedTarget.PACK_SIZE_BYTES + 8 + 2;
     }
 
     public double getLatencyMillis() {
@@ -65,38 +75,47 @@ public class SimplePipelineResult extends BytePackable {
         return Objects.hash(latencyMillis, hasTargets, targets);
     }
 
-    @Override
-    public byte[] toByteArray() {
-        bufferPosition = 0;
-        // latencyMillis + hasTargets + targetCount + targets
-        int bufferSize = 8 + 1 + 1 + (targets.size() * 8 * SimpleTrackedTarget.PACK_SIZE_BYTES);
-        var buff = new byte[bufferSize];
-
-        bufferData(latencyMillis, buff);
-        bufferData(hasTargets, buff);
-        bufferData((byte) targets.size(), buff);
-        for (var target : targets) {
-            bufferData(target.toByteArray(), buff);
-        }
-
-        return buff;
-    }
-
-    @Override
-    public void fromByteArray(byte[] src) {
-        bufferPosition = 0;
-
-        latencyMillis = unbufferDouble(src);
-        hasTargets = unbufferBoolean(src);
-        byte targetCount = unbufferByte(src);
+    /**
+    * Populates the fields of the pipeline result from the packet.
+    *
+    * @param packet The incoming packet.
+    * @return The incoming packet.
+    */
+    public Packet createFromPacket(Packet packet) {
+        // Decode latency, existence of targets, and number of targets.
+        latencyMillis = packet.decodeDouble();
+        hasTargets = packet.decodeBoolean();
+        byte targetCount = packet.decodeByte();
 
         targets.clear();
-        for (int i = 0; i < targetCount; i++) {
+
+        // Decode the information of each target.
+        for (int i = 0; i < (int) targetCount; ++i) {
             var target = new SimpleTrackedTarget();
-            target.fromByteArray(unbufferBytes(src, 48));
-            bufferPosition += 48;
+            target.createFromPacket(packet);
             targets.add(target);
         }
+
+        return packet;
+    }
+
+    /**
+    * Populates the outgoing packet with information from this pipeline result.
+    *
+    * @param packet The outgoing packet.
+    * @return The outgoing packet.
+    */
+    public Packet populatePacket(Packet packet) {
+        // Encode latency, existence of targets, and number of targets.
+        packet.encode(latencyMillis);
+        packet.encode(hasTargets);
+        packet.encode((byte) targets.size());
+
+        // Encode the information of each target.
+        for (var target : targets) target.populatePacket(packet);
+
+        // Return the packet.
+        return packet;
     }
 
     private static List<SimpleTrackedTarget> simpleFromTrackedTargets(List<TrackedTarget> targets) {
