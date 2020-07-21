@@ -1,34 +1,29 @@
 package org.photonvision.raspi;
 
-import edu.wpi.first.wpiutil.RuntimeLoader;
-import edu.wpi.first.wpiutil.WPIUtilJNI;
-
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class PicamJNI {
 
-    static RuntimeLoader<PicamJNI> loader;
-    private static boolean libraryLoaded;
-
     static {
-//        System.loadLibrary("libpicam"); // Load native library libpicam.so
-
-        try {
-            loader = new RuntimeLoader<>("wpiutiljni", RuntimeLoader.getDefaultExtractionRoot(), PicamJNI.class);
-            loader.loadLibrary();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            System.exit(1);
-        }
-        libraryLoaded = true;
-
+       System.load(Path.of("src/main/resources/native/libpicam.so").toAbsolutePath().toString());
     }
 
-    // Declare an instance native method sayHello() which receives no parameter and returns void
-    private native void createCamera();
-
-    // Test Driver
     public static void main(String[] args) {
-        new PicamJNI().createCamera();  // Create an instance and invoke the native method
+        var cam = new PicamJNI();
+        cam.setVideoMode(1920, 1080, 30); 
+        cam.setExposure(10);
+        // cam.createCamera();
     }
+
+    private native boolean createCamera();
+    private native boolean destroyCamera();
+
+    private native boolean setExposure(int exposure);
+    private native boolean setBrightness(int exposure);
+    private native boolean setISO(int iso);
+    private native boolean setRotation(int rotation);
+    private native boolean setVideoMode(int width, int height, int fps);
+
+    private native boolean grabFrame(long imageNativeObj);
 }
