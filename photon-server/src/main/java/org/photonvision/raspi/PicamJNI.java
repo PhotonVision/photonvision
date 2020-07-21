@@ -13,7 +13,7 @@ public class PicamJNI {
         var cam = new PicamJNI();
         cam.setVideoMode(1920, 1080, 30); 
         cam.setExposure(10);
-        // cam.createCamera();
+        cam.createCamera();
     }
 
     private native boolean createCamera();
