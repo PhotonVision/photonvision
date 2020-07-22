@@ -63,6 +63,7 @@
         <CVselect
           v-model="currentPipelineIndex"
           name="Pipeline"
+          :disabled="$store.getters.isDriverMode"
           :list="['Driver Mode'].concat($store.getters.pipelineList)"
           @input="handleInputWithIndex('currentPipeline',currentPipelineIndex - 1)"
         />

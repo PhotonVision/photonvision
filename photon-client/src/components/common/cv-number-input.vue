@@ -4,7 +4,7 @@
       dense
       align="center"
     >
-      <v-col :cols="2">
+      <v-col :cols="labelCols || 2">
         <span>{{ name }}</span>
       </v-col>
       <v-col>
@@ -27,7 +27,7 @@
     export default {
         name: 'NumberInput',
       // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'step'],
+        props: ['name', 'value', 'step', 'labelCols'],
         data() {
             return {}
         },

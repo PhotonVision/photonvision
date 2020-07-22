@@ -37,7 +37,7 @@
     />
     <CVselect
       v-model="contourGroupingMode"
-      name="Target Group"
+      name="Target Grouping"
       :select-cols="largeBox"
       :list="['Single','Dual']"
       @input="handlePipelineData('targetGroup')"
@@ -51,6 +51,14 @@
       :disabled="contourGroupingMode === 0"
       @input="handlePipelineData('contourIntersection')"
       @rollback="e=> rollback('contourIntersection',e)"
+    />
+    <CVselect
+      v-model="contourSortMode"
+      name="Target Sort"
+      :select-cols="largeBox"
+      :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
+      @input="handlePipelineData('contourSortMode')"
+      @rollback="e => rollback('contourSortMode', e)"
     />
   </div>
 </template>
@@ -121,6 +129,14 @@
                 set(val) {
                     this.$store.commit("mutatePipeline", {"contourGroupingMode": val});
                 }
+            },
+            contourSortMode: {
+              get() {
+                return this.$store.getters.currentPipelineSettings.contourSortMode
+              },
+              set(val) {
+                this.$store.commit("mutatePipeline", {"contourSortMode": val});
+              }
             },
             contourIntersection: {
                 get() {

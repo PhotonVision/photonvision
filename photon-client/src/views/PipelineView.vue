@@ -11,8 +11,8 @@
       >
         <v-col
           cols="12"
-          :class="['pb-3 ', $store.getters.isDriverMode ? '' : 'pr-lg-3']"
-          :lg="$store.getters.isDriverMode ? 12 : 8"
+          :class="['pb-3 ', 'pr-lg-3']"
+          lg="8"
           align-self="stretch"
         >
           <v-card
@@ -25,6 +25,12 @@
               style="height: 10%;"
             >
               Cameras
+              <v-switch
+                v-model="driverMode"
+                label="Driver Mode"
+                style="margin-left: auto;"
+                color="accent"
+              />
             </v-card-title>
             <v-row
               align="center"
@@ -46,7 +52,7 @@
                     :alt="'Stream' + idx"
                     @click="onImageClick"
                   />
-                  <span style="position: absolute; top: 2%; left: 2%; font-size: 28px; -webkit-text-stroke: 1px black;">{{ parseFloat(fps).toFixed(2) }}</span>
+                  <span class="fps-indicator">{{ parseFloat(fps).toFixed(2) }}</span>
                 </div>
               </v-col>
             </v-row>
@@ -55,7 +61,7 @@
         <v-col
           cols="12"
           class="pb-3"
-          :lg="$store.getters.isDriverMode ? 12 : 4"
+          lg="4"
           align-self="stretch"
         >
           <v-card
@@ -64,7 +70,7 @@
             <camera-and-pipeline-select />
           </v-card>
           <v-card
-            v-if="!$store.getters.isDriverMode"
+            :disabled="$store.getters.isDriverMode"
             class="mt-3"
             color="primary"
           >
@@ -83,12 +89,12 @@
                   class="fill"
                 >
                   <v-btn color="secondary">
-                    <v-icon>mdi-cube-outline</v-icon>
-                    <span>3D</span>
-                  </v-btn>
-                  <v-btn color="secondary">
                     <v-icon>mdi-crop-square</v-icon>
                     <span>2D</span>
+                  </v-btn>
+                  <v-btn color="secondary">
+                    <v-icon>mdi-cube-outline</v-icon>
+                    <span>3D</span>
                   </v-btn>
                 </v-btn-toggle>
               </v-col>
@@ -248,10 +254,10 @@
 
                     // 2D array of tab names and component names; each sub-array is a separate tab group
                     let ret = [];
-                    if (this.$vuetify.breakpoint.smAndDown || !this.$store.state.compactMode || this.$store.getters.isDriverMode) {
+                    if (this.$vuetify.breakpoint.smAndDown || this.$store.getters.isDriverMode || (this.$vuetify.breakpoint.mdAndDown && !this.$store.state.compactMode)) {
                         // One big tab group with all the tabs
                         ret[0] = Object.values(tabs);
-                    } else if (this.$vuetify.breakpoint.mdAndDown) {
+                    } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
                         // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
                         ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.output];
                         ret[1] = [tabs.targets, tabs.pnp];
@@ -277,6 +283,15 @@
                 },
                 set(value) {
                     this.is3D = value === 0;
+                }
+            },
+            driverMode: {
+                get() {
+                  return this.$store.getters.isDriverMode;
+                },
+                set(value) {
+                  this.$store.getters.currentCameraSettings.currentPipelineIndex = value ? -1 : 0;
+                  this.handleInputWithIndex('currentPipeline', value ? -1 : 0);
                 }
             },
             selectedOutputs: {
@@ -343,12 +358,24 @@
         height: 100%;
     }
 
+    .v-btn--active {
+        /*text-shadow: rgba(0, 0, 0, 0.3) 1px 1px 5px;*/
+    }
+
     .colsClass {
         padding: 0 !important;
     }
 
     .videoClass {
         text-align: center;
+    }
+
+    .fps-indicator {
+      position: absolute;
+      top: 2%;
+      left: 2%;
+      font-size: 1.75rem;
+      text-shadow: 1px 1px 5px rgba(1, 1, 1, 0.65);
     }
 
     th {

@@ -4,10 +4,10 @@
       dense
       align="center"
     >
-      <v-col cols="4">
-        <span class="ml-2">{{ name }}</span>
+      <v-col :cols="12 - (inputCols || 8)">
+        <span>{{ name }}</span>
       </v-col>
-      <v-col cols="8">
+      <v-col :cols="inputCols || 8">
         <v-text-field
           v-model="localValue"
           dark
@@ -25,7 +25,7 @@ s
     export default {
         name: 'Input',
       // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'disabled', 'errorMessage'],
+        props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols'],
         data() {
             return {}
         },

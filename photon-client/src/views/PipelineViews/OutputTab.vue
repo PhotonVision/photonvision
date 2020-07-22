@@ -1,14 +1,7 @@
 <template>
   <div>
-    <span>Contour Sorting</span>
+    <span>Target Manipulation</span>
     <v-divider class="mt-2" />
-    <CVselect
-      v-model="contourSortMode"
-      name="Sort Mode"
-      :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
-      @input="handlePipelineData('contourSortMode')"
-      @rollback="e => rollback('contourSortMode', e)"
-    />
 
     <CVselect
       v-model="contourTargetOffsetPointEdge"
@@ -93,16 +86,6 @@
             }
         },
         computed: {
-
-            contourSortMode: {
-
-                get() {
-                    return this.$store.getters.currentPipelineSettings.contourSortMode
-                },
-                set(val) {
-                    this.$store.commit("mutatePipeline", {"contourSortMode": val});
-                }
-            },
             contourTargetOffsetPointEdge: {
                 get() {
                     return this.$store.getters.currentPipelineSettings.contourTargetOffsetPointEdge

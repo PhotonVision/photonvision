@@ -1,64 +1,73 @@
 <template>
   <div>
-    <v-row>
+    <v-row
+      class="pa-3"
+      no-gutters
+    >
       <v-col
-        class="colsClass"
-        cols="6"
+        cols="12"
+        style="max-width: 1400px"
       >
-        <v-tabs
-          v-model="selectedTab"
-          background-color="#232c37"
-          dark
-          fixed-tabs
-          height="50"
-          slider-color="#ffd843"
+        <v-form
+          ref="form"
+          v-model="valid"
         >
-          <v-tab to="">
-            General
-          </v-tab>
-          <v-tab to="">
-            Cameras
-          </v-tab>
-        </v-tabs>
-        <div style="padding-left:30px">
-          <component
-            :is="selectedComponent"
-            @update="$emit('save')"
-          />
-        </div>
-      </v-col>
-      <v-col
-        v-show="selectedTab === 1"
-        class="colsClass"
-      >
-        <div class="videoClass">
-          <cvImage
-            :address="$store.getters.streamAddress"
-            :scale="75"
-          />
-        </div>
+          <v-card
+            v-for="item in tabList"
+            :key="item.name"
+            dark
+            class="mb-3 pr-6 pb-3"
+            style="background-color: #006492;"
+          >
+            <v-card-title>{{ item.name }}</v-card-title>
+            <component
+              :is="item"
+              class="ml-5"
+            />
+          </v-card>
+          <v-btn
+            color="accent"
+            style="color: black; width: 100%;"
+            :disabled="!valid"
+            @click="sendGeneralSettings()"
+          >
+            Save
+          </v-btn>
+        </v-form>
       </v-col>
     </v-row>
+    <v-snackbar
+      v-model="snack"
+      top
+      :color="snackbar.color"
+    >
+      <span>{{ snackbar.text }}</span>
+    </v-snackbar>
   </div>
 </template>
 
 <script>
-    import General from './SettingsViews/General'
-    import Cameras from './SettingsViews/Cameras'
+    import Networking from './SettingsViews/Networking'
+    import Lighting from "./SettingsViews/Lighting";
     import cvImage from '../components/common/cv-image'
+    import General from "./SettingsViews/General";
 
 
     export default {
         name: 'SettingsTab',
         components: {
             cvImage,
-            General,
-            Cameras,
+            // General,
         },
         data() {
             return {
                 selectedTab: 0,
-                tabList: [General, Cameras]
+                valid: true, // Are all settings valid
+                snack: false,
+                snackbar: {
+                  color: "accent",
+                  text: ""
+                },
             }
         },
         computed: {
@@ -66,6 +75,39 @@
                 get() {
                     return this.tabList[this.selectedTab];
                 }
+            },
+            settings: {
+                get() {
+                    return this.$store.state.settings;
+                }
+            },
+            tabList: {
+                get() {
+                    return [General, Networking].concat(this.$store.state.settings.lighting.supported ? Lighting : []);
+                }
+            }
+        },
+        methods: {
+            sendGeneralSettings() {
+                const self = this;
+                this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
+                    function (response) {
+                        if (response.status === 200) {
+                            self.snackbar = {
+                                color: "success",
+                                text: "Settings updated successfully"
+                            };
+                            self.snack = true;
+                        }
+                    },
+                    function (error) {
+                        self.snackbar = {
+                            color: "error",
+                            text: (error.response || {data: "Couldn't save settings"}).data
+                        };
+                        self.snack = true;
+                    }
+                )
             },
         }
     }
@@ -80,9 +122,5 @@
         padding-top: 10px;
         height: auto !important;
         vertical-align: middle;
-    }
-
-    .colsClass {
-        padding: 0 !important;
     }
 </style>

@@ -13,7 +13,7 @@
         dark
       >
         <template v-slot:default>
-          <thead style="font-size: 20px;">
+          <thead style="font-size: 1.25rem;">
             <tr>
               <th class="text-center">
                 Target

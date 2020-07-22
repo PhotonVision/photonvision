@@ -2,8 +2,9 @@
   <img
     id="CameraStream"
     :style="styleObject"
-    :src="address"
+    :src="src"
     alt=""
+    @error="showError()"
     @click="e => $emit('click', e)"
   >
 </template>
@@ -11,10 +12,12 @@
 <script>
     export default {
         name: "CvImage",
-      // eslint-disable-next-line vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightXl'],
         data: () => {
-            return {}
+            return {
+              addressData: undefined,
+            }
         },
         computed: {
             styleObject: {
@@ -34,8 +37,20 @@
 
                     return ret;
                 }
-
+            },
+            src: {
+              get() {
+                return this.addressData || this.address;
+              },
+              set(value) {
+                this.addressData = value;
+              }
             }
+        },
+        methods: {
+          showError() {
+            this.addressData = require("../../assets/noStream.jpg")
+          }
         }
     }
 </script>

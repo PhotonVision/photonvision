@@ -25,11 +25,10 @@
           </v-list-item-icon>
         </v-list-item>
 
-        <v-divider />
-
         <v-list-item
           link
           to="dashboard"
+          @click="rollbackPipelineIndex()"
         >
           <v-list-item-icon>
             <v-icon>mdi-view-dashboard</v-icon>
@@ -40,9 +39,20 @@
         </v-list-item>
         <v-list-item
           link
+          to="cameras"
+          @click="switchToDriverMode()"
+        >
+          <v-list-item-icon>
+            <v-icon>mdi-camera</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Cameras</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+          link
           to="settings"
         >
-          <!-- TODO: Expandable sub-elements? -->
           <v-list-item-icon>
             <v-icon>mdi-settings</v-icon>
           </v-list-item-icon>
@@ -123,6 +133,8 @@
             logView
         },
         data: () => ({
+            // Used so that we can switch back to the previously selected pipeline after camera calibration
+            previouslySelectedIndex: null,
             timer: undefined,
             isLogger: false,
             log: "",
@@ -138,11 +150,16 @@
             },
             compact: {
                 get() {
-                    return this.$store.state.compactMode === undefined ? this.$vuetify.breakpoint.smAndDown : this.$store.state.compactMode || this.$vuetify.breakpoint.smAndDown;
+                    if (this.$store.state.compactMode === undefined) {
+                      return this.$vuetify.breakpoint.smAndDown;
+                    } else {
+                      return this.$store.state.compactMode || this.$vuetify.breakpoint.smAndDown;
+                    }
                 },
                 set(value) {
                     // compactMode is the user's preference for compact mode; it overrides screen size
                     this.$store.commit("compactMode", value);
+                    localStorage.setItem("compactMode", value);
                 },
             }
         },
@@ -215,6 +232,18 @@
                 const colors = ["\u001b[31m", "\u001b[32m", "\u001b[33m", "\u001b[34m"]
                 const reset = "\u001b[0m"
                 this.log += `${colors[level]}${message}${reset}\n`
+            },
+            switchToDriverMode() {
+                this.previouslySelectedIndex = this.$store.getters.currentPipelineIndex;
+                console.log("prev: " + this.previouslySelectedIndex);
+                this.handleInputWithIndex('currentPipeline', -1)
+            },
+            rollbackPipelineIndex() {
+                if (this.previouslySelectedIndex !== null) {
+                  console.log("prev set: " + this.previouslySelectedIndex);
+                  this.handleInputWithIndex('currentPipeline', this.previouslySelectedIndex)
+                }
+                this.previouslySelectedIndex = null;
             }
         }
     };
@@ -274,6 +303,20 @@
 <style>
   /* Hack */
   .v-divider {
-    border-color: #23add9 !important;
+    border-color: #aad2e3 !important;
+  }
+
+  .v-input {
+    font-size: 1rem !important;
+  }
+</style>
+
+<style lang="scss">
+  @import '~vuetify/src/styles/settings/_variables';
+
+  @media #{map-get($display-breakpoints, 'md-and-down')} {
+    html {
+      font-size: 14px !important;
+    }
   }
 </style>

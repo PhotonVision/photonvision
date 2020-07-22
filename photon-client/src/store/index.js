@@ -22,7 +22,7 @@ export default new Vuex.Store({
     },
     state: {
         saveBar: false,
-        compactMode: undefined, // Compact mode is initially unset on purpose
+        compactMode: localStorage.getItem("compactMode") === undefined ? undefined : localStorage.getItem("compactMode") === "true", // Compact mode is initially unset on purpose
         currentCameraIndex: 0,
         selectedOutputs: [0, 1], // 0 indicates normal, 1 indicates threshold
         cameraSettings: [ // This is a list of objects representing the settings of all cameras
@@ -92,7 +92,24 @@ export default new Vuex.Store({
                     pose: {x: 0, y: 0, rot: 0},
                 }]
             }
-        ]
+        ],
+        settings: {
+            networking: {
+                teamNumber: 0,
+
+                supported: true,
+                // Below options are only configurable if supported is true
+                connectionType: 0, // 0 = DHCP, 1 = Static
+                staticIp: "",
+                netmask: "",
+                gateway: "",
+                hostname: "photonvision.local",
+            },
+            lighting: {
+                supported: true,
+                brightness: 0.0,
+            },
+        }
     },
     mutations: {
         saveBar: set('saveBar'),
