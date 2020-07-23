@@ -55,7 +55,8 @@ public class MetricsPublisher {
 
                                             DataChangeService.getInstance()
                                                     .publishEvent(
-                                                            new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "metrics", metrics, null));
+                                                            new OutgoingUIEvent<>(
+                                                                    UIUpdateType.BROADCAST, "metrics", metrics, null));
                                         }
                                     },
                                     0,
