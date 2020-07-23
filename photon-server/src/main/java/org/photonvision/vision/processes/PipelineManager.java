@@ -39,7 +39,7 @@ public class PipelineManager {
     private int currentPipelineIndex = DRIVERMODE_INDEX;
 
     /** The currently active pipeline. */
-    private CVPipeline currentPipeline = driverModePipeline;
+    private CVPipeline currentUserPipeline = driverModePipeline;
 
     /**
     * Index of the last active user-created pipeline. <br>
@@ -109,7 +109,7 @@ public class PipelineManager {
     *
     * @return The currently active pipeline.
     */
-    public CVPipeline getCurrentPipeline() {
+    public CVPipeline getCurrentUserPipeline() {
         if (currentPipelineIndex < 0) {
             switch (currentPipelineIndex) {
                 case CAL_3D_INDEX:
@@ -120,20 +120,23 @@ public class PipelineManager {
         }
 
         var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
-        if (currentPipeline.getSettings().pipelineIndex != desiredPipelineSettings.pipelineIndex) {
-            switch (desiredPipelineSettings.pipelineType) {
-                case Reflective:
-                    currentPipeline =
-                            new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
-                    break;
-                case ColoredShape:
-                    currentPipeline =
-                            new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
-                    break;
-            }
-        }
+        //        if (currentPipeline.getSettings().pipelineIndex !=
+        // desiredPipelineSettings.pipelineIndex) {
+        //            switch (desiredPipelineSettings.pipelineType) {
+        //                case Reflective:
+        //                    currentPipeline =
+        //                            new ReflectivePipeline((ReflectivePipelineSettings)
+        // desiredPipelineSettings);
+        //                    break;
+        //                case ColoredShape:
+        //                    currentPipeline =
+        //                            new ColoredShapePipeline((ColoredShapePipelineSettings)
+        // desiredPipelineSettings);
+        //                    break;
+        //            }
+        //        }
 
-        return currentPipeline;
+        return currentUserPipeline;
     }
 
     /**
@@ -164,6 +167,30 @@ public class PipelineManager {
         }
 
         currentPipelineIndex = index;
+        if (index >= 0) {
+            var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
+            switch (desiredPipelineSettings.pipelineType) {
+                case Reflective:
+                    currentUserPipeline =
+                            new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
+                    break;
+                case ColoredShape:
+                    currentUserPipeline =
+                            new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
+                    break;
+            }
+        }
+    }
+
+    /**
+    * Enters or exits calibration mode based on the parameter. <br>
+    * <br>
+    * Exiting returns to the last used user pipeline.
+    *
+    * @param state True to enter calibration mode, false to exit calibration mode.
+    */
+    public void setCalibrationMode(boolean state) {
+        setPipelineInternal(state ? CAL_3D_INDEX : lastPipelineIndex);
     }
 
     /**
@@ -197,15 +224,20 @@ public class PipelineManager {
     private void reassignIndexes() {
         userPipelineSettings.sort(PipelineSettingsIndexComparator);
         for (int i = 0; i < userPipelineSettings.size(); i++) {
-            getPipelineSettings(i).pipelineIndex = i;
+            userPipelineSettings.get(i).pipelineIndex = i;
         }
     }
 
     public CVPipelineSettings addPipeline(PipelineType type) {
+        return addPipeline(type, "New Pipeline");
+    }
+
+    public CVPipelineSettings addPipeline(PipelineType type, String nickname) {
         switch (type) {
             case Reflective:
                 {
                     var added = new ReflectivePipelineSettings();
+                    added.pipelineNickname = nickname;
                     addPipelineInternal(added);
                     return added;
                 }
@@ -228,6 +260,7 @@ public class PipelineManager {
 
     private void removePipelineInternal(int index) {
         userPipelineSettings.remove(index);
+        currentPipelineIndex = Math.min(index, userPipelineSettings.size() - 1);
         reassignIndexes();
     }
 
@@ -241,6 +274,40 @@ public class PipelineManager {
         }
         // TODO should we block/lock on a mutex?
         removePipelineInternal(index);
-        currentPipelineIndex = Math.max(userPipelineSettings.size() - 1, currentPipelineIndex);
+        setIndex(currentPipelineIndex);
+    }
+
+    public void renameCurrentPipeline(String newName) {
+        getCurrentPipelineSettings().pipelineNickname = newName;
+    }
+
+    public void duplicatePipeline(int index) {
+        var settings = userPipelineSettings.get(index);
+        var newSettings = settings.clone();
+        newSettings.pipelineNickname =
+                createUniqueName(settings.pipelineNickname, userPipelineSettings);
+        newSettings.pipelineIndex = Integer.MAX_VALUE;
+        logger.debug("Duplicating pipe " + index + " to " + newSettings.pipelineNickname);
+        userPipelineSettings.add(newSettings);
+        reassignIndexes();
+    }
+
+    private static String createUniqueName(
+            String nickname, List<CVPipelineSettings> existingSettings) {
+        int index = 0;
+        String uniqueName = nickname;
+        while (true) {
+            String finalUniqueName = uniqueName;
+            var conflictingName =
+                    existingSettings.stream().anyMatch(it -> it.pipelineNickname.equals(finalUniqueName));
+            if (!conflictingName) return uniqueName;
+            index++;
+            uniqueName = nickname + " (" + index + ")";
+
+            if (index == 6
+                    && existingSettings.stream()
+                            .noneMatch(it -> it.pipelineNickname.equals(nickname + "( dQw4w9WgXcQ )")))
+                return nickname + "( dQw4w9WgXcQ )";
+        }
     }
 }

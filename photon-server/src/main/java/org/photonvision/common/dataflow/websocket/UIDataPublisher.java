@@ -49,7 +49,7 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         lastRunTime = now;
 
         // only update the UI at 15hz
-        if (lastUIResultUpdateTime + 1000.0 / 15.0 > now) return;
+        if (lastUIResultUpdateTime + 1000.0 / 1.0 > now) return;
 
         var uiMap = new HashMap<Integer, HashMap<String, Object>>();
         var dataMap = new HashMap<String, Object>();

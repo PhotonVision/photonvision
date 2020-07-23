@@ -1,0 +1,8 @@
+{
+  "teamNumber" : 1,
+  "connectionType" : "DHCP",
+  "staticIp" : "",
+  "netmask" : "",
+  "hostname" : "photonvision",
+  "shouldManage" : false
+}

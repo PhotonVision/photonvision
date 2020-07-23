@@ -17,12 +17,18 @@
 
 package org.photonvision.vision.pipeline;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import edu.wpi.first.wpilibj.util.Units;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.server.SocketHandler;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -56,6 +62,8 @@ public class Calibration3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
+    private static final int kMinSnapshots = 25;
+
     public Calibration3dPipeline() {
         this.settings = new Calibration3dPipelineSettings();
         this.boardSnapshots = new ArrayList<>();
@@ -66,10 +74,7 @@ public class Calibration3dPipeline
             FrameStaticProperties frameStaticProperties, Calibration3dPipelineSettings settings) {
         FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
                 new FindBoardCornersPipe.FindCornersPipeParams(
-                        settings.boardHeight,
-                        settings.boardWidth,
-                        settings.isUsingChessboard,
-                        settings.gridSize);
+                        settings.boardHeight, settings.boardWidth, settings.boardType, settings.gridSize);
         findBoardCornersPipe.setParams(findCornersPipeParams);
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
@@ -112,6 +117,31 @@ public class Calibration3dPipeline
                 // Set snapshot to false and increment number of snapshots taken
                 takeSnapshot = false;
                 numSnapshots++;
+
+                // update the UI
+                try {
+                    var state =
+                            SerializationUtils.objectToHashMap(
+                                    new UICalibrationData(
+                                            settings.cameraVideoModeIndex,
+                                            numSnapshots,
+                                            kMinSnapshots,
+                                            hasEnough(),
+                                            Units.metersToInches(settings.gridSize),
+                                            settings.boardWidth,
+                                            settings.boardHeight,
+                                            settings.boardType));
+                    var map = new SocketHandler.UIMap();
+                    map.put("calibrationData", state);
+                    SocketHandler.getInstance().broadcastMessage(map, null);
+                } catch (JsonProcessingException e) {
+                    logger.error(Arrays.toString(e.getStackTrace()));
+                }
+
+                return new CVPipelineResult(
+                        MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                        Collections.emptyList(),
+                        new Frame(new CVMat(hasBoard.getRight()), frame.frameStaticProperties));
             }
         }
 
@@ -125,7 +155,7 @@ public class Calibration3dPipeline
     }
 
     public boolean hasEnough() {
-        return numSnapshots >= 25;
+        return numSnapshots >= kMinSnapshots;
     }
 
     public void startCalibration() {

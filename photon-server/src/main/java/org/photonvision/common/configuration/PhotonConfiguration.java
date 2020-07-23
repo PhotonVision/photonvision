@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.photonvision.PhotonVersion;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
@@ -33,6 +34,10 @@ public class PhotonConfiguration {
 
     public NetworkConfig getNetworkConfig() {
         return networkConfig;
+    }
+
+    public void setNetworkConfig(NetworkConfig networkConfig) {
+        this.networkConfig = networkConfig;
     }
 
     public HashMap<String, CameraConfiguration> getCameraConfigurations() {
@@ -54,6 +59,7 @@ public class PhotonConfiguration {
     }
 
     private HardwareConfig hardwareConfig;
+
     private NetworkConfig networkConfig;
 
     private HashMap<String, CameraConfiguration> cameraConfigurations;
@@ -73,8 +79,9 @@ public class PhotonConfiguration {
 
     public Map<String, Object> toHashMap() {
         Map<String, Object> map = new HashMap<>();
+        var settingsSubmap = new HashMap<String, Object>();
 
-        map.put("networkSettings", networkConfig.toHashMap());
+        settingsSubmap.put("networkSettings", networkConfig.toHashMap());
         map.put(
                 "cameraSettings",
                 VisionModuleManager.getInstance().getModules().stream()
@@ -82,6 +89,17 @@ public class PhotonConfiguration {
                         .map(SerializationUtils::objectToHashMap)
                         .collect(Collectors.toList()));
 
+        settingsSubmap.put("lighting", hardwareConfig.toHashMap());
+
+        var generalSubmap = new HashMap<String, Object>();
+        generalSubmap.put("version", PhotonVersion.versionString);
+        generalSubmap.put("gpuAcceleration", false); // TODO gpu accel and accel type
+        generalSubmap.put("gpuAccelerationType", "Unknown");
+        generalSubmap.put("hardwareModel", "Unknown"); // TODO hardware model and platform
+        generalSubmap.put("hardwarePlatform", "Unknown");
+        settingsSubmap.put("general", generalSubmap);
+
+        map.put("settings", settingsSubmap);
         return map;
     }
 

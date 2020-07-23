@@ -27,25 +27,23 @@ public class NetworkInterface {
 
     public final String name;
     public final String displayName;
-    public final String IPAddress;
-    public final String Netmask;
-    public final String Gateway;
-    public final String Broadcast;
+    public final String ipAddress;
+    public final String netmask;
+    public final String broadcast;
 
     public NetworkInterface(java.net.NetworkInterface inetface, InterfaceAddress ifaceAddress) {
         name = inetface.getName();
         displayName = inetface.getDisplayName();
 
         var inetAddress = ifaceAddress.getAddress();
-        IPAddress = inetAddress.getHostAddress();
-        Netmask = getIPv4LocalNetMask(ifaceAddress);
+        ipAddress = inetAddress.getHostAddress();
+        netmask = getIPv4LocalNetMask(ifaceAddress);
 
         // TODO: (low) hack to "get" gateway, this is gross and bad, pls fix
-        var splitIPAddr = IPAddress.split("\\.");
+        var splitIPAddr = ipAddress.split("\\.");
         splitIPAddr[3] = "1";
-        Gateway = String.join(".", splitIPAddr);
         splitIPAddr[3] = "255";
-        Broadcast = String.join(".", splitIPAddr);
+        broadcast = String.join(".", splitIPAddr);
     }
 
     private static String getIPv4LocalNetMask(InterfaceAddress interfaceAddress) {

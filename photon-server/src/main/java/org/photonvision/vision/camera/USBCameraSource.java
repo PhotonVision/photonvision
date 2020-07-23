@@ -27,7 +27,6 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.FrameProvider;
-import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
@@ -69,7 +68,7 @@ public class USBCameraSource implements VisionSource {
             super(configuration);
             getAllVideoModes();
             setCurrentVideoMode(videoModes.get(0));
-            frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
+            calculateFrameStaticProps();
         }
 
         @Override
@@ -117,7 +116,6 @@ public class USBCameraSource implements VisionSource {
                     return;
                 }
                 camera.setVideoMode(videoMode);
-                this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
             } catch (Exception e) {
                 logger.error("Failed to set video mode!", e);
             }

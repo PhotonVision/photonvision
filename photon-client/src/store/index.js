@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import networkSettings from "./modules/networkSettings"
 import undoRedo from "./modules/undoRedo";
 
 Vue.use(Vuex);
@@ -17,7 +16,6 @@ export default new Vuex.Store({
                 currentResolutionIndex: 0,
             },
         },
-        networkSettings: networkSettings,
         undoRedo: undoRedo
     },
     state: {
@@ -106,7 +104,7 @@ export default new Vuex.Store({
                 hardwareModel: "Unknown",
                 hardwarePlatform: "Unknown",
             },
-            networking: {
+            networkSettings: {
                 teamNumber: 0,
 
                 supported: true,
@@ -120,7 +118,17 @@ export default new Vuex.Store({
                 supported: true,
                 brightness: 0.0,
             },
-        }
+        },
+        calibrationData: {
+            count: 0,
+            videoModeIndex: 0,
+            minCount: 25,
+            hasEnough: false,
+            squareSizeIn: 1.0,
+            patternWidth: 8,
+            patternHeight: 8,
+            boardType: 0, // Chessboard, dotboard
+        },
     },
     mutations: {
         saveBar: set('saveBar'),
@@ -128,8 +136,9 @@ export default new Vuex.Store({
         cameraSettings: set('cameraSettings'),
         currentCameraIndex: set('currentCameraIndex'),
         pipelineResults: set('pipelineResults'),
-        networkSettings: set('networkSettings'),
         selectedOutputs: set('selectedOutputs'),
+        settings: set('settings'),
+        calibrationData: set('calibrationData'),
 
         is3D: (state, val) => {
             state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.is3D = val;
@@ -152,6 +161,17 @@ export default new Vuex.Store({
             }
         },
 
+        mutateSettings: (state, payload) => {
+            for (let key in payload) {
+                if (!payload.hasOwnProperty(key)) continue;
+                const value = payload[key];
+                const settings = state.settings;
+                if (settings.hasOwnProperty(key)) {
+                    Vue.set(settings, key, value);
+                }
+            }
+        },
+
         mutatePipelineResults(state, payload) {
             // Key: index, value: result
             let newResultArray = [];
@@ -162,17 +182,28 @@ export default new Vuex.Store({
             }
 
             Vue.set(state, 'pipelineResults', newResultArray)
-        }
+        },
+
+        mutateCalibrationState: (state, payload) => {
+            for (let key in payload) {
+                if (!payload.hasOwnProperty(key)) continue;
+                const value = payload[key];
+                const calibration = state.calibrationData;
+                if (calibration.hasOwnProperty(key)) {
+                    Vue.set(calibration, key, value);
+                }
+            }
+        },
     },
     getters: {
         isDriverMode: state => state.cameraSettings[state.currentCameraIndex].currentPipelineIndex === -1,
-        pipelineSettings: state => state.pipelineSettings,
         streamAddress: state =>
             ["http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].inputStreamPort + "/stream.mjpg",
                 "http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].outputStreamPort + "/stream.mjpg"],
         targets: state => state.pipelineResults.length,
-        currentPipelineResults: state =>
-            state.pipelineResults[state.cameraSettings[state.currentCameraIndex].currentPipelineIndex],
+        currentPipelineResults: state => {
+            return state.pipelineResults[state.currentCameraIndex];
+        },
         cameraList: state => state.cameraSettings.map(it => it.nickname),
         currentCameraSettings: state => state.cameraSettings[state.currentCameraIndex],
         currentCameraIndex: state => state.currentCameraIndex,

@@ -67,7 +67,7 @@ public class ConfigTest {
     @Order(1)
     public void serializeConfig() throws IOException {
         TestUtils.loadLibraries();
-        JacksonUtils.serializer(Path.of("settings.json"), REFLECTIVE_PIPELINE_SETTINGS);
+        JacksonUtils.serialize(Path.of("settings.json"), REFLECTIVE_PIPELINE_SETTINGS);
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
         configMgr.getConfig().addCameraConfig(cameraConfig);

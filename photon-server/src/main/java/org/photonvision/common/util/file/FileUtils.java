@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 import org.photonvision.common.hardware.Platform;
@@ -37,6 +38,25 @@ public class FileUtils {
     private static Logger logger = new Logger(FileUtils.class, LogGroup.General);
     private static final Set<PosixFilePermission> allReadWriteExecutePerms =
             new HashSet<>(Arrays.asList(PosixFilePermission.values()));
+
+    public static void deleteDirectory(Path path) {
+        try {
+            // create a stream
+            var files = Files.walk(path);
+
+            // delete directory including files and sub-folders
+            files
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .filter(File::isFile)
+                    .forEach(File::delete);
+
+            // close the stream
+            files.close();
+        } catch (IOException e) {
+            logger.error("Exception deleting files in " + path + "!", e);
+        }
+    }
 
     public static void setFilePerms(Path path) throws IOException {
         if (!Platform.CurrentPlatform.isWindows()) {

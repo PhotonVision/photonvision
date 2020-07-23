@@ -20,10 +20,15 @@ package org.photonvision.server;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.javalin.websocket.*;
+import io.javalin.websocket.WsBinaryMessageContext;
+import io.javalin.websocket.WsCloseContext;
+import io.javalin.websocket.WsConnectContext;
+import io.javalin.websocket.WsContext;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.apache.commons.lang3.tuple.Pair;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
@@ -33,7 +38,6 @@ import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.PipelineType;
-import org.photonvision.vision.processes.PipelineManager;
 
 @SuppressWarnings("rawtypes")
 public class SocketHandler {
@@ -177,6 +181,22 @@ public class SocketHandler {
                                 dcService.publishEvent(newPipelineEvent);
                                 break;
                             }
+                        case SMT_DUPLICATEPIPELINE:
+                            {
+                                var pipeIndex = (Integer) entryValue;
+
+                                logger.info("Duplicating pipe@index" + pipeIndex + " for camera " + cameraIndex);
+
+                                var newPipelineEvent =
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "duplicatePipeline",
+                                                pipeIndex,
+                                                cameraIndex,
+                                                context);
+                                dcService.publishEvent(newPipelineEvent);
+                                break;
+                            }
                         case SMT_COMMAND:
                             {
                                 var cmd = SocketMessageCommandType.fromEntryKey((String) entryValue);
@@ -223,13 +243,13 @@ public class SocketHandler {
                                 dcService.publishEvent(changePipelineEvent);
                                 break;
                             }
-                        case SMT_ISPNPCALIBRATION:
+                        case SMT_STARTPNPCALIBRATION:
                             {
                                 var changePipelineEvent =
                                         new IncomingWebSocketEvent<>(
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
-                                                "changePipeline",
-                                                PipelineManager.CAL_3D_INDEX,
+                                                "startcalibration",
+                                                (Map) entryValue,
                                                 cameraIndex,
                                                 context);
                                 dcService.publishEvent(changePipelineEvent);

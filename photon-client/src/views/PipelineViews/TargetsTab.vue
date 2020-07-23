@@ -18,7 +18,7 @@
               <th class="text-center">
                 Target
               </th>
-              <template v-if="!$store.getters.currentPipelineSettings.is3D">
+              <template>
                 <th class="text-center">
                   Pitch
                 </th>
@@ -51,7 +51,7 @@
               :key="index"
             >
               <td>{{ index }}</td>
-              <template v-if="!$store.getters.currentPipelineSettings.is3D">
+              <template>
                 <td>{{ parseFloat(value.pitch).toFixed(2) }}</td>
                 <td>{{ parseFloat(value.yaw).toFixed(2) }}</td>
                 <td>{{ parseFloat(value.skew).toFixed(2) }}</td>

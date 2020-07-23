@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline.result;
 
+import java.util.Collections;
 import java.util.List;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
@@ -32,7 +33,7 @@ public class CVPipelineResult implements Releasable {
     public CVPipelineResult(
             double processingMillis, List<TrackedTarget> targets, Frame outputFrame, Frame inputFrame) {
         this.processingMillis = processingMillis;
-        this.targets = targets;
+        this.targets = targets != null ? targets : Collections.emptyList();
 
         this.outputFrame = Frame.copyFromAndRelease(outputFrame);
         this.inputFrame = inputFrame != null ? Frame.copyFromAndRelease(inputFrame) : null;

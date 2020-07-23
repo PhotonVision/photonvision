@@ -18,6 +18,7 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -50,6 +51,11 @@ public abstract class VisionSourceSettables {
 
     public abstract void setCurrentVideoMode(VideoMode videoMode);
 
+    public void setCameraPitch(Rotation2d pitch) {
+        configuration.camPitch = pitch;
+        calculateFrameStaticProps();
+    }
+
     @SuppressWarnings("unused")
     public void setVideoModeIndex(int index) {
         setCurrentVideoMode(videoModes.get(index));
@@ -63,6 +69,12 @@ public abstract class VisionSourceSettables {
 
     public void setFOV(double fov) {
         configuration.FOV = fov;
+        calculateFrameStaticProps();
+    }
+
+    protected void calculateFrameStaticProps() {
+        this.frameStaticProperties =
+                new FrameStaticProperties(getCurrentVideoMode(), getFOV(), configuration.camPitch);
     }
 
     public FrameStaticProperties getFrameStaticProperties() {

@@ -102,8 +102,7 @@ public class ScriptManager {
                 }
 
                 try {
-                    JacksonUtils.serializer(
-                            scriptConfigPath, eventsConfig.toArray(new ScriptConfig[0]), true);
+                    JacksonUtils.serialize(scriptConfigPath, eventsConfig.toArray(new ScriptConfig[0]), true);
                 } catch (IOException e) {
                     logger.error("Failed to initialize!", e);
                 }

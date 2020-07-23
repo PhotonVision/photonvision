@@ -20,6 +20,7 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
@@ -50,6 +51,7 @@ public class CameraConfiguration {
     public CameraCalibrationCoefficients calibration;
     public List<Integer> cameraLeds = new ArrayList<>();
     public int currentPipelineIndex = -1;
+    public Rotation2d camPitch = new Rotation2d();
 
     @JsonIgnore // this ignores the pipes as we serialize them to their own subfolder
     public List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
@@ -87,7 +89,8 @@ public class CameraConfiguration {
             @JsonProperty("cameraType") CameraType cameraType,
             @JsonProperty("calibration") CameraCalibrationCoefficients calibration,
             @JsonProperty("cameraLEDs") List<Integer> cameraLeds,
-            @JsonProperty("currentPipelineIndex") int currentPipelineIndex) {
+            @JsonProperty("currentPipelineIndex") int currentPipelineIndex,
+            @JsonProperty("camPitch") Rotation2d camPitch) {
         this.baseName = baseName;
         this.uniqueName = uniqueName;
         this.nickname = nickname;
@@ -97,6 +100,7 @@ public class CameraConfiguration {
         this.calibration = calibration;
         this.cameraLeds = cameraLeds;
         this.currentPipelineIndex = currentPipelineIndex;
+        this.camPitch = camPitch;
 
         logger.debug(
                 "Creating camera configuration for "

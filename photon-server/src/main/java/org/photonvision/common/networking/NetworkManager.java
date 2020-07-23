@@ -17,6 +17,8 @@
 
 package org.photonvision.common.networking;
 
+import org.photonvision.common.configuration.ConfigManager;
+
 public class NetworkManager {
     private NetworkManager() {}
 
@@ -35,5 +37,9 @@ public class NetworkManager {
         if (!isManaged) {
             return;
         }
+    }
+
+    public void reinitialize() {
+        initialize(ConfigManager.getInstance().getConfig().getNetworkConfig().shouldManage);
     }
 }

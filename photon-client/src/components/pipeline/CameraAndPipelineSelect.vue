@@ -148,21 +148,9 @@
         </v-card-title>
         <v-card-text>
           <CVselect
-            v-model="pipelineDuplicate.pipeline"
+            v-model="pipeIndexToDuplicate"
             name="Pipeline"
             :list="$store.getters.pipelineList"
-          />
-          <v-checkbox
-            v-if="$store.getters.cameraList.length > 1"
-            v-model="anotherCamera"
-            dark
-            :label="'To another camera'"
-          />
-          <CVselect
-            v-if="anotherCamera === true"
-            v-model="pipelineDuplicate.camera"
-            name="Camera"
-            :list="$store.getters.cameraList"
           />
         </v-card-text>
         <v-divider />
@@ -249,11 +237,7 @@
                 namingDialog: false,
                 newPipelineName: "",
                 duplicateDialog: false,
-                anotherCamera: false,
-                pipelineDuplicate: {
-                    pipeline: undefined,
-                    camera: -1
-                },
+                pipeIndexToDuplicate: undefined
             }
         },
         computed: {
@@ -299,10 +283,10 @@
             },
             currentPipelineIndex: {
                 get() {
-                    return this.$store.getters.currentPipelineIndex + this.$store.getters.isDriverMode ? 1 : 0;
+                    return this.$store.getters.currentPipelineIndex + (this.$store.getters.isDriverMode ? 1 : 0);
                 },
                 set(value) {
-                    this.$store.commit('currentPipelineIndex', value - this.$store.getters.isDriverMode ? 1 : 0);
+                    this.$store.commit('currentPipelineIndex', value - (this.$store.getters.isDriverMode ? 1 : 0));
                 }
             }
         },
@@ -332,10 +316,7 @@
                 this.namingDialog = true;
             },
             openDuplicateDialog() {
-                this.pipelineDuplicate = {
-                    pipeline: this.currentPipelineIndex - 1,
-                    camera: -1
-                };
+                this.pipeIndexToDuplicate = this.currentPipelineIndex - 1;
                 this.duplicateDialog = true;
             },
             deleteCurrentPipeline() {
@@ -356,19 +337,17 @@
                 }
             },
             duplicatePipeline() {
-                if (!this.anotherCamera) {
-                    this.pipelineDuplicate.camera = -1
-                }
-                // this.handleInput("duplicatePipeline", this.pipelineDuplicate);
-                this.axios.post("http://" + this.$address + "/api/vision/duplicate", this.pipelineDuplicate);
+                // if (!this.anotherCamera) {
+                //     this.pipelineDuplicate.camera = -1
+                // }
+                this.handleInputWithIndex("duplicatePipeline", this.pipeIndexToDuplicate);
+                // this.axios.post("http://" + this.$address + "/api/vision/duplicate", this.pipeIndexToDuplicate);
+
                 this.closeDuplicateDialog();
             },
             closeDuplicateDialog() {
                 this.duplicateDialog = false;
-                this.pipelineDuplicate = {
-                    pipeline: undefined,
-                    camera: -1
-                }
+                this.pipeIndexToDuplicate = undefined;
             },
             discardPipelineNameChange() {
                 this.namingDialog = false;

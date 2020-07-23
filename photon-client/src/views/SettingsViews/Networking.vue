@@ -5,7 +5,7 @@
       name="Team Number"
       :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
     />
-    <template v-if="$store.state.settings.networking.supported">
+    <template v-if="$store.state.settings.networkSettings.supported">
       <CVradio
         v-model="settings.connectionType"
         :list="['DHCP','Static']"
@@ -70,7 +70,7 @@
                 return this.settings.connectionType === 0;
             },
             settings() {
-                return this.$store.state.settings.networking;
+                return this.$store.state.settings.networkSettings;
             }
         },
         methods: {

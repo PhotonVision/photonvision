@@ -68,14 +68,12 @@ public class Server {
                     ws.onBinaryMessage(socketHandler::onBinaryMessage);
                 });
         /*API Events*/
+        app.post("/api/settings/import", RequestHandler::onSettingUpload);
+        app.post("/api/settings/export", RequestHandler::onSettingsDownload);
+        app.post("/api/settings/camera", RequestHandler::onCameraSettingsSave);
         app.post("/api/settings/general", RequestHandler::onGeneralSettings);
-        app.post("/api/settings/camera", RequestHandler::onCameraSettings);
-        app.post("/api/vision/duplicate", RequestHandler::onDuplicatePipeline);
-        app.post("/api/settings/startCalibration", RequestHandler::onCalibrationStart);
-        app.post("/api/settings/snapshot", RequestHandler::onSnapshot);
-        app.post("/api/settings/endCalibration", RequestHandler::onCalibrationEnding);
-        app.post("/api/vision/pnpModel", RequestHandler::onPnpModel);
-        app.post("/api/install", RequestHandler::onInstallOrUpdate);
+        app.post("/api/settings/endCalibration", RequestHandler::onCalibrationEnd);
+
         app.start(port);
     }
 }

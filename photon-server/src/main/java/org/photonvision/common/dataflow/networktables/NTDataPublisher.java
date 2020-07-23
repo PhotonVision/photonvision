@@ -52,8 +52,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Supplier<Integer> pipelineIndexSupplier;
     private final BooleanSupplier driverModeSupplier;
 
-    private String currentCameraNickname;
-
     public NTDataPublisher(
             String cameraNickname,
             Supplier<Integer> pipelineIndexSupplier,
@@ -65,7 +63,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         this.driverModeSupplier = driverModeSupplier;
         this.driverModeConsumer = driverModeConsumer;
 
-        currentCameraNickname = cameraNickname;
         updateCameraNickname(cameraNickname);
         updateEntries();
     }
@@ -146,7 +143,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         removeEntries();
         subTable = rootTable.getSubTable(newCameraNickname);
         updateEntries();
-        currentCameraNickname = newCameraNickname;
     }
 
     @Override

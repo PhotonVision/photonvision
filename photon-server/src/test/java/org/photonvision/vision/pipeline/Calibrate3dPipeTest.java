@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +54,8 @@ public class Calibrate3dPipeTest {
 
         FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
         findBoardCornersPipe.setParams(
-                new FindBoardCornersPipe.FindCornersPipeParams(11, 4, false, 15));
+                new FindBoardCornersPipe.FindCornersPipeParams(
+                        11, 4, UICalibrationData.BoardType.CHESSBOARD, 15));
         var findBoardCornersPipeOutput = findBoardCornersPipe.run(frames);
 
         Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
@@ -74,7 +76,7 @@ public class Calibrate3dPipeTest {
         Calibration3dPipeline calibration3dPipeline = new Calibration3dPipeline();
         calibration3dPipeline.getSettings().boardHeight = 11;
         calibration3dPipeline.getSettings().boardWidth = 4;
-        calibration3dPipeline.getSettings().isUsingChessboard = false;
+        calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
         calibration3dPipeline.getSettings().gridSize = 15;
         calibration3dPipeline.getSettings().resolution = new Size(640, 480);
 
@@ -84,7 +86,7 @@ public class Calibrate3dPipeTest {
                     calibration3dPipeline.run(
                             new Frame(
                                     new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                    new FrameStaticProperties(640, 480, 60)));
+                                    new FrameStaticProperties(640, 480, 60, new Rotation2d())));
             TestUtils.showImage(output.outputFrame.image.getMat());
         }
 
@@ -93,7 +95,7 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.run(
                 new Frame(
                         new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
-                        new FrameStaticProperties(640, 480, 60)));
+                        new FrameStaticProperties(640, 480, 60, new Rotation2d())));
         calibration3dPipeline.finishCalibration();
         System.out.println(
                 "Per View Errors: " + Arrays.toString(calibration3dPipeline.perViewErrors()));

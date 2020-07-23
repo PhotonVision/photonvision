@@ -1,0 +1,20 @@
+{
+  "deviceName" : "",
+  "deviceLogoPath" : "",
+  "supportURL" : "",
+  "restartHardwareCommand" : "",
+  "ledPins" : [ ],
+  "ledSetCommand" : "",
+  "ledsCanDim" : false,
+  "ledPWMRange" : [ ],
+  "ledPWMSetRange" : "",
+  "ledPWMFrequency" : 0,
+  "ledDimCommand" : "",
+  "ledBlinkCommand" : "",
+  "cpuTempCommand" : "",
+  "cpuMemoryCommand" : "",
+  "cpuUtilCommand" : "",
+  "gpuMemoryCommand" : "",
+  "gpuTempCommand" : "",
+  "ramUtilCommand" : ""
+}

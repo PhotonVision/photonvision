@@ -52,7 +52,6 @@
     import cvImage from '../components/common/cv-image'
     import General from "./SettingsViews/General";
 
-
     export default {
         name: 'SettingsTab',
         components: {
@@ -89,23 +88,22 @@
         },
         methods: {
             sendGeneralSettings() {
-                const self = this;
                 this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
                     function (response) {
                         if (response.status === 200) {
-                            self.snackbar = {
+                            this.snackbar = {
                                 color: "success",
                                 text: "Settings updated successfully"
                             };
-                            self.snack = true;
+                            this.snack = true;
                         }
                     },
                     function (error) {
-                        self.snackbar = {
+                        this.snackbar = {
                             color: "error",
                             text: (error.response || {data: "Couldn't save settings"}).data
                         };
-                        self.snack = true;
+                        this.snack = true;
                     }
                 )
             },

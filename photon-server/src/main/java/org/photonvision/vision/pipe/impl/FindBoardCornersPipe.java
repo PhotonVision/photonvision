@@ -24,6 +24,7 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.pipeline.UICalibrationData;
 
 public class FindBoardCornersPipe
         extends CVPipe<List<Mat>, List<List<Mat>>, FindBoardCornersPipe.FindCornersPipeParams> {
@@ -44,7 +45,7 @@ public class FindBoardCornersPipe
     private boolean objectPointsCreated = false;
 
     public void createObjectPoints() {
-        if (objectPointsCreated) return;
+        if (objectPointsCreated) return; // TODO reinstantiate on settings change
 
         /*If using a chessboard, then the pattern size if the inner corners of the board. For example, the pattern size of a 9x9 chessboard would be 8x8
         If using a dot board, then the pattern size width is the sum of the bottom 2 rows and the height is the left or right most column
@@ -54,14 +55,14 @@ public class FindBoardCornersPipe
 
         // Chessboard and dot board have different 3D points to project as a dot board has alternating
         // dots per column
-        if (params.isUsingChessboard) {
+        if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
             // Here we can create an NxN grid since a chessboard is rectangular
             for (int i = 0; i < patternSize.height * patternSize.width; i++) {
                 objectPoints.push_back(
                         new MatOfPoint3f(
                                 new Point3((double) i / patternSize.width, i % patternSize.width, 0.0f)));
             }
-        } else {
+        } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
             // Here we need to alternate the amount of dots per column since a dot board is not
             // rectangular and also by taking in account the grid size which should be in mm
             for (int i = 0; i < patternSize.height; i++) {
@@ -71,6 +72,8 @@ public class FindBoardCornersPipe
                                     new Point3((2 * j + i % 2) * params.gridSize, i * params.gridSize, 0.0d)));
                 }
             }
+        } else {
+            // TOOD log
         }
         objectPointsCreated = true;
     }
@@ -106,12 +109,12 @@ public class FindBoardCornersPipe
 
         // Convert the frame to grayscale to increase contrast
         Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2GRAY);
-        boolean boardFound;
+        boolean boardFound = false;
 
-        if (params.isUsingChessboard) {
+        if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
             // This is for chessboards
             boardFound = Calib3d.findChessboardCorners(frame, patternSize, boardCorners);
-        } else {
+        } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
             // For dot boards
             boardFound =
                     Calib3d.findCirclesGrid(
@@ -149,14 +152,14 @@ public class FindBoardCornersPipe
 
         private final int boardHeight;
         private final int boardWidth;
-        private final boolean isUsingChessboard;
+        private final UICalibrationData.BoardType type;
         private final double gridSize;
 
         public FindCornersPipeParams(
-                int boardHeight, int boardWidth, boolean isUsingChessboard, double gridSize) {
+                int boardHeight, int boardWidth, UICalibrationData.BoardType type, double gridSize) {
             this.boardHeight = boardHeight;
             this.boardWidth = boardWidth;
-            this.isUsingChessboard = isUsingChessboard;
+            this.type = type;
             this.gridSize = gridSize; // mm
         }
     }

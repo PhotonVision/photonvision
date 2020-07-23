@@ -62,7 +62,6 @@
                     :color-picking="$store.state.colorPicking && idx == 0"
                     @click="onImageClick"
                   />
-                  <!--                  <span class="fps-indicator">{{ parseFloat(fps).toFixed(2) }}</span>-->
                 </div>
               </v-col>
             </v-row>
@@ -349,11 +348,6 @@
                     // this.handlePipelineUpdate('selectedOutputs', valToCommit);
                 }
             },
-            fps: {
-                get() {
-                    return this.$store.getters.currentCameraFPS;
-                }
-            },
             latency: {
                 get() {
                     return this.$store.getters.currentPipelineResults.latency;
@@ -382,14 +376,6 @@
     .v-btn-toggle.fill > .v-btn {
         width: 50%;
         height: 100%;
-    }
-
-    .fps-indicator {
-      position: absolute;
-      top: 2%;
-      left: 2%;
-      font-size: 1.75rem;
-      text-shadow: 1px 1px 5px rgba(1, 1, 1, 0.65);
     }
 
     th {

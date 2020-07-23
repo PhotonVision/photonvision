@@ -21,6 +21,7 @@
           type="number"
           style="width: 70px"
           :step="step"
+          :disabled="disabled"
           :rules="rules"
         />
       </v-col>
@@ -37,7 +38,7 @@
             TooltippedLabel,
         },
       // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'step', 'labelCols', 'rules', 'tooltip'],
+        props: ['name', 'value', 'step', 'labelCols', 'rules', 'tooltip', 'disabled'],
         computed: {
             localValue: {
                 get() {

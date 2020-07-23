@@ -1,0 +1,80 @@
+[ "ReflectivePipelineSettings", {
+  "pipelineIndex" : 0,
+  "pipelineType" : "Reflective",
+  "inputImageFlipMode" : "NONE",
+  "inputImageRotationMode" : "DEG_0",
+  "pipelineNickname" : "New Pipeline",
+  "cameraExposure" : 50,
+  "cameraBrightness" : 50,
+  "cameraGain" : 50,
+  "cameraVideoModeIndex" : 0,
+  "streamingFrameDivisor" : "NONE",
+  "ledMode" : true,
+  "hsvHue" : {
+    "first" : 50,
+    "second" : 180
+  },
+  "hsvSaturation" : {
+    "first" : 50,
+    "second" : 255
+  },
+  "hsvValue" : {
+    "first" : 50,
+    "second" : 255
+  },
+  "outputShowThresholded" : true,
+  "outputShowMultipleTargets" : false,
+  "erode" : false,
+  "dilate" : false,
+  "contourArea" : {
+    "first" : 0.0,
+    "second" : 100.0
+  },
+  "contourRatio" : {
+    "first" : 0.0,
+    "second" : 20.0
+  },
+  "contourFullness" : {
+    "first" : 0.0,
+    "second" : 100.0
+  },
+  "contourSpecklePercentage" : 5,
+  "contourSortMode" : "Largest",
+  "contourTargetOffsetPointEdge" : "Center",
+  "contourTargetOrientation" : "Landscape",
+  "offsetRobotOffsetMode" : "None",
+  "offsetCalibrationPoint" : {
+    "first" : 0.0,
+    "second" : 0.0
+  },
+  "offsetDualLineM" : 1.0,
+  "offsetDualLineB" : 0.0,
+  "contourGroupingMode" : "Single",
+  "contourIntersection" : "Up",
+  "solvePNPEnabled" : false,
+  "targetModel" : {
+    "realWorldCoordinatesArray" : [ {
+      "x" : -0.49847498536109924,
+      "y" : 0.0,
+      "z" : 0.0
+    }, {
+      "x" : -0.24942462146282196,
+      "y" : -17.0,
+      "z" : 0.0
+    }, {
+      "x" : 0.24942462146282196,
+      "y" : -17.0,
+      "z" : 0.0
+    }, {
+      "x" : 0.49847498536109924,
+      "y" : 0.0,
+      "z" : 0.0
+    } ],
+    "boxHeight" : 0.30479999999999996
+  },
+  "cornerDetectionStrategy" : "APPROX_POLY_DP_AND_EXTREME_CORNERS",
+  "cornerDetectionUseConvexHulls" : true,
+  "cornerDetectionExactSideCount" : false,
+  "cornerDetectionSideCount" : 4,
+  "cornerDetectionAccuracyPercentage" : 10.0
+} ]

@@ -20,7 +20,7 @@ package org.photonvision.vision.pipe.impl;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
@@ -28,24 +28,27 @@ import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dTargetsPipe
-        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dContoursParams> {
+        extends MutatingPipe<
+                Triple<Mat, List<TrackedTarget>, Integer>, Draw2dTargetsPipe.Draw2dContoursParams> {
 
     private List<MatOfPoint> m_drawnContours = new ArrayList<>();
 
     @Override
-    protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-        if (!in.getRight().isEmpty()
+    protected Void process(Triple<Mat, List<TrackedTarget>, Integer> in) {
+        if (!in.getMiddle().isEmpty()
                 && (params.showCentroid
                         || params.showMaximumBox
                         || params.showRotatedBox
                         || params.showShape)) {
+
+            var fps = in.getRight();
 
             var centroidColour = ColorHelper.colorToScalar(params.centroidColor);
             var maximumBoxColour = ColorHelper.colorToScalar(params.maximumBoxColor);
             var rotatedBoxColour = ColorHelper.colorToScalar(params.rotatedBoxColor);
             var shapeColour = ColorHelper.colorToScalar(params.shapeOutlineColour);
 
-            for (int i = 0; i < (params.showMultiple ? in.getRight().size() : 1); i++) {
+            for (int i = 0; i < (params.showMultiple ? in.getMiddle().size() : 1); i++) {
                 Point[] vertices = new Point[4];
                 MatOfPoint contour = new MatOfPoint();
 
@@ -53,7 +56,7 @@ public class Draw2dTargetsPipe
                     break;
                 }
 
-                TrackedTarget target = in.getRight().get(i);
+                TrackedTarget target = in.getMiddle().get(i);
                 RotatedRect r = target.getMinAreaRect();
 
                 if (r == null) continue;
@@ -112,6 +115,18 @@ public class Draw2dTargetsPipe
                             ColorHelper.colorToScalar(params.textColor),
                             (int) thickness);
                 }
+
+                // Draw FPS
+                var textSize = params.kPixelsToText * in.getLeft().rows();
+                var thickness = params.kPixelsToThickness * in.getLeft().rows();
+                Imgproc.putText(
+                        in.getLeft(),
+                        fps.toString(),
+                        new Point(10, 10 + textSize * 25),
+                        0,
+                        textSize,
+                        ColorHelper.colorToScalar(params.textColor),
+                        (int) thickness);
             }
         }
 
@@ -119,7 +134,7 @@ public class Draw2dTargetsPipe
     }
 
     public static class Draw2dContoursParams {
-        public final double kPixelsToText = 0.003;
+        public final double kPixelsToText = 0.0025;
         public final double kPixelsToThickness = 0.008;
         public final double kPixelsToOffset = 0.02;
         public boolean showCentroid = true;

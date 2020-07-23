@@ -22,14 +22,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.VisionSource;
+import org.zeroturnaround.zip.ZipUtil;
 
 public class ConfigManager {
     private static final Logger logger = new Logger(ConfigManager.class, LogGroup.General);
@@ -46,6 +50,20 @@ public class ConfigManager {
             INSTANCE = new ConfigManager(getRootFolder());
         }
         return INSTANCE;
+    }
+
+    public static void saveUploadedSettingsZip(File uploadPath) {
+        logger.info(uploadPath.getAbsolutePath());
+        var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
+        folderPath.mkdirs();
+        ZipUtil.unpack(uploadPath, folderPath);
+        FileUtils.deleteDirectory(getRootFolder());
+        try {
+            org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.exit(666);
     }
 
     public PhotonConfiguration getConfig() {
@@ -74,6 +92,16 @@ public class ConfigManager {
                 logger.debug("Root config folder did not exist. Created!");
             } else {
                 logger.error("Failed to create root config folder!");
+            }
+        }
+        if (!rootFolder.canWrite()) {
+            logger.debug("Making root dir writeable...");
+            try {
+                var success = rootFolder.setWritable(true);
+                if (success) logger.debug("Set root dir writeable!");
+                else logger.error("Could not make root dir writeable!");
+            } catch (SecurityException e) {
+                logger.error("Could not make root dir writeable!", e);
             }
         }
 
@@ -130,15 +158,18 @@ public class ConfigManager {
         logger.info("Saving settings...");
 
         try {
-            JacksonUtils.serializer(hardwareConfigFile.toPath(), config.getHardwareConfig());
+            JacksonUtils.serialize(hardwareConfigFile.toPath(), config.getHardwareConfig());
         } catch (IOException e) {
             logger.error("Could not save hardware config!", e);
         }
         try {
-            JacksonUtils.serializer(networkConfigFile.toPath(), config.getNetworkConfig());
+            JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
         }
+
+        // Delete old configs
+        FileUtils.deleteDirectory(camerasFolder.toPath());
 
         // save all of our cameras
         var cameraConfigMap = config.getCameraConfigurations();
@@ -152,25 +183,18 @@ public class ConfigManager {
             }
 
             try {
-                JacksonUtils.serializer(Path.of(subdir.toString(), "config.json"), camConfig);
+                JacksonUtils.serialize(Path.of(subdir.toString(), "config.json"), camConfig);
             } catch (IOException e) {
-                logger.error("Could not save config.json for " + subdir);
+                logger.error("Could not save config.json for " + subdir, e);
+                System.exit(999999);
             }
 
             try {
-                JacksonUtils.serializer(
+                JacksonUtils.serialize(
                         Path.of(subdir.toString(), "drivermode.json"), camConfig.driveModeSettings);
             } catch (IOException e) {
-                logger.error("Could not save drivermode.json for " + subdir);
-            }
-
-            // Delete old pipe configs so that we don't get any conflicts
-            try {
-                var pipelineFolder = Path.of(subdir.toString(), "pipelines");
-                if (pipelineFolder.toFile().exists())
-                    Files.list(pipelineFolder).map(Path::toFile).filter(File::exists).forEach(File::delete);
-            } catch (IOException e) {
-                logger.error("Exception while deleting old configs!", e);
+                logger.error("Could not save drivermode.json for " + subdir, e);
+                System.exit(999999);
             }
 
             for (var pipe : camConfig.pipelineSettings) {
@@ -182,7 +206,7 @@ public class ConfigManager {
                 }
 
                 try {
-                    JacksonUtils.serializer(pipePath, pipe);
+                    JacksonUtils.serialize(pipePath, pipe);
                 } catch (IOException e) {
                     logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
                 }
@@ -283,5 +307,28 @@ public class ConfigManager {
     public void saveModule(CameraConfiguration config, String uniqueName) {
         getConfig().addCameraConfig(uniqueName, config);
         save();
+    }
+
+    public File getSettingsFolderAsZip() {
+        File out = Path.of(System.getProperty("java.io.tmpdir"), "photonvision-settings.zip").toFile();
+        try {
+            ZipUtil.pack(rootFolder, out);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return out;
+    }
+
+    public void setNetworkSettings(NetworkConfig networkConfig) {
+        getConfig().setNetworkConfig(networkConfig);
+        save();
+    }
+
+    public Path getLogPath() {
+        var dateString = DateTimeFormatter.ofPattern("yyyy-M-d_hh-mm-ss").format(LocalDateTime.now());
+        var logFile =
+                Path.of(rootFolder.toString(), "logs", "photonvision-" + dateString + ".log").toFile();
+        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
+        return logFile.toPath();
     }
 }

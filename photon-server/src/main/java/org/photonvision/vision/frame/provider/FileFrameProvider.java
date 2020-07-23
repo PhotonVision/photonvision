@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.frame.provider;
 
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
