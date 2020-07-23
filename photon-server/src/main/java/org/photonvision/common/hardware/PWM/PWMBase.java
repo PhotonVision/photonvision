@@ -17,11 +17,16 @@
 
 package org.photonvision.common.hardware.PWM;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public abstract class PWMBase {
+    private static final Logger logger = new Logger(PWMBase.class, LogGroup.General);
+
     public static HashMap<String, String> commands =
             new HashMap<>() {
                 {
@@ -37,6 +42,7 @@ public abstract class PWMBase {
         try {
             runCommand.executeBashCommand(command);
         } catch (Exception e) {
+            logger.error(Arrays.toString(e.getStackTrace()));
             return "";
         }
         return runCommand.getOutput();
