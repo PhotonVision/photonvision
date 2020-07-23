@@ -13,11 +13,11 @@
   },
 
   "metrics": {
-    "cpuTemp": "",
-    "cpuMemory": "",
-    "cpuUtil": "",
-    "gpuMemory": "",
-    "gpuUtil": "",
-    "ramUtil": ""
+    "cpuTemp": "echo 10",
+    "cpuMemory": "echo 10",
+    "cpuUtil": "echo 10",
+    "gpuMemory": "echo 10",
+    "gpuUtil": "echo 10",
+    "ramUtil": "echo 10"
   }
 }

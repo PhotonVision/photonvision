@@ -54,7 +54,7 @@ public class CustomPWM extends PWMBase {
 
     @Override
     public void dimLED(int dimValue) {
-        // Check to see if dimPercentage is within the range
+        // Check to see if dimValue is within the range
         if (dimValue < pwmRange.get(0) || dimValue > pwmRange.get(1)) return;
         execute(
                 commands
