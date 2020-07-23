@@ -44,22 +44,18 @@ public class HardwareManager {
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
 
-        hardwareConfig
-                .getLedPins()
-                .forEach(
-                        pin -> {
-                            if (Platform.isRaspberryPi()) {
-                                LEDs.put(
-                                        pin,
-                                        Pair.of(
-                                                new PiGPIO(pin),
-                                                new PiPWM(pin, 0, hardwareConfig.getLedPWMRange().get(1))));
-                            } else {
-                                var pwm = new CustomPWM(pin);
-                                pwm.setPwmRange(hardwareConfig.getLedPWMRange());
-                                LEDs.put(pin, Pair.of(new CustomGPIO(pin), pwm));
-                            }
-                        });
+        hardwareConfig.ledPins.forEach(
+                pin -> {
+                    if (Platform.isRaspberryPi()) {
+                        LEDs.put(
+                                pin,
+                                Pair.of(new PiGPIO(pin), new PiPWM(pin, 0, hardwareConfig.ledPWMRange.get(1))));
+                    } else {
+                        var pwm = new CustomPWM(pin);
+                        pwm.setPwmRange(hardwareConfig.ledPWMRange);
+                        LEDs.put(pin, Pair.of(new CustomGPIO(pin), pwm));
+                    }
+                });
 
         // Start hardware metrics thread
         MetricsPublisher.getInstance().startThread();

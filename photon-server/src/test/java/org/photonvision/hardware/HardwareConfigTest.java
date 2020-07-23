@@ -36,13 +36,13 @@ public class HardwareConfigTest {
             System.out.println("Loading Hardware configs...");
             var config =
                     new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
-            assertEquals(config.getDeviceName(), "PhotonVision");
-            assertEquals(config.getDeviceLogoPath(), "photonvision.png");
-            assertEquals(config.getSupportURL(), "https://support.photonvision.com");
+            assertEquals(config.deviceName, "PhotonVision");
+            assertEquals(config.deviceLogoPath, "photonvision.png");
+            assertEquals(config.supportURL, "https://support.photonvision.com");
             Assertions.assertArrayEquals(
-                    config.getLedPins().stream().mapToInt(i -> i).toArray(), new int[] {1, 5});
+                    config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {1, 5});
             Assertions.assertArrayEquals(
-                    config.getLedPWMRange().stream().mapToInt(i -> i).toArray(), new int[] {0, 100});
+                    config.ledPWMRange.stream().mapToInt(i -> i).toArray(), new int[] {0, 100});
 
             CustomGPIO.setConfig(config);
             CustomPWM.setConfig(config);

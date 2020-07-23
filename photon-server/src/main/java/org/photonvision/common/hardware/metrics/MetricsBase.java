@@ -17,10 +17,14 @@
 
 package org.photonvision.common.hardware.metrics;
 
+import java.util.Arrays;
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public abstract class MetricsBase {
+    private static final Logger logger = new Logger(MetricsBase.class, LogGroup.General);
     // CPU
     public static String cpuMemoryCommand = "sudo vcgencmd get_mem arm | grep -Eo '[0-9]+'";
     public static String cpuTemperatureCommand =
@@ -38,14 +42,14 @@ public abstract class MetricsBase {
     private static ShellExec runCommand = new ShellExec(true, true);
 
     public static void setConfig(HardwareConfig config) {
-        cpuMemoryCommand = config.getCpuMemoryCommand();
-        cpuTemperatureCommand = config.getCpuTempCommand();
-        cpuUtilizationCommand = config.getCpuUtilCommand();
+        cpuMemoryCommand = config.cpuMemoryCommand;
+        cpuTemperatureCommand = config.cpuTempCommand;
+        cpuUtilizationCommand = config.cpuUtilCommand;
 
-        gpuMemoryCommand = config.getGpuMemoryCommand();
-        gpuTemperatureCommand = config.getGpuTempCommand();
+        gpuMemoryCommand = config.gpuMemoryCommand;
+        gpuTemperatureCommand = config.gpuTempCommand;
 
-        ramUsageCommand = config.getRamUtilCommand();
+        ramUsageCommand = config.ramUtilCommand;
     }
 
     public static double execute(String command) {
@@ -53,7 +57,7 @@ public abstract class MetricsBase {
             runCommand.executeBashCommand(command);
             return Double.parseDouble(runCommand.getOutput());
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error(Arrays.toString(e.getStackTrace()));
             return Double.NaN;
         }
     }

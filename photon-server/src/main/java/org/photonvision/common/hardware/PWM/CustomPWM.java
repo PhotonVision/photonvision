@@ -65,7 +65,7 @@ public class CustomPWM extends PWMBase {
 
     public static void setConfig(HardwareConfig config) {
         if (Platform.isRaspberryPi()) return;
-        commands.replace("setRange", config.getLedPWMSetRange());
-        commands.replace("dim", config.getLedDimCommand());
+        commands.replace("setRange", config.ledPWMSetRange);
+        commands.replace("dim", config.ledDimCommand);
     }
 }

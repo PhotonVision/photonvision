@@ -25,26 +25,26 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class HardwareConfig {
 
-    private final String deviceName;
-    private final String deviceLogoPath;
-    private final String supportURL;
+    public final String deviceName;
+    public final String deviceLogoPath;
+    public final String supportURL;
 
     // LED control
-    private final ArrayList<Integer> ledPins;
-    private final String ledSetCommand;
-    private final boolean ledsCanDim;
-    private final ArrayList<Integer> ledPWMRange;
-    private final String ledPWMSetRange;
-    private final String ledDimCommand;
-    private final String ledBlinkCommand;
+    public final ArrayList<Integer> ledPins;
+    public final String ledSetCommand;
+    public final boolean ledsCanDim;
+    public final ArrayList<Integer> ledPWMRange;
+    public final String ledPWMSetRange;
+    public final String ledDimCommand;
+    public final String ledBlinkCommand;
 
     // Metrics
-    private final String cpuTempCommand;
-    private final String cpuMemoryCommand;
-    private final String cpuUtilCommand;
-    private final String gpuMemoryCommand;
-    private final String gpuTempCommand;
-    private final String ramUtilCommand;
+    public final String cpuTempCommand;
+    public final String cpuMemoryCommand;
+    public final String cpuUtilCommand;
+    public final String gpuMemoryCommand;
+    public final String gpuTempCommand;
+    public final String ramUtilCommand;
 
     public HardwareConfig() {
         deviceName = "";
@@ -90,69 +90,5 @@ public class HardwareConfig {
         this.gpuMemoryCommand = (String) metrics.get("gpuMemory");
         this.gpuTempCommand = (String) metrics.get("gpuUtil");
         this.ramUtilCommand = (String) metrics.get("ramUtil");
-    }
-
-    public String getDeviceName() {
-        return deviceName;
-    }
-
-    public String getDeviceLogoPath() {
-        return deviceLogoPath;
-    }
-
-    public String getSupportURL() {
-        return supportURL;
-    }
-
-    public ArrayList<Integer> getLedPins() {
-        return ledPins;
-    }
-
-    public String getLedSetCommand() {
-        return ledSetCommand;
-    }
-
-    public String getLedBlinkCommand() {
-        return ledBlinkCommand;
-    }
-
-    public boolean isLedsCanDim() {
-        return ledsCanDim;
-    }
-
-    public ArrayList<Integer> getLedPWMRange() {
-        return ledPWMRange;
-    }
-
-    public String getLedPWMSetRange() {
-        return ledPWMSetRange;
-    }
-
-    public String getLedDimCommand() {
-        return ledDimCommand;
-    }
-
-    public String getCpuTempCommand() {
-        return cpuTempCommand;
-    }
-
-    public String getCpuMemoryCommand() {
-        return cpuMemoryCommand;
-    }
-
-    public String getCpuUtilCommand() {
-        return cpuUtilCommand;
-    }
-
-    public String getGpuMemoryCommand() {
-        return gpuMemoryCommand;
-    }
-
-    public String getGpuTempCommand() {
-        return gpuTempCommand;
-    }
-
-    public String getRamUtilCommand() {
-        return ramUtilCommand;
     }
 }

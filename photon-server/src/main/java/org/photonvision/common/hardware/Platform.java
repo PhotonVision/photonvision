@@ -29,9 +29,7 @@ public enum Platform {
     LINUX_64("Linux x64"),
     LINUX_RASPBIAN("Linux Raspbian"), // Raspberry Pi 3/4
     LINUX_AARCH64BIONIC("Linux AARCH64 Bionic"), // Jetson Nano, Jetson TX2
-    MACOS_64("Mac OS x64"),
-
-    // ChameleonVision Supported (Manual install)
+    // PhotonVision Supported (Manual install)
     LINUX_ARM32("Linux ARM32"), // ODROID XU4, C1+
     LINUX_ARM64("Linux ARM64"), // ODROID C2, N2
 
@@ -60,10 +58,6 @@ public enum Platform {
         return this == LINUX_64 || this == LINUX_RASPBIAN || this == LINUX_ARM64;
     }
 
-    public boolean isMac() {
-        return this == MACOS_64;
-    }
-
     public static boolean isRaspberryPi() {
         return CurrentPlatform.equals(LINUX_RASPBIAN);
     }
@@ -72,7 +66,7 @@ public enum Platform {
 
     @SuppressWarnings("StatementWithEmptyBody")
     private boolean checkForRoot() {
-        if (isLinux() || isMac()) {
+        if (isLinux()) {
             try {
                 shell.execute("id", null, true, "-u");
             } catch (IOException e) {
@@ -101,7 +95,6 @@ public enum Platform {
 
         if (RuntimeDetector.isMac()) {
             if (RuntimeDetector.is32BitIntel()) return UNSUPPORTED;
-            if (RuntimeDetector.is64BitIntel()) return MACOS_64;
         }
 
         if (RuntimeDetector.isLinux()) {

@@ -17,10 +17,15 @@
 
 package org.photonvision.common.hardware.GPIO;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public abstract class GPIOBase {
+    private static final Logger logger = new Logger(GPIOBase.class, LogGroup.General);
+
     public static HashMap<String, String> commands =
             new HashMap<>() {
                 {
@@ -36,6 +41,7 @@ public abstract class GPIOBase {
         try {
             runCommand.executeBashCommand(command);
         } catch (Exception e) {
+            logger.error(Arrays.toString(e.getStackTrace()));
             return "";
         }
         return runCommand.getOutput();
