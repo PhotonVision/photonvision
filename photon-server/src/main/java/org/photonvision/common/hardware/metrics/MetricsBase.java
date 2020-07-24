@@ -19,6 +19,7 @@ package org.photonvision.common.hardware.metrics;
 
 import java.util.Arrays;
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
@@ -42,6 +43,7 @@ public abstract class MetricsBase {
     private static ShellExec runCommand = new ShellExec(true, true);
 
     public static void setConfig(HardwareConfig config) {
+        if (Platform.isRaspberryPi()) return;
         cpuMemoryCommand = config.cpuMemoryCommand;
         cpuTemperatureCommand = config.cpuTempCommand;
         cpuUtilizationCommand = config.cpuUtilCommand;
