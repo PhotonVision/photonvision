@@ -64,25 +64,10 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public int getExposure() {
-            return 0;
-        }
-
-        @Override
         public void setExposure(int exposure) {}
 
         @Override
-        public int getBrightness() {
-            return 0;
-        }
-
-        @Override
         public void setBrightness(int brightness) {}
-
-        @Override
-        public int getGain() {
-            return 0;
-        }
 
         @Override
         public void setGain(int gain) {}

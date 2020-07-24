@@ -119,7 +119,7 @@ public class USBCameraSource implements VisionSource {
                 camera.setVideoMode(videoMode);
                 this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
             } catch (Exception e) {
-                logger.error("", e);
+                logger.error("Failed to set video mode!", e);
             }
         }
 
