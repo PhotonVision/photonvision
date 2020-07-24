@@ -17,6 +17,7 @@
           color="accent"
           item-color="secondary"
           :disabled="disabled"
+          :rules="rules"
           @change="$emit('rollback', localValue)"
         />
       </v-col>
@@ -28,7 +29,7 @@
     export default {
         name: 'Select',
       // eslint-disable-next-line vue/require-prop-types
-        props: ['list', 'name', 'value', 'disabled', 'selectCols'],
+        props: ['list', 'name', 'value', 'disabled', 'selectCols', 'rules'],
         data() {
             return {}
         },

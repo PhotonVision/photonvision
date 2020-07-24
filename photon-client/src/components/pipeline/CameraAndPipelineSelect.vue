@@ -64,8 +64,8 @@
           v-model="currentPipelineIndex"
           name="Pipeline"
           :disabled="$store.getters.isDriverMode"
-          :list="['Driver Mode'].concat($store.getters.pipelineList)"
-          @input="handleInputWithIndex('currentPipeline',currentPipelineIndex - 1)"
+          :list="($store.getters.isDriverMode ? ['Driver Mode'] : []).concat($store.getters.pipelineList)"
+          @input="handleInputWithIndex('currentPipeline', currentPipelineIndex)"
         />
       </v-col>
       <v-col
@@ -129,15 +129,6 @@
           </v-list>
         </v-menu>
       </v-col>
-
-      <!--      <v-btn-->
-      <!--        outlined-->
-      <!--        color="accent"-->
-      <!--        @click="handleInput('command','save')"-->
-      <!--      >-->
-      <!--        <v-icon>save</v-icon>-->
-      <!--        Save-->
-      <!--      </v-btn>-->
     </v-row>
     <!--pipeline duplicate dialog-->
     <v-dialog
@@ -306,10 +297,10 @@
             },
             currentPipelineIndex: {
                 get() {
-                    return this.$store.getters.currentPipelineIndex + 1;
+                    return this.$store.getters.currentPipelineIndex + this.$store.getters.isDriverMode ? 1 : 0;
                 },
                 set(value) {
-                    this.$store.commit('currentPipelineIndex', value - 1);
+                    this.$store.commit('currentPipelineIndex', value - this.$store.getters.isDriverMode ? 1 : 0);
                 }
             }
         },

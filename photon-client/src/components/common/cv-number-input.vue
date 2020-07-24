@@ -17,6 +17,7 @@
           type="number"
           style="width: 70px"
           :step="step"
+          :rules="rules"
         />
       </v-col>
     </v-row>
@@ -27,7 +28,7 @@
     export default {
         name: 'NumberInput',
       // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'step', 'labelCols'],
+        props: ['name', 'value', 'step', 'labelCols', 'rules'],
         data() {
             return {}
         },

@@ -14,6 +14,7 @@
           dense
           :disabled="disabled"
           :error-messages="errorMessage"
+          :rules="rules"
           @keydown="handleKeyboard"
         />
       </v-col>
@@ -25,7 +26,7 @@ s
     export default {
         name: 'Input',
       // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols'],
+        props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols', 'rules'],
         data() {
             return {}
         },

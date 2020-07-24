@@ -72,7 +72,8 @@ export default new Vuex.Store({
                     offsetRobotOffsetMode: 0,
                     solvePNPEnabled: false,
                     targetRegion: 0,
-                    contourTargetOrientation: 1
+                    contourTargetOrientation: 1,
+                    is3D: false,
 
                     // Settings that apply to shape
                 }
@@ -119,6 +120,10 @@ export default new Vuex.Store({
         pipelineResults: set('pipelineResults'),
         networkSettings: set('networkSettings'),
         selectedOutputs: set('selectedOutputs'),
+
+        is3D: (state, val) => {
+            state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.is3D = val;
+        },
 
         currentPipelineIndex: (state, val) => {
             const settings = state.cameraSettings[state.currentCameraIndex];

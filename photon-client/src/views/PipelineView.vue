@@ -88,11 +88,17 @@
                   dark
                   class="fill"
                 >
-                  <v-btn color="secondary">
+                  <v-btn
+                    color="secondary"
+                    @click="toggleGroupClicked(processingMode, 'is3D', 0, (v) => v[0] === 1)"
+                  >
                     <v-icon>mdi-crop-square</v-icon>
                     <span>2D</span>
                   </v-btn>
-                  <v-btn color="secondary">
+                  <v-btn
+                    color="secondary"
+                    @click="toggleGroupClicked(processingMode, 'is3D', 1, (v) => v[0] === 1)"
+                  >
                     <v-icon>mdi-cube-outline</v-icon>
                     <span>3D</span>
                   </v-btn>
@@ -112,6 +118,7 @@
                   <v-btn
                     color="secondary"
                     class="fill"
+                    @click="toggleGroupClicked(selectedOutputs, 'selectedOutputs', 0)"
                   >
                     <v-icon>mdi-palette</v-icon>
                     <span>Normal</span>
@@ -119,6 +126,7 @@
                   <v-btn
                     color="secondary"
                     class="fill"
+                    @click="toggleGroupClicked(selectedOutputs, 'selectedOutputs', 1)"
                   >
                     <v-icon>mdi-compare</v-icon>
                     <span>Threshold</span>
@@ -152,7 +160,7 @@
               slider-color="accent"
             >
               <v-tab
-                v-for="(tab, i) in tabs.filter(it => it.name !== '3D' || is3D)"
+                v-for="(tab, i) in tabs.filter(it => it.name !== '3D' || $store.getters.currentPipelineSettings.is3D)"
                 :key="i"
               >
                 {{ tab.name }}
@@ -165,7 +173,6 @@
                   :is="(tabs[selectedTabs[idx]] || tabs[0]).component"
                   ref="component"
                   v-model="$store.getters.pipeline"
-                  :is3d="is3D"
                   @update="$emit('save')"
                 />
               </keep-alive>
@@ -219,7 +226,6 @@
             return {
                 selectedTabs: [0, 0, 0, 0],
                 snackbar: false,
-                is3D: false,
             }
         },
         computed: {
@@ -279,10 +285,11 @@
             },
             processingMode: {
                 get() {
-                    return this.is3D ? 0 : 1;
+                    return this.$store.getters.currentPipelineSettings.is3D ? 1 : 0;
                 },
                 set(value) {
-                    this.is3D = value === 0;
+                    this.$store.getters.currentPipelineSettings.is3D = value === 1;
+                    this.handlePipelineUpdate("is3D", value === 1);
                 }
             },
             driverMode: {
@@ -338,6 +345,17 @@
             }
         },
         methods: {
+            toggleGroupClicked(prop, propName, buttonId, converter = (v) => v) {
+                const possibleValues = [0, 1];
+                let ret = possibleValues.filter(it => it != buttonId);
+                if ((prop instanceof Array && prop.includes(buttonId) && prop.length < 2) || prop == buttonId) {
+                    // handlePipelineUpdate is needed (and only works) if this function is used for the 3D toggle
+                    this.handlePipelineUpdate(propName, converter(ret));
+                    this.$store.commit(propName, converter(ret));
+                    console.log(converter(ret));
+                }
+                // console.log(prop);
+            },
             onImageClick(event) {
                 if (this.selectedTab === 1) {
                     this.$refs.component.onClick(event);
@@ -356,10 +374,6 @@
     .v-btn-toggle.fill > .v-btn {
         width: 50%;
         height: 100%;
-    }
-
-    .v-btn--active {
-        /*text-shadow: rgba(0, 0, 0, 0.3) 1px 1px 5px;*/
     }
 
     .colsClass {
