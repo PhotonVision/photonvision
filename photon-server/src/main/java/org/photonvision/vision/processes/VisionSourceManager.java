@@ -19,10 +19,7 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +33,22 @@ import org.photonvision.vision.frame.provider.NetworkFrameProvider;
 public class VisionSourceManager {
 
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
+    private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
+
+    private static List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
+        List<UsbCameraInfo> filteredDevices = new ArrayList<>();
+        for (var device : allDevices) {
+            if (deviceBlacklist.contains(device.name)) {
+                logger.info(
+                        "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\"");
+            } else {
+                allDevices.add(device);
+                logger.info(
+                        "Adding local video device - \"" + device.name + "\" at \"" + device.path + "\"");
+            }
+        }
+        return filteredDevices;
+    }
 
     /**
     * Load vision sources based on currently connected hardware.
