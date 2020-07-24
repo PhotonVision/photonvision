@@ -76,7 +76,7 @@ public class TimedTaskManager {
 
             if (throwable != null) {
                 logger.error("TimedTask threw uncaught exception!");
-                t.printStackTrace();
+                throwable.printStackTrace();
                 // Restart the runnable again
                 execute(runnable);
             }
