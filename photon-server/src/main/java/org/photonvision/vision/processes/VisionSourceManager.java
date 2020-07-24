@@ -48,7 +48,7 @@ public class VisionSourceManager {
     }
 
     private VisionSourceManager() {
-        TimedTaskManager.getInstance().addTask("VisionSourceManager", this::tryMatchUSBCams, 2);
+        TimedTaskManager.getInstance().addTask("VisionSourceManager", this::tryMatchUSBCams, 3000);
     }
 
     public void registerLoadedConfigs(CameraConfiguration... configs) {
@@ -76,9 +76,6 @@ public class VisionSourceManager {
             connectedCameras.remove(0);
             hasYote = true;
         }
-
-        logger.trace("Matching " + connectedCameras.size() + " new cameras!");
-
         // Remove all known devices
         var notYetLoadedCams = new ArrayList<UsbCameraInfo>();
         for (var connectedCam : connectedCameras) {
@@ -86,6 +83,12 @@ public class VisionSourceManager {
                 notYetLoadedCams.add(connectedCam);
             }
         }
+        if(notYetLoadedCams.isEmpty()) {
+            logger.warn(unmatchedLoadedConfigs.size() + " configs are unmatched, but there are no unmatched USB cameras.");
+            logger.warn("Check that all cameras are connected, or that the path is correct?");
+            return;
+        }
+        logger.trace("Matching " + notYetLoadedCams.size() + " new cameras!");
 
         // Debug prints
         for (var info : notYetLoadedCams) {
