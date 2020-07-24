@@ -95,6 +95,6 @@ public class PipelineProfiler {
     }
 
     public static void printReflectiveProfile(long[] nanos) {
-        reflectiveLogger.trace(() -> getReflectiveProfileString(nanos));
+//        reflectiveLogger.trace(() -> getReflectiveProfileString(nanos));
     }
 }
