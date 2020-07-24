@@ -198,8 +198,8 @@
         methods: {
             handleMessage(key, value) {
                 if (key === "logMessage") {
-                    console.log(value)
-                    this.logMessage(value, 0)
+                    console.log("[FROM BACKEND]" + value);
+                    this.logMessage(value, 0);
                 } else if (key === "updatePipelineResult") {
                     this.$store.commit('mutatePipelineResults', value)
                 } else if (this.$store.state.hasOwnProperty(key)) {
@@ -209,7 +209,7 @@
                 } else {
                     switch (key) {
                         default: {
-                            console.log(value);
+                            console.error("Unknown message from backend: " + value);
                         }
                     }
                 }
@@ -235,12 +235,10 @@
             },
             switchToDriverMode() {
                 this.previouslySelectedIndex = this.$store.getters.currentPipelineIndex;
-                console.log("prev: " + this.previouslySelectedIndex);
                 this.handleInputWithIndex('currentPipeline', -1)
             },
             rollbackPipelineIndex() {
                 if (this.previouslySelectedIndex !== null) {
-                  console.log("prev set: " + this.previouslySelectedIndex);
                   this.handleInputWithIndex('currentPipeline', this.previouslySelectedIndex)
                 }
                 this.previouslySelectedIndex = null;

@@ -15,6 +15,7 @@
           :disabled="disabled"
           :error-messages="errorMessage"
           :rules="rules"
+          class="mt-1 pt-2"
           @keydown="handleKeyboard"
         />
       </v-col>
@@ -25,7 +26,7 @@ s
 <script>
     export default {
         name: 'Input',
-      // eslint-disable-next-line vue/require-prop-types
+        // eslint-disable-next-line vue/require-prop-types
         props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols', 'rules'],
         data() {
             return {}
@@ -50,6 +51,5 @@ s
     }
 </script>
 
-<style lang="" scoped>
-
+<style lang="css" scoped>
 </style>

@@ -24,39 +24,53 @@
       @input="handlePipelineData('hsvValue')"
       @rollback="e => rollback('value',e)"
     />
+    <div class="pt-3 white--text">Color Picker</div>
     <v-divider
       class="mt-3"
     />
-    <v-row justify="center">
-      <v-btn
-        color="accent"
-        class="ma-5 black--text"
-        small
-        @click="setFunction(1)"
-      >
-        <v-icon>colorize</v-icon>
-        Eye drop
-      </v-btn>
-      <v-btn
-        color="accent"
-        class="ma-5 black--text"
-        small
-        @click="setFunction(2)"
-      >
-        <v-icon>add</v-icon>
-        Expand Selection
-      </v-btn>
-      <v-btn
-        color="accent"
-        class="ma-5 black--text"
-        small
-        @click="setFunction(3)"
-      >
-        <v-icon>remove</v-icon>
-        Shrink Selection
-      </v-btn>
+    <v-row justify="center" class="mt-3 mb-3">
+      <template v-if="!$store.state.colorPicking">
+        <v-btn
+          color="accent"
+          class="ma-2 black--text"
+          small
+          @click="setFunction(3)"
+        >
+          <v-icon left>mdi-minus</v-icon>
+          Shrink Range
+        </v-btn>
+        <v-btn
+          color="accent"
+          class="ma-2 black--text"
+          small
+          @click="setFunction(1)"
+        >
+          <v-icon left>mdi-plus-minus</v-icon>
+          Set To Average
+        </v-btn>
+        <v-btn
+          color="accent"
+          class="ma-2 black--text"
+          small
+          @click="setFunction(2)"
+        >
+          <v-icon left>mdi-plus</v-icon>
+          Expand Range
+        </v-btn>
+      </template>
+      <template v-else>
+        <v-btn
+          color="accent"
+          class="ma-2 black--text"
+          style="width: 30%;"
+          small
+          @click="setFunction(0)"
+        >
+          Cancel
+        </v-btn>
+      </template>
     </v-row>
-    <v-divider />
+    <v-divider class="mb-3" />
     <CVswitch
       v-model="erode"
       name="Erode"
@@ -143,14 +157,24 @@
         methods: {
             onClick(event) {
                 if (this.currentFunction !== undefined) {
+                    let s = this.$store.getters.currentPipelineSettings;
                     let hsvArray = this.colorPicker.colorPickerClick(event, this.currentFunction,
-                        [[this.value.hue[0], this.value.saturation[0], this.value.value[0]], [this.value.hue[1], this.value.saturation[1], this.value.value[1]]]);
+                        [
+                                [s.hsvHue[0], s.hsvSaturation[0], s.hsvValue[0]],
+                                [s.hsvHue[1], s.hsvSaturation[1], s.hsvValue[1]]
+                        ].map(hsv => hsv.map(it => it || 0)));
                     this.currentFunction = undefined;
+                    this.$store.state.colorPicking = false;
+
+                    s.hsvHue = [hsvArray[0][0], hsvArray[1][0]];
+                    s.hsvSaturation = [hsvArray[0][1], hsvArray[1][1]];
+                    s.hsvValue = [hsvArray[0][2], hsvArray[1][2]];
+
                     let msg = this.$msgPack.encode({
                         "changePipelineSetting": {
-                            'hsvHue': [hsvArray[0][0], hsvArray[1][0]],
-                            'hsvSaturation': [hsvArray[0][1], hsvArray[1][1]],
-                            'hsvValue': [hsvArray[0][2], hsvArray[1][2]],
+                            'hsvHue': s.hsvHue,
+                            'hsvSaturation': s.hsvSaturation,
+                            'hsvValue': s.hsvValue,
                             'outputShowThresholded': this.showThresholdState,
                             'cameraIndex': this.$store.state.currentCameraIndex
                         }
@@ -160,15 +184,11 @@
                 }
             },
             setFunction(index) {
-                this.showThresholdState = this.value.outputShowThresholded;
-                if (this.showThresholdState === true) {
-                    this.value.outputShowThresholded = false;
-                    this.handlePipelineData('outputShowThresholded')
-                }
                 switch (index) {
                     case 0:
                         this.currentFunction = undefined;
-                        break;
+                        this.$store.state.colorPicking = false;
+                        return;
                     case 1:
                         this.currentFunction = this.colorPicker.eyeDrop;
                         break;
@@ -179,6 +199,7 @@
                         this.currentFunction = this.colorPicker.shrink;
                         break;
                 }
+                this.$store.state.colorPicking = true;
             }
         }
     }

@@ -18,11 +18,12 @@
           <v-card
             color="primary"
             height="100%"
+            style="display: flex; flex-direction: column"
             dark
           >
             <v-card-title
               class="pb-0 mb-0 pl-4 pt-1"
-              style="height: 10%;"
+              style="height: 15%;"
             >
               Cameras
               <v-switch
@@ -34,7 +35,6 @@
             </v-card-title>
             <v-row
               align="center"
-              style="height: 90%;"
             >
               <v-col
                 v-for="idx in (selectedOutputs instanceof Array ? selectedOutputs : [selectedOutputs])"
@@ -50,6 +50,7 @@
                     max-height-md="320px"
                     max-height-xl="450px"
                     :alt="'Stream' + idx"
+                    :color-picking="$store.state.colorPicking && idx == 0"
                     @click="onImageClick"
                   />
                   <span class="fps-indicator">{{ parseFloat(fps).toFixed(2) }}</span>
@@ -171,7 +172,7 @@
                 <!-- vision component -->
                 <component
                   :is="(tabs[selectedTabs[idx]] || tabs[0]).component"
-                  ref="component"
+                  :ref="tabs[selectedTabs[idx]].name"
                   v-model="$store.getters.pipeline"
                   @update="$emit('save')"
                 />
@@ -352,14 +353,15 @@
                     // handlePipelineUpdate is needed (and only works) if this function is used for the 3D toggle
                     this.handlePipelineUpdate(propName, converter(ret));
                     this.$store.commit(propName, converter(ret));
-                    console.log(converter(ret));
                 }
-                // console.log(prop);
             },
             onImageClick(event) {
-                if (this.selectedTab === 1) {
-                    this.$refs.component.onClick(event);
-                }
+                // Only run on the input stream
+                if (event.target.alt !== "Stream0") return;
+                // Get a reference to the threshold tab (if it is shown) and call its "onClick" method
+                let ref = this.$refs["Threshold"];
+                if (ref && ref[0])
+                  ref[0].onClick(event)
             },
         }
     }

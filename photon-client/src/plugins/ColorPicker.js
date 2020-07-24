@@ -20,6 +20,7 @@ function colorPickerClick(event, currentFunction, currentRange) {
     let context = canvas.getContext('2d');
     context.drawImage(image, 0, 0, image.width, image.height);
     let pixelData = context.getImageData(x, y, 1, 1).data;
+    console.log(pixelData);
     if (currentFunction !== undefined) {
         return currentFunction(pixelData, currentRange);
     }
@@ -114,6 +115,7 @@ function shrinkRange(range, color) {
                 range[1][j] = Math.max(range[1][j] - 10, range[0][j]);//shrink from max side
         }
     }
+
     return inside;//returns if color is inside or not
 }
 

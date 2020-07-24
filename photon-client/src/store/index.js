@@ -21,6 +21,7 @@ export default new Vuex.Store({
         undoRedo: undoRedo
     },
     state: {
+        colorPicking: false,
         saveBar: false,
         compactMode: localStorage.getItem("compactMode") === undefined ? undefined : localStorage.getItem("compactMode") === "true", // Compact mode is initially unset on purpose
         currentCameraIndex: 0,
@@ -136,9 +137,7 @@ export default new Vuex.Store({
                 if (!payload.hasOwnProperty(key)) continue;
                 const value = payload[key];
                 const settings = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings;
-                if (key === "selectedOutputs") console.log(settings);
                 if (settings.hasOwnProperty(key)) {
-                    if (key === "selectedOutputs") console.log('here');
                     Vue.set(settings, key, value);
                 }
             }

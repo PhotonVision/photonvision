@@ -18,6 +18,7 @@
           v-else
           v-model="newCameraName"
           name="Camera"
+          input-cols="9"
           :error-message="checkCameraName"
           @Enter="saveCameraNameChange"
         />

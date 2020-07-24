@@ -258,7 +258,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             pipeProfileNanos[18] = 0;
         }
 
-        PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
+        //PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
