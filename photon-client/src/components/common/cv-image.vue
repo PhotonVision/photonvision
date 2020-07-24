@@ -1,6 +1,6 @@
 <template>
   <img
-    id="CameraStream"
+    :id="id"
     crossOrigin="anonymous"
     :style="styleObject"
     :src="src"
@@ -14,7 +14,7 @@
     export default {
         name: "CvImage",
         // eslint-disable-next-line vue/require-prop-types
-        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightXl', 'colorPicking'],
+        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightXl', 'colorPicking', 'id'],
         data: () => {
             return {
               addressData: undefined,
@@ -24,10 +24,13 @@
             styleObject: {
                 get() {
                     let ret = {
+                      "display": "block",
                       "object-fit": "contain",
                       "object-position": "50% 50%",
+                      "max-width": "100%",
+                      "margin-left": "auto",
+                      "margin-right": "auto",
                       "max-height": this.maxHeight,
-                      width: `${this.scale}%`,
                       height: `${this.scale}%`,
                       cursor: (this.colorPicking ? `url(${require("../../assets/eyedropper.svg")}),` : "") + "default",
                     };

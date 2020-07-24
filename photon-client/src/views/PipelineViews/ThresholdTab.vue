@@ -157,12 +157,15 @@
         methods: {
             onClick(event) {
                 if (this.currentFunction !== undefined) {
+                    this.colorPicker.initColorPicker();
+
                     let s = this.$store.getters.currentPipelineSettings;
                     let hsvArray = this.colorPicker.colorPickerClick(event, this.currentFunction,
                         [
                                 [s.hsvHue[0], s.hsvSaturation[0], s.hsvValue[0]],
                                 [s.hsvHue[1], s.hsvSaturation[1], s.hsvValue[1]]
                         ].map(hsv => hsv.map(it => it || 0)));
+                    // That `map` calls are to make sure that we don't let any undefined/null values slip in
                     this.currentFunction = undefined;
                     this.$store.state.colorPicking = false;
 

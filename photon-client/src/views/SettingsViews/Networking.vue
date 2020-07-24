@@ -23,12 +23,6 @@
           :rules="[v => isSubnetMask(v) || 'Invalid subnet mask']"
           name="Subnet Mask"
         />
-        <CVinput
-          v-model="settings.gateway"
-          :input-cols="inputCols"
-          :rules="[v => (isIPv4(v) || isIPv6(v)) || 'Invalid default gateway']"
-          name="Gateway"
-        />
       </template>
     </template>
     <CVinput

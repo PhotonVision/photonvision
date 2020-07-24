@@ -41,9 +41,11 @@
                 :key="idx"
                 cols="12"
                 :md="selectedOutputs.length === 1 ? 12 : Math.floor(12 / selectedOutputs.length)"
+                class="pb-0 pt-0"
               >
                 <div style="position: relative; width: 100%; height: 100%;">
                   <cvImage
+                    :id="idx === 0 ? 'normal-stream' : ''"
                     :address="$store.getters.streamAddress[idx]"
                     scale="100"
                     max-height="300px"
@@ -169,10 +171,9 @@
             </v-tabs>
             <div class="pl-4 pr-4 pt-2">
               <keep-alive>
-                <!-- vision component -->
                 <component
                   :is="(tabs[selectedTabs[idx]] || tabs[0]).component"
-                  :ref="tabs[selectedTabs[idx]].name"
+                  :ref="(tabs[selectedTabs[idx]] || tabs[0]).name"
                   v-model="$store.getters.pipeline"
                   @update="$emit('save')"
                 />
@@ -225,11 +226,20 @@
         },
         data() {
             return {
-                selectedTabs: [0, 0, 0, 0],
+                selectedTabsData: [0, 0, 0, 0],
                 snackbar: false,
+                counterData: 0,
             }
         },
         computed: {
+            selectedTabs: {
+                get() {
+                  return this.$store.getters.isDriverMode ? [0] : this.selectedTabsData;
+                },
+                set(value) {
+                  this.selectedTabsData = value;
+                }
+            },
             tabGroups: {
                 get() {
                     let tabs = {

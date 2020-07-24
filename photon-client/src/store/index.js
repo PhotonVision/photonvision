@@ -104,8 +104,7 @@ export default new Vuex.Store({
                 connectionType: 0, // 0 = DHCP, 1 = Static
                 staticIp: "",
                 netmask: "",
-                gateway: "",
-                hostname: "photonvision.local",
+                hostname: "photonvision",
             },
             lighting: {
                 supported: true,
