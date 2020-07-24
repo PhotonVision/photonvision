@@ -17,7 +17,6 @@
 
 package org.photonvision.common.util;
 
-import java.util.Arrays;
 import java.util.concurrent.*;
 import org.jetbrains.annotations.NotNull;
 import org.photonvision.common.logging.LogGroup;
@@ -35,59 +34,76 @@ public class TimedTaskManager {
         return Singleton.INSTANCE;
     }
 
-    private static class TimedTask {
-        final String identifier;
-        final Runnable runnable;
-        final Future future;
+    private static class CaughtThreadFactory implements ThreadFactory {
+        private static final ThreadFactory defaultThreadFactory = Executors.defaultThreadFactory();
 
-        TimedTask(String identifier, Runnable runnable, Future future) {
-            this.identifier = identifier;
-            this.runnable = runnable;
-            this.future = future;
+        @Override
+        public Thread newThread(@NotNull Runnable r) {
+            Thread thread = defaultThreadFactory.newThread(r);
+            thread.setUncaughtExceptionHandler((t, e) -> {
+                logger.error("TimedTask threw uncaught exception!", e);
+            });
+            return thread;
         }
     }
 
-    private class CaughtThreadFactory implements ThreadFactory {
+    private static class TimedTaskExecutorPool extends ScheduledThreadPoolExecutor {
+        public TimedTaskExecutorPool(int corePoolSize) {
+            super(corePoolSize, new CaughtThreadFactory());
+        }
+
+        // Thanks to Abdullah Ozturk for this tip
+        // https://medium.com/@aozturk/how-to-handle-uncaught-exceptions-in-java-abf819347906
         @Override
-        public Thread newThread(@NotNull Runnable r) {
-            String taskIdentifier = "Unknown";
-            for (TimedTask timedTask : activeTasks.values()) {
-                if (timedTask.runnable == r) {
-                    taskIdentifier = timedTask.identifier;
-                    break;
+        protected void afterExecute(Runnable runnable, Throwable throwable) {
+            super.afterExecute(runnable, throwable);
+
+            // If submit() method is called instead of execute()
+            if (throwable == null && runnable instanceof Future<?>) {
+                try {
+                    //noinspection unused
+                    Object result = ((Future<?>) runnable).get();
+                } catch (CancellationException e) {
+                    throwable = e;
+                } catch (ExecutionException e) {
+                    throwable = e.getCause();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
             }
 
-            var errorString = "Exception running task \"" + taskIdentifier + "\": ";
-            return new Thread(
-                    () -> {
-                        try {
-                            r.run();
-                        } catch (Throwable t) {
-                            logger.error(errorString);
-                            logger.error(Arrays.toString(t.getStackTrace()));
-                        }
-                    });
+            if (throwable != null) {
+                logger.error("TimedTask threw uncaught exception!", throwable);
+                // Restart the runnable again
+                execute(runnable);
+            }
         }
     }
 
-    private final ScheduledExecutorService taskExecutor =
-            Executors.newScheduledThreadPool(2, new CaughtThreadFactory());
-    private final ConcurrentHashMap<String, TimedTask> activeTasks = new ConcurrentHashMap<>();
+    private final ScheduledExecutorService timedTaskExecutorPool = new TimedTaskExecutorPool(2);
+    private final ConcurrentHashMap<String, Future<?>> activeTasks = new ConcurrentHashMap<>();
 
     public void addTask(String identifier, Runnable runnable, long millisInterval) {
         if (!activeTasks.containsKey(identifier)) {
             var future =
-                    taskExecutor.scheduleAtFixedRate(runnable, 0, millisInterval, TimeUnit.MILLISECONDS);
-            activeTasks.put(identifier, new TimedTask(identifier, runnable, future));
+                    timedTaskExecutorPool.scheduleAtFixedRate(runnable, 0, millisInterval, TimeUnit.MILLISECONDS);
+            activeTasks.put(identifier, future);
+        }
+    }
+
+    public void addTask(String identifier, Runnable runnable, long millisStartDelay, long millisInterval) {
+        if (!activeTasks.containsKey(identifier)) {
+            var future =
+                    timedTaskExecutorPool.scheduleAtFixedRate(runnable, millisStartDelay, millisInterval, TimeUnit.MILLISECONDS);
+            activeTasks.put(identifier, future);
         }
     }
 
     public void cancelTask(String identifier) {
-        var task = activeTasks.getOrDefault(identifier, null);
-        if (task != null) {
-            task.future.cancel(true);
-            activeTasks.remove(task.identifier);
+        var future = activeTasks.getOrDefault(identifier, null);
+        if (future != null) {
+            future.cancel(true);
+            activeTasks.remove(identifier);
         }
     }
 }
