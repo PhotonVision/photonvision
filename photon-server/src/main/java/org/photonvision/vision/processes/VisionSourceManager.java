@@ -37,21 +37,6 @@ public class VisionSourceManager {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
 
-    private static List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
-        List<UsbCameraInfo> filteredDevices = new ArrayList<>();
-        for (var device : allDevices) {
-            if (deviceBlacklist.contains(device.name)) {
-                logger.info(
-                        "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\"");
-            } else {
-                allDevices.add(device);
-                logger.info(
-                        "Adding local video device - \"" + device.name + "\" at \"" + device.path + "\"");
-            }
-        }
-        return filteredDevices;
-    }
-
     private final List<UsbCameraInfo> knownUsbCameras = new CopyOnWriteArrayList<>();
     private final List<CameraConfiguration> unmatchedLoadedConfigs = new CopyOnWriteArrayList<>();
 
@@ -83,8 +68,8 @@ public class VisionSourceManager {
 
     private void tryMatchUSBCams() {
         // Detect cameras using CSCore
-        List<UsbCameraInfo> connectedCameras = Arrays.asList(UsbCamera.enumerateUsbCameras());
-
+        List<UsbCameraInfo> connectedCameras = filterAllowedDevices(Arrays.asList(UsbCamera.enumerateUsbCameras()));
+        
         // Remove all known devices
         var notYetLoadedCams = new ArrayList<UsbCameraInfo>();
         for (var connectedCam : connectedCameras) {
@@ -222,6 +207,21 @@ public class VisionSourceManager {
         List<VisionSource> usbCameraSources = new ArrayList<>();
         camConfigs.forEach(configuration -> usbCameraSources.add(new USBCameraSource(configuration)));
         return usbCameraSources;
+    }
+
+    private static List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
+        List<UsbCameraInfo> filteredDevices = new ArrayList<>();
+        for (var device : allDevices) {
+            if (deviceBlacklist.contains(device.name)) {
+                logger.info(
+                    "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\"");
+            } else {
+                allDevices.add(device);
+                logger.info(
+                    "Adding local video device - \"" + device.name + "\" at \"" + device.path + "\"");
+            }
+        }
+        return filteredDevices;
     }
 
     private boolean usbCamEquals(UsbCameraInfo a, UsbCameraInfo b) {
