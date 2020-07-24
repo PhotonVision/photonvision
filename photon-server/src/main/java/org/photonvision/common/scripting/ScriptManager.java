@@ -30,7 +30,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
 
-
 public class ScriptManager {
 
     private static final Logger logger = new Logger(ScriptManager.class, LogGroup.General);
