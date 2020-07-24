@@ -135,8 +135,7 @@ public class USBCameraSource implements VisionSource {
                         videoModesList.add(videoMode);
                     }
                 } catch (Exception e) {
-                    logger.error("Exception while enumerating video modes!");
-                    e.printStackTrace();
+                    logger.error("Exception while enumerating video modes!", e);
                     videoModesList = List.of();
                 }
                 for (VideoMode videoMode : videoModesList) {

@@ -63,7 +63,7 @@ public class FileUtils {
                 p.waitFor();
 
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Setting perms failed!", e);
             }
         } else {
             logger.info("Cannot set directory permissions on Windows!");

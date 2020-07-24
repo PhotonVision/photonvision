@@ -61,7 +61,7 @@ public class LinuxNetworking extends SysNetworking {
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Failed to set DHCP!", e);
                 return false;
             }
 
@@ -78,7 +78,7 @@ public class LinuxNetworking extends SysNetworking {
             var setHostnameRetCode = shell.execute("hostnamectl", "set-hostname", newHostname);
             return setHostnameRetCode == 0;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to set hostname!", e);
             return false;
         }
     }
@@ -97,7 +97,7 @@ public class LinuxNetworking extends SysNetworking {
             FileUtils.writeLines(dhcpConf, lines);
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Failed to set Static IP!", e);
         }
         return false;
     }

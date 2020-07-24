@@ -39,7 +39,7 @@ public class ScriptEvent {
         String error = executor.getError();
 
         if (!error.isEmpty()) {
-            System.err.printf("Error when running \"%s\" script: %s\n", config.eventType.name(), error);
+            logger.error("Error when running \"" + config.eventType.name() + "\" script: " + error);
         } else if (!output.isEmpty()) {
             logger.info(
                     String.format("Output from \"%s\" script: %s\n", config.eventType.name(), output));

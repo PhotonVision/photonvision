@@ -18,9 +18,13 @@
 package org.photonvision.common.networking;
 
 import java.net.InterfaceAddress;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 @SuppressWarnings("WeakerAccess")
 public class NetworkInterface {
+    private static final Logger logger = new Logger(NetworkInterface.class, LogGroup.General);
+
     public final String name;
     public final String displayName;
     public final String IPAddress;
@@ -68,7 +72,7 @@ public class NetworkInterface {
                     + (shiftby & 255);
             //            return InetAddress.getByName(maskString);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Failed to get netmask!", e);
         }
         // Something went wrong here...
         return null;

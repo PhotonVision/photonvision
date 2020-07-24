@@ -35,6 +35,7 @@ import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.server.SocketHandler;
 import org.photonvision.server.UIUpdateType;
 
+@SuppressWarnings("unused")
 public class Logger {
 
     public static final String ANSI_RESET = "\u001B[0m";
@@ -87,8 +88,8 @@ public class Logger {
         return builder.toString();
     }
 
-    private static HashMap<LogGroup, LogLevel> levelMap = new HashMap<>();
-    private static List<LogAppender> currentAppenders = new ArrayList<>();
+    private static final HashMap<LogGroup, LogLevel> levelMap = new HashMap<>();
+    private static final List<LogAppender> currentAppenders = new ArrayList<>();
 
     static {
         levelMap.put(LogGroup.Camera, LogLevel.INFO);
@@ -103,6 +104,7 @@ public class Logger {
         currentAppenders.add(new UILogAppender());
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void addFileAppender(Path logFilePath) {
         var file = logFilePath.toFile();
         if (!file.exists()) {

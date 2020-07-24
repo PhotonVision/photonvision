@@ -82,7 +82,7 @@ public class Calibrate3dPipe
                             stdDeviationsExtrinsics,
                             perViewErrors);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Calibration failed!", e);
         }
         JsonMat cameraMatrixMat = JsonMat.fromMat(cameraMatrix);
         JsonMat distortionCoefficientsMat = JsonMat.fromMat(distortionCoefficients);

@@ -57,8 +57,7 @@ public class Main {
             logger.info("Loading native libraries...");
             CameraServerCvJNI.forceLoad();
         } catch (Exception e) {
-            logger.error("Failed to load native libraries!");
-            e.printStackTrace(); // TODO: redirect stacktrace to Logger stream somehow
+            logger.error("Failed to load native libraries!", e);
         }
         logger.info("Native libaries loaded.");
 

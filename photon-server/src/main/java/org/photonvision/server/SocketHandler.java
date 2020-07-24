@@ -272,14 +272,12 @@ public class SocketHandler {
                                 break;
                             }
                     }
-                } catch (Exception ex) {
-                    logger.error("unknown booboo");
-                    ex.printStackTrace();
+                } catch (Exception e) {
+                    logger.error("Failed to parse message!", e);
                 }
             }
         } catch (IOException e) {
-            // TODO: log
-            e.printStackTrace();
+            logger.error("Failed to deserialize message!", e);
         }
     }
 

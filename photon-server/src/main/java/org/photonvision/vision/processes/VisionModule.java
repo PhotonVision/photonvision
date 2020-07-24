@@ -197,8 +197,7 @@ public class VisionModule {
                                 try {
                                     method.invoke(visionSource.getSettables(), newPropValue);
                                 } catch (Exception e) {
-                                    logger.error("Failed to invoke camera settable method: " + method.getName());
-                                    e.printStackTrace();
+                                    logger.error("Failed to invoke camera settable method: " + method.getName(), e);
                                 }
                             }
                         }
@@ -249,11 +248,10 @@ public class VisionModule {
                                         + " with value "
                                         + newPropValue
                                         + " on "
-                                        + currentSettings);
-                        e.printStackTrace();
+                                        + currentSettings,
+                                e);
                     } catch (Exception e) {
-                        logger.error("Unknown exception when setting PSC prop!");
-                        e.printStackTrace();
+                        logger.error("Unknown exception when setting PSC prop!", e);
                     }
 
                     saveModule();
