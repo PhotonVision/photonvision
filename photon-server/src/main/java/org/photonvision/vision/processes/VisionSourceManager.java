@@ -65,17 +65,11 @@ public class VisionSourceManager {
         unmatchedLoadedConfigs.addAll(configs);
     }
 
-    boolean hasYote = false;
-
     private void tryMatchUSBCams() {
         // Detect cameras using CSCore
         List<UsbCameraInfo> connectedCameras =
                 new ArrayList<>(filterAllowedDevices(Arrays.asList(UsbCamera.enumerateUsbCameras())));
 
-        if (!hasYote) {
-            connectedCameras.remove(0);
-            hasYote = true;
-        }
         // Remove all known devices
         var notYetLoadedCams = new ArrayList<UsbCameraInfo>();
         for (var connectedCam : connectedCameras) {
@@ -83,8 +77,10 @@ public class VisionSourceManager {
                 notYetLoadedCams.add(connectedCam);
             }
         }
-        if(notYetLoadedCams.isEmpty()) {
-            logger.warn(unmatchedLoadedConfigs.size() + " configs are unmatched, but there are no unmatched USB cameras.");
+        if (notYetLoadedCams.isEmpty() && unmatchedLoadedConfigs.isEmpty()) {
+            logger.warn(
+                    unmatchedLoadedConfigs.size()
+                            + " configs are unmatched, but there are no unmatched USB cameras.");
             logger.warn("Check that all cameras are connected, or that the path is correct?");
             return;
         }
@@ -114,7 +110,7 @@ public class VisionSourceManager {
 
         // We add the matched cameras to the known camera list
         for (var cam : notYetLoadedCams) {
-            if (this.knownUsbCameras.stream().noneMatch(it -> it.name.equals(cam.name)))
+            if (this.knownUsbCameras.stream().noneMatch(it -> usbCamEquals(it, cam)))
                 this.knownUsbCameras.add(cam);
         }
         if (matchedCameras.isEmpty()) return;
