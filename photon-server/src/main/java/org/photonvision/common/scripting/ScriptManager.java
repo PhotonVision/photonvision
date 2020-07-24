@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.LoopingRunnable;
 import org.photonvision.common.util.Platform;
+import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class ScriptManager {
@@ -48,22 +48,17 @@ public class ScriptManager {
                 events.add(scriptEvent);
             }
 
-            new Thread(new ScriptRunner(10L)).start();
+            TimedTaskManager.getInstance().addTask("ScriptRunner", new ScriptRunner(), 10);
+
         } else {
             System.err.println("Something went wrong initializing scripts! Events will not run.");
         }
     }
 
-    private static class ScriptRunner extends LoopingRunnable {
-
-        ScriptRunner(Long loopTimeMs) {
-            super(loopTimeMs);
-        }
-
+    private static class ScriptRunner implements Runnable {
         @Override
-        protected void process() {
+        public void run() {
             try {
-
                 handleEvent(queuedEvents.takeFirst());
             } catch (InterruptedException e) {
                 e.printStackTrace();
