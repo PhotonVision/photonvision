@@ -48,7 +48,7 @@ public class VisionSourceManager {
     }
 
     private VisionSourceManager() {
-        TimedTaskManager.getInstance().addTask("VisionSourceManager", this::tryMatchUSBCams, 3000);
+        TimedTaskManager.getInstance().addTask("VisionSourceManager", this::tryMatchUSBCams, 2);
     }
 
     public void registerLoadedConfigs(CameraConfiguration... configs) {
@@ -65,10 +65,19 @@ public class VisionSourceManager {
         unmatchedLoadedConfigs.addAll(configs);
     }
 
+    boolean hasYote = false;
+
     private void tryMatchUSBCams() {
         // Detect cameras using CSCore
         List<UsbCameraInfo> connectedCameras =
-                filterAllowedDevices(Arrays.asList(UsbCamera.enumerateUsbCameras()));
+                new ArrayList<>(filterAllowedDevices(Arrays.asList(UsbCamera.enumerateUsbCameras())));
+
+        if (!hasYote) {
+            connectedCameras.remove(0);
+            hasYote = true;
+        }
+
+        logger.trace("Matching " + connectedCameras.size() + " new cameras!");
 
         // Remove all known devices
         var notYetLoadedCams = new ArrayList<UsbCameraInfo>();
@@ -220,7 +229,7 @@ public class VisionSourceManager {
                 logger.info(
                         "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\"");
             } else {
-                allDevices.add(device);
+                filteredDevices.add(device);
                 logger.info(
                         "Adding local video device - \"" + device.name + "\" at \"" + device.path + "\"");
             }
