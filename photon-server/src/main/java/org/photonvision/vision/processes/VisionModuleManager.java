@@ -64,11 +64,4 @@ public class VisionModuleManager {
         }
         return addedModules;
     }
-
-    public void startModules() {
-        for (var visionModule : visionModules) {
-            visionModule.start();
-            // todo: logging
-        }
-    }
 }
