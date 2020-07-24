@@ -1,5 +1,6 @@
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.nio.file.Path
 
 gradle.allprojects {
     ext.getCurrentVersion = { ->
@@ -17,8 +18,9 @@ gradle.allprojects {
 
 task writeCurrentVersionJava {
     String date = DateTimeFormatter.ofPattern("yyyy-M-d hh:mm:ss").format(LocalDateTime.now())
-    File versionFile = new File("src/main/java/org/photonvision/PhotonVersion.java")
+    File versionFile = new File(Path.of("$projectDir/src/main/java/org/photonvision/PhotonVersion.java").toAbsolutePath().toString())
     versionFile.delete()
+    boolean success = versionFile.createNewFile()
     versionFile << "package org.photonvision;\n" +
             "\n" +
             "/*\n" +
