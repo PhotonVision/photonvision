@@ -132,14 +132,12 @@ public class ConfigManager {
         try {
             JacksonUtils.serializer(hardwareConfigFile.toPath(), config.getHardwareConfig());
         } catch (IOException e) {
-            logger.error("Could not save hardware config!");
-            e.printStackTrace();
+            logger.error("Could not save hardware config!", e);
         }
         try {
             JacksonUtils.serializer(networkConfigFile.toPath(), config.getNetworkConfig());
         } catch (IOException e) {
-            logger.error("Could not save network config!");
-            e.printStackTrace();
+            logger.error("Could not save network config!", e);
         }
 
         // save all of our cameras
@@ -172,8 +170,7 @@ public class ConfigManager {
                 if (pipelineFolder.toFile().exists())
                     Files.list(pipelineFolder).map(Path::toFile).filter(File::exists).forEach(File::delete);
             } catch (IOException e) {
-                logger.error("Exception while deleting old configs!");
-                e.printStackTrace();
+                logger.error("Exception while deleting old configs!", e);
             }
 
             for (var pipe : camConfig.pipelineSettings) {
@@ -187,7 +184,7 @@ public class ConfigManager {
                 try {
                     JacksonUtils.serializer(pipePath, pipe);
                 } catch (IOException e) {
-                    logger.error("Could not save " + pipe.pipelineNickname + ".json!");
+                    logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
                 }
             }
         }
@@ -209,7 +206,7 @@ public class ConfigManager {
                             JacksonUtils.deserialize(
                                     cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
                 } catch (JsonProcessingException e) {
-                    e.printStackTrace();
+                    logger.error("Camera config deserialization failed!", e);
                 }
                 if (loadedConfig == null) { // If the file could not be deserialized
                     logger.warn("Could not load camera " + subdir + "'s config.json! Loading " + "default");
@@ -250,8 +247,7 @@ public class ConfigManager {
                                                     try {
                                                         return JacksonUtils.deserialize(p, CVPipelineSettings.class);
                                                     } catch (JsonProcessingException e) {
-                                                        logger.error("Exception while deserializing " + relativizedFilePath);
-                                                        e.printStackTrace();
+                                                        logger.error("Exception while deserializing " + relativizedFilePath, e);
                                                     } catch (IOException e) {
                                                         logger.warn(
                                                                 "Could not load pipeline at "
@@ -270,7 +266,7 @@ public class ConfigManager {
                 loadedConfigurations.put(subdir.toFile().getName(), loadedConfig);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Error loading camera configs!", e);
         }
         return loadedConfigurations;
     }

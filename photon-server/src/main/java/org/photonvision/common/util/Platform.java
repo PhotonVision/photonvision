@@ -20,6 +20,8 @@ package org.photonvision.common.util;
 import edu.wpi.first.wpiutil.RuntimeDetector;
 import java.io.IOException;
 import org.apache.commons.lang3.SystemUtils;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 @SuppressWarnings("unused")
 public enum Platform {
@@ -41,6 +43,8 @@ public enum Platform {
     Platform(String value) {
         this.value = value;
     }
+
+    private static final Logger logger = new Logger(Platform.class, LogGroup.General);
 
     public static final Platform CurrentPlatform = getCurrentPlatform();
 
@@ -64,7 +68,7 @@ public enum Platform {
             try {
                 shell.execute("id", null, true, "-u");
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Failed to perform root check!", e);
             }
 
             while (!shell.isOutputCompleted()) {

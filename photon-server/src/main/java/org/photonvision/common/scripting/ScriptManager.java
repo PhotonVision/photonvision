@@ -51,7 +51,7 @@ public class ScriptManager {
             TimedTaskManager.getInstance().addTask("ScriptRunner", new ScriptRunner(), 10);
 
         } else {
-            System.err.println("Something went wrong initializing scripts! Events will not run.");
+            logger.error("Something went wrong initializing scripts! Events will not run.");
         }
     }
 
@@ -61,7 +61,7 @@ public class ScriptManager {
             try {
                 handleEvent(queuedEvents.takeFirst());
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.error("ScriptRunner queue interrupted!", e);
             }
         }
 
@@ -76,9 +76,7 @@ public class ScriptManager {
                 try {
                     toRun.run();
                 } catch (IOException e) {
-                    System.err.printf(
-                            "Failed to run script for event: %s, exception below.\n%s\n",
-                            eventType.name(), e.getMessage());
+                    logger.error("Failed to run script for event \"" + eventType.name() + "\"", e);
                 }
             }
         }
@@ -107,7 +105,7 @@ public class ScriptManager {
                     JacksonUtils.serializer(
                             scriptConfigPath, eventsConfig.toArray(new ScriptConfig[0]), true);
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    logger.error("Failed to initialize!", e);
                 }
             }
         }
@@ -119,7 +117,7 @@ public class ScriptManager {
                     return List.of(raw);
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Failed to load scripting config!", e);
             }
             return new ArrayList<>();
         }
@@ -139,7 +137,7 @@ public class ScriptManager {
                 queuedEvents.putLast(eventType);
                 logger.info("Queued event: " + eventType.name());
             } catch (InterruptedException e) {
-                System.err.println("Failed to add event to queue: " + eventType.name());
+                logger.error("Failed to add event to queue: " + eventType.name(), e);
             }
         }
     }

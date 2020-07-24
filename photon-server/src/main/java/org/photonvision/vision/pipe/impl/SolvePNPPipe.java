@@ -27,6 +27,8 @@ import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Scalar;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TargetModel;
@@ -34,6 +36,8 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class SolvePNPPipe
         extends CVPipe<List<TrackedTarget>, List<TrackedTarget>, SolvePNPPipe.SolvePNPPipeParams> {
+
+    private static final Logger logger = new Logger(SolvePNPPipe.class, LogGroup.VisionModule);
 
     private final MatOfPoint2f imagePoints = new MatOfPoint2f();
 
@@ -68,7 +72,7 @@ public class SolvePNPPipe
                     rVec,
                     tVec);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Exception when attempting solvePnP!", e);
             return;
         }
 

@@ -22,7 +22,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public final class SerializationUtils {
-    private static final Logger LOGGER = new Logger(SerializationUtils.class, LogGroup.General);
+    private static final Logger logger = new Logger(SerializationUtils.class, LogGroup.General);
 
     public static HashMap<String, Object> objectToHashMap(Object src) {
         var ret = new HashMap<String, Object>();
@@ -37,8 +37,7 @@ public final class SerializationUtils {
                     ret.put(field.getName(), ordinal.ordinal());
                 }
             } catch (IllegalArgumentException | IllegalAccessException e) {
-                LOGGER.error("Could not serialize " + src.getClass().getSimpleName());
-                e.printStackTrace();
+                logger.error("Could not serialize " + src.getClass().getSimpleName(), e);
             }
         }
         return ret;

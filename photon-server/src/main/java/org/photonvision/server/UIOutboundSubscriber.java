@@ -71,8 +71,7 @@ class UIOutboundSubscriber extends DataChangeSubscriber {
                         }
                 }
             } catch (JsonProcessingException e) {
-                // TODO: Log
-                e.printStackTrace();
+                logger.error("Failed to process outgoing message!", e);
             }
         }
     }
