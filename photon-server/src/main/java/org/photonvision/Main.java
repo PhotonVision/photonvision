@@ -40,11 +40,12 @@ public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
     public static void main(String[] args) {
-        Logger.setLevel(LogGroup.Camera, LogLevel.TRACE);
-        Logger.setLevel(LogGroup.WebServer, LogLevel.TRACE);
-        Logger.setLevel(LogGroup.VisionModule, LogLevel.TRACE);
-        Logger.setLevel(LogGroup.Data, LogLevel.TRACE);
-        Logger.setLevel(LogGroup.General, LogLevel.TRACE);
+        var logLevel = PhotonVersion.isRelease ? LogLevel.ERROR : LogLevel.TRACE;
+        Logger.setLevel(LogGroup.Camera, logLevel);
+        Logger.setLevel(LogGroup.WebServer, logLevel);
+        Logger.setLevel(LogGroup.VisionModule, logLevel);
+        Logger.setLevel(LogGroup.Data, logLevel);
+        Logger.setLevel(LogGroup.General, logLevel);
 
         logger.info("Logging initialized!");
 
