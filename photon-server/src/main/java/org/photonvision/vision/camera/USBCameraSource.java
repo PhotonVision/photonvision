@@ -19,6 +19,7 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoException;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
 import java.util.*;
@@ -72,37 +73,34 @@ public class USBCameraSource implements VisionSource {
         }
 
         @Override
-        public int getExposure() {
-            return camera.getProperty("exposure").get();
-        }
-
-        @Override
         public void setExposure(int exposure) {
-            camera.setExposureManual(exposure);
-            camera.setExposureManual(exposure);
-        }
-
-        @Override
-        public int getBrightness() {
-            return camera.getBrightness();
+            try {
+                camera.setExposureManual(exposure);
+                camera.setExposureManual(exposure);
+            } catch (VideoException e) {
+                logger.error("Failed to set camera exposure!", e);
+            }
         }
 
         @Override
         public void setBrightness(int brightness) {
-            camera.setBrightness(brightness);
-            camera.setBrightness(brightness);
-        }
-
-        @Override
-        public int getGain() {
-            return !cameraQuirks.hasQuirk(CameraQuirk.Gain) ? -1 : camera.getProperty("gain").get();
+            try {
+                camera.setBrightness(brightness);
+                camera.setBrightness(brightness);
+            } catch (VideoException e) {
+                logger.error("Failed to set camera brightness!", e);
+            }
         }
 
         @Override
         public void setGain(int gain) {
-            if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
-                camera.getProperty("gain_automatic").set(0);
-                camera.getProperty("gain").set(gain);
+            try {
+                if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
+                    camera.getProperty("gain_automatic").set(0);
+                    camera.getProperty("gain").set(gain);
+                }
+            } catch (VideoException e) {
+                logger.error("Failed to set camera gain!", e);
             }
         }
 
@@ -113,12 +111,16 @@ public class USBCameraSource implements VisionSource {
 
         @Override
         public void setCurrentVideoMode(VideoMode videoMode) {
-            if (videoMode == null) {
-                logger.error("Got a null video mode! Doing nothing...");
-                return;
+            try {
+                if (videoMode == null) {
+                    logger.error("Got a null video mode! Doing nothing...");
+                    return;
+                }
+                camera.setVideoMode(videoMode);
+                this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
+            } catch (Exception e) {
+                logger.error("", e);
             }
-            camera.setVideoMode(videoMode);
-            this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
         }
 
         @Override
