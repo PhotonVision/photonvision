@@ -48,7 +48,7 @@ public class ScriptManager {
                 events.add(scriptEvent);
             }
 
-            TimedTaskManager.getInstance().addTask(new ScriptRunner(), 10);
+            TimedTaskManager.getInstance().addTask("ScriptRunner", new ScriptRunner(), 10);
 
         } else {
             System.err.println("Something went wrong initializing scripts! Events will not run.");
