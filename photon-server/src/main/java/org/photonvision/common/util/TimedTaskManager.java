@@ -40,9 +40,10 @@ public class TimedTaskManager {
         @Override
         public Thread newThread(@NotNull Runnable r) {
             Thread thread = defaultThreadFactory.newThread(r);
-            thread.setUncaughtExceptionHandler((t, e) -> {
-                logger.error("TimedTask threw uncaught exception!", e);
-            });
+            thread.setUncaughtExceptionHandler(
+                    (t, e) -> {
+                        logger.error("TimedTask threw uncaught exception!", e);
+                    });
             return thread;
         }
     }
@@ -86,15 +87,18 @@ public class TimedTaskManager {
     public void addTask(String identifier, Runnable runnable, long millisInterval) {
         if (!activeTasks.containsKey(identifier)) {
             var future =
-                    timedTaskExecutorPool.scheduleAtFixedRate(runnable, 0, millisInterval, TimeUnit.MILLISECONDS);
+                    timedTaskExecutorPool.scheduleAtFixedRate(
+                            runnable, 0, millisInterval, TimeUnit.MILLISECONDS);
             activeTasks.put(identifier, future);
         }
     }
 
-    public void addTask(String identifier, Runnable runnable, long millisStartDelay, long millisInterval) {
+    public void addTask(
+            String identifier, Runnable runnable, long millisStartDelay, long millisInterval) {
         if (!activeTasks.containsKey(identifier)) {
             var future =
-                    timedTaskExecutorPool.scheduleAtFixedRate(runnable, millisStartDelay, millisInterval, TimeUnit.MILLISECONDS);
+                    timedTaskExecutorPool.scheduleAtFixedRate(
+                            runnable, millisStartDelay, millisInterval, TimeUnit.MILLISECONDS);
             activeTasks.put(identifier, future);
         }
     }
