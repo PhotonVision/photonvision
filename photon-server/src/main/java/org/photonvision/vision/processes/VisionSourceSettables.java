@@ -36,15 +36,9 @@ public abstract class VisionSourceSettables {
         return configuration;
     }
 
-    public abstract int getExposure();
-
     public abstract void setExposure(int exposure);
 
-    public abstract int getBrightness();
-
     public abstract void setBrightness(int brightness);
-
-    public abstract int getGain();
 
     public abstract void setGain(int gain);
 
