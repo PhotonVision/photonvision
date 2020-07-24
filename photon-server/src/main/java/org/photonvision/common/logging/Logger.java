@@ -18,6 +18,8 @@
 package org.photonvision.common.logging;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousFileChannel;
 import java.nio.file.Path;
@@ -151,6 +153,11 @@ public class Logger {
         log(message, LogLevel.ERROR);
     }
 
+    public void error(String message, Throwable t) {
+        log(message, LogLevel.ERROR);
+        log(convertStackTraceToString(t), LogLevel.ERROR);
+    }
+
     public void warn(Supplier<String> messageSupplier) {
         log(messageSupplier, LogLevel.WARN);
     }
@@ -181,6 +188,16 @@ public class Logger {
 
     public void trace(String message) {
         log(message, LogLevel.TRACE);
+    }
+
+    private static String convertStackTraceToString(Throwable throwable) {
+        try (StringWriter sw = new StringWriter();
+                PrintWriter pw = new PrintWriter(sw)) {
+            throwable.printStackTrace(pw);
+            return sw.toString();
+        } catch (IOException ioe) {
+            throw new IllegalStateException(ioe);
+        }
     }
 
     private interface LogAppender {
