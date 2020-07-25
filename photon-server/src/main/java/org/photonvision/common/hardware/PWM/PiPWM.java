@@ -24,7 +24,13 @@ import java.util.List;
 
 public class PiPWM extends PWMBase {
 
-    private List<Integer> pwmRange = new ArrayList<>();
+    private List<Integer> pwmRange =
+            new ArrayList<>() {
+                {
+                    add(0);
+                    add(0);
+                }
+            };
     private final int pin;
     private final PwmLed LED;
 
