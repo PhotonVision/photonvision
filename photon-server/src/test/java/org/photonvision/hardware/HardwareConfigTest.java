@@ -40,7 +40,7 @@ public class HardwareConfigTest {
             assertEquals(config.deviceLogoPath, "photonvision.png");
             assertEquals(config.supportURL, "https://support.photonvision.com");
             Assertions.assertArrayEquals(
-                    config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {1, 5});
+                    config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 5});
             Assertions.assertArrayEquals(
                     config.ledPWMRange.stream().mapToInt(i -> i).toArray(), new int[] {0, 100});
 

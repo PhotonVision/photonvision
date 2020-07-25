@@ -30,8 +30,8 @@ ext {
 
 dependencies {
     implementation "io.javalin:javalin:3.7.0"
-    implementation "com.pi4j:pi4j-parent:1.2"
-    implementation "com.pi4j:pi4j-core:1.2"
+    compile group: 'com.diozero', name: 'diozero-provider-jpi', version: '0.9'
+
 
     implementation "com.fasterxml.jackson.core:jackson-annotations:2.10.0"
     implementation "com.fasterxml.jackson.core:jackson-core:2.10.0"

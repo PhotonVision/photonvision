@@ -17,32 +17,26 @@
 
 package org.photonvision.common.hardware.PWM;
 
-import com.pi4j.io.gpio.*;
-import com.pi4j.io.gpio.exception.UnsupportedPinModeException;
-import com.pi4j.wiringpi.Gpio;
-import com.pi4j.wiringpi.SoftPwm;
+import com.diozero.PwmLed;
+import com.diozero.util.RuntimeIOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PiPWM extends PWMBase {
 
-    static {
-        // Initialize wiringPi Library
-        Gpio.wiringPiSetup();
-    }
-
     private List<Integer> pwmRange = new ArrayList<>();
     private final int pin;
+    private final PwmLed LED;
 
-    public PiPWM(int pin, int value, int range) throws UnsupportedPinModeException {
+    public PiPWM(int pin, int value, int range) throws RuntimeIOException {
         this.pin = pin;
-        SoftPwm.softPwmCreate(pin, value, range);
+        this.pwmRange.set(1, range);
+        LED = new PwmLed(pin);
+        LED.setValue(value);
     }
 
     @Override
     public void setPwmRange(List<Integer> range) {
-        SoftPwm.softPwmStop(pin);
-        SoftPwm.softPwmCreate(pin, 0, range.get(1));
         pwmRange = range;
     }
 
@@ -53,7 +47,7 @@ public class PiPWM extends PWMBase {
 
     @Override
     public boolean shutdown() {
-        SoftPwm.softPwmStop(pin);
+        LED.close();
         return true;
     }
 
@@ -61,6 +55,6 @@ public class PiPWM extends PWMBase {
     public void dimLED(int dimPercentage) {
         // Check to see if dimPercentage is within the range
         if (dimPercentage < pwmRange.get(0) || dimPercentage > pwmRange.get(1)) return;
-        SoftPwm.softPwmWrite(pin, dimPercentage);
+        LED.setValue(dimPercentage);
     }
 }

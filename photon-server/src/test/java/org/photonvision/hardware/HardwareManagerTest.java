@@ -37,11 +37,11 @@ public class HardwareManagerTest {
 
         var instance = HardwareManager.getInstance();
 
-        instance.getPWM(1).setPwmRange(List.of(5, 99));
-        Assertions.assertEquals(instance.getPWM(1).getPwmRange().get(0), 5);
-        Assertions.assertEquals(instance.getPWM(1).getPwmRange().get(1), 99);
+        instance.getPWM(2).setPwmRange(List.of(5, 99));
+        Assertions.assertEquals(instance.getPWM(2).getPwmRange().get(0), 5);
+        Assertions.assertEquals(instance.getPWM(2).getPwmRange().get(1), 99);
         for (int i = 0; i < 101; i++) {
-            instance.getPWM(1).dimLED(i);
+            instance.getPWM(2).dimLED(i);
         }
     }
 }

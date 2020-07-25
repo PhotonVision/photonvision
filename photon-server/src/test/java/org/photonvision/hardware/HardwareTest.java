@@ -19,7 +19,7 @@ package org.photonvision.hardware;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.pi4j.io.gpio.exception.UnsupportedPinModeException;
+import com.diozero.util.RuntimeIOException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
@@ -62,9 +62,9 @@ public class HardwareTest {
     public void testGPIO() {
         GPIOBase gpio;
         if (Platform.isRaspberryPi()) {
-            gpio = new PiGPIO(2);
+            gpio = new PiGPIO(1);
         } else {
-            gpio = new CustomGPIO(2);
+            gpio = new CustomGPIO(1);
         }
 
         gpio.setHigh(); // HIGH
@@ -97,7 +97,7 @@ public class HardwareTest {
         if (Platform.isRaspberryPi()) {
             try {
                 pwm = new PiPWM(1, 0, 100);
-            } catch (UnsupportedPinModeException e) {
+            } catch (RuntimeIOException e) {
                 System.out.println("Invalid PWN port.");
                 return;
             }

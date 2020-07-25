@@ -3,7 +3,7 @@
   "deviceLogoPath": "photonvision.png",
   "supportURL": "https://support.photonvision.com",
   "hardware": {
-    "leds": [1,5],
+    "leds": [2,5],
     "ledSetCommand": "",
     "ledsCanDim": true,
     "ledPWMRange": [0, 100],

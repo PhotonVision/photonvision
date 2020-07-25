@@ -17,15 +17,14 @@
 
 package org.photonvision.common.hardware.GPIO;
 
-import com.pi4j.io.gpio.*;
-import com.pi4j.io.gpio.exception.GpioPinExistsException;
+import com.diozero.LED;
+import com.diozero.util.RuntimeIOException;
 
 public class PiGPIO extends GPIOBase {
-    private static final GpioController gpio = GpioFactory.getInstance();
-    private final GpioPinDigitalOutput pin;
+    private final LED pin;
 
-    public PiGPIO(int address) throws GpioPinExistsException {
-        this.pin = gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(address), PinState.LOW);
+    public PiGPIO(int address) throws RuntimeIOException {
+        this.pin = new LED(address);
     }
 
     @Override
@@ -35,33 +34,32 @@ public class PiGPIO extends GPIOBase {
 
     @Override
     public void setLow() {
-        pin.setState(PinState.LOW);
+        pin.off();
     }
 
     @Override
     public void setHigh() {
-        pin.setState(PinState.HIGH);
+        pin.on();
     }
 
     @Override
     public void setState(boolean state) {
-        pin.setState(state);
+        pin.setOn(state);
     }
 
     @Override
     public void blink(long delay, long duration) {
-        pin.blink(delay, duration);
+        pin.blink(0f, delay, (int) duration, false);
     }
 
     @Override
     public boolean shutdown() {
-        gpio.shutdown();
-        gpio.unprovisionPin(this.pin);
-        return gpio.isShutdown();
+        pin.close();
+        return true;
     }
 
     @Override
     public boolean getState() {
-        return pin.isState(PinState.HIGH);
+        return pin.isLit();
     }
 }
