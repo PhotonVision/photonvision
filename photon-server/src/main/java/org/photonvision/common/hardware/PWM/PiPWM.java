@@ -17,7 +17,7 @@
 
 package org.photonvision.common.hardware.PWM;
 
-import com.diozero.PwmLed;
+import com.diozero.devices.PwmLed;
 import com.diozero.util.RuntimeIOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +38,7 @@ public class PiPWM extends PWMBase {
         this.pin = pin;
         this.pwmRange.set(1, range);
         LED = new PwmLed(pin);
-        LED.setValue(value);
+        LED.setValue((float) value / range);
     }
 
     @Override
@@ -61,6 +61,6 @@ public class PiPWM extends PWMBase {
     public void dimLED(int dimPercentage) {
         // Check to see if dimPercentage is within the range
         if (dimPercentage < pwmRange.get(0) || dimPercentage > pwmRange.get(1)) return;
-        LED.setValue(dimPercentage);
+        LED.setValue((float) dimPercentage / getPwmRange().get(1));
     }
 }

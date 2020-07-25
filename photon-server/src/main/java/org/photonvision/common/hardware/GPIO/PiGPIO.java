@@ -17,7 +17,7 @@
 
 package org.photonvision.common.hardware.GPIO;
 
-import com.diozero.LED;
+import com.diozero.devices.LED;
 import com.diozero.util.RuntimeIOException;
 
 public class PiGPIO extends GPIOBase {
@@ -44,7 +44,8 @@ public class PiGPIO extends GPIOBase {
 
     @Override
     public void setState(boolean state) {
-        pin.setOn(state);
+        if (state) pin.on();
+        else pin.off();
     }
 
     @Override
@@ -60,6 +61,6 @@ public class PiGPIO extends GPIOBase {
 
     @Override
     public boolean getState() {
-        return pin.isLit();
+        return pin.isOn();
     }
 }
