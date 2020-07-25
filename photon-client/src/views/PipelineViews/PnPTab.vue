@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- Special hidden upload input that gets 'clicked' when the user selects the right dropdown item' -->
+    <!-- Special hidden upload input that gets 'clicked' when the user selects the right dropdown item -->
     <input
       ref="file"
       type="file"

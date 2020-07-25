@@ -21,6 +21,7 @@ export default new Vuex.Store({
         undoRedo: undoRedo
     },
     state: {
+        backendConnected: false,
         colorPicking: false,
         saveBar: false,
         compactMode: localStorage.getItem("compactMode") === undefined ? undefined : localStorage.getItem("compactMode") === "true", // Compact mode is initially unset on purpose
@@ -96,6 +97,14 @@ export default new Vuex.Store({
             }
         ],
         settings: {
+            general: {
+                version: "Unknown",
+                gpuAcceleration: false,
+                gpuAccelerationType: "Unknown",
+
+                hardwareModel: "Unknown",
+                hardwarePlatform: "Unknown",
+            },
             networking: {
                 teamNumber: 0,
 
