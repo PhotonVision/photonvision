@@ -96,13 +96,14 @@ public class HardwareTest {
         PWMBase pwm;
         if (Platform.isRaspberryPi()) {
             try {
-                pwm = new PiPWM(18, 0, 100);
+                pwm = new PiPWM(0, 0, 100);
             } catch (RuntimeIOException e) {
+                e.printStackTrace();
                 System.out.println("Invalid PWN port.");
                 return;
             }
         } else {
-            pwm = new CustomPWM(18);
+            pwm = new CustomPWM(0);
         }
         pwm.setPwmRange(List.of(0, 100));
         assertEquals(pwm.getPwmRange().get(0), 0);

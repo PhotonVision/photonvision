@@ -53,7 +53,7 @@ public class PiPWM extends PWMBase {
 
     @Override
     public boolean shutdown() {
-        LED.close();
+        LED.off();
         return true;
     }
 
