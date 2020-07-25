@@ -17,7 +17,7 @@
 
 package org.photonvision.common.hardware.GPIO;
 
-import com.diozero.devices.LED;
+import com.diozero.LED;
 import com.diozero.util.RuntimeIOException;
 
 public class PiGPIO extends GPIOBase {
