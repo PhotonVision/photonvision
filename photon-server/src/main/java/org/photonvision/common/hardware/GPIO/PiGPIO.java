@@ -18,12 +18,13 @@
 package org.photonvision.common.hardware.GPIO;
 
 import com.pi4j.io.gpio.*;
+import com.pi4j.io.gpio.exception.GpioPinExistsException;
 
 public class PiGPIO extends GPIOBase {
     private static final GpioController gpio = GpioFactory.getInstance();
     private final GpioPinDigitalOutput pin;
 
-    public PiGPIO(int address) {
+    public PiGPIO(int address) throws GpioPinExistsException {
         this.pin = gpio.provisionDigitalOutputPin(RaspiPin.getPinByAddress(address), PinState.LOW);
     }
 
@@ -55,6 +56,7 @@ public class PiGPIO extends GPIOBase {
     @Override
     public boolean shutdown() {
         gpio.shutdown();
+        gpio.unprovisionPin(this.pin);
         return gpio.isShutdown();
     }
 

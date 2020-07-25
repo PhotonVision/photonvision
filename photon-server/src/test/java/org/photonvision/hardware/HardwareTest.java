@@ -62,9 +62,9 @@ public class HardwareTest {
     public void testGPIO() {
         GPIOBase gpio;
         if (Platform.isRaspberryPi()) {
-            gpio = new PiGPIO(5);
+            gpio = new PiGPIO(2);
         } else {
-            gpio = new CustomGPIO(5);
+            gpio = new CustomGPIO(2);
         }
 
         gpio.setHigh(); // HIGH
