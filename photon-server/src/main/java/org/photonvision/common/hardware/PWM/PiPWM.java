@@ -17,7 +17,7 @@
 
 package org.photonvision.common.hardware.PWM;
 
-import com.diozero.PwmLed;
+import com.diozero.devices.PwmLed;
 import com.diozero.util.RuntimeIOException;
 import java.util.ArrayList;
 import java.util.List;
