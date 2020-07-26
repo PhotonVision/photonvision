@@ -18,15 +18,10 @@
 package org.photonvision.common.hardware.GPIO;
 
 import eu.xeli.jpigpio.PigpioException;
-import eu.xeli.jpigpio.Pulse;
-import eu.xeli.jpigpio.devices.Stepper;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
-
-import java.util.ArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 public class PiGPIO extends GPIOBase {
     private static final Logger logger = new Logger(PiGPIO.class, LogGroup.General);
@@ -76,8 +71,6 @@ public class PiGPIO extends GPIOBase {
             e.printStackTrace();
         }
     }
-
-
 
     @Override
     public boolean shutdown() {

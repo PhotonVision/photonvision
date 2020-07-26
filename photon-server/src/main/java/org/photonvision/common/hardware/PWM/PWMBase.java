@@ -55,7 +55,7 @@ public abstract class PWMBase {
 
     public abstract List<Integer> getPwmRange();
 
-    public abstract void blink(int pulseTimeMillis, int  blinks);
+    public abstract void blink(int pulseTimeMillis, int blinks);
 
     public abstract boolean shutdown();
 

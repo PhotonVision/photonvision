@@ -53,7 +53,7 @@ public class CustomPWM extends PWMBase {
     }
 
     @Override
-    public void blink(int pulseTimeMillis, int  blinks) {
+    public void blink(int pulseTimeMillis, int blinks) {
         execute(
                 commands
                         .get("blink")
@@ -61,7 +61,6 @@ public class CustomPWM extends PWMBase {
                         .replace("{blinks}", String.valueOf(blinks))
                         .replace("{p}", String.valueOf(this.port)));
     }
-
 
     @Override
     public void dimLED(int dimValue) {

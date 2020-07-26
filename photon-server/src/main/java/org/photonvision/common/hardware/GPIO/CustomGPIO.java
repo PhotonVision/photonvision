@@ -69,7 +69,6 @@ public class CustomGPIO extends GPIOBase {
         currentState = state;
     }
 
-
     @Override
     public boolean shutdown() {
         execute(commands.get("shutdown"));

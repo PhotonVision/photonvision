@@ -18,14 +18,11 @@
 package org.photonvision.common.hardware.PWM;
 
 import eu.xeli.jpigpio.PigpioException;
-
+import eu.xeli.jpigpio.Pulse;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import eu.xeli.jpigpio.Pulse;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -80,12 +77,11 @@ public class PiPWM extends PWMBase {
         return true;
     }
 
-
     @Override
-    public void blink(int pulseTimeMillis, int  blinks) {
+    public void blink(int pulseTimeMillis, int blinks) {
         try {
             pulses.clear();
-            for(int i = 0; i < blinks; i++){
+            for (int i = 0; i < blinks; i++) {
                 pulses.add(new Pulse(1 << this.pin, 0, pulseTimeMillis));
                 pulses.add(new Pulse(0, 1 << this.pin, pulseTimeMillis));
             }
@@ -95,6 +91,7 @@ public class PiPWM extends PWMBase {
             e.printStackTrace();
         }
     }
+
     @Override
     public void dimLED(int dimPercentage) {
         // Check to see if dimPercentage is within the range

@@ -98,8 +98,6 @@ public class HardwareTest {
         gpio.setState(false); // LOW
         assertFalse(gpio.getState());
 
-        gpio.blink(250, 2000);
-
         var success = gpio.shutdown();
         assertTrue(success);
     }
@@ -128,6 +126,7 @@ public class HardwareTest {
         } else {
             pwm = new CustomPWM(18);
         }
+        pwm.blink(1000, 10);
         pwm.setPwmRange(List.of(0, 100));
         assertEquals(pwm.getPwmRange().get(0), 0);
         assertEquals(pwm.getPwmRange().get(1), 100);

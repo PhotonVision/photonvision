@@ -40,7 +40,7 @@ public class HardwareManagerTest {
         instance.getPWM(13).setPwmRange(List.of(5, 100));
         Assertions.assertEquals(instance.getPWM(13).getPwmRange().get(0), 0);
         Assertions.assertEquals(instance.getPWM(13).getPwmRange().get(1), 100);
-        instance.getGPIO(2).blink(250, 2000);
+        instance.getPWM(13).blink(250, 5);
         for (int i = 0; i < 101; i++) {
             instance.getPWM(13).dimLED(i);
         }
