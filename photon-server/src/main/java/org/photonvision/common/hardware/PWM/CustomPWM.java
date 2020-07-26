@@ -53,6 +53,17 @@ public class CustomPWM extends PWMBase {
     }
 
     @Override
+    public void blink(int pulseTimeMillis, int  blinks) {
+        execute(
+                commands
+                        .get("blink")
+                        .replace("{pulseTime}", String.valueOf(pulseTimeMillis))
+                        .replace("{blinks}", String.valueOf(blinks))
+                        .replace("{p}", String.valueOf(this.port)));
+    }
+
+
+    @Override
     public void dimLED(int dimValue) {
         // Check to see if dimValue is within the range
         if (dimValue < pwmRange.get(0) || dimValue > pwmRange.get(1)) return;
@@ -67,5 +78,6 @@ public class CustomPWM extends PWMBase {
         if (Platform.isRaspberryPi()) return;
         commands.replace("setRange", config.ledPWMSetRange);
         commands.replace("dim", config.ledDimCommand);
+        commands.replace("blink", config.ledBlinkCommand);
     }
 }

@@ -18,20 +18,29 @@
 package org.photonvision.common.hardware.PWM;
 
 import eu.xeli.jpigpio.PigpioException;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import eu.xeli.jpigpio.Pulse;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class PiPWM extends PWMBase {
 
     private static final Logger logger = new Logger(PWMBase.class, LogGroup.General);
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private final ArrayList<Pulse> pulses = new ArrayList<>();
     private final int pin;
 
     public PiPWM(int pin, int value, int range) {
         this.pin = pin;
         try {
-            pigpio.setPWMRange(this.pin, range);
             pigpio.setPWMFrequency(this.pin, value);
+            pigpio.setPWMRange(this.pin, range);
         } catch (PigpioException e) {
             logger.error("Could not set PWM settings on port " + this.pin);
             e.printStackTrace();
@@ -71,6 +80,21 @@ public class PiPWM extends PWMBase {
         return true;
     }
 
+
+    @Override
+    public void blink(int pulseTimeMillis, int  blinks) {
+        try {
+            pulses.clear();
+            for(int i = 0; i < blinks; i++){
+                pulses.add(new Pulse(1 << this.pin, 0, pulseTimeMillis));
+                pulses.add(new Pulse(0, 1 << this.pin, pulseTimeMillis));
+            }
+            pigpio.waveAddGeneric(this.pulses);
+            pigpio.waveSendOnce(pigpio.waveCreate());
+        } catch (PigpioException e) {
+            e.printStackTrace();
+        }
+    }
     @Override
     public void dimLED(int dimPercentage) {
         // Check to see if dimPercentage is within the range

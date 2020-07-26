@@ -35,6 +35,7 @@ public abstract class PWMBase {
                     put("setRange", "");
                     put("shutdown", "");
                     put("dim", "");
+                    put("blink", "");
                 }
             };
 
@@ -53,6 +54,8 @@ public abstract class PWMBase {
     public abstract void setPwmRange(List<Integer> range);
 
     public abstract List<Integer> getPwmRange();
+
+    public abstract void blink(int pulseTimeMillis, int  blinks);
 
     public abstract boolean shutdown();
 

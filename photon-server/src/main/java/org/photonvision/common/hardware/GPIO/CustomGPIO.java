@@ -69,15 +69,6 @@ public class CustomGPIO extends GPIOBase {
         currentState = state;
     }
 
-    @Override
-    public void blink(long delay, long duration) {
-        execute(
-                commands
-                        .get("blink")
-                        .replace("{delay}", String.valueOf(delay))
-                        .replace("{duration}", String.valueOf(duration))
-                        .replace("{p}", String.valueOf(this.port)));
-    }
 
     @Override
     public boolean shutdown() {
@@ -93,6 +84,5 @@ public class CustomGPIO extends GPIOBase {
     public static void setConfig(HardwareConfig config) {
         if (Platform.isRaspberryPi()) return;
         commands.replace("setState", config.ledSetCommand);
-        commands.replace("blink", config.ledBlinkCommand);
     }
 }

@@ -32,7 +32,6 @@ public abstract class GPIOBase {
             new HashMap<>() {
                 {
                     put("setState", "");
-                    put("blink", "");
                     put("shutdown", "");
                 }
             };
@@ -56,8 +55,6 @@ public abstract class GPIOBase {
     public abstract void setHigh();
 
     public abstract void setState(boolean state);
-
-    public abstract void blink(long delay, long duration);
 
     public abstract boolean shutdown();
 

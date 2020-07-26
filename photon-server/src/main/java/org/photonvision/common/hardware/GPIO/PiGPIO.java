@@ -18,11 +18,19 @@
 package org.photonvision.common.hardware.GPIO;
 
 import eu.xeli.jpigpio.PigpioException;
+import eu.xeli.jpigpio.Pulse;
+import eu.xeli.jpigpio.devices.Stepper;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
+import java.util.ArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 public class PiGPIO extends GPIOBase {
     private static final Logger logger = new Logger(PiGPIO.class, LogGroup.General);
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private final int pin;
 
     public PiGPIO(int address) {
@@ -69,15 +77,7 @@ public class PiGPIO extends GPIOBase {
         }
     }
 
-    @Override
-    public void blink(long delay, long duration) {
-        try {
-            pigpio.gpioTrigger(this.pin, duration, true);
-        } catch (PigpioException e) {
-            logger.error("Could not blink pin on port " + this.pin);
-            e.printStackTrace();
-        }
-    }
+
 
     @Override
     public boolean shutdown() {
