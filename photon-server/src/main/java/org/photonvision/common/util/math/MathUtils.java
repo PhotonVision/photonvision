@@ -39,6 +39,14 @@ public class MathUtils {
         return FastMath.atan(FastMath.toRadians(angle.doubleValue() - 90));
     }
 
+    public static int safeDivide(int quotient, int divisor) {
+        if (divisor == 0) {
+            return 0;
+        } else {
+            return quotient / divisor;
+        }
+    }
+
     public static double roundTo(double value, int to) {
         double toMult = Math.pow(10, to);
         return (double) Math.round(value * toMult) / toMult;

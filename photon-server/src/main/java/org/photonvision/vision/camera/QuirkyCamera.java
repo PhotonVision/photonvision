@@ -31,9 +31,10 @@ public class QuirkyCamera {
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "", List.of());
 
+    public final String baseName;
     public final int usbVid;
     public final int usbPid;
-    public final String baseName;
+    public final String replacementName;
     public final HashMap<CameraQuirk, Boolean> quirks;
 
     /**
@@ -42,21 +43,22 @@ public class QuirkyCamera {
      * @param usbPid USB PID of camera
      * @param quirks Camera quirks
      */
-    private QuirkyCamera(int usbVid, int usbPid, CameraQuirk... quirks) {
-        this(usbVid, usbPid, "", quirks);
+    private QuirkyCamera(int usbVid, int usbPid, String replacementName, CameraQuirk... quirks) {
+        this("", usbVid, usbPid, replacementName, quirks);
     }
 
     /**
      * Creates a QuirkyCamera that matches by USB VID/PID and name
+     * @param baseName CSCore name of camera
      * @param usbVid USB VID of camera
      * @param usbPid USB PID of camera
-     * @param baseName CSCore name of camera
      * @param quirks Camera quirks
      */
-    private QuirkyCamera(int usbVid, int usbPid, String baseName, CameraQuirk... quirks) {
+    private QuirkyCamera(String baseName, int usbVid, int usbPid, String replacementName, CameraQuirk... quirks) {
+        this.baseName = baseName;
         this.usbVid = usbVid;
         this.usbPid = usbPid;
-        this.baseName = baseName;
+        this.replacementName = replacementName;
 
         this.quirks = new HashMap<>();
         for (var q : quirks) {
@@ -77,7 +79,11 @@ public class QuirkyCamera {
                 return qc;
             }
         }
-        return new QuirkyCamera(usbVid, usbPid, baseName);
+        return new QuirkyCamera(baseName, usbVid, usbPid, "");
+    }
+
+    public boolean hasQuirks() {
+        return quirks.containsValue(true);
     }
 
     @Override

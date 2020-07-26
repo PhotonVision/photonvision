@@ -26,6 +26,7 @@ import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
@@ -45,10 +46,16 @@ public class USBCameraSource implements VisionSource {
         logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
         configuration = config;
         camera = new UsbCamera(config.nickname, config.path);
+        cvSink = CameraServer.getInstance().getVideo(this.camera);
+
         cameraQuirks =
                 QuirkyCamera.getQuirkyCamera(
-                        camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
-        cvSink = CameraServer.getInstance().getVideo(this.camera);
+                        config.baseName, camera.getInfo().productId, camera.getInfo().vendorId);
+
+        if (cameraQuirks.hasQuirks()) {
+            logger.info("Quirky camera detected: " + cameraQuirks.replacementName);
+        }
+
         usbCameraSettables = new USBCameraSettables(config);
         usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
     }
@@ -74,8 +81,13 @@ public class USBCameraSource implements VisionSource {
         @Override
         public void setExposure(int exposure) {
             try {
-                camera.setExposureManual(exposure);
-                camera.setExposureManual(exposure);
+                if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                    camera.getProperty("auto_exposure").set(1); // auto exposure off
+                    camera.getProperty("exposure_time_absolute").set(MathUtils.safeDivide(10000, exposure)); // exposure time is a range, 0-10000
+                } else {
+                    camera.setExposureManual(exposure);
+                    camera.setExposureManual(exposure);
+                }
             } catch (VideoException e) {
                 logger.error("Failed to set camera exposure!", e);
             }
