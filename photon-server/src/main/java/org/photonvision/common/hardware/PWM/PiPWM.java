@@ -76,7 +76,7 @@ public class PiPWM extends PWMBase {
         // Check to see if dimPercentage is within the range
         if (dimPercentage < getPwmRange().get(0) || dimPercentage > getPwmRange().get(1)) return;
         try {
-            pigpio.setPWMFrequency(this.pin, dimPercentage);
+            pigpio.setPWMDutycycle(this.pin, dimPercentage);
         } catch (PigpioException e) {
             logger.error("Could not dim PWM on port " + this.pin);
             e.printStackTrace();
