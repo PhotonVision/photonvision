@@ -42,11 +42,13 @@
                 cols="12"
                 :md="selectedOutputs.length === 1 ? 12 : Math.floor(12 / selectedOutputs.length)"
                 class="pb-0 pt-0"
+                style="height: 100%;"
               >
                 <div style="position: relative; width: 100%; height: 100%;">
                   <cvImage
                     :id="idx === 0 ? 'normal-stream' : ''"
                     :address="$store.getters.streamAddress[idx]"
+                    :disconnected="!$store.state.backendConnected"
                     scale="100"
                     max-height="300px"
                     max-height-md="320px"

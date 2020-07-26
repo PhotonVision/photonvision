@@ -5,7 +5,6 @@
     :style="styleObject"
     :src="src"
     alt=""
-    @error="showError()"
     @click="e => $emit('click', e)"
   >
 </template>
@@ -14,12 +13,7 @@
     export default {
         name: "CvImage",
         // eslint-disable-next-line vue/require-prop-types
-        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightXl', 'colorPicking', 'id'],
-        data: () => {
-            return {
-              addressData: undefined,
-            }
-        },
+        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
         computed: {
             styleObject: {
                 get() {
@@ -47,17 +41,9 @@
             },
             src: {
               get() {
-                return this.addressData || this.address;
+                return this.disconnected ? require("../../assets/noStream.jpg") : this.address;
               },
-              set(value) {
-                this.addressData = value;
-              }
-            }
+            },
         },
-        methods: {
-          showError() {
-            this.addressData = require("../../assets/noStream.jpg")
-          }
-        }
     }
 </script>

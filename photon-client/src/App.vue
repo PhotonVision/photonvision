@@ -89,6 +89,20 @@
             <v-list-item-title>Advanced Mode</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
+
+        <v-list-item style="position: absolute; bottom: 0; left: 0;">
+          <v-list-item-icon>
+            <v-icon v-if="$store.state.backendConnected">
+              mdi-wifi
+            </v-icon>
+            <v-icon class="pulse" style="border-radius: 100%;" v-else>
+              mdi-wifi-off
+            </v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>{{ $store.state.backendConnected ? "Connected" : "Trying to connect..." }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
     </v-navigation-drawer>
     <v-content>
@@ -182,6 +196,7 @@
 
                 }
             });
+
             this.$options.sockets.onmessage = (data) => {
                 try {
                     let message = this.$msgPack.decode(data.data);
@@ -193,7 +208,18 @@
                 } catch (error) {
                     console.error('error: ' + data.data + " , " + error);
                 }
+            };
+            this.$options.sockets.onopen = () => {
+              this.$store.state.backendConnected = true;
+            };
+
+            let closed = () => {
+              this.$store.state.backendConnected = false;
             }
+            this.$options.sockets.onclose = closed;
+            this.$options.sockets.onerror = closed;
+
+            this.$connect();
         },
         methods: {
             handleMessage(key, value) {
@@ -252,6 +278,21 @@
 </style>
 
 <style>
+    .pulse {
+        animation: pulse-animation 2s infinite;
+    }
+
+    @keyframes pulse-animation {
+        0% {
+          box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
+          background-color: rgba(0, 0, 0, 0.2);
+        }
+        100% {
+          box-shadow: 0 0 0 20px rgba(0, 0, 0, 0);
+          background-color: rgba(0, 0, 0, 0);
+        }
+    }
+
     .logo {
         width: 100%;
         height: 70px;

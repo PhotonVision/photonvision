@@ -166,6 +166,7 @@
       >
         <CVimage
           :address="$store.getters.streamAddress[1]"
+          :disconnected="!$store.state.backendConnected"
           scale="100"
           style="border-radius: 5px;"
         />

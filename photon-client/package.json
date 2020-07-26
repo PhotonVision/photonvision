@@ -17,7 +17,7 @@
     "msgpack5": "^4.2.1",
     "vue": "^2.6.11",
     "vue-axios": "^2.1.5",
-    "vue-native-websocket": "^2.0.14",
+    "vue-native-websocket": "git+https://github.com/PhotonVision/vue-native-websocket.git#7a32791",
     "vue-router": "^3.3.2",
     "vuetify": "^2.2.34",
     "vuex": "^3.4.0"
