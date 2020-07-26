@@ -24,6 +24,7 @@ import eu.xeli.jpigpio.PigpioSocket;
 import eu.xeli.jpigpio.Utils;
 import java.util.List;
 import org.eclipse.jetty.io.RuntimeIOException;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
@@ -37,6 +38,19 @@ import org.photonvision.common.hardware.metrics.GPU;
 import org.photonvision.common.hardware.metrics.RAM;
 
 public class HardwareTest {
+    @BeforeAll
+    public void Init() {
+        if (!Platform.isRaspberryPi()) return;
+        try {
+            var pigpio = new PigpioSocket("localhost", 8888);
+            GPIOBase.pigpio = pigpio;
+            PWMBase.pigpio = pigpio;
+            pigpio.gpioInitialize();
+            Utils.addShutdown(pigpio);
+        } catch (PigpioException e) {
+            e.printStackTrace();
+        }
+    }
 
     @Test
     public void testHardware() {
@@ -63,16 +77,6 @@ public class HardwareTest {
 
     @Test
     public void testGPIO() {
-        try {
-            var pigpio = new PigpioSocket("localhost", 8888);
-            GPIOBase.pigpio = pigpio;
-            PWMBase.pigpio = pigpio;
-            pigpio.gpioInitialize();
-            Utils.addShutdown(pigpio);
-        } catch (PigpioException e) {
-            e.printStackTrace();
-        }
-
         GPIOBase gpio;
         if (Platform.isRaspberryPi()) {
             gpio = new PiGPIO(18);
@@ -104,15 +108,6 @@ public class HardwareTest {
 
     @Test
     public void testPWM() {
-        try {
-            var pigpio = new PigpioSocket("localhost", 8888);
-            GPIOBase.pigpio = pigpio;
-            PWMBase.pigpio = pigpio;
-            pigpio.gpioInitialize();
-            Utils.addShutdown(pigpio);
-        } catch (PigpioException e) {
-            e.printStackTrace();
-        }
 
         PWMBase pwm;
         if (Platform.isRaspberryPi()) {
@@ -126,7 +121,6 @@ public class HardwareTest {
         } else {
             pwm = new CustomPWM(18);
         }
-        pwm.blink(1000, 10);
         pwm.setPwmRange(List.of(0, 100));
         assertEquals(pwm.getPwmRange().get(0), 0);
         assertEquals(pwm.getPwmRange().get(1), 100);
@@ -137,5 +131,15 @@ public class HardwareTest {
         pwm.shutdown();
         var success = pwm.shutdown();
         assertTrue(success);
+    }
+
+    @Test
+    public void testBlink() {
+        PWMBase pwm = new PiPWM(18, 0, 100);
+        pwm.blink(125, 3);
+        var startms = System.currentTimeMillis();
+        while (true) {
+            if (System.currentTimeMillis() - startms > 4500) break;
+        }
     }
 }

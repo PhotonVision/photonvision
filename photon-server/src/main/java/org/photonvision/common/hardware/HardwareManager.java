@@ -87,6 +87,35 @@ public class HardwareManager {
         return LEDs.get(pin).getLeft();
     }
 
+    public void blinkLEDs(int pulseTimeMillis, int blinks) {
+        LEDs.values().forEach(led -> led.getRight().blink(pulseTimeMillis, blinks));
+    }
+
+    public void setBrightnessPercentage(int percentage) {
+        LEDs.values().forEach(led -> led.getRight().dimLED(percentage));
+    }
+
+    public void turnLEDsOn() {
+        LEDs.values().forEach(led -> led.getLeft().setHigh());
+    }
+
+    public void turnLEDsOff() {
+        LEDs.values().forEach(led -> led.getLeft().setLow());
+    }
+
+    public void toggleLEDs() {
+        LEDs.values().forEach(led -> led.getLeft().togglePin());
+    }
+
+    public void shutdown() {
+        LEDs.values()
+                .forEach(
+                        led -> {
+                            led.getLeft().shutdown();
+                            led.getRight().shutdown();
+                        });
+    }
+
     private static class Singleton {
         private static final HardwareManager INSTANCE = new HardwareManager();
     }

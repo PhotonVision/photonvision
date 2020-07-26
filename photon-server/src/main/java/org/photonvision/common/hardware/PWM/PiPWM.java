@@ -82,8 +82,8 @@ public class PiPWM extends PWMBase {
         try {
             pulses.clear();
             for (int i = 0; i < blinks; i++) {
-                pulses.add(new Pulse(1 << this.pin, 0, pulseTimeMillis));
-                pulses.add(new Pulse(0, 1 << this.pin, pulseTimeMillis));
+                pulses.add(new Pulse(1 << this.pin, 0, pulseTimeMillis * 100));
+                pulses.add(new Pulse(0, 1 << this.pin, pulseTimeMillis * 100));
             }
             pigpio.waveAddGeneric(this.pulses);
             pigpio.waveSendOnce(pigpio.waveCreate());
@@ -94,10 +94,8 @@ public class PiPWM extends PWMBase {
 
     @Override
     public void dimLED(int dimPercentage) {
-        // Check to see if dimPercentage is within the range
-        if (dimPercentage < getPwmRange().get(0) || dimPercentage > getPwmRange().get(1)) return;
         try {
-            pigpio.setPWMDutycycle(this.pin, dimPercentage);
+            pigpio.setPWMDutycycle(this.pin, getPwmRange().get(1) * (dimPercentage / 100));
         } catch (PigpioException e) {
             logger.error("Could not dim PWM on port " + this.pin);
             e.printStackTrace();
