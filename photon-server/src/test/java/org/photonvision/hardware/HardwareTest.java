@@ -19,6 +19,9 @@ package org.photonvision.hardware;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import eu.xeli.jpigpio.PigpioException;
+import eu.xeli.jpigpio.PigpioSocket;
+import eu.xeli.jpigpio.Utils;
 import java.util.List;
 import org.eclipse.jetty.io.RuntimeIOException;
 import org.junit.jupiter.api.Test;
@@ -60,6 +63,16 @@ public class HardwareTest {
 
     @Test
     public void testGPIO() {
+        try {
+            var pigpio = new PigpioSocket("localhost", 8888);
+            GPIOBase.pigpio = pigpio;
+            PWMBase.pigpio = pigpio;
+            pigpio.gpioInitialize();
+            Utils.addShutdown(pigpio);
+        } catch (PigpioException e) {
+            e.printStackTrace();
+        }
+
         GPIOBase gpio;
         if (Platform.isRaspberryPi()) {
             gpio = new PiGPIO(18);
@@ -93,6 +106,16 @@ public class HardwareTest {
 
     @Test
     public void testPWM() {
+        try {
+            var pigpio = new PigpioSocket("localhost", 8888);
+            GPIOBase.pigpio = pigpio;
+            PWMBase.pigpio = pigpio;
+            pigpio.gpioInitialize();
+            Utils.addShutdown(pigpio);
+        } catch (PigpioException e) {
+            e.printStackTrace();
+        }
+
         PWMBase pwm;
         if (Platform.isRaspberryPi()) {
             try {
