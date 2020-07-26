@@ -50,16 +50,18 @@ public class HardwareManager {
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
 
-        // Start pigpio
-        try {
-            var pigpio = new PigpioSocket("localhost", 8888);
-            GPIOBase.pigpio = pigpio;
-            PWMBase.pigpio = pigpio;
-            pigpio.gpioInitialize();
-            Utils.addShutdown(pigpio);
-        } catch (PigpioException e) {
-            logger.error("Could not start pigpio");
-            e.printStackTrace();
+        // Start pigpio if on pi
+        if (Platform.isRaspberryPi()) {
+            try {
+                var pigpio = new PigpioSocket("localhost", 8888);
+                GPIOBase.pigpio = pigpio;
+                PWMBase.pigpio = pigpio;
+                pigpio.gpioInitialize();
+                Utils.addShutdown(pigpio);
+            } catch (PigpioException e) {
+                logger.error("Could not start pigpio");
+                e.printStackTrace();
+            }
         }
 
         hardwareConfig.ledPins.forEach(
