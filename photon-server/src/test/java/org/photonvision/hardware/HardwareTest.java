@@ -98,7 +98,7 @@ public class HardwareTest {
         gpio.setState(false); // LOW
         assertFalse(gpio.getState());
 
-        gpio.blink(10, 100);
+        gpio.blink(250, 2000);
 
         var success = gpio.shutdown();
         assertTrue(success);

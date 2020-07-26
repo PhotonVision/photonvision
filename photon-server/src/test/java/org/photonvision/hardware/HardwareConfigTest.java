@@ -46,6 +46,7 @@ public class HardwareConfigTest {
 
             CustomGPIO.setConfig(config);
             CustomPWM.setConfig(config);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
