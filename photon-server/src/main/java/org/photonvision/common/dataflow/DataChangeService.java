@@ -76,7 +76,7 @@ public class DataChangeService {
         if (!subscribers.addIfAbsent(subscriber)) {
             logger.warn("Attempted to add already added subscriber!");
         } else {
-            logger.trace(
+            logger.debug(
                     () -> {
                         var sources =
                                 subscriber.wantedSources.stream()

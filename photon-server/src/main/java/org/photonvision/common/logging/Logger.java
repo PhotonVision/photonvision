@@ -141,9 +141,21 @@ public class Logger {
         }
     }
 
+    private void log(String message, LogLevel messageLevel, LogLevel conditionalLevel) {
+        if (shouldLog(conditionalLevel)) {
+            log(message, messageLevel, group, className);
+        }
+    }
+
     private void log(Supplier<String> messageSupplier, LogLevel level) {
         if (shouldLog(level)) {
             log(messageSupplier.get(), level, group, className);
+        }
+    }
+
+    private void log(Supplier<String> messageSupplier, LogLevel messageLevel, LogLevel conditionalLevel) {
+        if (shouldLog(conditionalLevel)) {
+            log(messageSupplier.get(), messageLevel, group, className);
         }
     }
 
@@ -155,9 +167,15 @@ public class Logger {
         log(message, LogLevel.ERROR);
     }
 
+    /**
+     * Logs an error message with the stack trace of a Throwable.
+     * The stacktrace will only be printed if the current LogLevel is TRACE
+     * @param message
+     * @param t
+     */
     public void error(String message, Throwable t) {
         log(message, LogLevel.ERROR);
-        log(convertStackTraceToString(t), LogLevel.ERROR);
+        log(convertStackTraceToString(t), LogLevel.ERROR, LogLevel.TRACE);
     }
 
     public void warn(Supplier<String> messageSupplier) {

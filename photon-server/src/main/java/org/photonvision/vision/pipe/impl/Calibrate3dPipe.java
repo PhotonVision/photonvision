@@ -97,7 +97,7 @@ public class Calibrate3dPipe
                             + new ObjectMapper().writeValueAsString(distortionCoefficientsMat)
                             + "\n");
         } catch (JsonProcessingException e) {
-            logger.error(Arrays.toString(e.getStackTrace()));
+            logger.error("Failed to parse calibration data to json!", e);
         }
         // Create a new CameraCalibrationCoefficients object to pass onto SolvePnP
         double[] perViewErrorsArray =
