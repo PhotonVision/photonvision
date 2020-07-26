@@ -38,7 +38,7 @@ public class HardwareManagerTest {
         var instance = HardwareManager.getInstance();
 
         instance.getPWM(13).setPwmRange(List.of(5, 99));
-        Assertions.assertEquals(instance.getPWM(13).getPwmRange().get(0), 5);
+        Assertions.assertEquals(instance.getPWM(13).getPwmRange().get(0), 0);
         Assertions.assertEquals(instance.getPWM(13).getPwmRange().get(1), 99);
         instance.getGPIO(2).blink(250, 2000);
         for (int i = 0; i < 101; i++) {
