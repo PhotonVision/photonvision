@@ -30,7 +30,8 @@ ext {
 
 dependencies {
     implementation "io.javalin:javalin:3.7.0"
-    compile group: 'com.diozero', name: 'diozero-core', version: '0.12'
+    compile group: 'eu.xeli', name: 'jpigpio_2.12', version: '0.1.0'
+
 
 
 

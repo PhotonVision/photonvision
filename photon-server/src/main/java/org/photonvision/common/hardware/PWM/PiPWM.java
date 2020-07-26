@@ -17,50 +17,69 @@
 
 package org.photonvision.common.hardware.PWM;
 
-import com.diozero.devices.PwmLed;
-import com.diozero.util.RuntimeIOException;
-import java.util.ArrayList;
+import eu.xeli.jpigpio.PigpioException;
 import java.util.List;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 public class PiPWM extends PWMBase {
 
-    private List<Integer> pwmRange =
-            new ArrayList<>() {
-                {
-                    add(0);
-                    add(0);
-                }
-            };
+    private static final Logger logger = new Logger(PWMBase.class, LogGroup.General);
     private final int pin;
-    private final PwmLed LED;
 
-    public PiPWM(int pin, int value, int range) throws RuntimeIOException {
+    public PiPWM(int pin, int value, int range) {
         this.pin = pin;
-        this.pwmRange.set(1, range);
-        LED = new PwmLed(pin);
-        LED.setValue((float) value / range);
+        try {
+            pigpio.setPWMRange(this.pin, range);
+            pigpio.setPWMFrequency(this.pin, value);
+        } catch (PigpioException e) {
+            logger.error("Could not set PWM settings on port " + this.pin);
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void setPwmRange(List<Integer> range) {
-        pwmRange = range;
+        try {
+            pigpio.setPWMRange(this.pin, range.get(0));
+        } catch (PigpioException e) {
+            logger.error("Could not set PWM range on port " + this.pin);
+            e.printStackTrace();
+        }
     }
 
     @Override
     public List<Integer> getPwmRange() {
-        return pwmRange;
+        try {
+            return List.of(0, pigpio.getPWMRange(this.pin));
+        } catch (PigpioException e) {
+            logger.error("Could not get PWM range on port " + this.pin);
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override
     public boolean shutdown() {
-        LED.off();
+        try {
+            pigpio.gpioTerminate();
+        } catch (PigpioException e) {
+            logger.error("Could not stop GPIO instance");
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 
     @Override
     public void dimLED(int dimPercentage) {
         // Check to see if dimPercentage is within the range
-        if (dimPercentage < pwmRange.get(0) || dimPercentage > pwmRange.get(1)) return;
-        LED.setValue((float) dimPercentage / getPwmRange().get(1));
+        if (dimPercentage < getPwmRange().get(0) || dimPercentage > getPwmRange().get(1)) return;
+        try {
+            pigpio.setPWMFrequency(this.pin, dimPercentage);
+        } catch (PigpioException e) {
+            logger.error("Could not dim PWM on port " + this.pin);
+            e.printStackTrace();
+        }
     }
 }

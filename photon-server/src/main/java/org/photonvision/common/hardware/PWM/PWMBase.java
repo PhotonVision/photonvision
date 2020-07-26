@@ -17,6 +17,7 @@
 
 package org.photonvision.common.hardware.PWM;
 
+import eu.xeli.jpigpio.JPigpio;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +27,7 @@ import org.photonvision.common.util.ShellExec;
 
 public abstract class PWMBase {
     private static final Logger logger = new Logger(PWMBase.class, LogGroup.General);
+    public static JPigpio pigpio;
 
     public static HashMap<String, String> commands =
             new HashMap<>() {

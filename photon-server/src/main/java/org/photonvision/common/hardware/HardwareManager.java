@@ -17,6 +17,9 @@
 
 package org.photonvision.common.hardware;
 
+import eu.xeli.jpigpio.PigpioException;
+import eu.xeli.jpigpio.PigpioSocket;
+import eu.xeli.jpigpio.Utils;
 import java.util.HashMap;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.HardwareConfig;
@@ -28,9 +31,12 @@ import org.photonvision.common.hardware.PWM.PWMBase;
 import org.photonvision.common.hardware.PWM.PiPWM;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.hardware.metrics.MetricsPublisher;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 public class HardwareManager {
     HardwareConfig hardwareConfig;
+    private static final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
     private static final HashMap<Integer, Pair<? extends GPIOBase, ? extends PWMBase>> LEDs =
             new HashMap<>();
 
@@ -43,6 +49,18 @@ public class HardwareManager {
         CustomPWM.setConfig(hardwareConfig);
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
+
+        // Start pigpio
+        try {
+            var pigpio = new PigpioSocket("localhost", 8888);
+            GPIOBase.pigpio = pigpio;
+            PWMBase.pigpio = pigpio;
+            pigpio.gpioInitialize();
+            Utils.addShutdown(pigpio);
+        } catch (PigpioException e) {
+            logger.error("Could not start pigpio");
+            e.printStackTrace();
+        }
 
         hardwareConfig.ledPins.forEach(
                 pin -> {

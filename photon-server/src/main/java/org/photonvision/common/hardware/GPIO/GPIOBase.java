@@ -17,6 +17,7 @@
 
 package org.photonvision.common.hardware.GPIO;
 
+import eu.xeli.jpigpio.JPigpio;
 import java.util.Arrays;
 import java.util.HashMap;
 import org.photonvision.common.logging.LogGroup;
@@ -25,6 +26,7 @@ import org.photonvision.common.util.ShellExec;
 
 public abstract class GPIOBase {
     private static final Logger logger = new Logger(GPIOBase.class, LogGroup.General);
+    public static JPigpio pigpio;
 
     public static HashMap<String, String> commands =
             new HashMap<>() {

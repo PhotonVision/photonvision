@@ -19,8 +19,8 @@ package org.photonvision.hardware;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.diozero.util.RuntimeIOException;
 import java.util.List;
+import org.eclipse.jetty.io.RuntimeIOException;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;

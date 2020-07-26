@@ -17,50 +17,87 @@
 
 package org.photonvision.common.hardware.GPIO;
 
-import com.diozero.devices.LED;
-import com.diozero.util.RuntimeIOException;
+import eu.xeli.jpigpio.PigpioException;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 public class PiGPIO extends GPIOBase {
-    private final LED pin;
+    private static final Logger logger = new Logger(PiGPIO.class, LogGroup.General);
+    private final int pin;
 
-    public PiGPIO(int address) throws RuntimeIOException {
-        this.pin = new LED(address);
+    public PiGPIO(int address) {
+        this.pin = address;
     }
 
     @Override
     public void togglePin() {
-        pin.toggle();
+        try {
+            pigpio.gpioWrite(this.pin, !pigpio.gpioRead(this.pin));
+        } catch (PigpioException e) {
+            logger.error("Could not toggle on pin " + this.pin);
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void setLow() {
-        pin.off();
+        try {
+            pigpio.gpioWrite(this.pin, false);
+        } catch (PigpioException e) {
+            logger.error("Could not set pin low on port " + this.pin);
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void setHigh() {
-        pin.on();
+        try {
+            pigpio.gpioWrite(this.pin, true);
+        } catch (PigpioException e) {
+            logger.error("Could not set pin high on port " + this.pin);
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void setState(boolean state) {
-        if (state) pin.on();
-        else pin.off();
+        try {
+            pigpio.gpioWrite(this.pin, state);
+        } catch (PigpioException e) {
+            logger.error("Could not set pin state on port " + this.pin);
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void blink(long delay, long duration) {
-        pin.blink(0f, delay, (int) duration, false);
+        try {
+            pigpio.gpioTrigger(this.pin, duration, true);
+        } catch (PigpioException e) {
+            logger.error("Could not blink pin on port " + this.pin);
+            e.printStackTrace();
+        }
     }
 
     @Override
     public boolean shutdown() {
-        pin.close();
+        try {
+            pigpio.gpioTerminate();
+        } catch (PigpioException e) {
+            logger.error("Could not terminate GPIO instance");
+            e.printStackTrace();
+        }
         return true;
     }
 
     @Override
     public boolean getState() {
-        return pin.isOn();
+        try {
+            return pigpio.gpioRead(this.pin);
+        } catch (PigpioException e) {
+            logger.error("Could not read pin on port " + this.pin);
+            e.printStackTrace();
+            return false;
+        }
     }
 }
