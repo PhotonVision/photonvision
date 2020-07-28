@@ -78,7 +78,7 @@ jobs:
         run: ./gradlew jacocoTestReport
       
       # Publish Coverage Report.
-      - name: Publish Coverate Report
+      - name: Publish Coverage Report
         uses: codecov/codecov-action@v1
         with:
           file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
