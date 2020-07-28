@@ -66,7 +66,7 @@ public class VisionSourceManager {
         for (var device : allDevices) {
             if (deviceBlacklist.contains(device.name)) {
                 logger.info(
-                        "Skipping blacklisted device: \""
+                        "Skipping blacklisted device - \""
                                 + device.name
                                 + "\" at \""
                                 + device.path
