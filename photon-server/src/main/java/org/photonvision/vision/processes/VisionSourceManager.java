@@ -38,11 +38,25 @@ public class VisionSourceManager {
         for (var device : allDevices) {
             if (deviceBlacklist.contains(device.name)) {
                 logger.info(
-                        "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\" with VID/PID: " + device.vendorId + ":" + device.productId);
+                        "Skipping blacklisted device: \""
+                                + device.name
+                                + "\" at \""
+                                + device.path
+                                + "\" with VID/PID: "
+                                + device.vendorId
+                                + ":"
+                                + device.productId);
             } else {
                 filteredDevices.add(device);
                 logger.info(
-                        "Adding local video device - \"" + device.name + "\" at \"" + device.path + "\" with VID/PID: " + device.vendorId + ":" + device.productId);
+                        "Adding local video device - \""
+                                + device.name
+                                + "\" at \""
+                                + device.path
+                                + "\" with VID/PID: "
+                                + device.vendorId
+                                + ":"
+                                + device.productId);
             }
         }
         return filteredDevices;
@@ -54,7 +68,8 @@ public class VisionSourceManager {
     * @param loadedConfigs The {@link CameraConfiguration}s loaded from disk.
     */
     public static List<VisionSource> loadAllSources(Collection<CameraConfiguration> loadedConfigs) {
-        return loadAllSources(loadedConfigs, filterAllowedDevices(Arrays.asList(UsbCamera.enumerateUsbCameras())));
+        return loadAllSources(
+                loadedConfigs, filterAllowedDevices(Arrays.asList(UsbCamera.enumerateUsbCameras())));
     }
 
     /**
