@@ -62,7 +62,7 @@ public class VisionSourceManagerTest {
 
     @Test
     public void visionSourceTest() {
-        List<VisionSource> i = VisionSourceManager.LoadAllSources(camConfig, usbCameraInfos);
+        List<VisionSource> i = VisionSourceManager.loadAllSources(camConfig, usbCameraInfos);
         for (var source : i) {
             Assertions.assertEquals(source, usbCameraSources.get(i.indexOf(source)));
         }
