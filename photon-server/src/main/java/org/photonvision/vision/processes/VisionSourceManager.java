@@ -33,6 +33,34 @@ public class VisionSourceManager {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
 
+    /**
+    * Load vision sources based on currently connected hardware.
+    *
+    * @param loadedConfigs The {@link CameraConfiguration}s loaded from disk.
+    */
+    public static List<VisionSource> loadAllSources(Collection<CameraConfiguration> loadedConfigs) {
+        return loadAllSources(
+                loadedConfigs, filterAllowedDevices(Arrays.asList(UsbCamera.enumerateUsbCameras())));
+    }
+
+    /**
+    * Load vision sources based on given cameras and configs.
+    *
+    * @param loadedConfigs The configs loaded from disk.
+    * @param detectedCamInfos The cameras to attempt connection to.
+    */
+    public static List<VisionSource> loadAllSources(
+            Collection<CameraConfiguration> loadedConfigs, List<UsbCameraInfo> detectedCamInfos) {
+        var loadedUsbCamConfigs =
+                loadedConfigs.stream()
+                        .filter(configuration -> configuration.cameraType == CameraType.UsbCamera)
+                        .collect(Collectors.toList());
+        var matchedCameras = matchUSBCameras(detectedCamInfos, loadedUsbCamConfigs);
+
+        // turn the matched cameras into VisionSources
+        return loadVisionSourcesFromCamConfigs(matchedCameras);
+    }
+
     private static List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
         List<UsbCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
@@ -60,34 +88,6 @@ public class VisionSourceManager {
             }
         }
         return filteredDevices;
-    }
-
-    /**
-    * Load vision sources based on currently connected hardware.
-    *
-    * @param loadedConfigs The {@link CameraConfiguration}s loaded from disk.
-    */
-    public static List<VisionSource> loadAllSources(Collection<CameraConfiguration> loadedConfigs) {
-        return loadAllSources(
-                loadedConfigs, filterAllowedDevices(Arrays.asList(UsbCamera.enumerateUsbCameras())));
-    }
-
-    /**
-    * Load vision sources based on given cameras and configs.
-    *
-    * @param loadedConfigs The configs loaded from disk.
-    * @param detectedCamInfos The cameras to attempt connection to.
-    */
-    public static List<VisionSource> loadAllSources(
-            Collection<CameraConfiguration> loadedConfigs, List<UsbCameraInfo> detectedCamInfos) {
-        var loadedUsbCamConfigs =
-                loadedConfigs.stream()
-                        .filter(configuration -> configuration.cameraType == CameraType.UsbCamera)
-                        .collect(Collectors.toList());
-        var matchedCameras = matchUSBCameras(detectedCamInfos, loadedUsbCamConfigs);
-
-        // turn the matched cameras into VisionSources
-        return loadVisionSourcesFromCamConfigs(matchedCameras);
     }
 
     /**
