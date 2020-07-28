@@ -22,10 +22,13 @@ import java.util.List;
 import java.util.Objects;
 
 public class QuirkyCamera {
+
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
                     new QuirkyCamera(0x1415, 0x2000, "PS3Eye", CameraQuirk.Gain),
                     new QuirkyCamera(0x72E, 0x45D, "LifeCam VX-5500", CameraQuirk.DoubleSet));
+
+    public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "", List.of());
 
     public final int usbVid;
     public final int usbPid;
@@ -50,6 +53,10 @@ public class QuirkyCamera {
         }
     }
 
+    public boolean hasQuirk(CameraQuirk quirk) {
+        return quirks.get(quirk);
+    }
+
     public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid, String baseName) {
         for (var qc : quirkyCameras) {
             if (qc.usbVid == usbVid && qc.usbPid == usbPid) {
@@ -57,10 +64,6 @@ public class QuirkyCamera {
             }
         }
         return new QuirkyCamera(usbVid, usbPid, baseName, List.of());
-    }
-
-    public boolean hasQuirk(CameraQuirk quirk) {
-        return quirks.get(quirk);
     }
 
     @Override

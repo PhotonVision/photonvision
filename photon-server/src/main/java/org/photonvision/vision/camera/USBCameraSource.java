@@ -40,7 +40,7 @@ public class USBCameraSource implements VisionSource {
     public final CameraConfiguration configuration;
     private final CvSink cvSink;
 
-    private final QuirkyCamera cameraQuirks;
+    public final QuirkyCamera cameraQuirks;
 
     public USBCameraSource(CameraConfiguration config) {
         logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
