@@ -25,7 +25,7 @@ public class QuirkyCamera {
 
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
-                    new QuirkyCamera(0x1415, 0x2000, "PS3Eye", CameraQuirk.Gain),
+                    new QuirkyCamera(0x2000, 0x1415, "PS3Eye", CameraQuirk.Gain),
                     new QuirkyCamera(0x72E, 0x45D, "LifeCam VX-5500", CameraQuirk.DoubleSet));
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "", List.of());
