@@ -17,22 +17,25 @@
 
 package org.photonvision.common.hardware.GPIO;
 
-import eu.xeli.jpigpio.JPigpio;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public abstract class GPIOBase {
     private static final Logger logger = new Logger(GPIOBase.class, LogGroup.General);
-    public static JPigpio pigpio;
 
     public static HashMap<String, String> commands =
             new HashMap<>() {
                 {
                     put("setState", "");
                     put("shutdown", "");
+                    put("setRange", "");
+                    put("shutdown", "");
+                    put("dim", "");
+                    put("blink", "");
                 }
             };
 
@@ -59,4 +62,12 @@ public abstract class GPIOBase {
     public abstract boolean shutdown();
 
     public abstract boolean getState();
+
+    public abstract void setPwmRange(List<Integer> range);
+
+    public abstract List<Integer> getPwmRange();
+
+    public abstract void blink(int pulseTimeMillis, int blinks);
+
+    public abstract void dimLED(int dimPercentage);
 }

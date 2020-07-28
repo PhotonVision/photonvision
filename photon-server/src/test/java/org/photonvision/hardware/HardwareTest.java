@@ -19,38 +19,16 @@ package org.photonvision.hardware;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import eu.xeli.jpigpio.PigpioException;
-import eu.xeli.jpigpio.PigpioSocket;
-import eu.xeli.jpigpio.Utils;
-import java.util.List;
-import org.eclipse.jetty.io.RuntimeIOException;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.PiGPIO;
-import org.photonvision.common.hardware.PWM.CustomPWM;
-import org.photonvision.common.hardware.PWM.PWMBase;
-import org.photonvision.common.hardware.PWM.PiPWM;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.metrics.CPU;
 import org.photonvision.common.hardware.metrics.GPU;
 import org.photonvision.common.hardware.metrics.RAM;
 
 public class HardwareTest {
-    @BeforeAll
-    public void Init() {
-        if (!Platform.isRaspberryPi()) return;
-        try {
-            var pigpio = new PigpioSocket("localhost", 8888);
-            GPIOBase.pigpio = pigpio;
-            PWMBase.pigpio = pigpio;
-            pigpio.gpioInitialize();
-            Utils.addShutdown(pigpio);
-        } catch (PigpioException e) {
-            e.printStackTrace();
-        }
-    }
 
     @Test
     public void testHardware() {
@@ -79,7 +57,7 @@ public class HardwareTest {
     public void testGPIO() {
         GPIOBase gpio;
         if (Platform.isRaspberryPi()) {
-            gpio = new PiGPIO(18);
+            gpio = new PiGPIO(18, 0, 100);
         } else {
             gpio = new CustomGPIO(18);
         }
@@ -107,35 +85,9 @@ public class HardwareTest {
     }
 
     @Test
-    public void testPWM() {
-
-        PWMBase pwm;
-        if (Platform.isRaspberryPi()) {
-            try {
-                pwm = new PiPWM(18, 0, 100);
-            } catch (RuntimeIOException e) {
-                e.printStackTrace();
-                System.out.println("Invalid PWN port.");
-                return;
-            }
-        } else {
-            pwm = new CustomPWM(18);
-        }
-        pwm.setPwmRange(List.of(0, 100));
-        assertEquals(pwm.getPwmRange().get(0), 0);
-        assertEquals(pwm.getPwmRange().get(1), 100);
-
-        for (int i = 0; i < 100; i++) {
-            pwm.dimLED(i);
-        }
-        pwm.shutdown();
-        var success = pwm.shutdown();
-        assertTrue(success);
-    }
-
-    @Test
     public void testBlink() {
-        PWMBase pwm = new PiPWM(18, 0, 100);
+        if (!Platform.isRaspberryPi()) return;
+        GPIOBase pwm = new PiGPIO(18, 0, 100);
         pwm.blink(125, 3);
         var startms = System.currentTimeMillis();
         while (true) {

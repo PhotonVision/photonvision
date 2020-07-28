@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
-import org.photonvision.common.hardware.PWM.CustomPWM;
 import org.photonvision.common.util.TestUtils;
 
 public class HardwareConfigTest {
@@ -40,12 +39,11 @@ public class HardwareConfigTest {
             assertEquals(config.deviceLogoPath, "photonvision.png");
             assertEquals(config.supportURL, "https://support.photonvision.com");
             Assertions.assertArrayEquals(
-                    config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 5});
+                    config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
             Assertions.assertArrayEquals(
                     config.ledPWMRange.stream().mapToInt(i -> i).toArray(), new int[] {0, 100});
 
             CustomGPIO.setConfig(config);
-            CustomPWM.setConfig(config);
 
         } catch (IOException e) {
             e.printStackTrace();
