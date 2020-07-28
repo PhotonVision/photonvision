@@ -21,34 +21,17 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.USBCameraSource;
-import org.photonvision.vision.frame.provider.NetworkFrameProvider;
 
 public class VisionSourceManager {
 
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
-
-    private static List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
-        List<UsbCameraInfo> filteredDevices = new ArrayList<>();
-        for (var device : allDevices) {
-            if (deviceBlacklist.contains(device.name)) {
-                logger.info(
-                        "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\"");
-            } else {
-                allDevices.add(device);
-                logger.info(
-                        "Adding local video device - \"" + device.name + "\" at \"" + device.path + "\"");
-            }
-        }
-        return filteredDevices;
-    }
 
     /**
     * Load vision sources based on currently connected hardware.
@@ -56,42 +39,55 @@ public class VisionSourceManager {
     * @param loadedConfigs The {@link CameraConfiguration}s loaded from disk.
     */
     public static List<VisionSource> loadAllSources(Collection<CameraConfiguration> loadedConfigs) {
-        logger.trace(() -> "Loading all sources...");
-
-        List<UsbCameraInfo> usbCamInfos = Arrays.asList(UsbCamera.enumerateUsbCameras());
-        logger.trace(() -> "CSCore detected " + usbCamInfos.size() + " USB cameras!");
-
-        for (var usbCamInfo : usbCamInfos) {
-            logger.info(
-                    "Adding local video device - \"" + usbCamInfo.name + "\" at \"" + usbCamInfo.path + "\"");
-        }
-
-        return LoadAllSources(loadedConfigs, usbCamInfos);
+        return loadAllSources(
+                loadedConfigs, filterAllowedDevices(Arrays.asList(UsbCamera.enumerateUsbCameras())));
     }
 
     /**
-    * Load vision sources based on currently connected hardware and preexisting configs.
+    * Load vision sources based on given cameras and configs.
     *
     * @param loadedConfigs The configs loaded from disk.
-    * @param detectedCamInfos The {@link UsbCameraInfo}s detected by {@link
-    *     UsbCamera#enumerateUsbCameras()}.
+    * @param detectedCamInfos The cameras to attempt connection to.
     */
-    public static List<VisionSource> LoadAllSources(
+    public static List<VisionSource> loadAllSources(
             Collection<CameraConfiguration> loadedConfigs, List<UsbCameraInfo> detectedCamInfos) {
         var loadedUsbCamConfigs =
                 loadedConfigs.stream()
                         .filter(configuration -> configuration.cameraType == CameraType.UsbCamera)
                         .collect(Collectors.toList());
-        // var HttpCamerasConfiguration = camerasConfiguration.stream().filter(configuration ->
-        // configuration.cameraType == CameraType.HttpCamera);
         var matchedCameras = matchUSBCameras(detectedCamInfos, loadedUsbCamConfigs);
 
         // turn the matched cameras into VisionSources
         return loadVisionSourcesFromCamConfigs(matchedCameras);
     }
 
-    private static NetworkFrameProvider loadHTTPCamera(CameraConfiguration config) {
-        throw new NotImplementedException("");
+    private static List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
+        List<UsbCameraInfo> filteredDevices = new ArrayList<>();
+        for (var device : allDevices) {
+            if (deviceBlacklist.contains(device.name)) {
+                logger.info(
+                        "Skipping blacklisted device - \""
+                                + device.name
+                                + "\" at \""
+                                + device.path
+                                + "\" with VID/PID: "
+                                + device.vendorId
+                                + ":"
+                                + device.productId);
+            } else {
+                filteredDevices.add(device);
+                logger.info(
+                        "Adding local video device - \""
+                                + device.name
+                                + "\" at \""
+                                + device.path
+                                + "\" with VID/PID: "
+                                + device.vendorId
+                                + ":"
+                                + device.productId);
+            }
+        }
+        return filteredDevices;
     }
 
     /**
