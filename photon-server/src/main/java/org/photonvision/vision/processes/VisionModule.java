@@ -132,15 +132,8 @@ public class VisionModule {
             if (event instanceof IncomingWebSocketEvent) {
                 var wsEvent = (IncomingWebSocketEvent<?>) event;
 
-                // TODO: remove?
-                if (wsEvent.propertyName.equals("save")) {
-                    logger.debug("UI-based saving deprecated, ignoring");
-                    // saveAndBroadcast();
-                    return;
-                }
-
                 if (wsEvent.cameraIndex != null && wsEvent.cameraIndex == moduleIndex) {
-                    logger.debug("Got PSC event - propName: " + wsEvent.propertyName);
+                    logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
 
                     var propName = wsEvent.propertyName;
                     var newPropValue = wsEvent.data;
@@ -182,7 +175,6 @@ public class VisionModule {
                                 logger.debug("Skipping pipeline change, index " + index + " already active");
                                 return;
                             }
-                            logger.debug("Setting pipeline index to " + index);
                             setPipeline(index);
                             saveAndBroadcastAll();
                             return;

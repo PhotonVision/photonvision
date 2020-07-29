@@ -42,8 +42,7 @@ public class TimedTaskManager {
             Thread thread = defaultThreadFactory.newThread(r);
             thread.setUncaughtExceptionHandler(
                     (t, e) -> {
-                        logger.error("TimedTask threw uncaught exception!");
-                        e.printStackTrace();
+                        logger.error("TimedTask threw uncaught exception!", e);
                     });
             return thread;
         }
@@ -75,8 +74,7 @@ public class TimedTaskManager {
             }
 
             if (throwable != null) {
-                logger.error("TimedTask threw uncaught exception!");
-                throwable.printStackTrace();
+                logger.error("TimedTask threw uncaught exception!", throwable);
                 // Restart the runnable again
                 execute(runnable);
             }

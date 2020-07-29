@@ -40,14 +40,15 @@ public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
     public static void main(String[] args) {
-        var logLevel = PhotonVersion.isRelease ? LogLevel.ERROR : LogLevel.TRACE;
+        boolean isRelease = !PhotonVersion.isRelease; // Hack!!!! Until PhotonVersion script fixed
+        var logLevel = isRelease ? LogLevel.INFO : LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
         Logger.setLevel(LogGroup.WebServer, logLevel);
         Logger.setLevel(LogGroup.VisionModule, logLevel);
         Logger.setLevel(LogGroup.Data, logLevel);
         Logger.setLevel(LogGroup.General, logLevel);
 
-        logger.info("Logging initialized!");
+        logger.info("Logging initialized in " + (isRelease ? "Release" : "Debug") + " mode.");
 
         logger.info(
                 "Starting PhotonVision version "
@@ -60,7 +61,7 @@ public class Main {
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
         }
-        logger.info("Native libaries loaded.");
+        logger.info("Native libraries loaded.");
 
         ConfigManager.getInstance(); // init config manager
         NetworkManager.getInstance().initialize(false); // basically empty. todo: link to ConfigManager?
@@ -75,7 +76,7 @@ public class Main {
         for (var src : sources) {
             var usbSrc = (USBCameraSource) src;
             collectedSources.put(usbSrc, usbSrc.configuration.pipelineSettings);
-            logger.trace(
+            logger.debug(
                     () ->
                             "Matched config for camera \""
                                     + src.getFrameProvider().getName()

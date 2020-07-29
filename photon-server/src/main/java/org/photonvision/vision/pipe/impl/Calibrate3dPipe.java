@@ -20,7 +20,6 @@ package org.photonvision.vision.pipe.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
@@ -97,7 +96,7 @@ public class Calibrate3dPipe
                             + new ObjectMapper().writeValueAsString(distortionCoefficientsMat)
                             + "\n");
         } catch (JsonProcessingException e) {
-            logger.error(Arrays.toString(e.getStackTrace()));
+            logger.error("Failed to parse calibration data to json!", e);
         }
         // Create a new CameraCalibrationCoefficients object to pass onto SolvePnP
         double[] perViewErrorsArray =
