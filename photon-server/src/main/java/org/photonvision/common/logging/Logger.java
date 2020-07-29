@@ -153,7 +153,8 @@ public class Logger {
         }
     }
 
-    private void log(Supplier<String> messageSupplier, LogLevel messageLevel, LogLevel conditionalLevel) {
+    private void log(
+            Supplier<String> messageSupplier, LogLevel messageLevel, LogLevel conditionalLevel) {
         if (shouldLog(conditionalLevel)) {
             log(messageSupplier.get(), messageLevel, group, className);
         }
@@ -168,11 +169,12 @@ public class Logger {
     }
 
     /**
-     * Logs an error message with the stack trace of a Throwable.
-     * The stacktrace will only be printed if the current LogLevel is TRACE
-     * @param message
-     * @param t
-     */
+    * Logs an error message with the stack trace of a Throwable. The stacktrace will only be printed
+    * if the current LogLevel is TRACE
+    *
+    * @param message
+    * @param t
+    */
     public void error(String message, Throwable t) {
         log(message, LogLevel.ERROR);
         log(convertStackTraceToString(t), LogLevel.ERROR, LogLevel.TRACE);

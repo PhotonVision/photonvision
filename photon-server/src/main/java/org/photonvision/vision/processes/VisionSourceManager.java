@@ -64,27 +64,21 @@ public class VisionSourceManager {
     private static List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
         List<UsbCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
+            var deviceInfoStr =
+                    "\""
+                            + device.name
+                            + "\" at \""
+                            + device.path
+                            + "\" with USB ID \""
+                            + device.vendorId
+                            + ":"
+                            + device.productId
+                            + "\"";
             if (deviceBlacklist.contains(device.name)) {
-                logger.info(
-                        "Skipping blacklisted device - \""
-                                + device.name
-                                + "\" at \""
-                                + device.path
-                                + "\" with VID/PID: "
-                                + device.vendorId
-                                + ":"
-                                + device.productId);
+                logger.info("Skipping blacklisted device - " + deviceInfoStr);
             } else {
                 filteredDevices.add(device);
-                logger.info(
-                        "Adding local video device - \""
-                                + device.name
-                                + "\" at \""
-                                + device.path
-                                + "\" with VID/PID: "
-                                + device.vendorId
-                                + ":"
-                                + device.productId);
+                logger.info("Adding local video device - " + deviceInfoStr);
             }
         }
         return filteredDevices;
