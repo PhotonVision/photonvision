@@ -1,9 +1,6 @@
 <template>
   <div>
-    <v-row
-      dense
-      align="center"
-    >
+    <v-row dense align="center">
       <v-col :cols="2">
         <span>{{ name }}</span>
       </v-col>
@@ -70,7 +67,7 @@ export default {
     return {
       prependFocused: false,
       appendFocused: false,
-      currentBoxVals: [null, null]
+      currentTempVal: null,
     };
   },
   computed: {
@@ -80,45 +77,40 @@ export default {
       },
       set(value) {
         this.$emit("input", value);
-      }
-    }
+      },
+    },
   },
   methods: {
-    // handleChange(val) {
-    //     let i = 0;
-    //     if (this.prependFocused === false && this.appendFocused === true) {
-    //         i = 1;
-    //     }
-    //     if (this.prependFocused || this.appendFocused) {
-    //         this.$set(this.localValue, i, val);
-    //         this.$emit('rollback', this.localValue)
-    //     }
-    // },
-    handleChange(val) {
-      let i = 0;
-      if (this.prependFocused === false && this.appendFocused === true) {
-        i = 1;
-      }
+    delay(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    },
 
-      this.currentBoxVals[i] = val;
-      setTimeout(() => {
-        if (this.currentBoxVals[i] !== val) return;
-        //if (this.prependFocused || this.appendFocused) {
-        let tmp = this.localValue;
+    async handleChange(val) {
+      this.currentTempVal = val;
+
+      await this.delay(200).then(() => {
+        let i = 0;
+        if (this.prependFocused === false && this.appendFocused === true) {
+          i = 1;
+        }
+
+        // will get empty string if entry is not a number
+        if (this.currentTempVal !== val || val === "") return;
+
         let parsed = parseFloat(val);
-        if (isNaN(parsed)) return;
-        tmp[i] = parsed;
+        let tmp = this.localValue;
+        tmp[i] = Math.max(this.min, Math.min(parsed, this.max));
         this.localValue = tmp;
+
         this.$emit("rollback", this.localValue);
-        //}
-      }, 200);
+      });
     },
     handleInput(val) {
       if (!this.prependFocused || !this.appendFocused) {
         this.localValue = val;
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
