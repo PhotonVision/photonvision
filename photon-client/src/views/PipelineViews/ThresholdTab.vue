@@ -27,11 +27,16 @@
       @input="handlePipelineData('hsvValue')"
       @rollback="e => rollback('value',e)"
     />
-    <div class="pt-3 white--text">Color Picker</div>
+    <div class="pt-3 white--text">
+      Color Picker
+    </div>
     <v-divider
       class="mt-3"
     />
-    <v-row justify="center" class="mt-3 mb-3">
+    <v-row
+      justify="center"
+      class="mt-3 mb-3"
+    >
       <template v-if="!$store.state.colorPicking">
         <v-btn
           color="accent"
@@ -39,7 +44,9 @@
           small
           @click="setFunction(3)"
         >
-          <v-icon left>mdi-minus</v-icon>
+          <v-icon left>
+            mdi-minus
+          </v-icon>
           Shrink Range
         </v-btn>
         <v-btn
@@ -48,7 +55,9 @@
           small
           @click="setFunction(1)"
         >
-          <v-icon left>mdi-plus-minus</v-icon>
+          <v-icon left>
+            mdi-plus-minus
+          </v-icon>
           Set To Average
         </v-btn>
         <v-btn
@@ -57,7 +66,9 @@
           small
           @click="setFunction(2)"
         >
-          <v-icon left>mdi-plus</v-icon>
+          <v-icon left>
+            mdi-plus
+          </v-icon>
           Expand Range
         </v-btn>
       </template>
@@ -77,14 +88,14 @@
     <CVswitch
       v-model="erode"
       name="Erode"
-      tooltip="Remove pixels around the edges of white areas in the thresholded image"
+      tooltip="Removes pixels around the edges of white areas in the thresholded image"
       @input="handlePipelineData('erode')"
       @rollback="e => rollback('erode',e)"
     />
     <CVswitch
       v-model="dilate"
       name="Dilate"
-      tooltip="Add pixels around the edges of white areas in the thresholded image"
+      tooltip="Adds pixels around the edges of white areas in the thresholded image"
       @input="handlePipelineData('dilate')"
       @rollback="e => rollback('dilate',e)"
     />

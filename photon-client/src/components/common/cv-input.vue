@@ -5,12 +5,10 @@
       align="center"
     >
       <v-col :cols="12 - (inputCols || 8)">
-        <v-tooltip :disabled="tooltip === undefined" right>
-          <template v-slot:activator="{ on, attrs }">
-            <span style="cursor: text !important;" v-bind="attrs" v-on="on">{{ name }}</span>
-          </template>
-          <span>{{ tooltip }}</span>
-        </v-tooltip>
+        <tooltipped-label
+          :tooltip="tooltip"
+          :text="name"
+        />
       </v-col>
       <v-col :cols="inputCols || 8">
         <v-text-field
@@ -30,8 +28,13 @@
 </template>
 s
 <script>
+    import TooltippedLabel from "./cv-tooltipped-label";
+
     export default {
         name: 'Input',
+        components: {
+          TooltippedLabel
+        },
         // eslint-disable-next-line vue/require-prop-types
         props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols', 'rules', 'tooltip'],
         data() {

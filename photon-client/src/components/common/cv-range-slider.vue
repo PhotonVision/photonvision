@@ -5,12 +5,10 @@
       align="center"
     >
       <v-col cols="2">
-        <v-tooltip :disabled="tooltip === undefined" right>
-          <template v-slot:activator="{ on, attrs }">
-            <span style="cursor: text !important;" v-bind="attrs" v-on="on">{{ name }}</span>
-          </template>
-          <span>{{ tooltip }}</span>
-        </v-tooltip>
+        <tooltipped-label
+          :tooltip="tooltip"
+          :text="name"
+        />
       </v-col>
       <v-col cols="10">
         <v-range-slider
@@ -69,8 +67,13 @@
 </template>
 
 <script>
+import TooltippedLabel from "./cv-tooltipped-label";
+
 export default {
   name: "RangeSlider",
+  components: {
+    TooltippedLabel,
+  },
   // eslint-disable-next-line vue/require-prop-types
   props: ["name", "min", "max", "value", "step", "tooltip"],
   data() {

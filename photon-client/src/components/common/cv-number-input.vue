@@ -5,12 +5,10 @@
       align="center"
     >
       <v-col :cols="labelCols || 2">
-        <v-tooltip :disabled="tooltip === undefined" right>
-          <template v-slot:activator="{ on, attrs }">
-            <span style="cursor: text !important;" v-bind="attrs" v-on="on">{{ name }}</span>
-          </template>
-          <span>{{ tooltip }}</span>
-        </v-tooltip>
+        <tooltipped-label
+          :tooltip="tooltip"
+          :text="name"
+        />
       </v-col>
       <v-col>
         <v-text-field
@@ -31,13 +29,15 @@
 </template>
 
 <script>
+    import TooltippedLabel from "./cv-tooltipped-label";
+
     export default {
         name: 'NumberInput',
+        components: {
+            TooltippedLabel,
+        },
       // eslint-disable-next-line vue/require-prop-types
         props: ['name', 'value', 'step', 'labelCols', 'rules', 'tooltip'],
-        data() {
-            return {}
-        },
         computed: {
             localValue: {
                 get() {
