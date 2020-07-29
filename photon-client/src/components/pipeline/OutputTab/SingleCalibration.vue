@@ -4,22 +4,22 @@
       align="center"
       justify="start"
     >
-      <v-col
-        style="padding-right:0"
-        :cols="3"
-      >
+      <v-col cols="6">
         <v-btn
           small
-          color="#ffd843"
+          color="accent"
+          class="black--text"
+          style="width: 100%;"
           @click="takePoint"
         >
           Take Point
         </v-btn>
       </v-col>
-      <v-col>
+      <v-col cols="6">
         <v-btn
           small
           color="yellow darken-3"
+          style="width: 100%;"
           @click="clearPoint"
         >
           Clear Point

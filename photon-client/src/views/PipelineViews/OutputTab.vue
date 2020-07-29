@@ -126,13 +126,13 @@
 
             selectedComponent: {
                 get() {
-                    switch (this.value.calibrationMode) {
+                    switch (this.offsetRobotOffsetMode) {
                         case 0:
-                            return "";
+                            return null;
                         case 1:
-                            return "SingleCalibration";
+                            return SingleCalibration;
                         case 2:
-                            return "DualCalibration"
+                            return DualCalibration;
                     }
                     return ""
                 }

@@ -4,34 +4,33 @@
       align="center"
       justify="start"
     >
-      <v-col
-        style="padding-right:0"
-        :cols="3"
-      >
+      <v-col cols="4">
         <v-btn
           small
-          color="#ffd843"
+          color="accent"
+          style="width: 100%;"
+          class="black--text"
           @click="takePointA"
         >
           Take Point A
         </v-btn>
       </v-col>
-      <v-col
-        style="margin-left:0"
-        :cols="3"
-      >
+      <v-col cols="4">
         <v-btn
           small
-          color="#ffd843"
+          color="accent"
+          style="width: 100%;"
+          class="black--text"
           @click="takePointB"
         >
           Take Point B
         </v-btn>
       </v-col>
-      <v-col>
+      <v-col cols="4">
         <v-btn
           small
           color="yellow darken-3"
+          style="width: 100%;"
           @click="clearSlope"
         >
           Clear All Points
