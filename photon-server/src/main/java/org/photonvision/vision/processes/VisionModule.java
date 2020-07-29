@@ -51,6 +51,8 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 */
 public class VisionModule {
 
+    private static final int StreamFPSCap = 30;
+
     private final Logger logger;
     private final PipelineManager pipelineManager;
     private final VisionSource visionSource;
@@ -62,6 +64,7 @@ public class VisionModule {
     private final int moduleIndex;
 
     private long lastSettingChangeTimestamp = 0;
+    private long lastFrameConsumeMillis;
 
     private MJPGFrameConsumer dashboardInputStreamer;
     private MJPGFrameConsumer dashboardOutputStreamer;
@@ -377,8 +380,11 @@ public class VisionModule {
     }
 
     private void consumeFrame(Frame frame) {
-        for (var frameConsumer : frameConsumers) {
-            frameConsumer.accept(frame);
+        if (System.currentTimeMillis() - lastFrameConsumeMillis > 1000 / StreamFPSCap) {
+            for (var frameConsumer : frameConsumers) {
+                frameConsumer.accept(frame);
+            }
+            lastFrameConsumeMillis = System.currentTimeMillis();
         }
     }
 }
