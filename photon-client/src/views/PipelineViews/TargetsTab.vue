@@ -94,6 +94,10 @@
         font-size: 1rem !important;
     }
 
+    .v-data-table td {
+      font-family: monospace !important;
+    }
+
     /** This is unfortunately the only way to override table background color **/
     .theme--dark.v-data-table tbody tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
         background: #005281;

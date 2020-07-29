@@ -12,6 +12,7 @@
     <CVrangeSlider
       v-model="contourRatio"
       name="Ratio (W/H)"
+      tooltip="Min and max ratio between the width and height of a contour's bounding rectangle"
       min="0"
       max="100"
       step="0.1"
@@ -21,6 +22,7 @@
     <CVrangeSlider
       v-model="contourFullness"
       name="Fullness"
+      tooltip="Min and max ratio between a contour's area and its bounding rectangle"
       min="0"
       max="100"
       @input="handlePipelineData('contourFullness')"
@@ -29,6 +31,7 @@
     <CVslider
       v-model="contourSpecklePercentage"
       name="Speckle Rejection"
+      tooltip="Rejects contours whose average area is less than the given percentage of the average area of all the other contours"
       min="0"
       max="100"
       :slider-cols="largeBox"
@@ -38,6 +41,7 @@
     <CVselect
       v-model="contourGroupingMode"
       name="Target Grouping"
+      tooltip="Whether or not every two targets are paired with each other (good for e.g. 2019 targets)"
       :select-cols="largeBox"
       :list="['Single','Dual']"
       @input="handlePipelineData('targetGroup')"
@@ -46,6 +50,7 @@
     <CVselect
       v-model="contourIntersection"
       name="Target Intersection"
+      tooltip="If target grouping is in dual mode it will use this dropdown to decide how targets are grouped with adjacent targets"
       :select-cols="largeBox"
       :list="['None','Up','Down','Left','Right']"
       :disabled="contourGroupingMode === 0"
@@ -55,6 +60,7 @@
     <CVselect
       v-model="contourSortMode"
       name="Target Sort"
+      tooltip="Chooses the sorting mode used to determine the 'best' targets to provide to user code"
       :select-cols="largeBox"
       :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
       @input="handlePipelineData('contourSortMode')"

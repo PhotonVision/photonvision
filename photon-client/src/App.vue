@@ -342,7 +342,7 @@
 <style>
   /* Hack */
   .v-divider {
-    border-color: #aad2e3 !important;
+    border-color: white !important;
   }
 
   .v-input {

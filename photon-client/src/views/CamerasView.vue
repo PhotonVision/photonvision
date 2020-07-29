@@ -7,7 +7,6 @@
       <v-col
         cols="12"
         md="7"
-        style="max-width: 1400px;"
       >
         <v-card
           class="mb-3 pr-6 pb-3"
@@ -25,12 +24,14 @@
             />
             <CVnumberinput
               v-model="cameraSettings.fov"
+              tooltip="Field of view (in degrees) of the camera measured across the diagonal of the frame"
               name="Diagonal FOV"
             />
             <br>
             <CVnumberinput
               v-model="cameraSettings.tilt"
               name="Camera pitch"
+              tooltip="How many degrees above the horizontal the physical camera is tilted"
               :step="0.01"
             />
             <br>
@@ -69,6 +70,7 @@
                 <CVnumberinput
                   v-model="squareSize"
                   name="Square Size (in)"
+                  tooltip="Length of one side of the checkerboard's square in inches"
                   label-cols="unset"
                 />
               </v-col>

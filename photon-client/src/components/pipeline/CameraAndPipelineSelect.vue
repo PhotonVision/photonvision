@@ -64,6 +64,7 @@
         <CVselect
           v-model="currentPipelineIndex"
           name="Pipeline"
+          tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
           :disabled="$store.getters.isDriverMode"
           :list="($store.getters.isDriverMode ? ['Driver Mode'] : []).concat($store.getters.pipelineList)"
           @input="handleInputWithIndex('currentPipeline', currentPipelineIndex)"

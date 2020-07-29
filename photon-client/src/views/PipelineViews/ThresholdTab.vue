@@ -3,6 +3,7 @@
     <CVrangeSlider
       v-model="hsvHue"
       name="Hue"
+      tooltip="Describes color"
       :min="0"
       :max="180"
       @input="handlePipelineData('hsvHue')"
@@ -11,6 +12,7 @@
     <CVrangeSlider
       v-model="hsvSaturation"
       name="Saturation"
+      tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
       :min="0"
       :max="255"
       @input="handlePipelineData('hsvSaturation')"
@@ -19,6 +21,7 @@
     <CVrangeSlider
       v-model="hsvValue"
       name="Value"
+      tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
       :min="0"
       :max="255"
       @input="handlePipelineData('hsvValue')"
@@ -74,12 +77,14 @@
     <CVswitch
       v-model="erode"
       name="Erode"
+      tooltip="Remove pixels around the edges of white areas in the thresholded image"
       @input="handlePipelineData('erode')"
       @rollback="e => rollback('erode',e)"
     />
     <CVswitch
       v-model="dilate"
       name="Dilate"
+      tooltip="Add pixels around the edges of white areas in the thresholded image"
       @input="handlePipelineData('dilate')"
       @rollback="e => rollback('dilate',e)"
     />

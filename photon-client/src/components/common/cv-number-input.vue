@@ -5,7 +5,12 @@
       align="center"
     >
       <v-col :cols="labelCols || 2">
-        <span>{{ name }}</span>
+        <v-tooltip :disabled="tooltip === undefined" right>
+          <template v-slot:activator="{ on, attrs }">
+            <span style="cursor: text !important;" v-bind="attrs" v-on="on">{{ name }}</span>
+          </template>
+          <span>{{ tooltip }}</span>
+        </v-tooltip>
       </v-col>
       <v-col>
         <v-text-field
@@ -14,6 +19,7 @@
           class="mt-0 pt-0"
           hide-details
           single-line
+          color="accent"
           type="number"
           style="width: 70px"
           :step="step"
@@ -28,7 +34,7 @@
     export default {
         name: 'NumberInput',
       // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'step', 'labelCols', 'rules'],
+        props: ['name', 'value', 'step', 'labelCols', 'rules', 'tooltip'],
         data() {
             return {}
         },

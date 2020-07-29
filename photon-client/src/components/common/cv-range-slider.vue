@@ -1,10 +1,18 @@
 <template>
   <div>
-    <v-row dense align="center">
-      <v-col :cols="2">
-        <span>{{ name }}</span>
+    <v-row
+      dense
+      align="center"
+    >
+      <v-col cols="2">
+        <v-tooltip :disabled="tooltip === undefined" right>
+          <template v-slot:activator="{ on, attrs }">
+            <span style="cursor: text !important;" v-bind="attrs" v-on="on">{{ name }}</span>
+          </template>
+          <span>{{ tooltip }}</span>
+        </v-tooltip>
       </v-col>
-      <v-col :cols="10">
+      <v-col cols="10">
         <v-range-slider
           :value="localValue"
           :max="max"
@@ -12,7 +20,7 @@
           hide-details
           class="align-center"
           dark
-          color="#ffd843"
+          color="accent"
           :step="step"
           @input="handleInput"
           @mousedown="$emit('rollback', localValue)"
@@ -20,6 +28,7 @@
           <template v-slot:prepend>
             <v-text-field
               dark
+              color="accent"
               :value="localValue[0]"
               :max="max"
               :min="min"
@@ -38,6 +47,7 @@
           <template v-slot:append>
             <v-text-field
               dark
+              color="accent"
               :value="localValue[1]"
               :max="max"
               :min="min"
@@ -62,7 +72,7 @@
 export default {
   name: "RangeSlider",
   // eslint-disable-next-line vue/require-prop-types
-  props: ["name", "min", "max", "value", "step"],
+  props: ["name", "min", "max", "value", "step", "tooltip"],
   data() {
     return {
       prependFocused: false,

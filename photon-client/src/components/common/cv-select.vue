@@ -5,7 +5,12 @@
       align="center"
     >
       <v-col :cols="12 - (selectCols || 9)">
-        <span>{{ name }}</span>
+        <v-tooltip :disabled="tooltip === undefined" right>
+          <template v-slot:activator="{ on, attrs }">
+            <span style="cursor: text !important;" v-bind="attrs" v-on="on">{{ name }}</span>
+          </template>
+          <span>{{ tooltip }}</span>
+        </v-tooltip>
       </v-col>
       <v-col :cols="selectCols || 9">
         <v-select
@@ -29,7 +34,7 @@
     export default {
         name: 'Select',
       // eslint-disable-next-line vue/require-prop-types
-        props: ['list', 'name', 'value', 'disabled', 'selectCols', 'rules'],
+        props: ['list', 'name', 'value', 'disabled', 'selectCols', 'rules', 'tooltip'],
         data() {
             return {}
         },

@@ -5,13 +5,19 @@
       align="center"
     >
       <v-col :cols="12 - (inputCols || 8)">
-        <span>{{ name }}</span>
+        <v-tooltip :disabled="tooltip === undefined" right>
+          <template v-slot:activator="{ on, attrs }">
+            <span style="cursor: text !important;" v-bind="attrs" v-on="on">{{ name }}</span>
+          </template>
+          <span>{{ tooltip }}</span>
+        </v-tooltip>
       </v-col>
       <v-col :cols="inputCols || 8">
         <v-text-field
           v-model="localValue"
           dark
           dense
+          color="accent"
           :disabled="disabled"
           :error-messages="errorMessage"
           :rules="rules"
@@ -27,7 +33,7 @@ s
     export default {
         name: 'Input',
         // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols', 'rules'],
+        props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols', 'rules', 'tooltip'],
         data() {
             return {}
         },

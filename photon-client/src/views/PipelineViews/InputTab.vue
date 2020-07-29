@@ -5,6 +5,7 @@
       name="Exposure"
       min="0"
       max="100"
+      tooltip="Directly controls how much light is allowed to fall onto the sensor, which affects brightness"
       :slider-cols="largeBox"
       @input="handlePipelineData('cameraExposure')"
       @rollback="e => rollback('cameraExposure', e)"
@@ -14,6 +15,7 @@
       name="Brightness"
       min="0"
       max="100"
+      tooltip="Controls camera postprocessing that brightens or darkens the image uniformly"
       :slider-cols="largeBox"
       @input="handlePipelineData('cameraBrightness')"
       @rollback="e => rollback('cameraBrightness', e)"
@@ -24,6 +26,7 @@
       name="Gain"
       min="0"
       max="100"
+      tooltip="Controls automatic white balance gain, which affects how the camera captures colors in different conditions"
       :slider-cols="largeBox"
       @input="handlePipelineData('cameraGain')"
       @rollback="e => rollback('cameraGain', e)"
@@ -31,6 +34,7 @@
     <CVselect
       v-model="inputImageRotationMode"
       name="Orientation"
+      tooltip="Rotates the camera stream"
       :list="['Normal','90° CW','180°','90° CCW']"
       :select-cols="largeBox"
       @input="handlePipelineData('inputImageRotationMode')"
@@ -39,6 +43,7 @@
     <CVselect
       v-model="cameraVideoModeIndex"
       name="Resolution"
+      tooltip="Resolution and FPS the camera should directly capture at"
       :list="resolutionList"
       :select-cols="largeBox"
       @input="handlePipelineData('cameraVideoModeIndex')"
@@ -47,6 +52,7 @@
     <CVselect
       v-model="streamingFrameDivisor"
       name="Stream Resolution"
+      tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
       :list="streamResolutionList"
       :select-cols="largeBox"
       @input="handlePipelineData('streamingFrameDivisor')"

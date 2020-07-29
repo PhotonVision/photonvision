@@ -5,7 +5,12 @@
       align="center"
     >
       <v-col :cols="12 - (sliderCols || 8)">
-        <span>{{ name }}</span>
+        <v-tooltip :disabled="tooltip === undefined" right>
+          <template v-slot:activator="{ on, attrs }">
+            <span style="cursor: text !important;" v-bind="attrs" v-on="on">{{ name }}</span>
+          </template>
+          <span>{{ tooltip }}</span>
+        </v-tooltip>
       </v-col>
       <v-col :cols="sliderCols || 8">
         <v-slider
@@ -27,6 +32,7 @@
           <template v-slot:append>
             <v-text-field
               dark
+              color="accent"
               :max="max"
               :min="min"
               :disabled="disabled"
@@ -52,7 +58,7 @@
 export default {
   name: "Slider",
   // eslint-disable-next-line vue/require-prop-types
-  props: ["min", "max", "name", "value", "step", "sliderCols", "disabled"],
+  props: ["min", "max", "name", "value", "step", "sliderCols", "disabled", "tooltip"],
   data() {
     return {
       isFocused: false,
