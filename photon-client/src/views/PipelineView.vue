@@ -95,14 +95,12 @@
                 >
                   <v-btn
                     color="secondary"
-                    @click="toggleGroupClicked(processingMode, 'is3D', 0, (v) => v[0] === 1)"
                   >
                     <v-icon>mdi-crop-square</v-icon>
                     <span>2D</span>
                   </v-btn>
                   <v-btn
                     color="secondary"
-                    @click="toggleGroupClicked(processingMode, 'is3D', 1, (v) => v[0] === 1)"
                   >
                     <v-icon>mdi-cube-outline</v-icon>
                     <span>3D</span>
@@ -123,7 +121,6 @@
                   <v-btn
                     color="secondary"
                     class="fill"
-                    @click="toggleGroupClicked(selectedOutputs, 'selectedOutputs', 0)"
                   >
                     <v-icon>mdi-palette</v-icon>
                     <span>Normal</span>
@@ -131,7 +128,6 @@
                   <v-btn
                     color="secondary"
                     class="fill"
-                    @click="toggleGroupClicked(selectedOutputs, 'selectedOutputs', 1)"
                   >
                     <v-icon>mdi-compare</v-icon>
                     <span>Threshold</span>
@@ -360,15 +356,6 @@
             }
         },
         methods: {
-            toggleGroupClicked(prop, propName, buttonId, converter = (v) => v) {
-                const possibleValues = [0, 1];
-                let ret = possibleValues.filter(it => it != buttonId);
-                if ((prop instanceof Array && prop.includes(buttonId) && prop.length < 2) || prop == buttonId) {
-                    // handlePipelineUpdate is needed (and only works) if this function is used for the 3D toggle
-                    // this.handlePipelineUpdate(propName, converter(ret));
-                    this.$store.commit(propName, converter(ret));
-                }
-            },
             onImageClick(event) {
                 // Only run on the input stream
                 if (event.target.alt !== "Stream0") return;
