@@ -75,7 +75,7 @@
             <camera-and-pipeline-select />
           </v-card>
           <v-card
-            :disabled="$store.getters.isDriverMode"
+            :disabled="$store.getters.isDriverMode || $store.state.colorPicking"
             class="mt-3"
             color="primary"
           >
@@ -319,7 +319,9 @@
                 get() {
                     // We switch the selector to single-select only on sm-and-down size devices, so we have to return a Number instead of an Array in that state
                     let ret;
-                    if (!this.$store.getters.isDriverMode) {
+                    if (this.$store.state.colorPicking) {
+                        ret = [0]; // We want the input stream only while color picking
+                    } else if (!this.$store.getters.isDriverMode) {
                         ret = this.$store.state.selectedOutputs || [0];
                     } else {
                         ret = [1]; // We want the output stream in driver mode
@@ -363,7 +365,7 @@
                 let ret = possibleValues.filter(it => it != buttonId);
                 if ((prop instanceof Array && prop.includes(buttonId) && prop.length < 2) || prop == buttonId) {
                     // handlePipelineUpdate is needed (and only works) if this function is used for the 3D toggle
-                    this.handlePipelineUpdate(propName, converter(ret));
+                    // this.handlePipelineUpdate(propName, converter(ret));
                     this.$store.commit(propName, converter(ret));
                 }
             },
@@ -388,14 +390,6 @@
     .v-btn-toggle.fill > .v-btn {
         width: 50%;
         height: 100%;
-    }
-
-    .colsClass {
-        padding: 0 !important;
-    }
-
-    .videoClass {
-        text-align: center;
     }
 
     .fps-indicator {
