@@ -37,6 +37,9 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.server.UIUpdateType;
+import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.camera.QuirkyCamera;
+import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
@@ -62,6 +65,7 @@ public class VisionModule {
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
     private final int moduleIndex;
+    private final QuirkyCamera cameraQuirks;
 
     private long lastSettingChangeTimestamp = 0;
     private long lastFrameConsumeMillis;
@@ -83,6 +87,13 @@ public class VisionModule {
                         this.pipelineManager::getCurrentPipeline,
                         this::consumeResult);
         this.moduleIndex = index;
+
+        // do this
+        if (visionSource instanceof USBCameraSource) {
+            cameraQuirks = ((USBCameraSource) visionSource).cameraQuirks;
+        } else {
+            cameraQuirks = QuirkyCamera.DefaultCamera;
+        }
 
         DataChangeService.getInstance().addSubscriber(new VisionSettingChangeSubscriber());
 
@@ -250,8 +261,6 @@ public class VisionModule {
                     }
 
                     saveModule();
-
-                    VisionModule.this.lastSettingChangeTimestamp = System.currentTimeMillis();
                 }
             }
         }
@@ -270,7 +279,13 @@ public class VisionModule {
         visionSource.getSettables().setCurrentVideoMode(config.cameraVideoModeIndex);
         visionSource.getSettables().setBrightness(config.cameraBrightness);
         visionSource.getSettables().setExposure(config.cameraExposure);
-        visionSource.getSettables().setGain(config.cameraGain);
+
+        if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
+            config.cameraGain = -1;
+        } else {
+            visionSource.getSettables().setGain(config.cameraGain);
+        }
+
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
                 pipelineManager.getCurrentPipelineIndex();
     }
