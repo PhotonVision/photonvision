@@ -51,9 +51,9 @@
       </v-col>
     </v-row>
     <v-snackbar
-            v-model="snack"
-            top
-            :color="snackbar.color"
+      v-model="snack"
+      top
+      :color="snackbar.color"
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
@@ -80,11 +80,6 @@
 <script>
     export default {
         name: 'General',
-        computed: {
-          settings() {
-            return this.$store.state.settings.general;
-          }
-        },
         data() {
           return {
             snack: false,
@@ -92,6 +87,11 @@
               color: "success",
               text: ""
             },
+          }
+        },
+        computed: {
+          settings() {
+            return this.$store.state.settings.general;
           }
         },
         methods: {

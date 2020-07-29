@@ -75,7 +75,7 @@
         computed: {
             targets: {
                 get() {
-                    return "FIXME"; // TODO fix
+                    return this.$store.getters.currentPipelineResults.targets;
                 }
             },
             horizontalFOV: {

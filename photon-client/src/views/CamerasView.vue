@@ -23,6 +23,7 @@
               @input="handleInput('currentCamera',currentCameraIndex)"
             />
             <CVnumberinput
+              v-if="cameraSettings.isFovConfigurable"
               v-model="cameraSettings.fov"
               tooltip="Field of view (in degrees) of the camera measured across the diagonal of the frame"
               name="Diagonal FOV"

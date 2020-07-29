@@ -61,7 +61,7 @@
                 <!-- TODO: Make sure that units are correct -->
                 <td>{{ parseFloat(value.pose.x).toFixed(2) }}&nbsp;m</td>
                 <td>{{ parseFloat(value.pose.y).toFixed(2) }}&nbsp;m</td>
-                <td>{{ parseFloat(value.pose.rot).toFixed(2) }}&deg;</td>
+                <td>{{ parseFloat(value.pose.rotation).toFixed(2) }}&deg;</td>
               </template>
             </tr>
           </tbody>

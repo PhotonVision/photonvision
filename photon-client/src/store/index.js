@@ -44,6 +44,7 @@ export default new Vuex.Store({
                     }
                 ],
                 fov: 70.0,
+                isFovConfigurable: true,
                 calibrated: false,
                 currentPipelineSettings: {
                     pipelineType: 2, // One of "driver", "reflective", "shape"
@@ -92,7 +93,7 @@ export default new Vuex.Store({
                     skew: 0,
                     area: 0,
                     // 3D only
-                    pose: {x: 0, y: 0, rot: 0},
+                    pose: {x: 0, y: 0, rotation: 0},
                 }]
             }
         ],

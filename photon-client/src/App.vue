@@ -95,7 +95,11 @@
             <v-icon v-if="$store.state.backendConnected">
               mdi-wifi
             </v-icon>
-            <v-icon class="pulse" style="border-radius: 100%;" v-else>
+            <v-icon
+              v-else
+              class="pulse"
+              style="border-radius: 100%;"
+            >
               mdi-wifi-off
             </v-icon>
           </v-list-item-icon>

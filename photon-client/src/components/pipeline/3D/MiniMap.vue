@@ -23,9 +23,7 @@
     export default {
         name: "MiniMap",
         props: {
-          // eslint-disable-next-line vue/require-default-prop
             targets: Array,
-          // eslint-disable-next-line vue/require-default-prop
             horizontalFOV: Number
         },
         data() {
@@ -75,7 +73,6 @@
 
             this.$nextTick(function () {
                 this.drawPlayer();
-
             });
         },
         methods: {
@@ -88,8 +85,8 @@
             },
             drawTarget(index, target) {
                 // first save the untranslated/unrotated context
-                let x = 800 - (160 * target.translation.x); // getting meters as pixels
-                let y = 400 - (160 * target.translation.y);
+                let x = 800 - (160 * target.x); // getting meters as pixels
+                let y = 400 - (160 * target.y);
                 this.ctx.save();
                 this.ctx.beginPath();
                 // move the rotation point to the center of the rect
