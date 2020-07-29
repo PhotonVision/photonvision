@@ -64,27 +64,21 @@ public class VisionSourceManager {
     private static List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
         List<UsbCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
+            var deviceInfoStr =
+                    "\""
+                            + device.name
+                            + "\" at \""
+                            + device.path
+                            + "\" with USB ID \""
+                            + device.vendorId
+                            + ":"
+                            + device.productId
+                            + "\"";
             if (deviceBlacklist.contains(device.name)) {
-                logger.info(
-                        "Skipping blacklisted device - \""
-                                + device.name
-                                + "\" at \""
-                                + device.path
-                                + "\" with VID/PID: "
-                                + device.vendorId
-                                + ":"
-                                + device.productId);
+                logger.info("Skipping blacklisted device - " + deviceInfoStr);
             } else {
                 filteredDevices.add(device);
-                logger.info(
-                        "Adding local video device - \""
-                                + device.name
-                                + "\" at \""
-                                + device.path
-                                + "\" with VID/PID: "
-                                + device.vendorId
-                                + ":"
-                                + device.productId);
+                logger.info("Adding local video device - " + deviceInfoStr);
             }
         }
         return filteredDevices;
@@ -110,7 +104,7 @@ public class VisionSourceManager {
             if (StringUtils.isNumeric(config.path)) {
                 // match by index
                 var index = Integer.parseInt(config.path);
-                logger.trace(
+                logger.debug(
                         "Trying to find a match for loaded camera " + config.baseName + " with index " + index);
                 cameraInfo =
                         detectedCameraList.stream()
@@ -119,7 +113,7 @@ public class VisionSourceManager {
                                 .orElse(null);
             } else {
                 // matching by path
-                logger.trace(
+                logger.debug(
                         "Trying to find a match for loaded camera "
                                 + config.baseName
                                 + " with path "
@@ -134,14 +128,14 @@ public class VisionSourceManager {
             // If we actually matched a camera to a config, remove that camera from the list and add it to
             // the output
             if (cameraInfo != null) {
-                logger.trace("Matched the config for " + config.baseName + " to a physical camera!");
+                logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
                 detectedCameraList.remove(cameraInfo);
                 cameraConfigurations.add(config);
             }
         }
 
         // If we have any unmatched cameras left, create a new CameraConfiguration for them here.
-        logger.trace(
+        logger.debug(
                 "After matching loaded configs " + detectedCameraList.size() + " cameras were unmatched.");
         for (UsbCameraInfo info : detectedCameraList) {
             // create new camera config for all new cameras
@@ -162,7 +156,7 @@ public class VisionSourceManager {
             cameraConfigurations.add(configuration);
         }
 
-        logger.trace("Matched or created " + cameraConfigurations.size() + " camera configs!");
+        logger.debug("Matched or created " + cameraConfigurations.size() + " camera configs!");
         return cameraConfigurations;
     }
 

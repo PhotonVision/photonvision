@@ -54,6 +54,8 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 */
 public class VisionModule {
 
+    private static final int StreamFPSCap = 30;
+
     private final Logger logger;
     private final PipelineManager pipelineManager;
     private final VisionSource visionSource;
@@ -64,6 +66,9 @@ public class VisionModule {
     private final UIDataPublisher uiDataConsumer;
     private final int moduleIndex;
     private final QuirkyCamera cameraQuirks;
+
+    private long lastSettingChangeTimestamp = 0;
+    private long lastFrameConsumeMillis;
 
     private MJPGFrameConsumer dashboardInputStreamer;
     private MJPGFrameConsumer dashboardOutputStreamer;
@@ -141,15 +146,8 @@ public class VisionModule {
             if (event instanceof IncomingWebSocketEvent) {
                 var wsEvent = (IncomingWebSocketEvent<?>) event;
 
-                // TODO: remove?
-                if (wsEvent.propertyName.equals("save")) {
-                    logger.debug("UI-based saving deprecated, ignoring");
-                    // saveAndBroadcast();
-                    return;
-                }
-
                 if (wsEvent.cameraIndex != null && wsEvent.cameraIndex == moduleIndex) {
-                    logger.debug("Got PSC event - propName: " + wsEvent.propertyName);
+                    logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
 
                     var propName = wsEvent.propertyName;
                     var newPropValue = wsEvent.data;
@@ -191,7 +189,6 @@ public class VisionModule {
                                 logger.debug("Skipping pipeline change, index " + index + " already active");
                                 return;
                             }
-                            logger.debug("Setting pipeline index to " + index);
                             setPipeline(index);
                             saveAndBroadcastAll();
                             return;
@@ -398,8 +395,11 @@ public class VisionModule {
     }
 
     private void consumeFrame(Frame frame) {
-        for (var frameConsumer : frameConsumers) {
-            frameConsumer.accept(frame);
+        if (System.currentTimeMillis() - lastFrameConsumeMillis > 1000 / StreamFPSCap) {
+            for (var frameConsumer : frameConsumers) {
+                frameConsumer.accept(frame);
+            }
+            lastFrameConsumeMillis = System.currentTimeMillis();
         }
     }
 }

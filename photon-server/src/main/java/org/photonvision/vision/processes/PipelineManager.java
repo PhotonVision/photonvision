@@ -237,7 +237,6 @@ public class PipelineManager {
 
     public void removePipeline(int index) {
         if (index < 0) {
-            logger.debug("Could not remove preset pipes!");
             return;
         }
         // TODO should we block/lock on a mutex?
