@@ -125,10 +125,10 @@ public class VisionModule {
 
     private class VisionSettingChangeSubscriber extends DataChangeSubscriber {
 
-
         private VisionSettingChangeSubscriber() {
             super();
         }
+
         @SuppressWarnings({"unchecked", "rawtypes"})
         @Override
         public void onDataChangeEvent(DataChangeEvent event) {
@@ -263,7 +263,6 @@ public class VisionModule {
                 }
             }
         }
-
     }
 
     private void setPipeline(int index) {
@@ -387,8 +386,6 @@ public class VisionModule {
             dataConsumer.accept(result);
         }
     }
-
-
 
     private void consumeFrame(Frame frame) {
         if (System.currentTimeMillis() - lastFrameConsumeMillis > 1000 / StreamFPSCap) {
