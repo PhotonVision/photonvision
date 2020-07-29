@@ -32,7 +32,7 @@ public class QuirkyCameraTest {
             ps3EyeQuirks.putIfAbsent(q, false);
         }
 
-        QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x1415, 0x2000, "psEye");
+        QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x2000, 0x1415, "psEye");
         Assertions.assertEquals(psEye.quirks, ps3EyeQuirks);
     }
 
