@@ -28,7 +28,7 @@ task writeCurrentVersionJava {
     File versionFile = new File(Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java")
             .toAbsolutePath().toString())
     versionFile.delete()
-    boolean success = versionFile.createNewFile()
+    versionFile.createNewFile()
     versionFile << "package org.photonvision;\n" +
             "\n" +
             "/*\n" +
