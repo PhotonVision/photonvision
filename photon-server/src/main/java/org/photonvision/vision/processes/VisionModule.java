@@ -202,7 +202,6 @@ public class VisionModule {
                         case "blinkLED":
                             if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                                 var params = (Pair<Integer, Integer>) newPropValue;
-                                ;
                                 HardwareManager.getInstance().blinkLEDs(params.getLeft(), params.getRight());
                             }
                             return;
