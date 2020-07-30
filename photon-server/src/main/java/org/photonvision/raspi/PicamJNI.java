@@ -8,6 +8,7 @@ public class PicamJNI {
        System.load(Path.of("src/main/resources/native/libpicam.so").toAbsolutePath().toString());
     }
 
+    // Everything is static because only one picam is really ever supported
     private static native boolean createCamera();
     private static native boolean destroyCamera();
 
