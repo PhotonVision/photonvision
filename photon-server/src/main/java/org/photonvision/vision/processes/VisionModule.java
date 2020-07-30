@@ -31,6 +31,7 @@ import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -191,6 +192,36 @@ public class VisionModule {
                             }
                             setPipeline(index);
                             saveAndBroadcastAll();
+                            return;
+                        case "dimLED":
+                            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                                var dimPercentage = (int) newPropValue;
+                                HardwareManager.getInstance().setBrightnessPercentage(dimPercentage);
+                            }
+                            return;
+                        case "blinkLED":
+                            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                                var params = (Pair<Integer, Integer>) newPropValue;
+                                ;
+                                HardwareManager.getInstance().blinkLEDs(params.getLeft(), params.getRight());
+                            }
+                            return;
+                        case "setLED":
+                            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                                var state = (boolean) newPropValue;
+                                if (state) HardwareManager.getInstance().turnLEDsOn();
+                                else HardwareManager.getInstance().turnLEDsOff();
+                            }
+                            return;
+                        case "toggleLED":
+                            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                                HardwareManager.getInstance().toggleLEDs();
+                            }
+                            return;
+                        case "shutdownLEDs":
+                            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                                HardwareManager.getInstance().shutdown();
+                            }
                             return;
                     }
 
