@@ -9,8 +9,7 @@ plugins {
 
 apply from: 'versioningHelper.gradle'
 
-//mainClassName = 'org.photonvision.Main'
-mainClassName = 'org.photonvision.raspi.PicamJNI'
+mainClassName = 'org.photonvision.Main'
 
 group 'org.photonvision'
 version versionString
