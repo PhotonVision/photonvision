@@ -126,6 +126,12 @@ task generateJavaDocs(type: Javadoc) {
     destinationDir = file("${projectDir}/build/docs")
 }
 
+task generatePicamJNIHeader(type: Exec) {
+    commandLine 'javac', '-h', 'src/main/generated/native/include', 'src/main/java/org/photonvision/raspi/PicamJNI.java'
+}
+
+build.dependsOn generatePicamJNIHeader
+
 spotless {
     java {
         googleJavaFormat()
