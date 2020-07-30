@@ -18,6 +18,7 @@
             styleObject: {
                 get() {
                     let ret = {
+                      "border-radius": "3px",
                       "display": "block",
                       "object-fit": "contain",
                       "object-position": "50% 50%",

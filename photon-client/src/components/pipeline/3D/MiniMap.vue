@@ -23,8 +23,10 @@
     export default {
         name: "MiniMap",
         props: {
-            targets: Array,
-            horizontalFOV: Number
+          // eslint-disable-next-line vue/require-default-prop
+          targets: Array,
+          // eslint-disable-next-line vue/require-default-prop
+          horizontalFOV: Number
         },
         data() {
             return {
