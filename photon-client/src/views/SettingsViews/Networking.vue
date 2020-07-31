@@ -14,7 +14,7 @@
         <CVinput
           v-model="settings.ip"
           :input-cols="inputCols"
-          :rules="[v => (isIPv4(v) || isIPv6(v)) || 'Invalid IPv4 or IPv6 address']"
+          :rules="[v => isIPv4(v) || 'Invalid IPv4 address']"
           name="IP"
         />
         <CVinput
@@ -41,24 +41,6 @@
 
     // https://stackoverflow.com/a/17871737
     const ipv4Regex = /^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])$/;
-    const ipv6Regex = new RegExp(`^(
-                  ([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|
-                  ([0-9a-fA-F]{1,4}:){1,7}:|
-                  ([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|
-                  ([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|
-                  ([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|
-                  ([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|
-                  ([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|
-                  [0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|
-                  :((:[0-9a-fA-F]{1,4}){1,7}|:)|
-                  fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|
-                  ::(ffff(:0{1,4}){0,1}:){0,1}
-                  ((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}
-                  (25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|
-                  ([0-9a-fA-F]{1,4}:){1,4}:
-                  ((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}
-                  (25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])
-              )$`.replace(/[ \n]/g, ""));
     // https://stackoverflow.com/a/18494710
     const hostnameRegex = /^([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*)+(\.([a-zA-Z0-9]+(-[a-zA-Z0-9]+)*))*$/;
 
@@ -94,9 +76,6 @@
         methods: {
             isIPv4(v) {
               return ipv4Regex.test(v);
-            },
-            isIPv6(v) {
-              return ipv6Regex.test(v);
             },
             isHostname(v) {
               return hostnameRegex.test(v);
