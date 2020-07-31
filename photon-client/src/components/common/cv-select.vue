@@ -5,7 +5,10 @@
       align="center"
     >
       <v-col :cols="12 - (selectCols || 9)">
-        <span>{{ name }}</span>
+        <tooltipped-label
+          :tooltip="tooltip"
+          :text="name"
+        />
       </v-col>
       <v-col :cols="selectCols || 9">
         <v-select
@@ -17,6 +20,7 @@
           color="accent"
           item-color="secondary"
           :disabled="disabled"
+          :rules="rules"
           @change="$emit('rollback', localValue)"
         />
       </v-col>
@@ -25,13 +29,15 @@
 </template>
 
 <script>
+import TooltippedLabel from "./cv-tooltipped-label";
+
     export default {
         name: 'Select',
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['list', 'name', 'value', 'disabled', 'selectCols'],
-        data() {
-            return {}
+        components: {
+            TooltippedLabel,
         },
+      // eslint-disable-next-line vue/require-prop-types
+        props: ['list', 'name', 'value', 'disabled', 'selectCols', 'rules', 'tooltip'],
         computed: {
             localValue: {
                 get() {

@@ -15,15 +15,14 @@ if (process.env.NODE_ENV === "production") {
     Vue.prototype.$address = location.hostname + ":5800";
 }
 
-const wsURL = 'ws://' + Vue.prototype.$address + '/websocket';
-
-const ws = new WebSocket(wsURL);
-ws.binaryType = "arraybuffer";
+const wsURL = '//' + Vue.prototype.$address + '/websocket';
 
 import VueNativeSock from 'vue-native-websocket';
 
 Vue.use(VueNativeSock, wsURL, {
-    WebSocket: ws
+    reconnection: true,
+    connectManually: true,
+    format: "arraybuffer",
 });
 Vue.use(VueAxios, axios);
 Vue.prototype.$msgPack = msgPack(true);

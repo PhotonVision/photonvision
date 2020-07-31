@@ -1,8 +1,9 @@
 <template>
   <img
-    id="CameraStream"
+    :id="id"
+    crossOrigin="anonymous"
     :style="styleObject"
-    :src="address"
+    :src="src"
     alt=""
     @click="e => $emit('click', e)"
   >
@@ -11,20 +12,24 @@
 <script>
     export default {
         name: "CvImage",
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightXl'],
-        data: () => {
-            return {}
-        },
+        // eslint-disable-next-line vue/require-prop-types
+        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
         computed: {
             styleObject: {
                 get() {
                     let ret = {
+                      "border-radius": "3px",
+                      "display": "block",
                       "object-fit": "contain",
+                      "object-position": "50% 50%",
+                      "max-width": "100%",
+                      "margin-left": "auto",
+                      "margin-right": "auto",
                       "max-height": this.maxHeight,
-                      width: `${this.scale}%`,
                       height: `${this.scale}%`,
+                      cursor: (this.colorPicking ? `url(${require("../../assets/eyedropper.svg")}),` : "") + "default",
                     };
+                    console.log(ret);
 
                     if (this.$vuetify.breakpoint.xl) {
                       ret["max-height"] = this.maxHeightXl;
@@ -34,8 +39,12 @@
 
                     return ret;
                 }
-
-            }
-        }
+            },
+            src: {
+              get() {
+                return this.disconnected ? require("../../assets/noStream.jpg") : this.address;
+              },
+            },
+        },
     }
 </script>

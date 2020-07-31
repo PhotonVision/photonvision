@@ -21,8 +21,10 @@ export default new Vuex.Store({
         undoRedo: undoRedo
     },
     state: {
+        backendConnected: false,
+        colorPicking: false,
         saveBar: false,
-        compactMode: undefined, // Compact mode is initially unset on purpose
+        compactMode: localStorage.getItem("compactMode") === undefined ? undefined : localStorage.getItem("compactMode") === "true", // Compact mode is initially unset on purpose
         currentCameraIndex: 0,
         selectedOutputs: [0, 1], // 0 indicates normal, 1 indicates threshold
         cameraSettings: [ // This is a list of objects representing the settings of all cameras
@@ -42,6 +44,7 @@ export default new Vuex.Store({
                     }
                 ],
                 fov: 70.0,
+                isFovConfigurable: true,
                 calibrated: false,
                 currentPipelineSettings: {
                     pipelineType: 2, // One of "driver", "reflective", "shape"
@@ -72,7 +75,8 @@ export default new Vuex.Store({
                     offsetRobotOffsetMode: 0,
                     solvePNPEnabled: false,
                     targetRegion: 0,
-                    contourTargetOrientation: 1
+                    contourTargetOrientation: 1,
+                    is3D: false,
 
                     // Settings that apply to shape
                 }
@@ -89,10 +93,34 @@ export default new Vuex.Store({
                     skew: 0,
                     area: 0,
                     // 3D only
-                    pose: {x: 0, y: 0, rot: 0},
+                    pose: {x: 0, y: 0, rotation: 0},
                 }]
             }
-        ]
+        ],
+        settings: {
+            general: {
+                version: "Unknown",
+                // Empty string means unsupported, otherwise the value in the string is the transfer mode
+                gpuAcceleration: "",
+
+                hardwareModel: "Unknown",
+                hardwarePlatform: "Unknown",
+            },
+            networking: {
+                teamNumber: 0,
+
+                supported: true,
+                // Below options are only configurable if supported is true
+                connectionType: 0, // 0 = DHCP, 1 = Static
+                staticIp: "",
+                netmask: "",
+                hostname: "photonvision",
+            },
+            lighting: {
+                supported: true,
+                brightness: 0.0,
+            },
+        }
     },
     mutations: {
         saveBar: set('saveBar'),
@@ -102,6 +130,10 @@ export default new Vuex.Store({
         pipelineResults: set('pipelineResults'),
         networkSettings: set('networkSettings'),
         selectedOutputs: set('selectedOutputs'),
+
+        is3D: (state, val) => {
+            state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.is3D = val;
+        },
 
         currentPipelineIndex: (state, val) => {
             const settings = state.cameraSettings[state.currentCameraIndex];
@@ -114,9 +146,7 @@ export default new Vuex.Store({
                 if (!payload.hasOwnProperty(key)) continue;
                 const value = payload[key];
                 const settings = state.cameraSettings[state.currentCameraIndex].currentPipelineSettings;
-                if (key === "selectedOutputs") console.log(settings);
                 if (settings.hasOwnProperty(key)) {
-                    if (key === "selectedOutputs") console.log('here');
                     Vue.set(settings, key, value);
                 }
             }

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <!-- Special hidden upload input that gets 'clicked' when the user selects the right dropdown item' -->
+    <!-- Special hidden upload input that gets 'clicked' when the user selects the right dropdown item -->
     <input
       ref="file"
       type="file"
@@ -21,7 +21,6 @@
       item-value="data"
       @change="onModelSelect"
     />
-    <v-divider />
     <CVslider
       v-model="value.accuracy"
       class="pt-2"
@@ -33,7 +32,6 @@
       @input="handleData('accuracy')"
       @rollback="e => rollback('accuracy', e)"
     />
-    <v-divider class="pb-2" />
     <mini-map
       class="miniMapClass"
       :targets="targets"
@@ -77,7 +75,7 @@
         computed: {
             targets: {
                 get() {
-                    return "FIXME"; // TODO fix
+                    return this.$store.getters.currentPipelineResults.targets;
                 }
             },
             horizontalFOV: {
@@ -100,7 +98,7 @@
             let tmp = [];
             for (let t in FRCtargetsConfig) {
                 if (FRCtargetsConfig.hasOwnProperty(t)) {
-                    tmp.push({name: t, data: FRCtargetsConfig[t]})
+                    tmp.push({name: t, data: FRCtargetsConfig[t]});
                 }
             }
 

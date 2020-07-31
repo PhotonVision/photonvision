@@ -25,11 +25,10 @@
           </v-list-item-icon>
         </v-list-item>
 
-        <v-divider />
-
         <v-list-item
           link
           to="dashboard"
+          @click="rollbackPipelineIndex()"
         >
           <v-list-item-icon>
             <v-icon>mdi-view-dashboard</v-icon>
@@ -40,9 +39,20 @@
         </v-list-item>
         <v-list-item
           link
+          to="cameras"
+          @click="switchToDriverMode()"
+        >
+          <v-list-item-icon>
+            <v-icon>mdi-camera</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>Cameras</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-list-item
+          link
           to="settings"
         >
-          <!-- TODO: Expandable sub-elements? -->
           <v-list-item-icon>
             <v-icon>mdi-settings</v-icon>
           </v-list-item-icon>
@@ -77,6 +87,24 @@
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title>Advanced Mode</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item style="position: absolute; bottom: 0; left: 0;">
+          <v-list-item-icon>
+            <v-icon v-if="$store.state.backendConnected">
+              mdi-wifi
+            </v-icon>
+            <v-icon
+              v-else
+              class="pulse"
+              style="border-radius: 100%;"
+            >
+              mdi-wifi-off
+            </v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>{{ $store.state.backendConnected ? "Connected" : "Trying to connect..." }}</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -123,6 +151,8 @@
             logView
         },
         data: () => ({
+            // Used so that we can switch back to the previously selected pipeline after camera calibration
+            previouslySelectedIndex: null,
             timer: undefined,
             isLogger: false,
             log: "",
@@ -138,11 +168,16 @@
             },
             compact: {
                 get() {
-                    return this.$store.state.compactMode === undefined ? this.$vuetify.breakpoint.smAndDown : this.$store.state.compactMode || this.$vuetify.breakpoint.smAndDown;
+                    if (this.$store.state.compactMode === undefined) {
+                      return this.$vuetify.breakpoint.smAndDown;
+                    } else {
+                      return this.$store.state.compactMode || this.$vuetify.breakpoint.smAndDown;
+                    }
                 },
                 set(value) {
                     // compactMode is the user's preference for compact mode; it overrides screen size
                     this.$store.commit("compactMode", value);
+                    localStorage.setItem("compactMode", value);
                 },
             }
         },
@@ -165,6 +200,7 @@
 
                 }
             });
+
             this.$options.sockets.onmessage = (data) => {
                 try {
                     let message = this.$msgPack.decode(data.data);
@@ -176,13 +212,24 @@
                 } catch (error) {
                     console.error('error: ' + data.data + " , " + error);
                 }
+            };
+            this.$options.sockets.onopen = () => {
+              this.$store.state.backendConnected = true;
+            };
+
+            let closed = () => {
+              this.$store.state.backendConnected = false;
             }
+            this.$options.sockets.onclose = closed;
+            this.$options.sockets.onerror = closed;
+
+            this.$connect();
         },
         methods: {
             handleMessage(key, value) {
                 if (key === "logMessage") {
-                    console.log(value)
-                    this.logMessage(value, 0)
+                    console.log("[FROM BACKEND]" + value);
+                    this.logMessage(value, 0);
                 } else if (key === "updatePipelineResult") {
                     this.$store.commit('mutatePipelineResults', value)
                 } else if (this.$store.state.hasOwnProperty(key)) {
@@ -192,7 +239,7 @@
                 } else {
                     switch (key) {
                         default: {
-                            console.log(value);
+                            console.error("Unknown message from backend: " + value);
                         }
                     }
                 }
@@ -215,6 +262,16 @@
                 const colors = ["\u001b[31m", "\u001b[32m", "\u001b[33m", "\u001b[34m"]
                 const reset = "\u001b[0m"
                 this.log += `${colors[level]}${message}${reset}\n`
+            },
+            switchToDriverMode() {
+                this.previouslySelectedIndex = this.$store.getters.currentPipelineIndex;
+                this.handleInputWithIndex('currentPipeline', -1)
+            },
+            rollbackPipelineIndex() {
+                if (this.previouslySelectedIndex !== null) {
+                  this.handleInputWithIndex('currentPipeline', this.previouslySelectedIndex)
+                }
+                this.previouslySelectedIndex = null;
             }
         }
     };
@@ -225,6 +282,21 @@
 </style>
 
 <style>
+    .pulse {
+        animation: pulse-animation 2s infinite;
+    }
+
+    @keyframes pulse-animation {
+        0% {
+          box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
+          background-color: rgba(0, 0, 0, 0.2);
+        }
+        100% {
+          box-shadow: 0 0 0 20px rgba(0, 0, 0, 0);
+          background-color: rgba(0, 0, 0, 0);
+        }
+    }
+
     .logo {
         width: 100%;
         height: 70px;
@@ -274,6 +346,20 @@
 <style>
   /* Hack */
   .v-divider {
-    border-color: #23add9 !important;
+    border-color: white !important;
+  }
+
+  .v-input {
+    font-size: 1rem !important;
+  }
+</style>
+
+<style lang="scss">
+  @import '~vuetify/src/styles/settings/_variables';
+
+  @media #{map-get($display-breakpoints, 'md-and-down')} {
+    html {
+      font-size: 14px !important;
+    }
   }
 </style>

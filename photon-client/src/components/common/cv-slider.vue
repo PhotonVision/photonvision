@@ -5,7 +5,10 @@
       align="center"
     >
       <v-col :cols="12 - (sliderCols || 8)">
-        <span>{{ name }}</span>
+        <tooltipped-label
+          :tooltip="tooltip"
+          :text="name"
+        />
       </v-col>
       <v-col :cols="sliderCols || 8">
         <v-slider
@@ -27,6 +30,7 @@
           <template v-slot:append>
             <v-text-field
               dark
+              color="accent"
               :max="max"
               :min="min"
               :disabled="disabled"
@@ -49,10 +53,15 @@
 </template>
 
 <script>
+import TooltippedLabel from "./cv-tooltipped-label";
+
 export default {
   name: "Slider",
+  components: {
+    TooltippedLabel,
+  },
   // eslint-disable-next-line vue/require-prop-types
-  props: ["min", "max", "name", "value", "step", "sliderCols", "disabled"],
+  props: ["min", "max", "name", "value", "step", "sliderCols", "disabled", "tooltip"],
   data() {
     return {
       isFocused: false,

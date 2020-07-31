@@ -1,18 +1,12 @@
 <template>
   <div>
-    <span>Contour Sorting</span>
+    <span>Target Manipulation</span>
     <v-divider class="mt-2" />
-    <CVselect
-      v-model="contourSortMode"
-      name="Sort Mode"
-      :list="['Largest','Smallest','Highest','Lowest','Rightmost','Leftmost','Centermost']"
-      @input="handlePipelineData('contourSortMode')"
-      @rollback="e => rollback('contourSortMode', e)"
-    />
 
     <CVselect
       v-model="contourTargetOffsetPointEdge"
       name="Target Offset Point"
+      tooltip="Changes where the 'center' of the target is (used for calculating e.g. pitch and yaw)"
       :list="['Center','Top','Bottom','Left','Right']"
       @input="handlePipelineData('contourTargetOffsetPointEdge')"
       @rollback="e=> rollback('contourTargetOffsetPointEdge', e)"
@@ -21,6 +15,7 @@
     <CVselect
       v-model="contourTargetOrientation"
       name="Target Orientation"
+      tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
       :list="['Portrait', 'Landscape']"
       @input="handlePipelineData('contourTargetOrientation')"
       @rollback="e=> rollback('contourTargetOrientation', e)"
@@ -29,7 +24,9 @@
     <CVswitch
       v-model="outputShowMultipleTargets"
       name="Show Multiple Targets"
+      tooltip="If enabled, up to five targets will be displayed and sent to user code"
       class="mb-4"
+      text-cols="3"
       @input="handlePipelineData('outputShowMultipleTargets')"
 
       @rollback="e=> rollback('outputShowMultipleTargets', e)"
@@ -39,6 +36,7 @@
     <CVselect
       v-model="offsetRobotOffsetMode"
       name="Robot Offset Mode"
+      tooltip="Used to add an arbitrary offset to the location of the targeting crosshair"
       :list="['None','Single Point','Dual Point']"
       @input="handlePipelineData('offsetRobotOffsetMode')"
       @rollback="e=> rollback('offsetRobotOffsetMode',e)"
@@ -93,16 +91,6 @@
             }
         },
         computed: {
-
-            contourSortMode: {
-
-                get() {
-                    return this.$store.getters.currentPipelineSettings.contourSortMode
-                },
-                set(val) {
-                    this.$store.commit("mutatePipeline", {"contourSortMode": val});
-                }
-            },
             contourTargetOffsetPointEdge: {
                 get() {
                     return this.$store.getters.currentPipelineSettings.contourTargetOffsetPointEdge
@@ -138,13 +126,13 @@
 
             selectedComponent: {
                 get() {
-                    switch (this.value.calibrationMode) {
+                    switch (this.offsetRobotOffsetMode) {
                         case 0:
-                            return "";
+                            return null;
                         case 1:
-                            return "Single Point";
+                            return SingleCalibration;
                         case 2:
-                            return "Dual Point"
+                            return DualCalibration;
                     }
                     return ""
                 }

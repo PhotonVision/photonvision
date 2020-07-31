@@ -1,10 +1,16 @@
 <template>
   <div>
-    <v-row dense align="center">
-      <v-col :cols="2">
-        <span>{{ name }}</span>
+    <v-row
+      dense
+      align="center"
+    >
+      <v-col cols="2">
+        <tooltipped-label
+          :tooltip="tooltip"
+          :text="name"
+        />
       </v-col>
-      <v-col :cols="10">
+      <v-col cols="10">
         <v-range-slider
           :value="localValue"
           :max="max"
@@ -12,7 +18,7 @@
           hide-details
           class="align-center"
           dark
-          color="#ffd843"
+          color="accent"
           :step="step"
           @input="handleInput"
           @mousedown="$emit('rollback', localValue)"
@@ -20,6 +26,7 @@
           <template v-slot:prepend>
             <v-text-field
               dark
+              color="accent"
               :value="localValue[0]"
               :max="max"
               :min="min"
@@ -38,6 +45,7 @@
           <template v-slot:append>
             <v-text-field
               dark
+              color="accent"
               :value="localValue[1]"
               :max="max"
               :min="min"
@@ -59,10 +67,15 @@
 </template>
 
 <script>
+import TooltippedLabel from "./cv-tooltipped-label";
+
 export default {
   name: "RangeSlider",
+  components: {
+    TooltippedLabel,
+  },
   // eslint-disable-next-line vue/require-prop-types
-  props: ["name", "min", "max", "value", "step"],
+  props: ["name", "min", "max", "value", "step", "tooltip"],
   data() {
     return {
       prependFocused: false,

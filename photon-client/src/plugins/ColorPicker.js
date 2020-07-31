@@ -2,8 +2,10 @@ var canvas = undefined;
 var image = undefined;
 
 function initColorPicker() {
-    canvas = document.createElement('canvas');
-    image = document.getElementById('CameraStream');
+    if (!canvas)
+        canvas = document.createElement('canvas');
+
+    image = document.querySelector('#normal-stream');
     canvas.width = image.width;
     canvas.height = image.height;
 }
@@ -15,11 +17,12 @@ function initColorPicker() {
 //calls the function to handle the button (either eyedrop,expand or shrink)
 function colorPickerClick(event, currentFunction, currentRange) {
     let rect = image.getBoundingClientRect();
-    let x = Math.round(event.clientX - rect.left);
-    let y = Math.round(event.clientY - rect.top);
+    let x = Math.round((event.clientX - rect.left) / rect.width * image.width);
+    let y = Math.round((event.clientY - rect.top) / rect.height * image.height);
     let context = canvas.getContext('2d');
     context.drawImage(image, 0, 0, image.width, image.height);
     let pixelData = context.getImageData(x, y, 1, 1).data;
+
     if (currentFunction !== undefined) {
         return currentFunction(pixelData, currentRange);
     }
@@ -114,6 +117,7 @@ function shrinkRange(range, color) {
                 range[1][j] = Math.max(range[1][j] - 10, range[0][j]);//shrink from max side
         }
     }
+
     return inside;//returns if color is inside or not
 }
 

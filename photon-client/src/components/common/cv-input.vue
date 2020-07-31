@@ -4,16 +4,22 @@
       dense
       align="center"
     >
-      <v-col cols="4">
-        <span class="ml-2">{{ name }}</span>
+      <v-col :cols="12 - (inputCols || 8)">
+        <tooltipped-label
+          :tooltip="tooltip"
+          :text="name"
+        />
       </v-col>
-      <v-col cols="8">
+      <v-col :cols="inputCols || 8">
         <v-text-field
           v-model="localValue"
           dark
           dense
+          color="accent"
           :disabled="disabled"
           :error-messages="errorMessage"
+          :rules="rules"
+          class="mt-1 pt-2"
           @keydown="handleKeyboard"
         />
       </v-col>
@@ -22,10 +28,15 @@
 </template>
 s
 <script>
+    import TooltippedLabel from "./cv-tooltipped-label";
+
     export default {
         name: 'Input',
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['name', 'value', 'disabled', 'errorMessage'],
+        components: {
+          TooltippedLabel
+        },
+        // eslint-disable-next-line vue/require-prop-types
+        props: ['name', 'value', 'disabled', 'errorMessage', 'inputCols', 'rules', 'tooltip'],
         data() {
             return {}
         },
@@ -49,6 +60,5 @@ s
     }
 </script>
 
-<style lang="" scoped>
-
+<style lang="css" scoped>
 </style>
