@@ -100,8 +100,8 @@ export default new Vuex.Store({
         settings: {
             general: {
                 version: "Unknown",
-                gpuAcceleration: false,
-                gpuAccelerationType: "Unknown",
+                // Empty string means unsupported, otherwise the value in the string is the transfer mode
+                gpuAcceleration: "",
 
                 hardwareModel: "Unknown",
                 hardwarePlatform: "Unknown",

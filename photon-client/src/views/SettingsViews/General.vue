@@ -6,7 +6,7 @@
     &mdash;
     <span>Platform: {{ settings.hardwarePlatform }}</span>
     &mdash;
-    <span>GPU Acceleration: {{ settings.gpuAcceleration ? "Enabled" : "Unsupported" }}{{ settings.gpuAcceleration ? " (" + settings.gpuAccelerationType + " mode)" : "" }}</span>
+    <span>GPU Acceleration: {{ settings.gpuAcceleration ? "Enabled" : "Unsupported" }}{{ settings.gpuAcceleration ? " (" + settings.gpuAcceleration + " mode)" : "" }}</span>
     <v-row>
       <v-col
         cols="12"
