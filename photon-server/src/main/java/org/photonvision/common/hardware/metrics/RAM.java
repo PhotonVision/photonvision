@@ -15,13 +15,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.camera;
+package org.photonvision.common.hardware.metrics;
 
-public enum CameraQuirk {
-    /** Camera settable for controllable image gain */
-    Gain,
-    /** For cameras that need a bit of encouragement for settings to stick */
-    DoubleSet,
-    /** For cameras that are pi cams */
-    PiCam
+public class RAM extends MetricsBase {
+    private RAM() {}
+
+    public static RAM getInstance() {
+        return Singleton.INSTANCE;
+    }
+
+    // TODO: Output in MBs for consistency
+    public double getUsedRam() {
+        return execute(ramUsageCommand) / 1000;
+    }
+
+    private static class Singleton {
+        public static final RAM INSTANCE = new RAM();
+    }
 }

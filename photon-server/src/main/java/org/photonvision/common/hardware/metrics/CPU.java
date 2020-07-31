@@ -15,13 +15,30 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.camera;
+package org.photonvision.common.hardware.metrics;
 
-public enum CameraQuirk {
-    /** Camera settable for controllable image gain */
-    Gain,
-    /** For cameras that need a bit of encouragement for settings to stick */
-    DoubleSet,
-    /** For cameras that are pi cams */
-    PiCam
+public class CPU extends MetricsBase {
+
+    private CPU() {}
+
+    public static CPU getInstance() {
+        return Singleton.INSTANCE;
+    }
+
+    public double getMemory() {
+        return execute(cpuMemoryCommand);
+    }
+
+    // TODO: Command should return in Celsius
+    public double getTemp() {
+        return execute(cpuTemperatureCommand) / 1000;
+    }
+
+    public double getUtilization() {
+        return execute(cpuUtilizationCommand);
+    }
+
+    private static class Singleton {
+        public static final CPU INSTANCE = new CPU();
+    }
 }

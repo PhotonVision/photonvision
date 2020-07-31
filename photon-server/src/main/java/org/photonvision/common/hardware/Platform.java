@@ -15,27 +15,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.util;
+package org.photonvision.common.hardware;
 
 import edu.wpi.first.wpiutil.RuntimeDetector;
 import java.io.IOException;
-import org.apache.commons.lang3.SystemUtils;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.ShellExec;
 
 @SuppressWarnings("unused")
 public enum Platform {
+    // WPILib Supported (JNI)
     WINDOWS_32("Windows x32"),
     WINDOWS_64("Windows x64"),
-    LINUX_32("Linux x32"),
     LINUX_64("Linux x64"),
-    LINUX_RASPBIAN("Linux Raspbian"), // TODO: check that RaspiOS reports the same way
-    LINUX_AARCH64BIONIC("Linux Aarch64 Bionic"),
-    UNSUPPORTED(
-            "Unsupported Platform - OS: "
-                    + SystemUtils.OS_NAME
-                    + ", Architecture: "
-                    + SystemUtils.OS_ARCH);
+    LINUX_RASPBIAN("Linux Raspbian"), // Raspberry Pi 3/4
+    LINUX_AARCH64BIONIC("Linux AARCH64 Bionic"), // Jetson Nano, Jetson TX2
+    // PhotonVision Supported (Manual install)
+    LINUX_ARM32("Linux ARM32"), // ODROID XU4, C1+
+    LINUX_ARM64("Linux ARM64"), // ODROID C2, N2
+
+    // Completely unsupported
+    UNSUPPORTED("Unsupported Platform");
 
     public final String value;
     public final boolean isRoot = checkForRoot();
@@ -44,16 +43,19 @@ public enum Platform {
         this.value = value;
     }
 
-    private static final Logger logger = new Logger(Platform.class, LogGroup.General);
-
+    private static final String OS_NAME = System.getProperty("os.name");
+    private static final String OS_ARCH = System.getProperty("os.arch");
     public static final Platform CurrentPlatform = getCurrentPlatform();
 
-    public static boolean isWindows() {
-        return CurrentPlatform == WINDOWS_64 || CurrentPlatform == WINDOWS_32;
+    private static String UnknownPlatformString =
+            String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
+
+    public boolean isWindows() {
+        return this == WINDOWS_64 || this == WINDOWS_32;
     }
 
-    public static boolean isLinux() {
-        return CurrentPlatform != UNSUPPORTED && !isWindows();
+    public boolean isLinux() {
+        return this == LINUX_64 || this == LINUX_RASPBIAN || this == LINUX_ARM64;
     }
 
     public static boolean isRaspberryPi() {
@@ -68,7 +70,7 @@ public enum Platform {
             try {
                 shell.execute("id", null, true, "-u");
             } catch (IOException e) {
-                logger.error("Failed to perform root check!", e);
+                e.printStackTrace();
             }
 
             while (!shell.isOutputCompleted()) {
@@ -91,17 +93,25 @@ public enum Platform {
             if (RuntimeDetector.is64BitIntel()) return WINDOWS_64;
         }
 
-        if (RuntimeDetector.isLinux()) {
-            if (RuntimeDetector.is32BitIntel()) return LINUX_32;
-            if (RuntimeDetector.is64BitIntel()) return LINUX_64;
-            if (RuntimeDetector.isRaspbian()) return LINUX_RASPBIAN;
-            if (RuntimeDetector.isAarch64Bionic()) return LINUX_AARCH64BIONIC;
+        if (RuntimeDetector.isMac()) {
+            if (RuntimeDetector.is32BitIntel()) return UNSUPPORTED;
         }
 
-        return UNSUPPORTED;
+        if (RuntimeDetector.isLinux()) {
+            if (RuntimeDetector.is32BitIntel()) return UNSUPPORTED;
+            if (RuntimeDetector.is64BitIntel()) return LINUX_64;
+            if (RuntimeDetector.isRaspbian()) return LINUX_RASPBIAN;
+        }
+
+        System.out.println(UnknownPlatformString);
+        return Platform.UNSUPPORTED;
     }
 
     public String toString() {
-        return this.value;
+        if (this.equals(UNSUPPORTED)) {
+            return UnknownPlatformString;
+        } else {
+            return this.value;
+        }
     }
 }

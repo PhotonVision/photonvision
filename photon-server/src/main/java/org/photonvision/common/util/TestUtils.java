@@ -19,6 +19,7 @@ package org.photonvision.common.util;
 
 import edu.wpi.cscore.CameraServerCvJNI;
 import java.awt.*;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
@@ -163,6 +164,10 @@ public class TestUtils {
 
     public static Path getDotBoardImagesPath() {
         return getResourcesFolderPath().resolve("calibrationBoardImages");
+    }
+
+    public static File getHardwareConfigJson() {
+        return getResourcesFolderPath().resolve("hardware").resolve("HardwareConfig.json").toFile();
     }
 
     public static void loadLibraries() {

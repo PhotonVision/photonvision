@@ -15,13 +15,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.camera;
+package org.photonvision.common.hardware.metrics;
 
-public enum CameraQuirk {
-    /** Camera settable for controllable image gain */
-    Gain,
-    /** For cameras that need a bit of encouragement for settings to stick */
-    DoubleSet,
-    /** For cameras that are pi cams */
-    PiCam
+public class GPU extends MetricsBase {
+
+    private GPU() {}
+
+    public static GPU getInstance() {
+        return Singleton.INSTANCE;
+    }
+
+    public double getMemory() {
+        return execute(gpuMemoryCommand);
+    }
+
+    public double getTemp() {
+        return execute(gpuTemperatureCommand) / 10;
+    }
+
+    private static class Singleton {
+        public static final GPU INSTANCE = new GPU();
+    }
 }

@@ -1,0 +1,23 @@
+{
+  "deviceName": "PhotonVision",
+  "deviceLogoPath": "photonvision.png",
+  "supportURL": "https://support.photonvision.com",
+  "hardware": {
+    "leds": [2,13],
+    "ledSetCommand": "",
+    "ledsCanDim": true,
+    "ledPWMRange": [0, 100],
+    "ledPWMSetRange": "",
+    "ledDimCommand": "",
+    "ledBlinkCommand": ""
+  },
+
+  "metrics": {
+    "cpuTemp": "echo 10",
+    "cpuMemory": "echo 10",
+    "cpuUtil": "echo 10",
+    "gpuMemory": "echo 10",
+    "gpuUtil": "echo 10",
+    "ramUtil": "echo 10"
+  }
+}

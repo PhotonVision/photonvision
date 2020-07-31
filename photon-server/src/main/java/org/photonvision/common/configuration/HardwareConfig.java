@@ -17,7 +17,78 @@
 
 package org.photonvision.common.configuration;
 
-/** Defines a;lskdjfa;dsklf */
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.ArrayList;
+import java.util.Map;
+
+@SuppressWarnings("unused")
 public class HardwareConfig {
-    public int ledPin = 1; // just to stop jackson from yeeting
+
+    public final String deviceName;
+    public final String deviceLogoPath;
+    public final String supportURL;
+
+    // LED control
+    public final ArrayList<Integer> ledPins;
+    public final String ledSetCommand;
+    public final boolean ledsCanDim;
+    public final ArrayList<Integer> ledPWMRange;
+    public final String ledPWMSetRange;
+    public final String ledDimCommand;
+    public final String ledBlinkCommand;
+
+    // Metrics
+    public final String cpuTempCommand;
+    public final String cpuMemoryCommand;
+    public final String cpuUtilCommand;
+    public final String gpuMemoryCommand;
+    public final String gpuTempCommand;
+    public final String ramUtilCommand;
+
+    public HardwareConfig() {
+        deviceName = "";
+        deviceLogoPath = "";
+        supportURL = "";
+        ledPins = new ArrayList<>();
+        ledSetCommand = "";
+        ledsCanDim = false;
+        ledPWMRange = new ArrayList<>();
+        ledPWMSetRange = "";
+        ledDimCommand = "";
+
+        cpuTempCommand = "";
+        cpuMemoryCommand = "";
+        cpuUtilCommand = "";
+        gpuMemoryCommand = "";
+        gpuTempCommand = "";
+        ramUtilCommand = "";
+        ledBlinkCommand = "";
+    }
+
+    @JsonCreator
+    public HardwareConfig(
+            @JsonProperty("deviceName") String deviceName,
+            @JsonProperty("deviceLogoPath") String deviceLogoPath,
+            @JsonProperty("supportURL") String supportURL,
+            @JsonProperty("hardware") Map<String, ?> hardware,
+            @JsonProperty("metrics") Map<String, ?> metrics) {
+        this.deviceName = deviceName;
+        this.deviceLogoPath = deviceLogoPath;
+        this.supportURL = supportURL;
+        this.ledPins = (ArrayList<Integer>) hardware.get("leds");
+        this.ledSetCommand = (String) hardware.get("ledSetCommand");
+        this.ledsCanDim = (Boolean) hardware.get("ledsCanDim");
+        this.ledPWMRange = (ArrayList<Integer>) hardware.get("ledPWMRange");
+        this.ledPWMSetRange = (String) hardware.get("ledPWMSetRange");
+        this.ledDimCommand = (String) hardware.get("ledDimCommand");
+        this.ledBlinkCommand = (String) hardware.get("ledBlinkCommand");
+
+        this.cpuTempCommand = (String) metrics.get("cpuTemp");
+        this.cpuMemoryCommand = (String) metrics.get("cpuMemory");
+        this.cpuUtilCommand = (String) metrics.get("cpuUtil");
+        this.gpuMemoryCommand = (String) metrics.get("gpuMemory");
+        this.gpuTempCommand = (String) metrics.get("gpuUtil");
+        this.ramUtilCommand = (String) metrics.get("ramUtil");
+    }
 }
