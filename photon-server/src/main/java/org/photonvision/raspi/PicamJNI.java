@@ -1,5 +1,7 @@
 package org.photonvision.raspi;
 
+import org.photonvision.common.util.TestUtils;
+
 import java.nio.file.Path;
 
 public class PicamJNI {
