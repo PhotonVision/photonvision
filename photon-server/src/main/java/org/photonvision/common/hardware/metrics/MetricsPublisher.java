@@ -27,6 +27,7 @@ import org.photonvision.server.UIUpdateType;
 public class MetricsPublisher {
     private final HashMap<String, Double> metrics;
     private final Thread metricsThread;
+    private final Timer timer;
 
     public static MetricsPublisher getInstance() {
         return Singleton.INSTANCE;
@@ -38,34 +39,38 @@ public class MetricsPublisher {
         var ram = RAM.getInstance();
 
         metrics = new HashMap<>();
+        timer = new Timer();
 
         this.metricsThread =
                 new Thread(
                         () -> {
-                            var timer = new Timer();
-                            timer.schedule(
-                                    new TimerTask() {
-                                        public void run() {
-                                            metrics.put("cpuTemp", cpu.getTemp());
-                                            metrics.put("cpuUtil", cpu.getUtilization());
-                                            metrics.put("cpuMem", cpu.getMemory());
-                                            metrics.put("gpuTemp", gpu.getTemp());
-                                            metrics.put("gpuMem", gpu.getMemory());
-                                            metrics.put("ramUtil", ram.getUsedRam());
+                                timer.schedule(
+                                        new TimerTask() {
+                                            public void run() {
+                                                metrics.put("cpuTemp", cpu.getTemp());
+                                                metrics.put("cpuUtil", cpu.getUtilization());
+                                                metrics.put("cpuMem", cpu.getMemory());
+                                                metrics.put("gpuTemp", gpu.getTemp());
+                                                metrics.put("gpuMem", gpu.getMemory());
+                                                metrics.put("ramUtil", ram.getUsedRam());
 
-                                            DataChangeService.getInstance()
-                                                    .publishEvent(
-                                                            new OutgoingUIEvent<>(
-                                                                    UIUpdateType.BROADCAST, "metrics", metrics, null));
-                                        }
-                                    },
-                                    0,
-                                    1000);
+                                                DataChangeService.getInstance()
+                                                        .publishEvent(
+                                                                new OutgoingUIEvent<>(
+                                                                        UIUpdateType.BROADCAST, "metrics", metrics, null));
+                                            }
+                                        },
+                                        0,
+                                        1000);
                         });
     }
 
     public void startThread() {
         metricsThread.start();
+    }
+
+    public void stopThread(){
+        timer.cancel();
     }
 
     private static class Singleton {

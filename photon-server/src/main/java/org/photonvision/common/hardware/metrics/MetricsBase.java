@@ -59,7 +59,9 @@ public abstract class MetricsBase {
             runCommand.executeBashCommand(command);
             return Double.parseDouble(runCommand.getOutput());
         } catch (Exception e) {
-            logger.error(Arrays.toString(e.getStackTrace()));
+            logger.info("This device does not support running bash commands.");
+            MetricsPublisher.getInstance().stopThread();
+            logger.info("Stopped metrics thread.");
             return Double.NaN;
         }
     }
