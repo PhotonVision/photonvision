@@ -62,9 +62,12 @@ public abstract class MetricsBase {
             logger.error(
                     "Command: \""
                             + command
-                            + "\" returned a non-double output \""
+                            + "\" returned a non-double output!"
+                            + "Output Received: "
                             + runCommand.getOutput()
-                            + "\"");
+                            + "\n"
+                            + "Standard Error: "
+                            + runCommand.getError());
             return Double.NaN;
         } catch (IOException e) {
             MetricsPublisher.getInstance().stopThread();
