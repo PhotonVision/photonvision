@@ -18,63 +18,53 @@
 package org.photonvision.common.hardware.metrics;
 
 import java.util.HashMap;
-import java.util.Timer;
-import java.util.TimerTask;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.server.UIUpdateType;
 
 public class MetricsPublisher {
     private final HashMap<String, Double> metrics;
-    private final Thread metricsThread;
-    private final Timer timer;
     private static final Logger logger = new Logger(MetricsPublisher.class, LogGroup.General);
+    private static CPU cpu;
+    private static GPU gpu;
+    private static RAM ram;
 
     public static MetricsPublisher getInstance() {
         return Singleton.INSTANCE;
     }
 
     private MetricsPublisher() {
-        var cpu = CPU.getInstance();
-        var gpu = GPU.getInstance();
-        var ram = RAM.getInstance();
+        cpu = CPU.getInstance();
+        gpu = GPU.getInstance();
+        ram = RAM.getInstance();
 
         metrics = new HashMap<>();
-        timer = new Timer();
-
-        this.metricsThread =
-                new Thread(
-                        () ->
-                                timer.schedule(
-                                        new TimerTask() {
-                                            public void run() {
-                                                metrics.put("cpuTemp", cpu.getTemp());
-                                                metrics.put("cpuUtil", cpu.getUtilization());
-                                                metrics.put("cpuMem", cpu.getMemory());
-                                                metrics.put("gpuTemp", gpu.getTemp());
-                                                metrics.put("gpuMem", gpu.getMemory());
-                                                metrics.put("ramUtil", ram.getUsedRam());
-
-                                                DataChangeService.getInstance()
-                                                        .publishEvent(
-                                                                new OutgoingUIEvent<>(
-                                                                        UIUpdateType.BROADCAST, "metrics", metrics, null));
-                                            }
-                                        },
-                                        0,
-                                        1000));
     }
 
-    public void startThread() {
-        metricsThread.start();
+    public void startTask() {
+        TimedTaskManager.getInstance()
+                .addTask(
+                        "Metrics",
+                        () -> {
+                            metrics.put("cpuTemp", cpu.getTemp());
+                            metrics.put("cpuUtil", cpu.getUtilization());
+                            metrics.put("cpuMem", cpu.getMemory());
+                            metrics.put("gpuTemp", gpu.getTemp());
+                            metrics.put("gpuMem", gpu.getMemory());
+                            metrics.put("ramUtil", ram.getUsedRam());
+
+                            DataChangeService.getInstance()
+                                    .publishEvent(
+                                            new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "metrics", metrics, null));
+                        },
+                        1000);
     }
 
-    public void stopThread() {
-        timer.cancel();
-        timer.purge();
-        metricsThread.interrupt();
+    public void stopTask() {
+        TimedTaskManager.getInstance().cancelTask("Metrics");
         logger.info("This device does not support running bash commands. Stopped metrics thread.");
     }
 

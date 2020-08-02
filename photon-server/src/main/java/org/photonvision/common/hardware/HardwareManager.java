@@ -48,7 +48,7 @@ public class HardwareManager {
                 });
 
         // Start hardware metrics thread
-        MetricsPublisher.getInstance().startThread();
+        MetricsPublisher.getInstance().startTask();
     }
     /** Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue); */
     public GPIOBase getGPIO(int pin) {

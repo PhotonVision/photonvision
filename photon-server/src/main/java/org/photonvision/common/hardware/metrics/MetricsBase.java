@@ -75,8 +75,8 @@ public abstract class MetricsBase {
                             + runCommand.getExitCode());
             return Double.NaN;
         } catch (IOException e) {
-            MetricsPublisher.getInstance().stopThread();
-            return Double.NaN;
+            MetricsPublisher.getInstance().stopTask();
+            return -1;
         }
     }
 }
