@@ -63,11 +63,16 @@ public abstract class MetricsBase {
                     "Command: \""
                             + command
                             + "\" returned a non-double output!"
-                            + "Output Received: "
+                            + "\nOutput Received: "
                             + runCommand.getOutput()
-                            + "\n"
-                            + "Standard Error: "
-                            + runCommand.getError());
+                            + "\nStandard Error: "
+                            + runCommand.getError()
+                            + "\nCommand completed: "
+                            + runCommand.isOutputCompleted()
+                            + "\nError completed: "
+                            + runCommand.isErrorCompleted()
+                            + "\nExit code: "
+                            + runCommand.getExitCode());
             return Double.NaN;
         } catch (IOException e) {
             MetricsPublisher.getInstance().stopThread();
