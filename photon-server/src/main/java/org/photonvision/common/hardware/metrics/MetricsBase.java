@@ -56,7 +56,7 @@ public abstract class MetricsBase {
 
     public static double execute(String command) {
         try {
-            runCommand.execute(command);
+            runCommand.executeBashCommand(command);
             return Double.parseDouble(runCommand.getOutput());
         } catch (NumberFormatException e) {
             logger.error(
