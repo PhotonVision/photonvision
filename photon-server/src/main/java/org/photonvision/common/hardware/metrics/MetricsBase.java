@@ -17,6 +17,7 @@
 
 package org.photonvision.common.hardware.metrics;
 
+import java.io.IOException;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
@@ -57,10 +58,11 @@ public abstract class MetricsBase {
         try {
             runCommand.executeBashCommand(command);
             return Double.parseDouble(runCommand.getOutput());
-        } catch (Exception e) {
-            logger.info("This device does not support running bash commands.");
+        } catch (NumberFormatException e) {
+            logger.error("Command: " + command + " returned a non-double output!");
+            return Double.NaN;
+        } catch (IOException e) {
             MetricsPublisher.getInstance().stopThread();
-            logger.info("Stopped metrics thread.");
             return Double.NaN;
         }
     }

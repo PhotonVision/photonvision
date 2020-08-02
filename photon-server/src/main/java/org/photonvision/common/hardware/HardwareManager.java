@@ -24,12 +24,9 @@ import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.PiGPIO;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.hardware.metrics.MetricsPublisher;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
 
 public class HardwareManager {
     HardwareConfig hardwareConfig;
-    private static final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
     private static final HashMap<Integer, GPIOBase> LEDs = new HashMap<>();
 
     public static HardwareManager getInstance() {

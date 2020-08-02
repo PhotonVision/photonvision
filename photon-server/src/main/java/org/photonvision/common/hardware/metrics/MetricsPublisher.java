@@ -22,12 +22,15 @@ import java.util.Timer;
 import java.util.TimerTask;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.server.UIUpdateType;
 
 public class MetricsPublisher {
     private final HashMap<String, Double> metrics;
     private final Thread metricsThread;
     private final Timer timer;
+    private static final Logger logger = new Logger(MetricsPublisher.class, LogGroup.General);
 
     public static MetricsPublisher getInstance() {
         return Singleton.INSTANCE;
@@ -43,26 +46,25 @@ public class MetricsPublisher {
 
         this.metricsThread =
                 new Thread(
-                        () -> {
-                            timer.schedule(
-                                    new TimerTask() {
-                                        public void run() {
-                                            metrics.put("cpuTemp", cpu.getTemp());
-                                            metrics.put("cpuUtil", cpu.getUtilization());
-                                            metrics.put("cpuMem", cpu.getMemory());
-                                            metrics.put("gpuTemp", gpu.getTemp());
-                                            metrics.put("gpuMem", gpu.getMemory());
-                                            metrics.put("ramUtil", ram.getUsedRam());
+                        () ->
+                                timer.schedule(
+                                        new TimerTask() {
+                                            public void run() {
+                                                metrics.put("cpuTemp", cpu.getTemp());
+                                                metrics.put("cpuUtil", cpu.getUtilization());
+                                                metrics.put("cpuMem", cpu.getMemory());
+                                                metrics.put("gpuTemp", gpu.getTemp());
+                                                metrics.put("gpuMem", gpu.getMemory());
+                                                metrics.put("ramUtil", ram.getUsedRam());
 
-                                            DataChangeService.getInstance()
-                                                    .publishEvent(
-                                                            new OutgoingUIEvent<>(
-                                                                    UIUpdateType.BROADCAST, "metrics", metrics, null));
-                                        }
-                                    },
-                                    0,
-                                    1000);
-                        });
+                                                DataChangeService.getInstance()
+                                                        .publishEvent(
+                                                                new OutgoingUIEvent<>(
+                                                                        UIUpdateType.BROADCAST, "metrics", metrics, null));
+                                            }
+                                        },
+                                        0,
+                                        1000));
     }
 
     public void startThread() {
@@ -71,6 +73,9 @@ public class MetricsPublisher {
 
     public void stopThread() {
         timer.cancel();
+        timer.purge();
+        metricsThread.interrupt();
+        logger.info("This device does not support running bash commands. Stopped metrics thread.");
     }
 
     private static class Singleton {
