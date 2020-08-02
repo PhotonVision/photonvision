@@ -36,6 +36,8 @@ public class HardwareTest {
         RAM ram = RAM.getInstance();
         GPU gpu = GPU.getInstance();
 
+        if (!Platform.isRaspberryPi()) return;
+
         System.out.println("Testing on platform: " + Platform.CurrentPlatform);
 
         System.out.println("Printing CPU Info:");
