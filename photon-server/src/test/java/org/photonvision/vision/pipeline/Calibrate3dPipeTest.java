@@ -105,7 +105,8 @@ public class Calibrate3dPipeTest {
                 "Camera Extrinsics : "
                         + calibration3dPipeline.cameraCalibrationCoefficients().cameraExtrinsics.toString());
         System.out.println(
-                "Standard Deviation: " + calibration3dPipeline.cameraCalibrationCoefficients().standardDeviation);
+                "Standard Deviation: "
+                        + calibration3dPipeline.cameraCalibrationCoefficients().standardDeviation);
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
     }

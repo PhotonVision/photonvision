@@ -136,16 +136,16 @@ public class Calibration3dPipeline
         return calibrationOutput.output.perViewErrors;
     }
 
-    public void finishCalibration(){
+    public void finishCalibration() {
         numSnapshots = 0;
         boardSnapshots.clear();
     }
 
-    public boolean removeSnapshot(int index){
-        try{
+    public boolean removeSnapshot(int index) {
+        try {
             boardSnapshots.remove(index);
             return true;
-        }catch (ArrayIndexOutOfBoundsException e){
+        } catch (ArrayIndexOutOfBoundsException e) {
             logger.error("Could not remove snapshot at index " + index, e);
             return false;
         }

@@ -17,7 +17,6 @@
 
 package org.photonvision.common.hardware.metrics;
 
-import java.util.Arrays;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;

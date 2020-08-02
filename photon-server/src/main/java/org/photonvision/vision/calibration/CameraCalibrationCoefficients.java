@@ -71,7 +71,9 @@ public class CameraCalibrationCoefficients implements Releasable {
     }
 
     @JsonIgnore
-    public double getStandardDeviation(){return standardDeviation;}
+    public double getStandardDeviation() {
+        return standardDeviation;
+    }
 
     @Override
     public void release() {

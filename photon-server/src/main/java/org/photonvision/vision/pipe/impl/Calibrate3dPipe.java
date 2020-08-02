@@ -90,7 +90,7 @@ public class Calibrate3dPipe
                 new double[(int) perViewErrors.total() * perViewErrors.channels()];
         perViewErrors.get(0, 0, perViewErrorsArray);
 
-        //Standard deviation of results
+        // Standard deviation of results
         double stdDev = calculateSD(perViewErrorsArray);
         try {
             // Print calibration successful
@@ -111,23 +111,22 @@ public class Calibrate3dPipe
                 params.resolution, cameraMatrixMat, distortionCoefficientsMat, perViewErrorsArray, stdDev);
     }
 
-    //Calculate standard deviation of the RMS error of the snapshots
-    private static double calculateSD(double numArray[])
-    {
+    // Calculate standard deviation of the RMS error of the snapshots
+    private static double calculateSD(double numArray[]) {
         double sum = 0.0, standardDeviation = 0.0;
         int length = numArray.length;
 
-        for(double num : numArray) {
+        for (double num : numArray) {
             sum += num;
         }
 
-        double mean = sum/length;
+        double mean = sum / length;
 
-        for(double num: numArray) {
+        for (double num : numArray) {
             standardDeviation += Math.pow(num - mean, 2);
         }
 
-        return Math.sqrt(standardDeviation/length);
+        return Math.sqrt(standardDeviation / length);
     }
 
     public static class CalibratePipeParams {
