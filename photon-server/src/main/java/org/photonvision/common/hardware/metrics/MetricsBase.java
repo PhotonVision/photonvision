@@ -59,7 +59,12 @@ public abstract class MetricsBase {
             runCommand.executeBashCommand(command);
             return Double.parseDouble(runCommand.getOutput());
         } catch (NumberFormatException e) {
-            logger.error("Command: " + command + " returned a non-double output!");
+            logger.error(
+                    "Command: \""
+                            + command
+                            + "\" returned a non-double output \""
+                            + runCommand.getOutput()
+                            + "\"");
             return Double.NaN;
         } catch (IOException e) {
             MetricsPublisher.getInstance().stopThread();
