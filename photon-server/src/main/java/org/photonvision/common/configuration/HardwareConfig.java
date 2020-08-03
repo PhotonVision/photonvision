@@ -35,6 +35,7 @@ public class HardwareConfig {
     public final boolean ledsCanDim;
     public final ArrayList<Integer> ledPWMRange;
     public final String ledPWMSetRange;
+    public final int ledPWMFrequency;
     public final String ledDimCommand;
     public final String ledBlinkCommand;
 
@@ -54,6 +55,7 @@ public class HardwareConfig {
         ledSetCommand = "";
         ledsCanDim = false;
         ledPWMRange = new ArrayList<>();
+        ledPWMFrequency = 0;
         ledPWMSetRange = "";
         ledDimCommand = "";
 
@@ -81,6 +83,7 @@ public class HardwareConfig {
         this.ledsCanDim = (Boolean) hardware.get("ledsCanDim");
         this.ledPWMRange = (ArrayList<Integer>) hardware.get("ledPWMRange");
         this.ledPWMSetRange = (String) hardware.get("ledPWMSetRange");
+        this.ledPWMFrequency = (Integer) hardware.get("ledPWMFrequency");
         this.ledDimCommand = (String) hardware.get("ledDimCommand");
         this.ledBlinkCommand = (String) hardware.get("ledBlinkCommand");
 

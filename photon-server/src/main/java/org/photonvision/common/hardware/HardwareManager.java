@@ -41,7 +41,9 @@ public class HardwareManager {
         hardwareConfig.ledPins.forEach(
                 pin -> {
                     if (Platform.isRaspberryPi()) {
-                        LEDs.put(pin, new PiGPIO(pin, 0, hardwareConfig.ledPWMRange.get(1)));
+                        LEDs.put(
+                                pin,
+                                new PiGPIO(pin, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1)));
                     } else {
                         LEDs.put(pin, new CustomGPIO(pin));
                     }
