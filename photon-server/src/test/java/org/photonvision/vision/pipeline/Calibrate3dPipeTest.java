@@ -27,7 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
-import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.Frame;
@@ -86,7 +85,7 @@ public class Calibrate3dPipeTest {
                             new Frame(
                                     new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
                                     new FrameStaticProperties(640, 480, 60)));
-            HighGui.imshow("Calibration Output Frame", output.outputFrame.image.getMat());
+            TestUtils.showImage(output.outputFrame.image.getMat());
         }
 
         calibration3dPipeline.removeSnapshot(0);
