@@ -35,10 +35,10 @@ public class PiGPIO extends GPIOBase {
         return Singleton.INSTANCE;
     }
 
-    public PiGPIO(int address, int value, int range) {
+    public PiGPIO(int address, int frequency, int range) {
         this.pin = address;
         try {
-            getPigpioDaemon().setPWMFrequency(this.pin, value);
+            getPigpioDaemon().setPWMFrequency(this.pin, frequency);
             getPigpioDaemon().setPWMRange(this.pin, range);
         } catch (PigpioException e) {
             logger.error("Could not set PWM settings on port " + this.pin);

@@ -27,7 +27,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
-import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.Frame;
@@ -86,14 +85,16 @@ public class Calibrate3dPipeTest {
                             new Frame(
                                     new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
                                     new FrameStaticProperties(640, 480, 60)));
-            HighGui.imshow("Calibration Output Frame", output.outputFrame.image.getMat());
+            TestUtils.showImage(output.outputFrame.image.getMat());
         }
 
+        calibration3dPipeline.removeSnapshot(0);
         calibration3dPipeline.startCalibration();
         calibration3dPipeline.run(
                 new Frame(
                         new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
                         new FrameStaticProperties(640, 480, 60)));
+        calibration3dPipeline.finishCalibration();
         System.out.println(
                 "Per View Errors: " + Arrays.toString(calibration3dPipeline.perViewErrors()));
         System.out.println(
@@ -102,5 +103,10 @@ public class Calibrate3dPipeTest {
         System.out.println(
                 "Camera Extrinsics : "
                         + calibration3dPipeline.cameraCalibrationCoefficients().cameraExtrinsics.toString());
+        System.out.println(
+                "Standard Deviation: "
+                        + calibration3dPipeline.cameraCalibrationCoefficients().standardDeviation);
+        System.out.println(
+                "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
     }
 }

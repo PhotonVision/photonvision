@@ -24,12 +24,9 @@ import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.PiGPIO;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.hardware.metrics.MetricsPublisher;
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
 
 public class HardwareManager {
     HardwareConfig hardwareConfig;
-    private static final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
     private static final HashMap<Integer, GPIOBase> LEDs = new HashMap<>();
 
     public static HardwareManager getInstance() {
@@ -44,14 +41,16 @@ public class HardwareManager {
         hardwareConfig.ledPins.forEach(
                 pin -> {
                     if (Platform.isRaspberryPi()) {
-                        LEDs.put(pin, new PiGPIO(pin, 0, hardwareConfig.ledPWMRange.get(1)));
+                        LEDs.put(
+                                pin,
+                                new PiGPIO(pin, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1)));
                     } else {
                         LEDs.put(pin, new CustomGPIO(pin));
                     }
                 });
 
         // Start hardware metrics thread
-        MetricsPublisher.getInstance().startThread();
+        MetricsPublisher.getInstance().startTask();
     }
     /** Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue); */
     public GPIOBase getGPIO(int pin) {

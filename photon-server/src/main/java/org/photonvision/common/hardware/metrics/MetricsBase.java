@@ -17,7 +17,7 @@
 
 package org.photonvision.common.hardware.metrics;
 
-import java.util.Arrays;
+import java.io.IOException;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
@@ -58,9 +58,25 @@ public abstract class MetricsBase {
         try {
             runCommand.executeBashCommand(command);
             return Double.parseDouble(runCommand.getOutput());
-        } catch (Exception e) {
-            logger.error(Arrays.toString(e.getStackTrace()));
+        } catch (NumberFormatException e) {
+            logger.error(
+                    "Command: \""
+                            + command
+                            + "\" returned a non-double output!"
+                            + "\nOutput Received: "
+                            + runCommand.getOutput()
+                            + "\nStandard Error: "
+                            + runCommand.getError()
+                            + "\nCommand completed: "
+                            + runCommand.isOutputCompleted()
+                            + "\nError completed: "
+                            + runCommand.isErrorCompleted()
+                            + "\nExit code: "
+                            + runCommand.getExitCode());
             return Double.NaN;
+        } catch (IOException e) {
+            MetricsPublisher.getInstance().stopTask();
+            return -1;
         }
     }
 }
