@@ -45,11 +45,16 @@ public abstract class VisionSourceSettables {
 
     public abstract VideoMode getCurrentVideoMode();
 
-    public void setCurrentVideoMode(int index) {
-        setCurrentVideoMode(getAllVideoModes().get(index));
+    public void setVideoModeInternal(int index) {
+        setVideoMode(getAllVideoModes().get(index));
     }
 
-    public abstract void setCurrentVideoMode(VideoMode videoMode);
+    public void setVideoMode(VideoMode mode) {
+        setVideoModeInternal(mode);
+        calculateFrameStaticProps();
+    }
+
+    protected abstract void setVideoModeInternal(VideoMode videoMode);
 
     public void setCameraPitch(Rotation2d pitch) {
         configuration.camPitch = pitch;
@@ -58,7 +63,7 @@ public abstract class VisionSourceSettables {
 
     @SuppressWarnings("unused")
     public void setVideoModeIndex(int index) {
-        setCurrentVideoMode(videoModes.get(index));
+        setVideoMode(videoModes.get(index));
     }
 
     public abstract HashMap<Integer, VideoMode> getAllVideoModes();
@@ -72,9 +77,20 @@ public abstract class VisionSourceSettables {
         calculateFrameStaticProps();
     }
 
-    protected void calculateFrameStaticProps() {
+    public void calculateFrameStaticProps() {
+        var videoMode = getCurrentVideoMode();
         this.frameStaticProperties =
-                new FrameStaticProperties(getCurrentVideoMode(), getFOV(), configuration.camPitch);
+                new FrameStaticProperties(
+                        videoMode,
+                        getFOV(),
+                        configuration.camPitch,
+                        configuration.calibrations.stream()
+                                .filter(
+                                        it ->
+                                                it.resolution.width == videoMode.width
+                                                        && it.resolution.height == videoMode.height)
+                                .findFirst()
+                                .orElse(null));
     }
 
     public FrameStaticProperties getFrameStaticProperties() {

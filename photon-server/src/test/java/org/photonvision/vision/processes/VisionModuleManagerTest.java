@@ -79,9 +79,9 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public void setCurrentVideoMode(VideoMode videoMode) {
+        public void setVideoModeInternal(VideoMode videoMode) {
             this.frameStaticProperties =
-                    new FrameStaticProperties(getCurrentVideoMode(), getFOV(), new Rotation2d());
+                    new FrameStaticProperties(getCurrentVideoMode(), getFOV(), new Rotation2d(), null);
         }
 
         @Override

@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -33,7 +34,7 @@ import org.photonvision.vision.opencv.CVMat;
 * path}.
 */
 public class FileFrameProvider implements FrameProvider {
-    private static final int MAX_FPS = 120;
+    public static final int MAX_FPS = 120;
     private static int count = 0;
 
     private final int thisIndex = count++;
@@ -52,6 +53,11 @@ public class FileFrameProvider implements FrameProvider {
     * @param maxFPS The max framerate to provide the image at.
     */
     public FileFrameProvider(Path path, double fov, int maxFPS) {
+        this(path, fov, maxFPS, null, null);
+    }
+
+    public FileFrameProvider(Path path, double fov, int maxFPS, Rotation2d pitch,
+                             CameraCalibrationCoefficients calibration) {
         if (!Files.exists(path))
             throw new RuntimeException("Invalid path for image: " + path.toAbsolutePath().toString());
         this.path = path;
@@ -60,7 +66,7 @@ public class FileFrameProvider implements FrameProvider {
         Mat rawImage = Imgcodecs.imread(path.toString());
         if (rawImage.cols() > 0 && rawImage.rows() > 0) {
             FrameStaticProperties m_properties =
-                    new FrameStaticProperties(rawImage.width(), rawImage.height(), fov);
+                    new FrameStaticProperties(rawImage.width(), rawImage.height(), fov, pitch, calibration);
             Mat originalImage = new Mat();
             rawImage.copyTo(originalImage);
             originalFrame = new Frame(new CVMat(rawImage), m_properties);

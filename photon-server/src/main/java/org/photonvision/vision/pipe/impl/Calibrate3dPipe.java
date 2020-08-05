@@ -21,6 +21,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.photonvision.common.logging.LogGroup;
@@ -31,7 +33,9 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class Calibrate3dPipe
         extends CVPipe<
-                List<List<Mat>>, CameraCalibrationCoefficients, Calibrate3dPipe.CalibratePipeParams> {
+                List<Triple<Size, Mat, Mat>>,
+                CameraCalibrationCoefficients,
+                Calibrate3dPipe.CalibratePipeParams> {
 
     // Camera matrix stores the center of the image and focal length across the x and y-axis in a 3x3
     // matrix
@@ -60,19 +64,28 @@ public class Calibrate3dPipe
     /**
     * Runs the process for the pipe.
     *
-    * @param in Input for pipe processing.
+    * @param in Input for pipe processing. In the format (Input image, object points, image points)
     * @return Result of processing.
     */
     @Override
-    protected CameraCalibrationCoefficients process(List<List<Mat>> in) {
+    protected CameraCalibrationCoefficients process(List<Triple<Size, Mat, Mat>> in) {
+        in =
+                in.stream()
+                        .filter(
+                                it ->
+                                        it != null
+                                                && it.getLeft() != null
+                                                && it.getMiddle() != null
+                                                && it.getRight() != null)
+                        .collect(Collectors.toList());
         try {
             // FindBoardCorners pipe outputs all the image points, object points, and frames to calculate
             // imageSize from, other parameters are output Mats
             calibrationAccuracy =
                     Calib3d.calibrateCameraExtended(
-                            in.get(1),
-                            in.get(2),
-                            new Size(in.get(0).get(0).width(), in.get(0).get(0).height()),
+                            in.stream().map(Triple::getMiddle).collect(Collectors.toList()),
+                            in.stream().map(Triple::getRight).collect(Collectors.toList()),
+                            new Size(in.get(0).getLeft().width, in.get(0).getLeft().height),
                             cameraMatrix,
                             distortionCoefficients,
                             rvecs,
@@ -82,6 +95,7 @@ public class Calibrate3dPipe
                             perViewErrors);
         } catch (Exception e) {
             logger.error("Calibration failed!", e);
+            e.printStackTrace();
             return null;
         }
         JsonMat cameraMatrixMat = JsonMat.fromMat(cameraMatrix);

@@ -114,7 +114,7 @@
                     <v-btn
                       small
                       color="secondary"
-                      :disabled="checkValidConfig"
+                      :disabled="disallowCalibration"
                       @click="sendCalibrationMode"
                     >
                       {{ calibrationModeButton.text }}
@@ -146,7 +146,7 @@
                       ref="calibrationFile"
                       style="color: black; text-decoration: none; display: none"
                       :href="require('../assets/chessboard.png')"
-                      download="Calibration Board.png"
+                      download="chessboard.png"
                     />
                   </v-col>
                 </v-row>
@@ -282,13 +282,13 @@ export default {
         }
     },
     computed: {
-        checkValidConfig() {
+        disallowCalibration() {
             return false;
         },
         checkCancellation() {
             if (this.isCalibrating) {
                 return false
-            } else if (this.checkValidConfig) {
+            } else if (this.disallowCalibration) {
                 return true;
             } else {
                 return true
@@ -363,18 +363,18 @@ export default {
         },
         boardWidth: {
             get() {
-                return this.calibrationData.boardWidth
+                return this.calibrationData.patternWidth
             },
             set(value) {
-                this.$store.commit('mutateCalibrationState', {['boardWidth']: value})
+                this.$store.commit('mutateCalibrationState', {['patternWidth']: value})
             }
         },
         boardHeight: {
             get() {
-                return this.calibrationData.boardHeight
+                return this.calibrationData.patternHeight
             },
             set(value) {
-                this.$store.commit('mutateCalibrationState', {['boardHeight']: value})
+                this.$store.commit('mutateCalibrationState', {['patternHeight']: value})
             }
         },
         calibrationData: {
@@ -395,14 +395,13 @@ export default {
             })
         },
         sendCameraSettings() {
-            const self = this;
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
                 "settings": this.cameraSettings,
                 "index": this.$store.state.currentCameraIndex
             }).then(
                 function (response) {
                     if (response.status === 200) {
-                        self.$store.state.saveBar = true;
+                        this.$store.state.saveBar = true;
                     }
                 }
             )
@@ -430,35 +429,34 @@ export default {
             this.$socket.send(this.$msgPack.encode(data));
         },
         sendCalibrationFinish() {
-            const self = this;
             let connection_string = "/api/settings/endCalibration";
-            self.axios.post("http://" + this.$address + connection_string, this.$store.getters.currentCameraIndex).then((response) => {
+            this.axios.post("http://" + this.$address + connection_string, this.$store.getters.currentCameraIndex).then((response) => {
                     if (response.status === 200) {
-                        self.snackbar = {
+                        this.snackbar = {
                             color: "success",
-                            text: "calibration successful. \n" +
-                                "accuracy: " + response.data['accuracy'].toFixed(5)
+                            text: "Calibration successful! \n" +
+                                "Standard deviation: " + response.data.toFixed(5)
                         };
-                        self.snack = true;
+                        this.snack = true;
                     }
-                    self.isCalibrating = false;
-                    self.snapshotAmount = 0;
-                    self.calibrationModeButton.text = "Start Calibration";
-                    self.cancellationModeButton.text = "Cancel Calibration";
-                    self.cancellationModeButton.color = "red";
+                    this.
+                    this.snapshotAmount = 0;
+                    this.calibrationModeButton.text = "Start Calibration";
+                    this.cancellationModeButton.text = "Cancel Calibration";
+                    this.cancellationModeButton.color = "red";
                 }
             ).catch(() => {
-                self.snackbar = {
+                this.snackbar = {
                     color: "error",
-                    text: "calibration failed"
+                    text: "Calibration Failed!"
                 };
-                self.snack = true;
-                self.isCalibrating = false;
-                self.hasEnough = false;
-                self.snapshotAmount = 0;
-                self.calibrationModeButton.text = "Start Calibration";
-                self.cancellationModeButton.text = "Cancel Calibration";
-                self.cancellationModeButton.color = "red";
+                this.snack = true;
+                this.isCalibrating = false;
+                this.hasEnough = false;
+                this.snapshotAmount = 0;
+                this.calibrationModeButton.text = "Start Calibration";
+                this.cancellationModeButton.text = "Cancel Calibration";
+                this.cancellationModeButton.color = "red";
             });
         }
     }

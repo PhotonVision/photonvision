@@ -48,7 +48,7 @@ public class CameraConfiguration {
 
     public CameraType cameraType = CameraType.UsbCamera;
     public double FOV = 70;
-    public List<CameraCalibrationCoefficients> calibrations = new ArrayList<>();
+    public List<CameraCalibrationCoefficients> calibrations;
     public List<Integer> cameraLeds = new ArrayList<>();
     public int currentPipelineIndex = -1;
     public Rotation2d camPitch = new Rotation2d();
@@ -68,6 +68,7 @@ public class CameraConfiguration {
         this.uniqueName = uniqueName;
         this.nickname = nickname;
         this.path = path;
+        this.calibrations = new ArrayList<>();
 
         logger.debug(
                 "Creating USB camera configuration for "
@@ -97,7 +98,7 @@ public class CameraConfiguration {
         this.FOV = FOV;
         this.path = path;
         this.cameraType = cameraType;
-        this.calibrations = calibrations;
+        this.calibrations = calibrations != null ? calibrations : new ArrayList<>();
         this.cameraLeds = cameraLeds;
         this.currentPipelineIndex = currentPipelineIndex;
         this.camPitch = camPitch;
@@ -137,5 +138,14 @@ public class CameraConfiguration {
 
     public void setPipelineSettings(List<CVPipelineSettings> settings) {
         pipelineSettings = settings;
+    }
+
+    public void addCalibration(CameraCalibrationCoefficients calibration) {
+        calibrations.stream()
+                .filter(it -> it.resolution.equals(calibration.resolution))
+                .findAny()
+                .ifPresent(
+                        cameraCalibrationCoefficients -> calibrations.remove(cameraCalibrationCoefficients));
+        calibrations.add(calibration);
     }
 }

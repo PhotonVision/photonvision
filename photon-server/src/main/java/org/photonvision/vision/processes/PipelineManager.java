@@ -187,10 +187,11 @@ public class PipelineManager {
     * <br>
     * Exiting returns to the last used user pipeline.
     *
-    * @param state True to enter calibration mode, false to exit calibration mode.
+    * @param wantsCalibration True to enter calibration mode, false to exit calibration mode.
     */
-    public void setCalibrationMode(boolean state) {
-        setPipelineInternal(state ? CAL_3D_INDEX : lastPipelineIndex);
+    public void setCalibrationMode(boolean wantsCalibration) {
+        if (!wantsCalibration) calibration3dPipeline.finishCalibration();
+        setPipelineInternal(wantsCalibration ? CAL_3D_INDEX : lastPipelineIndex);
     }
 
     /**

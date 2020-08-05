@@ -140,12 +140,12 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         var draw3dContoursParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
-                        settings.cameraCalibration, settings.targetModel);
+                        frameStaticProperties.cameraCalibration, settings.targetModel);
         draw3dTargetsPipe.setParams(draw3dContoursParams);
 
         var solvePNPParams =
                 new SolvePNPPipe.SolvePNPPipeParams(
-                        settings.cameraCalibration, settings.cameraPitch, settings.targetModel);
+                        frameStaticProperties.cameraCalibration, settings.cameraPitch, settings.targetModel);
         solvePNPPipe.setParams(solvePNPParams);
     }
 

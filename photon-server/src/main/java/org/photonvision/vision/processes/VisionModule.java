@@ -19,9 +19,7 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import io.javalin.websocket.WsContext;
-
 import java.util.*;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -40,7 +38,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
-import org.photonvision.server.SocketHandler;
 import org.photonvision.server.UIUpdateType;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
@@ -172,10 +169,11 @@ public class VisionModule {
 
     public CameraCalibrationCoefficients endCalibration() {
         var ret = pipelineManager.calibration3dPipeline.tryCalibration();
-        if(ret != null) {
-            pipelineManager.calibration3dPipeline.finishCalibration();
-            return ret;
-        } else return null;
+        pipelineManager.setCalibrationMode(false);
+        visionSource.getSettables().getConfiguration().addCalibration(ret);
+        visionSource.getSettables().calculateFrameStaticProps();
+        saveModule();
+        return ret;
     }
 
     private class VisionSettingChangeSubscriber extends DataChangeSubscriber {
@@ -365,7 +363,7 @@ public class VisionModule {
             return;
         }
 
-        visionSource.getSettables().setCurrentVideoMode(config.cameraVideoModeIndex);
+        visionSource.getSettables().setVideoModeInternal(config.cameraVideoModeIndex);
         visionSource.getSettables().setBrightness(config.cameraBrightness);
         visionSource.getSettables().setExposure(config.cameraExposure);
 
@@ -452,7 +450,7 @@ public class VisionModule {
         ret.inputStreamPort = dashboardInputStreamer.getCurrentStreamPort();
 
         var calList = new ArrayList<HashMap<String, Object>>();
-        for(var c: visionSource.getSettables().getConfiguration().calibrations) {
+        for (var c : visionSource.getSettables().getConfiguration().calibrations) {
             var internalMap = new HashMap<String, Object>();
 
             internalMap.put("perViewErrors", c.perViewErrors);
@@ -471,7 +469,9 @@ public class VisionModule {
         var config = visionSource.getSettables().getConfiguration();
         config.setPipelineSettings(pipelineManager.userPipelineSettings);
         config.driveModeSettings = pipelineManager.driverModePipeline.getSettings();
-        config.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
+        config.currentPipelineIndex = Math.max(pipelineManager.getCurrentPipelineIndex(), 0);
+
+        logger.info("Saving state with " + config.calibrations.size() + " calibrated resolutions!");
 
         return config;
     }

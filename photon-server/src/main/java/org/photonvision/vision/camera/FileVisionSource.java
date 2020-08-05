@@ -19,6 +19,8 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.cscore.VideoMode.PixelFormat;
+
+import java.nio.file.Path;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
@@ -35,7 +37,9 @@ public class FileVisionSource implements VisionSource {
 
     public FileVisionSource(CameraConfiguration cameraConfiguration) {
         this.cameraConfiguration = cameraConfiguration;
-        frameProvider = new FileFrameProvider(cameraConfiguration.path, cameraConfiguration.FOV);
+        frameProvider = new FileFrameProvider(Path.of(cameraConfiguration.path), cameraConfiguration.FOV,
+            FileFrameProvider.MAX_FPS,
+            cameraConfiguration.camPitch, cameraConfiguration.calibrations.get(0));
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
     }
@@ -91,7 +95,9 @@ public class FileVisionSource implements VisionSource {
         }
 
         @Override
-        public void setCurrentVideoMode(VideoMode videoMode) {}
+        protected void setVideoModeInternal(VideoMode videoMode) {
+            // Do nothing
+        }
 
         @Override
         public HashMap<Integer, VideoMode> getAllVideoModes() {

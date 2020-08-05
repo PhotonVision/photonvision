@@ -17,9 +17,7 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
@@ -27,10 +25,8 @@ import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
 
 public class FindBoardCornersPipe
-        extends CVPipe<List<Mat>, List<List<Mat>>, FindBoardCornersPipe.FindCornersPipeParams> {
+        extends CVPipe<Mat, Triple<Size, Mat, Mat>, FindBoardCornersPipe.FindCornersPipeParams> {
     MatOfPoint3f objectPoints = new MatOfPoint3f();
-    private final List<Mat> listOfObjectPoints = new ArrayList<>();
-    private final List<Mat> listOfImagePoints = new ArrayList<>();
 
     Size imageSize;
     Size patternSize;
@@ -43,6 +39,15 @@ public class FindBoardCornersPipe
     private final TermCriteria criteria = new TermCriteria(3, 30, 0.001);
 
     private boolean objectPointsCreated = false;
+
+    @Override
+    public void setParams(FindCornersPipeParams params) {
+        super.setParams(params);
+
+        if (new Size(params.boardWidth, params.boardHeight).equals(patternSize)) return;
+
+        objectPointsCreated = false;
+    }
 
     public void createObjectPoints() {
         if (objectPointsCreated) return; // TODO reinstantiate on settings change
@@ -79,32 +84,21 @@ public class FindBoardCornersPipe
     }
 
     /**
-    * Runs the process for the pipe.
+    * Finds the corners in a given image and returns them
     *
     * @param in Input for pipe processing.
     * @return All valid Mats for camera calibration
     */
     @Override
-    protected List<List<Mat>> process(List<Mat> in) {
-        // If we have less than 20 snapshots we need to return null
-        if (in.size() < 20) return null;
-        // Contains all valid Mats where a chessboard or dot board have been found
-        List<Mat> outputMats = new ArrayList<>();
+    protected Triple<Size, Mat, Mat> process(Mat in) {
 
         // Create the object points
         createObjectPoints();
 
-        for (Mat board : in) {
-            if (findBoardCorners(board).getLeft()) {
-                outputMats.add(board);
-            }
-        }
-        // Contains the list of valid Mats, object points and images points where objectPoints.size() =
-        // imagePoints.size()
-        return List.of(outputMats, listOfObjectPoints, listOfImagePoints);
+        return findBoardCorners(in);
     }
 
-    public Pair<Boolean, Mat> findBoardCorners(Mat frame) {
+    private Triple<Size, Mat, Mat> findBoardCorners(Mat frame) {
         createObjectPoints();
 
         // Convert the frame to grayscale to increase contrast
@@ -125,27 +119,30 @@ public class FindBoardCornersPipe
             // If we can't find a chessboard/dot board, convert the frame back to BGR and return false.
             Imgproc.cvtColor(frame, frame, Imgproc.COLOR_GRAY2BGR);
 
-            return Pair.of(false, null);
+            return null;
         }
+        var outBoardCorners = new MatOfPoint2f();
+        boardCorners.copyTo(outBoardCorners);
+
         // Get the size of the frame
         this.imageSize = new Size(frame.width(), frame.height());
 
-        // Add the 3D points and the points of the corners found
-        this.listOfObjectPoints.add(objectPoints);
-        this.listOfImagePoints.add(boardCorners);
-
         // Do sub corner pix for drawing chessboard
-        Imgproc.cornerSubPix(frame, boardCorners, windowSize, zeroZone, criteria);
+        Imgproc.cornerSubPix(frame, outBoardCorners, windowSize, zeroZone, criteria);
 
         // convert back to BGR
         Imgproc.cvtColor(frame, frame, Imgproc.COLOR_GRAY2BGR);
         // draw the chessboard, doesn't have to be different for a dot board since it just re projects
         // the corners we found
-        Mat chessboardDrawn = new Mat();
-        frame.copyTo(chessboardDrawn);
-        Calib3d.drawChessboardCorners(chessboardDrawn, patternSize, boardCorners, true);
-        boardCorners = new MatOfPoint2f();
-        return Pair.of(true, chessboardDrawn);
+        Calib3d.drawChessboardCorners(frame, patternSize, outBoardCorners, true);
+
+        //        // Add the 3D points and the points of the corners found
+        //        if (addToSnapList) {
+        //            this.listOfObjectPoints.add(objectPoints);
+        //            this.listOfImagePoints.add(boardCorners);
+        //        }
+
+        return Triple.of(frame.size(), objectPoints, outBoardCorners);
     }
 
     public static class FindCornersPipeParams {

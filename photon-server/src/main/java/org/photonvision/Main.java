@@ -106,12 +106,11 @@ public class Main {
             var camConf2019 =
                     new CameraConfiguration("WPI2019", TestUtils.getTestMode2019ImagePath().toString());
             camConf2019.FOV = TestUtils.WPI2019Image.FOV;
-            camConf2019.calibration = TestUtils.get2019LifeCamCoeffs(true);
+            camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
             var pipeline2019 = new ReflectivePipelineSettings();
             pipeline2019.pipelineNickname = "CargoShip";
             pipeline2019.targetModel = TargetModel.get2019Target();
-            pipeline2019.cameraCalibration = camConf2019.calibration;
 
             var psList2019 = new ArrayList<CVPipelineSettings>();
             psList2019.add(pipeline2019);
@@ -121,12 +120,12 @@ public class Main {
             var camConf2020 =
                     new CameraConfiguration("WPI2020", TestUtils.getTestMode2020ImagePath().toString());
             camConf2020.FOV = TestUtils.WPI2020Image.FOV;
-            camConf2020.calibration = TestUtils.get2020LifeCamCoeffs(true);
+            camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
             var pipeline2020 = new ReflectivePipelineSettings();
             pipeline2020.pipelineNickname = "OuterPort";
             pipeline2020.targetModel = TargetModel.get2020Target();
-            pipeline2020.cameraCalibration = camConf2020.calibration;
+            camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
             var psList2020 = new ArrayList<CVPipelineSettings>();
             psList2020.add(pipeline2020);

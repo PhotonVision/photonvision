@@ -25,12 +25,7 @@
               class="pb-0 mb-0 pl-4 pt-1"
               style="height: 15%; min-height: 50px;"
             >
-              <div>
-                Cameras <span
-                  class="pl-2 caption grey--text text--lighten-2"
-                  style="line-height: 220%; display: inline-block; vertical-align: bottom;"
-                >{{ parseFloat(fps).toFixed(2) }} FPS</span>
-              </div>
+              Cameras
               <v-switch
                 v-model="driverMode"
                 label="Driver Mode"

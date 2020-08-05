@@ -23,7 +23,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -50,14 +52,10 @@ public class Calibrate3dPipeline
 
     // Getter methods have been set for calibrate and takeSnapshot
     private int numSnapshots = 0;
-    private boolean calibrate = false;
     private boolean takeSnapshot = false;
 
-    // BoardSnapshots is a list of all valid snapshots taken
-    private ArrayList<Mat> boardSnapshots;
-
     // Output of the corners
-    private CVPipeResult<List<List<Mat>>> findCornersPipeOutput;
+    final List<Triple<Size, Mat, Mat>> foundCornersList;
 
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
@@ -66,7 +64,7 @@ public class Calibrate3dPipeline
 
     public Calibrate3dPipeline() {
         this.settings = new Calibration3dPipelineSettings();
-        this.boardSnapshots = new ArrayList<>();
+        this.foundCornersList = new ArrayList<>();
     }
 
     @Override
@@ -90,20 +88,16 @@ public class Calibrate3dPipeline
         long sumPipeNanosElapsed = 0L;
 
         // Check if the frame has chessboard corners
-        var hasBoard = findBoardCornersPipe.findBoardCorners(frame.image.getMat());
+        var findBoardResult = findBoardCornersPipe.run(frame.image.getMat()).output;
 
-        // hasEnough() is a getter method for numSnapshots that checks if there are more than 25
-        // snapshots
-        // calibrate will be true when it is get by it's putter method
-        if (hasEnough() && calibrate) {
+        if (takeSnapshot) {
+            if (findBoardResult != null) {
+                //                Mat board = new Mat();
+                //                frame.image.getMat().copyTo(board);
+                //                // Add board to snapshots
+                //                boardSnapshots.add(board);
 
-            calibrate = false;
-        } else if (takeSnapshot) {
-            if (hasBoard.getLeft()) {
-                Mat board = new Mat();
-                frame.image.getMat().copyTo(board);
-                // Add board to snapshots
-                boardSnapshots.add(board);
+                foundCornersList.add(findBoardResult);
 
                 // Set snapshot to false and increment number of snapshots taken
                 takeSnapshot = false;
@@ -114,8 +108,8 @@ public class Calibrate3dPipeline
                     var state =
                             SerializationUtils.objectToHashMap(
                                     new UICalibrationData(
-                                            settings.cameraVideoModeIndex,
                                             numSnapshots,
+                                            settings.cameraVideoModeIndex,
                                             kMinSnapshots,
                                             hasEnough(),
                                             Units.metersToInches(settings.gridSize),
@@ -130,9 +124,7 @@ public class Calibrate3dPipeline
                 }
 
                 return new CVPipelineResult(
-                        MathUtils.nanosToMillis(sumPipeNanosElapsed),
-                        Collections.emptyList(),
-                        new Frame(new CVMat(hasBoard.getRight()), frame.frameStaticProperties));
+                        MathUtils.nanosToMillis(sumPipeNanosElapsed), Collections.emptyList(), frame);
             }
         }
 
@@ -140,9 +132,7 @@ public class Calibrate3dPipeline
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
                 null,
-                new Frame(
-                        new CVMat(hasBoard.getLeft() ? hasBoard.getRight() : frame.image.getMat()),
-                        frame.frameStaticProperties));
+                new Frame(new CVMat(frame.image.getMat()), frame.frameStaticProperties));
     }
 
     public boolean hasEnough() {
@@ -154,16 +144,10 @@ public class Calibrate3dPipeline
 
         /*Pass the board corners to the pipe, which will check again to see if all boards are valid
         and returns the corresponding image and object points*/
-        findCornersPipeOutput = findBoardCornersPipe.run(boardSnapshots);
-        // Increment the time it took to process all board pics to total elapsed time
 
-        calibrationOutput = calibrate3dPipe.run(findCornersPipeOutput.output);
+        calibrationOutput = calibrate3dPipe.run(foundCornersList);
 
         return calibrationOutput.output;
-    }
-
-    public void startCalibration() {
-        calibrate = true;
     }
 
     public void takeSnapshot() {
@@ -176,12 +160,17 @@ public class Calibrate3dPipeline
 
     public void finishCalibration() {
         numSnapshots = 0;
-        boardSnapshots.clear();
+        foundCornersList.forEach(
+                it -> {
+                    it.getMiddle().release();
+                    it.getRight().release();
+                });
+        foundCornersList.clear();
     }
 
     public boolean removeSnapshot(int index) {
         try {
-            boardSnapshots.remove(index);
+            foundCornersList.remove(index);
             return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             logger.error("Could not remove snapshot at index " + index, e);

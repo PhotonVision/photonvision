@@ -67,7 +67,7 @@ public class USBCameraSource implements VisionSource {
         protected USBCameraSettables(CameraConfiguration configuration) {
             super(configuration);
             getAllVideoModes();
-            setCurrentVideoMode(videoModes.get(0));
+            setVideoMode(videoModes.get(0));
             calculateFrameStaticProps();
         }
 
@@ -109,7 +109,7 @@ public class USBCameraSource implements VisionSource {
         }
 
         @Override
-        public void setCurrentVideoMode(VideoMode videoMode) {
+        public void setVideoModeInternal(VideoMode videoMode) {
             try {
                 if (videoMode == null) {
                     logger.error("Got a null video mode! Doing nothing...");

@@ -135,8 +135,8 @@ export default new Vuex.Store({
             minCount: 25,
             hasEnough: false,
             squareSizeIn: 1.0,
-            patternWidth: 8,
-            patternHeight: 8,
+            patternWidth: 7,
+            patternHeight: 5,
             boardType: 0, // Chessboard, dotboard
         },
     },
@@ -223,6 +223,5 @@ export default new Vuex.Store({
             return Object.values(state.cameraSettings[state.currentCameraIndex].videoFormatList); // convert to a list
         },
         pipelineList: state => state.cameraSettings[state.currentCameraIndex].pipelineNicknames,
-        currentCameraFPS: state => state.pipelineResults[state.currentCameraIndex].fps
     }
 })

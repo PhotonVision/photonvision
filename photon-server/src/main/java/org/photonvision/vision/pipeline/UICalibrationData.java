@@ -48,7 +48,7 @@ public class UICalibrationData {
         this.type = type;
     }
 
-    public static enum BoardType {
+    public enum BoardType {
         CHESSBOARD,
         DOTBOARD
     }

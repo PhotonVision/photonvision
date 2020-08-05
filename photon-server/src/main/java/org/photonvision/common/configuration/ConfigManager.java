@@ -231,6 +231,7 @@ public class ConfigManager {
                                     cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
                 } catch (JsonProcessingException e) {
                     logger.error("Camera config deserialization failed!", e);
+                    e.printStackTrace();
                 }
                 if (loadedConfig == null) { // If the file could not be deserialized
                     logger.warn("Could not load camera " + subdir + "'s config.json! Loading " + "default");
