@@ -46,12 +46,11 @@ public class FileFrameProvider implements FrameProvider {
     /**
     * Instantiates a new FileFrameProvider.
     *
-    * @param stringPath The path of the image to read from.
+    * @param path The path of the image to read from.
     * @param fov The fov of the image.
     * @param maxFPS The max framerate to provide the image at.
     */
-    public FileFrameProvider(String stringPath, double fov, int maxFPS) {
-        var path = Paths.get(stringPath);
+    public FileFrameProvider(Path path, double fov, int maxFPS) {
         if (!Files.exists(path))
             throw new RuntimeException("Invalid path for image: " + path.toAbsolutePath().toString());
         this.path = path;
@@ -77,7 +76,17 @@ public class FileFrameProvider implements FrameProvider {
     * @param fov The fov of the image.
     */
     public FileFrameProvider(String pathAsString, double fov) {
-        this(pathAsString, fov, MAX_FPS);
+        this(Paths.get(pathAsString), fov, MAX_FPS);
+    }
+
+    /**
+     * Instantiates a new File frame provider.
+     *
+     * @param path The path of the image to read from.
+     * @param fov The fov of the image.
+     */
+    public FileFrameProvider(Path path, double fov) {
+        this(path, fov, MAX_FPS);
     }
 
     @Override
