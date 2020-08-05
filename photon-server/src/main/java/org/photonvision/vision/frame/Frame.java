@@ -36,11 +36,11 @@ public class Frame implements Releasable {
         this(image, System.nanoTime(), frameStaticProperties);
     }
 
-    public void copyTo(Mat destMat) {
-        image.getMat().copyTo(destMat);
+    public void copyTo(Frame destFrame) {
+        image.getMat().copyTo(destFrame.image.getMat());
     }
 
-    public static Frame copyFrom(Frame frame) {
+    public static Frame copyFromAndRelease(Frame frame) {
         Mat newMat = new Mat();
         frame.image.getMat().copyTo(newMat);
         frame.release();
