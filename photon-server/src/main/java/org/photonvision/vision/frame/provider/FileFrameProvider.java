@@ -80,11 +80,11 @@ public class FileFrameProvider implements FrameProvider {
     }
 
     /**
-     * Instantiates a new File frame provider.
-     *
-     * @param path The path of the image to read from.
-     * @param fov The fov of the image.
-     */
+    * Instantiates a new File frame provider.
+    *
+    * @param path The path of the image to read from.
+    * @param fov The fov of the image.
+    */
     public FileFrameProvider(Path path, double fov) {
         this(path, fov, MAX_FPS);
     }
