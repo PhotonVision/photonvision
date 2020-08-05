@@ -59,8 +59,6 @@ public class BenchmarkTest {
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoSideStraightDark72in),
                         TestUtils.WPI2019Image.FOV);
 
-        frameProvider.setImageReloading(true);
-
         benchmarkPipeline(frameProvider, pipeline, 5);
     }
 
@@ -78,8 +76,6 @@ public class BenchmarkTest {
                         TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center),
                         TestUtils.WPI2020Image.FOV);
 
-        frameProvider.setImageReloading(true);
-
         benchmarkPipeline(frameProvider, pipeline, 5);
     }
 
@@ -96,8 +92,6 @@ public class BenchmarkTest {
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center_720p),
                         TestUtils.WPI2020Image.FOV);
-
-        frameProvider.setImageReloading(true);
 
         benchmarkPipeline(frameProvider, pipeline, 5);
     }
@@ -118,8 +112,6 @@ public class BenchmarkTest {
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
                         TestUtils.WPI2019Image.FOV);
-
-        frameProvider.setImageReloading(true);
 
         benchmarkPipeline(frameProvider, pipeline, 5);
     }

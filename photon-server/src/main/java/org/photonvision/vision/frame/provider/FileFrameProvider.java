@@ -32,28 +32,41 @@ import org.photonvision.vision.opencv.CVMat;
 * path}.
 */
 public class FileFrameProvider implements FrameProvider {
+    private static final int MAX_FPS = 120;
     private static int count = 0;
 
-    private Frame m_frame;
-    private final Path m_path;
+    private final int thisIndex = count++;
+    private final Path path;
+    private final int millisDelay;
+    private final Frame originalFrame;
+    private final Frame outputFrame;
 
-    private final double m_fov;
-
-    private boolean m_reloadImage;
+    private long lastGetMillis = System.currentTimeMillis();
 
     /**
     * Instantiates a new FileFrameProvider.
     *
     * @param path The path of the image to read from.
     * @param fov The fov of the image.
+    * @param maxFPS The max framerate to provide the image at.
     */
-    public FileFrameProvider(Path path, double fov) {
+    public FileFrameProvider(Path path, double fov, int maxFPS) {
         if (!Files.exists(path))
             throw new RuntimeException("Invalid path for image: " + path.toAbsolutePath().toString());
-        m_path = path;
-        m_fov = fov;
+        this.path = path;
+        this.millisDelay = 1000 / maxFPS;
 
-        loadImage();
+        Mat rawImage = Imgcodecs.imread(path.toString());
+        if (rawImage.cols() > 0 && rawImage.rows() > 0) {
+            FrameStaticProperties m_properties =
+                    new FrameStaticProperties(rawImage.width(), rawImage.height(), fov);
+            Mat originalImage = new Mat();
+            rawImage.copyTo(originalImage);
+            originalFrame = new Frame(new CVMat(rawImage), m_properties);
+            outputFrame = new Frame(new CVMat(originalImage), m_properties);
+        } else {
+            throw new RuntimeException("Image loading failed!");
+        }
     }
 
     /**
@@ -63,53 +76,40 @@ public class FileFrameProvider implements FrameProvider {
     * @param fov The fov of the image.
     */
     public FileFrameProvider(String pathAsString, double fov) {
-        this(Paths.get(pathAsString), fov);
-    }
-
-    private void loadImage() {
-        Mat image = Imgcodecs.imread(m_path.toString());
-
-        if (image.cols() > 0 && image.rows() > 0) {
-            FrameStaticProperties m_properties =
-                    new FrameStaticProperties(image.width(), image.height(), m_fov);
-            m_frame = new Frame(new CVMat(image), m_properties);
-        } else {
-            throw new RuntimeException("Image loading failed!");
-        }
+        this(Paths.get(pathAsString), fov, MAX_FPS);
     }
 
     /**
-    * Set image reloading. If true this will reload the image from the path set in the constructor
-    * every time {@link FileFrameProvider#get()} is called.
+    * Instantiates a new File frame provider.
     *
-    * @param reloadImage True to enable image reloading.
+    * @param path The path of the image to read from.
+    * @param fov The fov of the image.
     */
-    public void setImageReloading(boolean reloadImage) {
-        m_reloadImage = reloadImage;
-    }
-
-    /**
-    * Returns if image reloading is enabled.
-    *
-    * @return True if image reloading is enabled.
-    */
-    public boolean isImageReloading() {
-        return m_reloadImage;
+    public FileFrameProvider(Path path, double fov) {
+        this(path, fov, MAX_FPS);
     }
 
     @Override
     public Frame get() {
-        if (m_reloadImage) {
-            if (m_frame != null) m_frame.release();
-            m_frame = null;
-            loadImage();
+        if (outputFrame.image.getMat().empty()) {
+            originalFrame.copyTo(outputFrame);
         }
 
-        return m_frame;
+        // block to keep FPS at a defined rate
+        if (System.currentTimeMillis() - lastGetMillis < millisDelay) {
+            try {
+                Thread.sleep(millisDelay);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        lastGetMillis = System.currentTimeMillis();
+        return outputFrame;
     }
 
     @Override
     public String getName() {
-        return "FileFrameProvider" + count++ + " - " + m_path.getFileName();
+        return "FileFrameProvider" + thisIndex + " - " + path.getFileName();
     }
 }
