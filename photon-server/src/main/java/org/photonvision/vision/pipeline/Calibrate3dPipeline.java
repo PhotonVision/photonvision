@@ -38,11 +38,11 @@ import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
-public class Calibration3dPipeline
+public class Calibrate3dPipeline
         extends CVPipeline<CVPipelineResult, Calibration3dPipelineSettings> {
 
     // For loggging
-    private static final Logger logger = new Logger(Calibration3dPipeline.class, LogGroup.General);
+    private static final Logger logger = new Logger(Calibrate3dPipeline.class, LogGroup.General);
 
     // Only 2 pipes needed, one for finding the board corners and one for actually calibrating
     private final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
@@ -64,7 +64,7 @@ public class Calibration3dPipeline
 
     private static final int kMinSnapshots = 25;
 
-    public Calibration3dPipeline() {
+    public Calibrate3dPipeline() {
         this.settings = new Calibration3dPipelineSettings();
         this.boardSnapshots = new ArrayList<>();
     }
@@ -96,15 +96,6 @@ public class Calibration3dPipeline
         // snapshots
         // calibrate will be true when it is get by it's putter method
         if (hasEnough() && calibrate) {
-
-            /*Pass the board corners to the pipe, which will check again to see if all boards are valid
-            and returns the corresponding image and object points*/
-            findCornersPipeOutput = findBoardCornersPipe.run(boardSnapshots);
-            // Increment the time it took to process all board pics to total elapsed time
-            sumPipeNanosElapsed += findCornersPipeOutput.nanosElapsed;
-
-            calibrationOutput = calibrate3dPipe.run(findCornersPipeOutput.output);
-            sumPipeNanosElapsed += calibrationOutput.nanosElapsed;
 
             calibrate = false;
         } else if (takeSnapshot) {
@@ -156,6 +147,19 @@ public class Calibration3dPipeline
 
     public boolean hasEnough() {
         return numSnapshots >= kMinSnapshots;
+    }
+
+    public CameraCalibrationCoefficients tryCalibration() {
+        if (!hasEnough()) return null;
+
+        /*Pass the board corners to the pipe, which will check again to see if all boards are valid
+        and returns the corresponding image and object points*/
+        findCornersPipeOutput = findBoardCornersPipe.run(boardSnapshots);
+        // Increment the time it took to process all board pics to total elapsed time
+
+        calibrationOutput = calibrate3dPipe.run(findCornersPipeOutput.output);
+
+        return calibrationOutput.output;
     }
 
     public void startCalibration() {

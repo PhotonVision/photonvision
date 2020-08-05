@@ -89,7 +89,7 @@ public class PhotonConfiguration {
                         .map(SerializationUtils::objectToHashMap)
                         .collect(Collectors.toList()));
 
-        settingsSubmap.put("lighting", hardwareConfig.toHashMap());
+        settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(hardwareConfig));
 
         var generalSubmap = new HashMap<String, Object>();
         generalSubmap.put("version", PhotonVersion.versionString);
@@ -113,5 +113,6 @@ public class PhotonConfiguration {
         public HashMap<Integer, HashMap<String, Object>> videoFormatList;
         public int outputStreamPort;
         public int inputStreamPort;
+        public List<HashMap<String, Object>> calibrations;
     }
 }

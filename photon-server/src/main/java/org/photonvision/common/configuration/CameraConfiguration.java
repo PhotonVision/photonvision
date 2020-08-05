@@ -48,7 +48,7 @@ public class CameraConfiguration {
 
     public CameraType cameraType = CameraType.UsbCamera;
     public double FOV = 70;
-    public CameraCalibrationCoefficients calibration;
+    public List<CameraCalibrationCoefficients> calibrations = new ArrayList<>();
     public List<Integer> cameraLeds = new ArrayList<>();
     public int currentPipelineIndex = -1;
     public Rotation2d camPitch = new Rotation2d();
@@ -87,7 +87,7 @@ public class CameraConfiguration {
             @JsonProperty("FOV") double FOV,
             @JsonProperty("path") String path,
             @JsonProperty("cameraType") CameraType cameraType,
-            @JsonProperty("calibration") CameraCalibrationCoefficients calibration,
+            @JsonProperty("calibration") List<CameraCalibrationCoefficients> calibrations,
             @JsonProperty("cameraLEDs") List<Integer> cameraLeds,
             @JsonProperty("currentPipelineIndex") int currentPipelineIndex,
             @JsonProperty("camPitch") Rotation2d camPitch) {
@@ -97,7 +97,7 @@ public class CameraConfiguration {
         this.FOV = FOV;
         this.path = path;
         this.cameraType = cameraType;
-        this.calibration = calibration;
+        this.calibrations = calibrations;
         this.cameraLeds = cameraLeds;
         this.currentPipelineIndex = currentPipelineIndex;
         this.camPitch = camPitch;

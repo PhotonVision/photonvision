@@ -32,7 +32,7 @@ public class PipelineManager {
     public static final int CAL_3D_INDEX = -2;
 
     protected final List<CVPipelineSettings> userPipelineSettings;
-    protected final Calibration3dPipeline calibration3dPipeline = new Calibration3dPipeline();
+    protected final Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline();
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
     /** Index of the currently active pipeline. */

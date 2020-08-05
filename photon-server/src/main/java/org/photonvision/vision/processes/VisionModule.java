@@ -19,10 +19,9 @@ package org.photonvision.vision.processes;
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import io.javalin.websocket.WsContext;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+
+import java.util.*;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -41,7 +40,9 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.server.SocketHandler;
 import org.photonvision.server.UIUpdateType;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
@@ -163,11 +164,18 @@ public class VisionModule {
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.type;
         pipelineManager.setCalibrationMode(true);
-        pipelineManager.calibration3dPipeline.startCalibration();
     }
 
     public void takeCalibrationSnapshot() {
         pipelineManager.calibration3dPipeline.takeSnapshot();
+    }
+
+    public CameraCalibrationCoefficients endCalibration() {
+        var ret = pipelineManager.calibration3dPipeline.tryCalibration();
+        if(ret != null) {
+            pipelineManager.calibration3dPipeline.finishCalibration();
+            return ret;
+        } else return null;
     }
 
     private class VisionSettingChangeSubscriber extends DataChangeSubscriber {
@@ -442,6 +450,19 @@ public class VisionModule {
         ret.videoFormatList = temp;
         ret.outputStreamPort = dashboardOutputStreamer.getCurrentStreamPort();
         ret.inputStreamPort = dashboardInputStreamer.getCurrentStreamPort();
+
+        var calList = new ArrayList<HashMap<String, Object>>();
+        for(var c: visionSource.getSettables().getConfiguration().calibrations) {
+            var internalMap = new HashMap<String, Object>();
+
+            internalMap.put("perViewErrors", c.perViewErrors);
+            internalMap.put("standardDeviation", c.standardDeviation);
+            internalMap.put("width", c.resolution.width);
+            internalMap.put("height", c.resolution.height);
+            internalMap.put("intrinsics", c.cameraIntrinsics.data);
+            internalMap.put("extrinsics", c.cameraExtrinsics.data);
+        }
+        ret.calibrations = calList;
 
         return ret;
     }

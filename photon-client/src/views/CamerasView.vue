@@ -8,6 +8,7 @@
         cols="12"
         md="7"
       >
+        <!-- Camera card -->
         <v-card
           class="mb-3 pr-6 pb-3"
           color="primary"
@@ -49,136 +50,179 @@
             </v-btn>
           </div>
         </v-card>
+
+        <!-- Calibration card -->
         <v-card
           class="pr-6 pb-3"
           color="primary"
           dark
         >
           <v-card-title>Camera Calibration</v-card-title>
+
           <div class="ml-5">
-            <CVselect
-              v-model="calibrationVideoMode"
-              name="Resolution"
-              :list="stringResolutionList"
-              :disabled="isCalibrating"
-            />
-            <br>
-            <v-row align-self="center">
-              <v-col cols="5">
-                <CVnumberinput
-                  v-model="squareSize"
-                  name="Pattern Spacing (in)"
-                  tooltip="Spacing between pattern features in inches"
-                  label-cols="unset"
+            <v-row cols="12">
+              <!-- Calibration input -->
+              <v-col cols="7">
+                <CVselect
+                  v-model="calibrationVideoMode"
+                  name="Resolution"
+                  :list="stringResolutionList"
                   :disabled="isCalibrating"
                 />
-              </v-col>
-              <v-row cols="7">
-                <v-col>
-                  <CVnumberinput
-                    v-model="boardWidth"
-                    name="Board width"
-                    tooltip="Width of the board in dots or corners. With the standard chessboard, this is usually 7."
-                    label-cols="7"
-                    :disabled="isCalibrating"
+                <br>
+                <v-row>
+                  <v-col cols="4">
+                    <CVnumberinput
+                      v-model="squareSize"
+                      name="Pattern Spacing (in)"
+                      tooltip="Spacing between pattern features in inches"
+                      label-cols="unset"
+                      :disabled="isCalibrating"
+                    />
+                  </v-col>
+                  <v-row cols="4">
+                    <v-col>
+                      <CVnumberinput
+                        v-model="boardWidth"
+                        name="Board width"
+                        tooltip="Width of the board in dots or corners. With the standard chessboard, this is usually 7."
+                        label-cols="7"
+                        :disabled="isCalibrating"
+                      />
+                    </v-col>
+                    <v-col>
+                      <CVnumberinput
+                        v-model="boardHeight"
+                        name="Board height"
+                        tooltip="Height of the board in dots or corners. With the standard chessboard, this is usually 7."
+                        label-cols="7"
+                        :disabled="isCalibrating"
+                      />
+                    </v-col>
+                  </v-row>
+                  <v-col cols="4">
+                    <CVselect
+                      v-model="boardType"
+                      name="Board Type"
+                      select-cols="8"
+                      :list="['Chessboard', 'Dot Grid']"
+                    />
+                  </v-col>
+                </v-row>
+                <v-row>
+                  <v-col>
+                    <v-btn
+                      small
+                      color="secondary"
+                      :disabled="checkValidConfig"
+                      @click="sendCalibrationMode"
+                    >
+                      {{ calibrationModeButton.text }}
+                    </v-btn>
+                  </v-col>
+                  <v-col>
+                    <v-btn
+                      small
+                      color="red"
+                      :disabled="checkCancellation"
+                      @click="sendCalibrationFinish"
+                    >
+                      {{ cancellationModeButton.text }}
+                    </v-btn>
+                  </v-col>
+                  <v-col>
+                    <v-btn
+                      color="accent"
+                      small
+                      outlined
+                      @click="downloadBoard"
+                    >
+                      <v-icon left>
+                        mdi-download
+                      </v-icon>
+                      Download Checkerboard
+                    </v-btn>
+                    <a
+                      ref="calibrationFile"
+                      style="color: black; text-decoration: none; display: none"
+                      :href="require('../assets/chessboard.png')"
+                      download="Calibration Board.png"
+                    />
+                  </v-col>
+                </v-row>
+                <v-row v-if="isCalibrating">
+                  <v-col>
+                    <span>Snapshots: {{ snapshotAmount }} of at least {{ minSnapshots }}</span>
+                  </v-col>
+                </v-row>
+                <div v-if="isCalibrating">
+                  <CVslider
+                    v-model="$store.getters.currentPipelineSettings.cameraExposure"
+                    name="Exposure"
+                    :min="0"
+                    :max="100"
+                    @input="e => handlePipelineUpdate('cameraExposure', e)"
                   />
-                </v-col>
-                <v-col>
-                  <CVnumberinput
-                    v-model="boardHeight"
-                    name="Board height"
-                    tooltip="Height of the board in dots or corners. With the standard chessboard, this is usually 7."
-                    label-cols="7"
-                    :disabled="isCalibrating"
+                  <CVslider
+                    v-model="this.$store.getters.currentPipelineSettings.cameraBrightness"
+                    name="Brightness"
+                    :min="0"
+                    :max="100"
+                    @input="e => handlePipelineUpdate('cameraBrightness', e)"
                   />
-                </v-col>
-              </v-row>
-              <v-col cols="4">
-                <CVselect
-                  v-model="boardType"
-                  name="Board Type"
-                  align-self="center"
-                  select-cols="7"
-                  :list="['Chessboard', 'Dot Grid']"
-                />
+                  <CVslider
+                    v-if="$store.getters.currentPipelineSettings.cameraGain !== -1"
+                    v-model="$store.getters.currentPipelineSettings.cameraGain"
+                    name="Gain"
+                    :min="0"
+                    :max="100"
+                    @input="e => handlePipelineUpdate('cameraGain', e)"
+                  />
+                </div>
+              </v-col>
+
+              <!-- Calibrated table -->
+              <v-col cols="5">
+                <v-row
+                  align="start"
+                  class="pb-4"
+                >
+                  <v-simple-table
+                    fixed-header
+                    height="100%"
+                    dense
+                  >
+                    <template v-slot:default>
+                      <thead style="font-size: 1.25rem;">
+                        <tr>
+                          <th class="text-center">
+                            Resolution
+                          </th>
+                          <th class="text-center">
+                            Calibrated?
+                          </th>
+                          <th class="text-center">
+                            Standard Deviation
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(value, index) in filteredResolutionList"
+                          :key="index"
+                        >
+                          <td> {{ value.width }} X {{ value.height }} </td>
+                          <td>
+                            {{ isCalibrated(value) ? "Yes" : "No" }}
+                          </td>
+                          <td> {{ isCalibrated(value) ? value.standardDeviation + "px" : "N/A" }} </td>
+                        </tr>
+                      </tbody>
+                    </template>
+                  </v-simple-table>
+                </v-row>
               </v-col>
             </v-row>
-            <v-row>
-              <v-col>
-                <v-btn
-                  small
-                  color="secondary"
-                  :disabled="checkValidConfig"
-                  @click="sendCalibrationMode"
-                >
-                  {{ calibrationModeButton.text }}
-                </v-btn>
-              </v-col>
-              <v-col>
-                <v-btn
-                  small
-                  color="red"
-                  :disabled="checkCancellation"
-                  @click="sendCalibrationFinish"
-                >
-                  {{ cancellationModeButton.text }}
-                </v-btn>
-              </v-col>
-              <v-col>
-                <v-btn
-                  color="accent"
-                  small
-                  outlined
-                  @click="downloadBoard"
-                >
-                  <v-icon left>
-                    mdi-download
-                  </v-icon>
-                  Download Checkerboard
-                </v-btn>
-                <a
-                  ref="calibrationFile"
-                  style="color: black; text-decoration: none; display: none"
-                  :href="require('../assets/chessboard.png')"
-                  download="Calibration Board.png"
-                />
-              </v-col>
-            </v-row>
-            <v-row v-if="isCalibrating">
-              <v-col>
-                <span>Snapshots: {{ snapshotAmount }} of at least {{ minSnapshots }}</span>
-              </v-col>
-            </v-row>
-            <div v-if="isCalibrating">
-              <CVslider
-                v-model="$store.getters.currentPipelineSettings.cameraExposure"
-                name="Exposure"
-                :min="0"
-                :max="100"
-                @input="e => handlePipelineUpdate('cameraExposure', e)"
-              />
-              <CVslider
-                v-model="this.$store.getters.currentPipelineSettings.cameraBrightness"
-                name="Brightness"
-                :min="0"
-                :max="100"
-                @input="e => handlePipelineUpdate('cameraBrightness', e)"
-              />
-              <CVslider
-                v-if="$store.getters.currentPipelineSettings.cameraGain !== -1"
-                v-model="$store.getters.currentPipelineSettings.cameraGain"
-                name="Gain"
-                :min="0"
-                :max="100"
-                @input="e => handlePipelineUpdate('cameraGain', e)"
-              />
-              <!--                <CVselect-->
-              <!--                  v-model="$store.getters.currentPipelineSettings.cameraVideoModeIndex"-->
-              <!--                  name="FPS"-->
-              <!--                  :list="stringFpsList"-->
-              <!--                  @input="changeFps"-->
-              <!--                />-->
-            </div>
           </div>
         </v-card>
       </v-col>
@@ -270,6 +314,7 @@ export default {
                         filtered.push(it)
                     }
                 })
+                filtered.sort((a, b) => (b.width + b.height) - (a.width + a.height))
                 return filtered
             }
         },
@@ -363,6 +408,11 @@ export default {
             )
         },
 
+        isCalibrated(resolution) {
+            return this.$store.getters.currentCameraSettings.calibrations
+                .some(e => e.width === resolution.width && e.height === resolution.height)
+        },
+
         sendCalibrationMode() {
             let data = {
                 ['cameraIndex']: this.$store.state.currentCameraIndex
@@ -415,6 +465,24 @@ export default {
 }
 </script>
 
-<style lang="" scoped>
+<style scoped>
+    .v-data-table {
+        text-align: center;
+        background-color: transparent !important;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+    }
+    .v-data-table th {
+        background-color: #006492 !important;
+    }
 
+    .v-data-table th,td {
+        font-size: 1rem !important;
+    }
+
+    /** This is unfortunately the only way to override table background color **/
+    .theme--dark.v-data-table tbody tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
+        background: #005281;
+    }
 </style>

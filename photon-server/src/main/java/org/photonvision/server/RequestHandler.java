@@ -123,6 +123,9 @@ public class RequestHandler {
 
     public static void onCalibrationEnd(Context ctx) {
         var index = Integer.parseInt(ctx.body());
-        VisionModuleManager.getInstance().getModule(index).endCalibration();
+        var calData = VisionModuleManager.getInstance().getModule(index).endCalibration();
+        if(calData == null) ctx.status(500);
+
+//        ctx.json()
     }
 }

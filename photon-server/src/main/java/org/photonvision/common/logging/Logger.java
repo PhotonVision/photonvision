@@ -175,7 +175,7 @@ public class Logger {
     */
     public void error(String message, Throwable t) {
         log(message, LogLevel.ERROR);
-        log(convertStackTraceToString(t), LogLevel.ERROR, LogLevel.TRACE);
+        log(convertStackTraceToString(t), LogLevel.ERROR, LogLevel.DEBUG);
     }
 
     public void warn(Supplier<String> messageSupplier) {

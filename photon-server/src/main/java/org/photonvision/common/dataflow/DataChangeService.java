@@ -68,6 +68,7 @@ public class DataChangeService {
                 }
             } catch (Exception e) {
                 logger.error("Exception when dispatching event!", e);
+                e.printStackTrace();
             }
         }
     }
