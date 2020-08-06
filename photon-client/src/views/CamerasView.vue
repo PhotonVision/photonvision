@@ -68,47 +68,37 @@
                   name="Resolution"
                   :list="stringResolutionList"
                   :disabled="isCalibrating"
+                  tooltip="Resolution to calibrate in."
                 />
                 <br>
-                <v-row>
-                  <v-col cols="4">
-                    <CVnumberinput
-                      v-model="squareSize"
-                      name="Pattern Spacing (in)"
-                      tooltip="Spacing between pattern features in inches"
-                      label-cols="unset"
-                      :disabled="isCalibrating"
-                    />
-                  </v-col>
-                  <v-row cols="4">
-                    <v-col>
-                      <CVnumberinput
-                        v-model="boardWidth"
-                        name="Board width"
-                        tooltip="Width of the board in dots or corners. With the standard chessboard, this is usually 7."
-                        label-cols="7"
-                        :disabled="isCalibrating"
-                      />
-                    </v-col>
-                    <v-col>
-                      <CVnumberinput
-                        v-model="boardHeight"
-                        name="Board height"
-                        tooltip="Height of the board in dots or corners. With the standard chessboard, this is usually 7."
-                        label-cols="7"
-                        :disabled="isCalibrating"
-                      />
-                    </v-col>
-                  </v-row>
-                  <v-col cols="4">
-                    <CVselect
-                      v-model="boardType"
-                      name="Board Type"
-                      select-cols="8"
-                      :list="['Chessboard', 'Dot Grid']"
-                    />
-                  </v-col>
-                </v-row>
+                <CVselect
+                  v-model="boardType"
+                  name="Board Type"
+                  select-cols="8"
+                  :list="['Chessboard', 'Dot Grid']"
+                  tooltip="Type of board to use."
+                />
+                <CVnumberinput
+                  v-model="squareSize"
+                  name="Pattern Spacing (in)"
+                  tooltip="Spacing between pattern features in inches"
+                  label-cols="7"
+                  :disabled="isCalibrating"
+                />
+                <CVnumberinput
+                  v-model="boardWidth"
+                  name="Board width"
+                  tooltip="Width of the board in dots or corners. With the standard chessboard, this is usually 7."
+                  label-cols="7"
+                  :disabled="isCalibrating"
+                />
+                <CVnumberinput
+                  v-model="boardHeight"
+                  name="Board height"
+                  tooltip="Height of the board in dots or corners. With the standard chessboard, this is usually 7."
+                  label-cols="7"
+                  :disabled="isCalibrating"
+                />
                 <v-row>
                   <v-col>
                     <v-btn

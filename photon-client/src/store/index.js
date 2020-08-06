@@ -142,7 +142,7 @@ export default new Vuex.Store({
             hasEnough: false,
             squareSizeIn: 1.0,
             patternWidth: 7,
-            patternHeight: 5,
+            patternHeight: 7,
             boardType: 0, // Chessboard, dotboard
         },
     },

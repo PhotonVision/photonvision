@@ -22,7 +22,7 @@ import org.opencv.core.Size;
 
 public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
     public int boardHeight = 7;
-    public int boardWidth = 6;
+    public int boardWidth = 7;
     public UICalibrationData.BoardType boardType = UICalibrationData.BoardType.CHESSBOARD;
     public double gridSize = Units.inchesToMeters(1.0);
 
