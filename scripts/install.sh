@@ -27,6 +27,16 @@ curl -s https://api.github.com/repos/photonvision/photonvision/releases/latest |
 echo "Downloaded latest stable release of PhotonVision."
 
 echo "Creating the PhotonVision systemd service..."
+
+if service --status-all | grep -Fq 'photonvision'; then    
+  systemctl stop photonvision
+  systemctl disable photonvision
+  rm /lib/systemd/system/photonvision.service
+  rm /etc/systemd/system/photonvision.service
+  systemctl dameon-relaod
+  systemctl reset-failed
+fi
+
 cd /lib/systemd/system/
 touch photonvision.service
 printf \
