@@ -54,7 +54,7 @@ public class Main {
                     "t",
                     "test-mode",
                     false,
-                    "Run in test mode with a 2019 and 2020 WPI field image as available cameras");
+                    "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
         }
 
         CommandLineParser parser = new DefaultParser();
