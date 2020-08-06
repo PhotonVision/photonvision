@@ -213,9 +213,9 @@
                         >
                           <td> {{ value.width }} X {{ value.height }} </td>
                           <td>
-                            {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "N/A" }}
+                            {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "—" }}
                           </td>
-                          <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "N/A" }} </td>
+                          <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "—" }} </td>
                         </tr>
                       </tbody>
                     </template>
