@@ -183,7 +183,6 @@ public class VisionModule {
         }
         saveAndBroadcastAll();
         return ret;
-
     }
 
     private class VisionSettingChangeSubscriber extends DataChangeSubscriber {

@@ -109,7 +109,7 @@ public class SolvePNPTest {
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getRobotRelativePose();
+        var pose = pipelineResult.targets.get(0).getCameraToTarget();
         Assertions.assertEquals(41.96, pose.getTranslation().getX(), 0.05);
         Assertions.assertEquals(-1.03, pose.getTranslation().getY(), 0.05);
         Assertions.assertEquals(1.46, pose.getRotation().getDegrees(), 0.05);
@@ -140,7 +140,7 @@ public class SolvePNPTest {
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getRobotRelativePose();
+        var pose = pipelineResult.targets.get(0).getCameraToTarget();
         Assertions.assertEquals(260.26, pose.getTranslation().getX(), 0.05);
         Assertions.assertEquals(64.26, pose.getTranslation().getY(), 0.05);
         Assertions.assertEquals(36.88, pose.getRotation().getDegrees(), 0.05);
@@ -191,7 +191,7 @@ public class SolvePNPTest {
         System.out.println(
                 "Found targets at "
                         + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getRobotRelativePose)
+                                .map(TrackedTarget::getCameraToTarget)
                                 .collect(Collectors.toList()));
     }
 }

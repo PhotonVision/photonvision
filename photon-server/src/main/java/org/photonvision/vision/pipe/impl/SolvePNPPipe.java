@@ -17,8 +17,8 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import java.util.List;
 import org.apache.commons.math3.util.FastMath;
@@ -50,7 +50,7 @@ public class SolvePNPPipe
     }
 
     private void calculateTargetPose(TrackedTarget target) {
-        Pose2d targetPose;
+        Transform2d targetPose;
 
         var corners = target.getTargetCorners();
         if (corners == null
@@ -81,7 +81,7 @@ public class SolvePNPPipe
 
         targetPose = correctLocationForCameraPitch(tVec, rVec, params.cameraPitchAngle);
 
-        target.setRobotRelativePose(targetPose);
+        target.setCameraToTarget(targetPose);
     }
 
     Mat rotationMatrix = new Mat();
@@ -91,7 +91,7 @@ public class SolvePNPPipe
     Mat scaledTvec;
 
     @SuppressWarnings("DuplicatedCode") // yes I know we have another solvePNP pipe
-    private Pose2d correctLocationForCameraPitch(Mat tVec, Mat rVec, Rotation2d cameraPitchAngle) {
+    private Transform2d correctLocationForCameraPitch(Mat tVec, Mat rVec, Rotation2d cameraPitchAngle) {
         // Algorithm from team 5190 Green Hope Falcons. Can also be found in Ligerbot's vision
         // whitepaper
         var tiltAngle = cameraPitchAngle.getRadians();
@@ -124,7 +124,7 @@ public class SolvePNPPipe
         // so Z_field becomes X, and X becomes Y
 
         var targetLocation = new Translation2d(zField, -x);
-        return new Pose2d(targetLocation, new Rotation2d(targetRotation));
+        return new Transform2d(targetLocation, new Rotation2d(targetRotation));
     }
 
     /**

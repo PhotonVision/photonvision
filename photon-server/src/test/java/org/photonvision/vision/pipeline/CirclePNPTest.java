@@ -162,7 +162,7 @@ public class CirclePNPTest {
         System.out.println(
                 "Found targets at "
                         + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getRobotRelativePose)
+                                .map(TrackedTarget::getCameraToTarget)
                                 .collect(Collectors.toList()));
     }
 }

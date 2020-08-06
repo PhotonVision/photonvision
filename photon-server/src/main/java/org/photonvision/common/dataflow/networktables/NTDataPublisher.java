@@ -166,9 +166,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             targetAreaEntry.forceSetDouble(bestTarget.getArea());
             targetSkewEntry.forceSetDouble(bestTarget.getSkew());
 
-            var poseX = bestTarget.getRobotRelativePose().getTranslation().getX();
-            var poseY = bestTarget.getRobotRelativePose().getTranslation().getY();
-            var poseRot = bestTarget.getRobotRelativePose().getRotation().getDegrees();
+            var poseX = bestTarget.getCameraToTarget().getTranslation().getX();
+            var poseY = bestTarget.getCameraToTarget().getTranslation().getY();
+            var poseRot = bestTarget.getCameraToTarget().getRotation().getDegrees();
             targetPoseEntry.forceSetDoubleArray(new double[] {poseX, poseY, poseRot});
         } else {
             targetPitchEntry.forceSetDouble(0);

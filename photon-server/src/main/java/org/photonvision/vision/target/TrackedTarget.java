@@ -17,9 +17,10 @@
 
 package org.photonvision.vision.target;
 
-import edu.wpi.first.wpilibj.geometry.Pose2d;
 import java.util.HashMap;
 import java.util.List;
+
+import edu.wpi.first.wpilibj.geometry.Transform2d;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -44,7 +45,7 @@ public class TrackedTarget implements Releasable {
     private double m_area;
     private double m_skew;
 
-    private Pose2d m_robotRelativePose = new Pose2d();
+    private Transform2d m_cameraToTarget = new Transform2d();
 
     private Mat m_cameraRelativeTvec, m_cameraRelativeRvec;
 
@@ -143,12 +144,12 @@ public class TrackedTarget implements Releasable {
         return !m_subContours.isEmpty();
     }
 
-    public Pose2d getRobotRelativePose() {
-        return m_robotRelativePose;
+    public Transform2d getCameraToTarget() {
+        return m_cameraToTarget;
     }
 
-    public void setRobotRelativePose(Pose2d robotRelativePose) {
-        this.m_robotRelativePose = robotRelativePose;
+    public void setCameraToTarget(Transform2d pose) {
+        this.m_cameraToTarget = pose;
     }
 
     public Mat getCameraRelativeTvec() {
@@ -181,8 +182,8 @@ public class TrackedTarget implements Releasable {
         ret.put("yaw", getYaw());
         ret.put("skew", getSkew());
         ret.put("area", getArea());
-        if (getRobotRelativePose() != null) {
-            ret.put("pose", getRobotRelativePose().toHashMap());
+        if (getCameraToTarget() != null) {
+            ret.put("pose", getCameraToTarget().toHashMap());
         }
         return ret;
     }
