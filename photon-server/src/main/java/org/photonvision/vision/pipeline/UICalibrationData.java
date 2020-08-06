@@ -27,7 +27,7 @@ public class UICalibrationData {
     public final double squareSizeIn;
     public final int patternWidth;
     public final int patternHeight;
-    public final BoardType type; //
+    public final BoardType boardType; //
 
     public UICalibrationData(
             int count,
@@ -37,7 +37,7 @@ public class UICalibrationData {
             double squareSizeIn,
             int patternWidth,
             int patternHeight,
-            BoardType type) {
+            BoardType boardType) {
         this.count = count;
         this.minCount = minCount;
         this.videoModeIndex = videoModeIndex;
@@ -45,7 +45,7 @@ public class UICalibrationData {
         this.squareSizeIn = squareSizeIn;
         this.patternWidth = patternWidth;
         this.patternHeight = patternHeight;
-        this.type = type;
+        this.boardType = boardType;
     }
 
     public enum BoardType {

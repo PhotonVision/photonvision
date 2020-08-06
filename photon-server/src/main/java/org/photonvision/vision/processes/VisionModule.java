@@ -161,7 +161,7 @@ public class VisionModule {
         settings.gridSize = data.squareSizeIn;
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
-        settings.boardType = data.type;
+        settings.boardType = data.boardType;
         pipelineManager.setCalibrationMode(true);
     }
 

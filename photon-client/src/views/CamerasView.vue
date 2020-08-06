@@ -62,7 +62,10 @@
           <div class="ml-5">
             <v-row>
               <!-- Calibration input -->
-              <v-col cols="12" md="6">
+              <v-col
+                cols="12"
+                md="6"
+              >
                 <CVselect
                   v-model="calibrationVideoMode"
                   name="Resolution"
@@ -102,7 +105,10 @@
               </v-col>
 
               <!-- Calibrated table -->
-              <v-col cols="12" md="6">
+              <v-col
+                cols="12"
+                md="6"
+              >
                 <v-row
                   align="start"
                   class="pb-4"
@@ -115,13 +121,19 @@
                     <thead style="font-size: 1.25rem;">
                       <tr>
                         <th class="text-center">
-                          <tooltipped-label text="Resolution"/>
+                          <tooltipped-label text="Resolution" />
                         </th>
                         <th class="text-center">
-                          <tooltipped-label tooltip="Mean" text="Mean"/>
+                          <tooltipped-label
+                            tooltip="Mean"
+                            text="Mean"
+                          />
                         </th>
                         <th class="text-center">
-                          <tooltipped-label tooltip="Standard Deviation" text="Standard Deviation"/>
+                          <tooltipped-label
+                            tooltip="Standard Deviation"
+                            text="Standard Deviation"
+                          />
                         </th>
                       </tr>
                     </thead>
@@ -140,34 +152,43 @@
                   </v-simple-table>
                 </v-row>
                 <v-row justify="center">
-                  <v-chip v-show="isCalibrating" label :color="snapshotAmount < 25 ? 'grey' : 'secondary'">Snapshots: {{ snapshotAmount }} of at least {{ minSnapshots }}</v-chip>
+                  <v-chip
+                    v-show="isCalibrating"
+                    label
+                    :color="snapshotAmount < 25 ? 'grey' : 'secondary'"
+                  >
+                    Snapshots: {{ snapshotAmount }} of at least {{ minSnapshots }}
+                  </v-chip>
                 </v-row>
               </v-col>
             </v-row>
 
             <v-row v-if="isCalibrating">
-              <v-col cols="12" class="pt-0">
+              <v-col
+                cols="12"
+                class="pt-0"
+              >
                 <CVslider
-                        v-model="$store.getters.currentPipelineSettings.cameraExposure"
-                        name="Exposure"
-                        :min="0"
-                        :max="100"
-                        @input="e => handlePipelineUpdate('cameraExposure', e)"
+                  v-model="$store.getters.currentPipelineSettings.cameraExposure"
+                  name="Exposure"
+                  :min="0"
+                  :max="100"
+                  @input="e => handlePipelineUpdate('cameraExposure', e)"
                 />
                 <CVslider
-                        v-model="this.$store.getters.currentPipelineSettings.cameraBrightness"
-                        name="Brightness"
-                        :min="0"
-                        :max="100"
-                        @input="e => handlePipelineUpdate('cameraBrightness', e)"
+                  v-model="this.$store.getters.currentPipelineSettings.cameraBrightness"
+                  name="Brightness"
+                  :min="0"
+                  :max="100"
+                  @input="e => handlePipelineUpdate('cameraBrightness', e)"
                 />
                 <CVslider
-                        v-if="$store.getters.currentPipelineSettings.cameraGain !== -1"
-                        v-model="$store.getters.currentPipelineSettings.cameraGain"
-                        name="Gain"
-                        :min="0"
-                        :max="100"
-                        @input="e => handlePipelineUpdate('cameraGain', e)"
+                  v-if="$store.getters.currentPipelineSettings.cameraGain !== -1"
+                  v-model="$store.getters.currentPipelineSettings.cameraGain"
+                  name="Gain"
+                  :min="0"
+                  :max="100"
+                  @input="e => handlePipelineUpdate('cameraGain', e)"
                 />
               </v-col>
             </v-row>
@@ -175,33 +196,33 @@
             <v-row>
               <v-col align-self="center">
                 <v-btn
-                        small
-                        color="secondary"
-                        style="width: 100%;"
-                        :disabled="disallowCalibration"
-                        @click="sendCalibrationMode"
+                  small
+                  color="secondary"
+                  style="width: 100%;"
+                  :disabled="disallowCalibration"
+                  @click="sendCalibrationMode"
                 >
-                  {{ calibrationModeButton.text }}
+                  {{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}
                 </v-btn>
               </v-col>
               <v-col align-self="center">
                 <v-btn
-                        small
-                        color="red"
-                        style="width: 100%;"
-                        :disabled="checkCancellation"
-                        @click="sendCalibrationFinish"
+                  small
+                  color="red"
+                  style="width: 100%;"
+                  :disabled="checkCancellation"
+                  @click="sendCalibrationFinish"
                 >
-                  {{ cancellationModeButton.text }}
+                  {{ hasEnough ? "End Calibration" : "Cancel Calibration" }}
                 </v-btn>
               </v-col>
               <v-col>
                 <v-btn
-                        color="accent"
-                        small
-                        outlined
-                        style="width: 100%;"
-                        @click="downloadBoard"
+                  color="accent"
+                  small
+                  outlined
+                  style="width: 100%;"
+                  @click="downloadBoard"
                 >
                   <v-icon left>
                     mdi-download
@@ -209,10 +230,10 @@
                   Download Checkerboard
                 </v-btn>
                 <a
-                        ref="calibrationFile"
-                        style="color: black; text-decoration: none; display: none"
-                        :href="require('../assets/chessboard.png')"
-                        download="chessboard.png"
+                  ref="calibrationFile"
+                  style="color: black; text-decoration: none; display: none"
+                  :href="require('../assets/chessboard.png')"
+                  download="chessboard.png"
                 />
               </v-col>
             </v-row>
@@ -260,14 +281,6 @@ export default {
     },
     data() {
         return {
-            calibrationModeButton: {
-                text: "Start Calibration",
-                color: "green"
-            },
-            cancellationModeButton: {
-                text: "Cancel Calibration",
-                color: "red"
-            },
             snackbar: {
                 color: "success",
                 text: ""
@@ -278,7 +291,8 @@ export default {
     },
     computed: {
         disallowCalibration() {
-            return false;
+            console.log("aaaa" + this.calibrationData.boardType)
+            return !(this.calibrationData.boardType === 0 || this.calibrationData.boardType === 1);
         },
         checkCancellation() {
             if (this.isCalibrating) {
@@ -435,7 +449,6 @@ export default {
                 const calData = this.calibrationData
                 calData.isCalibrating = true
                 data['startPnpCalibration'] = calData
-                this.calibrationModeButton.text = "Take Snapshot";
 
                 console.log("starting calibration with index " + calData.videoModeIndex)
             }
@@ -455,9 +468,6 @@ export default {
                     }
                     this.
                     this.snapshotAmount = 0;
-                    this.calibrationModeButton.text = "Start Calibration";
-                    this.cancellationModeButton.text = "Cancel Calibration";
-                    this.cancellationModeButton.color = "red";
                 }
             ).catch(() => {
                 this.snackbar = {
@@ -468,9 +478,6 @@ export default {
                 this.isCalibrating = false;
                 this.hasEnough = false;
                 this.snapshotAmount = 0;
-                this.calibrationModeButton.text = "Start Calibration";
-                this.cancellationModeButton.text = "Cancel Calibration";
-                this.cancellationModeButton.color = "red";
             });
         }
     }
