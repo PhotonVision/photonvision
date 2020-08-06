@@ -173,15 +173,16 @@ public class VisionModule {
         var ret = pipelineManager.calibration3dPipeline.tryCalibration();
         pipelineManager.setCalibrationMode(false);
 
-        if(ret == null) {
-            logger.error("Got NULL calibration! Not saving...");
-            return null;
+        if (ret != null) {
+            logger.debug("Saving calibration...");
+            visionSource.getSettables().getConfiguration().addCalibration(ret);
+            visionSource.getSettables().calculateFrameStaticProps();
+        } else {
+            logger.error("Calibration failed...");
         }
-
-        visionSource.getSettables().getConfiguration().addCalibration(ret);
-        visionSource.getSettables().calculateFrameStaticProps();
         saveAndBroadcastAll();
         return ret;
+
     }
 
     private class VisionSettingChangeSubscriber extends DataChangeSubscriber {
@@ -479,9 +480,9 @@ public class VisionModule {
         var config = visionSource.getSettables().getConfiguration();
         config.setPipelineSettings(pipelineManager.userPipelineSettings);
         config.driveModeSettings = pipelineManager.driverModePipeline.getSettings();
-        config.currentPipelineIndex = Math.max(pipelineManager.getCurrentPipelineIndex(), 0);
+        config.currentPipelineIndex = Math.max(pipelineManager.getCurrentPipelineIndex(), -1);
 
-        logger.info("Saving state with " + config.calibrations.size() + " calibrated resolutions!");
+        logger.info("Saving state with " + config.calibrations.size() + " calibrated resolutions and index " + config.currentPipelineIndex);
 
         return config;
     }
