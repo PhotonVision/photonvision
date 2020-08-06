@@ -20,7 +20,7 @@ package org.photonvision;
 import edu.wpi.cscore.CameraServerCvJNI;
 import java.util.HashMap;
 import java.util.List;
-import org.photonvision.common.configuration.CameraConfiguration;
+import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
@@ -36,18 +36,86 @@ import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
 
 public class Main {
-    private static final Logger logger = new Logger(Main.class, LogGroup.General);
     public static final int DEFAULT_WEBPORT = 5800;
 
+    private static final Logger logger = new Logger(Main.class, LogGroup.General);
+    private static final boolean isRelease =
+            !PhotonVersion.isRelease; // Hack!!!! Until PhotonVersion script fixed
+
+    private static boolean isTestMode;
+    private static boolean printDebugLogs;
+
+    private static boolean handleArgs(String[] args) throws ParseException {
+        final var options = new Options();
+        options.addOption("d", "debug", false, "Enable debug logging prints");
+        options.addOption("h", "help", false, "Show this help text and exit");
+        if (!isRelease) {
+            options.addOption(
+                    "t",
+                    "test-mode",
+                    false,
+                    "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
+        }
+
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = parser.parse(options, args);
+
+        if (cmd.hasOption("help")) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("java -jar photonvision.jar [options]", options);
+            return false; // exit program
+        } else {
+            if (cmd.hasOption("debug")) {
+                printDebugLogs = true;
+                logger.info("Enabled debug logging");
+            }
+
+            if (cmd.hasOption("test-mode")) {
+                isTestMode = true;
+                logger.info("Running in test mode - Cameras will not be used");
+            }
+        }
+        return true;
+    }
+
+    private static HashMap<VisionSource, List<CVPipelineSettings>> gatherSources() {
+        if (!isTestMode) {
+            var camConfigs = ConfigManager.getInstance().getConfig().getCameraConfigurations();
+            logger.info("Loaded " + camConfigs.size() + " configs from disk.");
+            var sources = VisionSourceManager.loadAllSources(camConfigs.values());
+
+            var collectedSources = new HashMap<VisionSource, List<CVPipelineSettings>>();
+            for (var src : sources) {
+                var usbSrc = (USBCameraSource) src;
+                collectedSources.put(usbSrc, usbSrc.configuration.pipelineSettings);
+                logger.debug(
+                        () ->
+                                "Matched config for camera \""
+                                        + src.getFrameProvider().getName()
+                                        + "\" and loaded "
+                                        + usbSrc.configuration.pipelineSettings.size()
+                                        + " pipelines");
+            }
+            return collectedSources;
+        } else {
+            // todo: test mode
+            return new HashMap<>();
+        }
+    }
+
     public static void main(String[] args) {
-        boolean isRelease = !PhotonVersion.isRelease; // Hack!!!! Until PhotonVersion script fixed
-        var logLevel = isRelease ? LogLevel.INFO : LogLevel.DEBUG;
+        try {
+            if (!handleArgs(args)) return;
+        } catch (ParseException e) {
+            logger.error("Failed to parse command-line options!", e);
+        }
+
+        var logLevel = (isRelease || printDebugLogs) ? LogLevel.INFO : LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
         Logger.setLevel(LogGroup.WebServer, logLevel);
         Logger.setLevel(LogGroup.VisionModule, logLevel);
         Logger.setLevel(LogGroup.Data, logLevel);
         Logger.setLevel(LogGroup.General, logLevel);
-
         logger.info("Logging initialized in " + (isRelease ? "Release" : "Debug") + " mode.");
 
         logger.info(
@@ -55,39 +123,23 @@ public class Main {
                         + PhotonVersion.versionString
                         + " on "
                         + Platform.CurrentPlatform.toString());
+
         try {
-            logger.info("Loading native libraries...");
             CameraServerCvJNI.forceLoad();
+            logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
         }
-        logger.info("Native libraries loaded.");
 
         ConfigManager.getInstance(); // init config manager
         NetworkManager.getInstance().initialize(false); // basically empty. todo: link to ConfigManager?
         NetworkTablesManager.setClientMode("127.0.0.1");
 
-        HashMap<String, CameraConfiguration> camConfigs =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations();
-        logger.info("Loaded " + camConfigs.size() + " configs from disk.");
-        List<VisionSource> sources = VisionSourceManager.loadAllSources(camConfigs.values());
+        HashMap<VisionSource, List<CVPipelineSettings>> allSources = gatherSources();
 
-        var collectedSources = new HashMap<VisionSource, List<CVPipelineSettings>>();
-        for (var src : sources) {
-            var usbSrc = (USBCameraSource) src;
-            collectedSources.put(usbSrc, usbSrc.configuration.pipelineSettings);
-            logger.debug(
-                    () ->
-                            "Matched config for camera \""
-                                    + src.getFrameProvider().getName()
-                                    + "\" and loaded "
-                                    + usbSrc.configuration.pipelineSettings.size()
-                                    + " pipelines");
-        }
-
-        logger.info("Adding " + collectedSources.size() + " configs to VMM.");
-        VisionModuleManager.getInstance().addSources(collectedSources);
-        ConfigManager.getInstance().addCameraConfigurations(collectedSources);
+        logger.info("Adding " + allSources.size() + " configs to VMM.");
+        VisionModuleManager.getInstance().addSources(allSources);
+        ConfigManager.getInstance().addCameraConfigurations(allSources);
 
         VisionModuleManager.getInstance().startModules();
         Server.main(DEFAULT_WEBPORT);
