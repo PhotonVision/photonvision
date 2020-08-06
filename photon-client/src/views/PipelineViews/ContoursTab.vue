@@ -44,8 +44,8 @@
       tooltip="Whether or not every two targets are paired with each other (good for e.g. 2019 targets)"
       :select-cols="largeBox"
       :list="['Single','Dual']"
-      @input="handlePipelineData('targetGroup')"
-      @rollback="e=> rollback('targetGroup',e)"
+      @input="handlePipelineData('contourGroupingMode')"
+      @rollback="e=> rollback('contourGroupingMode',e)"
     />
     <CVselect
       v-model="contourIntersection"
