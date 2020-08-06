@@ -1,5 +1,7 @@
 package org.photonvision.vision.frame.provider;
 
+import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
@@ -15,14 +17,33 @@ public class AcceleratedPicamFrameProvider implements FrameProvider {
     this.settables = visionSettables;
     this.accelerator = new GPUAccelerator(GPUAccelerator.TransferMode.DIRECT_OMX);
 
-//    boolean err = PicamJNI.createImageKHR(accelerator.getInputTextureID());
+    boolean err;
+
+    System.out.println("starting...");
+
+//    err = PicamJNI.createImageKHR(accelerator.getInputTextureID());
 //    if (err) {
 //      System.out.println("uh oh");
 //      return;
 //    } else {
 //      System.out.println("guuci");
 //    }
-    PicamJNI.createCamera(1920, 1080, 60);
+    err = PicamJNI.createCamera(1280, 720, 60);
+    if (err) {
+      System.out.println("bade");
+    } else {
+      System.out.println("goodee");
+    }
+
+    while (true) {
+
+      accelerator.redrawGL(new Scalar(0, 0, 0), new Scalar(1, 1, 1), 1280, 720);
+//      try {
+//        Thread.sleep(1000);
+//      } catch (InterruptedException e) {
+//        e.printStackTrace();
+//      }
+    }
   }
 
   @Override

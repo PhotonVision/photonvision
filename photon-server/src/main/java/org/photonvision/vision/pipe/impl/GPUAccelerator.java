@@ -1,15 +1,23 @@
 package org.photonvision.vision.pipe.impl;
 
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.nativewindow.NativeSurface;
+import com.jogamp.nativewindow.egl.EGLGraphicsDevice;
 import com.jogamp.opengl.*;
+import com.jogamp.opengl.egl.EGL;
+import com.jogamp.opengl.egl.EGLExt;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureData;
+import jogamp.nativewindow.BcmVCArtifacts;
 import jogamp.opengl.GLOffscreenAutoDrawableImpl;
+import jogamp.opengl.egl.*;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.raspi.PicamJNI;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -23,6 +31,22 @@ public class GPUAccelerator {
   private static final String k_vertexShader = String.join("\n",
           "#version 100",
           "",
+//          "void main() {",
+//          "  vec2 positions[4] = vec2[](",
+//          "      vec2(-1, -1),",
+//          "      vec2(+1, -1),",
+//          "      vec2(-1, +1),",
+//          "      vec2(+1, +1)",
+//          "  const vec2 coords[4] = vec2[](",
+//          "      vec2(0, 0),",
+//          "      vec2(1, 0),",
+//          "      vec2(0, 1),",
+//          "      vec2(1, 1)",
+//          "  );",
+//          "",
+//          "  textureCoords = coords[gl_VertexID];",
+//          "  gl_Position = vec4(positions[gl_VertexID], 0.0, 1.0);",
+//          "}"
           "attribute vec4 position;",
           "",
           "void main() {",
@@ -61,7 +85,8 @@ public class GPUAccelerator {
           // Important! We do this .bgr swizzle because the image comes in as BGR but we pretend it's RGB for convenience+speed
           "  vec3 col = texture2D(texture0, uv).bgr;",
           // Only the first value in the vec4 gets used for GL_RED, and only the last value gets used for GL_ALPHA
-          "  gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);",
+//          "  gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);",
+          "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);",
           "}"
   );
   private static final int k_startingWidth = 1280, k_startingHeight = 720;
@@ -90,12 +115,12 @@ public class GPUAccelerator {
   private final GLProfile profile;
   private final int outputFormat;
   private final TransferMode transferMode;
-  private final GLOffscreenAutoDrawableImpl.FBOImpl drawable;
+  private final GLAutoDrawable drawable;
   private final Texture texture;
   // The texture uniform holds the image that's being processed
   // The resolution uniform holds the current image resolution
   // The lower and upper uniforms hold the lower and upper HSV limits for thresholding
-  private final int textureUniformId, resolutionUniformId, lowerUniformId, upperUniformId;
+  private final int textureUniformId, resolutionUniformId, lowerUniformId, upperUniformId, programId;
 
   private final Logger logger = new Logger(GPUAccelerator.class, LogGroup.General);
 
@@ -113,27 +138,35 @@ public class GPUAccelerator {
     profile = GLProfile.get((transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) ? GLProfile.GLES2 : GLProfile.GL4ES3);
     final var capabilities = new GLCapabilities(profile);
     capabilities.setHardwareAccelerated(true);
-    capabilities.setFBO(true);
+    if (transferMode == TransferMode.DIRECT_OMX) {
+      // The VideoCore IV closed source driver only works with offscreen PBuffers, not an offscreen FBO
+      // The open source driver (Mesa) *does* work with offscreen PBuffers, but OMX doesn't work with Mesa, so we use PBuffers
+//      capabilities.setPBuffer(true);
+    } else {
+      capabilities.setFBO(true);
+    }
     capabilities.setDoubleBuffered(false);
-    capabilities.setOnscreen(false);
+    capabilities.setOnscreen(true);
     capabilities.setRedBits(8);
-    capabilities.setBlueBits(0);
-    capabilities.setGreenBits(0);
+    capabilities.setBlueBits(8);
+    capabilities.setGreenBits(8);
     capabilities.setAlphaBits(0);
+    logger.info("VideoCore IV used: " + BcmVCArtifacts.guessVCIVUsed(true));
+    logger.info("OpenGL ARB context disabled: " + profile.disableOpenGLARBContext);
 
     // Set up the offscreen area we're going to draw to
-    final var factory = GLDrawableFactory.getFactory(profile);
-    drawable = (GLOffscreenAutoDrawableImpl.FBOImpl) factory.createOffscreenAutoDrawable(factory.getDefaultDevice(), capabilities, new DefaultGLCapabilitiesChooser(), k_startingWidth, k_startingHeight);
+    final EGLDrawableFactory factory = (EGLDrawableFactory) EGLDrawableFactory.getEGLFactory();
+    drawable = factory.createOffscreenAutoDrawable(factory.getDefaultDevice(), capabilities, new DefaultGLCapabilitiesChooser(), k_startingWidth, k_startingHeight); //factory.createDummyAutoDrawable(factory.getDefaultDevice(), true, capabilities, new DefaultGLCapabilitiesChooser());
     drawable.display();
     drawable.getContext().makeCurrent();
 
     var sb = new StringBuilder();
     JoglVersion.getDefaultOpenGLInfo(factory.getDefaultDevice(), sb, true);
-    System.out.println(sb.toString());
+    logger.trace(sb.toString());
 
     // Get an OpenGL context; OpenGL ES 2.0 and OpenGL 2.0 are compatible with all the coprocs we care about but not compatible with PBOs. Open GL ES 3.0 and OpenGL 4.0 are compatible with select coprocs *and* PBOs
-    gl = (transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) ? drawable.getGL().getGLES2() : drawable.getGL().getGL4ES3();
-    final int programId = gl.glCreateProgram();
+    gl = (transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) ? new DebugGLES2(drawable.getGL().getGLES2()) : drawable.getGL().getGL4ES3();
+    programId = gl.glCreateProgram();
 
     if (transferMode == TransferMode.NONE && !gl.glGetString(GL_EXTENSIONS).contains("GL_EXT_texture_rg")) {
       logger.warn("OpenGL ES 2.0 implementation does not have the 'GL_EXT_texture_rg' extension, falling back to GL_ALPHA instead of GL_RED output format");
@@ -142,37 +175,41 @@ public class GPUAccelerator {
       outputFormat = GL_RED;
     }
 
-    // JOGL creates a framebuffer color attachment that has RGB set as the format, which is not appropriate for us because we want a single-channel format
-    // We make our own FBO color attachment to remedy this
-    // Detach and destroy the FBO color attachment that JOGL made for us
-    drawable.getFBObject(GL_FRONT).detachColorbuffer(gl, 0, true);
-    // Equivalent to calling glBindFramebuffer
-    drawable.getFBObject(GL_FRONT).bind(gl);
     if (transferMode != TransferMode.DIRECT_OMX) {
-      // Create a color attachment texture to hold our rendered output
-      var colorBufferIds = GLBuffers.newDirectIntBuffer(1);
-      gl.glGenTextures(1, colorBufferIds);
-      gl.glBindTexture(GL_TEXTURE_2D, colorBufferIds.get(0));
-      gl.glTexImage2D(GL_TEXTURE_2D, 0, outputFormat == GL_RED ? GL_R8 : GL_ALPHA8, k_startingWidth, k_startingHeight, 0, outputFormat, GL_UNSIGNED_BYTE, null);
-      gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-      gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-      // Attach the texture to the framebuffer
-      gl.glBindTexture(GL_TEXTURE_2D, 0);
-      gl.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBufferIds.get(0), 0);
-      // Cleanup
-      gl.glBindTexture(GL_TEXTURE_2D, 0);
-    } else if (false) {
-      // Create a color attachment texture to hold our rendered output
-      var renderBufferIds = GLBuffers.newDirectIntBuffer(1);
-      gl.glGenRenderbuffers(1, renderBufferIds);
-      gl.glBindRenderbuffer(GL_RENDERBUFFER, renderBufferIds.get(0));
-      gl.glRenderbufferStorage(GL_RENDERBUFFER, outputFormat == GL_RED ? GL_R8 : GL_ALPHA8, k_startingWidth, k_startingHeight);
-      // Attach the texture to the framebuffer
-      gl.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderBufferIds.get(0));
-      // Cleanup
-      gl.glBindRenderbuffer(GL_RENDERBUFFER, 0);
+      var fboDrawable = (GLOffscreenAutoDrawableImpl.FBOImpl) drawable;
+
+      // JOGL creates a framebuffer color attachment that has RGB set as the format, which is not appropriate for us because we want a single-channel format
+      // We make our own FBO color attachment to remedy this
+      // Detach and destroy the FBO color attachment that JOGL made for us
+      fboDrawable.getFBObject(GL_FRONT).detachColorbuffer(gl, 0, true);
+      // Equivalent to calling glBindFramebuffer
+      fboDrawable.getFBObject(GL_FRONT).bind(gl);
+      if (transferMode != TransferMode.DIRECT_OMX) {
+        // Create a color attachment texture to hold our rendered output
+        var colorBufferIds = GLBuffers.newDirectIntBuffer(1);
+        gl.glGenTextures(1, colorBufferIds);
+        gl.glBindTexture(GL_TEXTURE_2D, colorBufferIds.get(0));
+        gl.glTexImage2D(GL_TEXTURE_2D, 0, outputFormat == GL_RED ? GL_R8 : GL_ALPHA8, k_startingWidth, k_startingHeight, 0, outputFormat, GL_UNSIGNED_BYTE, null);
+        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        // Attach the texture to the framebuffer
+        gl.glBindTexture(GL_TEXTURE_2D, 0);
+        gl.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, colorBufferIds.get(0), 0);
+        // Cleanup
+        gl.glBindTexture(GL_TEXTURE_2D, 0);
+      } else if (false) {
+        // Create a color attachment texture to hold our rendered output
+        var renderBufferIds = GLBuffers.newDirectIntBuffer(1);
+        gl.glGenRenderbuffers(1, renderBufferIds);
+        gl.glBindRenderbuffer(GL_RENDERBUFFER, renderBufferIds.get(0));
+        gl.glRenderbufferStorage(GL_RENDERBUFFER, outputFormat == GL_RED ? GL_R8 : GL_ALPHA8, k_startingWidth, k_startingHeight);
+        // Attach the texture to the framebuffer
+        gl.glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, renderBufferIds.get(0));
+        // Cleanup
+        gl.glBindRenderbuffer(GL_RENDERBUFFER, 0);
+      }
+      fboDrawable.getFBObject(GL_FRONT).unbind(gl);
     }
-    drawable.getFBObject(GL_FRONT).unbind(gl);
 
     // Check that the FBO is attached
     int fboStatus = gl.glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -237,6 +274,36 @@ public class GPUAccelerator {
     texture.setTexParameteri(gl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     texture.setTexParameteri(gl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
+    // Get pointers to our current EGLDisplay, EGLSurface, and EGLContext
+    if (transferMode == TransferMode.DIRECT_OMX) {
+      logger.info("Start DIRECT_OMX init");
+      // We don't have to call any of the EGL init functions, all the EGL devices are premade
+      // The EGLContext provides a gateway to what we want
+      EGLContext eglContext = (EGLContext) gl.getContext();
+      EGLExt eglExt = eglContext.getEGLExt();
+
+      logger.info("Handles: " + drawable.getNativeSurface().getDisplayHandle() + ", " + eglContext.getHandle());
+
+      var params = Buffers.newDirectIntBuffer(1);
+      params.put(0, EGL.EGL_NONE);
+      long eglImageHandle = eglExt.eglCreateImageKHR(
+              drawable.getNativeSurface().getDisplayHandle(), eglContext.getHandle(),
+              EGLExt.EGL_GL_TEXTURE_2D_KHR,
+              texture.getTextureObject(),
+              params
+      );
+      // Is this the same as EGL_NO_IMAGE_KHR? Seems to be ok and notices if we have an error.
+      if (eglImageHandle == EGLExt.EGL_NO_IMAGE) {
+        throw new RuntimeException("EGLImage handle is invalid");
+      }
+
+      logger.info("Setting EGLImage handle");
+      boolean err = PicamJNI.setEGLImageHandle(eglImageHandle);
+      if (err) {
+        throw new RuntimeException("Couldn't set EGLImage handle");
+      }
+    }
+
     // Set up a uniform holding our image as a texture
     textureUniformId = gl.glGetUniformLocation(programId, "texture0");
     gl.glUniform1i(textureUniformId, 0);
@@ -254,6 +321,13 @@ public class GPUAccelerator {
     FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(k_vertexPositions);
     gl.glBindBuffer(GL_ARRAY_BUFFER, vertexVBOIds.get(0));
     gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
+
+    // This is a pretty unique color; good for spotting issues
+    gl.glClearColor(0.15f, 0.25f, 0.35f, 1.0f);
+    gl.glEnable(GL_CULL_FACE);
+    gl.glEnable(GL_DEPTH_TEST);
+    texture.enable(gl);
+    texture.bind(gl);
 
     if (transferMode == TransferMode.SINGLE_BUFFERED || transferMode == TransferMode.DOUBLE_BUFFERED) {
       // Set up pixel unpack buffer (a PBO to transfer image data to the GPU)
@@ -278,10 +352,6 @@ public class GPUAccelerator {
       }
       gl.glBindBuffer(GLES3.GL_PIXEL_PACK_BUFFER, 0);
     }
-  }
-
-  public int getInputTextureID() {
-    return texture.getTextureObject();
   }
 
   private static int createShader(GL2ES2 gl, int programId, String glslCode, int shaderType) {
@@ -312,11 +382,46 @@ public class GPUAccelerator {
     return shaderId;
   }
 
+  public void redrawGL(Scalar hsvLower, Scalar hsvUpper, int width, int height) {
+    gl.glUseProgram(programId);
+
+    // Send vertex positions for a fullscreen quad
+    gl.glBindBuffer(GL_ARRAY_BUFFER, vertexVBOIds.get(0));
+    gl.glEnableVertexAttribArray(k_positionVertexAttribute);
+    gl.glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
+
+    gl.glActiveTexture(GL_TEXTURE0);
+    texture.bind(gl);
+    gl.glUniform1i(textureUniformId, 0);
+
+    // Put values in a uniform holding the image resolution
+    gl.glUniform2f(resolutionUniformId, width, height);
+
+    // Put values in threshold uniforms
+    var lowr = hsvLower.val;
+    var upr = hsvUpper.val;
+    gl.glUniform3f(lowerUniformId, (float) lowr[0], (float) lowr[1], (float) lowr[2]);
+    gl.glUniform3f(upperUniformId, (float) upr[0], (float) upr[1], (float) upr[2]);
+
+    gl.glDrawArrays(GL_TRIANGLE_STRIP, 0, k_vertexPositions.length);
+
+    gl.glBindTexture(GL_TEXTURE_2D, 0);
+    gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    gl.glUseProgram(0);
+
+    ByteBuffer buffer = GLBuffers.newDirectByteBuffer(width * height * 3);
+    gl.glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+    for (int i = 0; i < width * height * 3; i += 3) {
+      System.out.println(buffer.get(i) + ", " + buffer.get(i + 1) + ", " + buffer.get(i + 2));
+    }
+  }
+
   public Mat process(Mat in, Scalar hsvLower, Scalar hsvUpper) {
     if (in.width() != previousWidth && in.height() != previousHeight) {
       logger.debug("Resizing OpenGL viewport, byte buffers, and PBOs");
 
-      drawable.setSurfaceSize(in.width(), in.height());
+//      drawable.setSurfaceSize(in.width(), in.height());
       gl.glViewport(0, 0, in.width(), in.height());
 
       previousWidth = in.width();
@@ -343,12 +448,6 @@ public class GPUAccelerator {
       unpackNextIndex = (unpackIndex + 1) % 2;
     }
 
-    // Reset the fullscreen quad
-    gl.glBindBuffer(GL_ARRAY_BUFFER, vertexVBOIds.get(0));
-    gl.glEnableVertexAttribArray(k_positionVertexAttribute);
-    gl.glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
-    gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-
     // Load and bind our image as a 2D texture
     gl.glActiveTexture(GL_TEXTURE0);
     texture.enable(gl);
@@ -356,7 +455,7 @@ public class GPUAccelerator {
 
     // Load our image into the texture
     in.get(0, 0, inputBytes);
-    if (transferMode == TransferMode.NONE) {
+    if (transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) { // TODO: Remove DIRECT_OMX and use OMX itself to copy out single-channel data
       ByteBuffer buf = ByteBuffer.wrap(inputBytes);
       // (We're actually taking in BGR even though this says RGB; it's much easier and faster to switch it around in the fragment shader)
       texture.updateImage(gl, new TextureData(profile, GL_RGB8, in.width(), in.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, false, false, false, buf, null));
@@ -382,22 +481,7 @@ public class GPUAccelerator {
       gl.glBindBuffer(GLES3.GL_PIXEL_UNPACK_BUFFER, 0);
     }
 
-    // Put values in a uniform holding the image resolution
-    gl.glUniform2f(resolutionUniformId, in.width(), in.height());
-
-    // Put values in threshold uniforms
-    var lowr = hsvLower.val;
-    var upr = hsvUpper.val;
-    gl.glUniform3f(lowerUniformId, (float) lowr[0], (float) lowr[1], (float) lowr[2]);
-    gl.glUniform3f(upperUniformId, (float) upr[0], (float) upr[1], (float) upr[2]);
-
-    // Draw the fullscreen quad
-    gl.glDrawArrays(GL_TRIANGLE_STRIP, 0, k_vertexPositions.length);
-
-    // Cleanup
-    texture.disable(gl);
-    gl.glDisableVertexAttribArray(k_positionVertexAttribute);
-    gl.glUseProgram(0);
+    redrawGL(hsvLower, hsvUpper, in.width(), in.height());
 
     if (transferMode == TransferMode.NONE) {
       return saveMatNoPBO(gl, in.width(), in.height());

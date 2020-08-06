@@ -1,7 +1,5 @@
 package org.photonvision.raspi;
 
-import org.photonvision.common.util.TestUtils;
-
 import java.nio.file.Path;
 
 public class PicamJNI {
@@ -10,15 +8,14 @@ public class PicamJNI {
        System.load(Path.of("src/main/resources/native/libpicam.so").toAbsolutePath().toString());
     }
 
-    // Everything here is static because only one picam is really ever supported
+    // Everything here is static because multiple picams are unsupported at the hardware level
 
     /**
-     * Called once to make the input texture (held through JOGL) be a pointer (in the GPU) to the data captured by the camera.
+     * Gives the native code a handle to an EGLImage, which is a texture that's filled with camera data to be processed.
      *
-     * @param textureId OpenGL texture ID for the input texture used by the fragment shader.
      * @return true on error.
      */
-    public static native boolean createImageKHR(int textureId);
+    public static native boolean setEGLImageHandle(long eglImage);
 
     /**
      * Called once for each video mode change. createImageKHR must be called once first. Starts a native thread that sets up OpenMAX and stays alive until destroyCamera is called.

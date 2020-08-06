@@ -169,6 +169,10 @@ spotless {
     }
 }
 
+run {
+//    systemProperty "jogl.debug.GLContext", true
+}
+
 jacocoTestReport {
     dependsOn test // Tests are required to run before generating the report
     
