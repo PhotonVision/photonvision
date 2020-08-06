@@ -35,14 +35,14 @@ export default new Vuex.Store({
                 nickname: "Unknown",
                 videoFormatList: [
                     {
-                        "width": 1920,
-                        "height": 1080,
+                        "width": 1280,
+                        "height": 720,
                         "fps": 30,
                         "pixelFormat": "BGR"
                     },
                     {
-                        "width": 1280,
-                        "height": 720,
+                        "width": 1920,
+                        "height": 1080,
                         "fps": 30,
                         "pixelFormat": "BGR"
                     }
@@ -201,6 +201,7 @@ export default new Vuex.Store({
         },
 
         mutateCalibrationState: (state, payload) => {
+            console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' + JSON.stringify(payload))
             for (let key in payload) {
                 if (!payload.hasOwnProperty(key)) continue;
                 const value = payload[key];

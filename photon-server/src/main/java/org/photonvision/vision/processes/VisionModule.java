@@ -18,6 +18,7 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -156,9 +157,9 @@ public class VisionModule {
     public void startCalibration(UICalibrationData data) {
         var settings = pipelineManager.calibration3dPipeline.getSettings();
         settings.cameraVideoModeIndex = data.videoModeIndex;
-        visionSource.getSettables().setVideoModeInternal(data.videoModeIndex);
+        visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
         logger.info("Starting calibration at resolution index " + data.videoModeIndex);
-        settings.gridSize = data.squareSizeIn;
+        settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;

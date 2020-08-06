@@ -51,7 +51,6 @@ public class Calibrate3dPipeline
     private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
 
     // Getter methods have been set for calibrate and takeSnapshot
-    private int numSnapshots = 0;
     private boolean takeSnapshot = false;
 
     // Output of the corners
@@ -91,37 +90,14 @@ public class Calibrate3dPipeline
         var findBoardResult = findBoardCornersPipe.run(frame.image.getMat()).output;
 
         if (takeSnapshot) {
-            if (findBoardResult != null) {
-                //                Mat board = new Mat();
-                //                frame.image.getMat().copyTo(board);
-                //                // Add board to snapshots
-                //                boardSnapshots.add(board);
+            // Set snapshot to false even if we don't find a board
+            takeSnapshot = false;
 
+            if (findBoardResult != null) {
                 foundCornersList.add(findBoardResult);
 
-                // Set snapshot to false and increment number of snapshots taken
-                takeSnapshot = false;
-                numSnapshots++;
-
                 // update the UI
-                try {
-                    var state =
-                            SerializationUtils.objectToHashMap(
-                                    new UICalibrationData(
-                                            numSnapshots,
-                                            settings.cameraVideoModeIndex,
-                                            kMinSnapshots,
-                                            hasEnough(),
-                                            Units.metersToInches(settings.gridSize),
-                                            settings.boardWidth,
-                                            settings.boardHeight,
-                                            settings.boardType));
-                    var map = new SocketHandler.UIMap();
-                    map.put("calibrationData", state);
-                    SocketHandler.getInstance().broadcastMessage(map, null);
-                } catch (JsonProcessingException e) {
-                    logger.error(Arrays.toString(e.getStackTrace()));
-                }
+                broadcastState();
 
                 return new CVPipelineResult(
                         MathUtils.nanosToMillis(sumPipeNanosElapsed), Collections.emptyList(), frame);
@@ -162,13 +138,35 @@ public class Calibrate3dPipeline
     }
 
     public void finishCalibration() {
-        numSnapshots = 0;
         foundCornersList.forEach(
                 it -> {
                     it.getMiddle().release();
                     it.getRight().release();
                 });
         foundCornersList.clear();
+
+        broadcastState();
+    }
+
+    private void broadcastState() {
+        var state =
+            SerializationUtils.objectToHashMap(
+                new UICalibrationData(
+                    foundCornersList.size(),
+                    settings.cameraVideoModeIndex,
+                    kMinSnapshots,
+                    hasEnough(),
+                    Units.metersToInches(settings.gridSize),
+                    settings.boardWidth,
+                    settings.boardHeight,
+                    settings.boardType));
+        var map = new SocketHandler.UIMap();
+        map.put("calibrationData", state);
+        try {
+            SocketHandler.getInstance().broadcastMessage(map, null);
+        } catch (JsonProcessingException e) {
+            logger.error("Unable to send cal data!", e);
+        }
     }
 
     public boolean removeSnapshot(int index) {

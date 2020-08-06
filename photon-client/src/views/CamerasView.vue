@@ -67,7 +67,7 @@
                 md="6"
               >
                 <CVselect
-                  v-model="calibrationVideoMode"
+                  v-model="selectedFilteredResIndex"
                   name="Resolution"
                   select-cols="7"
                   :list="stringResolutionList"
@@ -79,10 +79,11 @@
                   name="Board Type"
                   select-cols="7"
                   :list="['Chessboard', 'Dot Grid']"
+                  :disabled="isCalibrating"
                   tooltip="Calibration board pattern to use"
                 />
                 <CVnumberinput
-                  v-model="squareSize"
+                  v-model="squareSizeIn"
                   name="Pattern Spacing (in)"
                   label-cols="5"
                   tooltip="Spacing between pattern features in inches"
@@ -125,13 +126,13 @@
                         </th>
                         <th class="text-center">
                           <tooltipped-label
-                            tooltip="Mean"
-                            text="Mean"
+                            tooltip="Average reprojection error of the calibration, in pixels"
+                            text="Mean Error"
                           />
                         </th>
                         <th class="text-center">
                           <tooltipped-label
-                            tooltip="Standard Deviation"
+                            tooltip="Standard deviation of the mean error, in pixels"
                             text="Standard Deviation"
                           />
                         </th>
@@ -208,7 +209,8 @@
               <v-col align-self="center">
                 <v-btn
                   small
-                  color="red"
+                  :color="hasEnough ? 'accent' : 'red'"
+                  :class="hasEnough ? 'black--text' : 'white---text'"
                   style="width: 100%;"
                   :disabled="checkCancellation"
                   @click="sendCalibrationFinish"
@@ -285,13 +287,12 @@ export default {
                 color: "success",
                 text: ""
             },
-            squareSize: 1.0,
             snack: false,
+            filteredVideomodeIndex: 0
         }
     },
     computed: {
         disallowCalibration() {
-            console.log("aaaa" + this.calibrationData.boardType)
             return !(this.calibrationData.boardType === 0 || this.calibrationData.boardType === 1);
         },
         checkCancellation() {
@@ -348,12 +349,6 @@ export default {
             }
         },
 
-        calibrationVideoMode: {
-            get() { return this.calibrationData.videoModeIndex },
-            set(value) {
-                this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[value].index});
-            }
-        },
         boardType: {
             get() {
                 return this.calibrationData.boardType
@@ -393,6 +388,11 @@ export default {
                 this.$store.commit('mutateCalibrationState', {['patternHeight']: value})
             }
         },
+        squareSizeIn: {
+            get() {
+                return this.calibrationData.squareSizeIn
+            }
+        },
         calibrationData: {
             get() {
                 return this.$store.state.calibrationData
@@ -402,9 +402,21 @@ export default {
             get() {
                 return this.$store.getters.currentPipelineIndex === -2;
             }
-        }
+        },
+
+        selectedFilteredResIndex: {
+            get() {
+                return this.filteredVideomodeIndex
+            },
+            set(i) {
+                console.log(`Setting filtered index to ${i}`)
+                this.filteredVideomodeIndex = i
+                this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[i].index});
+            }
+        },
     },
     methods: {
+
         getCalibrationCoeffs(resolution) {
             const calList = this.$store.getters.calibrationList;
             let ret = null;
@@ -457,28 +469,29 @@ export default {
         },
         sendCalibrationFinish() {
             let connection_string = "/api/settings/endCalibration";
-            this.axios.post("http://" + this.$address + connection_string, this.$store.getters.currentCameraIndex).then((response) => {
-                    if (response.status === 200) {
-                        this.snackbar = {
-                            color: "success",
-                            text: "Calibration successful! \n" +
-                                "Standard deviation: " + response.data.toFixed(5)
-                        };
-                        this.snack = true;
-                    }
-                    this.
-                    this.snapshotAmount = 0;
-                }
-            ).catch(() => {
-                this.snackbar = {
-                    color: "error",
-                    text: "Calibration Failed!"
-                };
-                this.snack = true;
-                this.isCalibrating = false;
-                this.hasEnough = false;
-                this.snapshotAmount = 0;
-            });
+            this.axios.post("http://" + this.$address + connection_string, this.$store.getters.currentCameraIndex)
+            //     .then((response) => {
+            //         if (response.status === 200) {
+            //             this.snackbar = {
+            //                 color: "success",
+            //                 text: "Calibration successful! \n" +
+            //                     "Standard deviation: " + response.data.toFixed(5)
+            //             };
+            //             this.snack = true;
+            //         }
+            //         this.
+            //         this.snapshotAmount = 0;
+            //     }
+            // ).catch(() => {
+            //     this.snackbar = {
+            //         color: "error",
+            //         text: "Calibration Failed!"
+            //     };
+            //     this.snack = true;
+            //     this.isCalibrating = false;
+            //     this.hasEnough = false;
+            //     this.snapshotAmount = 0;
+            // });
         }
     }
 }

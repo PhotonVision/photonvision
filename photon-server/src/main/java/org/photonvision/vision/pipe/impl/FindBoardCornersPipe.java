@@ -65,7 +65,7 @@ public class FindBoardCornersPipe
             for (int i = 0; i < patternSize.height * patternSize.width; i++) {
                 objectPoints.push_back(
                         new MatOfPoint3f(
-                                new Point3((double) i / patternSize.width, i % patternSize.width, 0.0f)));
+                                new Point3((double) i / patternSize.width * params.gridSize, i % patternSize.width * params.gridSize, 0.0f)));
             }
         } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
             // Here we need to alternate the amount of dots per column since a dot board is not
