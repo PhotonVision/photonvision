@@ -60,119 +60,49 @@
           <v-card-title>Camera Calibration</v-card-title>
 
           <div class="ml-5">
-            <v-row cols="12">
+            <v-row>
               <!-- Calibration input -->
-              <v-col cols="7">
+              <v-col cols="12" md="6">
                 <CVselect
                   v-model="calibrationVideoMode"
                   name="Resolution"
+                  select-cols="7"
                   :list="stringResolutionList"
                   :disabled="isCalibrating"
-                  tooltip="Resolution to calibrate in."
+                  tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
                 />
-                <br>
                 <CVselect
                   v-model="boardType"
                   name="Board Type"
-                  select-cols="8"
+                  select-cols="7"
                   :list="['Chessboard', 'Dot Grid']"
-                  tooltip="Type of board to use."
+                  tooltip="Calibration board pattern to use"
                 />
                 <CVnumberinput
                   v-model="squareSize"
                   name="Pattern Spacing (in)"
+                  label-cols="5"
                   tooltip="Spacing between pattern features in inches"
-                  label-cols="7"
                   :disabled="isCalibrating"
                 />
                 <CVnumberinput
                   v-model="boardWidth"
                   name="Board width"
-                  tooltip="Width of the board in dots or corners. With the standard chessboard, this is usually 7."
-                  label-cols="7"
+                  label-cols="5"
+                  tooltip="Width of the board in dots or corners; with the standard chessboard, this is usually 7"
                   :disabled="isCalibrating"
                 />
                 <CVnumberinput
                   v-model="boardHeight"
                   name="Board height"
-                  tooltip="Height of the board in dots or corners. With the standard chessboard, this is usually 7."
-                  label-cols="7"
+                  label-cols="5"
+                  tooltip="Height of the board in dots or corners; with the standard chessboard, this is usually 7"
                   :disabled="isCalibrating"
                 />
-                <v-row>
-                  <v-col>
-                    <v-btn
-                      small
-                      color="secondary"
-                      :disabled="disallowCalibration"
-                      @click="sendCalibrationMode"
-                    >
-                      {{ calibrationModeButton.text }}
-                    </v-btn>
-                  </v-col>
-                  <v-col>
-                    <v-btn
-                      small
-                      color="red"
-                      :disabled="checkCancellation"
-                      @click="sendCalibrationFinish"
-                    >
-                      {{ cancellationModeButton.text }}
-                    </v-btn>
-                  </v-col>
-                  <v-col>
-                    <v-btn
-                      color="accent"
-                      small
-                      outlined
-                      @click="downloadBoard"
-                    >
-                      <v-icon left>
-                        mdi-download
-                      </v-icon>
-                      Download Checkerboard
-                    </v-btn>
-                    <a
-                      ref="calibrationFile"
-                      style="color: black; text-decoration: none; display: none"
-                      :href="require('../assets/chessboard.png')"
-                      download="chessboard.png"
-                    />
-                  </v-col>
-                </v-row>
-                <v-row v-if="isCalibrating">
-                  <v-col>
-                    <span>Snapshots: {{ snapshotAmount }} of at least {{ minSnapshots }}</span>
-                  </v-col>
-                </v-row>
-                <div v-if="isCalibrating">
-                  <CVslider
-                    v-model="$store.getters.currentPipelineSettings.cameraExposure"
-                    name="Exposure"
-                    :min="0"
-                    :max="100"
-                    @input="e => handlePipelineUpdate('cameraExposure', e)"
-                  />
-                  <CVslider
-                    v-model="this.$store.getters.currentPipelineSettings.cameraBrightness"
-                    name="Brightness"
-                    :min="0"
-                    :max="100"
-                    @input="e => handlePipelineUpdate('cameraBrightness', e)"
-                  />
-                  <CVslider
-                    v-if="$store.getters.currentPipelineSettings.cameraGain !== -1"
-                    v-model="$store.getters.currentPipelineSettings.cameraGain"
-                    name="Gain"
-                    :min="0"
-                    :max="100"
-                    @input="e => handlePipelineUpdate('cameraGain', e)"
-                  />
-                </div>
               </v-col>
 
               <!-- Calibrated table -->
-              <v-col cols="5">
+              <v-col cols="12" md="6">
                 <v-row
                   align="start"
                   class="pb-4"
@@ -182,35 +112,108 @@
                     height="100%"
                     dense
                   >
-                    <template v-slot:default>
-                      <thead style="font-size: 1.25rem;">
-                        <tr>
-                          <th class="text-center">
-                            Resolution
-                          </th>
-                          <th class="text-center">
-                            Mean Error
-                          </th>
-                          <th class="text-center">
-                            Standard Deviation
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr
-                          v-for="(value, index) in filteredResolutionList"
-                          :key="index"
-                        >
-                          <td> {{ value.width }} X {{ value.height }} </td>
-                          <td>
-                            {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "—" }}
-                          </td>
-                          <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "—" }} </td>
-                        </tr>
-                      </tbody>
-                    </template>
+                    <thead style="font-size: 1.25rem;">
+                      <tr>
+                        <th class="text-center">
+                          <tooltipped-label text="Resolution"/>
+                        </th>
+                        <th class="text-center">
+                          <tooltipped-label tooltip="Mean" text="Mean"/>
+                        </th>
+                        <th class="text-center">
+                          <tooltipped-label tooltip="Standard Deviation" text="Standard Deviation"/>
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="(value, index) in filteredResolutionList"
+                        :key="index"
+                      >
+                        <td> {{ value.width }} X {{ value.height }} </td>
+                        <td>
+                          {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "—" }}
+                        </td>
+                        <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "—" }} </td>
+                      </tr>
+                    </tbody>
                   </v-simple-table>
                 </v-row>
+                <v-row justify="center">
+                  <v-chip v-show="isCalibrating" label :color="snapshotAmount < 25 ? 'grey' : 'secondary'">Snapshots: {{ snapshotAmount }} of at least {{ minSnapshots }}</v-chip>
+                </v-row>
+              </v-col>
+            </v-row>
+
+            <v-row v-if="isCalibrating">
+              <v-col cols="12" class="pt-0">
+                <CVslider
+                        v-model="$store.getters.currentPipelineSettings.cameraExposure"
+                        name="Exposure"
+                        :min="0"
+                        :max="100"
+                        @input="e => handlePipelineUpdate('cameraExposure', e)"
+                />
+                <CVslider
+                        v-model="this.$store.getters.currentPipelineSettings.cameraBrightness"
+                        name="Brightness"
+                        :min="0"
+                        :max="100"
+                        @input="e => handlePipelineUpdate('cameraBrightness', e)"
+                />
+                <CVslider
+                        v-if="$store.getters.currentPipelineSettings.cameraGain !== -1"
+                        v-model="$store.getters.currentPipelineSettings.cameraGain"
+                        name="Gain"
+                        :min="0"
+                        :max="100"
+                        @input="e => handlePipelineUpdate('cameraGain', e)"
+                />
+              </v-col>
+            </v-row>
+
+            <v-row>
+              <v-col align-self="center">
+                <v-btn
+                        small
+                        color="secondary"
+                        style="width: 100%;"
+                        :disabled="disallowCalibration"
+                        @click="sendCalibrationMode"
+                >
+                  {{ calibrationModeButton.text }}
+                </v-btn>
+              </v-col>
+              <v-col align-self="center">
+                <v-btn
+                        small
+                        color="red"
+                        style="width: 100%;"
+                        :disabled="checkCancellation"
+                        @click="sendCalibrationFinish"
+                >
+                  {{ cancellationModeButton.text }}
+                </v-btn>
+              </v-col>
+              <v-col>
+                <v-btn
+                        color="accent"
+                        small
+                        outlined
+                        style="width: 100%;"
+                        @click="downloadBoard"
+                >
+                  <v-icon left>
+                    mdi-download
+                  </v-icon>
+                  Download Checkerboard
+                </v-btn>
+                <a
+                        ref="calibrationFile"
+                        style="color: black; text-decoration: none; display: none"
+                        :href="require('../assets/chessboard.png')"
+                        download="chessboard.png"
+                />
               </v-col>
             </v-row>
           </div>
@@ -244,10 +247,12 @@ import CVselect from '../components/common/cv-select';
 import CVnumberinput from '../components/common/cv-number-input';
 import CVslider from '../components/common/cv-slider';
 import CVimage from "../components/common/cv-image";
+import TooltippedLabel from "../components/common/cv-tooltipped-label";
 
 export default {
     name: 'Cameras',
     components: {
+      TooltippedLabel,
         CVselect,
         CVnumberinput,
         CVslider,
@@ -303,20 +308,20 @@ export default {
                         it['index'] = i;
                         const calib = this.getCalibrationCoeffs(it);
                         if(calib != null) {
-                            it['standardDeviation'] = calib.standardDeviation
-                            it['mean'] = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length
+                            it['standardDeviation'] = calib.standardDeviation;
+                            it['mean'] = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
                         }
-                        filtered.push(it)
+                        filtered.push(it);
                     }
-                })
-                filtered.sort((a, b) => (b.width + b.height) - (a.width + a.height))
+                });
+                filtered.sort((a, b) => (b.width + b.height) - (a.width + a.height));
                 return filtered
             }
         },
 
         stringResolutionList: {
             get() {
-                return this.filteredResolutionList.map(res => `${res['width']} X ${res['height']}`)
+                return this.filteredResolutionList.map(res => `${res['width']} X ${res['height']}`);
             }
         },
 
@@ -332,7 +337,7 @@ export default {
         calibrationVideoMode: {
             get() { return this.calibrationData.videoModeIndex },
             set(value) {
-                this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[value].index})
+                this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[value].index});
             }
         },
         boardType: {
@@ -340,7 +345,7 @@ export default {
                 return this.calibrationData.boardType
             },
             set(value) {
-                this.$store.commit('mutateCalibrationState', {['boardType']: value})
+                this.$store.commit('mutateCalibrationState', {['boardType']: value});
             }
         },
         snapshotAmount: {

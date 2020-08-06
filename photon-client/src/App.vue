@@ -154,7 +154,7 @@
         },
         data: () => ({
             // Used so that we can switch back to the previously selected pipeline after camera calibration
-            previouslySelectedIndex: null,
+            previouslySelectedIndex: undefined,
             timer: undefined,
             isLogger: false,
             log: "",
@@ -221,7 +221,7 @@
 
             let closed = () => {
                 this.$store.state.backendConnected = false;
-            }
+            };
             this.$options.sockets.onclose = closed;
             this.$options.sockets.onerror = closed;
 
@@ -273,7 +273,7 @@
             },
             rollbackPipelineIndex() {
                 if (this.previouslySelectedIndex !== null) {
-                    this.handleInputWithIndex('currentPipeline', this.previouslySelectedIndex)
+                    this.handleInputWithIndex('currentPipeline', this.previouslySelectedIndex || 0);
                 }
                 this.previouslySelectedIndex = null;
             }
