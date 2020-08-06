@@ -76,7 +76,7 @@ public class Calibrate3dPipeline
         findBoardCornersPipe.setParams(findCornersPipeParams);
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
-                new Calibrate3dPipe.CalibratePipeParams(settings.resolution);
+                new Calibrate3dPipe.CalibratePipeParams(new Size(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight));
         calibrate3dPipe.setParams(calibratePipeParams);
     }
 
@@ -136,11 +136,14 @@ public class Calibrate3dPipeline
     }
 
     public boolean hasEnough() {
-        return numSnapshots >= kMinSnapshots;
+        return foundCornersList.size() >= kMinSnapshots;
     }
 
     public CameraCalibrationCoefficients tryCalibration() {
-        if (!hasEnough()) return null;
+        if (!hasEnough()) {
+            logger.info("Not enough snapshots! Returning null..");
+            return null;
+        }
 
         /*Pass the board corners to the pipe, which will check again to see if all boards are valid
         and returns the corresponding image and object points*/

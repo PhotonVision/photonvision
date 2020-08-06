@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -48,7 +49,7 @@ public class CameraConfiguration {
 
     public CameraType cameraType = CameraType.UsbCamera;
     public double FOV = 70;
-    public List<CameraCalibrationCoefficients> calibrations;
+    public final List<CameraCalibrationCoefficients> calibrations;
     public List<Integer> cameraLeds = new ArrayList<>();
     public int currentPipelineIndex = -1;
     public Rotation2d camPitch = new Rotation2d();
@@ -141,11 +142,10 @@ public class CameraConfiguration {
     }
 
     public void addCalibration(CameraCalibrationCoefficients calibration) {
+        logger.info("adding calibration " + calibration.resolution);
         calibrations.stream()
                 .filter(it -> it.resolution.equals(calibration.resolution))
-                .findAny()
-                .ifPresent(
-                        cameraCalibrationCoefficients -> calibrations.remove(cameraCalibrationCoefficients));
+                .findAny().ifPresent(calibrations::remove);
         calibrations.add(calibration);
     }
 }

@@ -39,6 +39,12 @@ export default new Vuex.Store({
                         "height": 1080,
                         "fps": 30,
                         "pixelFormat": "BGR"
+                    },
+                    {
+                        "width": 1280,
+                        "height": 720,
+                        "fps": 30,
+                        "pixelFormat": "BGR"
                     }
                 ],
                 calibrations: [
@@ -200,8 +206,9 @@ export default new Vuex.Store({
                 const value = payload[key];
                 const calibration = state.calibrationData;
                 if (calibration.hasOwnProperty(key)) {
-                    Vue.set(calibration, key, value);
+                    calibration[key] = value
                 }
+                Vue.set(state, 'calibrationData', calibration)
             }
         },
     },
@@ -223,5 +230,6 @@ export default new Vuex.Store({
             return Object.values(state.cameraSettings[state.currentCameraIndex].videoFormatList); // convert to a list
         },
         pipelineList: state => state.cameraSettings[state.currentCameraIndex].pipelineNicknames,
+        calibrationList: state => state.cameraSettings[state.currentCameraIndex].calibrations,
     }
 })

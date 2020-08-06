@@ -199,7 +199,7 @@
                             Resolution
                           </th>
                           <th class="text-center">
-                            Calibrated?
+                            Mean Error
                           </th>
                           <th class="text-center">
                             Standard Deviation
@@ -213,9 +213,9 @@
                         >
                           <td> {{ value.width }} X {{ value.height }} </td>
                           <td>
-                            {{ isCalibrated(value) ? "Yes" : "No" }}
+                            {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "N/A" }}
                           </td>
-                          <td> {{ isCalibrated(value) ? value.standardDeviation + "px" : "N/A" }} </td>
+                          <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "N/A" }} </td>
                         </tr>
                       </tbody>
                     </template>
@@ -311,6 +311,11 @@ export default {
                 list.forEach((it, i) => {
                     if (!filtered.some(e => e.width === it.width && e.height === it.height)) {
                         it['index'] = i;
+                        const calib = this.getCalibrationCoeffs(it);
+                        if(calib != null) {
+                            it['standardDeviation'] = calib.standardDeviation
+                            it['mean'] = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length
+                        }
                         filtered.push(it)
                     }
                 })
@@ -336,7 +341,9 @@ export default {
 
         calibrationVideoMode: {
             get() { return this.calibrationData.videoModeIndex },
-            set(value) { this.$store.commit('mutateCalibrationState', {['videoModeIndex']: value}) }
+            set(value) {
+                this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[value].index})
+            }
         },
         boardType: {
             get() {
@@ -389,6 +396,16 @@ export default {
         }
     },
     methods: {
+        getCalibrationCoeffs(resolution) {
+            const calList = this.$store.getters.calibrationList;
+            let ret = null;
+            calList.forEach(cal => {
+                if(cal.width === resolution.width && cal.height === resolution.height) {
+                    ret = cal
+                }
+            })
+            return ret;
+        },
         downloadBoard() {
             this.axios.get("http://" + this.$address + require('../assets/chessboard.png'), {responseType: 'blob'}).then((response) => {
                 require('downloadjs')(response.data, "Calibration Board", "image/png")
@@ -424,6 +441,8 @@ export default {
                 calData.isCalibrating = true
                 data['startPnpCalibration'] = calData
                 this.calibrationModeButton.text = "Take Snapshot";
+
+                console.log("starting calibration with index " + calData.videoModeIndex)
             }
 
             this.$socket.send(this.$msgPack.encode(data));

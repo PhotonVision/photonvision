@@ -122,8 +122,9 @@ public class Calibrate3dPipe
         } catch (JsonProcessingException e) {
             logger.error("Failed to parse calibration data to json!", e);
         }
-        return new CameraCalibrationCoefficients(
+        var ret = new CameraCalibrationCoefficients(
                 params.resolution, cameraMatrixMat, distortionCoefficientsMat, perViewErrorsArray, stdDev);
+        return ret;
     }
 
     // Calculate standard deviation of the RMS error of the snapshots

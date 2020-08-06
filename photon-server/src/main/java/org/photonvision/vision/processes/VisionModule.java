@@ -156,6 +156,8 @@ public class VisionModule {
     public void startCalibration(UICalibrationData data) {
         var settings = pipelineManager.calibration3dPipeline.getSettings();
         settings.cameraVideoModeIndex = data.videoModeIndex;
+        visionSource.getSettables().setVideoModeInternal(data.videoModeIndex);
+        logger.info("Starting calibration at resolution index " + data.videoModeIndex);
         settings.gridSize = data.squareSizeIn;
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
@@ -170,9 +172,15 @@ public class VisionModule {
     public CameraCalibrationCoefficients endCalibration() {
         var ret = pipelineManager.calibration3dPipeline.tryCalibration();
         pipelineManager.setCalibrationMode(false);
+
+        if(ret == null) {
+            logger.error("Got NULL calibration! Not saving...");
+            return null;
+        }
+
         visionSource.getSettables().getConfiguration().addCalibration(ret);
         visionSource.getSettables().calculateFrameStaticProps();
-        saveModule();
+        saveAndBroadcastAll();
         return ret;
     }
 
@@ -459,6 +467,8 @@ public class VisionModule {
             internalMap.put("height", c.resolution.height);
             internalMap.put("intrinsics", c.cameraIntrinsics.data);
             internalMap.put("extrinsics", c.cameraExtrinsics.data);
+
+            calList.add(internalMap);
         }
         ret.calibrations = calList;
 
