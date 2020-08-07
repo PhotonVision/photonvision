@@ -129,7 +129,6 @@ public class SolvePNPTest {
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
         pipeline.getSettings().targetModel = TargetModel.get2020Target(36);
-        pipeline.getSettings().cameraPitch = Rotation2d.fromDegrees(0.0);
 
         var frameProvider =
                 new FileFrameProvider(

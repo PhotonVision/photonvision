@@ -35,8 +35,7 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
 
     // 3d settings
     public boolean solvePNPEnabled = false;
-    public TargetModel targetModel;
-    public Rotation2d cameraPitch = Rotation2d.fromDegrees(0.0);
+    public TargetModel targetModel = TargetModel.get2020Target();
 
     // Corner detection settings
     public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
@@ -66,7 +65,6 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
                 && contourGroupingMode == that.contourGroupingMode
                 && contourIntersection == that.contourIntersection
                 && targetModel.equals(that.targetModel)
-                && cameraPitch.equals(that.cameraPitch)
                 && cornerDetectionStrategy == that.cornerDetectionStrategy;
     }
 
@@ -78,7 +76,6 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
                 contourIntersection,
                 solvePNPEnabled,
                 targetModel,
-                cameraPitch,
                 cornerDetectionStrategy,
                 cornerDetectionUseConvexHulls,
                 cornerDetectionExactSideCount,

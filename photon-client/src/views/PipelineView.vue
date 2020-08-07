@@ -160,7 +160,7 @@
               slider-color="accent"
             >
               <v-tab
-                v-for="(tab, i) in tabs.filter(it => it.name !== '3D' || $store.getters.currentPipelineSettings.is3D)"
+                v-for="(tab, i) in tabs.filter(it => it.name !== '3D' || $store.getters.currentPipelineSettings.solvePNPEnabled)"
                 :key="i"
               >
                 {{ tab.name }}
@@ -293,11 +293,11 @@
             },
             processingMode: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.is3D ? 1 : 0;
+                    return this.$store.getters.currentPipelineSettings.solvePNPEnabled ? 1 : 0;
                 },
                 set(value) {
-                    this.$store.getters.currentPipelineSettings.is3D = value === 1;
-                    this.handlePipelineUpdate("is3D", value === 1);
+                    this.$store.getters.currentPipelineSettings.solvePNPEnabled = value === 1;
+                    this.handlePipelineUpdate("solvePNPEnabled", value === 1);
                 }
             },
             driverMode: {

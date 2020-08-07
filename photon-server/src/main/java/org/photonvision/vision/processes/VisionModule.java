@@ -473,6 +473,8 @@ public class VisionModule {
         }
         ret.calibrations = calList;
 
+        ret.isFovConfigurable = true; // TODO configurable FOV support
+
         return ret;
     }
 

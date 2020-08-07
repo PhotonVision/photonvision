@@ -196,7 +196,6 @@ public class CornerDetectionPipe
         rightList.sort(distanceProvider);
         var bl = leftList.get(leftList.size() - 1);
         var br = rightList.get(rightList.size() - 1);
-        System.out.printf("Found points: TL (%s) BL (%s) BR (%s) TR (%s)\n", tl, bl, br, tr);
         return List.of(tl, bl, br, tr);
     }
 

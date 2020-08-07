@@ -90,7 +90,8 @@ export default new Vuex.Store({
                     solvePNPEnabled: false,
                     targetRegion: 0,
                     contourTargetOrientation: 1,
-                    is3D: false,
+
+                    cornerDetectionAccuracyPercentage: 10,
 
                     // Settings that apply to shape
                 }
@@ -156,8 +157,8 @@ export default new Vuex.Store({
         settings: set('settings'),
         calibrationData: set('calibrationData'),
 
-        is3D: (state, val) => {
-            state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.is3D = val;
+        solvePNPEnabled: (state, val) => {
+            state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.solvePNPEnabled = val;
         },
 
         currentPipelineIndex: (state, val) => {

@@ -23,6 +23,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import edu.wpi.first.wpilibj.util.Units;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
 import org.photonvision.vision.opencv.Releasable;
@@ -81,17 +83,17 @@ public class TargetModel implements Releasable {
     }
 
     public static TargetModel get2020TargetInnerPort() {
-        return get2020Target(2d * 12d + 5.25); // Inches, TODO switch to meters
+        return get2020Target(Units.inchesToMeters(2d * 12d + 5.25));
     }
 
-    public static TargetModel get2020Target(double offset) {
+    public static TargetModel get2020Target(double offsetMeters) {
         var corners =
                 List.of(
-                        new Point3(-19.625, 0, offset),
-                        new Point3(-9.819867, -17, offset),
-                        new Point3(9.819867, -17, offset),
-                        new Point3(19.625, 0, offset));
-        return new TargetModel(corners, 12); // TODO switch to meters
+                        new Point3(Units.inchesToMeters(-19.625), 0, offsetMeters),
+                        new Point3(Units.inchesToMeters(-9.819867), -17, offsetMeters),
+                        new Point3(Units.inchesToMeters(9.819867), -17, offsetMeters),
+                        new Point3(Units.inchesToMeters(19.625), 0, offsetMeters));
+        return new TargetModel(corners, Units.inchesToMeters(12));
     }
 
     public static TargetModel get2019Target() {
