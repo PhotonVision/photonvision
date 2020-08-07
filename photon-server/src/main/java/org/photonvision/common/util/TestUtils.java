@@ -17,6 +17,7 @@
 
 package org.photonvision.common.util;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.cscore.CameraServerCvJNI;
 import java.awt.*;
 import java.io.File;
@@ -24,6 +25,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class TestUtils {
 
@@ -168,6 +170,29 @@ public class TestUtils {
 
     public static File getHardwareConfigJson() {
         return getResourcesFolderPath().resolve("hardware").resolve("HardwareConfig.json").toFile();
+    }
+
+    private static final String LIFECAM_240P_CAL_FILE = "lifecam240p.json";
+    private static final String LIFECAM_480P_CAL_FILE = "lifecam480p.json";
+
+    private static CameraCalibrationCoefficients getCoeffs(String filename) {
+        try {
+            return new ObjectMapper()
+                    .readValue(
+                            (Path.of(getCalibrationPath().toString(), filename).toFile()),
+                            CameraCalibrationCoefficients.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static CameraCalibrationCoefficients get2019LifeCamCoeffs() {
+        return getCoeffs(LIFECAM_240P_CAL_FILE);
+    }
+
+    public static CameraCalibrationCoefficients get2020LifeCamCoeffs() {
+        return getCoeffs(LIFECAM_480P_CAL_FILE);
     }
 
     public static void loadLibraries() {

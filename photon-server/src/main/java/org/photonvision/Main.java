@@ -18,9 +18,12 @@
 package org.photonvision;
 
 import edu.wpi.cscore.CameraServerCvJNI;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.cli.*;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
@@ -28,7 +31,9 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
+import org.photonvision.common.util.TestUtils;
 import org.photonvision.server.Server;
+import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.processes.VisionModuleManager;
@@ -79,12 +84,12 @@ public class Main {
     }
 
     private static HashMap<VisionSource, List<CVPipelineSettings>> gatherSources() {
+        var collectedSources = new HashMap<VisionSource, List<CVPipelineSettings>>();
         if (!isTestMode) {
             var camConfigs = ConfigManager.getInstance().getConfig().getCameraConfigurations();
             logger.info("Loaded " + camConfigs.size() + " configs from disk.");
             var sources = VisionSourceManager.loadAllSources(camConfigs.values());
 
-            var collectedSources = new HashMap<VisionSource, List<CVPipelineSettings>>();
             for (var src : sources) {
                 var usbSrc = (USBCameraSource) src;
                 collectedSources.put(usbSrc, usbSrc.configuration.pipelineSettings);
@@ -96,11 +101,23 @@ public class Main {
                                         + usbSrc.configuration.pipelineSettings.size()
                                         + " pipelines");
             }
-            return collectedSources;
         } else {
-            // todo: test mode
-            return new HashMap<>();
+            var camConf2019 = new CameraConfiguration("WPI2019", TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in).toString());
+            camConf2019.FOV = TestUtils.WPI2019Image.FOV;
+            camConf2019.calibration = TestUtils.get2019LifeCamCoeffs();
+
+            var fvs2019 = new FileVisionSource(camConf2019);
+
+            var camConf2020 = new CameraConfiguration("WPI2020", TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center).toString());
+            camConf2020.FOV = TestUtils.WPI2020Image.FOV;
+            camConf2020.calibration = TestUtils.get2020LifeCamCoeffs();
+
+            var fvs2020 = new FileVisionSource(camConf2020);
+
+            collectedSources.put(fvs2019, new ArrayList<>());
+            collectedSources.put(fvs2020, new ArrayList<>());
         }
+        return collectedSources;
     }
 
     public static void main(String[] args) {
