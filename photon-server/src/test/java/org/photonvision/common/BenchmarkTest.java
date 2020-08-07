@@ -27,6 +27,7 @@ import org.opencv.core.Scalar;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.common.util.numbers.NumberListUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
@@ -126,7 +127,7 @@ public class BenchmarkTest {
         // Uncomment to run on a single frame
         if (false) {
             var pipe = new GPUAcceleratedHSVPipe(GPUAccelerator.TransferMode.NONE);
-            pipe.setParams(new HSVPipe.HSVParams(null, null, null) {
+            pipe.setParams(new HSVPipe.HSVParams(new IntegerCouple(), null, null) {
                 @Override
                 public Scalar getHsvLower() {
                     return new Scalar(0.4, 0.8, 0.8);

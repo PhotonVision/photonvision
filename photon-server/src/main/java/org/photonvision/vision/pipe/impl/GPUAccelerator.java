@@ -61,9 +61,9 @@ public class GPUAccelerator {
           "}",
           "",
           "void main() {",
-          "  vec2 uv = gl_FragCoord.xy/resolution;",
+//          "  vec2 uv = gl_FragCoord.xy/resolution;",
           // Important! We do this .bgr swizzle because the image comes in as BGR but we pretend it's RGB for convenience+speed
-          "  vec3 col = texture2D(texture0, uv).bgr;",
+//          "  vec3 col = texture2D(texture0, uv).bgr;",
           // Only the first value in the vec4 gets used for GL_RED, and only the last value gets used for GL_ALPHA
 //          "  gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);",
           "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);",
@@ -230,17 +230,21 @@ public class GPUAccelerator {
     // Tell OpenGL to use our program
     gl.glUseProgram(programId);
 
+    // Initialize projection environment
+    gl.glViewport(0, 0, k_startingWidth, k_startingHeight);
+
     // Set up our texture
     texture = new Texture(GL_TEXTURE_2D);
     texture.bind(gl);
-    texture.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    if (transferMode == TransferMode.DIRECT_OMX) {
+      gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, k_startingWidth, k_startingHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
+    }
+    texture.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // TODO: This is GL_NEAREST in example code?
     texture.setTexParameteri(gl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     texture.setTexParameteri(gl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     texture.setTexParameteri(gl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     if (transferMode == TransferMode.DIRECT_OMX) {
-      gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, k_startingWidth, k_startingHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
-
       // First we get pointers to our current EGLDisplay, EGLSurface, and EGLContext
       logger.info("Start DIRECT_OMX init");
       // We don't have to call any of the EGL init functions, all the EGL devices are premade
