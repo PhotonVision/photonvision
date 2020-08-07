@@ -23,6 +23,8 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
+import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.util.numbers.NumberListUtils;
@@ -31,6 +33,9 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
+import org.photonvision.vision.pipe.impl.GPUAcceleratedHSVPipe;
+import org.photonvision.vision.pipe.impl.GPUAccelerator;
+import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -114,6 +119,50 @@ public class BenchmarkTest {
                         TestUtils.WPI2019Image.FOV);
 
         benchmarkPipeline(frameProvider, pipeline, 5);
+    }
+
+    @Test
+    public void ReflectiveGPU1920x1440Benchmark() {
+        // Uncomment to run on a single frame
+        if (false) {
+            var pipe = new GPUAcceleratedHSVPipe(GPUAccelerator.TransferMode.NONE);
+            pipe.setParams(new HSVPipe.HSVParams(null, null, null) {
+                @Override
+                public Scalar getHsvLower() {
+                    return new Scalar(0.4, 0.8, 0.8);
+                }
+
+                @Override
+                public Scalar getHsvUpper() {
+                    return new Scalar(0.85, 1.0, 1.0);
+                }
+            }); // new HSVPipe.HSVParams(new Scalar(0.4, 0.8, 0.8), new Scalar(0.85, 1.0, 1.0))
+            var path = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center_720p);
+            var mat = pipe.process(Imgcodecs.imread(path.toString()));
+            Imgcodecs.imwrite("i2.png", mat);
+            mat = pipe.process(Imgcodecs.imread(path.toString()));
+            Imgcodecs.imwrite("i3.png", mat);
+            mat = pipe.process(Imgcodecs.imread(path.toString()));
+            Imgcodecs.imwrite("i4.png", mat);
+        } else {
+            var pipeline = new ReflectivePipeline();
+            pipeline.getSettings().hsvHue.set(60, 100);
+            pipeline.getSettings().hsvSaturation.set(100, 255);
+            pipeline.getSettings().hsvValue.set(190, 255);
+            pipeline.getSettings().outputShowThresholded = true;
+            pipeline.getSettings().outputShowMultipleTargets = true;
+            pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
+            pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
+
+            var frameProvider =
+                    new FileFrameProvider(
+                            TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center_720p),
+                            TestUtils.WPI2019Image.FOV);
+
+            frameProvider.setImageReloading(true);
+
+            benchmarkPipeline(frameProvider, pipeline, 20);
+        }
     }
 
     private static <P extends CVPipeline> void benchmarkPipeline(

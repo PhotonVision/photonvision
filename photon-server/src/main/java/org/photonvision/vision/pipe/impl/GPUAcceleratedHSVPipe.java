@@ -31,7 +31,7 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
   }
 
   @Override
-  protected Mat process(Mat in) {
+  public Mat process(Mat in) {
     return accelerator.process(in, params.getHsvLower(), params.getHsvUpper());
   }
 }
