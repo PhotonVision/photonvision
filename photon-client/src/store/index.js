@@ -191,7 +191,7 @@ export default new Vuex.Store({
 
         mutatePipelineResults(state, payload) {
             // Key: index, value: result
-            let newResultArray = [];
+            let newResultArray = state.pipelineResults;
             for (let key in payload) {
                 if (!payload.hasOwnProperty(key)) continue;
                 const index = parseInt(key);
