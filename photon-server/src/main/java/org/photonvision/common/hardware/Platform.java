@@ -36,6 +36,7 @@ public enum Platform {
     // Completely unsupported
     UNSUPPORTED("Unsupported Platform");
 
+    private static final ShellExec shell = new ShellExec(true, false);
     public final String value;
     public static final boolean isRoot = checkForRoot();
 
@@ -63,13 +64,11 @@ public enum Platform {
         return CurrentPlatform.equals(LINUX_RASPBIAN);
     }
 
-    private static ShellExec shell = new ShellExec(true, false);
-
     @SuppressWarnings("StatementWithEmptyBody")
     private static boolean checkForRoot() {
         if (isLinux()) {
             try {
-                shell.execute("id", null, true, "-u");
+                shell.executeBashCommand("id -u");
             } catch (IOException e) {
                 e.printStackTrace();
             }

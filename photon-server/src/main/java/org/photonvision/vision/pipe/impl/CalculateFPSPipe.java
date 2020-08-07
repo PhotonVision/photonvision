@@ -17,14 +17,14 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.wpilibj.MedianFilter;
+import edu.wpi.first.wpilibj.LinearFilter;
 import org.apache.commons.lang3.time.StopWatch;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class CalculateFPSPipe
         extends CVPipe<Void, Integer, CalculateFPSPipe.CalculateFPSPipeParams> {
 
-    private MedianFilter fpsFilter = new MedianFilter(20);
+    private LinearFilter fpsFilter = LinearFilter.movingAverage(5);
     StopWatch clock = new StopWatch();
 
     @Override
