@@ -71,7 +71,7 @@ public class ConfigManager {
     }
 
     private static Path getRootFolder() {
-        return Path.of("photonvision");
+        return Path.of("photonvision_config");
     }
 
     ConfigManager(Path rootFolder) {
