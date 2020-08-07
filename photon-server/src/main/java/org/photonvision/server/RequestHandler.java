@@ -54,6 +54,7 @@ public class RequestHandler {
                 e.printStackTrace();
             }
             ConfigManager.saveUploadedSettingsZip(tempZipPath);
+//            restartDevice();
         } else {
             logger.error("Couldn't read uploaded settings ZIP! Ignoring.");
         }
@@ -113,6 +114,8 @@ public class RequestHandler {
             var stream = new FileInputStream(zip);
             logger.info("Uploading settings with size " + stream.available());
             ctx.result(stream);
+            ctx.contentType("application/zip");
+            ctx.header("Content-Disposition: attachment; filename=\"photonvision-settings-export.zip\"");
             ctx.status(200);
         } catch (IOException e) {
             e.printStackTrace();

@@ -71,7 +71,7 @@
     <a
       ref="exportSettings"
       style="color: black; text-decoration: none; display: none"
-      href="/api/settings/export"
+      :href="'http://' + this.$address + '/api/settings/photonvision_config.zip'"
       download="photonvision-settings.zip"
     />
   </div>

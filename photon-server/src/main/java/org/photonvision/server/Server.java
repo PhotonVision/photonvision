@@ -69,7 +69,7 @@ public class Server {
                 });
         /*API Events*/
         app.post("/api/settings/import", RequestHandler::onSettingUpload);
-        app.post("/api/settings/export", RequestHandler::onSettingsDownload);
+        app.get("/api/settings/photonvision_config.zip", RequestHandler::onSettingsDownload);
         app.post("/api/settings/camera", RequestHandler::onCameraSettingsSave);
         app.post("/api/settings/general", RequestHandler::onGeneralSettings);
         app.post("/api/settings/endCalibration", RequestHandler::onCalibrationEnd);

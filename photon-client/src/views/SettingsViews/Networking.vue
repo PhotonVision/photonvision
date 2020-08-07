@@ -17,12 +17,6 @@
           :rules="[v => isIPv4(v) || 'Invalid IPv4 address']"
           name="IP"
         />
-        <CVinput
-          v-model="settings.netmask"
-          :input-cols="inputCols"
-          :rules="[v => isSubnetMask(v) || 'Invalid subnet mask']"
-          name="Subnet Mask"
-        />
       </template>
     </template>
     <CVinput
