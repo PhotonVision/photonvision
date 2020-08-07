@@ -202,7 +202,6 @@ export default new Vuex.Store({
         },
 
         mutateCalibrationState: (state, payload) => {
-            console.log('AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' + JSON.stringify(payload))
             for (let key in payload) {
                 if (!payload.hasOwnProperty(key)) continue;
                 const value = payload[key];
