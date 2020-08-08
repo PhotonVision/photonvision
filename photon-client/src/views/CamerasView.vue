@@ -474,8 +474,8 @@ export default {
             this.$socket.send(this.$msgPack.encode(data));
         },
         sendCalibrationFinish() {
-            let connection_string = "/api/settings/endCalibration";
-            this.axios.post("http://" + this.$address + connection_string, this.$store.getters.currentCameraIndex)
+            console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex)
+            this.axios.post("http://" + this.$address + "/api/settings/endCalibration", this.$store.getters.currentCameraIndex)
             //     .then((response) => {
             //         if (response.status === 200) {
             //             this.snackbar = {

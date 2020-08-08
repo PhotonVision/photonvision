@@ -110,7 +110,7 @@ public class Calibrate3dPipe
         try {
             // Print calibration successful
             logger.info(
-                    "CALIBRATION SUCCESS (with accuracy "
+                    "CALIBRATION SUCCESS for res " + params.resolution + " (with accuracy "
                             + calibrationAccuracy
                             + ")! camMatrix: \n"
                             + new ObjectMapper().writeValueAsString(cameraMatrixMat)
@@ -122,9 +122,8 @@ public class Calibrate3dPipe
         } catch (JsonProcessingException e) {
             logger.error("Failed to parse calibration data to json!", e);
         }
-        var ret = new CameraCalibrationCoefficients(
+        return new CameraCalibrationCoefficients(
                 params.resolution, cameraMatrixMat, distortionCoefficientsMat, perViewErrorsArray, stdDev);
-        return ret;
     }
 
     // Calculate standard deviation of the RMS error of the snapshots
@@ -150,6 +149,7 @@ public class Calibrate3dPipe
         private final Size resolution;
 
         public CalibratePipeParams(Size resolution) {
+            logger.info(resolution.toString());
             this.resolution = resolution;
         }
     }

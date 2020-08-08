@@ -123,7 +123,6 @@ public class Calibrate3dPipeline
 
         /*Pass the board corners to the pipe, which will check again to see if all boards are valid
         and returns the corresponding image and object points*/
-
         calibrationOutput = calibrate3dPipe.run(foundCornersList);
 
         return calibrationOutput.output;
