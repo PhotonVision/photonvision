@@ -51,7 +51,7 @@ public class CameraConfiguration {
     public double FOV = 70;
     public final List<CameraCalibrationCoefficients> calibrations;
     public List<Integer> cameraLeds = new ArrayList<>();
-    public int currentPipelineIndex = -1;
+    public int currentPipelineIndex = 0;
     public Rotation2d camPitch = new Rotation2d();
 
     @JsonIgnore // this ignores the pipes as we serialize them to their own subfolder

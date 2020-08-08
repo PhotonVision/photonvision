@@ -174,6 +174,7 @@
                   name="Exposure"
                   :min="0"
                   :max="100"
+                  slider-cols="8"
                   @input="e => handlePipelineUpdate('cameraExposure', e)"
                 />
                 <CVslider
@@ -181,6 +182,7 @@
                   name="Brightness"
                   :min="0"
                   :max="100"
+                  slider-cols="8"
                   @input="e => handlePipelineUpdate('cameraBrightness', e)"
                 />
                 <CVslider
@@ -189,6 +191,7 @@
                   name="Gain"
                   :min="0"
                   :max="100"
+                  slider-cols="8"
                   @input="e => handlePipelineUpdate('cameraGain', e)"
                 />
               </v-col>
@@ -391,6 +394,9 @@ export default {
         squareSizeIn: {
             get() {
                 return this.calibrationData.squareSizeIn
+            },
+            set(value) {
+                this.$store.commit('mutateCalibrationState', {['squareSizeIn']: value})
             }
         },
         calibrationData: {

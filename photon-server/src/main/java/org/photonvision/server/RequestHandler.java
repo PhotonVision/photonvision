@@ -31,6 +31,8 @@ import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
@@ -134,5 +136,13 @@ public class RequestHandler {
 
         ctx.result(String.valueOf(calData.standardDeviation));
         ctx.status(200);
+    }
+
+    public static void restartDevice(Context ctx) {
+        ctx.status(HardwareManager.getInstance().restartDevice() ? 200 : 500);
+    }
+
+    public static void restartProgram(Context ctx) {
+        ctx.status(HardwareManager.getInstance().restartProgram() ? 200 : 500);
     }
 }

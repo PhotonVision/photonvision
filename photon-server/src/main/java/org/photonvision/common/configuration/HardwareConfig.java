@@ -47,6 +47,9 @@ public class HardwareConfig {
     public final String gpuTempCommand;
     public final String ramUtilCommand;
 
+    // Device stuff
+    public final String restartHardwareCommand;
+
     public HardwareConfig() {
         deviceName = "";
         deviceLogoPath = "";
@@ -66,6 +69,8 @@ public class HardwareConfig {
         gpuTempCommand = "";
         ramUtilCommand = "";
         ledBlinkCommand = "";
+
+        restartHardwareCommand = "";
     }
 
     @JsonCreator
@@ -73,6 +78,7 @@ public class HardwareConfig {
             @JsonProperty("deviceName") String deviceName,
             @JsonProperty("deviceLogoPath") String deviceLogoPath,
             @JsonProperty("supportURL") String supportURL,
+            @JsonProperty("restartHardwareCommand") String restartHardwareCommand,
             @JsonProperty("hardware") Map<String, ?> hardware,
             @JsonProperty("metrics") Map<String, ?> metrics) {
         this.deviceName = deviceName;
@@ -93,5 +99,7 @@ public class HardwareConfig {
         this.gpuMemoryCommand = (String) metrics.get("gpuMemory");
         this.gpuTempCommand = (String) metrics.get("gpuUtil");
         this.ramUtilCommand = (String) metrics.get("ramUtil");
+
+        this.restartHardwareCommand = restartHardwareCommand;
     }
 }

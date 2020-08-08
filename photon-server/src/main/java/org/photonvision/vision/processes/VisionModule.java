@@ -158,7 +158,7 @@ public class VisionModule {
         var settings = pipelineManager.calibration3dPipeline.getSettings();
         settings.cameraVideoModeIndex = data.videoModeIndex;
         visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
-        logger.info("Starting calibration at resolution index " + data.videoModeIndex);
+        logger.info("Starting calibration at resolution index " + data.videoModeIndex + " and settings " + data);
         settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;

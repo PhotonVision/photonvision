@@ -17,17 +17,26 @@
 
 package org.photonvision.common.hardware;
 
-import java.util.HashMap;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.PiGPIO;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.hardware.metrics.MetricsPublisher;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.ShellExec;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 
 public class HardwareManager {
     HardwareConfig hardwareConfig;
-    private static final HashMap<Integer, GPIOBase> LEDs = new HashMap<>();
+    private final HashMap<Integer, GPIOBase> LEDs = new HashMap<>();
+    private final ShellExec shellExec = new ShellExec(true, false);
+    private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
     public static HardwareManager getInstance() {
         return Singleton.INSTANCE;
@@ -39,20 +48,23 @@ public class HardwareManager {
         MetricsBase.setConfig(hardwareConfig);
 
         hardwareConfig.ledPins.forEach(
-                pin -> {
-                    if (Platform.isRaspberryPi()) {
-                        LEDs.put(
-                                pin,
-                                new PiGPIO(pin, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1)));
-                    } else {
-                        LEDs.put(pin, new CustomGPIO(pin));
-                    }
-                });
+            pin -> {
+                if (Platform.isRaspberryPi()) {
+                    LEDs.put(
+                        pin,
+                        new PiGPIO(pin, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1)));
+                } else {
+                    LEDs.put(pin, new CustomGPIO(pin));
+                }
+            });
 
         // Start hardware metrics thread
         MetricsPublisher.getInstance().startTask();
     }
-    /** Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue); */
+
+    /**
+     * Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue);
+     */
     public GPIOBase getGPIO(int pin) {
         return LEDs.get(pin);
     }
@@ -79,6 +91,46 @@ public class HardwareManager {
 
     public void shutdown() {
         LEDs.values().forEach(GPIOBase::shutdown);
+    }
+
+    public boolean restartDevice() {
+        try {
+            return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;
+        } catch (IOException e) {
+            logger.error("Could not restart device!", e);
+            return false;
+        }
+    }
+
+    public boolean restartProgram() {
+        String jarPath = null;
+
+        try {
+            jarPath = new File(HardwareManager.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        }
+
+        if(jarPath == null || !jarPath.endsWith("jar")) {
+            logger.info("Could not determine JAR path! Cannot restart program...");
+        }
+
+        if (Platform.isLinux()) {
+            try {
+                return shellExec.executeBashCommand("java -jar " + jarPath) == 0;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
+        else {
+            try {
+                return shellExec.execute("java -jar " + jarPath) == 0;
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        }
     }
 
     private static class Singleton {

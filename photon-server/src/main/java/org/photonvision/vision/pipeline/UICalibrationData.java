@@ -64,4 +64,18 @@ public class UICalibrationData {
                 ((Number) map.get("patternHeight")).intValue(),
                 BoardType.values()[(int) map.get("boardType")]);
     }
+
+    @Override
+    public String toString() {
+        return "UICalibrationData{" +
+            "videoModeIndex=" + videoModeIndex +
+            ", count=" + count +
+            ", minCount=" + minCount +
+            ", hasEnough=" + hasEnough +
+            ", squareSizeIn=" + squareSizeIn +
+            ", patternWidth=" + patternWidth +
+            ", patternHeight=" + patternHeight +
+            ", boardType=" + boardType +
+            '}';
+    }
 }
