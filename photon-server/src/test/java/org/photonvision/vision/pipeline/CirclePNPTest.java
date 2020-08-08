@@ -17,13 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,23 +57,13 @@ public class CirclePNPTest {
     }
 
     private CameraCalibrationCoefficients getCoeffs(String filename) {
-        try {
-            var cameraCalibration =
-                    new ObjectMapper()
-                            .readValue(
-                                    (Path.of(TestUtils.getCalibrationPath().toString(), filename).toFile()),
-                                    CameraCalibrationCoefficients.class);
-
-            checkCameraCoefficients(cameraCalibration);
-
-            return cameraCalibration;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        var cameraCalibration = TestUtils.getCoeffs(filename, false);
+        checkCameraCoefficients(cameraCalibration);
+        return cameraCalibration;
     }
 
     private void checkCameraCoefficients(CameraCalibrationCoefficients cameraCalibration) {
+        assertNotNull(cameraCalibration);
         assertEquals(3, cameraCalibration.cameraIntrinsics.rows);
         assertEquals(3, cameraCalibration.cameraIntrinsics.cols);
         assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMat().rows());
@@ -124,7 +110,7 @@ public class CirclePNPTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6),
+                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
                         TestUtils.WPI2020Image.FOV);
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
@@ -153,7 +139,7 @@ public class CirclePNPTest {
         TestUtils.loadLibraries();
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                         TestUtils.WPI2019Image.FOV);
 
         var settings = new ReflectivePipelineSettings();

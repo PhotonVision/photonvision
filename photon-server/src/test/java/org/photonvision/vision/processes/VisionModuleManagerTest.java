@@ -105,7 +105,8 @@ public class VisionModuleManagerTest {
         sources.put(
                 new TestSource(
                         new FileFrameProvider(
-                                TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
+                                TestUtils.getWPIImagePath(
+                                        TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                                 TestUtils.WPI2019Image.FOV)),
                 List.of());
 
