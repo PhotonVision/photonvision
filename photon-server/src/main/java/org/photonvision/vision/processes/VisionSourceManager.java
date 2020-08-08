@@ -108,7 +108,7 @@ public class VisionSourceManager {
                         "Trying to find a match for loaded camera " + config.baseName + " with index " + index);
                 cameraInfo =
                         detectedCameraList.stream()
-                                .filter(usbCameraInfo -> usbCameraInfo.dev == index)
+                                .filter(usbCameraInfo -> usbCameraInfo.dev == index && usbCameraInfo.name.equals(config.baseName))
                                 .findFirst()
                                 .orElse(null);
             } else {
@@ -120,7 +120,7 @@ public class VisionSourceManager {
                                 + config.path);
                 cameraInfo =
                         detectedCameraList.stream()
-                                .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path))
+                                .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path) && usbCameraInfo.name.equals(config.baseName))
                                 .findFirst()
                                 .orElse(null);
             }
