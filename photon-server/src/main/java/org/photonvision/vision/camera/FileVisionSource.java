@@ -36,7 +36,8 @@ public class FileVisionSource implements VisionSource {
     public FileVisionSource(CameraConfiguration cameraConfiguration) {
         this.cameraConfiguration = cameraConfiguration;
         frameProvider = new FileFrameProvider(cameraConfiguration.path, cameraConfiguration.FOV);
-        settables = new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
+        settables =
+                new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
     }
 
     public FileVisionSource(String name, String imagePath, double fov) {

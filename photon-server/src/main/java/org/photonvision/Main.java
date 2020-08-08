@@ -18,7 +18,6 @@
 package org.photonvision;
 
 import edu.wpi.cscore.CameraServerCvJNI;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -104,9 +103,10 @@ public class Main {
                                         + " pipelines");
             }
         } else {
-            var camConf2019 = new CameraConfiguration("WPI2019", TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in).toString());
+            var camConf2019 =
+                    new CameraConfiguration("WPI2019", TestUtils.getTestMode2019ImagePath().toString());
             camConf2019.FOV = TestUtils.WPI2019Image.FOV;
-            camConf2019.calibration = TestUtils.get2019LifeCamCoeffs();
+            camConf2019.calibration = TestUtils.get2019LifeCamCoeffs(true);
 
             var pipeline2019 = new ReflectivePipelineSettings();
             pipeline2019.pipelineNickname = "CargoShip";
@@ -118,9 +118,10 @@ public class Main {
 
             var fvs2019 = new FileVisionSource(camConf2019);
 
-            var camConf2020 = new CameraConfiguration("WPI2020", TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center).toString());
+            var camConf2020 =
+                    new CameraConfiguration("WPI2020", TestUtils.getTestMode2020ImagePath().toString());
             camConf2020.FOV = TestUtils.WPI2020Image.FOV;
-            camConf2020.calibration = TestUtils.get2020LifeCamCoeffs();
+            camConf2020.calibration = TestUtils.get2020LifeCamCoeffs(true);
 
             var pipeline2020 = new ReflectivePipelineSettings();
             pipeline2020.pipelineNickname = "OuterPort";
