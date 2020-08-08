@@ -99,31 +99,17 @@ public class VisionSourceManager {
         // loop over all the configs loaded from disk
         for (CameraConfiguration config : loadedUsbCamConfigs) {
             UsbCameraInfo cameraInfo;
-
-            // Load by path vs by index -- if the path is numeric we'll match by index
-            if (StringUtils.isNumeric(config.path)) {
-                // match by index
-                var index = Integer.parseInt(config.path);
-                logger.debug(
-                        "Trying to find a match for loaded camera " + config.baseName + " with index " + index);
-                cameraInfo =
-                        detectedCameraList.stream()
-                                .filter(usbCameraInfo -> usbCameraInfo.dev == index && usbCameraInfo.name.equals(config.baseName))
-                                .findFirst()
-                                .orElse(null);
-            } else {
-                // matching by path
-                logger.debug(
-                        "Trying to find a match for loaded camera "
-                                + config.baseName
-                                + " with path "
-                                + config.path);
-                cameraInfo =
-                        detectedCameraList.stream()
-                                .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path) && usbCameraInfo.name.equals(config.baseName))
-                                .findFirst()
-                                .orElse(null);
-            }
+            // matching by path
+            logger.debug(
+                    "Trying to find a match for loaded camera "
+                            + config.baseName
+                            + " with path "
+                            + config.path);
+            cameraInfo =
+                    detectedCameraList.stream()
+                            .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path) && usbCameraInfo.name.equals(config.baseName))
+                            .findFirst()
+                            .orElse(null);
 
             // If we actually matched a camera to a config, remove that camera from the list and add it to
             // the output
