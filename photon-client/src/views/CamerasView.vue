@@ -475,29 +475,36 @@ export default {
         },
         sendCalibrationFinish() {
             console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex)
+
+            this.snackbar.text = "Calibrating...";
+            this.snackbar.color = "secondary"
+            this.snack = true;
+
             this.axios.post("http://" + this.$address + "/api/settings/endCalibration", this.$store.getters.currentCameraIndex)
-            //     .then((response) => {
-            //         if (response.status === 200) {
-            //             this.snackbar = {
-            //                 color: "success",
-            //                 text: "Calibration successful! \n" +
-            //                     "Standard deviation: " + response.data.toFixed(5)
-            //             };
-            //             this.snack = true;
-            //         }
-            //         this.
-            //         this.snapshotAmount = 0;
-            //     }
-            // ).catch(() => {
-            //     this.snackbar = {
-            //         color: "error",
-            //         text: "Calibration Failed!"
-            //     };
-            //     this.snack = true;
-            //     this.isCalibrating = false;
-            //     this.hasEnough = false;
-            //     this.snapshotAmount = 0;
-            // });
+                .then((response) => {
+                    if (response.status === 200) {
+                        this.snackbar = {
+                            color: "success",
+                            text: "Calibration successful! \n" +
+                                "Standard deviation: " + response.data.toFixed(5)
+                        };
+                        this.snack = true;
+                    }
+                    else {
+                        this.snackbar = {
+                            color: "error",
+                            text: "Calibration Failed!"
+                        };
+                        this.snack = true;
+                    }
+                }
+            ).catch(() => {
+                this.snackbar = {
+                    color: "error",
+                    text: "Calibration Failed!"
+                };
+                this.snack = true;
+            });
         }
     }
 }

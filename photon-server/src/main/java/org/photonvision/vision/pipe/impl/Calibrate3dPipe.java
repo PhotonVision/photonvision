@@ -149,7 +149,7 @@ public class Calibrate3dPipe
         private final Size resolution;
 
         public CalibratePipeParams(Size resolution) {
-            logger.info(resolution.toString());
+//            logger.info("res: " + resolution.toString());
             this.resolution = resolution;
         }
     }
