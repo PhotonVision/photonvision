@@ -93,7 +93,7 @@ public class ColoredShapePipelineTest {
         settings.allowableThreshold = 5;
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6),
+                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
                         TestUtils.WPI2019Image.FOV);
         testCircleShapeDetection(
                 pipeline, settings, frameProvider.get().frameStaticProperties, frameProvider.get());
@@ -101,10 +101,11 @@ public class ColoredShapePipelineTest {
 
     public static void main(String[] args) {
         TestUtils.loadLibraries();
-        System.out.println(TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center));
+        System.out.println(
+                TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false));
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getPolygonImagePath(TestUtils.PolygonTestImages.kPolygons),
+                        TestUtils.getPolygonImagePath(TestUtils.PolygonTestImages.kPolygons, false),
                         TestUtils.WPI2019Image.FOV);
         var settings = new ColoredShapePipelineSettings();
         settings.hsvHue.set(0, 100);

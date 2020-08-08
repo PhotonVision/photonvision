@@ -20,10 +20,7 @@ package org.photonvision.vision.pipeline;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,23 +58,13 @@ public class SolvePNPTest {
     }
 
     private CameraCalibrationCoefficients getCoeffs(String filename) {
-        try {
-            var cameraCalibration =
-                    new ObjectMapper()
-                            .readValue(
-                                    (Path.of(TestUtils.getCalibrationPath().toString(), filename).toFile()),
-                                    CameraCalibrationCoefficients.class);
-
-            checkCameraCoefficients(cameraCalibration);
-
-            return cameraCalibration;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        var cameraCalibration = TestUtils.getCoeffs(filename, false);
+        checkCameraCoefficients(cameraCalibration);
+        return cameraCalibration;
     }
 
     private void checkCameraCoefficients(CameraCalibrationCoefficients cameraCalibration) {
+        assertNotNull(cameraCalibration);
         assertEquals(3, cameraCalibration.cameraIntrinsics.rows);
         assertEquals(3, cameraCalibration.cameraIntrinsics.cols);
         assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMat().rows());
@@ -114,7 +101,7 @@ public class SolvePNPTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
                         TestUtils.WPI2019Image.FOV);
 
         CVPipelineResult pipelineResult;
@@ -148,7 +135,7 @@ public class SolvePNPTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
                         TestUtils.WPI2020Image.FOV);
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
@@ -162,26 +149,6 @@ public class SolvePNPTest {
 
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
     }
-
-    //    @Test
-    //    public void junk() {
-    //        var frameProvider =
-    //                new FileFrameProvider(
-    //
-    // TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
-    //                        TestUtils.WPI2019Image.FOV);
-    //
-    //        var settings = new ReflectivePipelineSettings();
-    //        settings.hsvHue.set(60, 100);
-    //        settings.hsvSaturation.set(100, 255);
-    //        settings.hsvValue.set(190, 255);
-    //        settings.outputShowThresholded = true;
-    //        settings.outputShowMultipleTargets = true;
-    //        settings.contourGroupingMode = ContourGroupingMode.Dual;
-    //        settings.contourIntersection = ContourIntersectionDirection.Up;
-    //
-    //        continuouslyRunPipeline(frameProvider.getFrame(), settings);
-    //    }
 
     private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {
         var pipeline = new ReflectivePipeline();
@@ -203,7 +170,7 @@ public class SolvePNPTest {
         TestUtils.loadLibraries();
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                         TestUtils.WPI2019Image.FOV);
 
         var settings = new ReflectivePipelineSettings();
