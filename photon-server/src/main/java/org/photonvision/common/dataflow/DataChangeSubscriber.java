@@ -47,7 +47,7 @@ public abstract class DataChangeSubscriber {
         this(DataChangeSource.AllSources, wantedDestinations);
     }
 
-    public abstract void onDataChangeEvent(DataChangeEvent event);
+    public abstract void onDataChangeEvent(DataChangeEvent<?> event);
 
     @Override
     public int hashCode() {
