@@ -35,8 +35,8 @@ public class PipelineManager {
     protected final Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline();
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
-    /** Index of the currently active pipeline. */
-    private int currentPipelineIndex = DRIVERMODE_INDEX;
+    /** Index of the currently active pipeline. Defaults to 0. */
+    private int currentPipelineIndex = 0;
 
     /** The currently active pipeline. */
     private CVPipeline currentUserPipeline = driverModePipeline;
