@@ -97,8 +97,7 @@ export default new Vuex.Store({
                 }
             }
         ],
-        pipelineResults: [
-            {
+        pipelineResults: {
                 fps: 0,
                 latency: 0,
                 targets: [{
@@ -110,8 +109,7 @@ export default new Vuex.Store({
                     // 3D only
                     pose: {x: 0, y: 0, rotation: 0},
                 }]
-            }
-        ],
+            },
         settings: {
             general: {
                 version: "Unknown",
@@ -152,7 +150,6 @@ export default new Vuex.Store({
         compactMode: set('compactMode'),
         cameraSettings: set('cameraSettings'),
         currentCameraIndex: set('currentCameraIndex'),
-        pipelineResults: set('pipelineResults'),
         selectedOutputs: set('selectedOutputs'),
         settings: set('settings'),
         calibrationData: set('calibrationData'),
@@ -191,14 +188,15 @@ export default new Vuex.Store({
 
         mutatePipelineResults(state, payload) {
             // Key: index, value: result
-            let newResultArray = state.pipelineResults;
             for (let key in payload) {
                 if (!payload.hasOwnProperty(key)) continue;
                 const index = parseInt(key);
-                newResultArray[index] = payload[key];
+                if(index === state.currentCameraIndex) {
+                    Vue.set(state, 'pipelineResults', payload[key])
+                }
             }
 
-            Vue.set(state, 'pipelineResults', newResultArray)
+
         },
 
         mutateCalibrationState: (state, payload) => {
@@ -218,9 +216,8 @@ export default new Vuex.Store({
         streamAddress: state =>
             ["http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].inputStreamPort + "/stream.mjpg",
                 "http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].outputStreamPort + "/stream.mjpg"],
-        targets: state => state.pipelineResults.length,
         currentPipelineResults: state => {
-            return state.pipelineResults[state.currentCameraIndex];
+            return state.pipelineResults;
         },
         cameraList: state => state.cameraSettings.map(it => it.nickname),
         currentCameraSettings: state => state.cameraSettings[state.currentCameraIndex],
