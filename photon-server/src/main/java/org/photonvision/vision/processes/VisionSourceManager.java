@@ -111,6 +111,16 @@ public class VisionSourceManager {
                             .findFirst()
                             .orElse(null);
 
+            logger.debug("Failed to match by path and name, falling back to name-only match");
+
+            // if path based fails, attempt basename only match
+            if (cameraInfo == null) {
+                cameraInfo = detectedCameraList.stream()
+                        .filter(usbCameraInfo -> usbCameraInfo.name.equals(config.baseName))
+                        .findFirst()
+                        .orElse(null);
+            }
+
             // If we actually matched a camera to a config, remove that camera from the list and add it to
             // the output
             if (cameraInfo != null) {
