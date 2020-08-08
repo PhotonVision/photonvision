@@ -36,9 +36,11 @@ import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
+import org.photonvision.vision.target.TargetModel;
 
 public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
@@ -106,16 +108,32 @@ public class Main {
             camConf2019.FOV = TestUtils.WPI2019Image.FOV;
             camConf2019.calibration = TestUtils.get2019LifeCamCoeffs();
 
+            var pipeline2019 = new ReflectivePipelineSettings();
+            pipeline2019.pipelineNickname = "CargoShip";
+            pipeline2019.targetModel = TargetModel.get2019Target();
+            pipeline2019.cameraCalibration = camConf2019.calibration;
+
+            var psList2019 = new ArrayList<CVPipelineSettings>();
+            psList2019.add(pipeline2019);
+
             var fvs2019 = new FileVisionSource(camConf2019);
 
             var camConf2020 = new CameraConfiguration("WPI2020", TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center).toString());
             camConf2020.FOV = TestUtils.WPI2020Image.FOV;
             camConf2020.calibration = TestUtils.get2020LifeCamCoeffs();
 
+            var pipeline2020 = new ReflectivePipelineSettings();
+            pipeline2020.pipelineNickname = "OuterPort";
+            pipeline2020.targetModel = TargetModel.get2020Target();
+            pipeline2020.cameraCalibration = camConf2020.calibration;
+
+            var psList2020 = new ArrayList<CVPipelineSettings>();
+            psList2020.add(pipeline2020);
+
             var fvs2020 = new FileVisionSource(camConf2020);
 
-            collectedSources.put(fvs2019, new ArrayList<>());
-            collectedSources.put(fvs2020, new ArrayList<>());
+            collectedSources.put(fvs2019, psList2019);
+            collectedSources.put(fvs2020, psList2020);
         }
         return collectedSources;
     }
