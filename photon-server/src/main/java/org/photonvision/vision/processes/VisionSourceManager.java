@@ -99,7 +99,8 @@ public class VisionSourceManager {
         // loop over all the configs loaded from disk
         for (CameraConfiguration config : loadedUsbCamConfigs) {
             UsbCameraInfo cameraInfo;
-            // matching by path
+
+            // attempt matching by path and basename
             logger.debug(
                     "Trying to find a match for loaded camera "
                             + config.baseName
@@ -107,16 +108,16 @@ public class VisionSourceManager {
                             + config.path);
             cameraInfo =
                     detectedCameraList.stream()
-                            .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path) && usbCameraInfo.name.equals(config.baseName))
+                            .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path) && cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
                             .findFirst()
                             .orElse(null);
 
-            logger.debug("Failed to match by path and name, falling back to name-only match");
 
             // if path based fails, attempt basename only match
             if (cameraInfo == null) {
+                logger.debug("Failed to match by path and name, falling back to name-only match");
                 cameraInfo = detectedCameraList.stream()
-                        .filter(usbCameraInfo -> usbCameraInfo.name.equals(config.baseName))
+                        .filter(usbCameraInfo -> cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
                         .findFirst()
                         .orElse(null);
             }
@@ -135,9 +136,8 @@ public class VisionSourceManager {
                 "After matching loaded configs " + detectedCameraList.size() + " cameras were unmatched.");
         for (UsbCameraInfo info : detectedCameraList) {
             // create new camera config for all new cameras
-            String baseName =
-                    info.name.replaceAll("[^\\x00-\\x7F]", ""); // Remove all non-ASCII characters
-            String uniqueName = baseName.replaceAll(" ", "_"); // Replace spaces with underscores;
+            String baseName = cameraNameToBaseName(info.name);
+            String uniqueName = baseNameToUniqueName(baseName);
 
             int suffix = 0;
             while (containsName(cameraConfigurations, uniqueName)) {
@@ -154,6 +154,16 @@ public class VisionSourceManager {
 
         logger.debug("Matched or created " + cameraConfigurations.size() + " camera configs!");
         return cameraConfigurations;
+    }
+
+    // Remove all non-ASCII characters
+    private static String cameraNameToBaseName(String cameraName) {
+        return cameraName.replaceAll("[^\\x00-\\x7F]", "");
+    }
+
+    // Replace spaces with underscores
+    private static String baseNameToUniqueName(String baseName) {
+        return baseName.replaceAll(" ", "_");
     }
 
     private static List<VisionSource> loadVisionSourcesFromCamConfigs(
