@@ -21,7 +21,6 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -100,27 +99,29 @@ public class VisionSourceManager {
         for (CameraConfiguration config : loadedUsbCamConfigs) {
             UsbCameraInfo cameraInfo;
 
-            // Load by path vs by index -- if the path is numeric we'll match by index
-            if (StringUtils.isNumeric(config.path)) {
-                // match by index
-                var index = Integer.parseInt(config.path);
-                logger.debug(
-                        "Trying to find a match for loaded camera " + config.baseName + " with index " + index);
+            // attempt matching by path and basename
+            logger.debug(
+                    "Trying to find a match for loaded camera "
+                            + config.baseName
+                            + " with path "
+                            + config.path);
+            cameraInfo =
+                    detectedCameraList.stream()
+                            .filter(
+                                    usbCameraInfo ->
+                                            usbCameraInfo.path.equals(config.path)
+                                                    && cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
+                            .findFirst()
+                            .orElse(null);
+
+            // if path based fails, attempt basename only match
+            if (cameraInfo == null) {
+                logger.debug("Failed to match by path and name, falling back to name-only match");
                 cameraInfo =
                         detectedCameraList.stream()
-                                .filter(usbCameraInfo -> usbCameraInfo.dev == index)
-                                .findFirst()
-                                .orElse(null);
-            } else {
-                // matching by path
-                logger.debug(
-                        "Trying to find a match for loaded camera "
-                                + config.baseName
-                                + " with path "
-                                + config.path);
-                cameraInfo =
-                        detectedCameraList.stream()
-                                .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path))
+                                .filter(
+                                        usbCameraInfo ->
+                                                cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
                                 .findFirst()
                                 .orElse(null);
             }
@@ -139,9 +140,8 @@ public class VisionSourceManager {
                 "After matching loaded configs " + detectedCameraList.size() + " cameras were unmatched.");
         for (UsbCameraInfo info : detectedCameraList) {
             // create new camera config for all new cameras
-            String baseName =
-                    info.name.replaceAll("[^\\x00-\\x7F]", ""); // Remove all non-ASCII characters
-            String uniqueName = baseName.replaceAll(" ", "_"); // Replace spaces with underscores;
+            String baseName = cameraNameToBaseName(info.name);
+            String uniqueName = baseNameToUniqueName(baseName);
 
             int suffix = 0;
             while (containsName(cameraConfigurations, uniqueName)) {
@@ -158,6 +158,16 @@ public class VisionSourceManager {
 
         logger.debug("Matched or created " + cameraConfigurations.size() + " camera configs!");
         return cameraConfigurations;
+    }
+
+    // Remove all non-ASCII characters
+    private static String cameraNameToBaseName(String cameraName) {
+        return cameraName.replaceAll("[^\\x00-\\x7F]", "");
+    }
+
+    // Replace spaces with underscores
+    private static String baseNameToUniqueName(String baseName) {
+        return baseName.replaceAll(" ", "_");
     }
 
     private static List<VisionSource> loadVisionSourcesFromCamConfigs(
