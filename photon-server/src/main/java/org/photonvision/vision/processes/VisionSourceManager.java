@@ -21,7 +21,6 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.StringUtils;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -108,18 +107,23 @@ public class VisionSourceManager {
                             + config.path);
             cameraInfo =
                     detectedCameraList.stream()
-                            .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path) && cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
+                            .filter(
+                                    usbCameraInfo ->
+                                            usbCameraInfo.path.equals(config.path)
+                                                    && cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
                             .findFirst()
                             .orElse(null);
-
 
             // if path based fails, attempt basename only match
             if (cameraInfo == null) {
                 logger.debug("Failed to match by path and name, falling back to name-only match");
-                cameraInfo = detectedCameraList.stream()
-                        .filter(usbCameraInfo -> cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
-                        .findFirst()
-                        .orElse(null);
+                cameraInfo =
+                        detectedCameraList.stream()
+                                .filter(
+                                        usbCameraInfo ->
+                                                cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
+                                .findFirst()
+                                .orElse(null);
             }
 
             // If we actually matched a camera to a config, remove that camera from the list and add it to
