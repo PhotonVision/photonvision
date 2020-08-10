@@ -14,7 +14,6 @@ import org.opencv.core.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.raspi.PicamJNI;
-import org.photonvision.vision.pipe.impl.HSVPipe;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -27,10 +26,10 @@ public class GPUAccelerator {
   private static final String k_vertexShader = String.join("\n",
           "#version 100",
           "",
-          "attribute vec4 position;",
+          "attribute vec2 position;",
           "",
           "void main() {",
-          "  gl_Position = position;",
+          "  gl_Position = vec4(position, 0.0, 1.0);",
           "}"
   );
   private static final String k_fragmentShader = String.join("\n",
@@ -95,17 +94,17 @@ public class GPUAccelerator {
   private final GLProfile profile;
   private final int outputFormat;
   private final TransferMode transferMode;
-  private final GLAutoDrawable drawable;
+  private final GLOffscreenAutoDrawable drawable;
   private final Texture texture;
   // The texture uniform holds the image that's being processed
   // The resolution uniform holds the current image resolution
   // The lower and upper uniforms hold the lower and upper HSV limits for thresholding
-  private final int textureUniformId, resolutionUniformId, lowerUniformId, upperUniformId;
+  private final int programId, textureUniformId, resolutionUniformId, lowerUniformId, upperUniformId;
 
   private final Logger logger = new Logger(GPUAccelerator.class, LogGroup.General);
 
   private byte[] inputBytes, outputBytes;
-  private Mat outputMat = new Mat(k_startingHeight, k_startingWidth, CvType.CV_8UC1);
+  private Mat outputMat = new Mat(k_startingHeight, k_startingWidth, CvType.CV_8UC1); // Only used in PBO transfer modes
   private int previousWidth = -1, previousHeight = -1;
   private int
           unpackIndex = 0, unpackNextIndex = 0,
@@ -144,7 +143,7 @@ public class GPUAccelerator {
 
     // Get an OpenGL context; OpenGL ES 2.0 and OpenGL 2.0 are compatible with all the coprocs we care about but not compatible with PBOs. Open GL ES 3.0 and OpenGL 4.0 are compatible with select coprocs *and* PBOs
     gl = (transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) ? new DebugGLES2(drawable.getGL().getGLES2()) : drawable.getGL().getGLES3();
-    final int programId = gl.glCreateProgram();
+    programId = gl.glCreateProgram();
 
     if (transferMode == TransferMode.NONE && !gl.glGetString(GL_EXTENSIONS).contains("GL_EXT_texture_rg")) {
       logger.warn("OpenGL ES 2.0 implementation does not have the 'GL_EXT_texture_rg' extension, falling back to GL_ALPHA instead of GL_RED output format");
@@ -196,7 +195,7 @@ public class GPUAccelerator {
     logger.info("GL_IMPLEMENTATION_COLOR_READ_FORMAT: " + fmt.get(0) + ", GL_IMPLEMENTATION_COLOR_READ_TYPE: " + type.get(0));
 
     // Tell OpenGL that the attribute in the vertex shader named position is bound to index 0 (the index for the generic position input)
-    gl.glBindAttribLocation(programId, 0, "position");
+    gl.glBindAttribLocation(programId, k_positionVertexAttribute, "position");
 
     // Compile and setup our two shaders with our program
     final int vertexId = createShader(gl, programId, k_vertexShader, GL_VERTEX_SHADER);
@@ -287,13 +286,16 @@ public class GPUAccelerator {
     lowerUniformId = gl.glGetUniformLocation(programId, "lowerThresh");
     upperUniformId = gl.glGetUniformLocation(programId, "upperThresh");
 
+    // Clear the whole screen (front buffer)
+    gl.glClearColor(0, 0, 0, 1);
+    gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // Set up a quad that covers the entire screen so that our fragment shader draws onto the entire screen
     gl.glGenBuffers(1, vertexVBOIds);
 
     FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(k_vertexPositions);
     gl.glBindBuffer(GL_ARRAY_BUFFER, vertexVBOIds.get(0));
     gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
-
 
     if (transferMode == TransferMode.SINGLE_BUFFERED || transferMode == TransferMode.DOUBLE_BUFFERED) {
       // Set up pixel unpack buffer (a PBO to transfer image data to the GPU)
@@ -393,7 +395,7 @@ public class GPUAccelerator {
     if (in.width() != previousWidth && in.height() != previousHeight) {
       logger.debug("Resizing OpenGL viewport, byte buffers, and PBOs");
 
-//      ((GLOffscreenAutoDrawableImpl.FBOImpl) drawable).setSurfaceSize(in.width(), in.height());
+      drawable.setSurfaceSize(in.width(), in.height());
       gl.glViewport(0, 0, in.width(), in.height());
 
       previousWidth = in.width();
@@ -420,10 +422,12 @@ public class GPUAccelerator {
       unpackNextIndex = (unpackIndex + 1) % 2;
     }
 
+    gl.glUseProgram(programId);
+
     // Reset the fullscreen quad
     gl.glBindBuffer(GL_ARRAY_BUFFER, vertexVBOIds.get(0));
     gl.glEnableVertexAttribArray(k_positionVertexAttribute);
-    gl.glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
+    gl.glVertexAttribPointer(k_positionVertexAttribute, k_vertexPositions.length, GL_FLOAT, false, 2 * Float.BYTES, 0);
     gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Load and bind our image as a 2D texture
@@ -433,7 +437,7 @@ public class GPUAccelerator {
 
     // Load our image into the texture
     in.get(0, 0, inputBytes);
-    if (transferMode == TransferMode.NONE || true) {
+    if (transferMode == TransferMode.NONE) {
       ByteBuffer buf = ByteBuffer.wrap(inputBytes);
       // (We're actually taking in BGR even though this says RGB; it's much easier and faster to switch it around in the fragment shader)
       texture.updateImage(gl, new TextureData(profile, GL_RGB, in.width(), in.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, false, false, false, buf, null));
@@ -484,13 +488,17 @@ public class GPUAccelerator {
   }
 
   private Mat saveMatNoPBO(GLES2 gl, int width, int height) {
-    ByteBuffer buffer = GLBuffers.newDirectByteBuffer(width * height * 3);
+    ByteBuffer buffer = GLBuffers.newDirectByteBuffer(width * height * 4);
     // We use GL_RED/GL_ALPHA to get things in a single-channel format
-    // Note that which pixel format you use is *very* important to performance
+    // Note that which pixel format you use is *very* important for performance
     // E.g. GL_ALPHA is super slow in this case
-    gl.glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
+    gl.glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
-    return new Mat(height, width, CvType.CV_8UC3, buffer);
+    for (int i = 0; i < width * height; i += 4) {
+      System.out.println(buffer.get(i) + ", " + buffer.get(i + 1) + ", " + buffer.get(i + 2) + ", " + buffer.get(i + 3));
+    }
+
+    return new Mat(height, width, CvType.CV_8UC4, buffer);
   }
 
   private Mat saveMatPBO(GLES3 gl, int width, int height, boolean doubleBuffered) {
