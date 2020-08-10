@@ -118,7 +118,7 @@ public class GPUAccelerator {
     profile = GLProfile.get((transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) ? GLProfile.GLES2 : GLProfile.GLES3);
     final var capabilities = new GLCapabilities(profile);
     capabilities.setHardwareAccelerated(true);
-    if (transferMode == TransferMode.DIRECT_OMX) {
+    if (transferMode == TransferMode.DIRECT_OMX || true) {
       // The VideoCore IV closed source driver only works with offscreen PBuffers, not an offscreen FBO
       // The open source driver (Mesa) *does* work with offscreen PBuffers, but OMX doesn't work with Mesa, so we use PBuffers
       capabilities.setPBuffer(true);
@@ -153,7 +153,7 @@ public class GPUAccelerator {
       outputFormat = GL_RED;
     }
 
-    if (transferMode != TransferMode.DIRECT_OMX) {
+    if (transferMode != TransferMode.DIRECT_OMX && false) {
       var fboDrawable = (GLOffscreenAutoDrawableImpl.FBOImpl) drawable;
 
       // JOGL creates a framebuffer color attachment that has RGB set as the format, which is not appropriate for us because we want a single-channel format.
@@ -393,7 +393,7 @@ public class GPUAccelerator {
     if (in.width() != previousWidth && in.height() != previousHeight) {
       logger.debug("Resizing OpenGL viewport, byte buffers, and PBOs");
 
-      ((GLOffscreenAutoDrawableImpl.FBOImpl) drawable).setSurfaceSize(in.width(), in.height());
+//      ((GLOffscreenAutoDrawableImpl.FBOImpl) drawable).setSurfaceSize(in.width(), in.height());
       gl.glViewport(0, 0, in.width(), in.height());
 
       previousWidth = in.width();
@@ -436,7 +436,7 @@ public class GPUAccelerator {
     if (transferMode == TransferMode.NONE || true) {
       ByteBuffer buf = ByteBuffer.wrap(inputBytes);
       // (We're actually taking in BGR even though this says RGB; it's much easier and faster to switch it around in the fragment shader)
-      texture.updateImage(gl, new TextureData(profile, GL_RGB8, in.width(), in.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, false, false, false, buf, null));
+      texture.updateImage(gl, new TextureData(profile, GL_RGB, in.width(), in.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, false, false, false, buf, null));
     } else {
       // Bind the PBO to the texture
       gl.glBindBuffer(GLES3.GL_PIXEL_UNPACK_BUFFER, unpackPBOIds.get(unpackIndex));
@@ -484,13 +484,13 @@ public class GPUAccelerator {
   }
 
   private Mat saveMatNoPBO(GLES2 gl, int width, int height) {
-    ByteBuffer buffer = GLBuffers.newDirectByteBuffer(width * height);
+    ByteBuffer buffer = GLBuffers.newDirectByteBuffer(width * height * 3);
     // We use GL_RED/GL_ALPHA to get things in a single-channel format
     // Note that which pixel format you use is *very* important to performance
     // E.g. GL_ALPHA is super slow in this case
-    gl.glReadPixels(0, 0, width, height, outputFormat, GL_UNSIGNED_BYTE, buffer);
+    gl.glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
 
-    return new Mat(height, width, CvType.CV_8UC1, buffer);
+    return new Mat(height, width, CvType.CV_8UC3, buffer);
   }
 
   private Mat saveMatPBO(GLES3 gl, int width, int height, boolean doubleBuffered) {

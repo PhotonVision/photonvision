@@ -125,9 +125,9 @@ public class BenchmarkTest {
     @Test
     public void ReflectiveGPU1920x1440Benchmark() {
         // Uncomment to run on a single frame
-        if (false) {
+        if (true) {
             var pipe = new GPUAcceleratedHSVPipe(GPUAccelerator.TransferMode.NONE);
-            pipe.setParams(new HSVPipe.HSVParams(new IntegerCouple(), null, null) {
+            pipe.setParams(new HSVPipe.HSVParams(new IntegerCouple(), new IntegerCouple(), new IntegerCouple()) {
                 @Override
                 public Scalar getHsvLower() {
                     return new Scalar(0.4, 0.8, 0.8);
@@ -141,10 +141,10 @@ public class BenchmarkTest {
             var path = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center_720p);
             var mat = pipe.process(Imgcodecs.imread(path.toString()));
             Imgcodecs.imwrite("i2.png", mat);
-            mat = pipe.process(Imgcodecs.imread(path.toString()));
-            Imgcodecs.imwrite("i3.png", mat);
-            mat = pipe.process(Imgcodecs.imread(path.toString()));
-            Imgcodecs.imwrite("i4.png", mat);
+//            mat = pipe.process(Imgcodecs.imread(path.toString()));
+//            Imgcodecs.imwrite("i3.png", mat);
+//            mat = pipe.process(Imgcodecs.imread(path.toString()));
+//            Imgcodecs.imwrite("i4.png", mat);
         } else {
             var pipeline = new ReflectivePipeline();
             pipeline.getSettings().hsvHue.set(60, 100);
