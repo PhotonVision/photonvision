@@ -2,6 +2,7 @@ package org.photonvision.vision.frame.provider;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
@@ -28,16 +29,16 @@ public class AcceleratedPicamFrameProvider implements FrameProvider {
 //    } else {
 //      System.out.println("guuci");
 //    }
-    err = PicamJNI.createCamera(1280, 720, 60);
-    if (err) {
-      System.out.println("bade");
-    } else {
-      System.out.println("goodee");
-    }
+//    err = PicamJNI.createCamera(1280, 720, 60);
+//    if (err) {
+//      System.out.println("bade");
+//    } else {
+//      System.out.println("goodee");
+//    }
 
     while (true) {
-
-      accelerator.redrawGL(new Scalar(0, 0, 0), new Scalar(1, 1, 1), 1280, 720);
+      var mat = accelerator.redrawGL(new Scalar(0, 0, 0), new Scalar(1, 1, 1), 960, 720);
+//      Imgcodecs.imwrite("foo.png", mat);
 //      try {
 //        Thread.sleep(1000);
 //      } catch (InterruptedException e) {

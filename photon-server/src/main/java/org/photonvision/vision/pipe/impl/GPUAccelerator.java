@@ -35,8 +35,8 @@ public class GPUAccelerator {
   private static final String k_fragmentShader = String.join("\n",
           "#version 100",
           "",
-          "precision highp float;",
-          "precision highp int;",
+          "precision lowp float;",
+          "precision lowp int;",
           "",
           "uniform vec3 lowerThresh;",
           "uniform vec3 upperThresh;",
@@ -60,15 +60,15 @@ public class GPUAccelerator {
           "}",
           "",
           "void main() {",
-//          "  vec2 uv = gl_FragCoord.xy/resolution;",
+          "  vec2 uv = gl_FragCoord.xy/resolution;",
           // Important! We do this .bgr swizzle because the image comes in as BGR but we pretend it's RGB for convenience+speed
-//          "  vec3 col = texture2D(texture0, uv).bgr;",
+          "  vec3 col = texture2D(texture0, uv).bgr;",
           // Only the first value in the vec4 gets used for GL_RED, and only the last value gets used for GL_ALPHA
-//          "  gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 0.0, 0.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);",
-          "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);",
+          "  gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 1.0, 1.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);",
+//          "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);",
           "}"
   );
-  private static final int k_startingWidth = 1280, k_startingHeight = 720;
+  private static final int k_startingWidth = 960, k_startingHeight = 720;
   private static final float[] k_vertexPositions = {
           // Set up a quad that covers the screen
           -1f, +1f,
@@ -142,7 +142,7 @@ public class GPUAccelerator {
     logger.trace(sb.toString());
 
     // Get an OpenGL context; OpenGL ES 2.0 and OpenGL 2.0 are compatible with all the coprocs we care about but not compatible with PBOs. Open GL ES 3.0 and OpenGL 4.0 are compatible with select coprocs *and* PBOs
-    gl = (transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) ? new DebugGLES2(drawable.getGL().getGLES2()) : drawable.getGL().getGLES3();
+    gl = (transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) ? drawable.getGL().getGLES2() : drawable.getGL().getGLES3();
     programId = gl.glCreateProgram();
 
     if (transferMode == TransferMode.NONE && !gl.glGetString(GL_EXTENSIONS).contains("GL_EXT_texture_rg")) {
@@ -238,7 +238,7 @@ public class GPUAccelerator {
     if (transferMode == TransferMode.DIRECT_OMX) {
       gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, k_startingWidth, k_startingHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
     }
-    texture.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // TODO: This is GL_NEAREST in example code?
+    texture.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     texture.setTexParameteri(gl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     texture.setTexParameteri(gl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     texture.setTexParameteri(gl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -272,6 +272,12 @@ public class GPUAccelerator {
       boolean err = PicamJNI.setEGLImageHandle(eglImageHandle);
       if (err) {
         throw new RuntimeException("Couldn't set EGLImage handle");
+      }
+
+      // Start the OMX capture thread in native code
+      err = PicamJNI.createCamera(k_startingWidth, k_startingHeight, 90);
+      if (err){
+        throw new RuntimeException("Couldn't create native OMX capture thread");
       }
     }
 
@@ -351,20 +357,32 @@ public class GPUAccelerator {
     return shaderId;
   }
 
-  public void redrawGL(Scalar hsvLower, Scalar hsvUpper, int width, int height) {
+  private long lastTime = 0;
+
+  public Mat redrawGL(Scalar hsvLower, Scalar hsvUpper, int width, int height) {
+    long t0 = System.currentTimeMillis();
+    // Use the shaders we set up in the constructor
+    gl.glUseProgram(programId);
+    System.out.println("glUseProgram: " + (System.currentTimeMillis() - t0));
+
+    long t2 = System.currentTimeMillis();
+    // Load and bind our image as a 2D texture
+    gl.glActiveTexture(GL_TEXTURE0);
+    texture.enable(gl);
+    texture.bind(gl);
+    System.out.println("glActiveTexture: " + (System.currentTimeMillis() - t2));
+
+
+    long t1 = System.currentTimeMillis();
     // Reset the fullscreen quad
     gl.glBindBuffer(GL_ARRAY_BUFFER, vertexVBOIds.get(0));
+    gl.glVertexAttribPointer(k_positionVertexAttribute, 2, GL_FLOAT, false, 0, 0);
     gl.glEnableVertexAttribArray(k_positionVertexAttribute);
-    gl.glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
     gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-    // Load and bind our image as a 2D texture
-//    gl.glActiveTexture(GL_TEXTURE0);
-//    texture.enable(gl);
-    texture.bind(gl);
-
+    System.out.println("glVertexAttribPointer: " + (System.currentTimeMillis() - t1));
     // Texture is presumed to contain valid camera data at this point because it points to memory managed by OpenMAX
 
+    long t3 = System.currentTimeMillis();
     // Put values in a uniform holding the image resolution
     gl.glUniform2f(resolutionUniformId, width, height);
 
@@ -373,20 +391,27 @@ public class GPUAccelerator {
     var upr = hsvUpper.val;
     gl.glUniform3f(lowerUniformId, (float) lowr[0], (float) lowr[1], (float) lowr[2]);
     gl.glUniform3f(upperUniformId, (float) upr[0], (float) upr[1], (float) upr[2]);
+    System.out.println("glUniform*: " + (System.currentTimeMillis() - t3));
 
+    long t5 = System.currentTimeMillis();
     // Draw the fullscreen quad
-    gl.glDrawArrays(GL_TRIANGLE_STRIP, 0, k_vertexPositions.length);
+    gl.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    System.out.println("glDrawArrays: " + (System.currentTimeMillis() - t5));
 
     // Cleanup
     texture.disable(gl);
     gl.glDisableVertexAttribArray(k_positionVertexAttribute);
     gl.glUseProgram(0);
 
-    ByteBuffer buffer = GLBuffers.newDirectByteBuffer(width * height * 3);
-    gl.glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, buffer);
-    for (int i = 0; i < width * height * 3; i += 3) {
-      System.out.println(buffer.get(i) + ", " + buffer.get(i + 1) + ", " + buffer.get(i + 2));
-    }
+    ByteBuffer buffer = GLBuffers.newDirectByteBuffer(width * height);
+    gl.glReadPixels(0, 0, width, height / 4, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+//    for (int i = 0; i < width * height * 3; i += 4) {
+//      System.out.println(buffer.get(0) + ", " + buffer.get(1) + ", " + buffer.get(2));
+//    }
+    long time = System.currentTimeMillis();
+    System.out.println("total: " + (time - lastTime));
+    lastTime = time;
+    return null;//new Mat(height, width, CvType.CV_8UC4, buffer);
   }
 
   protected Mat process(Mat in, Scalar hsvLower, Scalar hsvUpper) {
@@ -422,12 +447,13 @@ public class GPUAccelerator {
       unpackNextIndex = (unpackIndex + 1) % 2;
     }
 
+    // Use the shaders we set up in the constructor
     gl.glUseProgram(programId);
 
     // Reset the fullscreen quad
     gl.glBindBuffer(GL_ARRAY_BUFFER, vertexVBOIds.get(0));
     gl.glEnableVertexAttribArray(k_positionVertexAttribute);
-    gl.glVertexAttribPointer(k_positionVertexAttribute, k_vertexPositions.length, GL_FLOAT, false, 2 * Float.BYTES, 0);
+    gl.glVertexAttribPointer(k_positionVertexAttribute, 2, GL_FLOAT, false, 0, 0);
     gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     // Load and bind our image as a 2D texture
@@ -473,7 +499,7 @@ public class GPUAccelerator {
     gl.glUniform3f(upperUniformId, (float) upr[0], (float) upr[1], (float) upr[2]);
 
     // Draw the fullscreen quad
-    gl.glDrawArrays(GL_TRIANGLE_STRIP, 0, k_vertexPositions.length);
+    gl.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     // Cleanup
     texture.disable(gl);
@@ -492,11 +518,7 @@ public class GPUAccelerator {
     // We use GL_RED/GL_ALPHA to get things in a single-channel format
     // Note that which pixel format you use is *very* important for performance
     // E.g. GL_ALPHA is super slow in this case
-    gl.glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-
-    for (int i = 0; i < width * height; i += 4) {
-      System.out.println(buffer.get(i) + ", " + buffer.get(i + 1) + ", " + buffer.get(i + 2) + ", " + buffer.get(i + 3));
-    }
+    gl.glReadPixels(0, 0, width, height, outputFormat, GL_UNSIGNED_BYTE, buffer);
 
     return new Mat(height, width, CvType.CV_8UC4, buffer);
   }
