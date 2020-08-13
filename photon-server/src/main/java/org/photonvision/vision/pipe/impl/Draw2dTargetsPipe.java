@@ -17,31 +17,34 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.awt.Color;
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.commons.lang3.tuple.Triple;
+import org.opencv.core.Point;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Draw2dTargetsPipe
-        extends MutatingPipe<
-                Triple<Mat, List<TrackedTarget>, Integer>, Draw2dTargetsPipe.Draw2dContoursParams> {
+    extends MutatingPipe<
+    Triple<Mat, List<TrackedTarget>, Integer>, Draw2dTargetsPipe.Draw2dContoursParams> {
 
     private List<MatOfPoint> m_drawnContours = new ArrayList<>();
 
     @Override
     protected Void process(Triple<Mat, List<TrackedTarget>, Integer> in) {
         if (!in.getMiddle().isEmpty()
-                && (params.showCentroid
-                        || params.showMaximumBox
-                        || params.showRotatedBox
-                        || params.showShape)) {
+            && (params.showCentroid
+            || params.showMaximumBox
+            || params.showRotatedBox
+            || params.showShape)) {
 
             var fps = in.getRight();
+            var imageSize = Math.sqrt(in.getLeft().rows() * in.getLeft().cols());
 
             var centroidColour = ColorHelper.colorToScalar(params.centroidColor);
             var maximumBoxColour = ColorHelper.colorToScalar(params.maximumBoxColor);
@@ -71,62 +74,63 @@ public class Draw2dTargetsPipe
 
                 if (params.showRotatedBox) {
                     Imgproc.drawContours(
-                            in.getLeft(), m_drawnContours, 0, rotatedBoxColour, params.boxOutlineSize);
+                        in.getLeft(), m_drawnContours, 0, rotatedBoxColour, (int) (imageSize * params.kPixelsToBoxThickness));
                 }
 
                 if (params.showMaximumBox) {
                     Rect box = Imgproc.boundingRect(contour);
                     Imgproc.rectangle(
-                            in.getLeft(),
-                            new Point(box.x, box.y),
-                            new Point(box.x + box.width, box.y + box.height),
-                            maximumBoxColour,
-                            params.boxOutlineSize);
+                        in.getLeft(),
+                        new Point(box.x, box.y),
+                        new Point(box.x + box.width, box.y + box.height),
+                        maximumBoxColour,
+                        (int) (imageSize * params.kPixelsToBoxThickness));
                 }
 
                 if (params.showShape) {
                     Imgproc.drawContours(
-                            in.getLeft(),
-                            List.of(target.m_mainContour.mat),
-                            -1,
-                            shapeColour,
-                            params.boxOutlineSize);
+                        in.getLeft(),
+                        List.of(target.m_mainContour.mat),
+                        -1,
+                        shapeColour,
+                        (int) (imageSize * params.kPixelsToBoxThickness));
                 }
 
                 if (params.showCentroid) {
-                    Imgproc.circle(in.getLeft(), target.getTargetOffsetPoint(), 3, centroidColour, 2);
+                    Imgproc.circle(in.getLeft(), target.getTargetOffsetPoint(), (int) (params.kPixelsToCentroidSize * imageSize), centroidColour,
+                        (int) (params.kPixelsToCentroidThickness * imageSize));
                 }
 
                 if (params.showContourNumber) {
-                    var textSize = params.kPixelsToText * in.getLeft().rows();
-                    var thickness = params.kPixelsToThickness * in.getLeft().rows();
+                    var textSize = params.kPixelsToText * imageSize;
+                    var thickness = params.kPixelsToThickness * imageSize;
                     var center = target.m_mainContour.getCenterPoint();
                     var textPos =
-                            new Point(
-                                    center.x + params.kPixelsToOffset * in.getLeft().rows(),
-                                    center.y - params.kPixelsToOffset * in.getLeft().rows());
+                        new Point(
+                            center.x + params.kPixelsToOffset * imageSize,
+                            center.y - params.kPixelsToOffset * imageSize);
 
                     Imgproc.putText(
-                            in.getLeft(),
-                            String.valueOf(i),
-                            textPos,
-                            0,
-                            textSize,
-                            ColorHelper.colorToScalar(params.textColor),
-                            (int) thickness);
-                }
-
-                // Draw FPS
-                var textSize = params.kPixelsToText * in.getLeft().rows();
-                var thickness = params.kPixelsToThickness * in.getLeft().rows();
-                Imgproc.putText(
                         in.getLeft(),
-                        fps.toString(),
-                        new Point(10, 10 + textSize * 25),
+                        String.valueOf(i),
+                        textPos,
                         0,
                         textSize,
                         ColorHelper.colorToScalar(params.textColor),
                         (int) thickness);
+                }
+
+                // Draw FPS
+                var textSize = params.kPixelsToText * imageSize;
+                var thickness = params.kPixelsToThickness * imageSize;
+                Imgproc.putText(
+                    in.getLeft(),
+                    fps.toString(),
+                    new Point(10, 10 + textSize * 25),
+                    0,
+                    textSize,
+                    ColorHelper.colorToScalar(params.textColor),
+                    (int) thickness);
             }
         }
 
@@ -137,9 +141,13 @@ public class Draw2dTargetsPipe
         public final double kPixelsToText = 0.0025;
         public final double kPixelsToThickness = 0.008;
         public final double kPixelsToOffset = 0.02;
+
+        public final double kPixelsToBoxThickness = 0.007;
+        public final double kPixelsToCentroidSize = 0.01u;
+        public final double kPixelsToCentroidThickness = 0.008;
+
         public boolean showCentroid = true;
         public boolean showMultiple;
-        public int boxOutlineSize = 1;
         public boolean showRotatedBox = true;
         public boolean showShape = false;
         public boolean showMaximumBox = true;
