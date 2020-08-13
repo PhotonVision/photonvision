@@ -56,8 +56,9 @@ public enum Platform {
     }
 
     public static boolean isLinux() {
-        return getCurrentPlatform() == LINUX_64 || getCurrentPlatform() == LINUX_RASPBIAN
-            || getCurrentPlatform() == LINUX_ARM64;
+        return getCurrentPlatform() == LINUX_64
+                || getCurrentPlatform() == LINUX_RASPBIAN
+                || getCurrentPlatform() == LINUX_ARM64;
     }
 
     public static boolean isRaspberryPi() {

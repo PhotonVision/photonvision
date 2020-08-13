@@ -79,7 +79,8 @@ public class Calibrate3dPipeline
         findBoardCornersPipe.setParams(findCornersPipeParams);
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
-                new Calibrate3dPipe.CalibratePipeParams(new Size(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight));
+                new Calibrate3dPipe.CalibratePipeParams(
+                        new Size(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight));
         calibrate3dPipe.setParams(calibratePipeParams);
     }
 
@@ -121,8 +122,12 @@ public class Calibrate3dPipeline
 
     public CameraCalibrationCoefficients tryCalibration() {
         if (!hasEnough()) {
-            logger.info("Not enough snapshots! Only got " + foundCornersList.size() + " of "
-                + minSnapshots + " -- returning null..");
+            logger.info(
+                    "Not enough snapshots! Only got "
+                            + foundCornersList.size()
+                            + " of "
+                            + minSnapshots
+                            + " -- returning null..");
             return null;
         }
 
@@ -154,16 +159,16 @@ public class Calibrate3dPipeline
 
     private void broadcastState() {
         var state =
-            SerializationUtils.objectToHashMap(
-                new UICalibrationData(
-                    foundCornersList.size(),
-                    settings.cameraVideoModeIndex,
-                    minSnapshots,
-                    hasEnough(),
-                    Units.metersToInches(settings.gridSize),
-                    settings.boardWidth,
-                    settings.boardHeight,
-                    settings.boardType));
+                SerializationUtils.objectToHashMap(
+                        new UICalibrationData(
+                                foundCornersList.size(),
+                                settings.cameraVideoModeIndex,
+                                minSnapshots,
+                                hasEnough(),
+                                Units.metersToInches(settings.gridSize),
+                                settings.boardWidth,
+                                settings.boardHeight,
+                                settings.boardType));
         var map = new SocketHandler.UIMap();
         map.put("calibrationData", state);
         try {

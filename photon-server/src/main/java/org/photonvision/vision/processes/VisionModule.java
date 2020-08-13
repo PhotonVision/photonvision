@@ -158,7 +158,11 @@ public class VisionModule {
         var settings = pipelineManager.calibration3dPipeline.getSettings();
         settings.cameraVideoModeIndex = data.videoModeIndex;
         visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
-        logger.info("Starting calibration at resolution index " + data.videoModeIndex + " and settings " + data);
+        logger.info(
+                "Starting calibration at resolution index "
+                        + data.videoModeIndex
+                        + " and settings "
+                        + data);
         settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
@@ -484,7 +488,11 @@ public class VisionModule {
         config.driveModeSettings = pipelineManager.driverModePipeline.getSettings();
         config.currentPipelineIndex = Math.max(pipelineManager.getCurrentPipelineIndex(), -1);
 
-        logger.info("Saving state with " + config.calibrations.size() + " calibrated resolutions and index " + config.currentPipelineIndex);
+        logger.info(
+                "Saving state with "
+                        + config.calibrations.size()
+                        + " calibrated resolutions and index "
+                        + config.currentPipelineIndex);
 
         return config;
     }

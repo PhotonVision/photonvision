@@ -32,7 +32,6 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
-import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
@@ -56,7 +55,7 @@ public class RequestHandler {
                 e.printStackTrace();
             }
             ConfigManager.saveUploadedSettingsZip(tempZipPath);
-//            restartDevice();
+            //            restartDevice();
         } else {
             logger.error("Couldn't read uploaded settings ZIP! Ignoring.");
         }

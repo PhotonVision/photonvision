@@ -28,7 +28,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.target.TargetModel;
@@ -51,10 +50,8 @@ public class ConfigTest {
         configMgr = new ConfigManager(Path.of("testconfigdir"));
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
 
-        REFLECTIVE_PIPELINE_SETTINGS =
-            new ReflectivePipelineSettings();
-        COLORED_SHAPE_PIPELINE_SETTINGS =
-            new ColoredShapePipelineSettings();
+        REFLECTIVE_PIPELINE_SETTINGS = new ReflectivePipelineSettings();
+        COLORED_SHAPE_PIPELINE_SETTINGS = new ColoredShapePipelineSettings();
 
         REFLECTIVE_PIPELINE_SETTINGS.pipelineNickname = "2019Tape";
         REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.get2019Target();

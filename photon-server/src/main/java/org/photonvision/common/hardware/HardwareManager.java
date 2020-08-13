@@ -17,6 +17,10 @@
 
 package org.photonvision.common.hardware;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.HashMap;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
@@ -26,11 +30,6 @@ import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
-import java.util.HashMap;
 
 public class HardwareManager {
     HardwareConfig hardwareConfig;
@@ -48,23 +47,21 @@ public class HardwareManager {
         MetricsBase.setConfig(hardwareConfig);
 
         hardwareConfig.ledPins.forEach(
-            pin -> {
-                if (Platform.isRaspberryPi()) {
-                    LEDs.put(
-                        pin,
-                        new PiGPIO(pin, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1)));
-                } else {
-                    LEDs.put(pin, new CustomGPIO(pin));
-                }
-            });
+                pin -> {
+                    if (Platform.isRaspberryPi()) {
+                        LEDs.put(
+                                pin,
+                                new PiGPIO(pin, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1)));
+                    } else {
+                        LEDs.put(pin, new CustomGPIO(pin));
+                    }
+                });
 
         // Start hardware metrics thread
         MetricsPublisher.getInstance().startTask();
     }
 
-    /**
-     * Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue);
-     */
+    /** Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue); */
     public GPIOBase getGPIO(int pin) {
         return LEDs.get(pin);
     }
@@ -106,12 +103,15 @@ public class HardwareManager {
         String jarPath = null;
 
         try {
-            jarPath = new File(HardwareManager.class.getProtectionDomain().getCodeSource().getLocation().toURI()).toString();
+            jarPath =
+                    new File(
+                                    HardwareManager.class.getProtectionDomain().getCodeSource().getLocation().toURI())
+                            .toString();
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
 
-        if(jarPath == null || !jarPath.endsWith("jar")) {
+        if (jarPath == null || !jarPath.endsWith("jar")) {
             logger.info("Could not determine JAR path! Cannot restart program...");
         }
 
@@ -122,8 +122,7 @@ public class HardwareManager {
                 e.printStackTrace();
                 return false;
             }
-        }
-        else {
+        } else {
             try {
                 return shellExec.execute("java -jar " + jarPath) == 0;
             } catch (IOException e) {

@@ -17,8 +17,12 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.util.Units;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,11 +37,6 @@ import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-
-import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SolvePNPTest {
 
@@ -102,11 +101,11 @@ public class SolvePNPTest {
         pipeline.getSettings().targetModel = TargetModel.get2019Target();
 
         var frameProvider =
-            new FileFrameProvider(
-                TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
-                TestUtils.WPI2019Image.FOV,
-                new Rotation2d(),
-                TestUtils.get2019LifeCamCoeffs(true));
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
+                        TestUtils.WPI2019Image.FOV,
+                        new Rotation2d(),
+                        TestUtils.get2019LifeCamCoeffs(true));
 
         CVPipelineResult pipelineResult;
 
@@ -137,11 +136,11 @@ public class SolvePNPTest {
         pipeline.getSettings().targetModel = TargetModel.get2020Target();
 
         var frameProvider =
-            new FileFrameProvider(
-                TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
-                TestUtils.WPI2020Image.FOV,
-                new Rotation2d(),
-                TestUtils.get2020LifeCamCoeffs(true));
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
+                        TestUtils.WPI2020Image.FOV,
+                        new Rotation2d(),
+                        TestUtils.get2020LifeCamCoeffs(true));
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
         printTestResults(pipelineResult);
@@ -174,9 +173,9 @@ public class SolvePNPTest {
     public static void main(String[] args) {
         TestUtils.loadLibraries();
         var frameProvider =
-            new FileFrameProvider(
-                TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                TestUtils.WPI2019Image.FOV);
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.WPI2019Image.FOV);
 
         var settings = new ReflectivePipelineSettings();
         settings.hsvHue.set(60, 100);
@@ -193,12 +192,12 @@ public class SolvePNPTest {
     private static void printTestResults(CVPipelineResult pipelineResult) {
         double fps = 1000 / pipelineResult.getLatencyMillis();
         System.out.println(
-            "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
+                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
         System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
         System.out.println(
-            "Found targets at "
-                + pipelineResult.targets.stream()
-                .map(TrackedTarget::getCameraToTarget)
-                .collect(Collectors.toList()));
+                "Found targets at "
+                        + pipelineResult.targets.stream()
+                                .map(TrackedTarget::getCameraToTarget)
+                                .collect(Collectors.toList()));
     }
 }

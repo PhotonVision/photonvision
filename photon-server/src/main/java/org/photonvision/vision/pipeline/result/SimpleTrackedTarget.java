@@ -18,10 +18,9 @@
 package org.photonvision.vision.pipeline.result;
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import java.util.Objects;
-
 import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
+import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.target.TrackedTarget;
 

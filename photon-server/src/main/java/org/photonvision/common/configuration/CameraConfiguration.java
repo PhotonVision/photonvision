@@ -22,7 +22,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -145,7 +144,8 @@ public class CameraConfiguration {
         logger.info("adding calibration " + calibration.resolution);
         calibrations.stream()
                 .filter(it -> it.resolution.equals(calibration.resolution))
-                .findAny().ifPresent(calibrations::remove);
+                .findAny()
+                .ifPresent(calibrations::remove);
         calibrations.add(calibration);
     }
 }

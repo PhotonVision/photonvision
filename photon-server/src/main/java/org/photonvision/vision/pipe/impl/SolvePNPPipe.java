@@ -91,7 +91,8 @@ public class SolvePNPPipe
     Mat scaledTvec;
 
     @SuppressWarnings("DuplicatedCode") // yes I know we have another solvePNP pipe
-    private Transform2d correctLocationForCameraPitch(Mat tVec, Mat rVec, Rotation2d cameraPitchAngle) {
+    private Transform2d correctLocationForCameraPitch(
+            Mat tVec, Mat rVec, Rotation2d cameraPitchAngle) {
         // Algorithm from team 5190 Green Hope Falcons. Can also be found in Ligerbot's vision
         // whitepaper
         var tiltAngle = cameraPitchAngle.getRadians();

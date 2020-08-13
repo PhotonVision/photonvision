@@ -17,13 +17,12 @@
 
 package org.photonvision.common.networking;
 
+import java.io.IOException;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
-
-import java.io.IOException;
 
 public class NetworkManager {
 
@@ -48,18 +47,18 @@ public class NetworkManager {
         }
 
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
-        if(Platform.isLinux()) {
-            if(!Platform.isRoot) {
+        if (Platform.isLinux()) {
+            if (!Platform.isRoot) {
                 logger.error("Cannot manage network without root!");
                 return;
             }
 
-            if(config.connectionType == NetworkMode.DHCP) {
+            if (config.connectionType == NetworkMode.DHCP) {
                 return; // TODO do we need to reconnect or something?
-            } else if(config.connectionType == NetworkMode.STATIC) {
+            } else if (config.connectionType == NetworkMode.STATIC) {
                 try {
-                    new ShellExec().executeBashCommand("ip addr add " + config.staticIp + "/24"
-                        + " dev eth0");
+                    new ShellExec()
+                            .executeBashCommand("ip addr add " + config.staticIp + "/24" + " dev eth0");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

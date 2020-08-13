@@ -110,7 +110,9 @@ public class Calibrate3dPipe
         try {
             // Print calibration successful
             logger.info(
-                    "CALIBRATION SUCCESS for res " + params.resolution + " (with accuracy "
+                    "CALIBRATION SUCCESS for res "
+                            + params.resolution
+                            + " (with accuracy "
                             + calibrationAccuracy
                             + ")! camMatrix: \n"
                             + new ObjectMapper().writeValueAsString(cameraMatrixMat)
@@ -149,7 +151,7 @@ public class Calibrate3dPipe
         private final Size resolution;
 
         public CalibratePipeParams(Size resolution) {
-//            logger.info("res: " + resolution.toString());
+            //            logger.info("res: " + resolution.toString());
             this.resolution = resolution;
         }
     }

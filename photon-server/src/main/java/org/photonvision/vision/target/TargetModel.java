@@ -21,22 +21,18 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.wpilibj.util.Units;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
 import org.photonvision.vision.opencv.Releasable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
 public class TargetModel implements Releasable {
 
-    @JsonIgnore
-    private final MatOfPoint3f realWorldTargetCoordinates;
-    @JsonIgnore
-    private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
-    @JsonIgnore
-    private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
+    @JsonIgnore private final MatOfPoint3f realWorldTargetCoordinates;
+    @JsonIgnore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
+    @JsonIgnore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
 
     public final List<Point3> realWorldCoordinatesArray;
     public final double boxHeight;
@@ -58,8 +54,8 @@ public class TargetModel implements Releasable {
 
     @JsonCreator
     public TargetModel(
-        @JsonProperty(value = "realWorldCoordinatesArray") List<Point3> points,
-        @JsonProperty(value = "boxHeight") double boxHeight) {
+            @JsonProperty(value = "realWorldCoordinatesArray") List<Point3> points,
+            @JsonProperty(value = "boxHeight") double boxHeight) {
         this(listToMat(points), boxHeight);
     }
 
@@ -91,31 +87,31 @@ public class TargetModel implements Releasable {
 
     public static TargetModel get2020Target(double offsetMeters) {
         var corners =
-            List.of(
-                new Point3(Units.inchesToMeters(-19.625), 0, offsetMeters),
-                new Point3(Units.inchesToMeters(-9.819867), Units.inchesToMeters(-17), offsetMeters),
-                new Point3(Units.inchesToMeters(9.819867), Units.inchesToMeters(-17), offsetMeters),
-                new Point3(Units.inchesToMeters(19.625), 0, offsetMeters));
+                List.of(
+                        new Point3(Units.inchesToMeters(-19.625), 0, offsetMeters),
+                        new Point3(Units.inchesToMeters(-9.819867), Units.inchesToMeters(-17), offsetMeters),
+                        new Point3(Units.inchesToMeters(9.819867), Units.inchesToMeters(-17), offsetMeters),
+                        new Point3(Units.inchesToMeters(19.625), 0, offsetMeters));
         return new TargetModel(corners, Units.inchesToMeters(12));
     }
 
     public static TargetModel get2019Target() {
         var corners =
-            List.of(
-                new Point3(Units.inchesToMeters(-5.936),Units.inchesToMeters( 2.662), 0),
-                new Point3(Units.inchesToMeters(-7.313),Units.inchesToMeters( -2.662), 0),
-                new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(-2.662), 0),
-                new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(2.662), 0));
+                List.of(
+                        new Point3(Units.inchesToMeters(-5.936), Units.inchesToMeters(2.662), 0),
+                        new Point3(Units.inchesToMeters(-7.313), Units.inchesToMeters(-2.662), 0),
+                        new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(-2.662), 0),
+                        new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(2.662), 0));
         return new TargetModel(corners, 0.1);
     }
 
     public static TargetModel getCircleTarget(double radius) {
         var corners =
-            List.of(
-                new Point3(-radius / 2, -radius / 2, -radius / 2),
-                new Point3(-radius / 2, radius / 2, -radius / 2),
-                new Point3(radius / 2, radius / 2, -radius / 2),
-                new Point3(radius / 2, -radius / 2, -radius / 2));
+                List.of(
+                        new Point3(-radius / 2, -radius / 2, -radius / 2),
+                        new Point3(-radius / 2, radius / 2, -radius / 2),
+                        new Point3(radius / 2, radius / 2, -radius / 2),
+                        new Point3(radius / 2, -radius / 2, -radius / 2));
         return new TargetModel(corners, 0);
     }
 
@@ -125,7 +121,7 @@ public class TargetModel implements Releasable {
         if (!(o instanceof TargetModel)) return false;
         TargetModel that = (TargetModel) o;
         return Double.compare(that.boxHeight, boxHeight) == 0
-            && Objects.equals(realWorldCoordinatesArray, that.realWorldCoordinatesArray);
+                && Objects.equals(realWorldCoordinatesArray, that.realWorldCoordinatesArray);
     }
 
     @Override

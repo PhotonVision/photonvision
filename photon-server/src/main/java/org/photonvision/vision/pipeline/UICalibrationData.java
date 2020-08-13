@@ -67,15 +67,23 @@ public class UICalibrationData {
 
     @Override
     public String toString() {
-        return "UICalibrationData{" +
-            "videoModeIndex=" + videoModeIndex +
-            ", count=" + count +
-            ", minCount=" + minCount +
-            ", hasEnough=" + hasEnough +
-            ", squareSizeIn=" + squareSizeIn +
-            ", patternWidth=" + patternWidth +
-            ", patternHeight=" + patternHeight +
-            ", boardType=" + boardType +
-            '}';
+        return "UICalibrationData{"
+                + "videoModeIndex="
+                + videoModeIndex
+                + ", count="
+                + count
+                + ", minCount="
+                + minCount
+                + ", hasEnough="
+                + hasEnough
+                + ", squareSizeIn="
+                + squareSizeIn
+                + ", patternWidth="
+                + patternWidth
+                + ", patternHeight="
+                + patternHeight
+                + ", boardType="
+                + boardType
+                + '}';
     }
 }

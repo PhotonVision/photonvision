@@ -56,13 +56,17 @@ public class FileFrameProvider implements FrameProvider {
         this(path, fov, maxFPS, null, null);
     }
 
-    public FileFrameProvider(Path path, double fov, Rotation2d pitch,
-                             CameraCalibrationCoefficients calibration) {
+    public FileFrameProvider(
+            Path path, double fov, Rotation2d pitch, CameraCalibrationCoefficients calibration) {
         this(path, fov, MAX_FPS, pitch, calibration);
     }
 
-    public FileFrameProvider(Path path, double fov, int maxFPS, Rotation2d pitch,
-                             CameraCalibrationCoefficients calibration) {
+    public FileFrameProvider(
+            Path path,
+            double fov,
+            int maxFPS,
+            Rotation2d pitch,
+            CameraCalibrationCoefficients calibration) {
         if (!Files.exists(path))
             throw new RuntimeException("Invalid path for image: " + path.toAbsolutePath().toString());
         this.path = path;
