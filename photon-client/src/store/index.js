@@ -35,12 +35,6 @@ export default new Vuex.Store({
                 nickname: "Unknown",
                 videoFormatList: [
                     {
-                        "width": 1280,
-                        "height": 720,
-                        "fps": 30,
-                        "pixelFormat": "BGR"
-                    },
-                    {
                         "width": 1920,
                         "height": 1080,
                         "fps": 30,
@@ -48,14 +42,6 @@ export default new Vuex.Store({
                     }
                 ],
                 calibrations: [
-                    {
-                        "width": 1920,
-                        "height": 1080,
-                        "intrinsics": [353.74653217742724, 0.0, 163.55407989211918, 0.0, 340.77624878700817, 119.8945718300403, 0.0, 0.0, 1.0],
-                        "extrinsics": [0.10322037759535845, -0.2890556437050186, 0.00406400648501475, 2.5573586808275763E-4, -1.462385758978924],
-                        "perViewErrors": [1.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0, 2.0, 3.0],
-                        "standardDeviation": 2.0,
-                    }
                 ],
                 fov: 70.0,
                 isFovConfigurable: true,

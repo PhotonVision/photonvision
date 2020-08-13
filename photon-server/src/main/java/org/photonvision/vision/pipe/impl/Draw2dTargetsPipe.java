@@ -77,7 +77,7 @@ public class Draw2dTargetsPipe
                             m_drawnContours,
                             0,
                             rotatedBoxColour,
-                            (int) (imageSize * params.kPixelsToBoxThickness));
+                            (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
                 }
 
                 if (params.showMaximumBox) {
@@ -87,7 +87,7 @@ public class Draw2dTargetsPipe
                             new Point(box.x, box.y),
                             new Point(box.x + box.width, box.y + box.height),
                             maximumBoxColour,
-                            (int) (imageSize * params.kPixelsToBoxThickness));
+                            (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
                 }
 
                 if (params.showShape) {
@@ -96,16 +96,7 @@ public class Draw2dTargetsPipe
                             List.of(target.m_mainContour.mat),
                             -1,
                             shapeColour,
-                            (int) (imageSize * params.kPixelsToBoxThickness));
-                }
-
-                if (params.showCentroid) {
-                    Imgproc.circle(
-                            in.getLeft(),
-                            target.getTargetOffsetPoint(),
-                            (int) (params.kPixelsToCentroidSize * imageSize),
-                            centroidColour,
-                            (int) (params.kPixelsToCentroidThickness * imageSize));
+                            (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
                 }
 
                 if (params.showContourNumber) {
@@ -125,6 +116,31 @@ public class Draw2dTargetsPipe
                             textSize,
                             ColorHelper.colorToScalar(params.textColor),
                             (int) thickness);
+                }
+
+                if (params.showCentroid) {
+
+                    Point centroid = target.getTargetOffsetPoint();
+                    var crosshairRadius = (int) (imageSize * params.kPixelsToCentroidRadius);
+                    var x = centroid.x;
+                    var y = centroid.y;
+                    Point xMax = new Point(x + crosshairRadius, y);
+                    Point xMin = new Point(x - crosshairRadius, y);
+                    Point yMax = new Point(x, y + crosshairRadius);
+                    Point yMin = new Point(x, y - crosshairRadius);
+
+                    Imgproc.line(
+                            in.getLeft(),
+                            xMax,
+                            xMin,
+                            centroidColour,
+                            (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
+                    Imgproc.line(
+                            in.getLeft(),
+                            yMax,
+                            yMin,
+                            centroidColour,
+                            (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
                 }
 
                 // Draw FPS
@@ -150,8 +166,7 @@ public class Draw2dTargetsPipe
         public final double kPixelsToOffset = 0.02;
 
         public final double kPixelsToBoxThickness = 0.007;
-        public final double kPixelsToCentroidSize = 0.01;
-        public final double kPixelsToCentroidThickness = 0.008;
+        public final double kPixelsToCentroidRadius = 0.03;
 
         public boolean showCentroid = true;
         public boolean showMultiple;
@@ -159,7 +174,7 @@ public class Draw2dTargetsPipe
         public boolean showShape = false;
         public boolean showMaximumBox = true;
         public boolean showContourNumber = true;
-        public Color centroidColor = Color.GREEN;
+        public Color centroidColor = Color.decode("#ff5ebf");
         public Color rotatedBoxColor = Color.BLUE;
         public Color maximumBoxColor = Color.RED;
         public Color shapeOutlineColour = Color.MAGENTA;
