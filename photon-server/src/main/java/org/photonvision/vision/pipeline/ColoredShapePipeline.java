@@ -160,7 +160,6 @@ public class ColoredShapePipeline
         draw2dContoursParams.showShape = true;
         draw2dContoursParams.showMaximumBox = false;
         draw2dContoursParams.showRotatedBox = false;
-        draw2dContoursParams.boxOutlineSize = 2;
         draw2DTargetsPipe.setParams(draw2dContoursParams);
 
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =

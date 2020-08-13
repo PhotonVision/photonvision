@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.util.Units;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
@@ -60,7 +61,7 @@ public class SolvePNPTest {
     }
 
     private CameraCalibrationCoefficients getCoeffs(String filename) {
-        var cameraCalibration = TestUtils.getCoeffs(filename, false);
+        var cameraCalibration = TestUtils.getCoeffs(filename, true);
         checkCameraCoefficients(cameraCalibration);
         return cameraCalibration;
     }
@@ -105,7 +106,7 @@ public class SolvePNPTest {
                 TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
                 TestUtils.WPI2019Image.FOV,
                 new Rotation2d(),
-                TestUtils.get2019LifeCamCoeffs(false));
+                TestUtils.get2019LifeCamCoeffs(true));
 
         CVPipelineResult pipelineResult;
 
@@ -114,11 +115,12 @@ public class SolvePNPTest {
 
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getCameraToTarget();
-        Assertions.assertEquals(41.96, pose.getTranslation().getX(), 0.05);
-        Assertions.assertEquals(-1.03, pose.getTranslation().getY(), 0.05);
-        Assertions.assertEquals(1.46, pose.getRotation().getDegrees(), 0.05);
+        Assertions.assertEquals(1.1, pose.getTranslation().getX(), 0.05);
+        Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.05);
+        Assertions.assertEquals(1, pose.getRotation().getDegrees(), 1);
 
-        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 1000 * 90);
+        Imgcodecs.imwrite("D:\\out.jpg", pipelineResult.outputFrame.image.getMat());
+        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
     }
 
     @Test
@@ -132,23 +134,23 @@ public class SolvePNPTest {
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.get2020Target(36);
+        pipeline.getSettings().targetModel = TargetModel.get2020Target();
 
         var frameProvider =
             new FileFrameProvider(
                 TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
                 TestUtils.WPI2020Image.FOV,
                 new Rotation2d(),
-                TestUtils.get2020LifeCamCoeffs(false));
+                TestUtils.get2020LifeCamCoeffs(true));
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getCameraToTarget();
-        Assertions.assertEquals(Units.inchesToMeters(260.26), pose.getTranslation().getX(), 0.05);
-        Assertions.assertEquals(Units.inchesToMeters(64.26), pose.getTranslation().getY(), 0.05);
-        Assertions.assertEquals(Units.inchesToMeters(36.88), pose.getRotation().getDegrees(), 0.05);
+        Assertions.assertEquals(Units.inchesToMeters(240.26), pose.getTranslation().getX(), 0.05);
+        Assertions.assertEquals(Units.inchesToMeters(35), pose.getTranslation().getY(), 0.05);
+        Assertions.assertEquals(42, pose.getRotation().getDegrees(), 1);
 
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
     }

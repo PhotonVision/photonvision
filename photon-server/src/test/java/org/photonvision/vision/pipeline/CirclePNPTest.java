@@ -57,7 +57,7 @@ public class CirclePNPTest {
     }
 
     private CameraCalibrationCoefficients getCoeffs(String filename) {
-        var cameraCalibration = TestUtils.getCoeffs(filename, false);
+        var cameraCalibration = TestUtils.getCoeffs(filename, true);
         checkCameraCoefficients(cameraCalibration);
         return cameraCalibration;
     }
