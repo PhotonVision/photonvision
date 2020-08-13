@@ -94,7 +94,7 @@ public class JacksonUtils {
 
     private static void saveJsonString(String json, Path path, boolean forceSync) throws IOException {
         var file = path.toFile();
-        if (!file.getParentFile().exists()) {
+        if (file.getParentFile() != null && !file.getParentFile().exists()) {
             file.getParentFile().mkdirs();
         }
         if (!file.exists()) {

@@ -17,11 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import java.util.stream.Collectors;
+import edu.wpi.first.wpilibj.util.Units;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,6 +32,11 @@ import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
+
+import java.util.stream.Collectors;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SolvePNPTest {
 
@@ -99,9 +101,11 @@ public class SolvePNPTest {
         pipeline.getSettings().targetModel = TargetModel.get2019Target();
 
         var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
-                        TestUtils.WPI2019Image.FOV);
+            new FileFrameProvider(
+                TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
+                TestUtils.WPI2019Image.FOV,
+                new Rotation2d(),
+                TestUtils.get2019LifeCamCoeffs(false));
 
         CVPipelineResult pipelineResult;
 
@@ -131,18 +135,20 @@ public class SolvePNPTest {
         pipeline.getSettings().targetModel = TargetModel.get2020Target(36);
 
         var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
-                        TestUtils.WPI2020Image.FOV);
+            new FileFrameProvider(
+                TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
+                TestUtils.WPI2020Image.FOV,
+                new Rotation2d(),
+                TestUtils.get2020LifeCamCoeffs(false));
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getCameraToTarget();
-        Assertions.assertEquals(260.26, pose.getTranslation().getX(), 0.05);
-        Assertions.assertEquals(64.26, pose.getTranslation().getY(), 0.05);
-        Assertions.assertEquals(36.88, pose.getRotation().getDegrees(), 0.05);
+        Assertions.assertEquals(Units.inchesToMeters(260.26), pose.getTranslation().getX(), 0.05);
+        Assertions.assertEquals(Units.inchesToMeters(64.26), pose.getTranslation().getY(), 0.05);
+        Assertions.assertEquals(Units.inchesToMeters(36.88), pose.getRotation().getDegrees(), 0.05);
 
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
     }
@@ -166,9 +172,9 @@ public class SolvePNPTest {
     public static void main(String[] args) {
         TestUtils.loadLibraries();
         var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                        TestUtils.WPI2019Image.FOV);
+            new FileFrameProvider(
+                TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                TestUtils.WPI2019Image.FOV);
 
         var settings = new ReflectivePipelineSettings();
         settings.hsvHue.set(60, 100);
@@ -185,12 +191,12 @@ public class SolvePNPTest {
     private static void printTestResults(CVPipelineResult pipelineResult) {
         double fps = 1000 / pipelineResult.getLatencyMillis();
         System.out.println(
-                "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
+            "Pipeline ran in " + pipelineResult.getLatencyMillis() + "ms (" + fps + " " + "fps)");
         System.out.println("Found " + pipelineResult.targets.size() + " valid targets");
         System.out.println(
-                "Found targets at "
-                        + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getCameraToTarget)
-                                .collect(Collectors.toList()));
+            "Found targets at "
+                + pipelineResult.targets.stream()
+                .map(TrackedTarget::getCameraToTarget)
+                .collect(Collectors.toList()));
     }
 }

@@ -20,7 +20,6 @@ package org.photonvision.vision.pipeline;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.wpilibj.util.Units;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Triple;
@@ -59,11 +58,16 @@ public class Calibrate3dPipeline
     /// Output of the calibration, getter method is set for this.
     private CVPipeResult<CameraCalibrationCoefficients> calibrationOutput;
 
-    private static final int kMinSnapshots = 25;
+    private int minSnapshots;
 
     public Calibrate3dPipeline() {
+        this(25);
+    }
+
+    public Calibrate3dPipeline(int minSnapshots) {
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
+        this.minSnapshots = minSnapshots;
     }
 
     @Override
@@ -112,12 +116,13 @@ public class Calibrate3dPipeline
     }
 
     public boolean hasEnough() {
-        return foundCornersList.size() >= kMinSnapshots;
+        return foundCornersList.size() >= minSnapshots;
     }
 
     public CameraCalibrationCoefficients tryCalibration() {
         if (!hasEnough()) {
-            logger.info("Not enough snapshots! Returning null..");
+            logger.info("Not enough snapshots! Only got " + foundCornersList.size() + " of "
+                + minSnapshots + " -- returning null..");
             return null;
         }
 
@@ -153,7 +158,7 @@ public class Calibrate3dPipeline
                 new UICalibrationData(
                     foundCornersList.size(),
                     settings.cameraVideoModeIndex,
-                    kMinSnapshots,
+                    minSnapshots,
                     hasEnough(),
                     Units.metersToInches(settings.gridSize),
                     settings.boardWidth,

@@ -35,23 +35,26 @@ import org.photonvision.vision.target.TargetModel;
 
 public class ConfigTest {
 
-    private static final ConfigManager configMgr;
-    private static final CameraConfiguration cameraConfig =
-            new CameraConfiguration("TestCamera", "/dev/video420");
-    private static final ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS =
-            new ReflectivePipelineSettings();
-    private static final ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS =
-            new ColoredShapePipelineSettings();
-
     static {
         TestUtils.loadLibraries();
-        configMgr = new ConfigManager(Path.of("testconfigdir"));
     }
+
+    private static ConfigManager configMgr;
+    private static final CameraConfiguration cameraConfig =
+            new CameraConfiguration("TestCamera", "/dev/video420");
+    private static ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS;
+    private static ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS;
 
     @BeforeAll
     public static void init() {
         TestUtils.loadLibraries();
+        configMgr = new ConfigManager(Path.of("testconfigdir"));
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
+
+        REFLECTIVE_PIPELINE_SETTINGS =
+            new ReflectivePipelineSettings();
+        COLORED_SHAPE_PIPELINE_SETTINGS =
+            new ColoredShapePipelineSettings();
 
         REFLECTIVE_PIPELINE_SETTINGS.pipelineNickname = "2019Tape";
         REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.get2019Target();
@@ -67,7 +70,6 @@ public class ConfigTest {
     @Order(1)
     public void serializeConfig() throws IOException {
         TestUtils.loadLibraries();
-        JacksonUtils.serialize(Path.of("settings.json"), REFLECTIVE_PIPELINE_SETTINGS);
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
         configMgr.getConfig().addCameraConfig(cameraConfig);
