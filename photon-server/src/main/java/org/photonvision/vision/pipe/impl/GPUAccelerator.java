@@ -117,7 +117,7 @@ public class GPUAccelerator {
     profile = GLProfile.get((transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) ? GLProfile.GLES2 : GLProfile.GLES3);
     final var capabilities = new GLCapabilities(profile);
     capabilities.setHardwareAccelerated(true);
-    if (transferMode == TransferMode.DIRECT_OMX || true) {
+    if (transferMode == TransferMode.DIRECT_OMX) {
       // The VideoCore IV closed source driver only works with offscreen PBuffers, not an offscreen FBO
       // The open source driver (Mesa) *does* work with offscreen PBuffers, but OMX doesn't work with Mesa, so we use PBuffers
       capabilities.setPBuffer(true);
@@ -126,10 +126,10 @@ public class GPUAccelerator {
     }
     capabilities.setDoubleBuffered(false);
     capabilities.setOnscreen(false);
-    capabilities.setRedBits(8);
-    capabilities.setBlueBits(8);
-    capabilities.setGreenBits(8);
-    capabilities.setAlphaBits(0);
+    capabilities.setRedBits(0);
+    capabilities.setBlueBits(0);
+    capabilities.setGreenBits(0);
+    capabilities.setAlphaBits(8);
 
     // Set up the offscreen area we're going to draw to
     final EGLDrawableFactory factory = (EGLDrawableFactory) EGLDrawableFactory.getEGLFactory();
@@ -152,7 +152,7 @@ public class GPUAccelerator {
       outputFormat = GL_RED;
     }
 
-    if (transferMode != TransferMode.DIRECT_OMX && false) {
+    if (transferMode != TransferMode.DIRECT_OMX) {
       var fboDrawable = (GLOffscreenAutoDrawableImpl.FBOImpl) drawable;
 
       // JOGL creates a framebuffer color attachment that has RGB set as the format, which is not appropriate for us because we want a single-channel format.
@@ -404,8 +404,8 @@ public class GPUAccelerator {
     gl.glUseProgram(0);
 
     ByteBuffer buffer = GLBuffers.newDirectByteBuffer(width * height);
-    gl.glReadPixels(0, 0, width, height / 4, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-//    for (int i = 0; i < width * height * 3; i += 4) {
+    gl.glReadPixels(0, 0, width, height, GL_ALPHA, GL_UNSIGNED_BYTE, buffer);
+//    for (int i = 0; i < width * height; i += 4) {
 //      System.out.println(buffer.get(0) + ", " + buffer.get(1) + ", " + buffer.get(2));
 //    }
     long time = System.currentTimeMillis();
