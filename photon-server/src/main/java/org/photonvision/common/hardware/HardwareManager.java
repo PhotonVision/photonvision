@@ -17,9 +17,7 @@
 
 package org.photonvision.common.hardware;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
@@ -97,6 +95,10 @@ public class HardwareManager {
             logger.error("Could not restart device!", e);
             return false;
         }
+    }
+
+    public HardwareConfig getConfig() {
+        return hardwareConfig;
     }
 
     private static class Singleton {

@@ -49,6 +49,7 @@ public class HardwareConfig {
 
     // Device stuff
     public final String restartHardwareCommand;
+    public final double vendorFOV;
 
     public HardwareConfig() {
         deviceName = "";
@@ -71,6 +72,7 @@ public class HardwareConfig {
         ledBlinkCommand = "";
 
         restartHardwareCommand = "";
+        vendorFOV = 0;
     }
 
     @JsonCreator
@@ -79,6 +81,7 @@ public class HardwareConfig {
             @JsonProperty("deviceLogoPath") String deviceLogoPath,
             @JsonProperty("supportURL") String supportURL,
             @JsonProperty("restartHardwareCommand") String restartHardwareCommand,
+            @JsonProperty("vendorFOV") double vendorFOV,
             @JsonProperty("hardware") Map<String, ?> hardware,
             @JsonProperty("metrics") Map<String, ?> metrics) {
         this.deviceName = deviceName;
@@ -101,5 +104,10 @@ public class HardwareConfig {
         this.ramUtilCommand = (String) metrics.get("ramUtil");
 
         this.restartHardwareCommand = restartHardwareCommand;
+        this.vendorFOV = vendorFOV;
+    }
+
+    public final boolean hasPresetFOV() {
+        return vendorFOV > 1e-4;
     }
 }

@@ -150,8 +150,16 @@ public class VisionModule {
                                 + ") FOV ("
                                 + fov
                                 + ")");
-        settables.setFOV(fov);
         settables.setCameraPitch(pitch);
+
+        // Only set FOV if we have no vendor JSON and we aren't using a PiCAM
+        // TODO improve robustness of this detection
+        if (HardwareManager.getInstance().getConfig().hasPresetFOV()
+                && cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+            logger.info("Cannot set FOV on a vendor device! Ignoring...");
+        } else {
+            settables.setFOV(fov);
+        }
     }
 
     public void startCalibration(UICalibrationData data) {
@@ -477,7 +485,9 @@ public class VisionModule {
         }
         ret.calibrations = calList;
 
-        ret.isFovConfigurable = true; // TODO configurable FOV support
+        ret.isFovConfigurable =
+                !(HardwareManager.getInstance().getConfig().hasPresetFOV()
+                        && cameraQuirks.hasQuirk(CameraQuirk.PiCam));
 
         return ret;
     }

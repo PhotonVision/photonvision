@@ -142,9 +142,9 @@ public class RequestHandler {
     }
 
     /**
-     * Note that this doesn't actually restart the program itself -- instead, it relies on
-     * systemd or an equivalent.
-     * */
+    * Note that this doesn't actually restart the program itself -- instead, it relies on systemd or
+    * an equivalent.
+    */
     public static void restartProgram(Context ctx) {
         ctx.status(200);
         System.exit(0);

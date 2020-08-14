@@ -267,7 +267,11 @@ public class ConfigManager {
                                         .map(
                                                 p -> {
                                                     var relativizedFilePath =
-                                                            configDirectoryFile.toPath().toAbsolutePath().relativize(p).toString();
+                                                            configDirectoryFile
+                                                                    .toPath()
+                                                                    .toAbsolutePath()
+                                                                    .relativize(p)
+                                                                    .toString();
                                                     try {
                                                         return JacksonUtils.deserialize(p, CVPipelineSettings.class);
                                                     } catch (JsonProcessingException e) {
@@ -327,7 +331,8 @@ public class ConfigManager {
     public Path getLogPath() {
         var dateString = DateTimeFormatter.ofPattern("yyyy-M-d_hh-mm-ss").format(LocalDateTime.now());
         var logFile =
-                Path.of(configDirectoryFile.toString(), "logs", "photonvision-" + dateString + ".log").toFile();
+                Path.of(configDirectoryFile.toString(), "logs", "photonvision-" + dateString + ".log")
+                        .toFile();
         if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
         return logFile.toPath();
     }

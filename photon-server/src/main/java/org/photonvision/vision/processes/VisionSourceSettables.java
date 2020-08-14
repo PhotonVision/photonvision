@@ -21,9 +21,14 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.FrameStaticProperties;
 
 public abstract class VisionSourceSettables {
+    private static final Logger logger =
+            new Logger(VisionSourceSettables.class, LogGroup.VisionModule);
+
     private final CameraConfiguration configuration;
 
     protected VisionSourceSettables(CameraConfiguration configuration) {
