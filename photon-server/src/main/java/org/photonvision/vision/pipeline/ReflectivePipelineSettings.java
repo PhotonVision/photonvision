@@ -18,9 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.Objects;
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
@@ -36,9 +34,7 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
 
     // 3d settings
     public boolean solvePNPEnabled = false;
-    public CameraCalibrationCoefficients cameraCalibration;
-    public TargetModel targetModel;
-    public Rotation2d cameraPitch = Rotation2d.fromDegrees(0.0);
+    public TargetModel targetModel = TargetModel.get2020Target();
 
     // Corner detection settings
     public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
@@ -67,9 +63,7 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
                         == 0
                 && contourGroupingMode == that.contourGroupingMode
                 && contourIntersection == that.contourIntersection
-                && Objects.equals(cameraCalibration, that.cameraCalibration)
                 && targetModel.equals(that.targetModel)
-                && cameraPitch.equals(that.cameraPitch)
                 && cornerDetectionStrategy == that.cornerDetectionStrategy;
     }
 
@@ -80,9 +74,7 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
                 contourGroupingMode,
                 contourIntersection,
                 solvePNPEnabled,
-                cameraCalibration,
                 targetModel,
-                cameraPitch,
                 cornerDetectionStrategy,
                 cornerDetectionUseConvexHulls,
                 cornerDetectionExactSideCount,

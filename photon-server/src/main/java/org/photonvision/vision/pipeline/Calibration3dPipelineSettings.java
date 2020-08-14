@@ -17,13 +17,14 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.wpilibj.util.Units;
 import org.opencv.core.Size;
 
 public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
-    public int boardHeight = 0;
-    public int boardWidth = 0;
-    public boolean isUsingChessboard = true;
-    public double gridSize = 0;
+    public int boardHeight = 7;
+    public int boardWidth = 7;
+    public UICalibrationData.BoardType boardType = UICalibrationData.BoardType.CHESSBOARD;
+    public double gridSize = Units.inchesToMeters(1.0);
 
     public Size resolution = new Size(640, 480);
 }

@@ -18,11 +18,17 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.FrameStaticProperties;
 
 public abstract class VisionSourceSettables {
+    private static final Logger logger =
+            new Logger(VisionSourceSettables.class, LogGroup.VisionModule);
+
     private final CameraConfiguration configuration;
 
     protected VisionSourceSettables(CameraConfiguration configuration) {
@@ -44,15 +50,25 @@ public abstract class VisionSourceSettables {
 
     public abstract VideoMode getCurrentVideoMode();
 
-    public void setCurrentVideoMode(int index) {
-        setCurrentVideoMode(getAllVideoModes().get(index));
+    public void setVideoModeInternal(int index) {
+        setVideoMode(getAllVideoModes().get(index));
     }
 
-    public abstract void setCurrentVideoMode(VideoMode videoMode);
+    public void setVideoMode(VideoMode mode) {
+        setVideoModeInternal(mode);
+        calculateFrameStaticProps();
+    }
+
+    protected abstract void setVideoModeInternal(VideoMode videoMode);
+
+    public void setCameraPitch(Rotation2d pitch) {
+        configuration.camPitch = pitch;
+        calculateFrameStaticProps();
+    }
 
     @SuppressWarnings("unused")
     public void setVideoModeIndex(int index) {
-        setCurrentVideoMode(videoModes.get(index));
+        setVideoMode(videoModes.get(index));
     }
 
     public abstract HashMap<Integer, VideoMode> getAllVideoModes();
@@ -63,6 +79,23 @@ public abstract class VisionSourceSettables {
 
     public void setFOV(double fov) {
         configuration.FOV = fov;
+        calculateFrameStaticProps();
+    }
+
+    public void calculateFrameStaticProps() {
+        var videoMode = getCurrentVideoMode();
+        this.frameStaticProperties =
+                new FrameStaticProperties(
+                        videoMode,
+                        getFOV(),
+                        configuration.camPitch,
+                        configuration.calibrations.stream()
+                                .filter(
+                                        it ->
+                                                it.resolution.width == videoMode.width
+                                                        && it.resolution.height == videoMode.height)
+                                .findFirst()
+                                .orElse(null));
     }
 
     public FrameStaticProperties getFrameStaticProperties() {

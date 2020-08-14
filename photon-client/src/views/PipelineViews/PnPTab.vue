@@ -22,15 +22,15 @@
       @change="onModelSelect"
     />
     <CVslider
-      v-model="value.accuracy"
+      v-model="cornerDetectionAccuracyPercentage"
       class="pt-2"
       slider-cols="12"
       name="Contour simplification amount"
       :disabled="selectedModel === null"
       min="0"
       max="100"
-      @input="handleData('accuracy')"
-      @rollback="e => rollback('accuracy', e)"
+      @input="handlePipelineData('cornerDetectionAccuracyPercentage')"
+      @rollback="e => rollback('cornerDetectionAccuracyPercentage', e)"
     />
     <mini-map
       class="miniMapClass"
@@ -59,20 +59,25 @@
             CVslider,
             miniMap
         },
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['value'],
         data() {
             return {
-                selectedModel: null,
                 FRCtargets: null,
                 snackbar: {
-                    color: "success",
+                    color: "Success",
                     text: ""
                 },
                 snack: false
             }
         },
         computed: {
+            cornerDetectionAccuracyPercentage: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.cornerDetectionAccuracyPercentage
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"cornerDetectionAccuracyPercentage": val});
+                }
+            },
             targets: {
                 get() {
                     return this.$store.getters.currentPipelineResults.targets;

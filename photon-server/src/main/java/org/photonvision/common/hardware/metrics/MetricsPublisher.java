@@ -28,18 +28,18 @@ import org.photonvision.server.UIUpdateType;
 public class MetricsPublisher {
     private final HashMap<String, Double> metrics;
     private static final Logger logger = new Logger(MetricsPublisher.class, LogGroup.General);
-    private static CPU cpu;
-    private static GPU gpu;
-    private static RAM ram;
+    private static CPUMetrics cpuMetrics;
+    private static GPUMetrics gpuMetrics;
+    private static RAMMetrics ramMetrics;
 
     public static MetricsPublisher getInstance() {
         return Singleton.INSTANCE;
     }
 
     private MetricsPublisher() {
-        cpu = CPU.getInstance();
-        gpu = GPU.getInstance();
-        ram = RAM.getInstance();
+        cpuMetrics = new CPUMetrics();
+        gpuMetrics = new GPUMetrics();
+        ramMetrics = new RAMMetrics();
 
         metrics = new HashMap<>();
     }
@@ -49,12 +49,12 @@ public class MetricsPublisher {
                 .addTask(
                         "Metrics",
                         () -> {
-                            metrics.put("cpuTemp", cpu.getTemp());
-                            metrics.put("cpuUtil", cpu.getUtilization());
-                            metrics.put("cpuMem", cpu.getMemory());
-                            metrics.put("gpuTemp", gpu.getTemp());
-                            metrics.put("gpuMem", gpu.getMemory());
-                            metrics.put("ramUtil", ram.getUsedRam());
+                            metrics.put("cpuTemp", cpuMetrics.getTemp());
+                            metrics.put("cpuUtil", cpuMetrics.getUtilization());
+                            metrics.put("cpuMem", cpuMetrics.getMemory());
+                            metrics.put("gpuTemp", gpuMetrics.getTemp());
+                            metrics.put("gpuMem", gpuMetrics.getMemory());
+                            metrics.put("ramUtil", ramMetrics.getUsedRam());
 
                             DataChangeService.getInstance()
                                     .publishEvent(

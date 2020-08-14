@@ -26,6 +26,7 @@ import org.photonvision.common.util.ShellExec;
 
 public abstract class GPIOBase {
     private static final Logger logger = new Logger(GPIOBase.class, LogGroup.General);
+    private static final ShellExec runCommand = new ShellExec(true, true);
 
     public static HashMap<String, String> commands =
             new HashMap<>() {
@@ -38,8 +39,6 @@ public abstract class GPIOBase {
                     put("blink", "");
                 }
             };
-
-    private static final ShellExec runCommand = new ShellExec(true, true);
 
     public static String execute(String command) {
         try {

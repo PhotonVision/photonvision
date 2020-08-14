@@ -7,6 +7,7 @@
 
 package edu.wpi.first.wpilibj.geometry;
 
+import java.util.HashMap;
 import java.util.Objects;
 
 /** Represents a transformation for a Pose2d. */
@@ -114,5 +115,13 @@ public class Transform2d {
     @Override
     public int hashCode() {
         return Objects.hash(m_translation, m_rotation);
+    }
+
+    public HashMap<String, Object> toHashMap() {
+        var ret = new HashMap<String, Object>();
+        ret.put("x", getTranslation().getX());
+        ret.put("y", getTranslation().getY());
+        ret.put("rot", getRotation().getDegrees());
+        return ret;
     }
 }

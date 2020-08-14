@@ -8,3 +8,4 @@ bin/*
 build
 build/*
 photonvision/*
+photonvision_config/*

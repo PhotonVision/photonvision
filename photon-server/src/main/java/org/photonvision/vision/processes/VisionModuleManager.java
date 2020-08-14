@@ -41,6 +41,13 @@ public class VisionModuleManager {
         return visionModules;
     }
 
+    public VisionModule getModule(String nickname) {
+        for (var module : visionModules) {
+            if (module.getStateAsCameraConfig().nickname.equals(nickname)) return module;
+        }
+        return null;
+    }
+
     public VisionModule getModule(int i) {
         return visionModules.get(i);
     }

@@ -11,7 +11,7 @@
       <v-col
         cols="12"
         sm="6"
-        lg="4"
+        lg="3"
       >
         <v-btn
           color="secondary"
@@ -25,7 +25,7 @@
       <v-col
         cols="12"
         sm="6"
-        lg="4"
+        lg="3"
       >
         <v-btn
           color="secondary"
@@ -38,11 +38,24 @@
       </v-col>
       <v-col
         cols="12"
-        lg="4"
+        lg="3"
       >
         <v-btn
           color="red"
-          @click="restartDevice"
+          @click="axios.post('http://' + this.$address + '/api/restartProgram')"
+        >
+          <v-icon left>
+            mdi-restart
+          </v-icon> Restart Photon
+        </v-btn>
+      </v-col>
+      <v-col
+        cols="12"
+        lg="3"
+      >
+        <v-btn
+          color="red"
+          @click="axios.post('http://' + this.$address + '/api/restartDevice')"
         >
           <v-icon left>
             mdi-restart
@@ -71,56 +84,53 @@
     <a
       ref="exportSettings"
       style="color: black; text-decoration: none; display: none"
-      href="/api/settings/export"
+      :href="'http://' + this.$address + '/api/settings/photonvision_config.zip'"
       download="photonvision-settings.zip"
     />
   </div>
 </template>
 
 <script>
-    export default {
-        name: 'General',
-        data() {
-          return {
+export default {
+    name: 'General',
+    data() {
+        return {
             snack: false,
             snackbar: {
-              color: "success",
-              text: ""
+                color: "success",
+                text: ""
             },
-          }
-        },
-        computed: {
-          settings() {
+        }
+    },
+    computed: {
+        settings() {
             return this.$store.state.settings.general;
-          }
-        },
-        methods: {
-          readImportedSettings(event) {
+        }
+    },
+    methods: {
+        readImportedSettings(event) {
             let formData = new FormData();
             formData.append("zipData", event.target.files[0]);
             this.axios.post("http://" + this.$address + "/api/settings/import", formData,
-                    {headers: {"Content-Type": "multipart/form-data"}}).then(() => {
-              this.snackbar = {
-                color: "success",
-                text: "Settings imported successfully",
-              };
+                {headers: {"Content-Type": "multipart/form-data"}}).then(() => {
+                this.snackbar = {
+                    color: "success",
+                    text: "Settings imported successfully",
+                };
             }).catch(() => {
-              this.snackbar = {
-                color: "error",
-                text: "Couldn't import settings",
-              }
+                this.snackbar = {
+                    color: "error",
+                    text: "Couldn't import settings",
+                }
             });
             this.snack = true;
-          },
-          restartDevice() {
-            this.axios.post("http://" + this.$address + "/api/restart");
-          }
-        }
+        },
     }
+}
 </script>
 
 <style lang="css" scoped>
-    .v-btn {
-        width: 100%;
-    }
+.v-btn {
+    width: 100%;
+}
 </style>

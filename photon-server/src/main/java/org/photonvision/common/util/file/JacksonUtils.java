@@ -32,11 +32,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 
 public class JacksonUtils {
-    public static <T> void serializer(Path path, T object) throws IOException {
-        serializer(path, object, false);
+    public static <T> void serialize(Path path, T object) throws IOException {
+        serialize(path, object, false);
     }
 
-    public static <T> void serializer(Path path, T object, boolean forceSync) throws IOException {
+    public static <T> void serialize(Path path, T object, boolean forceSync) throws IOException {
         PolymorphicTypeValidator ptv =
                 BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
         ObjectMapper objectMapper =
@@ -93,7 +93,17 @@ public class JacksonUtils {
     }
 
     private static void saveJsonString(String json, Path path, boolean forceSync) throws IOException {
-        FileOutputStream fileOutputStream = new FileOutputStream(path.toFile());
+        var file = path.toFile();
+        if (file.getParentFile() != null && !file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+        if (!file.exists()) {
+            if (!file.canWrite()) {
+                file.setWritable(true);
+            }
+            file.createNewFile();
+        }
+        FileOutputStream fileOutputStream = new FileOutputStream(file);
         fileOutputStream.write(json.getBytes());
         fileOutputStream.flush();
         if (forceSync) {

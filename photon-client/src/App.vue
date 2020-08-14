@@ -104,7 +104,9 @@
             </v-icon>
           </v-list-item-icon>
           <v-list-item-content>
-            <v-list-item-title>{{ $store.state.backendConnected ? "Connected" : "Trying to connect..." }}</v-list-item-title>
+            <v-list-item-title>
+              {{ $store.state.backendConnected ? "Connected" : "Trying to connect..." }}
+            </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
       </v-list>
@@ -152,7 +154,7 @@
         },
         data: () => ({
             // Used so that we can switch back to the previously selected pipeline after camera calibration
-            previouslySelectedIndex: null,
+            previouslySelectedIndex: undefined,
             timer: undefined,
             isLogger: false,
             log: "",
@@ -169,9 +171,9 @@
             compact: {
                 get() {
                     if (this.$store.state.compactMode === undefined) {
-                      return this.$vuetify.breakpoint.smAndDown;
+                        return this.$vuetify.breakpoint.smAndDown;
                     } else {
-                      return this.$store.state.compactMode || this.$vuetify.breakpoint.smAndDown;
+                        return this.$store.state.compactMode || this.$vuetify.breakpoint.smAndDown;
                     }
                 },
                 set(value) {
@@ -179,7 +181,7 @@
                     this.$store.commit("compactMode", value);
                     localStorage.setItem("compactMode", value);
                 },
-            }
+            },
         },
         created() {
             document.addEventListener("keydown", e => {
@@ -210,16 +212,16 @@
                         }
                     }
                 } catch (error) {
-                    console.error('error: ' + data.data + " , " + error);
+                    console.error('error: ' + JSON.stringify(data.data) + " , " + error);
                 }
             };
             this.$options.sockets.onopen = () => {
-              this.$store.state.backendConnected = true;
+                this.$store.state.backendConnected = true;
             };
 
             let closed = () => {
-              this.$store.state.backendConnected = false;
-            }
+                this.$store.state.backendConnected = false;
+            };
             this.$options.sockets.onclose = closed;
             this.$options.sockets.onerror = closed;
 
@@ -228,14 +230,15 @@
         methods: {
             handleMessage(key, value) {
                 if (key === "logMessage") {
-                    console.log("[FROM BACKEND]" + value);
-                    this.logMessage(value, 0);
+                    this.logMessage(value["logMessage"], value["logLevel"]);
                 } else if (key === "updatePipelineResult") {
                     this.$store.commit('mutatePipelineResults', value)
                 } else if (this.$store.state.hasOwnProperty(key)) {
                     this.$store.commit(key, value);
                 } else if (this.$store.getters.currentPipelineSettings.hasOwnProperty(key)) {
                     this.$store.commit('mutatePipeline', {[key]: value});
+                } else if (this.$store.state.settings.hasOwnProperty(key)) {
+                    this.$store.commit('mutateSettings', {[key]: value});
                 } else {
                     switch (key) {
                         default: {
@@ -259,9 +262,10 @@
                 this.timer = setInterval(this.saveSettings, 4000);
             },
             logMessage(message, level) {
-                const colors = ["\u001b[31m", "\u001b[32m", "\u001b[33m", "\u001b[34m"]
+                const colors = ["\u001B[30m", "\u001B[31m", "\u001B[33m", "\u001B[32m", "\u001B[37m", "\u001B[36m"]
                 const reset = "\u001b[0m"
                 this.log += `${colors[level]}${message}${reset}\n`
+                console.log(message)
             },
             switchToDriverMode() {
                 this.previouslySelectedIndex = this.$store.getters.currentPipelineIndex;
@@ -269,7 +273,7 @@
             },
             rollbackPipelineIndex() {
                 if (this.previouslySelectedIndex !== null) {
-                  this.handleInputWithIndex('currentPipeline', this.previouslySelectedIndex)
+                    this.handleInputWithIndex('currentPipeline', this.previouslySelectedIndex || 0);
                 }
                 this.previouslySelectedIndex = null;
             }
@@ -278,7 +282,7 @@
 </script>
 
 <style lang="sass">
-@import "./scss/variables.scss"
+    @import "./scss/variables.scss"
 </style>
 
 <style>
@@ -288,12 +292,12 @@
 
     @keyframes pulse-animation {
         0% {
-          box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
-          background-color: rgba(0, 0, 0, 0.2);
+            box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
+            background-color: rgba(0, 0, 0, 0.2);
         }
         100% {
-          box-shadow: 0 0 0 20px rgba(0, 0, 0, 0);
-          background-color: rgba(0, 0, 0, 0);
+            box-shadow: 0 0 0 20px rgba(0, 0, 0, 0);
+            background-color: rgba(0, 0, 0, 0);
         }
     }
 
@@ -349,17 +353,17 @@
     border-color: white !important;
   }
 
-  .v-input {
-    font-size: 1rem !important;
-  }
+    .v-input {
+        font-size: 1rem !important;
+    }
 </style>
 
 <style lang="scss">
-  @import '~vuetify/src/styles/settings/_variables';
+    @import '~vuetify/src/styles/settings/_variables';
 
-  @media #{map-get($display-breakpoints, 'md-and-down')} {
-    html {
-      font-size: 14px !important;
+    @media #{map-get($display-breakpoints, 'md-and-down')} {
+        html {
+            font-size: 14px !important;
+        }
     }
-  }
 </style>

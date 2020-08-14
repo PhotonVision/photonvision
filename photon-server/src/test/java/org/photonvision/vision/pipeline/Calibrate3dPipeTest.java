@@ -17,12 +17,15 @@
 
 package org.photonvision.vision.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
@@ -53,13 +56,19 @@ public class Calibrate3dPipeTest {
 
         FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
         findBoardCornersPipe.setParams(
-                new FindBoardCornersPipe.FindCornersPipeParams(11, 4, false, 15));
-        var findBoardCornersPipeOutput = findBoardCornersPipe.run(frames);
+                new FindBoardCornersPipe.FindCornersPipeParams(
+                        11, 4, UICalibrationData.BoardType.DOTBOARD, 15));
+
+        List<Triple<Size, Mat, Mat>> foundCornersList = new ArrayList<>();
+
+        for (var f : frames) {
+            foundCornersList.add(findBoardCornersPipe.run(f).output);
+        }
 
         Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
         calibrate3dPipe.setParams(new Calibrate3dPipe.CalibratePipeParams(new Size(640, 480)));
 
-        var calibrate3dPipeOutput = calibrate3dPipe.run(findBoardCornersPipeOutput.output);
+        var calibrate3dPipeOutput = calibrate3dPipe.run(foundCornersList);
         assertTrue(calibrate3dPipeOutput.output.perViewErrors.length > 0);
         System.out.println(
                 "Per View Errors: " + Arrays.toString(calibrate3dPipeOutput.output.perViewErrors));
@@ -71,10 +80,10 @@ public class Calibrate3dPipeTest {
         File dir = new File(TestUtils.getDotBoardImagesPath().toAbsolutePath().toString());
         File[] directoryListing = dir.listFiles();
 
-        Calibration3dPipeline calibration3dPipeline = new Calibration3dPipeline();
+        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
         calibration3dPipeline.getSettings().boardHeight = 11;
         calibration3dPipeline.getSettings().boardWidth = 4;
-        calibration3dPipeline.getSettings().isUsingChessboard = false;
+        calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.DOTBOARD;
         calibration3dPipeline.getSettings().gridSize = 15;
         calibration3dPipeline.getSettings().resolution = new Size(640, 480);
 
@@ -84,28 +93,35 @@ public class Calibrate3dPipeTest {
                     calibration3dPipeline.run(
                             new Frame(
                                     new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                    new FrameStaticProperties(640, 480, 60)));
-            TestUtils.showImage(output.outputFrame.image.getMat());
+                                    new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)));
+            //            TestUtils.showImage(output.outputFrame.image.getMat());
         }
 
+        assertTrue(
+                calibration3dPipeline.foundCornersList.stream()
+                        .map(Triple::getRight)
+                        .allMatch(it -> it.width() > 0 && it.height() > 0));
+
         calibration3dPipeline.removeSnapshot(0);
-        calibration3dPipeline.startCalibration();
         calibration3dPipeline.run(
                 new Frame(
                         new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
-                        new FrameStaticProperties(640, 480, 60)));
+                        new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)));
+
+        assertTrue(
+                calibration3dPipeline.foundCornersList.stream()
+                        .map(Triple::getRight)
+                        .allMatch(it -> it.width() > 0 && it.height() > 0));
+
+        var cal = calibration3dPipeline.tryCalibration();
         calibration3dPipeline.finishCalibration();
-        System.out.println(
-                "Per View Errors: " + Arrays.toString(calibration3dPipeline.perViewErrors()));
-        System.out.println(
-                "Camera Intrinsics : "
-                        + calibration3dPipeline.cameraCalibrationCoefficients().cameraIntrinsics.toString());
-        System.out.println(
-                "Camera Extrinsics : "
-                        + calibration3dPipeline.cameraCalibrationCoefficients().cameraExtrinsics.toString());
-        System.out.println(
-                "Standard Deviation: "
-                        + calibration3dPipeline.cameraCalibrationCoefficients().standardDeviation);
+
+        assertNotNull(cal);
+        assertNotNull(cal.perViewErrors);
+        System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
+        System.out.println("Camera Intrinsics : " + cal.cameraIntrinsics.toString());
+        System.out.println("Camera Extrinsics : " + cal.cameraExtrinsics.toString());
+        System.out.println("Standard Deviation: " + cal.standardDeviation);
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
     }

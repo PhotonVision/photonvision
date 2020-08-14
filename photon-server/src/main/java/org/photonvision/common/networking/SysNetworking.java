@@ -78,7 +78,7 @@ public abstract class SysNetworking {
 
     public abstract boolean setHostname(String hostname);
 
-    public abstract boolean setStatic(String ipAddress, String netmask, String gateway);
+    public abstract boolean setStatic(String ipAddress, String netmask);
 
     public abstract List<java.net.NetworkInterface> getNetworkInterfaces() throws SocketException;
 }

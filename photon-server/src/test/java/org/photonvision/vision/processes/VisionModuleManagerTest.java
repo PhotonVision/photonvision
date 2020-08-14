@@ -18,6 +18,7 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.*;
@@ -78,8 +79,9 @@ public class VisionModuleManagerTest {
         }
 
         @Override
-        public void setCurrentVideoMode(VideoMode videoMode) {
-            this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV());
+        public void setVideoModeInternal(VideoMode videoMode) {
+            this.frameStaticProperties =
+                    new FrameStaticProperties(getCurrentVideoMode(), getFOV(), new Rotation2d(), null);
         }
 
         @Override

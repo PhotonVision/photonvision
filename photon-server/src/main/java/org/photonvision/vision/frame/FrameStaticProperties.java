@@ -18,9 +18,11 @@
 package org.photonvision.vision.frame;
 
 import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.util.FastMath;
 import org.opencv.core.Point;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 /** Represents the properties of a frame. */
 public class FrameStaticProperties {
@@ -33,6 +35,8 @@ public class FrameStaticProperties {
     public final Point centerPoint;
     public final double horizontalFocalLength;
     public final double verticalFocalLength;
+    public final Rotation2d cameraPitch;
+    public CameraCalibrationCoefficients cameraCalibration;
 
     /**
     * Instantiates a new Frame static properties.
@@ -40,8 +44,9 @@ public class FrameStaticProperties {
     * @param mode The Video Mode of the camera.
     * @param fov The fov of the image.
     */
-    public FrameStaticProperties(VideoMode mode, double fov) {
-        this(mode != null ? mode.width : 1, mode != null ? mode.height : 1, fov);
+    public FrameStaticProperties(
+            VideoMode mode, double fov, Rotation2d cameraPitch, CameraCalibrationCoefficients cal) {
+        this(mode != null ? mode.width : 1, mode != null ? mode.height : 1, fov, cameraPitch, cal);
     }
 
     /**
@@ -51,10 +56,17 @@ public class FrameStaticProperties {
     * @param imageHeight The width of the image.
     * @param fov The fov of the image.
     */
-    public FrameStaticProperties(int imageWidth, int imageHeight, double fov) {
+    public FrameStaticProperties(
+            int imageWidth,
+            int imageHeight,
+            double fov,
+            Rotation2d cameraPitch,
+            CameraCalibrationCoefficients cal) {
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
         this.fov = fov;
+        this.cameraPitch = cameraPitch;
+        this.cameraCalibration = cal;
 
         imageArea = this.imageWidth * this.imageHeight;
 

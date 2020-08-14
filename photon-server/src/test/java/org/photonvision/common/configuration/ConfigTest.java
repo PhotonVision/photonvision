@@ -28,30 +28,30 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.target.TargetModel;
 
 public class ConfigTest {
 
-    private static final ConfigManager configMgr;
-    private static final CameraConfiguration cameraConfig =
-            new CameraConfiguration("TestCamera", "/dev/video420");
-    private static final ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS =
-            new ReflectivePipelineSettings();
-    private static final ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS =
-            new ColoredShapePipelineSettings();
-
     static {
         TestUtils.loadLibraries();
-        configMgr = new ConfigManager(Path.of("testconfigdir"));
     }
+
+    private static ConfigManager configMgr;
+    private static final CameraConfiguration cameraConfig =
+            new CameraConfiguration("TestCamera", "/dev/video420");
+    private static ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS;
+    private static ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS;
 
     @BeforeAll
     public static void init() {
         TestUtils.loadLibraries();
+        configMgr = new ConfigManager(Path.of("testconfigdir"));
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
+
+        REFLECTIVE_PIPELINE_SETTINGS = new ReflectivePipelineSettings();
+        COLORED_SHAPE_PIPELINE_SETTINGS = new ColoredShapePipelineSettings();
 
         REFLECTIVE_PIPELINE_SETTINGS.pipelineNickname = "2019Tape";
         REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.get2019Target();
@@ -67,7 +67,6 @@ public class ConfigTest {
     @Order(1)
     public void serializeConfig() throws IOException {
         TestUtils.loadLibraries();
-        JacksonUtils.serializer(Path.of("settings.json"), REFLECTIVE_PIPELINE_SETTINGS);
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
         configMgr.getConfig().addCameraConfig(cameraConfig);
@@ -75,16 +74,16 @@ public class ConfigTest {
 
         var camConfDir =
                 new File(
-                        Path.of(configMgr.rootFolder.toString(), "cameras", "TestCamera")
+                        Path.of(configMgr.configDirectoryFile.toString(), "cameras", "TestCamera")
                                 .toAbsolutePath()
                                 .toString());
         Assertions.assertTrue(camConfDir.exists(), "TestCamera config folder not found!");
 
         Assertions.assertTrue(
-                Files.exists(Path.of(configMgr.rootFolder.toString(), "hardwareConfig.json")),
+                Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "hardwareConfig.json")),
                 "hardwareConfig.json file not found!");
         Assertions.assertTrue(
-                Files.exists(Path.of(configMgr.rootFolder.toString(), "networkSettings.json")),
+                Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "networkSettings.json")),
                 "networkSettings.json file not found!");
     }
 
@@ -116,7 +115,7 @@ public class ConfigTest {
             e.printStackTrace();
         }
 
-        FileUtils.cleanDirectory(configMgr.rootFolder);
-        configMgr.rootFolder.delete();
+        FileUtils.cleanDirectory(configMgr.configDirectoryFile);
+        configMgr.configDirectoryFile.delete();
     }
 }

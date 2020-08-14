@@ -27,6 +27,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 
+// TODO refactor this to be a singleton
 public class NetworkTablesManager {
 
     private NetworkTablesManager() {}

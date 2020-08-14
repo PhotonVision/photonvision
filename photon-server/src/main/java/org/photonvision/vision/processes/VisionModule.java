@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.processes;
 
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.*;
 import org.apache.commons.lang3.tuple.Pair;
@@ -38,6 +40,7 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.server.UIUpdateType;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
@@ -45,6 +48,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.PipelineType;
+import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 /**
@@ -85,7 +89,7 @@ public class VisionModule {
         this.visionRunner =
                 new VisionRunner(
                         this.visionSource.getFrameProvider(),
-                        this.pipelineManager::getCurrentPipeline,
+                        this.pipelineManager::getCurrentUserPipeline,
                         this::consumeResult);
         this.moduleIndex = index;
 
@@ -124,6 +128,13 @@ public class VisionModule {
                 pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
         dashboardOutputStreamer.setFrameDivisor(
                 pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
+
+        // Set vendor FOV
+        if (isVendorCamera()) {
+            var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV;
+            logger.info("Setting FOV of vendor camera to " + fov);
+            visionSource.getSettables().setFOV(fov);
+        }
     }
 
     private void setDriverMode(boolean isDriverMode) {
@@ -133,6 +144,68 @@ public class VisionModule {
 
     public void start() {
         visionRunner.startProcess();
+    }
+
+    public void setFovAndPitch(double fov, Rotation2d pitch) {
+        var settables = visionSource.getSettables();
+        logger.trace(
+                () ->
+                        "Setting "
+                                + settables.getConfiguration().nickname
+                                + ": pitch ("
+                                + pitch.getDegrees()
+                                + ") FOV ("
+                                + fov
+                                + ")");
+        settables.setCameraPitch(pitch);
+
+        // Only set FOV if we have no vendor JSON and we aren't using a PiCAM
+        if (isVendorCamera()) {
+            logger.info("Cannot set FOV on a vendor device! Ignoring...");
+        } else {
+            settables.setFOV(fov);
+        }
+    }
+
+    // TODO improve robustness of this detection
+    private boolean isVendorCamera() {
+        return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
+                && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+    }
+
+    public void startCalibration(UICalibrationData data) {
+        var settings = pipelineManager.calibration3dPipeline.getSettings();
+        settings.cameraVideoModeIndex = data.videoModeIndex;
+        visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
+        logger.info(
+                "Starting calibration at resolution index "
+                        + data.videoModeIndex
+                        + " and settings "
+                        + data);
+        settings.gridSize = Units.inchesToMeters(data.squareSizeIn);
+        settings.boardHeight = data.patternHeight;
+        settings.boardWidth = data.patternWidth;
+        settings.boardType = data.boardType;
+        pipelineManager.setCalibrationMode(true);
+    }
+
+    public void takeCalibrationSnapshot() {
+        pipelineManager.calibration3dPipeline.takeSnapshot();
+    }
+
+    public CameraCalibrationCoefficients endCalibration() {
+        var ret = pipelineManager.calibration3dPipeline.tryCalibration();
+        pipelineManager.setCalibrationMode(false);
+
+        if (ret != null) {
+            logger.debug("Saving calibration...");
+            visionSource.getSettables().getConfiguration().addCalibration(ret);
+            visionSource.getSettables().calculateFrameStaticProps();
+        } else {
+            logger.error("Calibration failed...");
+        }
+        saveAndBroadcastAll();
+        return ret;
     }
 
     private class VisionSettingChangeSubscriber extends DataChangeSubscriber {
@@ -152,7 +225,7 @@ public class VisionModule {
 
                     var propName = wsEvent.propertyName;
                     var newPropValue = wsEvent.data;
-                    var currentSettings = pipelineManager.getCurrentPipeline().getSettings();
+                    var currentSettings = pipelineManager.getCurrentUserPipeline().getSettings();
 
                     // special case for non-PipelineSetting changes
                     switch (propName) {
@@ -164,7 +237,7 @@ public class VisionModule {
                             return;
                         case "pipelineName": // rename current pipeline
                             logger.info("Changing nick to " + newPropValue);
-                            pipelineManager.getCurrentPipelineSettings().pipelineNickname = (String) newPropValue;
+                            pipelineManager.renameCurrentPipeline((String) newPropValue);
                             saveAndBroadcastAll();
                             return;
                         case "newPipelineInfo": // add new pipeline
@@ -174,14 +247,22 @@ public class VisionModule {
 
                             logger.info("Adding a " + type + " pipeline with name " + name);
 
-                            var addedSettings = pipelineManager.addPipeline(type);
+                            var addedSettings = pipelineManager.addPipeline(type, name);
                             addedSettings.pipelineNickname = name;
+
+                            var newIndex = pipelineManager.userPipelineSettings.indexOf(addedSettings);
+                            setPipeline(newIndex);
                             saveAndBroadcastAll();
                             return;
                         case "deleteCurrPipeline":
                             var indexToDelete = pipelineManager.getCurrentPipelineIndex();
                             logger.info("Deleting current pipe at index " + indexToDelete);
                             pipelineManager.removePipeline(indexToDelete);
+                            saveAndBroadcastAll();
+                            return;
+                        case "duplicatePipeline":
+                            logger.info("Duplicating pipe " + newPropValue);
+                            pipelineManager.duplicatePipeline((Integer) newPropValue);
                             saveAndBroadcastAll();
                             return;
                         case "changePipeline": // change active pipeline
@@ -221,6 +302,14 @@ public class VisionModule {
                             if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                                 HardwareManager.getInstance().shutdown();
                             }
+                            return;
+                        case "startcalibration":
+                            var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
+                            startCalibration(data);
+                            saveAndBroadcastAll();
+                            return;
+                        case "takeCalSnapshot":
+                            takeCalibrationSnapshot();
                             return;
                     }
 
@@ -306,7 +395,7 @@ public class VisionModule {
             return;
         }
 
-        visionSource.getSettables().setCurrentVideoMode(config.cameraVideoModeIndex);
+        visionSource.getSettables().setVideoModeInternal(config.cameraVideoModeIndex);
         visionSource.getSettables().setBrightness(config.cameraBrightness);
         visionSource.getSettables().setExposure(config.cameraExposure);
 
@@ -320,7 +409,7 @@ public class VisionModule {
                 pipelineManager.getCurrentPipelineIndex();
     }
 
-    private void saveModule() {
+    public void saveModule() {
         ConfigManager.getInstance()
                 .saveModule(
                         getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
@@ -391,7 +480,25 @@ public class VisionModule {
         ret.videoFormatList = temp;
         ret.outputStreamPort = dashboardOutputStreamer.getCurrentStreamPort();
         ret.inputStreamPort = dashboardInputStreamer.getCurrentStreamPort();
-        //         ret.uiStreamPort = uiStreamer.getCurrentStreamPort();
+
+        var calList = new ArrayList<HashMap<String, Object>>();
+        for (var c : visionSource.getSettables().getConfiguration().calibrations) {
+            var internalMap = new HashMap<String, Object>();
+
+            internalMap.put("perViewErrors", c.perViewErrors);
+            internalMap.put("standardDeviation", c.standardDeviation);
+            internalMap.put("width", c.resolution.width);
+            internalMap.put("height", c.resolution.height);
+            internalMap.put("intrinsics", c.cameraIntrinsics.data);
+            internalMap.put("extrinsics", c.cameraExtrinsics.data);
+
+            calList.add(internalMap);
+        }
+        ret.calibrations = calList;
+
+        ret.isFovConfigurable =
+                !(HardwareManager.getInstance().getConfig().hasPresetFOV()
+                        && cameraQuirks.hasQuirk(CameraQuirk.PiCam));
 
         return ret;
     }
@@ -400,7 +507,13 @@ public class VisionModule {
         var config = visionSource.getSettables().getConfiguration();
         config.setPipelineSettings(pipelineManager.userPipelineSettings);
         config.driveModeSettings = pipelineManager.driverModePipeline.getSettings();
-        config.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
+        config.currentPipelineIndex = Math.max(pipelineManager.getCurrentPipelineIndex(), -1);
+
+        logger.info(
+                "Saving state with "
+                        + config.calibrations.size()
+                        + " calibrated resolutions and index "
+                        + config.currentPipelineIndex);
 
         return config;
     }

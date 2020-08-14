@@ -36,8 +36,9 @@ public enum Platform {
     // Completely unsupported
     UNSUPPORTED("Unsupported Platform");
 
+    private static final ShellExec shell = new ShellExec(true, false);
     public final String value;
-    public final boolean isRoot = checkForRoot();
+    public static final boolean isRoot = checkForRoot();
 
     Platform(String value) {
         this.value = value;
@@ -54,21 +55,21 @@ public enum Platform {
         return this == WINDOWS_64 || this == WINDOWS_32;
     }
 
-    public boolean isLinux() {
-        return this == LINUX_64 || this == LINUX_RASPBIAN || this == LINUX_ARM64;
+    public static boolean isLinux() {
+        return getCurrentPlatform() == LINUX_64
+                || getCurrentPlatform() == LINUX_RASPBIAN
+                || getCurrentPlatform() == LINUX_ARM64;
     }
 
     public static boolean isRaspberryPi() {
         return CurrentPlatform.equals(LINUX_RASPBIAN);
     }
 
-    private static ShellExec shell = new ShellExec(true, false);
-
     @SuppressWarnings("StatementWithEmptyBody")
-    private boolean checkForRoot() {
+    private static boolean checkForRoot() {
         if (isLinux()) {
             try {
-                shell.execute("id", null, true, "-u");
+                shell.executeBashCommand("id -u");
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -29,7 +29,7 @@ import org.photonvision.common.util.TestUtils;
 public class HardwareManagerTest {
 
     @Test
-    public void ManagementTest() throws IOException {
+    public void managementTest() throws IOException {
         var config =
                 new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(), HardwareConfig.class);
 

@@ -24,33 +24,33 @@ import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.PiGPIO;
 import org.photonvision.common.hardware.Platform;
-import org.photonvision.common.hardware.metrics.CPU;
-import org.photonvision.common.hardware.metrics.GPU;
-import org.photonvision.common.hardware.metrics.RAM;
+import org.photonvision.common.hardware.metrics.CPUMetrics;
+import org.photonvision.common.hardware.metrics.GPUMetrics;
+import org.photonvision.common.hardware.metrics.RAMMetrics;
 
 public class HardwareTest {
 
     @Test
     public void testHardware() {
-        CPU cpu = CPU.getInstance();
-        RAM ram = RAM.getInstance();
-        GPU gpu = GPU.getInstance();
+        CPUMetrics cpuMetrics = new CPUMetrics();
+        RAMMetrics ramMetrics = new RAMMetrics();
+        GPUMetrics gpuMetrics = new GPUMetrics();
 
         if (!Platform.isRaspberryPi()) return;
 
         System.out.println("Testing on platform: " + Platform.CurrentPlatform);
 
         System.out.println("Printing CPU Info:");
-        System.out.println("Memory: " + cpu.getMemory() + "MB");
-        System.out.println("Temperature: " + cpu.getTemp() + "C");
-        System.out.println("Utilization: : " + cpu.getUtilization() + "%");
+        System.out.println("Memory: " + cpuMetrics.getMemory() + "MB");
+        System.out.println("Temperature: " + cpuMetrics.getTemp() + "C");
+        System.out.println("Utilization: : " + cpuMetrics.getUtilization() + "%");
 
         System.out.println("Printing GPU Info:");
-        System.out.println("Memory: " + gpu.getMemory() + "MB");
-        System.out.println("Temperature: " + gpu.getTemp() + "C");
+        System.out.println("Memory: " + gpuMetrics.getMemory() + "MB");
+        System.out.println("Temperature: " + gpuMetrics.getTemp() + "C");
 
         System.out.println("Printing RAM Info: ");
-        System.out.println("Used RAM: : " + ram.getUsedRam() + "MB");
+        System.out.println("Used RAM: : " + ramMetrics.getUsedRam() + "MB");
     }
 
     @Test

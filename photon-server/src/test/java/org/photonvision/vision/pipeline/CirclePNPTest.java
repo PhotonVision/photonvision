@@ -57,7 +57,7 @@ public class CirclePNPTest {
     }
 
     private CameraCalibrationCoefficients getCoeffs(String filename) {
-        var cameraCalibration = TestUtils.getCoeffs(filename, false);
+        var cameraCalibration = TestUtils.getCoeffs(filename, true);
         checkCameraCoefficients(cameraCalibration);
         return cameraCalibration;
     }
@@ -162,7 +162,7 @@ public class CirclePNPTest {
         System.out.println(
                 "Found targets at "
                         + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getRobotRelativePose)
+                                .map(TrackedTarget::getCameraToTarget)
                                 .collect(Collectors.toList()));
     }
 }

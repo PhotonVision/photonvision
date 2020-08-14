@@ -20,6 +20,7 @@ package org.photonvision.vision.target;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.wpi.first.wpilibj.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -81,27 +82,28 @@ public class TargetModel implements Releasable {
     }
 
     public static TargetModel get2020TargetInnerPort() {
-        return get2020Target(2d * 12d + 5.25); // Inches, TODO switch to meters
+        // Per the game manual, the inner port is 2ft 5.25in behind the outer port
+        return get2020Target(Units.inchesToMeters(2d * 12d + 5.25));
     }
 
-    public static TargetModel get2020Target(double offset) {
+    public static TargetModel get2020Target(double offsetMeters) {
         var corners =
                 List.of(
-                        new Point3(-19.625, 0, offset),
-                        new Point3(-9.819867, -17, offset),
-                        new Point3(9.819867, -17, offset),
-                        new Point3(19.625, 0, offset));
-        return new TargetModel(corners, 12); // TODO switch to meters
+                        new Point3(Units.inchesToMeters(-19.625), 0, offsetMeters),
+                        new Point3(Units.inchesToMeters(-9.819867), Units.inchesToMeters(-17), offsetMeters),
+                        new Point3(Units.inchesToMeters(9.819867), Units.inchesToMeters(-17), offsetMeters),
+                        new Point3(Units.inchesToMeters(19.625), 0, offsetMeters));
+        return new TargetModel(corners, Units.inchesToMeters(12));
     }
 
     public static TargetModel get2019Target() {
         var corners =
                 List.of(
-                        new Point3(-5.936, 2.662, 0),
-                        new Point3(-7.313, -2.662, 0),
-                        new Point3(7.313, -2.662, 0),
-                        new Point3(5.936, 2.662, 0));
-        return new TargetModel(corners, 4);
+                        new Point3(Units.inchesToMeters(-5.936), Units.inchesToMeters(2.662), 0),
+                        new Point3(Units.inchesToMeters(-7.313), Units.inchesToMeters(-2.662), 0),
+                        new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(-2.662), 0),
+                        new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(2.662), 0));
+        return new TargetModel(corners, 0.1);
     }
 
     public static TargetModel getCircleTarget(double radius) {

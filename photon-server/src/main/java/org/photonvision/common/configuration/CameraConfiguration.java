@@ -20,6 +20,7 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
@@ -47,9 +48,10 @@ public class CameraConfiguration {
 
     public CameraType cameraType = CameraType.UsbCamera;
     public double FOV = 70;
-    public CameraCalibrationCoefficients calibration;
+    public final List<CameraCalibrationCoefficients> calibrations;
     public List<Integer> cameraLeds = new ArrayList<>();
-    public int currentPipelineIndex = -1;
+    public int currentPipelineIndex = 0;
+    public Rotation2d camPitch = new Rotation2d();
 
     @JsonIgnore // this ignores the pipes as we serialize them to their own subfolder
     public List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
@@ -66,6 +68,7 @@ public class CameraConfiguration {
         this.uniqueName = uniqueName;
         this.nickname = nickname;
         this.path = path;
+        this.calibrations = new ArrayList<>();
 
         logger.debug(
                 "Creating USB camera configuration for "
@@ -85,18 +88,20 @@ public class CameraConfiguration {
             @JsonProperty("FOV") double FOV,
             @JsonProperty("path") String path,
             @JsonProperty("cameraType") CameraType cameraType,
-            @JsonProperty("calibration") CameraCalibrationCoefficients calibration,
+            @JsonProperty("calibration") List<CameraCalibrationCoefficients> calibrations,
             @JsonProperty("cameraLEDs") List<Integer> cameraLeds,
-            @JsonProperty("currentPipelineIndex") int currentPipelineIndex) {
+            @JsonProperty("currentPipelineIndex") int currentPipelineIndex,
+            @JsonProperty("camPitch") Rotation2d camPitch) {
         this.baseName = baseName;
         this.uniqueName = uniqueName;
         this.nickname = nickname;
         this.FOV = FOV;
         this.path = path;
         this.cameraType = cameraType;
-        this.calibration = calibration;
+        this.calibrations = calibrations != null ? calibrations : new ArrayList<>();
         this.cameraLeds = cameraLeds;
         this.currentPipelineIndex = currentPipelineIndex;
+        this.camPitch = camPitch;
 
         logger.debug(
                 "Creating camera configuration for "
@@ -133,5 +138,14 @@ public class CameraConfiguration {
 
     public void setPipelineSettings(List<CVPipelineSettings> settings) {
         pipelineSettings = settings;
+    }
+
+    public void addCalibration(CameraCalibrationCoefficients calibration) {
+        logger.info("adding calibration " + calibration.resolution);
+        calibrations.stream()
+                .filter(it -> it.resolution.equals(calibration.resolution))
+                .findAny()
+                .ifPresent(calibrations::remove);
+        calibrations.add(calibration);
     }
 }

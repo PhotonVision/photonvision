@@ -33,7 +33,7 @@ import org.photonvision.vision.opencv.ImageRotationMode;
     @JsonSubTypes.Type(value = ReflectivePipelineSettings.class),
     @JsonSubTypes.Type(value = DriverModePipelineSettings.class)
 })
-public class CVPipelineSettings {
+public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;
     public PipelineType pipelineType = PipelineType.DriverMode;
     public ImageFlipMode inputImageFlipMode = ImageFlipMode.NONE;
@@ -78,5 +78,15 @@ public class CVPipelineSettings {
                 cameraVideoModeIndex,
                 streamingFrameDivisor,
                 ledMode);
+    }
+
+    @Override
+    public CVPipelineSettings clone() {
+        try {
+            return (CVPipelineSettings) super.clone();
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }

@@ -31,8 +31,9 @@ public enum SocketMessageType {
     SMT_CURRENTCAMERA("currentCamera"),
     SMT_PIPELINESETTINGCHANGE("changePipelineSetting"),
     SMT_CURRENTPIPELINE("currentPipeline"),
-    SMT_ISPNPCALIBRATION("isPNPCalibration"),
-    SMT_TAKECALIBRATIONSNAPSHOT("takeCalibrationSnapshot");
+    SMT_STARTPNPCALIBRATION("startPnpCalibration"),
+    SMT_TAKECALIBRATIONSNAPSHOT("takeCalibrationSnapshot"),
+    SMT_DUPLICATEPIPELINE("duplicatePipeline");
 
     public final String entryKey;
 

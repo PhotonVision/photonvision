@@ -17,21 +17,18 @@
 
 package org.photonvision.common.logging;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.nio.ByteBuffer;
-import java.nio.channels.AsynchronousFileChannel;
+import java.io.*;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.server.SocketHandler;
 import org.photonvision.server.UIUpdateType;
 
@@ -102,6 +99,7 @@ public class Logger {
     static {
         currentAppenders.add(new ConsoleLogAppender());
         currentAppenders.add(new UILogAppender());
+        addFileAppender(ConfigManager.getInstance().getLogPath());
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -115,7 +113,7 @@ public class Logger {
                 e.printStackTrace();
             }
         }
-        currentAppenders.add(new AsyncFileLogAppender(logFilePath));
+        currentAppenders.add(new FileLogAppender(logFilePath));
     }
 
     public static void setLevel(LogGroup group, LogLevel newLevel) {
@@ -177,7 +175,7 @@ public class Logger {
     */
     public void error(String message, Throwable t) {
         log(message, LogLevel.ERROR);
-        log(convertStackTraceToString(t), LogLevel.ERROR, LogLevel.TRACE);
+        log(convertStackTraceToString(t), LogLevel.ERROR, LogLevel.DEBUG);
     }
 
     public void warn(Supplier<String> messageSupplier) {
@@ -239,25 +237,40 @@ public class Logger {
             var messageMap = new SocketHandler.UIMap();
             messageMap.put("logMessage", message);
             messageMap.put("logLevel", level.code);
+            var superMap = new SocketHandler.UIMap();
+            superMap.put("logMessage", messageMap);
             DataChangeService.getInstance()
-                    .publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "log", messageMap, null));
+                    .publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "log", superMap, null));
         }
     }
 
-    private static class AsyncFileLogAppender implements LogAppender {
-        private final Path filePath;
+    private static class FileLogAppender implements LogAppender {
+        private OutputStream out;
 
-        public AsyncFileLogAppender(Path logFilePath) {
-            this.filePath = logFilePath;
+        public FileLogAppender(Path logFilePath) {
+            try {
+                this.out = new FileOutputStream(logFilePath.toFile());
+                TimedTaskManager.getInstance()
+                        .addTask(
+                                "FileLogAppender",
+                                () -> {
+                                    try {
+                                        out.flush();
+                                    } catch (IOException ignored) {
+                                    }
+                                },
+                                30000L);
+            } catch (FileNotFoundException e) {
+                out = null;
+                System.err.println("Unable to log to file " + logFilePath.toString());
+            }
         }
 
         @Override
         public void log(String message, LogLevel level) {
-            try (AsynchronousFileChannel asyncFile =
-                    AsynchronousFileChannel.open(
-                            filePath, StandardOpenOption.WRITE, StandardOpenOption.CREATE)) {
-
-                asyncFile.write(ByteBuffer.wrap(message.getBytes()), 0);
+            message += "\n";
+            try {
+                out.write(message.getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
             }

@@ -84,7 +84,7 @@ public class LinuxNetworking extends SysNetworking {
     }
 
     @Override
-    public boolean setStatic(String ipAddress, String netmask, String gateway) {
+    public boolean setStatic(String ipAddress, String netmask) {
         setDHCP(); // clean up old static interface
         File dhcpConf = new File(PATH);
         try {
@@ -93,7 +93,6 @@ public class LinuxNetworking extends SysNetworking {
             InetAddress iNetMask = InetAddress.getByName(netmask);
             int prefix = convertNetmaskToCIDR(iNetMask);
             lines.add("static ip_address=" + ipAddress + "/" + prefix);
-            lines.add("static routers=" + gateway);
             FileUtils.writeLines(dhcpConf, lines);
             return true;
         } catch (IOException e) {

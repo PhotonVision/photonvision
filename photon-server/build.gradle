@@ -76,6 +76,9 @@ dependencies {
 
     compile "org.slf4j:slf4j-simple:1.8.0-beta4"
 
+    // Zip
+    compile "org.zeroturnaround:zt-zip:1.14"
+
     // test stuff
     testImplementation('org.junit.jupiter:junit-jupiter:5.6.0')
 }

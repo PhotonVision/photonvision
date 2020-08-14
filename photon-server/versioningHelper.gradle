@@ -32,7 +32,7 @@ task writeCurrentVersionJava {
             "public final class PhotonVersion {\n" +
             "    public static final String versionString = \"${versionString}\";\n" +
             "    public static final String buildDate = \"${date}\";\n" +
-            "    public static final boolean isRelease = versionString.startsWith(\"dev\");\n" +
+            "    public static final boolean isRelease = !versionString.startsWith(\"dev\");\n" +
             "}"
 }
 

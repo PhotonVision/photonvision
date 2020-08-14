@@ -17,7 +17,17 @@
 
 package org.photonvision.common.networking;
 
+import java.io.IOException;
+import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.ShellExec;
+
 public class NetworkManager {
+
+    private static final Logger logger = new Logger(NetworkManager.class, LogGroup.General);
+
     private NetworkManager() {}
 
     private static class SingletonHolder {
@@ -35,5 +45,28 @@ public class NetworkManager {
         if (!isManaged) {
             return;
         }
+
+        var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
+        if (Platform.isLinux()) {
+            if (!Platform.isRoot) {
+                logger.error("Cannot manage network without root!");
+                return;
+            }
+
+            if (config.connectionType == NetworkMode.DHCP) {
+                return; // TODO do we need to reconnect or something?
+            } else if (config.connectionType == NetworkMode.STATIC) {
+                try {
+                    new ShellExec()
+                            .executeBashCommand("ip addr add " + config.staticIp + "/24" + " dev eth0");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    public void reinitialize() {
+        initialize(ConfigManager.getInstance().getConfig().getNetworkConfig().shouldManage);
     }
 }

@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import networkSettings from "./modules/networkSettings"
 import undoRedo from "./modules/undoRedo";
 
 Vue.use(Vuex);
@@ -17,7 +16,6 @@ export default new Vuex.Store({
                 currentResolutionIndex: 0,
             },
         },
-        networkSettings: networkSettings,
         undoRedo: undoRedo
     },
     state: {
@@ -43,6 +41,7 @@ export default new Vuex.Store({
                         "pixelFormat": "BGR"
                     }
                 ],
+                calibrations: [ ],
                 fov: 70.0,
                 isFovConfigurable: true,
                 calibrated: false,
@@ -76,14 +75,14 @@ export default new Vuex.Store({
                     solvePNPEnabled: false,
                     targetRegion: 0,
                     contourTargetOrientation: 1,
-                    is3D: false,
+
+                    cornerDetectionAccuracyPercentage: 10,
 
                     // Settings that apply to shape
                 }
             }
         ],
-        pipelineResults: [
-            {
+        pipelineResults: {
                 fps: 0,
                 latency: 0,
                 targets: [{
@@ -95,8 +94,7 @@ export default new Vuex.Store({
                     // 3D only
                     pose: {x: 0, y: 0, rotation: 0},
                 }]
-            }
-        ],
+            },
         settings: {
             general: {
                 version: "Unknown",
@@ -106,7 +104,7 @@ export default new Vuex.Store({
                 hardwareModel: "Unknown",
                 hardwarePlatform: "Unknown",
             },
-            networking: {
+            networkSettings: {
                 teamNumber: 0,
 
                 supported: true,
@@ -120,19 +118,29 @@ export default new Vuex.Store({
                 supported: true,
                 brightness: 0.0,
             },
-        }
+        },
+        calibrationData: {
+            count: 0,
+            videoModeIndex: 0,
+            minCount: 25,
+            hasEnough: false,
+            squareSizeIn: 1.0,
+            patternWidth: 7,
+            patternHeight: 7,
+            boardType: 0, // Chessboard, dotboard
+        },
     },
     mutations: {
         saveBar: set('saveBar'),
         compactMode: set('compactMode'),
         cameraSettings: set('cameraSettings'),
         currentCameraIndex: set('currentCameraIndex'),
-        pipelineResults: set('pipelineResults'),
-        networkSettings: set('networkSettings'),
         selectedOutputs: set('selectedOutputs'),
+        settings: set('settings'),
+        calibrationData: set('calibrationData'),
 
-        is3D: (state, val) => {
-            state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.is3D = val;
+        solvePNPEnabled: (state, val) => {
+            state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.solvePNPEnabled = val;
         },
 
         currentPipelineIndex: (state, val) => {
@@ -152,27 +160,50 @@ export default new Vuex.Store({
             }
         },
 
+        mutateSettings: (state, payload) => {
+            for (let key in payload) {
+                if (!payload.hasOwnProperty(key)) continue;
+                const value = payload[key];
+                const settings = state.settings;
+                if (settings.hasOwnProperty(key)) {
+                    Vue.set(settings, key, value);
+                }
+            }
+        },
+
         mutatePipelineResults(state, payload) {
             // Key: index, value: result
-            let newResultArray = [];
             for (let key in payload) {
                 if (!payload.hasOwnProperty(key)) continue;
                 const index = parseInt(key);
-                newResultArray[index] = payload[key];
+                if(index === state.currentCameraIndex) {
+                    Vue.set(state, 'pipelineResults', payload[key])
+                }
             }
 
-            Vue.set(state, 'pipelineResults', newResultArray)
-        }
+
+        },
+
+        mutateCalibrationState: (state, payload) => {
+            for (let key in payload) {
+                if (!payload.hasOwnProperty(key)) continue;
+                const value = payload[key];
+                const calibration = state.calibrationData;
+                if (calibration.hasOwnProperty(key)) {
+                    calibration[key] = value
+                }
+                Vue.set(state, 'calibrationData', calibration)
+            }
+        },
     },
     getters: {
         isDriverMode: state => state.cameraSettings[state.currentCameraIndex].currentPipelineIndex === -1,
-        pipelineSettings: state => state.pipelineSettings,
         streamAddress: state =>
             ["http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].inputStreamPort + "/stream.mjpg",
                 "http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].outputStreamPort + "/stream.mjpg"],
-        targets: state => state.pipelineResults.length,
-        currentPipelineResults: state =>
-            state.pipelineResults[state.cameraSettings[state.currentCameraIndex].currentPipelineIndex],
+        currentPipelineResults: state => {
+            return state.pipelineResults;
+        },
         cameraList: state => state.cameraSettings.map(it => it.nickname),
         currentCameraSettings: state => state.cameraSettings[state.currentCameraIndex],
         currentCameraIndex: state => state.currentCameraIndex,
@@ -182,6 +213,6 @@ export default new Vuex.Store({
             return Object.values(state.cameraSettings[state.currentCameraIndex].videoFormatList); // convert to a list
         },
         pipelineList: state => state.cameraSettings[state.currentCameraIndex].pipelineNicknames,
-        currentCameraFPS: state => state.pipelineResults[state.currentCameraIndex].fps
+        calibrationList: state => state.cameraSettings[state.currentCameraIndex].calibrations,
     }
 })

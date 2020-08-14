@@ -8,6 +8,7 @@
         cols="12"
         md="7"
       >
+        <!-- Camera card -->
         <v-card
           class="mb-3 pr-6 pb-3"
           color="primary"
@@ -23,14 +24,14 @@
               @input="handleInput('currentCamera',currentCameraIndex)"
             />
             <CVnumberinput
-              v-if="cameraSettings.isFovConfigurable"
               v-model="cameraSettings.fov"
-              tooltip="Field of view (in degrees) of the camera measured across the diagonal of the frame"
+              :tooltip="cameraSettings.isFovConfigurable ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame' : 'This setting is managed by a vendor'"
               name="Diagonal FOV"
+              :disabled="!cameraSettings.isFovConfigurable"
             />
             <br>
             <CVnumberinput
-              v-model="cameraSettings.tilt"
+              v-model="cameraSettings.tiltDegrees"
               name="Camera pitch"
               tooltip="How many degrees above the horizontal the physical camera is tilted"
               :step="0.01"
@@ -49,52 +50,175 @@
             </v-btn>
           </div>
         </v-card>
+
+        <!-- Calibration card -->
         <v-card
           class="pr-6 pb-3"
           color="primary"
           dark
         >
           <v-card-title>Camera Calibration</v-card-title>
+
           <div class="ml-5">
             <v-row>
-              <v-col cols="8">
+              <!-- Calibration input -->
+              <v-col
+                cols="12"
+                md="6"
+              >
                 <CVselect
-                  v-model="resolutionIndex"
+                  v-model="selectedFilteredResIndex"
                   name="Resolution"
+                  select-cols="7"
                   :list="stringResolutionList"
+                  :disabled="isCalibrating"
+                  tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
+                />
+                <CVselect
+                  v-model="boardType"
+                  name="Board Type"
+                  select-cols="7"
+                  :list="['Chessboard', 'Dot Grid']"
+                  :disabled="isCalibrating"
+                  tooltip="Calibration board pattern to use"
+                />
+                <CVnumberinput
+                  v-model="squareSizeIn"
+                  name="Pattern Spacing (in)"
+                  label-cols="5"
+                  tooltip="Spacing between pattern features in inches"
+                  :disabled="isCalibrating"
+                />
+                <CVnumberinput
+                  v-model="boardWidth"
+                  name="Board width"
+                  label-cols="5"
+                  tooltip="Width of the board in dots or corners; with the standard chessboard, this is usually 7"
+                  :disabled="isCalibrating"
+                />
+                <CVnumberinput
+                  v-model="boardHeight"
+                  name="Board height"
+                  label-cols="5"
+                  tooltip="Height of the board in dots or corners; with the standard chessboard, this is usually 7"
+                  :disabled="isCalibrating"
                 />
               </v-col>
+
+              <!-- Calibrated table -->
               <v-col
-                cols="4"
-                align-self="center"
+                cols="12"
+                md="6"
               >
-                <CVnumberinput
-                  v-model="squareSize"
-                  name="Square Size (in)"
-                  tooltip="Length of one side of the checkerboard's square in inches"
-                  label-cols="unset"
+                <v-row
+                  align="start"
+                  class="pb-4"
+                >
+                  <v-simple-table
+                    fixed-header
+                    height="100%"
+                    dense
+                  >
+                    <thead style="font-size: 1.25rem;">
+                      <tr>
+                        <th class="text-center">
+                          <tooltipped-label text="Resolution" />
+                        </th>
+                        <th class="text-center">
+                          <tooltipped-label
+                            tooltip="Average reprojection error of the calibration, in pixels"
+                            text="Mean Error"
+                          />
+                        </th>
+                        <th class="text-center">
+                          <tooltipped-label
+                            tooltip="Standard deviation of the mean error, in pixels"
+                            text="Standard Deviation"
+                          />
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr
+                        v-for="(value, index) in filteredResolutionList"
+                        :key="index"
+                      >
+                        <td> {{ value.width }} X {{ value.height }} </td>
+                        <td>
+                          {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "—" }}
+                        </td>
+                        <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "—" }} </td>
+                      </tr>
+                    </tbody>
+                  </v-simple-table>
+                </v-row>
+                <v-row justify="center">
+                  <v-chip
+                    v-show="isCalibrating"
+                    label
+                    :color="snapshotAmount < 25 ? 'grey' : 'secondary'"
+                  >
+                    Snapshots: {{ snapshotAmount }} of at least {{ minSnapshots }}
+                  </v-chip>
+                </v-row>
+              </v-col>
+            </v-row>
+
+            <v-row v-if="isCalibrating">
+              <v-col
+                cols="12"
+                class="pt-0"
+              >
+                <CVslider
+                  v-model="$store.getters.currentPipelineSettings.cameraExposure"
+                  name="Exposure"
+                  :min="0"
+                  :max="100"
+                  slider-cols="8"
+                  @input="e => handlePipelineUpdate('cameraExposure', e)"
+                />
+                <CVslider
+                  v-model="this.$store.getters.currentPipelineSettings.cameraBrightness"
+                  name="Brightness"
+                  :min="0"
+                  :max="100"
+                  slider-cols="8"
+                  @input="e => handlePipelineUpdate('cameraBrightness', e)"
+                />
+                <CVslider
+                  v-if="$store.getters.currentPipelineSettings.cameraGain !== -1"
+                  v-model="$store.getters.currentPipelineSettings.cameraGain"
+                  name="Gain"
+                  :min="0"
+                  :max="100"
+                  slider-cols="8"
+                  @input="e => handlePipelineUpdate('cameraGain', e)"
                 />
               </v-col>
             </v-row>
+
             <v-row>
-              <v-col>
+              <v-col align-self="center">
                 <v-btn
                   small
                   color="secondary"
-                  :disabled="checkResolution"
+                  style="width: 100%;"
+                  :disabled="disallowCalibration"
                   @click="sendCalibrationMode"
                 >
-                  {{ calibrationModeButton.text }}
+                  {{ isCalibrating ? "Take Snapshot" : "Start Calibration" }}
                 </v-btn>
               </v-col>
-              <v-col>
+              <v-col align-self="center">
                 <v-btn
                   small
-                  color="red"
+                  :color="hasEnough ? 'accent' : 'red'"
+                  :class="hasEnough ? 'black--text' : 'white---text'"
+                  style="width: 100%;"
                   :disabled="checkCancellation"
                   @click="sendCalibrationFinish"
                 >
-                  {{ cancellationModeButton.text }}
+                  {{ hasEnough ? "End Calibration" : "Cancel Calibration" }}
                 </v-btn>
               </v-col>
               <v-col>
@@ -102,6 +226,7 @@
                   color="accent"
                   small
                   outlined
+                  style="width: 100%;"
                   @click="downloadBoard"
                 >
                   <v-icon left>
@@ -113,52 +238,10 @@
                   ref="calibrationFile"
                   style="color: black; text-decoration: none; display: none"
                   :href="require('../assets/chessboard.png')"
-                  download="Calibration Board.png"
+                  download="chessboard.png"
                 />
               </v-col>
             </v-row>
-            <v-row v-if="isCalibrating">
-              <v-col>
-                <span>Snapshot Amount: {{ snapshotAmount }}</span>
-              </v-col>
-            </v-row>
-            <div v-if="isCalibrating">
-              <v-checkbox
-                v-model="isAdvanced"
-                label="Advanced Menu"
-                dark
-              />
-              <div v-if="isAdvanced">
-                <CVslider
-                  v-model="$store.getters.pipeline.exposure"
-                  name="Exposure"
-                  :min="0"
-                  :max="100"
-                  @input="e=> handleInput('exposure', e)"
-                />
-                <CVslider
-                  v-model="$store.getters.pipeline.brightness"
-                  name="Brightness"
-                  :min="0"
-                  :max="100"
-                  @input="e=> handleInput('brightness', e)"
-                />
-                <CVslider
-                  v-if="$store.getters.pipeline.gain !== -1"
-                  v-model="$store.getters.pipeline.gain"
-                  name="Gain"
-                  :min="0"
-                  :max="100"
-                  @input="e=> handleInput('gain', e)"
-                />
-                <CVselect
-                  v-model="$store.getters.pipeline.videoModeIndex"
-                  name="FPS"
-                  :list="stringFpsList"
-                  @input="changeFps"
-                />
-              </div>
-            </div>
           </div>
         </v-card>
       </v-col>
@@ -186,207 +269,265 @@
 </template>
 
 <script>
-    import CVselect from '../components/common/cv-select';
-    import CVnumberinput from '../components/common/cv-number-input';
-    import CVslider from '../components/common/cv-slider';
-    import CVimage from "../components/common/cv-image";
+import CVselect from '../components/common/cv-select';
+import CVnumberinput from '../components/common/cv-number-input';
+import CVslider from '../components/common/cv-slider';
+import CVimage from "../components/common/cv-image";
+import TooltippedLabel from "../components/common/cv-tooltipped-label";
 
-    export default {
-        name: 'Cameras',
-        components: {
-            CVselect,
-            CVnumberinput,
-            CVslider,
-            CVimage
+export default {
+    name: 'Cameras',
+    components: {
+      TooltippedLabel,
+        CVselect,
+        CVnumberinput,
+        CVslider,
+        CVimage
+    },
+    data() {
+        return {
+            snackbar: {
+                color: "success",
+                text: ""
+            },
+            snack: false,
+            filteredVideomodeIndex: 0
+        }
+    },
+    computed: {
+        disallowCalibration() {
+            return !(this.calibrationData.boardType === 0 || this.calibrationData.boardType === 1);
         },
-        data() {
-            return {
-                isCalibrating: false,
-                resolutionIndex: undefined,
-                calibrationModeButton: {
-                    text: "Start Calibration",
-                    color: "green"
-                },
-                cancellationModeButton: {
-                    text: "Cancel Calibration",
-                    color: "red"
-                },
-                snackbar: {
-                    color: "success",
-                    text: ""
-                },
-                squareSize: 1.0,
-                snapshotAmount: 0,
-                hasEnough: false,
-                snack: false,
-                isAdvanced: false
+        checkCancellation() {
+            if (this.isCalibrating) {
+                return false
+            } else if (this.disallowCalibration) {
+                return true;
+            } else {
+                return true
             }
         },
-        computed: {
-            checkResolution() {
-                return this.resolutionIndex === undefined;
+        currentCameraIndex: {
+            get() {
+                return this.$store.state.currentCameraIndex;
             },
-            checkCancellation() {
-                if (this.isCalibrating) {
-                    return false
-                } else if (this.checkResolution) {
-                    return true;
-                } else {
-                    return true
-                }
-            },
-            currentCameraIndex: {
-                get() {
-                    return this.$store.state.currentCameraIndex;
-                },
-                set(value) {
-                    this.$store.commit('currentCameraIndex', value);
-                }
-            },
-            filteredResolutionList: {
-                get() {
-                    let tmp_list = [];
-                    for (let i in this.$store.state.resolutionList) {
-                        if (this.$store.state.resolutionList.hasOwnProperty(i)) {
-                            let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
-                            if (!tmp_list.some(e => e.width === res.width && e.height === res.height)) {
-                                res['actualIndex'] = parseInt(i);
-                                tmp_list.push(res);
-                            }
-                        }
-                    }
-                    return tmp_list;
-                }
-            },
-            filteredFpsList() {
-                let selectedRes = this.$store.state.resolutionList[this.resolutionIndex];
-                let tmpList = [];
-                for (let i in this.$store.state.resolutionList) {
-                    if (this.$store.state.resolutionList.hasOwnProperty(i)) {
-                        let res = JSON.parse(JSON.stringify(this.$store.state.resolutionList[i]));
-                        if (!tmpList.some(e => e['fps'] === res['fps'])) {
-                            if (res.width === selectedRes.width && res.height === selectedRes.height) {
-                                res['actualIndex'] = parseInt(i);
-                                tmpList.push(res);
-                            }
-                        }
-                    }
-                }
-                return tmpList;
-            },
-            stringFpsList() {
-                let tmp = [];
-                for (let i of this.filteredFpsList) {
-                    tmp.push(i['fps']);
-                }
-                return tmp;
-            },
-            stringResolutionList: {
-                get() {
-                    let tmp = [];
-                    for (let i of this.filteredResolutionList) {
-                        tmp.push(`${i['width']} X ${i['height']}`)
-                    }
-                    return tmp
-                }
-            },
-            cameraSettings: {
-                get() {
-                    return this.$store.getters.currentCameraSettings;
-                },
-                set(value) {
-                    this.$store.commit('cameraSettings', value);
-                }
+            set(value) {
+                this.$store.commit('currentCameraIndex', value);
             }
         },
-        methods: {
-            downloadBoard() {
-                this.axios.get("http://" + this.$address + require('../assets/chessboard.png'), {responseType: 'blob'}).then((response) => {
-                    require('downloadjs')(response.data, "Calibration Board", "image/png")
-                })
-            },
-            changeFps() {
-                this.handleInput('videoModeIndex', this.filteredFpsList[this.$store.getters.pipeline['videoModeIndex']]['actualIndex']);
-            },
-            sendCameraSettings() {
-                const self = this;
-                this.axios.post("http://" + this.$address + "/api/settings/camera", this.cameraSettings).then(
-                    function (response) {
-                        if (response.status === 200) {
-                            self.$store.state.saveBar = true;
+
+        // Makes sure there's only one entry per resolution
+        filteredResolutionList: {
+            get() {
+                let list = this.$store.getters.videoFormatList;
+                let filtered = [];
+                list.forEach((it, i) => {
+                    if (!filtered.some(e => e.width === it.width && e.height === it.height)) {
+                        it['index'] = i;
+                        const calib = this.getCalibrationCoeffs(it);
+                        if(calib != null) {
+                            it['standardDeviation'] = calib.standardDeviation;
+                            it['mean'] = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
                         }
+                        filtered.push(it);
                     }
-                )
-            },
-            sendCalibrationMode() {
-                const self = this;
-                let data = {};
-                let connection_string = "/api/settings/";
-                if (self.isCalibrating === true) {
-                    connection_string += "snapshot"
-                } else {
-                    connection_string += "startCalibration";
-                    data['resolution'] = this.filteredResolutionList[this.resolutionIndex].actualIndex;
-                    data['squareSize'] = this.squareSize;
-                    self.hasEnough = false;
-                }
-                this.axios.post("http://" + this.$address + connection_string, data).then(
-                    function (response) {
-                        if (response.status === 200) {
-                            if (self.isCalibrating) {
-                                self.snapshotAmount = response.data['snapshotCount'];
-                                self.hasEnough = response.data['hasEnough'];
-                                if (self.hasEnough === true) {
-                                    self.cancellationModeButton.text = "Finish Calibration";
-                                    self.cancellationModeButton.color = "green";
-                                }
-                            } else {
-                                self.calibrationModeButton.text = "Take Snapshot";
-                                self.isCalibrating = true;
-                            }
-                        }
-                    }
-                );
-            },
-            sendCalibrationFinish() {
-                const self = this;
-                let connection_string = "/api/settings/endCalibration";
-                let data = {};
-                data['squareSize'] = this.squareSize;
-                self.axios.post("http://" + this.$address + connection_string, data).then((response) => {
-                        if (response.status === 200) {
-                            self.snackbar = {
-                                color: "success",
-                                text: "calibration successful. \n" +
-                                    "accuracy: " + response.data['accuracy'].toFixed(5)
-                            };
-                            self.snack = true;
-                        }
-                        self.isCalibrating = false;
-                        self.hasEnough = false;
-                        self.snapshotAmount = 0;
-                        self.calibrationModeButton.text = "Start Calibration";
-                        self.cancellationModeButton.text = "Cancel Calibration";
-                        self.cancellationModeButton.color = "red";
-                    }
-                ).catch(() => {
-                    self.snackbar = {
-                        color: "error",
-                        text: "calibration failed"
-                    };
-                    self.snack = true;
-                    self.isCalibrating = false;
-                    self.hasEnough = false;
-                    self.snapshotAmount = 0;
-                    self.calibrationModeButton.text = "Start Calibration";
-                    self.cancellationModeButton.text = "Cancel Calibration";
-                    self.cancellationModeButton.color = "red";
                 });
+                filtered.sort((a, b) => (b.width + b.height) - (a.width + a.height));
+                return filtered
             }
+        },
+
+        stringResolutionList: {
+            get() {
+                return this.filteredResolutionList.map(res => `${res['width']} X ${res['height']}`);
+            }
+        },
+
+        cameraSettings: {
+            get() {
+                return this.$store.getters.currentCameraSettings;
+            },
+            set(value) {
+                this.$store.commit('cameraSettings', value);
+            }
+        },
+
+        boardType: {
+            get() {
+                return this.calibrationData.boardType
+            },
+            set(value) {
+                this.$store.commit('mutateCalibrationState', {['boardType']: value});
+            }
+        },
+        snapshotAmount: {
+            get() {
+                return this.calibrationData.count
+            }
+        },
+        minSnapshots: {
+            get() {
+                return this.calibrationData.minCount
+            }
+        },
+        hasEnough: {
+            get() {
+                return this.calibrationData.hasEnough
+            }
+        },
+        boardWidth: {
+            get() {
+                return this.calibrationData.patternWidth
+            },
+            set(value) {
+                this.$store.commit('mutateCalibrationState', {['patternWidth']: value})
+            }
+        },
+        boardHeight: {
+            get() {
+                return this.calibrationData.patternHeight
+            },
+            set(value) {
+                this.$store.commit('mutateCalibrationState', {['patternHeight']: value})
+            }
+        },
+        squareSizeIn: {
+            get() {
+                return this.calibrationData.squareSizeIn
+            },
+            set(value) {
+                this.$store.commit('mutateCalibrationState', {['squareSizeIn']: value})
+            }
+        },
+        calibrationData: {
+            get() {
+                return this.$store.state.calibrationData
+            }
+        },
+        isCalibrating: {
+            get() {
+                return this.$store.getters.currentPipelineIndex === -2;
+            }
+        },
+
+        selectedFilteredResIndex: {
+            get() {
+                return this.filteredVideomodeIndex
+            },
+            set(i) {
+                console.log(`Setting filtered index to ${i}`)
+                this.filteredVideomodeIndex = i
+                this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[i].index});
+            }
+        },
+    },
+    methods: {
+
+        getCalibrationCoeffs(resolution) {
+            const calList = this.$store.getters.calibrationList;
+            let ret = null;
+            calList.forEach(cal => {
+                if(cal.width === resolution.width && cal.height === resolution.height) {
+                    ret = cal
+                }
+            })
+            return ret;
+        },
+        downloadBoard() {
+            this.axios.get("http://" + this.$address + require('../assets/chessboard.png'), {responseType: 'blob'}).then((response) => {
+                require('downloadjs')(response.data, "Calibration Board", "image/png")
+            })
+        },
+        sendCameraSettings() {
+            this.axios.post("http://" + this.$address + "/api/settings/camera", {
+                "settings": this.cameraSettings,
+                "index": this.$store.state.currentCameraIndex
+            }).then(
+                function (response) {
+                    if (response.status === 200) {
+                        this.$store.state.saveBar = true;
+                    }
+                }
+            )
+        },
+
+        isCalibrated(resolution) {
+            return this.$store.getters.currentCameraSettings.calibrations
+                .some(e => e.width === resolution.width && e.height === resolution.height)
+        },
+
+        sendCalibrationMode() {
+            let data = {
+                ['cameraIndex']: this.$store.state.currentCameraIndex
+            };
+
+            if (this.isCalibrating === true) {
+                data['takeCalibrationSnapshot'] = true
+            } else {
+                const calData = this.calibrationData
+                calData.isCalibrating = true
+                data['startPnpCalibration'] = calData
+
+                console.log("starting calibration with index " + calData.videoModeIndex)
+            }
+
+            this.$socket.send(this.$msgPack.encode(data));
+        },
+        sendCalibrationFinish() {
+            console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex)
+
+            this.snackbar.text = "Calibrating...";
+            this.snackbar.color = "secondary"
+            this.snack = true;
+
+            this.axios.post("http://" + this.$address + "/api/settings/endCalibration", this.$store.getters.currentCameraIndex)
+                .then((response) => {
+                    if (response.status === 200) {
+                        this.snackbar = {
+                            color: "success",
+                            text: "Calibration successful! \n" +
+                                "Standard deviation: " + response.data.toFixed(5)
+                        };
+                        this.snack = true;
+                    }
+                    else {
+                        this.snackbar = {
+                            color: "error",
+                            text: "Calibration Failed!"
+                        };
+                        this.snack = true;
+                    }
+                }
+            ).catch(() => {
+                this.snackbar = {
+                    color: "error",
+                    text: "Calibration Failed!"
+                };
+                this.snack = true;
+            });
         }
     }
+}
 </script>
 
-<style lang="" scoped>
+<style scoped>
+    .v-data-table {
+        text-align: center;
+        background-color: transparent !important;
+        width: 100%;
+        height: 100%;
+        overflow-y: auto;
+    }
+    .v-data-table th {
+        background-color: #006492 !important;
+    }
 
+    .v-data-table th,td {
+        font-size: 1rem !important;
+    }
+
+    /** This is unfortunately the only way to override table background color **/
+    .theme--dark.v-data-table tbody tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
+        background: #005281;
+    }
 </style>

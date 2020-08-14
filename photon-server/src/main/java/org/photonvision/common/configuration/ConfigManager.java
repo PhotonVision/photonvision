@@ -22,24 +22,29 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.VisionSource;
+import org.zeroturnaround.zip.ZipUtil;
 
 public class ConfigManager {
     private static final Logger logger = new Logger(ConfigManager.class, LogGroup.General);
     private static ConfigManager INSTANCE;
 
     private PhotonConfiguration config;
-    final File rootFolder;
     private final File hardwareConfigFile;
     private final File networkConfigFile;
     private final File camerasFolder;
+
+    final File configDirectoryFile;
 
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
@@ -48,32 +53,56 @@ public class ConfigManager {
         return INSTANCE;
     }
 
+    public static void saveUploadedSettingsZip(File uploadPath) {
+        logger.info(uploadPath.getAbsolutePath());
+        var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
+        folderPath.mkdirs();
+        ZipUtil.unpack(uploadPath, folderPath);
+        FileUtils.deleteDirectory(getRootFolder());
+        try {
+            org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        System.exit(666);
+    }
+
     public PhotonConfiguration getConfig() {
         return config;
     }
 
     private static Path getRootFolder() {
-        return Path.of("photonvision");
+        return Path.of("photonvision_config");
     }
 
-    ConfigManager(Path rootFolder) {
-        this.rootFolder = new File(rootFolder.toUri());
+    ConfigManager(Path configDirectoryFile) {
+        this.configDirectoryFile = new File(configDirectoryFile.toUri());
         this.hardwareConfigFile =
-                new File(Path.of(rootFolder.toString(), "hardwareConfig.json").toUri());
+                new File(Path.of(configDirectoryFile.toString(), "hardwareConfig.json").toUri());
         this.networkConfigFile =
-                new File(Path.of(rootFolder.toString(), "networkSettings.json").toUri());
-        this.camerasFolder = new File(Path.of(rootFolder.toString(), "cameras").toUri());
+                new File(Path.of(configDirectoryFile.toString(), "networkSettings.json").toUri());
+        this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
 
         load();
     }
 
     private void load() {
         logger.info("Loading settings...");
-        if (!rootFolder.exists()) {
-            if (rootFolder.mkdirs()) {
+        if (!configDirectoryFile.exists()) {
+            if (configDirectoryFile.mkdirs()) {
                 logger.debug("Root config folder did not exist. Created!");
             } else {
                 logger.error("Failed to create root config folder!");
+            }
+        }
+        if (!configDirectoryFile.canWrite()) {
+            logger.debug("Making root dir writeable...");
+            try {
+                var success = configDirectoryFile.setWritable(true);
+                if (success) logger.debug("Set root dir writeable!");
+                else logger.error("Could not make root dir writeable!");
+            } catch (SecurityException e) {
+                logger.error("Could not make root dir writeable!", e);
             }
         }
 
@@ -130,15 +159,18 @@ public class ConfigManager {
         logger.info("Saving settings...");
 
         try {
-            JacksonUtils.serializer(hardwareConfigFile.toPath(), config.getHardwareConfig());
+            JacksonUtils.serialize(hardwareConfigFile.toPath(), config.getHardwareConfig());
         } catch (IOException e) {
             logger.error("Could not save hardware config!", e);
         }
         try {
-            JacksonUtils.serializer(networkConfigFile.toPath(), config.getNetworkConfig());
+            JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
         }
+
+        // Delete old configs
+        FileUtils.deleteDirectory(camerasFolder.toPath());
 
         // save all of our cameras
         var cameraConfigMap = config.getCameraConfigurations();
@@ -152,25 +184,16 @@ public class ConfigManager {
             }
 
             try {
-                JacksonUtils.serializer(Path.of(subdir.toString(), "config.json"), camConfig);
+                JacksonUtils.serialize(Path.of(subdir.toString(), "config.json"), camConfig);
             } catch (IOException e) {
-                logger.error("Could not save config.json for " + subdir);
+                logger.error("Could not save config.json for " + subdir, e);
             }
 
             try {
-                JacksonUtils.serializer(
+                JacksonUtils.serialize(
                         Path.of(subdir.toString(), "drivermode.json"), camConfig.driveModeSettings);
             } catch (IOException e) {
-                logger.error("Could not save drivermode.json for " + subdir);
-            }
-
-            // Delete old pipe configs so that we don't get any conflicts
-            try {
-                var pipelineFolder = Path.of(subdir.toString(), "pipelines");
-                if (pipelineFolder.toFile().exists())
-                    Files.list(pipelineFolder).map(Path::toFile).filter(File::exists).forEach(File::delete);
-            } catch (IOException e) {
-                logger.error("Exception while deleting old configs!", e);
+                logger.error("Could not save drivermode.json for " + subdir, e);
             }
 
             for (var pipe : camConfig.pipelineSettings) {
@@ -182,7 +205,7 @@ public class ConfigManager {
                 }
 
                 try {
-                    JacksonUtils.serializer(pipePath, pipe);
+                    JacksonUtils.serialize(pipePath, pipe);
                 } catch (IOException e) {
                     logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
                 }
@@ -207,6 +230,7 @@ public class ConfigManager {
                                     cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
                 } catch (JsonProcessingException e) {
                     logger.error("Camera config deserialization failed!", e);
+                    e.printStackTrace();
                 }
                 if (loadedConfig == null) { // If the file could not be deserialized
                     logger.warn("Could not load camera " + subdir + "'s config.json! Loading " + "default");
@@ -243,7 +267,11 @@ public class ConfigManager {
                                         .map(
                                                 p -> {
                                                     var relativizedFilePath =
-                                                            rootFolder.toPath().toAbsolutePath().relativize(p).toString();
+                                                            configDirectoryFile
+                                                                    .toPath()
+                                                                    .toAbsolutePath()
+                                                                    .relativize(p)
+                                                                    .toString();
                                                     try {
                                                         return JacksonUtils.deserialize(p, CVPipelineSettings.class);
                                                     } catch (JsonProcessingException e) {
@@ -283,5 +311,29 @@ public class ConfigManager {
     public void saveModule(CameraConfiguration config, String uniqueName) {
         getConfig().addCameraConfig(uniqueName, config);
         save();
+    }
+
+    public File getSettingsFolderAsZip() {
+        File out = Path.of(System.getProperty("java.io.tmpdir"), "photonvision-settings.zip").toFile();
+        try {
+            ZipUtil.pack(configDirectoryFile, out);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return out;
+    }
+
+    public void setNetworkSettings(NetworkConfig networkConfig) {
+        getConfig().setNetworkConfig(networkConfig);
+        save();
+    }
+
+    public Path getLogPath() {
+        var dateString = DateTimeFormatter.ofPattern("yyyy-M-d_hh-mm-ss").format(LocalDateTime.now());
+        var logFile =
+                Path.of(configDirectoryFile.toString(), "logs", "photonvision-" + dateString + ".log")
+                        .toFile();
+        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
+        return logFile.toPath();
     }
 }

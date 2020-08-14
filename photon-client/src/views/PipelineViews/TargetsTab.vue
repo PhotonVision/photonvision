@@ -18,7 +18,7 @@
               <th class="text-center">
                 Target
               </th>
-              <template v-if="!$store.getters.currentPipelineSettings.is3D">
+              <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center">
                   Pitch
                 </th>
@@ -32,7 +32,7 @@
               <th class="text-center">
                 Area
               </th>
-              <template v-if="$store.getters.currentPipelineSettings.is3D">
+              <template v-if="$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center">
                   X
                 </th>
@@ -51,17 +51,17 @@
               :key="index"
             >
               <td>{{ index }}</td>
-              <template v-if="!$store.getters.currentPipelineSettings.is3D">
+              <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <td>{{ parseFloat(value.pitch).toFixed(2) }}</td>
                 <td>{{ parseFloat(value.yaw).toFixed(2) }}</td>
                 <td>{{ parseFloat(value.skew).toFixed(2) }}</td>
               </template>
               <td>{{ parseFloat(value.area).toFixed(2) }}</td>
-              <template v-if="$store.getters.currentPipelineSettings.is3D">
+              <template v-if="$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <!-- TODO: Make sure that units are correct -->
                 <td>{{ parseFloat(value.pose.x).toFixed(2) }}&nbsp;m</td>
                 <td>{{ parseFloat(value.pose.y).toFixed(2) }}&nbsp;m</td>
-                <td>{{ parseFloat(value.pose.rotation).toFixed(2) }}&deg;</td>
+                <td>{{ parseFloat(value.pose.rot).toFixed(2) }}&deg;</td>
               </template>
             </tr>
           </tbody>

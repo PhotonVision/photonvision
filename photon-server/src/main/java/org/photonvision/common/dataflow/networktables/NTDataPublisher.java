@@ -52,8 +52,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Supplier<Integer> pipelineIndexSupplier;
     private final BooleanSupplier driverModeSupplier;
 
-    private String currentCameraNickname;
-
     public NTDataPublisher(
             String cameraNickname,
             Supplier<Integer> pipelineIndexSupplier,
@@ -65,7 +63,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         this.driverModeSupplier = driverModeSupplier;
         this.driverModeConsumer = driverModeConsumer;
 
-        currentCameraNickname = cameraNickname;
         updateCameraNickname(cameraNickname);
         updateEntries();
     }
@@ -146,7 +143,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         removeEntries();
         subTable = rootTable.getSubTable(newCameraNickname);
         updateEntries();
-        currentCameraNickname = newCameraNickname;
     }
 
     @Override
@@ -170,9 +166,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             targetAreaEntry.forceSetDouble(bestTarget.getArea());
             targetSkewEntry.forceSetDouble(bestTarget.getSkew());
 
-            var poseX = bestTarget.getRobotRelativePose().getTranslation().getX();
-            var poseY = bestTarget.getRobotRelativePose().getTranslation().getY();
-            var poseRot = bestTarget.getRobotRelativePose().getRotation().getDegrees();
+            var poseX = bestTarget.getCameraToTarget().getTranslation().getX();
+            var poseY = bestTarget.getCameraToTarget().getTranslation().getY();
+            var poseRot = bestTarget.getCameraToTarget().getRotation().getDegrees();
             targetPoseEntry.forceSetDoubleArray(new double[] {poseX, poseY, poseRot});
         } else {
             targetPitchEntry.forceSetDouble(0);

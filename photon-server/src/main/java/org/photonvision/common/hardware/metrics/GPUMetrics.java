@@ -17,19 +17,12 @@
 
 package org.photonvision.common.hardware.metrics;
 
-public class RAM extends MetricsBase {
-    private RAM() {}
-
-    public static RAM getInstance() {
-        return Singleton.INSTANCE;
+public class GPUMetrics extends MetricsBase {
+    public double getMemory() {
+        return execute(gpuMemoryCommand);
     }
 
-    // TODO: Output in MBs for consistency
-    public double getUsedRam() {
-        return execute(ramUsageCommand) / 1000;
-    }
-
-    private static class Singleton {
-        public static final RAM INSTANCE = new RAM();
+    public double getTemp() {
+        return execute(gpuTemperatureCommand) / 10;
     }
 }

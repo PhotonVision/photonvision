@@ -25,12 +25,7 @@
               class="pb-0 mb-0 pl-4 pt-1"
               style="height: 15%; min-height: 50px;"
             >
-              <div>
-                Cameras <span
-                  class="pl-2 caption grey--text text--lighten-2"
-                  style="line-height: 220%; display: inline-block; vertical-align: bottom;"
-                >{{ parseFloat(fps).toFixed(2) }} FPS</span>
-              </div>
+              Cameras
               <v-switch
                 v-model="driverMode"
                 label="Driver Mode"
@@ -62,7 +57,6 @@
                     :color-picking="$store.state.colorPicking && idx == 0"
                     @click="onImageClick"
                   />
-                  <!--                  <span class="fps-indicator">{{ parseFloat(fps).toFixed(2) }}</span>-->
                 </div>
               </v-col>
             </v-row>
@@ -166,7 +160,7 @@
               slider-color="accent"
             >
               <v-tab
-                v-for="(tab, i) in tabs.filter(it => it.name !== '3D' || $store.getters.currentPipelineSettings.is3D)"
+                v-for="(tab, i) in tabs.filter(it => it.name !== '3D' || $store.getters.currentPipelineSettings.solvePNPEnabled)"
                 :key="i"
               >
                 {{ tab.name }}
@@ -299,11 +293,11 @@
             },
             processingMode: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.is3D ? 1 : 0;
+                    return this.$store.getters.currentPipelineSettings.solvePNPEnabled ? 1 : 0;
                 },
                 set(value) {
-                    this.$store.getters.currentPipelineSettings.is3D = value === 1;
-                    this.handlePipelineUpdate("is3D", value === 1);
+                    this.$store.getters.currentPipelineSettings.solvePNPEnabled = value === 1;
+                    this.handlePipelineUpdate("solvePNPEnabled", value === 1);
                 }
             },
             driverMode: {
@@ -349,11 +343,6 @@
                     // this.handlePipelineUpdate('selectedOutputs', valToCommit);
                 }
             },
-            fps: {
-                get() {
-                    return this.$store.getters.currentCameraFPS;
-                }
-            },
             latency: {
                 get() {
                     return this.$store.getters.currentPipelineResults.latency;
@@ -382,14 +371,6 @@
     .v-btn-toggle.fill > .v-btn {
         width: 50%;
         height: 100%;
-    }
-
-    .fps-indicator {
-      position: absolute;
-      top: 2%;
-      left: 2%;
-      font-size: 1.75rem;
-      text-shadow: 1px 1px 5px rgba(1, 1, 1, 0.65);
     }
 
     th {

@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
@@ -26,21 +27,7 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
-import org.photonvision.vision.pipe.impl.Collect2dTargetsPipe;
-import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
-import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
-import org.photonvision.vision.pipe.impl.Draw2dTargetsPipe;
-import org.photonvision.vision.pipe.impl.Draw3dTargetsPipe;
-import org.photonvision.vision.pipe.impl.ErodeDilatePipe;
-import org.photonvision.vision.pipe.impl.FilterContoursPipe;
-import org.photonvision.vision.pipe.impl.FindContoursPipe;
-import org.photonvision.vision.pipe.impl.GroupContoursPipe;
-import org.photonvision.vision.pipe.impl.HSVPipe;
-import org.photonvision.vision.pipe.impl.OutputMatPipe;
-import org.photonvision.vision.pipe.impl.RotateImagePipe;
-import org.photonvision.vision.pipe.impl.SolvePNPPipe;
-import org.photonvision.vision.pipe.impl.SortContoursPipe;
-import org.photonvision.vision.pipe.impl.SpeckleRejectPipe;
+import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.TrackedTarget;
@@ -64,6 +51,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
     private final Draw2dTargetsPipe draw2dTargetsPipe = new Draw2dTargetsPipe();
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
+    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private final Mat rawInputMat = new Mat();
     private final long[] pipeProfileNanos = new long[PipelineProfiler.ReflectivePipeCount];
@@ -79,6 +67,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     @Override
     protected void setPipeParams(
             FrameStaticProperties frameStaticProperties, ReflectivePipelineSettings settings) {
+
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
@@ -151,12 +140,14 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         var draw3dContoursParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
-                        settings.cameraCalibration, settings.targetModel);
+                        frameStaticProperties.cameraCalibration, settings.targetModel);
         draw3dTargetsPipe.setParams(draw3dContoursParams);
 
         var solvePNPParams =
                 new SolvePNPPipe.SolvePNPPipeParams(
-                        settings.cameraCalibration, settings.cameraPitch, settings.targetModel);
+                        frameStaticProperties.cameraCalibration,
+                        frameStaticProperties.cameraPitch,
+                        settings.targetModel);
         solvePNPPipe.setParams(solvePNPParams);
     }
 
@@ -223,6 +214,10 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             targetList = collect2dTargetsResult.output;
         }
 
+        var fpsResult = calculateFPSPipe.run(null);
+        var fps = fpsResult.output;
+        sumPipeNanosElapsed += fpsResult.nanosElapsed;
+
         // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
         var outputMatPipeResult = outputMatPipe.run(hsvPipeResult.output);
         sumPipeNanosElapsed += pipeProfileNanos[12] = outputMatPipeResult.nanosElapsed;
@@ -237,11 +232,11 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         // Draw 2D contours on input and output
         var draw2dTargetsOnInput =
-                draw2dTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
+                draw2dTargetsPipe.run(Triple.of(rawInputMat, collect2dTargetsResult.output, fps));
         sumPipeNanosElapsed += pipeProfileNanos[15] = draw2dTargetsOnInput.nanosElapsed;
 
         var draw2dTargetsOnOutput =
-                draw2dTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
+                draw2dTargetsPipe.run(Triple.of(hsvPipeResult.output, collect2dTargetsResult.output, fps));
         sumPipeNanosElapsed += pipeProfileNanos[16] = draw2dTargetsOnOutput.nanosElapsed;
 
         // Draw 3D Targets on input and output if necessary

@@ -2,23 +2,20 @@
   "deviceName": "PhotonVision",
   "deviceLogoPath": "photonvision.png",
   "supportURL": "https://support.photonvision.com",
-  "hardware": {
-    "leds": [2,13],
-    "ledSetCommand": "",
-    "ledsCanDim": true,
-    "ledPWMRange": [0, 100],
-    "ledPWMFrequency" : 800,
-    "ledPWMSetRange": "",
-    "ledDimCommand": "",
-    "ledBlinkCommand": ""
-  },
-
-  "metrics": {
-    "cpuTemp": "echo 10",
-    "cpuMemory": "echo 10",
-    "cpuUtil": "echo 10",
-    "gpuMemory": "echo 10",
-    "gpuUtil": "echo 10",
-    "ramUtil": "echo 10"
-  }
+  "ledPins" : [2, 13],
+  "ledSetCommand" : "",
+  "ledsCanDim" : true,
+  "ledPWMRange" : [0, 100],
+  "ledPWMSetRange" : "",
+  "ledPWMFrequency" : 800,
+  "ledDimCommand" : "echo 10",
+  "ledBlinkCommand" : "echo 10",
+  "cpuTempCommand" : "echo 10",
+  "cpuMemoryCommand" : "echo 10",
+  "cpuUtilCommand" : "echo 10",
+  "gpuMemoryCommand" : "echo 10",
+  "gpuTempCommand" : "echo 10",
+  "ramUtilCommand" : "echo 10",
+  "restartHardwareCommand" : "echo 10",
+  "vendorFOV" : 40.0
 }
