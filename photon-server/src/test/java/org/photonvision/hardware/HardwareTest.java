@@ -32,9 +32,9 @@ public class HardwareTest {
 
     @Test
     public void testHardware() {
-        CPUMetrics cpuMetrics = CPUMetrics.getInstance();
-        RAMMetrics ramMetrics = RAMMetrics.getInstance();
-        GPUMetrics gpuMetrics = GPUMetrics.getInstance();
+        CPUMetrics cpuMetrics = new CPUMetrics();
+        RAMMetrics ramMetrics = new RAMMetrics();
+        GPUMetrics gpuMetrics = new GPUMetrics();
 
         if (!Platform.isRaspberryPi()) return;
 
