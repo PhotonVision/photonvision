@@ -99,39 +99,6 @@ public class HardwareManager {
         }
     }
 
-    public boolean restartProgram() {
-        String jarPath = null;
-
-        try {
-            jarPath =
-                    new File(
-                                    HardwareManager.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-                            .toString();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-
-        if (jarPath == null || !jarPath.endsWith("jar")) {
-            logger.info("Could not determine JAR path! Cannot restart program...");
-        }
-
-        if (Platform.isLinux()) {
-            try {
-                return shellExec.executeBashCommand("java -jar " + jarPath) == 0;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            }
-        } else {
-            try {
-                return shellExec.execute("java -jar " + jarPath) == 0;
-            } catch (IOException e) {
-                e.printStackTrace();
-                return false;
-            }
-        }
-    }
-
     private static class Singleton {
         private static final HardwareManager INSTANCE = new HardwareManager();
     }

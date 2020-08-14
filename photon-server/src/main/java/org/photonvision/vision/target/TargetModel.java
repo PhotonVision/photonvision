@@ -82,6 +82,7 @@ public class TargetModel implements Releasable {
     }
 
     public static TargetModel get2020TargetInnerPort() {
+        // Per the game manual, the inner port is 2ft 5.25in behind the outer port
         return get2020Target(Units.inchesToMeters(2d * 12d + 5.25));
     }
 
