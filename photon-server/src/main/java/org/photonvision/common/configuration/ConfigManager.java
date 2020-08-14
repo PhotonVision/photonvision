@@ -40,10 +40,11 @@ public class ConfigManager {
     private static ConfigManager INSTANCE;
 
     private PhotonConfiguration config;
-    final File rootFolder;
     private final File hardwareConfigFile;
     private final File networkConfigFile;
     private final File camerasFolder;
+
+    final File configDirectoryFile;
 
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
@@ -74,30 +75,30 @@ public class ConfigManager {
         return Path.of("photonvision_config");
     }
 
-    ConfigManager(Path rootFolder) {
-        this.rootFolder = new File(rootFolder.toUri());
+    ConfigManager(Path configDirectoryFile) {
+        this.configDirectoryFile = new File(configDirectoryFile.toUri());
         this.hardwareConfigFile =
-                new File(Path.of(rootFolder.toString(), "hardwareConfig.json").toUri());
+                new File(Path.of(configDirectoryFile.toString(), "hardwareConfig.json").toUri());
         this.networkConfigFile =
-                new File(Path.of(rootFolder.toString(), "networkSettings.json").toUri());
-        this.camerasFolder = new File(Path.of(rootFolder.toString(), "cameras").toUri());
+                new File(Path.of(configDirectoryFile.toString(), "networkSettings.json").toUri());
+        this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
 
         load();
     }
 
     private void load() {
         logger.info("Loading settings...");
-        if (!rootFolder.exists()) {
-            if (rootFolder.mkdirs()) {
+        if (!configDirectoryFile.exists()) {
+            if (configDirectoryFile.mkdirs()) {
                 logger.debug("Root config folder did not exist. Created!");
             } else {
                 logger.error("Failed to create root config folder!");
             }
         }
-        if (!rootFolder.canWrite()) {
+        if (!configDirectoryFile.canWrite()) {
             logger.debug("Making root dir writeable...");
             try {
-                var success = rootFolder.setWritable(true);
+                var success = configDirectoryFile.setWritable(true);
                 if (success) logger.debug("Set root dir writeable!");
                 else logger.error("Could not make root dir writeable!");
             } catch (SecurityException e) {
@@ -186,7 +187,6 @@ public class ConfigManager {
                 JacksonUtils.serialize(Path.of(subdir.toString(), "config.json"), camConfig);
             } catch (IOException e) {
                 logger.error("Could not save config.json for " + subdir, e);
-                System.exit(999999);
             }
 
             try {
@@ -194,7 +194,6 @@ public class ConfigManager {
                         Path.of(subdir.toString(), "drivermode.json"), camConfig.driveModeSettings);
             } catch (IOException e) {
                 logger.error("Could not save drivermode.json for " + subdir, e);
-                System.exit(999999);
             }
 
             for (var pipe : camConfig.pipelineSettings) {
@@ -268,7 +267,7 @@ public class ConfigManager {
                                         .map(
                                                 p -> {
                                                     var relativizedFilePath =
-                                                            rootFolder.toPath().toAbsolutePath().relativize(p).toString();
+                                                            configDirectoryFile.toPath().toAbsolutePath().relativize(p).toString();
                                                     try {
                                                         return JacksonUtils.deserialize(p, CVPipelineSettings.class);
                                                     } catch (JsonProcessingException e) {
@@ -313,7 +312,7 @@ public class ConfigManager {
     public File getSettingsFolderAsZip() {
         File out = Path.of(System.getProperty("java.io.tmpdir"), "photonvision-settings.zip").toFile();
         try {
-            ZipUtil.pack(rootFolder, out);
+            ZipUtil.pack(configDirectoryFile, out);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -328,7 +327,7 @@ public class ConfigManager {
     public Path getLogPath() {
         var dateString = DateTimeFormatter.ofPattern("yyyy-M-d_hh-mm-ss").format(LocalDateTime.now());
         var logFile =
-                Path.of(rootFolder.toString(), "logs", "photonvision-" + dateString + ".log").toFile();
+                Path.of(configDirectoryFile.toString(), "logs", "photonvision-" + dateString + ".log").toFile();
         if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
         return logFile.toPath();
     }

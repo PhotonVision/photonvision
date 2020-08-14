@@ -74,16 +74,16 @@ public class ConfigTest {
 
         var camConfDir =
                 new File(
-                        Path.of(configMgr.rootFolder.toString(), "cameras", "TestCamera")
+                        Path.of(configMgr.configDirectoryFile.toString(), "cameras", "TestCamera")
                                 .toAbsolutePath()
                                 .toString());
         Assertions.assertTrue(camConfDir.exists(), "TestCamera config folder not found!");
 
         Assertions.assertTrue(
-                Files.exists(Path.of(configMgr.rootFolder.toString(), "hardwareConfig.json")),
+                Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "hardwareConfig.json")),
                 "hardwareConfig.json file not found!");
         Assertions.assertTrue(
-                Files.exists(Path.of(configMgr.rootFolder.toString(), "networkSettings.json")),
+                Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "networkSettings.json")),
                 "networkSettings.json file not found!");
     }
 
@@ -115,7 +115,7 @@ public class ConfigTest {
             e.printStackTrace();
         }
 
-        FileUtils.cleanDirectory(configMgr.rootFolder);
-        configMgr.rootFolder.delete();
+        FileUtils.cleanDirectory(configMgr.configDirectoryFile);
+        configMgr.configDirectoryFile.delete();
     }
 }

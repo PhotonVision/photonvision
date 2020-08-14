@@ -41,8 +41,7 @@ export default new Vuex.Store({
                         "pixelFormat": "BGR"
                     }
                 ],
-                calibrations: [
-                ],
+                calibrations: [ ],
                 fov: 70.0,
                 isFovConfigurable: true,
                 calibrated: false,
