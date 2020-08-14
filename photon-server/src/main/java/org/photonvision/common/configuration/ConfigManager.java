@@ -26,7 +26,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
@@ -154,7 +153,6 @@ public class ConfigManager {
         HashMap<String, CameraConfiguration> cameraConfigurations = loadCameraConfigs();
 
         this.config = new PhotonConfiguration(hardwareConfig, networkConfig, cameraConfigurations);
-        HardwareManager.getInstance().setConfig(hardwareConfig);
     }
 
     public void save() {

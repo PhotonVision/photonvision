@@ -25,7 +25,7 @@
             />
             <CVnumberinput
               v-model="cameraSettings.fov"
-              tooltip="Field of view (in degrees) of the camera measured across the diagonal of the frame"
+              :tooltip="cameraSettings.isFovConfigurable ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame' : 'This setting is managed by a vendor'"
               name="Diagonal FOV"
               :disabled="!cameraSettings.isFovConfigurable"
             />
