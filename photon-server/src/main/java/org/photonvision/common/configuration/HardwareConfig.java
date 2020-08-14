@@ -17,12 +17,8 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
-import java.util.Map;
 
-@SuppressWarnings("unused")
 public class HardwareConfig {
 
     public final String deviceName;
@@ -49,7 +45,7 @@ public class HardwareConfig {
 
     // Device stuff
     public final String restartHardwareCommand;
-    public final double vendorFOV;
+    public final double vendorFOV; // -1 for unmanaged
 
     public HardwareConfig() {
         deviceName = "";
@@ -72,42 +68,52 @@ public class HardwareConfig {
         ledBlinkCommand = "";
 
         restartHardwareCommand = "";
-        vendorFOV = 0;
+        vendorFOV = -1;
     }
 
-    @JsonCreator
+    @SuppressWarnings("unused")
     public HardwareConfig(
-            @JsonProperty("deviceName") String deviceName,
-            @JsonProperty("deviceLogoPath") String deviceLogoPath,
-            @JsonProperty("supportURL") String supportURL,
-            @JsonProperty("restartHardwareCommand") String restartHardwareCommand,
-            @JsonProperty("vendorFOV") double vendorFOV,
-            @JsonProperty("hardware") Map<String, ?> hardware,
-            @JsonProperty("metrics") Map<String, ?> metrics) {
+            String deviceName,
+            String deviceLogoPath,
+            String supportURL,
+            ArrayList<Integer> ledPins,
+            String ledSetCommand,
+            boolean ledsCanDim,
+            ArrayList<Integer> ledPWMRange,
+            String ledPWMSetRange,
+            int ledPWMFrequency,
+            String ledDimCommand,
+            String ledBlinkCommand,
+            String cpuTempCommand,
+            String cpuMemoryCommand,
+            String cpuUtilCommand,
+            String gpuMemoryCommand,
+            String gpuTempCommand,
+            String ramUtilCommand,
+            String restartHardwareCommand,
+            double vendorFOV) {
         this.deviceName = deviceName;
         this.deviceLogoPath = deviceLogoPath;
         this.supportURL = supportURL;
-        this.ledPins = (ArrayList<Integer>) hardware.get("leds");
-        this.ledSetCommand = (String) hardware.get("ledSetCommand");
-        this.ledsCanDim = (Boolean) hardware.get("ledsCanDim");
-        this.ledPWMRange = (ArrayList<Integer>) hardware.get("ledPWMRange");
-        this.ledPWMSetRange = (String) hardware.get("ledPWMSetRange");
-        this.ledPWMFrequency = (Integer) hardware.get("ledPWMFrequency");
-        this.ledDimCommand = (String) hardware.get("ledDimCommand");
-        this.ledBlinkCommand = (String) hardware.get("ledBlinkCommand");
-
-        this.cpuTempCommand = (String) metrics.get("cpuTemp");
-        this.cpuMemoryCommand = (String) metrics.get("cpuMemory");
-        this.cpuUtilCommand = (String) metrics.get("cpuUtil");
-        this.gpuMemoryCommand = (String) metrics.get("gpuMemory");
-        this.gpuTempCommand = (String) metrics.get("gpuUtil");
-        this.ramUtilCommand = (String) metrics.get("ramUtil");
-
+        this.ledPins = ledPins;
+        this.ledSetCommand = ledSetCommand;
+        this.ledsCanDim = ledsCanDim;
+        this.ledPWMRange = ledPWMRange;
+        this.ledPWMSetRange = ledPWMSetRange;
+        this.ledPWMFrequency = ledPWMFrequency;
+        this.ledDimCommand = ledDimCommand;
+        this.ledBlinkCommand = ledBlinkCommand;
+        this.cpuTempCommand = cpuTempCommand;
+        this.cpuMemoryCommand = cpuMemoryCommand;
+        this.cpuUtilCommand = cpuUtilCommand;
+        this.gpuMemoryCommand = gpuMemoryCommand;
+        this.gpuTempCommand = gpuTempCommand;
+        this.ramUtilCommand = ramUtilCommand;
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;
     }
 
     public final boolean hasPresetFOV() {
-        return vendorFOV > 1e-4;
+        return vendorFOV > 0;
     }
 }

@@ -36,6 +36,9 @@ public class HardwareManager {
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
     public static HardwareManager getInstance() {
+        if (Singleton.INSTANCE == null) {
+            Singleton.INSTANCE = new HardwareManager();
+        }
         return Singleton.INSTANCE;
     }
 
@@ -102,6 +105,6 @@ public class HardwareManager {
     }
 
     private static class Singleton {
-        private static final HardwareManager INSTANCE = new HardwareManager();
+        private static HardwareManager INSTANCE;
     }
 }

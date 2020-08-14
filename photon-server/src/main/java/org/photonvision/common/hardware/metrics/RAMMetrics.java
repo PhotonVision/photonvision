@@ -17,28 +17,10 @@
 
 package org.photonvision.common.hardware.metrics;
 
-public class CPU extends MetricsBase {
-
-    private CPU() {}
-
-    public static CPU getInstance() {
-        return Singleton.INSTANCE;
-    }
-
-    public double getMemory() {
-        return execute(cpuMemoryCommand);
-    }
-
-    // TODO: Command should return in Celsius
-    public double getTemp() {
-        return execute(cpuTemperatureCommand) / 1000;
-    }
-
-    public double getUtilization() {
-        return execute(cpuUtilizationCommand);
-    }
-
-    private static class Singleton {
-        public static final CPU INSTANCE = new CPU();
+public class RAMMetrics extends MetricsBase {
+    // TODO: Output in MBs for consistency
+    public double getUsedRam() {
+        if (ramUsageCommand.isEmpty()) return 0;
+        return execute(ramUsageCommand) / 1000;
     }
 }

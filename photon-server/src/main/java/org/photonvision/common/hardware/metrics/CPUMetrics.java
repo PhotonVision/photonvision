@@ -17,23 +17,22 @@
 
 package org.photonvision.common.hardware.metrics;
 
-public class GPU extends MetricsBase {
+public class CPUMetrics extends MetricsBase {
 
-    private GPU() {}
-
-    public static GPU getInstance() {
-        return Singleton.INSTANCE;
-    }
+    public CPUMetrics() {}
 
     public double getMemory() {
-        return execute(gpuMemoryCommand);
+        if (cpuMemoryCommand.isEmpty()) return 0;
+        return execute(cpuMemoryCommand);
     }
 
+    // TODO: Command should return in Celsius
     public double getTemp() {
-        return execute(gpuTemperatureCommand) / 10;
+        if (cpuTemperatureCommand.isEmpty()) return 0;
+        return execute(cpuTemperatureCommand) / 1000;
     }
 
-    private static class Singleton {
-        public static final GPU INSTANCE = new GPU();
+    public double getUtilization() {
+        return execute(cpuUtilizationCommand);
     }
 }

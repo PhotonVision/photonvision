@@ -2,6 +2,8 @@
   "deviceName": "PhotonVision",
   "deviceLogoPath": "photonvision.png",
   "supportURL": "https://support.photonvision.com",
+  "restartHardwareCommand" : "",
+  "vendorFOV" : -1.0,
   "hardware": {
     "leds": [2,13],
     "ledSetCommand": "",

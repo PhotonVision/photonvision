@@ -128,6 +128,13 @@ public class VisionModule {
                 pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
         dashboardOutputStreamer.setFrameDivisor(
                 pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
+
+        // Set vendor FOV
+        if (isVendorCamera()) {
+            var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV;
+            logger.info("Setting FOV of vendor camera to " + fov);
+            visionSource.getSettables().setFOV(fov);
+        }
     }
 
     private void setDriverMode(boolean isDriverMode) {
@@ -153,13 +160,17 @@ public class VisionModule {
         settables.setCameraPitch(pitch);
 
         // Only set FOV if we have no vendor JSON and we aren't using a PiCAM
-        // TODO improve robustness of this detection
-        if (HardwareManager.getInstance().getConfig().hasPresetFOV()
-                && cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+        if (isVendorCamera()) {
             logger.info("Cannot set FOV on a vendor device! Ignoring...");
         } else {
             settables.setFOV(fov);
         }
+    }
+
+    // TODO improve robustness of this detection
+    private boolean isVendorCamera() {
+        return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
+                && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
     }
 
     public void startCalibration(UICalibrationData data) {
