@@ -174,7 +174,7 @@ public class Draw2dTargetsPipe
         public boolean showShape = false;
         public boolean showMaximumBox = true;
         public boolean showContourNumber = true;
-        public Color centroidColor = Color.decode("#ff5ebf");
+        public Color centroidColor = Color.green; // Color.decode("#ff5ebf");
         public Color rotatedBoxColor = Color.BLUE;
         public Color maximumBoxColor = Color.RED;
         public Color shapeOutlineColour = Color.MAGENTA;
