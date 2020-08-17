@@ -303,18 +303,24 @@ public class SocketHandler {
         }
     }
 
-    // TODO: change to use the DataFlow system
     private void sendMessage(Object message, WsContext user) throws JsonProcessingException {
         ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(message));
         user.send(b);
     }
 
-    // TODO: change to use the DataFlow system
     public void broadcastMessage(Object message, WsContext userToSkip)
             throws JsonProcessingException {
-        for (WsContext user : users) {
-            if (user != userToSkip) {
+        if (userToSkip == null) {
+            for (WsContext user : users) {
                 sendMessage(message, user);
+            }
+        } else {
+            var skipUserPort = userToSkip.session.getRemote().getInetSocketAddress().getPort();
+            for (WsContext user : users) {
+                var userPort = user.session.getRemote().getInetSocketAddress().getPort();
+                if (userPort != skipUserPort) {
+                    sendMessage(message, user);
+                }
             }
         }
     }
