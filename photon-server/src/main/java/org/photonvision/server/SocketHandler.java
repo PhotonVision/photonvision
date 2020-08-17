@@ -70,7 +70,8 @@ public class SocketHandler {
 
     public void onConnect(WsConnectContext context) {
         context.session.setIdleTimeout(Long.MAX_VALUE); // TODO: determine better value
-        var host = context.session.getRemote().getInetSocketAddress().getHostName();
+        var insa = context.session.getRemote().getInetSocketAddress();
+        var host = insa.getAddress().toString() + ":" + insa.getPort();
         logger.info("New websocket connection from " + host);
         users.add(context);
         dcService.publishEvent(
@@ -79,7 +80,8 @@ public class SocketHandler {
     }
 
     protected void onClose(WsCloseContext context) {
-        var host = context.session.getRemote().getInetSocketAddress().getHostName();
+        var insa = context.session.getRemote().getInetSocketAddress();
+        var host = insa.getAddress().toString() + ":" + insa.getPort();
         var reason = context.reason() != null ? context.reason() : "Connection closed by client";
         logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         users.remove(context);

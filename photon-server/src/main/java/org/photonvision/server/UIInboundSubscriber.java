@@ -36,16 +36,15 @@ public class UIInboundSubscriber extends DataChangeSubscriber {
     }
 
     @Override
-    public void onDataChangeEvent(DataChangeEvent event) {
+    public void onDataChangeEvent(DataChangeEvent<?> event) {
         if (event instanceof IncomingWebSocketEvent) {
-            var incomingWSEvent = (IncomingWebSocketEvent) event;
+            var incomingWSEvent = (IncomingWebSocketEvent<?>) event;
             if (incomingWSEvent.propertyName.equals("userConnected")
                     || incomingWSEvent.propertyName.equals("sendFullSettings")) {
                 // Send full settings
                 var settings = ConfigManager.getInstance().getConfig().toHashMap();
                 var message =
-                        new OutgoingUIEvent<>(
-                                UIUpdateType.BROADCAST, "fullsettings", settings, incomingWSEvent.originContext);
+                        new OutgoingUIEvent<>("fullsettings", settings, incomingWSEvent.originContext);
                 DataChangeService.getInstance().publishEvent(message);
             }
         }

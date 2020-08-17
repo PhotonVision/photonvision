@@ -33,7 +33,6 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
-import org.photonvision.server.UIUpdateType;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -235,19 +234,18 @@ public class VisionModule {
         DataChangeService.getInstance()
                 .publishEvent(
                         new OutgoingUIEvent<>(
-                                UIUpdateType.BROADCAST,
-                                "fullsettings",
-                                ConfigManager.getInstance().getConfig().toHashMap(),
-                                null));
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
+        if (originContext == null) {
+            logger.warn("Origin for selective send is null, broadcasting to all!");
+        }
         saveModule();
         DataChangeService.getInstance()
                 .publishEvent(
-                        OutgoingUIEvent.wrappedOf(
-                                UIUpdateType.BROADCAST, "mutatePipeline", propertyName, value, originContext));
+                        OutgoingUIEvent.wrappedOf("mutatePipeline", propertyName, value, originContext));
     }
 
     void setCameraNickname(String newName) {
