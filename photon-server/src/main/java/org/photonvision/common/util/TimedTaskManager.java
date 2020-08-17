@@ -48,7 +48,8 @@ public class TimedTaskManager {
         }
     }
 
-    private final ScheduledExecutorService timedTaskExecutorPool = new ScheduledThreadPoolExecutor(2, new CaughtThreadFactory());
+    private final ScheduledExecutorService timedTaskExecutorPool =
+            new ScheduledThreadPoolExecutor(2, new CaughtThreadFactory());
     private final ConcurrentHashMap<String, Future<?>> activeTasks = new ConcurrentHashMap<>();
 
     public void addTask(String identifier, Runnable runnable, long millisInterval) {
