@@ -46,8 +46,7 @@ public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
     private static final Logger logger = new Logger(Main.class, LogGroup.General);
-    private static final boolean isRelease =
-            !PhotonVersion.isRelease; // Hack!!!! Until PhotonVersion script fixed
+    private static final boolean isRelease = PhotonVersion.isRelease;
 
     private static boolean isTestMode;
     private static boolean printDebugLogs;
@@ -146,6 +145,7 @@ public class Main {
             logger.error("Failed to parse command-line options!", e);
         }
 
+        System.out.println("Running in " + (isRelease ? "release" : "development") + " mode!");
         var logLevel = (isRelease || printDebugLogs) ? LogLevel.INFO : LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
         Logger.setLevel(LogGroup.WebServer, logLevel);

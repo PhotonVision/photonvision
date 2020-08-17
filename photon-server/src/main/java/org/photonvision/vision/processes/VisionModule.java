@@ -318,12 +318,6 @@ public class VisionModule {
         config.driveModeSettings = pipelineManager.driverModePipeline.getSettings();
         config.currentPipelineIndex = Math.max(pipelineManager.getCurrentPipelineIndex(), -1);
 
-        logger.info(
-                "Saving state with "
-                        + config.calibrations.size()
-                        + " calibrated resolutions and index "
-                        + config.currentPipelineIndex);
-
         return config;
     }
 

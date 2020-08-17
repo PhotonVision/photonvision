@@ -70,7 +70,7 @@ public class ConfigTest {
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
         configMgr.getConfig().addCameraConfig(cameraConfig);
-        configMgr.save();
+        configMgr.saveToDisk();
 
         var camConfDir =
                 new File(
