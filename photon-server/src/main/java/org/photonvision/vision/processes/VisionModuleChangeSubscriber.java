@@ -19,7 +19,6 @@ package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
 import java.util.Map;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
@@ -205,7 +204,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     logger.error("Unknown exception when setting PSC prop!", e);
                 }
 
-//                parentModule.saveModule();
+                //                parentModule.saveModule();
                 parentModule.saveAndBroadcastSelective(wsEvent.originContext, propName, newPropValue);
             }
         }
