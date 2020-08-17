@@ -48,40 +48,7 @@ public class TimedTaskManager {
         }
     }
 
-    private static class TimedTaskExecutorPool extends ScheduledThreadPoolExecutor {
-        public TimedTaskExecutorPool(int corePoolSize) {
-            super(corePoolSize, new CaughtThreadFactory());
-        }
-
-        // Thanks to Abdullah Ozturk for this tip
-        // https://medium.com/@aozturk/how-to-handle-uncaught-exceptions-in-java-abf819347906
-        @Override
-        protected void afterExecute(Runnable runnable, Throwable throwable) {
-            super.afterExecute(runnable, throwable);
-
-            // If submit() method is called instead of execute()
-            if (throwable == null && runnable instanceof Future<?>) {
-                try {
-                    //noinspection unused
-                    Object result = ((Future<?>) runnable).get();
-                } catch (CancellationException e) {
-                    throwable = e;
-                } catch (ExecutionException e) {
-                    throwable = e.getCause();
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-            }
-
-            if (throwable != null) {
-                logger.error("TimedTask threw uncaught exception!", throwable);
-                // Restart the runnable again
-                execute(runnable);
-            }
-        }
-    }
-
-    private final ScheduledExecutorService timedTaskExecutorPool = new TimedTaskExecutorPool(2);
+    private final ScheduledExecutorService timedTaskExecutorPool = new ScheduledThreadPoolExecutor(2, new CaughtThreadFactory());
     private final ConcurrentHashMap<String, Future<?>> activeTasks = new ConcurrentHashMap<>();
 
     public void addTask(String identifier, Runnable runnable, long millisInterval) {
