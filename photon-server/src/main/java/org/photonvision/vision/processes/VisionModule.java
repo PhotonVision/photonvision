@@ -239,9 +239,6 @@ public class VisionModule {
 
     void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
-        if (originContext == null) {
-            logger.warn("Origin for selective send is null, broadcasting to all!");
-        }
         saveModule();
         DataChangeService.getInstance()
                 .publishEvent(
