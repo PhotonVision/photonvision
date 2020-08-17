@@ -259,7 +259,7 @@ public class Logger {
                                     } catch (IOException ignored) {
                                     }
                                 },
-                                30000L);
+                                3000L);
             } catch (FileNotFoundException e) {
                 out = null;
                 System.err.println("Unable to log to file " + logFilePath.toString());

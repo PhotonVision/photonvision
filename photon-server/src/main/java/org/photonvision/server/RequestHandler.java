@@ -75,7 +75,7 @@ public class RequestHandler {
 
         var networkConfig = NetworkConfig.fromHashMap(networking);
         ConfigManager.getInstance().setNetworkSettings(networkConfig);
-        ConfigManager.getInstance().save();
+        ConfigManager.getInstance().requestSave();
         NetworkManager.getInstance().reinitialize();
         NetworkTablesManager.setClientMode(null); // TODO
 
