@@ -205,7 +205,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     logger.error("Unknown exception when setting PSC prop!", e);
                 }
 
-                parentModule.saveModule();
+//                parentModule.saveModule();
+                parentModule.saveAndBroadcastSelective(wsEvent.originContext, propName, newPropValue);
             }
         }
     }
