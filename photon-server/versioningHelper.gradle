@@ -5,11 +5,16 @@ import java.nio.file.Path
 gradle.allprojects {
     ext.getCurrentVersion = { ->
         def stdout = new ByteArrayOutputStream()
-        exec {
-            commandLine 'git', 'describe', '--tags'
-            standardOutput = stdout
+        String tagIsh
+        try {
+            exec {
+                commandLine 'git', 'describe', '--tags'
+                standardOutput = stdout
+            }
+            tagIsh = stdout.toString().trim().toLowerCase()
+        } catch(Exception e) {
+            tagIsh = "dev-Unknown"
         }
-        String tagIsh = stdout.toString().trim().toLowerCase()
         println("Picked up version: " + tagIsh)
         return tagIsh
     }
@@ -18,7 +23,8 @@ gradle.allprojects {
 
 task writeCurrentVersionJava {
     String date = DateTimeFormatter.ofPattern("yyyy-M-d hh:mm:ss").format(LocalDateTime.now())
-    File versionFile = new File(Path.of("$projectDir/src/main/java/org/photonvision/PhotonVersion.java").toAbsolutePath().toString())
+    File versionFile = new File(Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java")
+            .toAbsolutePath().toString())
     versionFile.delete()
     boolean success = versionFile.createNewFile()
     versionFile << "package org.photonvision;\n" +
