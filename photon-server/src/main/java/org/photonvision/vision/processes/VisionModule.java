@@ -29,6 +29,7 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -200,7 +201,7 @@ public class VisionModule {
         return ret;
     }
 
-    private void setPipeline(int index) {
+    void setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
         pipelineManager.setIndex(index);
         var config = pipelineManager.getPipelineSettings(index);

@@ -18,6 +18,8 @@
 package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
+import java.util.Map;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
@@ -29,6 +31,7 @@ import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.pipeline.PipelineType;
+import org.photonvision.vision.pipeline.UICalibrationData;
 
 @SuppressWarnings("unchecked")
 public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
@@ -55,7 +58,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
                 var propName = wsEvent.propertyName;
                 var newPropValue = wsEvent.data;
-                var currentSettings = parentModule.pipelineManager.getCurrentPipeline().getSettings();
+                var currentSettings = parentModule.pipelineManager.getCurrentUserPipeline().getSettings();
 
                 // special case for non-PipelineSetting changes
                 switch (propName) {
@@ -125,6 +128,14 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                             HardwareManager.getInstance().shutdown();
                         }
+                        return;
+                    case "startcalibration":
+                        var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
+                        parentModule.startCalibration(data);
+                        parentModule.saveAndBroadcastAll();
+                        return;
+                    case "takeCalSnapshot":
+                        parentModule.takeCalibrationSnapshot();
                         return;
                 }
 
