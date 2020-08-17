@@ -21,15 +21,11 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.*;
-import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.DataChangeSubscriber;
-import org.photonvision.common.dataflow.events.DataChangeEvent;
-import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
@@ -37,9 +33,6 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
-import org.photonvision.common.util.numbers.DoubleCouple;
-import org.photonvision.common.util.numbers.IntegerCouple;
-import org.photonvision.server.UIUpdateType;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -47,7 +40,6 @@ import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
-import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
@@ -62,21 +54,20 @@ public class VisionModule {
     private static final int StreamFPSCap = 30;
 
     private final Logger logger;
-    private final PipelineManager pipelineManager;
-    private final VisionSource visionSource;
+    protected final PipelineManager pipelineManager;
+    protected final VisionSource visionSource;
     private final VisionRunner visionRunner;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     private final LinkedList<FrameConsumer> frameConsumers = new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
-    private final int moduleIndex;
-    private final QuirkyCamera cameraQuirks;
+    protected final int moduleIndex;
+    protected final QuirkyCamera cameraQuirks;
 
-    private long lastSettingChangeTimestamp = 0;
     private long lastFrameConsumeMillis;
 
-    private MJPGFrameConsumer dashboardInputStreamer;
-    private MJPGFrameConsumer dashboardOutputStreamer;
+    MJPGFrameConsumer dashboardInputStreamer;
+    MJPGFrameConsumer dashboardOutputStreamer;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
@@ -100,7 +91,7 @@ public class VisionModule {
             cameraQuirks = QuirkyCamera.DefaultCamera;
         }
 
-        DataChangeService.getInstance().addSubscriber(new VisionSettingChangeSubscriber());
+        DataChangeService.getInstance().addSubscriber(new VisionModuleChangeSubscriber(this));
 
         dashboardOutputStreamer =
                 new MJPGFrameConsumer(
@@ -137,7 +128,7 @@ public class VisionModule {
         }
     }
 
-    private void setDriverMode(boolean isDriverMode) {
+    void setDriverMode(boolean isDriverMode) {
         pipelineManager.setDriverMode(isDriverMode);
         saveAndBroadcastAll();
     }
@@ -208,184 +199,7 @@ public class VisionModule {
         return ret;
     }
 
-    private class VisionSettingChangeSubscriber extends DataChangeSubscriber {
-
-        private VisionSettingChangeSubscriber() {
-            super();
-        }
-
-        @SuppressWarnings({"unchecked", "rawtypes"})
-        @Override
-        public void onDataChangeEvent(DataChangeEvent event) {
-            if (event instanceof IncomingWebSocketEvent) {
-                var wsEvent = (IncomingWebSocketEvent<?>) event;
-
-                if (wsEvent.cameraIndex != null && wsEvent.cameraIndex == moduleIndex) {
-                    logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
-
-                    var propName = wsEvent.propertyName;
-                    var newPropValue = wsEvent.data;
-                    var currentSettings = pipelineManager.getCurrentUserPipeline().getSettings();
-
-                    // special case for non-PipelineSetting changes
-                    switch (propName) {
-                        case "cameraNickname": // rename camera
-                            var newNickname = (String) newPropValue;
-                            logger.info("Changing nickname to " + newNickname);
-                            setCameraNickname(newNickname);
-                            saveAndBroadcastAll();
-                            return;
-                        case "pipelineName": // rename current pipeline
-                            logger.info("Changing nick to " + newPropValue);
-                            pipelineManager.renameCurrentPipeline((String) newPropValue);
-                            saveAndBroadcastAll();
-                            return;
-                        case "newPipelineInfo": // add new pipeline
-                            var typeName = (Pair<String, PipelineType>) newPropValue;
-                            var type = typeName.getRight();
-                            var name = typeName.getLeft();
-
-                            logger.info("Adding a " + type + " pipeline with name " + name);
-
-                            var addedSettings = pipelineManager.addPipeline(type, name);
-                            addedSettings.pipelineNickname = name;
-
-                            var newIndex = pipelineManager.userPipelineSettings.indexOf(addedSettings);
-                            setPipeline(newIndex);
-                            saveAndBroadcastAll();
-                            return;
-                        case "deleteCurrPipeline":
-                            var indexToDelete = pipelineManager.getCurrentPipelineIndex();
-                            logger.info("Deleting current pipe at index " + indexToDelete);
-                            pipelineManager.removePipeline(indexToDelete);
-                            saveAndBroadcastAll();
-                            return;
-                        case "duplicatePipeline":
-                            logger.info("Duplicating pipe " + newPropValue);
-                            pipelineManager.duplicatePipeline((Integer) newPropValue);
-                            saveAndBroadcastAll();
-                            return;
-                        case "changePipeline": // change active pipeline
-                            var index = (Integer) newPropValue;
-                            if (index == pipelineManager.getCurrentPipelineIndex()) {
-                                logger.debug("Skipping pipeline change, index " + index + " already active");
-                                return;
-                            }
-                            setPipeline(index);
-                            saveAndBroadcastAll();
-                            return;
-                        case "dimLED":
-                            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                                var dimPercentage = (int) newPropValue;
-                                HardwareManager.getInstance().setBrightnessPercentage(dimPercentage);
-                            }
-                            return;
-                        case "blinkLED":
-                            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                                var params = (Pair<Integer, Integer>) newPropValue;
-                                HardwareManager.getInstance().blinkLEDs(params.getLeft(), params.getRight());
-                            }
-                            return;
-                        case "setLED":
-                            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                                var state = (boolean) newPropValue;
-                                if (state) HardwareManager.getInstance().turnLEDsOn();
-                                else HardwareManager.getInstance().turnLEDsOff();
-                            }
-                            return;
-                        case "toggleLED":
-                            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                                HardwareManager.getInstance().toggleLEDs();
-                            }
-                            return;
-                        case "shutdownLEDs":
-                            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                                HardwareManager.getInstance().shutdown();
-                            }
-                            return;
-                        case "startcalibration":
-                            var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
-                            startCalibration(data);
-                            saveAndBroadcastAll();
-                            return;
-                        case "takeCalSnapshot":
-                            takeCalibrationSnapshot();
-                            return;
-                    }
-
-                    // special case for camera settables
-                    if (propName.startsWith("camera")) {
-                        var propMethodName = "set" + propName.replace("camera", "");
-                        var methods = visionSource.getSettables().getClass().getMethods();
-                        for (var method : methods) {
-                            if (method.getName().equalsIgnoreCase(propMethodName)) {
-                                try {
-                                    method.invoke(visionSource.getSettables(), newPropValue);
-                                } catch (Exception e) {
-                                    logger.error("Failed to invoke camera settable method: " + method.getName(), e);
-                                }
-                            }
-                        }
-                    }
-
-                    try {
-                        var propField = currentSettings.getClass().getField(propName);
-                        var propType = propField.getType();
-
-                        if (propType.isEnum()) {
-                            var actual = propType.getEnumConstants()[(int) newPropValue];
-                            propField.set(currentSettings, actual);
-                        } else if (propType.isAssignableFrom(DoubleCouple.class)) {
-                            var orig = (ArrayList<Number>) newPropValue;
-                            var actual = new DoubleCouple(orig.get(0), orig.get(1));
-                            propField.set(currentSettings, actual);
-                        } else if (propType.isAssignableFrom(IntegerCouple.class)) {
-                            var orig = (ArrayList<Integer>) newPropValue;
-                            var actual = new IntegerCouple(orig.get(0), orig.get(1));
-                            propField.set(currentSettings, actual);
-                        } else if (propType.equals(Double.TYPE)) {
-                            propField.setDouble(currentSettings, (Double) newPropValue);
-                        } else if (propType.equals(Integer.TYPE)) {
-                            propField.setInt(currentSettings, (Integer) newPropValue);
-                        } else if (propType.equals(Boolean.TYPE)) {
-                            if (newPropValue instanceof Integer) {
-                                propField.setBoolean(currentSettings, (Integer) newPropValue != 0);
-                            } else {
-                                propField.setBoolean(currentSettings, (Boolean) newPropValue);
-                            }
-                        } else {
-                            propField.set(newPropValue, newPropValue);
-                        }
-                        logger.trace("Set prop " + propName + " to value " + newPropValue);
-
-                        // special case for extra tasks to perform after setting PipelineSettings
-                        if (propName.equals("streamingFrameDivisor")) {
-                            dashboardInputStreamer.setFrameDivisor(
-                                    pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
-                            dashboardOutputStreamer.setFrameDivisor(
-                                    pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
-                        }
-
-                    } catch (NoSuchFieldException | IllegalAccessException e) {
-                        logger.error(
-                                "Could not set prop "
-                                        + propName
-                                        + " with value "
-                                        + newPropValue
-                                        + " on "
-                                        + currentSettings,
-                                e);
-                    } catch (Exception e) {
-                        logger.error("Unknown exception when setting PSC prop!", e);
-                    }
-
-                    saveModule();
-                }
-            }
-        }
-    }
-
-    private void setPipeline(int index) {
+    void setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
         pipelineManager.setIndex(index);
         var config = pipelineManager.getPipelineSettings(index);
@@ -415,28 +229,23 @@ public class VisionModule {
                         getStateAsCameraConfig(), visionSource.getSettables().getConfiguration().uniqueName);
     }
 
-    private void saveAndBroadcastAll() {
+    void saveAndBroadcastAll() {
         saveModule();
         DataChangeService.getInstance()
                 .publishEvent(
                         new OutgoingUIEvent<>(
-                                UIUpdateType.BROADCAST,
-                                "fullsettings",
-                                ConfigManager.getInstance().getConfig().toHashMap(),
-                                null));
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
-    private void saveAndBroadcastSelective(
-            WsContext originContext, String propertyName, Object value) {
+    void saveAndBroadcastSelective(WsContext originContext, String propertyName, Object value) {
         logger.trace("Broadcasting PSC mutation - " + propertyName + ": " + value);
         saveModule();
         DataChangeService.getInstance()
                 .publishEvent(
-                        OutgoingUIEvent.wrappedOf(
-                                UIUpdateType.BROADCAST, "mutatePipeline", propertyName, value, originContext));
+                        OutgoingUIEvent.wrappedOf("mutatePipeline", propertyName, value, originContext));
     }
 
-    private void setCameraNickname(String newName) {
+    void setCameraNickname(String newName) {
         visionSource.getSettables().getConfiguration().nickname = newName;
         ntConsumer.updateCameraNickname(newName);
 

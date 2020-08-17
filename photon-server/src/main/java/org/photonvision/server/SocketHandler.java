@@ -70,7 +70,8 @@ public class SocketHandler {
 
     public void onConnect(WsConnectContext context) {
         context.session.setIdleTimeout(Long.MAX_VALUE); // TODO: determine better value
-        var host = context.session.getRemote().getInetSocketAddress().getHostName();
+        var insa = context.session.getRemote().getInetSocketAddress();
+        var host = insa.getAddress().toString() + ":" + insa.getPort();
         logger.info("New websocket connection from " + host);
         users.add(context);
         dcService.publishEvent(
@@ -79,7 +80,8 @@ public class SocketHandler {
     }
 
     protected void onClose(WsCloseContext context) {
-        var host = context.session.getRemote().getInetSocketAddress().getHostName();
+        var insa = context.session.getRemote().getInetSocketAddress();
+        var host = insa.getAddress().toString() + ":" + insa.getPort();
         var reason = context.reason() != null ? context.reason() : "Connection closed by client";
         logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         users.remove(context);
@@ -301,18 +303,24 @@ public class SocketHandler {
         }
     }
 
-    // TODO: change to use the DataFlow system
     private void sendMessage(Object message, WsContext user) throws JsonProcessingException {
         ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(message));
         user.send(b);
     }
 
-    // TODO: change to use the DataFlow system
     public void broadcastMessage(Object message, WsContext userToSkip)
             throws JsonProcessingException {
-        for (WsContext user : users) {
-            if (user != userToSkip) {
+        if (userToSkip == null) {
+            for (WsContext user : users) {
                 sendMessage(message, user);
+            }
+        } else {
+            var skipUserPort = userToSkip.session.getRemote().getInetSocketAddress().getPort();
+            for (WsContext user : users) {
+                var userPort = user.session.getRemote().getInetSocketAddress().getPort();
+                if (userPort != skipUserPort) {
+                    sendMessage(message, user);
+                }
             }
         }
     }

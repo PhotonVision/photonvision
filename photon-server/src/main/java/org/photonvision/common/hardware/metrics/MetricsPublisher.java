@@ -23,7 +23,6 @@ import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
-import org.photonvision.server.UIUpdateType;
 
 public class MetricsPublisher {
     private final HashMap<String, Double> metrics;
@@ -57,8 +56,7 @@ public class MetricsPublisher {
                             metrics.put("ramUtil", ramMetrics.getUsedRam());
 
                             DataChangeService.getInstance()
-                                    .publishEvent(
-                                            new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "metrics", metrics, null));
+                                    .publishEvent(new OutgoingUIEvent<>("metrics", metrics));
                         },
                         1000);
     }

@@ -54,7 +54,11 @@ public class Server {
                                             ws.onBinaryMessage(
                                                     ctx ->
                                                             logger.debug(
-                                                                    "Got WebSockets binary message from host " + ctx.host())));
+                                                                    () -> {
+                                                                        var insa = ctx.session.getRemote().getInetSocketAddress();
+                                                                        var host = insa.getAddress().toString() + ":" + insa.getPort();
+                                                                        return "Got WebSockets binary message from host " + host;
+                                                                    })));
                         });
 
         var socketHandler = SocketHandler.getInstance();

@@ -30,7 +30,6 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.server.SocketHandler;
-import org.photonvision.server.UIUpdateType;
 
 @SuppressWarnings("unused")
 public class Logger {
@@ -239,8 +238,7 @@ public class Logger {
             messageMap.put("logLevel", level.code);
             var superMap = new SocketHandler.UIMap();
             superMap.put("logMessage", messageMap);
-            DataChangeService.getInstance()
-                    .publishEvent(new OutgoingUIEvent<>(UIUpdateType.BROADCAST, "log", superMap, null));
+            DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>("log", superMap));
         }
     }
 
