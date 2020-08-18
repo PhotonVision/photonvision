@@ -59,7 +59,7 @@ public class HardwareManager {
                 });
 
         // Start hardware metrics thread
-        MetricsPublisher.getInstance().startTask();
+        if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
     /** Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue); */
