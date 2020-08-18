@@ -169,7 +169,7 @@ public class Main {
 
         ConfigManager.getInstance(); // init config manager
         NetworkManager.getInstance().initialize(false); // basically empty. todo: link to ConfigManager?
-        NetworkTablesManager.setClientMode("127.0.0.1");
+        NetworkTablesManager.getInstance().setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
         HashMap<VisionSource, List<CVPipelineSettings>> allSources = gatherSources();
 
