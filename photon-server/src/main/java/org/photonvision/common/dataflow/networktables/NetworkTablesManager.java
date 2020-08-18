@@ -20,9 +20,7 @@ package org.photonvision.common.dataflow.networktables;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-
 import java.util.function.Consumer;
-
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.logging.LogGroup;
@@ -35,10 +33,9 @@ public class NetworkTablesManager {
 
     public static final String kRootTableName = "/photonvision";
     public static final NetworkTable kRootTable =
-        NetworkTableInstance.getDefault().getTable(kRootTableName);
+            NetworkTableInstance.getDefault().getTable(kRootTableName);
 
-    private NetworkTablesManager() {
-    }
+    private NetworkTablesManager() {}
 
     private static NetworkTablesManager INSTANCE;
 
@@ -68,7 +65,7 @@ public class NetworkTablesManager {
                 logger.error("NT Connection has failed! Will retry in background.");
                 hasReportedConnectionFailure = true;
             } else if (logMessage.message.contains("connected")
-                && System.currentTimeMillis() - lastConnectMessageMillis > 125) {
+                    && System.currentTimeMillis() - lastConnectMessageMillis > 125) {
                 logger.info("NT Connected!");
                 hasReportedConnectionFailure = false;
                 lastConnectMessageMillis = System.currentTimeMillis();
@@ -98,8 +95,7 @@ public class NetworkTablesManager {
         if (ntInstance.isConnected()) {
             logger.info("[NetworkTablesManager] Connected to the robot!");
         } else {
-            logger.info(
-                "[NetworkTablesManager] Could NOT to the robot! Will retry in the background...");
+            logger.info("[NetworkTablesManager] Could NOT to the robot! Will retry in the background...");
         }
     }
 

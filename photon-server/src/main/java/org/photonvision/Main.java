@@ -169,7 +169,8 @@ public class Main {
 
         ConfigManager.getInstance(); // init config manager
         NetworkManager.getInstance().initialize(false); // basically empty. todo: link to ConfigManager?
-        NetworkTablesManager.getInstance().setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
+        NetworkTablesManager.getInstance()
+                .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
         HashMap<VisionSource, List<CVPipelineSettings>> allSources = gatherSources();
 
