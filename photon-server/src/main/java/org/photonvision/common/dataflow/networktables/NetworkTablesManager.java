@@ -21,7 +21,6 @@ import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.function.Consumer;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -46,13 +45,9 @@ public class NetworkTablesManager {
 
     private static final Logger logger = new Logger(NetworkTablesManager.class, LogGroup.General);
 
-    private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
+    public final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
 
     public boolean isServer = false;
-
-    private int getTeamNumber() {
-        return ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber;
-    }
 
     private static class NTLogger implements Consumer<LogMessage> {
 
@@ -95,7 +90,8 @@ public class NetworkTablesManager {
         if (ntInstance.isConnected()) {
             logger.info("[NetworkTablesManager] Connected to the robot!");
         } else {
-            logger.info("[NetworkTablesManager] Could NOT to the robot! Will retry in the background...");
+            logger.error(
+                    "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
         }
     }
 

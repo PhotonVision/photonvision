@@ -168,7 +168,8 @@ public class Main {
         }
 
         ConfigManager.getInstance(); // init config manager
-        NetworkManager.getInstance().initialize(false); // basically empty. todo: link to ConfigManager?
+        NetworkManager.getInstance().initialize(false);
+
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
