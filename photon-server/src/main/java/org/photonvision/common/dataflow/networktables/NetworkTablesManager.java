@@ -27,14 +27,15 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 
-// TODO refactor this to be a singleton
 public class NetworkTablesManager {
 
-    public static final String kRootTableName = "/photonvision";
-    public static final NetworkTable kRootTable =
-            NetworkTableInstance.getDefault().getTable(kRootTableName);
+    private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
+    private final String kRootTableName = "/photonvision";
+    public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
 
-    private NetworkTablesManager() {}
+    private NetworkTablesManager() {
+        ntInstance.addLogger(new NTLogger(), 0, 255); // to hide error messages
+    }
 
     private static NetworkTablesManager INSTANCE;
 
@@ -44,8 +45,6 @@ public class NetworkTablesManager {
     }
 
     private static final Logger logger = new Logger(NetworkTablesManager.class, LogGroup.General);
-
-    public final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
 
     public boolean isServer = false;
 
@@ -67,10 +66,6 @@ public class NetworkTablesManager {
                 ScriptManager.queueEvent(ScriptEventType.kNTConnected);
             }
         }
-    }
-
-    static {
-        NetworkTableInstance.getDefault().addLogger(new NTLogger(), 0, 255); // to hide error messages
     }
 
     public void setConfig(NetworkConfig config) {
