@@ -155,21 +155,24 @@ public class ColoredShapePipeline
                         settings.cameraCalibration, settings.cameraPitch, settings.targetModel);
         solvePNPPipe.setParams(solvePNPParams);
 
-        Draw2dTargetsPipe.Draw2dContoursParams draw2dContoursParams =
-                new Draw2dTargetsPipe.Draw2dContoursParams(settings.outputShowMultipleTargets);
-        draw2dContoursParams.showShape = true;
-        draw2dContoursParams.showMaximumBox = false;
-        draw2dContoursParams.showRotatedBox = false;
-        draw2DTargetsPipe.setParams(draw2dContoursParams);
+        Draw2dTargetsPipe.Draw2dTargetsParams draw2DTargetsParams =
+                new Draw2dTargetsPipe.Draw2dTargetsParams(
+                        settings.outputShouldDraw, settings.outputShowMultipleTargets);
+        draw2DTargetsParams.showShape = true;
+        draw2DTargetsParams.showMaximumBox = false;
+        draw2DTargetsParams.showRotatedBox = false;
+        draw2DTargetsPipe.setParams(draw2DTargetsParams);
 
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
-                        settings.offsetRobotOffsetMode, settings.offsetCalibrationPoint);
+                        settings.outputShouldDraw,
+                        settings.offsetRobotOffsetMode,
+                        settings.offsetCalibrationPoint);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dContoursParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
-                        settings.cameraCalibration, settings.targetModel);
+                        settings.outputShouldDraw, settings.cameraCalibration, settings.targetModel);
         draw3dTargetsPipe.setParams(draw3dContoursParams);
     }
 

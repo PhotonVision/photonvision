@@ -129,18 +129,23 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         settings.cornerDetectionAccuracyPercentage);
         cornerDetectionPipe.setParams(params);
 
-        Draw2dTargetsPipe.Draw2dContoursParams draw2dContoursParams =
-                new Draw2dTargetsPipe.Draw2dContoursParams(settings.outputShowMultipleTargets);
-        draw2dTargetsPipe.setParams(draw2dContoursParams);
+        Draw2dTargetsPipe.Draw2dTargetsParams draw2DTargetsParams =
+                new Draw2dTargetsPipe.Draw2dTargetsParams(
+                        settings.outputShouldDraw, settings.outputShowMultipleTargets);
+        draw2dTargetsPipe.setParams(draw2DTargetsParams);
 
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
-                        settings.offsetRobotOffsetMode, settings.offsetCalibrationPoint);
+                        settings.outputShouldDraw,
+                        settings.offsetRobotOffsetMode,
+                        settings.offsetCalibrationPoint);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dContoursParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
-                        frameStaticProperties.cameraCalibration, settings.targetModel);
+                        settings.outputShouldDraw,
+                        frameStaticProperties.cameraCalibration,
+                        settings.targetModel);
         draw3dTargetsPipe.setParams(draw3dContoursParams);
 
         var solvePNPParams =

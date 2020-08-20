@@ -35,18 +35,20 @@ public class Draw2dCrosshairPipe
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
+        if (!params.shouldDraw) return null;
+
         Mat image = in.getLeft();
 
-        if (params.m_showCrosshair) {
+        if (params.showCrosshair) {
             double x = image.cols() / 2.0;
             double y = image.rows() / 2.0;
             double scale = image.cols() / 32.0;
 
-            switch (params.m_calibrationMode) {
+            switch (params.calibrationMode) {
                 case Single:
-                    if (!params.m_calibrationPoint.isEmpty()) {
-                        x = params.m_calibrationPoint.getFirst();
-                        y = params.m_calibrationPoint.getSecond();
+                    if (!params.calibrationPoint.isEmpty()) {
+                        x = params.calibrationPoint.getFirst();
+                        y = params.calibrationPoint.getSecond();
                     }
                     break;
                 case Dual:
@@ -59,22 +61,25 @@ public class Draw2dCrosshairPipe
             Point yMax = new Point(x, y + scale);
             Point yMin = new Point(x, y - scale);
 
-            Imgproc.line(image, xMax, xMin, ColorHelper.colorToScalar(params.m_crosshairColor));
-            Imgproc.line(image, yMax, yMin, ColorHelper.colorToScalar(params.m_crosshairColor));
+            Imgproc.line(image, xMax, xMin, ColorHelper.colorToScalar(params.crosshairColor));
+            Imgproc.line(image, yMax, yMin, ColorHelper.colorToScalar(params.crosshairColor));
         }
         return null;
     }
 
     public static class Draw2dCrosshairParams {
-        private final RobotOffsetPointMode m_calibrationMode;
-        private final DoubleCouple m_calibrationPoint;
-        private final boolean m_showCrosshair = true;
-        private final Color m_crosshairColor = Color.GREEN;
+        public boolean showCrosshair = true;
+        public Color crosshairColor = Color.GREEN;
+
+        public final boolean shouldDraw;
+        public final RobotOffsetPointMode calibrationMode;
+        public final DoubleCouple calibrationPoint;
 
         public Draw2dCrosshairParams(
-                RobotOffsetPointMode calibrationMode, DoubleCouple calibrationPoint) {
-            m_calibrationMode = calibrationMode;
-            m_calibrationPoint = calibrationPoint;
+                boolean shouldDraw, RobotOffsetPointMode calibrationMode, DoubleCouple calibrationPoint) {
+            this.shouldDraw = shouldDraw;
+            this.calibrationMode = calibrationMode;
+            this.calibrationPoint = calibrationPoint;
         }
     }
 }
