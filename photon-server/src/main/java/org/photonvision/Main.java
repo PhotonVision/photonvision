@@ -30,8 +30,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
-import org.photonvision.common.util.Platform;
-import org.photonvision.common.util.TestUtils;
 import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.ContourGroupingMode;

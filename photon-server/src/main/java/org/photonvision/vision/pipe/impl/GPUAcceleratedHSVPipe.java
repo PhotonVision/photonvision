@@ -17,24 +17,26 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import org.photonvision.vision.pipe.CVPipe;
 import org.opencv.core.Mat;
+import org.photonvision.vision.pipe.CVPipe;
 
 public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
 
-  private final GPUAccelerator accelerator;
+    private final GPUAccelerator accelerator;
 
-  public GPUAcceleratedHSVPipe(GPUAccelerator.TransferMode pboMode) {
-    if (pboMode == GPUAccelerator.TransferMode.ZERO_COPY_OMX) {
-      throw new IllegalArgumentException("The ZERO_COPY_OMX transfer mode is only supported with the GPUAcceleratedFrameProvider");
+    public GPUAcceleratedHSVPipe(GPUAccelerator.TransferMode pboMode) {
+        if (pboMode == GPUAccelerator.TransferMode.ZERO_COPY_OMX) {
+            throw new IllegalArgumentException(
+                    "The ZERO_COPY_OMX transfer mode is only supported with the GPUAcceleratedFrameProvider");
+        }
+
+        // 1280x720 is a reasonable starting resolution... It might be changed later if the user
+        // switches resolutions.
+        accelerator = new GPUAccelerator(pboMode, 1280, 720);
     }
 
-    // 1280x720 is a reasonable starting resolution... It might be changed later if the user switches resolutions.
-    accelerator = new GPUAccelerator(pboMode, 1280, 720);
-  }
-
-  @Override
-  public Mat process(Mat in) {
-    return accelerator.process(in, params.getHsvLower(), params.getHsvUpper());
-  }
+    @Override
+    public Mat process(Mat in) {
+        return accelerator.process(in, params.getHsvLower(), params.getHsvUpper());
+    }
 }

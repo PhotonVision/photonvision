@@ -127,24 +127,25 @@ public class BenchmarkTest {
         // Uncomment to run on a single frame
         if (true) {
             var pipe = new GPUAcceleratedHSVPipe(GPUAccelerator.TransferMode.GL_READ_PIXELS);
-            pipe.setParams(new HSVPipe.HSVParams(new IntegerCouple(), new IntegerCouple(), new IntegerCouple()) {
-                @Override
-                public Scalar getHsvLower() {
-                    return new Scalar(0.4, 0.8, 0.8);
-                }
+            pipe.setParams(
+                    new HSVPipe.HSVParams(new IntegerCouple(), new IntegerCouple(), new IntegerCouple()) {
+                        @Override
+                        public Scalar getHsvLower() {
+                            return new Scalar(0.4, 0.8, 0.8);
+                        }
 
-                @Override
-                public Scalar getHsvUpper() {
-                    return new Scalar(0.85, 1.0, 1.0);
-                }
-            }); // new HSVPipe.HSVParams(new Scalar(0.4, 0.8, 0.8), new Scalar(0.85, 1.0, 1.0))
+                        @Override
+                        public Scalar getHsvUpper() {
+                            return new Scalar(0.85, 1.0, 1.0);
+                        }
+                    }); // new HSVPipe.HSVParams(new Scalar(0.4, 0.8, 0.8), new Scalar(0.85, 1.0, 1.0))
             var path = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center_720p);
             var mat = pipe.process(Imgcodecs.imread(path.toString()));
             Imgcodecs.imwrite("i2.png", mat);
-//            mat = pipe.process(Imgcodecs.imread(path.toString()));
-//            Imgcodecs.imwrite("i3.png", mat);
-//            mat = pipe.process(Imgcodecs.imread(path.toString()));
-//            Imgcodecs.imwrite("i4.png", mat);
+            //            mat = pipe.process(Imgcodecs.imread(path.toString()));
+            //            Imgcodecs.imwrite("i3.png", mat);
+            //            mat = pipe.process(Imgcodecs.imread(path.toString()));
+            //            Imgcodecs.imwrite("i4.png", mat);
         } else {
             var pipeline = new ReflectivePipeline();
             pipeline.getSettings().hsvHue.set(60, 100);
