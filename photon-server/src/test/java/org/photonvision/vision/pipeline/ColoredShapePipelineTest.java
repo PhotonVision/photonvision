@@ -111,7 +111,7 @@ public class ColoredShapePipelineTest {
         settings.hsvHue.set(0, 100);
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(100, 255);
-        settings.outputShowThresholded = true;
+        settings.outputShouldDraw = true;
         settings.outputShowMultipleTargets = true;
         settings.contourGroupingMode = ContourGroupingMode.Single;
         settings.contourIntersection = ContourIntersectionDirection.Up;
