@@ -10,6 +10,8 @@ public class PicamJNI {
 
     // Everything here is static because multiple picams are unsupported at the hardware level
 
+    public static native long initVCSMInfo(int width, int height);
+
     /**
      * Gives the native code a handle to an EGLImage, which is a texture that's filled with camera data to be processed.
      *
@@ -23,6 +25,8 @@ public class PicamJNI {
      * @return true on error.
      */
     public static native boolean createCamera(int width, int height, int fps);
+
+    public static native void waitForOMXFillBufferDone();
 
     /**
      * Destroys OpenMAX and EGL contexts. Called once for each video mode change *before* createCamera.

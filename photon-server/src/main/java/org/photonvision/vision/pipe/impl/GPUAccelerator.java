@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2020 Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.vision.pipe.impl;
 
 import com.jogamp.common.nio.Buffers;
@@ -65,10 +82,8 @@ public class GPUAccelerator {
           "  vec3 col = texture2D(texture0, uv).bgr;",
           // Only the first value in the vec4 gets used for GL_RED, and only the last value gets used for GL_ALPHA
           "  gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 1.0, 1.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);",
-//          "  gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);",
           "}"
   );
-  private static final int k_startingWidth = 960, k_startingHeight = 720;
   private static final float[] k_vertexPositions = {
           // Set up a quad that covers the screen
           -1f, +1f,
@@ -77,12 +92,13 @@ public class GPUAccelerator {
           +1f, -1f
   };
   private static final int k_positionVertexAttribute = 0; // ID for the vertex shader position variable
+  private static final int EGL_IMAGE_BRCM_VCSM = 0x99930C3;
 
   public enum TransferMode {
-    NONE,
+    GL_READ_PIXELS,
     SINGLE_BUFFERED,
     DOUBLE_BUFFERED,
-    DIRECT_OMX
+    ZERO_COPY_OMX
   }
 
   private final IntBuffer
@@ -100,24 +116,27 @@ public class GPUAccelerator {
   // The resolution uniform holds the current image resolution
   // The lower and upper uniforms hold the lower and upper HSV limits for thresholding
   private final int programId, textureUniformId, resolutionUniformId, lowerUniformId, upperUniformId;
+  private final int startingWidth, startingHeight;
 
   private final Logger logger = new Logger(GPUAccelerator.class, LogGroup.General);
 
   private byte[] inputBytes, outputBytes;
-  private Mat outputMat = new Mat(k_startingHeight, k_startingWidth, CvType.CV_8UC1); // Only used in PBO transfer modes
+  private Mat outputMat; // Only used in PBO transfer modes
   private int previousWidth = -1, previousHeight = -1;
   private int
           unpackIndex = 0, unpackNextIndex = 0,
           packIndex = 0, packNextIndex = 0;
 
-  public GPUAccelerator(TransferMode transferMode) {
+  public GPUAccelerator(TransferMode transferMode, int startingWidth, int startingHeight) {
     this.transferMode = transferMode;
+    this.startingWidth = startingWidth;
+    this.startingHeight = startingHeight;
 
     // Set up GL profile and ask for specific capabilities
-    profile = GLProfile.get((transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) ? GLProfile.GLES2 : GLProfile.GLES3);
+    profile = GLProfile.get((transferMode == TransferMode.GL_READ_PIXELS || transferMode == TransferMode.ZERO_COPY_OMX) ? GLProfile.GLES2 : GLProfile.GLES3);
     final var capabilities = new GLCapabilities(profile);
     capabilities.setHardwareAccelerated(true);
-    if (transferMode == TransferMode.DIRECT_OMX) {
+    if (transferMode == TransferMode.ZERO_COPY_OMX) {
       // The VideoCore IV closed source driver only works with offscreen PBuffers, not an offscreen FBO
       // The open source driver (Mesa) *does* work with offscreen PBuffers, but OMX doesn't work with Mesa, so we use PBuffers
       capabilities.setPBuffer(true);
@@ -133,7 +152,7 @@ public class GPUAccelerator {
 
     // Set up the offscreen area we're going to draw to
     final EGLDrawableFactory factory = (EGLDrawableFactory) EGLDrawableFactory.getEGLFactory();
-    drawable = factory.createOffscreenAutoDrawable(factory.getDefaultDevice(), capabilities, new DefaultGLCapabilitiesChooser(), k_startingWidth, k_startingHeight);
+    drawable = factory.createOffscreenAutoDrawable(factory.getDefaultDevice(), capabilities, new DefaultGLCapabilitiesChooser(), startingWidth, startingHeight);
     drawable.display();
     drawable.getContext().makeCurrent();
 
@@ -142,17 +161,17 @@ public class GPUAccelerator {
     logger.trace(sb.toString());
 
     // Get an OpenGL context; OpenGL ES 2.0 and OpenGL 2.0 are compatible with all the coprocs we care about but not compatible with PBOs. Open GL ES 3.0 and OpenGL 4.0 are compatible with select coprocs *and* PBOs
-    gl = (transferMode == TransferMode.NONE || transferMode == TransferMode.DIRECT_OMX) ? drawable.getGL().getGLES2() : drawable.getGL().getGLES3();
+    gl = (transferMode == TransferMode.GL_READ_PIXELS || transferMode == TransferMode.ZERO_COPY_OMX) ? drawable.getGL().getGLES2() : drawable.getGL().getGLES3();
     programId = gl.glCreateProgram();
 
-    if (transferMode == TransferMode.NONE && !gl.glGetString(GL_EXTENSIONS).contains("GL_EXT_texture_rg")) {
+    if (transferMode == TransferMode.GL_READ_PIXELS && !gl.glGetString(GL_EXTENSIONS).contains("GL_EXT_texture_rg")) {
       logger.warn("OpenGL ES 2.0 implementation does not have the 'GL_EXT_texture_rg' extension, falling back to GL_ALPHA instead of GL_RED output format");
       outputFormat = GL_ALPHA;
     } else {
       outputFormat = GL_RED;
     }
 
-    if (transferMode != TransferMode.DIRECT_OMX) {
+    if (transferMode != TransferMode.ZERO_COPY_OMX) {
       var fboDrawable = (GLOffscreenAutoDrawableImpl.FBOImpl) drawable;
 
       // JOGL creates a framebuffer color attachment that has RGB set as the format, which is not appropriate for us because we want a single-channel format.
@@ -166,7 +185,7 @@ public class GPUAccelerator {
       var colorBufferIds = GLBuffers.newDirectIntBuffer(1);
       gl.glGenTextures(1, colorBufferIds);
       gl.glBindTexture(GL_TEXTURE_2D, colorBufferIds.get(0));
-      gl.glTexImage2D(GL_TEXTURE_2D, 0, outputFormat == GL_RED ? GL_R8 : GL_ALPHA8, k_startingWidth, k_startingHeight, 0, outputFormat, GL_UNSIGNED_BYTE, null);
+      gl.glTexImage2D(GL_TEXTURE_2D, 0, outputFormat == GL_RED ? GL_R8 : GL_ALPHA8, startingWidth, startingHeight, 0, outputFormat, GL_UNSIGNED_BYTE, null);
       gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
       // Attach the texture to the framebuffer
@@ -175,6 +194,38 @@ public class GPUAccelerator {
       // Cleanup
       gl.glBindTexture(GL_TEXTURE_2D, 0);
       fboDrawable.getFBObject(GL_FRONT).unbind(gl);
+    } else {
+      // We need to generate a framebuffer and attach an EGLImage set up as a texture to it; the EGLImage must be of the type EGL_IMAGE_BRCM_VCSM so that we can use VCSM to map the images contents without copying
+
+      // First generate our framebuffer and bind it
+      var vcsmFbId = GLBuffers.newDirectIntBuffer(1);
+      gl.glGenFramebuffers(1, vcsmFbId);
+      gl.glBindFramebuffer(GL_FRAMEBUFFER, vcsmFbId.get(0));
+
+      // Then generate the texture that we'll bind our EGLImage to
+      var vcsmFbTextureId = GLBuffers.newDirectIntBuffer(1);
+      gl.glGenTextures(1, vcsmFbTextureId);
+      gl.glBindTexture(GL_TEXTURE_2D, vcsmFbTextureId.get(0));
+      gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+      gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+      // Create our VCSM info struct
+      long vcsmInfo = PicamJNI.initVCSMInfo(startingWidth, startingHeight);
+      if (vcsmInfo == 0) {
+        throw new RuntimeException("Couldn't create VCSM info struct (resolution too high?)");
+      }
+
+      // Create our EGLImage bound to a pointer to a VCSM info struct
+      EGLContext eglContext = (EGLContext) gl.getContext();
+      EGLExt eglExt = eglContext.getEGLExt();
+      var vcsmFbEglImage = eglExt.eglCreateImageKHR(drawable.getNativeSurface().getDisplayHandle(), EGL.EGL_NO_CONTEXT, EGL_IMAGE_BRCM_VCSM, vcsmInfo, null);
+      if (vcsmFbEglImage == EGLExt.EGL_NO_IMAGE) {
+        throw new RuntimeException("Failed to create VCSM EGLImage");
+      }
+      gl.glEGLImageTargetTexture2DOES(GL_TEXTURE_2D, vcsmFbEglImage);
+
+      // Bind our texture to our framebuffer
+      gl.glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, vcsmFbTextureId.get(0), 0);
     }
 
     // Check that the FBO is attached
@@ -230,28 +281,26 @@ public class GPUAccelerator {
     gl.glUseProgram(programId);
 
     // Initialize projection environment
-    gl.glViewport(0, 0, k_startingWidth, k_startingHeight);
+    gl.glViewport(0, 0, startingWidth, startingHeight);
 
     // Set up our texture
     texture = new Texture(GL_TEXTURE_2D);
     texture.bind(gl);
-    if (transferMode == TransferMode.DIRECT_OMX) {
-      gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, k_startingWidth, k_startingHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
+    if (transferMode == TransferMode.ZERO_COPY_OMX) {
+      gl.glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, startingWidth, startingHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, null);
     }
     texture.setTexParameteri(gl, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     texture.setTexParameteri(gl, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     texture.setTexParameteri(gl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     texture.setTexParameteri(gl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    if (transferMode == TransferMode.DIRECT_OMX) {
+    if (transferMode == TransferMode.ZERO_COPY_OMX) {
       // First we get pointers to our current EGLDisplay, EGLSurface, and EGLContext
-      logger.info("Start DIRECT_OMX init");
       // We don't have to call any of the EGL init functions, all the EGL devices are premade
+
       // The EGLContext provides a gateway to what we want
       EGLContext eglContext = (EGLContext) gl.getContext();
       EGLExt eglExt = eglContext.getEGLExt();
-
-      logger.info("Handles: " + drawable.getNativeSurface().getDisplayHandle() + ", " + eglContext.getHandle());
 
       // Next we use our EGLExt to map our image texture to EGL
       var params = Buffers.newDirectIntBuffer(1);
@@ -275,7 +324,7 @@ public class GPUAccelerator {
       }
 
       // Start the OMX capture thread in native code
-      err = PicamJNI.createCamera(k_startingWidth, k_startingHeight, 90);
+      err = PicamJNI.createCamera(startingWidth, startingHeight, 90);
       if (err){
         throw new RuntimeException("Couldn't create native OMX capture thread");
       }
@@ -304,14 +353,16 @@ public class GPUAccelerator {
     gl.glBufferData(GL_ARRAY_BUFFER, vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
 
     if (transferMode == TransferMode.SINGLE_BUFFERED || transferMode == TransferMode.DOUBLE_BUFFERED) {
+      outputMat = new Mat(startingHeight, startingWidth, CvType.CV_8UC1);
+
       // Set up pixel unpack buffer (a PBO to transfer image data to the GPU)
       gl.glGenBuffers(2, unpackPBOIds);
 
       gl.glBindBuffer(GLES3.GL_PIXEL_UNPACK_BUFFER, unpackPBOIds.get(0));
-      gl.glBufferData(GLES3.GL_PIXEL_UNPACK_BUFFER, k_startingHeight * k_startingWidth * 3, null, GLES3.GL_STREAM_DRAW);
+      gl.glBufferData(GLES3.GL_PIXEL_UNPACK_BUFFER, startingHeight * startingWidth * 3, null, GLES3.GL_STREAM_DRAW);
       if (transferMode == TransferMode.DOUBLE_BUFFERED) {
         gl.glBindBuffer(GLES3.GL_PIXEL_UNPACK_BUFFER, unpackPBOIds.get(1));
-        gl.glBufferData(GLES3.GL_PIXEL_UNPACK_BUFFER, k_startingHeight * k_startingWidth * 3, null, GLES3.GL_STREAM_DRAW);
+        gl.glBufferData(GLES3.GL_PIXEL_UNPACK_BUFFER, startingHeight * startingWidth * 3, null, GLES3.GL_STREAM_DRAW);
       }
       gl.glBindBuffer(GLES3.GL_PIXEL_UNPACK_BUFFER, 0);
 
@@ -319,10 +370,10 @@ public class GPUAccelerator {
       gl.glGenBuffers(2, packPBOIds);
 
       gl.glBindBuffer(GLES3.GL_PIXEL_PACK_BUFFER, packPBOIds.get(0));
-      gl.glBufferData(GLES3.GL_PIXEL_PACK_BUFFER, k_startingHeight * k_startingWidth, null, GLES3.GL_STREAM_READ);
+      gl.glBufferData(GLES3.GL_PIXEL_PACK_BUFFER, startingHeight * startingWidth, null, GLES3.GL_STREAM_READ);
       if (transferMode == TransferMode.DOUBLE_BUFFERED) {
         gl.glBindBuffer(GLES3.GL_PIXEL_PACK_BUFFER, packPBOIds.get(1));
-        gl.glBufferData(GLES3.GL_PIXEL_PACK_BUFFER, k_startingHeight * k_startingWidth, null, GLES3.GL_STREAM_READ);
+        gl.glBufferData(GLES3.GL_PIXEL_PACK_BUFFER, startingHeight * startingWidth, null, GLES3.GL_STREAM_READ);
       }
       gl.glBindBuffer(GLES3.GL_PIXEL_PACK_BUFFER, 0);
     }
@@ -357,65 +408,49 @@ public class GPUAccelerator {
     return shaderId;
   }
 
-  private long lastTime = 0;
+  public void redrawGL(Scalar hsvLower, Scalar hsvUpper) {
+    PicamJNI.waitForOMXFillBufferDone();
 
-  public Mat redrawGL(Scalar hsvLower, Scalar hsvUpper, int width, int height) {
-    long t0 = System.currentTimeMillis();
+    // Set the viewport to the correct size and clear the screen
+    gl.glViewport(0, 0, startingWidth, startingHeight);
+    gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     // Use the shaders we set up in the constructor
     gl.glUseProgram(programId);
-    System.out.println("glUseProgram: " + (System.currentTimeMillis() - t0));
 
-    long t2 = System.currentTimeMillis();
     // Load and bind our image as a 2D texture
     gl.glActiveTexture(GL_TEXTURE0);
     texture.enable(gl);
     texture.bind(gl);
-    System.out.println("glActiveTexture: " + (System.currentTimeMillis() - t2));
 
-
-    long t1 = System.currentTimeMillis();
     // Reset the fullscreen quad
     gl.glBindBuffer(GL_ARRAY_BUFFER, vertexVBOIds.get(0));
     gl.glVertexAttribPointer(k_positionVertexAttribute, 2, GL_FLOAT, false, 0, 0);
     gl.glEnableVertexAttribArray(k_positionVertexAttribute);
     gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-    System.out.println("glVertexAttribPointer: " + (System.currentTimeMillis() - t1));
+
     // Texture is presumed to contain valid camera data at this point because it points to memory managed by OpenMAX
 
-    long t3 = System.currentTimeMillis();
     // Put values in a uniform holding the image resolution
-    gl.glUniform2f(resolutionUniformId, width, height);
+    gl.glUniform2f(resolutionUniformId, startingWidth, startingHeight);
 
     // Put values in threshold uniforms
     var lowr = hsvLower.val;
     var upr = hsvUpper.val;
-    gl.glUniform3f(lowerUniformId, (float) lowr[0], (float) lowr[1], (float) lowr[2]);
-    gl.glUniform3f(upperUniformId, (float) upr[0], (float) upr[1], (float) upr[2]);
-    System.out.println("glUniform*: " + (System.currentTimeMillis() - t3));
+    gl.glUniform3f(lowerUniformId, (float) lowr[0] / 255, (float) lowr[1] / 255, (float) lowr[2] / 255);
+    gl.glUniform3f(upperUniformId, (float) upr[0] / 255, (float) upr[1] / 255, (float) upr[2] / 255);
 
-    long t5 = System.currentTimeMillis();
     // Draw the fullscreen quad
     gl.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    System.out.println("glDrawArrays: " + (System.currentTimeMillis() - t5));
 
     // Cleanup
     texture.disable(gl);
     gl.glDisableVertexAttribArray(k_positionVertexAttribute);
     gl.glUseProgram(0);
-
-    ByteBuffer buffer = GLBuffers.newDirectByteBuffer(width * height);
-    gl.glReadPixels(0, 0, width, height, GL_ALPHA, GL_UNSIGNED_BYTE, buffer);
-//    for (int i = 0; i < width * height; i += 4) {
-//      System.out.println(buffer.get(0) + ", " + buffer.get(1) + ", " + buffer.get(2));
-//    }
-    long time = System.currentTimeMillis();
-    System.out.println("total: " + (time - lastTime));
-    lastTime = time;
-    return null;//new Mat(height, width, CvType.CV_8UC4, buffer);
   }
 
   protected Mat process(Mat in, Scalar hsvLower, Scalar hsvUpper) {
-    if (transferMode == TransferMode.DIRECT_OMX) throw new RuntimeException("This method does not support DIRECT_OMX mode; use redrawGL instead along with PicamJNI::grabFrame");
+    if (transferMode == TransferMode.ZERO_COPY_OMX) throw new RuntimeException("This method does not support DIRECT_OMX mode; use redrawGL instead along with PicamJNI::grabFrame");
 
     if (in.width() != previousWidth && in.height() != previousHeight) {
       logger.debug("Resizing OpenGL viewport, byte buffers, and PBOs");
@@ -429,9 +464,9 @@ public class GPUAccelerator {
       inputBytes = new byte[in.width() * in.height() * 3];
 
       outputBytes = new byte[in.width() * in.height()];
-      outputMat = new Mat(k_startingHeight, k_startingWidth, CvType.CV_8UC1);
+      outputMat = new Mat(startingHeight, startingWidth, CvType.CV_8UC1);
 
-      if (transferMode != TransferMode.NONE) {
+      if (transferMode != TransferMode.GL_READ_PIXELS) {
         gl.glBindBuffer(GLES3.GL_PIXEL_PACK_BUFFER, packPBOIds.get(0));
         gl.glBufferData(GLES3.GL_PIXEL_PACK_BUFFER, in.width() * in.height(), null, GLES3.GL_STREAM_READ);
 
@@ -463,7 +498,7 @@ public class GPUAccelerator {
 
     // Load our image into the texture
     in.get(0, 0, inputBytes);
-    if (transferMode == TransferMode.NONE) {
+    if (transferMode == TransferMode.GL_READ_PIXELS) {
       ByteBuffer buf = ByteBuffer.wrap(inputBytes);
       // (We're actually taking in BGR even though this says RGB; it's much easier and faster to switch it around in the fragment shader)
       texture.updateImage(gl, new TextureData(profile, GL_RGB, in.width(), in.height(), 0, GL_RGB, GL_UNSIGNED_BYTE, false, false, false, buf, null));
@@ -506,7 +541,7 @@ public class GPUAccelerator {
     gl.glDisableVertexAttribArray(k_positionVertexAttribute);
     gl.glUseProgram(0);
 
-    if (transferMode == TransferMode.NONE) {
+    if (transferMode == TransferMode.GL_READ_PIXELS) {
       return saveMatNoPBO(gl, in.width(), in.height());
     } else {
       return saveMatPBO((GLES3) gl, in.width(), in.height(), transferMode == TransferMode.DOUBLE_BUFFERED);

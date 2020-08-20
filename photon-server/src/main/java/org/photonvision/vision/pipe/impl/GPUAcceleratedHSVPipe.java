@@ -1,33 +1,36 @@
+/*
+ * Copyright (C) 2020 Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.vision.pipe.impl;
 
-import org.photonvision.common.logging.LogGroup;
-import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipe.CVPipe;
-import com.jogamp.opengl.*;
-import com.jogamp.opengl.util.GLBuffers;
-import com.jogamp.opengl.util.texture.Texture;
-import com.jogamp.opengl.util.texture.TextureData;
-import jogamp.opengl.GLOffscreenAutoDrawableImpl;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-
-import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
-import static com.jogamp.opengl.GL.*;
-import static com.jogamp.opengl.GL2ES2.*;
 
 public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
 
   private final GPUAccelerator accelerator;
 
   public GPUAcceleratedHSVPipe(GPUAccelerator.TransferMode pboMode) {
-    if (pboMode == GPUAccelerator.TransferMode.DIRECT_OMX) {
-      throw new IllegalArgumentException("The DIRECT_OMX transfer mode is only supported with the GPUAcceleratedFrameProvider");
+    if (pboMode == GPUAccelerator.TransferMode.ZERO_COPY_OMX) {
+      throw new IllegalArgumentException("The ZERO_COPY_OMX transfer mode is only supported with the GPUAcceleratedFrameProvider");
     }
 
-    accelerator = new GPUAccelerator(pboMode);
+    // 1280x720 is a reasonable starting resolution... It might be changed later if the user switches resolutions.
+    accelerator = new GPUAccelerator(pboMode, 1280, 720);
   }
 
   @Override

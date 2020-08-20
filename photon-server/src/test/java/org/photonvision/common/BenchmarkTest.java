@@ -126,7 +126,7 @@ public class BenchmarkTest {
     public void ReflectiveGPU1920x1440Benchmark() {
         // Uncomment to run on a single frame
         if (true) {
-            var pipe = new GPUAcceleratedHSVPipe(GPUAccelerator.TransferMode.NONE);
+            var pipe = new GPUAcceleratedHSVPipe(GPUAccelerator.TransferMode.GL_READ_PIXELS);
             pipe.setParams(new HSVPipe.HSVParams(new IntegerCouple(), new IntegerCouple(), new IntegerCouple()) {
                 @Override
                 public Scalar getHsvLower() {
