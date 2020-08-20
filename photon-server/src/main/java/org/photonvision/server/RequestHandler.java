@@ -77,7 +77,7 @@ public class RequestHandler {
         ConfigManager.getInstance().setNetworkSettings(networkConfig);
         ConfigManager.getInstance().requestSave();
         NetworkManager.getInstance().reinitialize();
-        NetworkTablesManager.setClientMode(null); // TODO
+        NetworkTablesManager.getInstance().setConfig(networkConfig);
 
         logger.info("Responding to general settings with http 200");
         context.status(200);
