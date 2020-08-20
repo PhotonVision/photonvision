@@ -184,6 +184,7 @@
                     // That `map` calls are to make sure that we don't let any undefined/null values slip in
                     this.currentFunction = undefined;
                     this.$store.state.colorPicking = false;
+                    this.handlePipelineUpdate("outputShouldDraw", true);
 
                     s.hsvHue = [hsvArray[0][0], hsvArray[1][0]];
                     s.hsvSaturation = [hsvArray[0][1], hsvArray[1][1]];
@@ -219,6 +220,7 @@
                         break;
                 }
                 this.$store.state.colorPicking = true;
+                this.handlePipelineUpdate("outputShouldDraw", false);
             }
         }
     }

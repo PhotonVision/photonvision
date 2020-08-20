@@ -70,6 +70,7 @@ export default new Vuex.Store({
                     contourGroupingMode: 0,
                     contourIntersection: 0,
                     contourSortMode: 0,
+                    outputShouldDraw: true,
                     outputShowMultipleTargets: false,
                     offsetRobotOffsetMode: 0,
                     solvePNPEnabled: false,
