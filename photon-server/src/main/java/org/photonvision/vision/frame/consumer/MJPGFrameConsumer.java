@@ -25,10 +25,9 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameConsumer;
 import org.photonvision.vision.frame.FrameDivisor;
 
-public class MJPGFrameConsumer implements FrameConsumer {
+public class MJPGFrameConsumer {
 
     private final CvSource cvSource;
     private final MjpegServer mjpegServer;
@@ -48,7 +47,6 @@ public class MJPGFrameConsumer implements FrameConsumer {
         this.divisor = divisor;
     }
 
-    @Override
     public void accept(Frame frame) {
         if (frame != null && !frame.image.getMat().empty()) {
             if (divisor != FrameDivisor.NONE) {
