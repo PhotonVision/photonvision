@@ -37,8 +37,6 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
-import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -58,7 +56,7 @@ public class VisionModule {
     protected final VisionSource visionSource;
     private final VisionRunner visionRunner;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
-    private final LinkedList<FrameConsumer> frameConsumers = new LinkedList<>();
+    private final LinkedList<CVPipelineResultConsumer> fpsLimitedResultConsumers = new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
     protected final int moduleIndex;
@@ -99,8 +97,8 @@ public class VisionModule {
         dashboardInputStreamer =
                 new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input");
 
-        addResultConsumer(result -> dashboardInputStreamer.accept(result.inputFrame));
-        addResultConsumer(result -> dashboardOutputStreamer.accept(result.outputFrame));
+        fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
+        fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
 
         ntConsumer =
                 new NTDataPublisher(
@@ -250,15 +248,16 @@ public class VisionModule {
         ntConsumer.updateCameraNickname(newName);
 
         // rename streams
-        frameConsumers.remove(dashboardOutputStreamer);
-        frameConsumers.remove(dashboardInputStreamer);
+        fpsLimitedResultConsumers.clear();
+
         dashboardOutputStreamer =
                 new MJPGFrameConsumer(
                         visionSource.getSettables().getConfiguration().uniqueName + "-output");
         dashboardInputStreamer =
                 new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input");
-        frameConsumers.add(dashboardOutputStreamer);
-        frameConsumers.add(dashboardInputStreamer);
+
+        fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
+        fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
     }
 
     public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
@@ -327,9 +326,7 @@ public class VisionModule {
 
     private void consumeResult(CVPipelineResult result) {
         consumePipelineResult(result);
-
-        var frame = result.outputFrame;
-        consumeFrame(frame);
+        consumeFpsLimitedResult(result);
 
         result.release();
     }
@@ -340,10 +337,10 @@ public class VisionModule {
         }
     }
 
-    private void consumeFrame(Frame frame) {
+    private void consumeFpsLimitedResult(CVPipelineResult result) {
         if (System.currentTimeMillis() - lastFrameConsumeMillis > 1000 / StreamFPSCap) {
-            for (var frameConsumer : frameConsumers) {
-                frameConsumer.accept(frame);
+            for (var c : fpsLimitedResultConsumers) {
+                c.accept(result);
             }
             lastFrameConsumeMillis = System.currentTimeMillis();
         }
