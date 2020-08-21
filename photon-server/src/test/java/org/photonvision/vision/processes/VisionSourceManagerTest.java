@@ -17,19 +17,15 @@
 
 package org.photonvision.vision.processes;
 
-import edu.wpi.cscore.UsbCameraInfo;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.cscore.UsbCameraInfo;
 import java.util.ArrayList;
-import java.util.List;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.vision.camera.USBCameraSource;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class VisionSourceManagerTest {
     @BeforeEach
@@ -55,7 +51,8 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownUsbCameras.contains(info1));
         assertEquals(1, inst.unmatchedLoadedConfigs.size());
 
-        UsbCameraInfo info2 = new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
+        UsbCameraInfo info2 =
+                new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
         infoList.add(info2);
 
         inst.tryMatchUSBCamImpl();

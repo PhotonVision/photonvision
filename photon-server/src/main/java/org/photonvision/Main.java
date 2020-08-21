@@ -18,11 +18,9 @@
 package org.photonvision;
 
 import edu.wpi.cscore.CameraServerCvJNI;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -58,10 +56,10 @@ public class Main {
         options.addOption("h", "help", false, "Show this help text and exit");
         if (!isRelease) {
             options.addOption(
-                "t",
-                "test-mode",
-                false,
-                "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
+                    "t",
+                    "test-mode",
+                    false,
+                    "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
         }
 
         CommandLineParser parser = new DefaultParser();
@@ -89,7 +87,7 @@ public class Main {
         var collectedSources = new HashMap<VisionSource, List<CVPipelineSettings>>();
 
         var camConf2019 =
-            new CameraConfiguration("WPI2019", TestUtils.getTestMode2019ImagePath().toString());
+                new CameraConfiguration("WPI2019", TestUtils.getTestMode2019ImagePath().toString());
         camConf2019.FOV = TestUtils.WPI2019Image.FOV;
         camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
@@ -103,7 +101,7 @@ public class Main {
         var fvs2019 = new FileVisionSource(camConf2019);
 
         var camConf2020 =
-            new CameraConfiguration("WPI2020", TestUtils.getTestMode2020ImagePath().toString());
+                new CameraConfiguration("WPI2020", TestUtils.getTestMode2020ImagePath().toString());
         camConf2020.FOV = TestUtils.WPI2020Image.FOV;
         camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
@@ -120,7 +118,7 @@ public class Main {
         collectedSources.put(fvs2019, psList2019);
         collectedSources.put(fvs2020, psList2020);
 
-//                logger.info("Adding " + allSources.size() + " configs to VMM.");
+        //                logger.info("Adding " + allSources.size() + " configs to VMM.");
         VisionModuleManager.getInstance().addSources(collectedSources);
         ConfigManager.getInstance().addCameraConfigurations(collectedSources);
     }
@@ -142,10 +140,10 @@ public class Main {
         logger.info("Logging initialized in " + (isRelease ? "Release" : "Debug") + " mode.");
 
         logger.info(
-            "Starting PhotonVision version "
-                + PhotonVersion.versionString
-                + " on "
-                + Platform.CurrentPlatform.toString());
+                "Starting PhotonVision version "
+                        + PhotonVersion.versionString
+                        + " on "
+                        + Platform.CurrentPlatform.toString());
 
         try {
             CameraServerCvJNI.forceLoad();
@@ -159,13 +157,13 @@ public class Main {
         NetworkManager.getInstance().initialize(false);
 
         NetworkTablesManager.getInstance()
-            .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
+                .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
-//        HashMap<VisionSource, List<CVPipelineSettings>> allSources = gatherSources();
+        //        HashMap<VisionSource, List<CVPipelineSettings>> allSources = gatherSources();
 
-//        logger.info("Adding " + allSources.size() + " configs to VMM.");
-//        VisionModuleManager.getInstance().addSources(allSources);
-//        ConfigManager.getInstance().addCameraConfigurations(allSources);
+        //        logger.info("Adding " + allSources.size() + " configs to VMM.");
+        //        VisionModuleManager.getInstance().addSources(allSources);
+        //        ConfigManager.getInstance().addCameraConfigurations(allSources);
 
         if (!isTestMode) {
             VisionSourceManager.getInstance().registerTimedTask();
@@ -175,7 +173,7 @@ public class Main {
 
         // Add hardware config to hardware manager
         HardwareManager.getInstance()
-            .setConfig(ConfigManager.getInstance().getConfig().getHardwareConfig());
+                .setConfig(ConfigManager.getInstance().getConfig().getHardwareConfig());
 
         Server.main(DEFAULT_WEBPORT);
     }
