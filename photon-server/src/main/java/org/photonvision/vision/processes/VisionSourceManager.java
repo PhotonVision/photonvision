@@ -21,6 +21,8 @@ import edu.wpi.cscore.UsbCamera;
 import edu.wpi.cscore.UsbCameraInfo;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Supplier;
+
 import org.apache.commons.lang3.StringUtils;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -36,8 +38,8 @@ public class VisionSourceManager {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
 
-    private final List<UsbCameraInfo> knownUsbCameras = new CopyOnWriteArrayList<>();
-    private final List<CameraConfiguration> unmatchedLoadedConfigs = new CopyOnWriteArrayList<>();
+    final List<UsbCameraInfo> knownUsbCameras = new CopyOnWriteArrayList<>();
+    final List<CameraConfiguration> unmatchedLoadedConfigs = new CopyOnWriteArrayList<>();
 
     private static class SingletonHolder {
         private static final VisionSourceManager INSTANCE = new VisionSourceManager();
@@ -47,7 +49,10 @@ public class VisionSourceManager {
         return SingletonHolder.INSTANCE;
     }
 
-    private VisionSourceManager() {
+    VisionSourceManager() {
+    }
+
+    public void registerTimedTask() {
         TimedTaskManager.getInstance().addTask("VisionSourceManager", this::tryMatchUSBCams, 3000);
     }
 
@@ -65,10 +70,21 @@ public class VisionSourceManager {
         unmatchedLoadedConfigs.addAll(configs);
     }
 
-    private void tryMatchUSBCams() {
+    protected Supplier<List<UsbCameraInfo>> cameraInfoSupplier = () -> List.of(UsbCamera.enumerateUsbCameras());
+
+    protected void tryMatchUSBCams() {
+        var visionSourceMap = tryMatchUSBCamImpl();
+
+        logger.info("Adding " + visionSourceMap.size() + " configs to VMM.");
+        ConfigManager.getInstance().addCameraConfigurations(visionSourceMap);
+        var addedSources = VisionModuleManager.getInstance().addSources(visionSourceMap);
+        addedSources.forEach(VisionModule::start);
+    }
+
+    protected HashMap<VisionSource, List<CVPipelineSettings>> tryMatchUSBCamImpl() {
         // Detect cameras using CSCore
         List<UsbCameraInfo> connectedCameras =
-                new ArrayList<>(filterAllowedDevices(Arrays.asList(UsbCamera.enumerateUsbCameras())));
+            new ArrayList<>(filterAllowedDevices(cameraInfoSupplier.get()));
 
         // Remove all known devices
         var notYetLoadedCams = new ArrayList<UsbCameraInfo>();
@@ -79,10 +95,10 @@ public class VisionSourceManager {
         }
         if (notYetLoadedCams.isEmpty() && unmatchedLoadedConfigs.isEmpty()) {
             logger.warn(
-                    unmatchedLoadedConfigs.size()
-                            + " configs are unmatched, but there are no unmatched USB cameras.");
+                unmatchedLoadedConfigs.size()
+                    + " configs are unmatched, but there are no unmatched USB cameras.");
             logger.warn("Check that all cameras are connected, or that the path is correct?");
-            return;
+            return null;
         }
         logger.trace("Matching " + notYetLoadedCams.size() + " new cameras!");
 
@@ -96,24 +112,23 @@ public class VisionSourceManager {
         for (var config : unmatchedLoadedConfigs) {
             if (config.cameraType == CameraType.UsbCamera) usbCamConfigs.add(config);
         }
-        if (usbCamConfigs.isEmpty()) return;
         logger.info("Trying to match " + usbCamConfigs.size() + " unmatched configs...");
 
         // Match camera configs to physical cameras
         var matchedCameras = matchUSBCameras(notYetLoadedCams, unmatchedLoadedConfigs);
         unmatchedLoadedConfigs.removeAll(matchedCameras);
         logger.trace(
-                () ->
-                        "After matching, "
-                                + unmatchedLoadedConfigs.size()
-                                + " configs remained unmatched. Is your camera disconnected?");
+            () ->
+                "After matching, "
+                    + unmatchedLoadedConfigs.size()
+                    + " configs remained unmatched. Is your camera disconnected?");
 
         // We add the matched cameras to the known camera list
         for (var cam : notYetLoadedCams) {
             if (this.knownUsbCameras.stream().noneMatch(it -> usbCamEquals(it, cam)))
                 this.knownUsbCameras.add(cam);
         }
-        if (matchedCameras.isEmpty()) return;
+        if (matchedCameras.isEmpty()) return null;
 
         // Turn these camera configs into vision sources
         var sources = loadVisionSourcesFromCamConfigs(matchedCameras);
@@ -124,18 +139,14 @@ public class VisionSourceManager {
             var usbSrc = (USBCameraSource) src;
             visionSourceMap.put(usbSrc, usbSrc.configuration.pipelineSettings);
             logger.trace(
-                    () ->
-                            "Matched config for camera \""
-                                    + src.getFrameProvider().getName()
-                                    + "\" and loaded "
-                                    + usbSrc.configuration.pipelineSettings.size()
-                                    + " pipelines");
+                () ->
+                    "Matched config for camera \""
+                        + src.getFrameProvider().getName()
+                        + "\" and loaded "
+                        + usbSrc.configuration.pipelineSettings.size()
+                        + " pipelines");
         }
-
-        logger.info("Adding " + visionSourceMap.size() + " configs to VMM.");
-        ConfigManager.getInstance().addCameraConfigurations(visionSourceMap);
-        var addedSources = VisionModuleManager.getInstance().addSources(visionSourceMap);
-        addedSources.forEach(VisionModule::start);
+        return visionSourceMap;
     }
 
     /**
