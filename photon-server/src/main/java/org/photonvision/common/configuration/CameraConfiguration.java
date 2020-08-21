@@ -29,8 +29,6 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
-import org.photonvision.vision.pipeline.ReflectivePipeline;
-import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.processes.PipelineManager;
 
 public class CameraConfiguration {

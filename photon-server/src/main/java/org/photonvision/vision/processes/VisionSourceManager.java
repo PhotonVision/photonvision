@@ -73,7 +73,7 @@ public class VisionSourceManager {
 
     protected void tryMatchUSBCams() {
         var visionSourceMap = tryMatchUSBCamImpl();
-        if(visionSourceMap == null) return;
+        if (visionSourceMap == null) return;
 
         logger.info("Adding " + visionSourceMap.size() + " configs to VMM.");
         ConfigManager.getInstance().addCameraConfigurations(visionSourceMap);
@@ -105,7 +105,7 @@ public class VisionSourceManager {
         for (var config : unmatchedLoadedConfigs) {
             if (config.cameraType == CameraType.UsbCamera) usbCamConfigs.add(config);
         }
-        if(usbCamConfigs.isEmpty()) return null;
+        if (usbCamConfigs.isEmpty()) return null;
 
         // Debug prints
         for (var info : notYetLoadedCams) {
@@ -117,11 +117,12 @@ public class VisionSourceManager {
         // Match camera configs to physical cameras
         var matchedCameras = matchUSBCameras(notYetLoadedCams, unmatchedLoadedConfigs);
         unmatchedLoadedConfigs.removeAll(matchedCameras);
-        if(!unmatchedLoadedConfigs.isEmpty()) logger.warn(
-                () ->
-                        "After matching, "
-                                + unmatchedLoadedConfigs.size()
-                                + " configs remained unmatched. Is your camera disconnected?");
+        if (!unmatchedLoadedConfigs.isEmpty())
+            logger.warn(
+                    () ->
+                            "After matching, "
+                                    + unmatchedLoadedConfigs.size()
+                                    + " configs remained unmatched. Is your camera disconnected?");
 
         // We add the matched cameras to the known camera list
         for (var cam : notYetLoadedCams) {

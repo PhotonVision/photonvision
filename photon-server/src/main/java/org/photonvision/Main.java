@@ -168,8 +168,9 @@ public class Main {
         //        ConfigManager.getInstance().addCameraConfigurations(allSources);
 
         if (!isTestMode) {
-            VisionSourceManager.getInstance().registerLoadedConfigs(
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
+            VisionSourceManager.getInstance()
+                    .registerLoadedConfigs(
+                            ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
             VisionSourceManager.getInstance().registerTimedTask();
         } else {
             addTestModeSources();
