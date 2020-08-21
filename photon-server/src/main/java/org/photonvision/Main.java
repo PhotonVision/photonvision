@@ -154,6 +154,8 @@ public class Main {
         }
 
         ConfigManager.getInstance().load(); // init config manager
+        ConfigManager.getInstance().requestSave();
+
         NetworkManager.getInstance().initialize(false);
 
         NetworkTablesManager.getInstance()
@@ -166,6 +168,8 @@ public class Main {
         //        ConfigManager.getInstance().addCameraConfigurations(allSources);
 
         if (!isTestMode) {
+            VisionSourceManager.getInstance().registerLoadedConfigs(
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
             VisionSourceManager.getInstance().registerTimedTask();
         } else {
             addTestModeSources();

@@ -73,6 +73,7 @@ public class VisionSourceManager {
 
     protected void tryMatchUSBCams() {
         var visionSourceMap = tryMatchUSBCamImpl();
+        if(visionSourceMap == null) return;
 
         logger.info("Adding " + visionSourceMap.size() + " configs to VMM.");
         ConfigManager.getInstance().addCameraConfigurations(visionSourceMap);
@@ -92,31 +93,31 @@ public class VisionSourceManager {
                 notYetLoadedCams.add(connectedCam);
             }
         }
-        if (notYetLoadedCams.isEmpty() && unmatchedLoadedConfigs.isEmpty()) {
-            logger.warn(
-                    unmatchedLoadedConfigs.size()
-                            + " configs are unmatched, but there are no unmatched USB cameras.");
+        if (connectedCameras.isEmpty() && unmatchedLoadedConfigs.isEmpty()) {
+            logger.warn("No configs were matched, but there are no unmatched USB cameras.");
             logger.warn("Check that all cameras are connected, or that the path is correct?");
             return null;
         }
         logger.trace("Matching " + notYetLoadedCams.size() + " new cameras!");
-
-        // Debug prints
-        for (var info : notYetLoadedCams) {
-            logger.info("Adding local video device - \"" + info.name + "\" at \"" + info.path + "\"");
-        }
 
         // Sort out just the USB cams
         var usbCamConfigs = new ArrayList<>();
         for (var config : unmatchedLoadedConfigs) {
             if (config.cameraType == CameraType.UsbCamera) usbCamConfigs.add(config);
         }
-        logger.info("Trying to match " + usbCamConfigs.size() + " unmatched configs...");
+        if(usbCamConfigs.isEmpty()) return null;
+
+        // Debug prints
+        for (var info : notYetLoadedCams) {
+            logger.info("Adding local video device - \"" + info.name + "\" at \"" + info.path + "\"");
+        }
+
+        logger.debug("Trying to match " + usbCamConfigs.size() + " unmatched configs...");
 
         // Match camera configs to physical cameras
         var matchedCameras = matchUSBCameras(notYetLoadedCams, unmatchedLoadedConfigs);
         unmatchedLoadedConfigs.removeAll(matchedCameras);
-        logger.trace(
+        if(!unmatchedLoadedConfigs.isEmpty()) logger.warn(
                 () ->
                         "After matching, "
                                 + unmatchedLoadedConfigs.size()
@@ -231,15 +232,15 @@ public class VisionSourceManager {
         return usbCameraSources;
     }
 
-    private static List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
+    private List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
         List<UsbCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
             if (deviceBlacklist.contains(device.name)) {
-                logger.info(
+                logger.trace(
                         "Skipping blacklisted device: \"" + device.name + "\" at \"" + device.path + "\"");
             } else {
                 filteredDevices.add(device);
-                logger.info(
+                logger.trace(
                         "Adding local video device - \"" + device.name + "\" at \"" + device.path + "\"");
             }
         }
