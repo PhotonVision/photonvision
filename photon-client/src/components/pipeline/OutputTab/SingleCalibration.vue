@@ -32,20 +32,12 @@
 <script>
     export default {
         name: "SingleCalibration",
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['rawPoint'],
         methods: {
             clearPoint() {
-                this.handleInput('point', []);
-                this.$emit('update');
+              this.handleInputWithIndex("robotOffsetPoint", 0, this.$store.state.currentCameraIndex)
             },
             takePoint() {
-                if (this.rawPoint[0] && this.rawPoint[1]) {
-                    this.handleInput('point', this.rawPoint);
-                    this.$emit('update');
-                } else {
-                    this.$emit('snackbar', "No target found");
-                }
+              this.handleInputWithIndex("robotOffsetPoint", 1, this.$store.state.currentCameraIndex)
             }
         }
     }

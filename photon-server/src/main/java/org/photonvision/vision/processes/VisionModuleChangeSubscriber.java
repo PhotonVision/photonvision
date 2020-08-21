@@ -185,7 +185,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                     break;
                             }
                         }
-                        break;
+                        return;
                 }
 
                 // special case for camera settables
