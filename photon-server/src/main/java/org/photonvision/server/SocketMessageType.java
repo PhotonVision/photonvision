@@ -27,13 +27,15 @@ public enum SocketMessageType {
     SMT_CHANGECAMERANAME("changeCameraName"),
     SMT_CHANGEPIPELINENAME("changePipelineName"),
     SMT_ADDNEWPIPELINE("addNewPipeline"),
-    SMT_COMMAND("command"),
+    SMT_DELETECURRENTPIPELINE("deleteCurrentPipeline"),
     SMT_CURRENTCAMERA("currentCamera"),
     SMT_PIPELINESETTINGCHANGE("changePipelineSetting"),
     SMT_CURRENTPIPELINE("currentPipeline"),
     SMT_STARTPNPCALIBRATION("startPnpCalibration"),
     SMT_TAKECALIBRATIONSNAPSHOT("takeCalibrationSnapshot"),
-    SMT_DUPLICATEPIPELINE("duplicatePipeline");
+    SMT_DUPLICATEPIPELINE("duplicatePipeline"),
+    SMT_ROBOTOFFSETPOINT("robotOffsetPoint");
+
 
     public final String entryKey;
 

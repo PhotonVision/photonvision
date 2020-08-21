@@ -20,6 +20,7 @@ package org.photonvision.vision.processes;
 import java.util.ArrayList;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -29,8 +30,10 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
+import org.photonvision.vision.target.RobotOffsetPointOperation;
 
 @SuppressWarnings("unchecked")
 public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
@@ -136,6 +139,53 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case "takeCalSnapshot":
                         parentModule.takeCalibrationSnapshot();
                         return;
+                    case "robotOffsetPoint":
+                        if (currentSettings instanceof AdvancedPipelineSettings) {
+                            var curAdvSettings = (AdvancedPipelineSettings) currentSettings;
+                            var offsetOperation = RobotOffsetPointOperation.fromIndex((int)newPropValue);
+
+                            Point latestBestTargetPoint = new Point(); // todo: get from last pipeline result
+
+                            switch (curAdvSettings.offsetRobotOffsetMode) {
+                                case Single:
+                                    if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
+                                        curAdvSettings.offsetCalibrationPoint = new DoubleCouple();
+                                    } else if (offsetOperation == RobotOffsetPointOperation.ROPO_TAKESINGLE) {
+                                        curAdvSettings.offsetCalibrationPoint = new DoubleCouple(latestBestTargetPoint.x, latestBestTargetPoint.y);
+                                    }
+                                    break;
+                                case Dual:
+                                        var firstPoint = parentModule.dualOffsetPoints.getLeft();
+                                        var secondPoint = parentModule.dualOffsetPoints.getRight();
+
+                                        if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
+                                            curAdvSettings.offsetDualLineM = 0;
+                                            curAdvSettings.offsetDualLineB = 0;
+                                        } else {
+                                            // update point
+                                            switch (offsetOperation) {
+                                                case ROPO_TAKEFIRSTDUAL:
+                                                    firstPoint.x = latestBestTargetPoint.x;
+                                                    firstPoint.y = latestBestTargetPoint.y;
+                                                    break;
+                                                case ROPO_TAKESECONDDUAL:
+                                                    secondPoint.x = latestBestTargetPoint.x;
+                                                    secondPoint.y = latestBestTargetPoint.y;
+                                                    break;
+                                            }
+
+                                            // update line if either point is updated
+                                            if (offsetOperation == RobotOffsetPointOperation.ROPO_TAKEFIRSTDUAL || offsetOperation ==RobotOffsetPointOperation.ROPO_TAKESECONDDUAL) {
+                                                var offsetLineSlope = (secondPoint.y - firstPoint.y) / (secondPoint.x - firstPoint.x);
+                                                var offsetLineIntercept = firstPoint.y - (offsetLineSlope * firstPoint.x);
+                                                curAdvSettings.offsetDualLineM = offsetLineSlope;
+                                                curAdvSettings.offsetDualLineB = offsetLineIntercept;
+                                            }
+                                    }
+                                    break;
+                            }
+                        }
+                        break;
                 }
 
                 // special case for camera settables
@@ -204,7 +254,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     logger.error("Unknown exception when setting PSC prop!", e);
                 }
 
-                //                parentModule.saveModule();
                 parentModule.saveAndBroadcastSelective(wsEvent.originContext, propName, newPropValue);
             }
         }

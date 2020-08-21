@@ -21,6 +21,9 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.*;
+
+import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.Point;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
@@ -65,6 +68,7 @@ public class VisionModule {
     protected final QuirkyCamera cameraQuirks;
 
     private long lastFrameConsumeMillis;
+    protected Pair<Point, Point> dualOffsetPoints = Pair.of(new Point(), new Point());
 
     MJPGFrameConsumer dashboardInputStreamer;
     MJPGFrameConsumer dashboardOutputStreamer;
