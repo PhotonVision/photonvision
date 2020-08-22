@@ -89,13 +89,21 @@ public class VisionSourceManager {
         // Remove all known devices
         var notYetLoadedCams = new ArrayList<UsbCameraInfo>();
         for (var connectedCam : connectedCameras) {
-            if (this.knownUsbCameras.stream().noneMatch(it -> usbCamEquals(it, connectedCam))) {
+            boolean cameraIsUnknown = true;
+            for (UsbCameraInfo knownCam : this.knownUsbCameras) {
+                if (usbCamEquals(knownCam, connectedCam)) {
+                    cameraIsUnknown = false;
+                    break;
+                }
+            }
+            if (cameraIsUnknown) {
                 notYetLoadedCams.add(connectedCam);
             }
         }
         if (notYetLoadedCams.isEmpty() && connectedCameras.isEmpty()) {
-            logger.warn("No configs were matched, but there are no unmatched USB cameras." +
-                "\nCheck that all cameras are connected, or that the path is correct?");
+            logger.warn(
+                    "No configs were matched, but there are no unmatched USB cameras."
+                            + "\nCheck that all cameras are connected, or that the path is correct?");
             return null;
         }
         logger.trace("Matching " + notYetLoadedCams.size() + " new cameras!");
@@ -111,10 +119,8 @@ public class VisionSourceManager {
             logger.info("Adding local video device - \"" + info.name + "\" at \"" + info.path + "\"");
         }
 
-        if(usbCamConfigs.isEmpty()) {
-            return null;
-        }
-        logger.debug("Trying to match " + usbCamConfigs.size() + " unmatched configs...");
+        if (!usbCamConfigs.isEmpty())
+            logger.debug("Trying to match " + usbCamConfigs.size() + " unmatched configs...");
 
         // Match camera configs to physical cameras
         var matchedCameras = matchUSBCameras(notYetLoadedCams, unmatchedLoadedConfigs);
@@ -128,8 +134,9 @@ public class VisionSourceManager {
 
         // We add the matched cameras to the known camera list
         for (var cam : notYetLoadedCams) {
-            if (this.knownUsbCameras.stream().noneMatch(it -> usbCamEquals(it, cam)))
+            if (this.knownUsbCameras.stream().noneMatch(it -> usbCamEquals(it, cam))) {
                 this.knownUsbCameras.add(cam);
+            }
         }
         if (matchedCameras.isEmpty()) return null;
 
