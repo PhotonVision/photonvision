@@ -103,9 +103,9 @@ public class TrackedTarget implements Releasable {
                         params.isLandscape, params.targetOffsetPointEdge, getMinAreaRect());
         m_robotOffsetPoint =
                 TargetCalculations.calculateRobotOffsetPoint(
-                        m_targetOffsetPoint,
+                        params.robotOffsetSinglePoint,
                         params.cameraCenterPoint,
-                        params.offsetEquationValues,
+                        params.robotOffsetDualValues,
                         params.robotOffsetPointMode);
 
         // order of this stuff doesnt matter though
@@ -193,9 +193,9 @@ public class TrackedTarget implements Releasable {
         final TargetOffsetPointEdge targetOffsetPointEdge;
 
         // RobotOffset calculation values
-        final Point userOffsetPoint;
+        final Point robotOffsetSinglePoint;
         final Point cameraCenterPoint;
-        final DoubleCouple offsetEquationValues;
+        final DoubleCouple robotOffsetDualValues;
         final RobotOffsetPointMode robotOffsetPointMode;
 
         // yaw calculation values
@@ -210,18 +210,18 @@ public class TrackedTarget implements Releasable {
         public TargetCalculationParameters(
                 boolean isLandscape,
                 TargetOffsetPointEdge targetOffsetPointEdge,
-                Point userOffsetPoint,
+                Point robotOffsetSinglePoint,
                 Point cameraCenterPoint,
-                DoubleCouple offsetEquationValues,
+                DoubleCouple robotOffsetDualValues,
                 RobotOffsetPointMode robotOffsetPointMode,
                 double horizontalFocalLength,
                 double verticalFocalLength,
                 double imageArea) {
             this.isLandscape = isLandscape;
             this.targetOffsetPointEdge = targetOffsetPointEdge;
-            this.userOffsetPoint = userOffsetPoint;
+            this.robotOffsetSinglePoint = robotOffsetSinglePoint;
             this.cameraCenterPoint = cameraCenterPoint;
-            this.offsetEquationValues = offsetEquationValues;
+            this.robotOffsetDualValues = robotOffsetDualValues;
             this.robotOffsetPointMode = robotOffsetPointMode;
             this.horizontalFocalLength = horizontalFocalLength;
             this.verticalFocalLength = verticalFocalLength;

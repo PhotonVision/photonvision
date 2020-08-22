@@ -98,10 +98,11 @@ public class TargetCalculations {
                 }
             case Dual:
                 Point resultPoint = new Point();
-                resultPoint.x =
-                        (offsetPoint.x - offsetEquationValues.getFirst()) / offsetEquationValues.getSecond();
-                resultPoint.y =
-                        (offsetPoint.y * offsetEquationValues.getSecond()) + offsetEquationValues.getFirst();
+                var offsetSlope = offsetEquationValues.getFirst();
+                var offsetIntercept = offsetEquationValues.getSecond();
+
+                resultPoint.x = (offsetPoint.x - offsetIntercept) / offsetSlope;
+                resultPoint.y = (offsetPoint.y * offsetSlope) + offsetIntercept;
                 return resultPoint;
         }
     }

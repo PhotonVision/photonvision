@@ -20,7 +20,6 @@ package org.photonvision.vision.processes;
 import java.util.ArrayList;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -161,8 +160,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                         var secondPoint = parentModule.dualOffsetPoints.getRight();
 
                                         if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
-                                            curAdvSettings.offsetDualLineM = 0;
-                                            curAdvSettings.offsetDualLineB = 0;
+                                            curAdvSettings.offsetDualLineSlope = 0;
+                                            curAdvSettings.offsetDualLineIntercept = 0;
                                         } else {
                                             // update point
                                             switch (offsetOperation) {
@@ -180,8 +179,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                             if (offsetOperation == RobotOffsetPointOperation.ROPO_TAKEFIRSTDUAL || offsetOperation ==RobotOffsetPointOperation.ROPO_TAKESECONDDUAL) {
                                                 var offsetLineSlope = (secondPoint.y - firstPoint.y) / (secondPoint.x - firstPoint.x);
                                                 var offsetLineIntercept = firstPoint.y - (offsetLineSlope * firstPoint.x);
-                                                curAdvSettings.offsetDualLineM = offsetLineSlope;
-                                                curAdvSettings.offsetDualLineB = offsetLineIntercept;
+                                                curAdvSettings.offsetDualLineSlope = offsetLineSlope;
+                                                curAdvSettings.offsetDualLineIntercept = offsetLineIntercept;
                                             }
                                         }
                                         break;

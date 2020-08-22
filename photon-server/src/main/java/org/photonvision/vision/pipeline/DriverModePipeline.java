@@ -45,8 +45,7 @@ public class DriverModePipeline
         rotateImagePipe.setParams(rotateImageParams);
 
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
-                new Draw2dCrosshairPipe.Draw2dCrosshairParams(
-                        true, settings.offsetPointMode, settings.offsetPoint);
+                new Draw2dCrosshairPipe.Draw2dCrosshairParams(frameStaticProperties);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
     }
 

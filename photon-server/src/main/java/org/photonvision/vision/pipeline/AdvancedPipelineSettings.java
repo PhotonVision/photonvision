@@ -65,8 +65,8 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public DoubleCouple offsetCalibrationPoint = new DoubleCouple();
 
     // the two values that define the line of the Dual Point Offset calibration (think y=mx+b)
-    public double offsetDualLineM = 1;
-    public double offsetDualLineB = 0;
+    public double offsetDualLineSlope = 1;
+    public double offsetDualLineIntercept = 0;
 
     @Override
     public boolean equals(Object o) {
@@ -79,8 +79,8 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 && erode == that.erode
                 && dilate == that.dilate
                 && contourSpecklePercentage == that.contourSpecklePercentage
-                && Double.compare(that.offsetDualLineM, offsetDualLineM) == 0
-                && Double.compare(that.offsetDualLineB, offsetDualLineB) == 0
+                && Double.compare(that.offsetDualLineSlope, offsetDualLineSlope) == 0
+                && Double.compare(that.offsetDualLineIntercept, offsetDualLineIntercept) == 0
                 && hsvHue.equals(that.hsvHue)
                 && hsvSaturation.equals(that.hsvSaturation)
                 && hsvValue.equals(that.hsvValue)
@@ -114,7 +114,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 contourTargetOrientation,
                 offsetRobotOffsetMode,
                 offsetCalibrationPoint,
-                offsetDualLineM,
-                offsetDualLineB);
+                offsetDualLineSlope,
+                offsetDualLineIntercept);
     }
 }

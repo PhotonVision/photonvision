@@ -22,6 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
@@ -113,8 +114,8 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
                         frameStaticProperties,
                         settings.offsetRobotOffsetMode,
-                        settings.offsetDualLineM,
-                        settings.offsetDualLineB,
+                        settings.offsetDualLineSlope,
+                        settings.offsetDualLineIntercept,
                         settings.offsetCalibrationPoint.toPoint(),
                         settings.contourTargetOffsetPointEdge,
                         settings.contourTargetOrientation);
@@ -137,8 +138,10 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
                         settings.outputShouldDraw,
+                        frameStaticProperties,
                         settings.offsetRobotOffsetMode,
-                        settings.offsetCalibrationPoint);
+                        settings.offsetCalibrationPoint,
+                        new DoubleCouple(settings.offsetDualLineSlope, settings.offsetDualLineIntercept));
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dContoursParams =
