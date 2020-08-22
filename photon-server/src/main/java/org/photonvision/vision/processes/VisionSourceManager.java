@@ -111,6 +111,9 @@ public class VisionSourceManager {
             logger.info("Adding local video device - \"" + info.name + "\" at \"" + info.path + "\"");
         }
 
+        if(usbCamConfigs.isEmpty()) {
+            return null;
+        }
         logger.debug("Trying to match " + usbCamConfigs.size() + " unmatched configs...");
 
         // Match camera configs to physical cameras
