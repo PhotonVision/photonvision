@@ -143,18 +143,20 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         if (currentSettings instanceof AdvancedPipelineSettings) {
                             var curAdvSettings = (AdvancedPipelineSettings) currentSettings;
                             var offsetOperation = RobotOffsetPointOperation.fromIndex((int)newPropValue);
+                            var latestResult = parentModule.lastPipelineResultBestTarget;
 
-                            Point latestBestTargetPoint = new Point(); // todo: get from last pipeline result
+                            if (latestResult != null) {
+                                var newPoint = latestResult.getMinAreaRect().center;
 
-                            switch (curAdvSettings.offsetRobotOffsetMode) {
-                                case Single:
-                                    if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
-                                        curAdvSettings.offsetCalibrationPoint = new DoubleCouple();
-                                    } else if (offsetOperation == RobotOffsetPointOperation.ROPO_TAKESINGLE) {
-                                        curAdvSettings.offsetCalibrationPoint = new DoubleCouple(latestBestTargetPoint.x, latestBestTargetPoint.y);
-                                    }
-                                    break;
-                                case Dual:
+                                switch (curAdvSettings.offsetRobotOffsetMode) {
+                                    case Single:
+                                        if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
+                                            curAdvSettings.offsetCalibrationPoint = new DoubleCouple();
+                                        } else if (offsetOperation == RobotOffsetPointOperation.ROPO_TAKESINGLE) {
+                                            curAdvSettings.offsetCalibrationPoint = new DoubleCouple(newPoint.x, newPoint.y);
+                                        }
+                                        break;
+                                    case Dual:
                                         var firstPoint = parentModule.dualOffsetPoints.getLeft();
                                         var secondPoint = parentModule.dualOffsetPoints.getRight();
 
@@ -165,12 +167,12 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                             // update point
                                             switch (offsetOperation) {
                                                 case ROPO_TAKEFIRSTDUAL:
-                                                    firstPoint.x = latestBestTargetPoint.x;
-                                                    firstPoint.y = latestBestTargetPoint.y;
+                                                    firstPoint.x = newPoint.x;
+                                                    firstPoint.y = newPoint.y;
                                                     break;
                                                 case ROPO_TAKESECONDDUAL:
-                                                    secondPoint.x = latestBestTargetPoint.x;
-                                                    secondPoint.y = latestBestTargetPoint.y;
+                                                    secondPoint.x = newPoint.x;
+                                                    secondPoint.y = newPoint.y;
                                                     break;
                                             }
 
@@ -181,8 +183,9 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                                 curAdvSettings.offsetDualLineM = offsetLineSlope;
                                                 curAdvSettings.offsetDualLineB = offsetLineIntercept;
                                             }
-                                    }
-                                    break;
+                                        }
+                                        break;
+                                }
                             }
                         }
                         return;
