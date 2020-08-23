@@ -131,6 +131,8 @@ public class VisionModule {
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
         }
+
+        saveAndBroadcastAll();
     }
 
     void setDriverMode(boolean isDriverMode) {
