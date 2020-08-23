@@ -109,7 +109,7 @@ public class Main {
         var pipeline2020 = new ReflectivePipelineSettings();
         pipeline2020.pipelineNickname = "OuterPort";
         pipeline2020.targetModel = TargetModel.get2020Target();
-        camConf2020.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+        camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs(true));
 
         var psList2020 = new ArrayList<CVPipelineSettings>();
         psList2020.add(pipeline2020);
