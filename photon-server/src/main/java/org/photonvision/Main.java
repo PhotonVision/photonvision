@@ -36,6 +36,7 @@ import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
+import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
@@ -108,7 +109,7 @@ public class Main {
         var pipeline2020 = new ReflectivePipelineSettings();
         pipeline2020.pipelineNickname = "OuterPort";
         pipeline2020.targetModel = TargetModel.get2020Target();
-        camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+        camConf2020.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
         var psList2020 = new ArrayList<CVPipelineSettings>();
         psList2020.add(pipeline2020);
@@ -119,7 +120,7 @@ public class Main {
         collectedSources.put(fvs2020, psList2020);
 
         //                logger.info("Adding " + allSources.size() + " configs to VMM.");
-        VisionModuleManager.getInstance().addSources(collectedSources);
+        VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
         ConfigManager.getInstance().addCameraConfigurations(collectedSources);
     }
 
@@ -130,7 +131,7 @@ public class Main {
             logger.error("Failed to parse command-line options!", e);
         }
 
-        System.out.println("Running in " + (isRelease ? "release" : "development") + " mode!");
+        logger.info("Running in " + (isRelease ? "release" : "development") + " mode!");
         var logLevel = (isRelease || printDebugLogs) ? LogLevel.INFO : LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
         Logger.setLevel(LogGroup.WebServer, logLevel);

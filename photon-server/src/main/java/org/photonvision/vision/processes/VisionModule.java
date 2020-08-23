@@ -314,7 +314,7 @@ public class VisionModule {
         ret.calibrations = calList;
 
         ret.isFovConfigurable =
-                !(HardwareManager.getInstance().getConfig().hasPresetFOV()
+                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
                         && cameraQuirks.hasQuirk(CameraQuirk.PiCam));
 
         return ret;
