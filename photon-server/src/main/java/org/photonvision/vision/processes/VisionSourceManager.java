@@ -25,6 +25,8 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.StringUtils;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
@@ -79,6 +81,10 @@ public class VisionSourceManager {
         ConfigManager.getInstance().addCameraConfigurations(visionSourceMap);
         var addedSources = VisionModuleManager.getInstance().addSources(visionSourceMap);
         addedSources.forEach(VisionModule::start);
+        DataChangeService.getInstance()
+            .publishEvent(
+                new OutgoingUIEvent<>(
+                    "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
     protected HashMap<VisionSource, List<CVPipelineSettings>> tryMatchUSBCamImpl() {
