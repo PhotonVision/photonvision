@@ -18,16 +18,22 @@
 package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import io.javalin.http.Context;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import org.apache.commons.io.FileUtils;
+import org.opencv.core.Point3;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -36,6 +42,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.vision.processes.VisionModuleManager;
+import org.photonvision.vision.target.TargetModel;
 
 public class RequestHandler {
     private static final Logger logger = new Logger(RequestHandler.class, LogGroup.WebServer);
@@ -46,7 +53,7 @@ public class RequestHandler {
         var file = ctx.uploadedFile("zipData");
         if (file != null) {
             var tempZipPath =
-                    new File(Path.of(System.getProperty("java.io.tmpdir"), file.getFilename()).toString());
+                new File(Path.of(System.getProperty("java.io.tmpdir"), file.getFilename()).toString());
             tempZipPath.getParentFile().mkdirs();
             try {
                 FileUtils.copyInputStreamToFile(file.getContent(), tempZipPath);
@@ -64,13 +71,13 @@ public class RequestHandler {
     @SuppressWarnings("unchecked")
     public static void onGeneralSettings(Context context) throws JsonProcessingException {
         Map<String, Object> map =
-                (Map<String, Object>) kObjectMapper.readValue(context.body(), Map.class);
+            (Map<String, Object>) kObjectMapper.readValue(context.body(), Map.class);
         var networking =
-                (Map<String, Object>)
-                        map.get("networkSettings"); // teamNumber (int), supported (bool), connectionType (int),
+            (Map<String, Object>)
+                map.get("networkSettings"); // teamNumber (int), supported (bool), connectionType (int),
         // staticIp (str), netmask (str), gateway (str), hostname (str)
         var lighting =
-                (Map<String, Object>) map.get("lighting"); // supported (true/false), brightness (int)
+            (Map<String, Object>) map.get("lighting"); // supported (true/false), brightness (int)
         // TODO do stuff with lighting
 
         var networkConfig = NetworkConfig.fromHashMap(networking);
@@ -94,11 +101,11 @@ public class RequestHandler {
             // The only settings we actually care about are FOV and pitch
             var fov = Double.parseDouble(settings.get("fov").toString());
             var pitch =
-                    Rotation2d.fromDegrees(Double.parseDouble(settings.get("tiltDegrees").toString()));
+                Rotation2d.fromDegrees(Double.parseDouble(settings.get("tiltDegrees").toString()));
 
             logger.info(
-                    String.format(
-                            "Setting camera %s's fov to %s w/pitch %s", index, fov, pitch.getDegrees()));
+                String.format(
+                    "Setting camera %s's fov to %s w/pitch %s", index, fov, pitch.getDegrees()));
             var module = VisionModuleManager.getInstance().getModule(index);
             module.setFovAndPitch(fov, pitch);
             module.saveModule();
@@ -142,11 +149,30 @@ public class RequestHandler {
     }
 
     /**
-    * Note that this doesn't actually restart the program itself -- instead, it relies on systemd or
-    * an equivalent.
-    */
+     * Note that this doesn't actually restart the program itself -- instead, it relies on systemd or
+     * an equivalent.
+     */
     public static void restartProgram(Context ctx) {
         ctx.status(200);
         System.exit(0);
+    }
+
+    public static void uploadPnpModel(Context ctx) {
+        UITargetData data;
+        try {
+            data = kObjectMapper.readValue(ctx.body(), UITargetData.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            ctx.status(500);
+            return;
+        }
+
+        VisionModuleManager.getInstance().getModule(data.index).setTargetModel(data.targetModel);
+        ctx.status(200);
+    }
+
+    public static class UITargetData {
+        public int index;
+        public TargetModel targetModel;
     }
 }

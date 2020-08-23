@@ -94,7 +94,7 @@
                 // move the rotation point to the center of the rect
                 this.ctx.translate(y + this.targetWidth / 2, x + this.targetHeight / 2); // wpi lib makes x forward and back and y left to right
                 // rotate the rect
-                this.ctx.rotate(target.rotation.radians * -1);
+                this.ctx.rotate(target.rot * -1 * Math.PI / 180.0);
 
                 // draw the rect on the transformed context
                 // Note: after transforming [0,0] is visually [x,y]

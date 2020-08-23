@@ -169,7 +169,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         var actual = new IntegerCouple(orig.get(0), orig.get(1));
                         propField.set(currentSettings, actual);
                     } else if (propType.equals(Double.TYPE)) {
-                        propField.setDouble(currentSettings, (Double) newPropValue);
+                        propField.setDouble(currentSettings, ((Number) newPropValue).doubleValue());
                     } else if (propType.equals(Integer.TYPE)) {
                         propField.setInt(currentSettings, (Integer) newPropValue);
                     } else if (propType.equals(Boolean.TYPE)) {

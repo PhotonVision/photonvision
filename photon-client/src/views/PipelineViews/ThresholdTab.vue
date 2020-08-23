@@ -195,7 +195,6 @@
                             'hsvHue': s.hsvHue,
                             'hsvSaturation': s.hsvSaturation,
                             'hsvValue': s.hsvValue,
-                            'outputShowThresholded': this.showThresholdState,
                             'cameraIndex': this.$store.state.currentCameraIndex
                         }
                     });
@@ -208,6 +207,7 @@
                     case 0:
                         this.currentFunction = undefined;
                         this.$store.state.colorPicking = false;
+                        this.handlePipelineUpdate("outputShouldDraw", true);
                         return;
                     case 1:
                         this.currentFunction = this.colorPicker.eyeDrop;
