@@ -113,8 +113,11 @@ public class TargetCalculations {
     }
 
     public static Point calculateDualOffsetCrosshair(DualOffsetValues dualOffsetValues, double currentArea) {
-        var areaRatio = MathUtils.map(currentArea, 0, 100, dualOffsetValues.firstPointArea, dualOffsetValues.secondPointArea);
-        var areaFraction = MathUtils.map(areaRatio, dualOffsetValues.firstPointArea, dualOffsetValues.secondPointArea, 0, 1);
+        boolean firstLarger = dualOffsetValues.firstPointArea >= dualOffsetValues.secondPointArea;
+        double upperArea = firstLarger ? dualOffsetValues.secondPointArea : dualOffsetValues.firstPointArea;
+        double lowerArea = firstLarger ? dualOffsetValues.firstPointArea : dualOffsetValues.secondPointArea;
+
+        var areaFraction = MathUtils.map(currentArea, lowerArea, upperArea, 0, 1);
         var xLerp = Trajectory.State.lerp(dualOffsetValues.firstPoint.x, dualOffsetValues.secondPoint.x, areaFraction);
         var yLerp = Trajectory.State.lerp(dualOffsetValues.firstPoint.y, dualOffsetValues.secondPoint.y, areaFraction);
 
