@@ -19,9 +19,10 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import org.opencv.core.Point;
-import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.*;
 
@@ -44,13 +45,10 @@ public class Collect2dTargetsPipe
                 new TrackedTarget.TargetCalculationParameters(
                         params.targetOrientation == TargetOrientation.Landscape,
                         params.targetOffsetPointEdge,
-                        params.robotOffsetPoint,
-                        params.frameStaticProperties.centerPoint,
-                        new DoubleCouple(params.robotOffsetDualSlope, params.robotOffsetDualIntercept),
                         params.robotOffsetPointMode,
-                        params.frameStaticProperties.horizontalFocalLength,
-                        params.frameStaticProperties.verticalFocalLength,
-                        params.frameStaticProperties.imageArea);
+                        params.robotOffsetSinglePoint,
+                        params.dualOffsetValues,
+                        params.frameStaticProperties);
 
         for (PotentialTarget target : in) {
             targets.add(new TrackedTarget(target, calculationParams));
@@ -60,27 +58,19 @@ public class Collect2dTargetsPipe
     }
 
     public static class Collect2dTargetsParams {
-        private final FrameStaticProperties frameStaticProperties;
         private final RobotOffsetPointMode robotOffsetPointMode;
-        private final double robotOffsetDualSlope;
-        private final double robotOffsetDualIntercept;
-        private final Point robotOffsetPoint;
+        private final Point robotOffsetSinglePoint;
+        private final DualOffsetValues dualOffsetValues;
         private final TargetOffsetPointEdge targetOffsetPointEdge;
         private final TargetOrientation targetOrientation;
+        private final FrameStaticProperties frameStaticProperties;
 
         public Collect2dTargetsParams(
-                FrameStaticProperties frameStaticProperties,
-                RobotOffsetPointMode robotOffsetPointMode,
-                double robotOffsetDualSlope,
-                double robotOffsetDualIntercept,
-                Point robotOffsetSinglePoint,
-                TargetOffsetPointEdge targetOffsetPointEdge,
-                TargetOrientation orientation) {
+                RobotOffsetPointMode robotOffsetPointMode, Point robotOffsetSinglePoint, DualOffsetValues dualOffsetValues, TargetOffsetPointEdge targetOffsetPointEdge, TargetOrientation orientation, FrameStaticProperties frameStaticProperties) {
             this.frameStaticProperties = frameStaticProperties;
             this.robotOffsetPointMode = robotOffsetPointMode;
-            this.robotOffsetDualSlope = robotOffsetDualSlope;
-            this.robotOffsetDualIntercept = robotOffsetDualIntercept;
-            this.robotOffsetPoint = robotOffsetSinglePoint;
+            this.robotOffsetSinglePoint = robotOffsetSinglePoint;
+            this.dualOffsetValues = dualOffsetValues;
             this.targetOffsetPointEdge = targetOffsetPointEdge;
             targetOrientation = orientation;
         }

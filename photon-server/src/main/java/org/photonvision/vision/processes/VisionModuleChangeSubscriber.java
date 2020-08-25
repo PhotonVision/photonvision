@@ -20,6 +20,7 @@ package org.photonvision.vision.processes;
 import java.util.ArrayList;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -142,45 +143,36 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         if (currentSettings instanceof AdvancedPipelineSettings) {
                             var curAdvSettings = (AdvancedPipelineSettings) currentSettings;
                             var offsetOperation = RobotOffsetPointOperation.fromIndex((int)newPropValue);
-                            var latestResult = parentModule.lastPipelineResultBestTarget;
+                            var latestTarget = parentModule.lastPipelineResultBestTarget;
 
-                            if (latestResult != null) {
-                                var newPoint = latestResult.getMinAreaRect().center;
+                            if (latestTarget != null) {
+                                var newPoint = latestTarget.getTargetOffsetPoint();
 
                                 switch (curAdvSettings.offsetRobotOffsetMode) {
                                     case Single:
                                         if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
-                                            curAdvSettings.offsetCalibrationPoint = new DoubleCouple();
+                                            curAdvSettings.offsetSinglePoint = new Point();
                                         } else if (offsetOperation == RobotOffsetPointOperation.ROPO_TAKESINGLE) {
-                                            curAdvSettings.offsetCalibrationPoint = new DoubleCouple(newPoint.x, newPoint.y);
+                                            curAdvSettings.offsetSinglePoint = newPoint;
                                         }
                                         break;
                                     case Dual:
-                                        var firstPoint = parentModule.dualOffsetPoints.getLeft();
-                                        var secondPoint = parentModule.dualOffsetPoints.getRight();
-
                                         if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
-                                            curAdvSettings.offsetDualLineSlope = 0;
-                                            curAdvSettings.offsetDualLineIntercept = 0;
+                                            curAdvSettings.offsetDualPointA = new Point();
+                                            curAdvSettings.offsetDualPointAArea = 0;
+                                            curAdvSettings.offsetDualPointB = new Point();
+                                            curAdvSettings.offsetDualPointBArea = 0;
                                         } else {
-                                            // update point
+                                            // update point and area
                                             switch (offsetOperation) {
                                                 case ROPO_TAKEFIRSTDUAL:
-                                                    firstPoint.x = newPoint.x;
-                                                    firstPoint.y = newPoint.y;
+                                                    curAdvSettings.offsetDualPointA = newPoint;
+                                                    curAdvSettings.offsetDualPointAArea = latestTarget.getArea();
                                                     break;
                                                 case ROPO_TAKESECONDDUAL:
-                                                    secondPoint.x = newPoint.x;
-                                                    secondPoint.y = newPoint.y;
+                                                    curAdvSettings.offsetDualPointB = newPoint;
+                                                    curAdvSettings.offsetDualPointBArea = latestTarget.getArea();
                                                     break;
-                                            }
-
-                                            // update line if either point is updated
-                                            if (offsetOperation == RobotOffsetPointOperation.ROPO_TAKEFIRSTDUAL || offsetOperation ==RobotOffsetPointOperation.ROPO_TAKESECONDDUAL) {
-                                                var offsetLineSlope = (secondPoint.y - firstPoint.y) / (secondPoint.x - firstPoint.x);
-                                                var offsetLineIntercept = firstPoint.y - (offsetLineSlope * firstPoint.x);
-                                                curAdvSettings.offsetDualLineSlope = offsetLineSlope;
-                                                curAdvSettings.offsetDualLineIntercept = offsetLineIntercept;
                                             }
                                         }
                                         break;

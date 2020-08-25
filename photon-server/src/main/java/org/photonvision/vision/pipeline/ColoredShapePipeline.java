@@ -72,6 +72,13 @@ public class ColoredShapePipeline
     protected void setPipeParams(
             FrameStaticProperties frameStaticProperties, ColoredShapePipelineSettings settings) {
 
+        DualOffsetValues dualOffsetValues = new DualOffsetValues(
+                settings.offsetDualPointA,
+                settings.offsetDualPointAArea,
+                settings.offsetDualPointB,
+                settings.offsetDualPointBArea
+        );
+
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
@@ -127,19 +134,18 @@ public class ColoredShapePipeline
         SortContoursPipe.SortContoursParams sortContoursParams =
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        frameStaticProperties,
-                        settings.outputShowMultipleTargets ? 5 : 1); // TODO don't hardcode?
+                        settings.outputShowMultipleTargets ? 5 : 1, frameStaticProperties
+                ); // TODO don't hardcode?
         sortContoursPipe.setParams(sortContoursParams);
 
         Collect2dTargetsPipe.Collect2dTargetsParams collect2dTargetsParams =
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
-                        frameStaticProperties,
                         settings.offsetRobotOffsetMode,
-                        settings.offsetDualLineSlope,
-                        settings.offsetDualLineIntercept,
-                        settings.offsetCalibrationPoint.toPoint(),
+                        settings.offsetSinglePoint,
+                        dualOffsetValues,
                         settings.contourTargetOffsetPointEdge,
-                        settings.contourTargetOrientation);
+                        settings.contourTargetOrientation,
+                        frameStaticProperties);
         collect2dTargetsPipe.setParams(collect2dTargetsParams);
 
         var params =
@@ -167,10 +173,11 @@ public class ColoredShapePipeline
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
                         settings.outputShouldDraw,
-                        frameStaticProperties,
                         settings.offsetRobotOffsetMode,
-                        settings.offsetCalibrationPoint,
-                        new DoubleCouple(settings.offsetDualLineSlope, settings.offsetDualLineIntercept));
+                        settings.offsetSinglePoint,
+                        dualOffsetValues,
+                        frameStaticProperties
+                );
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dContoursParams =

@@ -22,11 +22,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -69,6 +69,13 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     protected void setPipeParams(
             FrameStaticProperties frameStaticProperties, ReflectivePipelineSettings settings) {
 
+        DualOffsetValues dualOffsetValues = new DualOffsetValues(
+                settings.offsetDualPointA,
+                settings.offsetDualPointAArea,
+                settings.offsetDualPointB,
+                settings.offsetDualPointBArea
+        );
+
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
@@ -106,19 +113,15 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         SortContoursPipe.SortContoursParams sortContoursParams =
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        frameStaticProperties,
-                        settings.outputShowMultipleTargets ? 5 : 1); // TODO don't hardcode?
+                        settings.outputShowMultipleTargets ? 5 : 1, // TODO don't hardcode?
+                        frameStaticProperties
+                );
         sortContoursPipe.setParams(sortContoursParams);
 
         Collect2dTargetsPipe.Collect2dTargetsParams collect2dTargetsParams =
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
-                        frameStaticProperties,
-                        settings.offsetRobotOffsetMode,
-                        settings.offsetDualLineSlope,
-                        settings.offsetDualLineIntercept,
-                        settings.offsetCalibrationPoint.toPoint(),
-                        settings.contourTargetOffsetPointEdge,
-                        settings.contourTargetOrientation);
+                        settings.offsetRobotOffsetMode, settings.offsetSinglePoint, dualOffsetValues, settings.contourTargetOffsetPointEdge, settings.contourTargetOrientation, frameStaticProperties
+                );
         collect2dTargetsPipe.setParams(collect2dTargetsParams);
 
         var params =
@@ -138,10 +141,8 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
                         settings.outputShouldDraw,
-                        frameStaticProperties,
-                        settings.offsetRobotOffsetMode,
-                        settings.offsetCalibrationPoint,
-                        new DoubleCouple(settings.offsetDualLineSlope, settings.offsetDualLineIntercept));
+                        settings.offsetRobotOffsetMode, settings.offsetSinglePoint, dualOffsetValues, frameStaticProperties
+                );
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dContoursParams =

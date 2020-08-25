@@ -20,6 +20,8 @@ package org.photonvision.vision.target;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
@@ -29,6 +31,7 @@ import org.opencv.core.Size;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TrackedTargetTest {
     @BeforeEach
@@ -38,8 +41,6 @@ public class TrackedTargetTest {
 
     @Test
     void axisTest() {
-        Mat background = new Mat();
-
         MatOfPoint mat = new MatOfPoint();
         mat.fromList(
                 List.of(
@@ -56,10 +57,10 @@ public class TrackedTargetTest {
                 new TrackedTarget.TargetCalculationParameters(
                         false,
                         TargetOffsetPointEdge.Center,
-                        new Point(0, 0),
-                        new Point(imageSize.width / 2, imageSize.height / 2),
-                        new DoubleCouple(0.0, 0.0),
                         RobotOffsetPointMode.None,
+                        new Point(0, 0),
+                        new DualOffsetValues(),
+                        new Point(imageSize.width / 2, imageSize.height / 2),
                         61,
                         34.3,
                         imageSize.area());

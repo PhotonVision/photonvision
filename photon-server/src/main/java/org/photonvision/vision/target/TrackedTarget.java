@@ -20,12 +20,16 @@ package org.photonvision.vision.target;
 import edu.wpi.first.wpilibj.geometry.Transform2d;
 import java.util.HashMap;
 import java.util.List;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.photonvision.common.util.numbers.DoubleCouple;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.opencv.Releasable;
 
 public class TrackedTarget implements Releasable {
@@ -105,7 +109,7 @@ public class TrackedTarget implements Releasable {
                 TargetCalculations.calculateRobotOffsetPoint(
                         params.robotOffsetSinglePoint,
                         params.cameraCenterPoint,
-                        params.robotOffsetDualValues,
+                        params.dualOffsetValues,
                         params.robotOffsetPointMode);
 
         // order of this stuff doesnt matter though
@@ -193,10 +197,12 @@ public class TrackedTarget implements Releasable {
         final TargetOffsetPointEdge targetOffsetPointEdge;
 
         // RobotOffset calculation values
-        final Point robotOffsetSinglePoint;
-        final Point cameraCenterPoint;
-        final DoubleCouple robotOffsetDualValues;
         final RobotOffsetPointMode robotOffsetPointMode;
+        final Point robotOffsetSinglePoint;
+        final DualOffsetValues dualOffsetValues;
+
+        // center point of image
+        final Point cameraCenterPoint;
 
         // yaw calculation values
         final double horizontalFocalLength;
@@ -210,22 +216,43 @@ public class TrackedTarget implements Releasable {
         public TargetCalculationParameters(
                 boolean isLandscape,
                 TargetOffsetPointEdge targetOffsetPointEdge,
-                Point robotOffsetSinglePoint,
-                Point cameraCenterPoint,
-                DoubleCouple robotOffsetDualValues,
                 RobotOffsetPointMode robotOffsetPointMode,
+                Point robotOffsetSinglePoint,
+                DualOffsetValues dualOffsetValues,
+                Point cameraCenterPoint,
                 double horizontalFocalLength,
                 double verticalFocalLength,
                 double imageArea) {
+
             this.isLandscape = isLandscape;
             this.targetOffsetPointEdge = targetOffsetPointEdge;
-            this.robotOffsetSinglePoint = robotOffsetSinglePoint;
-            this.cameraCenterPoint = cameraCenterPoint;
-            this.robotOffsetDualValues = robotOffsetDualValues;
             this.robotOffsetPointMode = robotOffsetPointMode;
+            this.robotOffsetSinglePoint = robotOffsetSinglePoint;
+            this.dualOffsetValues = dualOffsetValues;
+            this.cameraCenterPoint = cameraCenterPoint;
             this.horizontalFocalLength = horizontalFocalLength;
             this.verticalFocalLength = verticalFocalLength;
             this.imageArea = imageArea;
+        }
+
+        public TargetCalculationParameters(
+                boolean isLandscape,
+                TargetOffsetPointEdge targetOffsetPointEdge,
+                RobotOffsetPointMode robotOffsetPointMode,
+                Point robotOffsetSinglePoint,
+                DualOffsetValues dualOffsetValues,
+                FrameStaticProperties frameStaticProperties) {
+
+            this.isLandscape = isLandscape;
+            this.targetOffsetPointEdge = targetOffsetPointEdge;
+            this.robotOffsetPointMode = robotOffsetPointMode;
+            this.robotOffsetSinglePoint = robotOffsetSinglePoint;
+            this.dualOffsetValues = dualOffsetValues;
+
+            this.cameraCenterPoint = frameStaticProperties.centerPoint;
+            this.horizontalFocalLength = frameStaticProperties.horizontalFocalLength;
+            this.verticalFocalLength = frameStaticProperties.verticalFocalLength;
+            this.imageArea = frameStaticProperties.imageArea;
         }
     }
 }

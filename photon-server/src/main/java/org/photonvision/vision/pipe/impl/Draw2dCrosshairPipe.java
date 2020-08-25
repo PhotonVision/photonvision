@@ -24,11 +24,10 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
-import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.RobotOffsetPointMode;
-import org.photonvision.vision.target.TargetCalculations;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dCrosshairPipe
@@ -49,14 +48,13 @@ public class Draw2dCrosshairPipe
 
             switch (params.robotOffsetPointMode) {
                 case Single:
-                    if (!params.singleOffsetPoint.isEmpty()) {
-                        x = params.singleOffsetPoint.getFirst();
-                        y = params.singleOffsetPoint.getSecond();
+                    if (params.singleOffsetPoint.x != 0 && params.singleOffsetPoint.y != 0) {
+                        x = params.singleOffsetPoint.x;
+                        y = params.singleOffsetPoint.y;
                     }
                     break;
                 case Dual:
-                    var beginningPoint = in.getRight().get(0) != null ? in.getRight().get(0).getRobotOffsetPoint() : new Point(0, 0);
-                    var dualOffsetPoint = TargetCalculations.calculateRobotOffsetPoint(beginningPoint, camCenterPoint, params.dualOffsetLineValues, RobotOffsetPointMode.Dual);
+                    var data = params.dualOffsetValues;
                     // TODO: draw crosshair based on dual calibration
                     break;
             }
@@ -79,28 +77,25 @@ public class Draw2dCrosshairPipe
         public final boolean shouldDraw;
         public final FrameStaticProperties frameStaticProperties;
         public final RobotOffsetPointMode robotOffsetPointMode;
-        public final DoubleCouple singleOffsetPoint;
-        public final DoubleCouple dualOffsetLineValues;
+        public final Point singleOffsetPoint;
+        public final DualOffsetValues dualOffsetValues;
 
         public Draw2dCrosshairParams(FrameStaticProperties frameStaticProperties) {
             shouldDraw = true;
             this.frameStaticProperties = frameStaticProperties;
             robotOffsetPointMode = RobotOffsetPointMode.None;
-            singleOffsetPoint = new DoubleCouple();
-            dualOffsetLineValues = new DoubleCouple();
+            singleOffsetPoint = new Point();
+            dualOffsetValues = new DualOffsetValues();
         }
 
         public Draw2dCrosshairParams(
                 boolean shouldDraw,
-                FrameStaticProperties frameStaticProperties,
-                RobotOffsetPointMode robotOffsetPointMode,
-                DoubleCouple singleOffsetPoint,
-                DoubleCouple dualOffsetLineValues) {
+                RobotOffsetPointMode robotOffsetPointMode, Point singleOffsetPoint, DualOffsetValues dualOffsetValues, FrameStaticProperties frameStaticProperties) {
             this.shouldDraw = shouldDraw;
             this.frameStaticProperties = frameStaticProperties;
             this.robotOffsetPointMode = robotOffsetPointMode;
             this.singleOffsetPoint = singleOffsetPoint;
-            this.dualOffsetLineValues = dualOffsetLineValues;
+            this.dualOffsetValues = dualOffsetValues;
         }
     }
 }

@@ -28,6 +28,7 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculationsTest {
 
@@ -42,10 +43,10 @@ public class TargetCalculationsTest {
             new TrackedTarget.TargetCalculationParameters(
                     true,
                     TargetOffsetPointEdge.Center,
-                    new Point(),
-                    imageCenterPoint,
-                    new DoubleCouple(1.0, 0.0),
                     RobotOffsetPointMode.None,
+                    new Point(),
+                    new DualOffsetValues(),
+                    imageCenterPoint,
                     props.horizontalFocalLength,
                     props.verticalFocalLength,
                     imageSize.width * imageSize.height);

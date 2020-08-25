@@ -70,7 +70,6 @@ public class VisionModule {
     protected final QuirkyCamera cameraQuirks;
 
     private long lastFrameConsumeMillis;
-    protected Pair<Point, Point> dualOffsetPoints = Pair.of(new Point(), new Point());
     protected TrackedTarget lastPipelineResultBestTarget;
 
     MJPGFrameConsumer dashboardInputStreamer;

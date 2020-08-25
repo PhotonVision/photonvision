@@ -60,14 +60,14 @@ public class SortContoursPipe
 
     public static class SortContoursParams {
         private final ContourSortMode m_sortMode;
-        private final FrameStaticProperties m_frameStaticProperties;
         private final int m_maxTargets;
+        private final FrameStaticProperties m_frameStaticProperties;
 
         public SortContoursParams(
-                ContourSortMode sortMode, FrameStaticProperties camProperties, int maxTargets) {
+                ContourSortMode sortMode, int maxTargets, FrameStaticProperties camProperties) {
             m_sortMode = sortMode;
-            m_frameStaticProperties = camProperties;
             m_maxTargets = maxTargets;
+            m_frameStaticProperties = camProperties;
         }
 
         public ContourSortMode getSortMode() {
