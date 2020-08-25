@@ -28,6 +28,7 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.RobotOffsetPointMode;
+import org.photonvision.vision.target.TargetCalculations;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dCrosshairPipe
@@ -54,8 +55,16 @@ public class Draw2dCrosshairPipe
                     }
                     break;
                 case Dual:
-                    var data = params.dualOffsetValues;
-                    // TODO: draw crosshair based on dual calibration
+                    if (in.getRight().size() >= 1) {
+                        var target = in.getRight().get(0);
+                        if (target != null) {
+                            var area = target.getArea();
+                            var offsetCrosshair =
+                                    TargetCalculations.calculateDualOffsetCrosshair(params.dualOffsetValues, area);
+                            x = offsetCrosshair.x;
+                            y = offsetCrosshair.y;
+                        }
+                    }
                     break;
             }
 
