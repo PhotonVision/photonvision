@@ -82,9 +82,9 @@ public class VisionSourceManager {
         var addedSources = VisionModuleManager.getInstance().addSources(visionSourceMap);
         addedSources.forEach(VisionModule::start);
         DataChangeService.getInstance()
-            .publishEvent(
-                new OutgoingUIEvent<>(
-                    "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
     protected HashMap<VisionSource, List<CVPipelineSettings>> tryMatchUSBCamImpl() {
