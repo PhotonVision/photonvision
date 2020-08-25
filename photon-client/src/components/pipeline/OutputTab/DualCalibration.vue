@@ -31,7 +31,7 @@
           small
           color="yellow darken-3"
           style="width: 100%;"
-          @click="clearSlope"
+          @click="clearPoints"
         >
           Clear All Points
         </v-btn>
@@ -45,8 +45,8 @@
         name: "DualCalibration",
 
         methods: {
-            clearSlope() {
-              this.handleInputWithIndex("robotOffsetPoint", 1, this.$store.state.currentCameraIndex)
+            clearPoints() {
+              this.handleInputWithIndex("robotOffsetPoint", 0, this.$store.state.currentCameraIndex)
             },
             takePointA() {
               this.handleInputWithIndex("robotOffsetPoint", 2, this.$store.state.currentCameraIndex)
