@@ -18,7 +18,6 @@
 package org.photonvision.vision.target;
 
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.math3.util.FastMath;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
@@ -112,14 +111,21 @@ public class TargetCalculations {
         }
     }
 
-    public static Point calculateDualOffsetCrosshair(DualOffsetValues dualOffsetValues, double currentArea) {
+    public static Point calculateDualOffsetCrosshair(
+            DualOffsetValues dualOffsetValues, double currentArea) {
         boolean firstLarger = dualOffsetValues.firstPointArea >= dualOffsetValues.secondPointArea;
-        double upperArea = firstLarger ? dualOffsetValues.secondPointArea : dualOffsetValues.firstPointArea;
-        double lowerArea = firstLarger ? dualOffsetValues.firstPointArea : dualOffsetValues.secondPointArea;
+        double upperArea =
+                firstLarger ? dualOffsetValues.secondPointArea : dualOffsetValues.firstPointArea;
+        double lowerArea =
+                firstLarger ? dualOffsetValues.firstPointArea : dualOffsetValues.secondPointArea;
 
         var areaFraction = MathUtils.map(currentArea, lowerArea, upperArea, 0, 1);
-        var xLerp = Trajectory.State.lerp(dualOffsetValues.firstPoint.x, dualOffsetValues.secondPoint.x, areaFraction);
-        var yLerp = Trajectory.State.lerp(dualOffsetValues.firstPoint.y, dualOffsetValues.secondPoint.y, areaFraction);
+        var xLerp =
+                Trajectory.State.lerp(
+                        dualOffsetValues.firstPoint.x, dualOffsetValues.secondPoint.x, areaFraction);
+        var yLerp =
+                Trajectory.State.lerp(
+                        dualOffsetValues.firstPoint.y, dualOffsetValues.secondPoint.y, areaFraction);
 
         return new Point(xLerp, yLerp);
     }

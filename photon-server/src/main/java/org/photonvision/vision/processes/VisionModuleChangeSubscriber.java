@@ -142,7 +142,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case "robotOffsetPoint":
                         if (currentSettings instanceof AdvancedPipelineSettings) {
                             var curAdvSettings = (AdvancedPipelineSettings) currentSettings;
-                            var offsetOperation = RobotOffsetPointOperation.fromIndex((int)newPropValue);
+                            var offsetOperation = RobotOffsetPointOperation.fromIndex((int) newPropValue);
                             var latestTarget = parentModule.lastPipelineResultBestTarget;
 
                             if (latestTarget != null) {

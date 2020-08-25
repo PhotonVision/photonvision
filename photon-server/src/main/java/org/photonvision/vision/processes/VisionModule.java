@@ -21,9 +21,6 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.*;
-
-import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.Point;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
@@ -44,7 +41,6 @@ import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.pipeline.result.SimplePipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TargetModel;
 
@@ -118,7 +114,9 @@ public class VisionModule {
         uiDataConsumer = new UIDataPublisher(index);
         addResultConsumer(ntConsumer);
         addResultConsumer(uiDataConsumer);
-        addResultConsumer((result) -> lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
+        addResultConsumer(
+                (result) ->
+                        lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
 
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 

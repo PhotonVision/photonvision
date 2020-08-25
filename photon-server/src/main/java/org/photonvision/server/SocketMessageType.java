@@ -36,7 +36,6 @@ public enum SocketMessageType {
     SMT_DUPLICATEPIPELINE("duplicatePipeline"),
     SMT_ROBOTOFFSETPOINT("robotOffsetPoint");
 
-
     public final String entryKey;
 
     SocketMessageType(String entryKey) {

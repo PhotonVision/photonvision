@@ -25,7 +25,6 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.*;
@@ -72,12 +71,12 @@ public class ColoredShapePipeline
     protected void setPipeParams(
             FrameStaticProperties frameStaticProperties, ColoredShapePipelineSettings settings) {
 
-        DualOffsetValues dualOffsetValues = new DualOffsetValues(
-                settings.offsetDualPointA,
-                settings.offsetDualPointAArea,
-                settings.offsetDualPointB,
-                settings.offsetDualPointBArea
-        );
+        DualOffsetValues dualOffsetValues =
+                new DualOffsetValues(
+                        settings.offsetDualPointA,
+                        settings.offsetDualPointAArea,
+                        settings.offsetDualPointB,
+                        settings.offsetDualPointBArea);
 
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
@@ -134,8 +133,8 @@ public class ColoredShapePipeline
         SortContoursPipe.SortContoursParams sortContoursParams =
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
-                        settings.outputShowMultipleTargets ? 5 : 1, frameStaticProperties
-                ); // TODO don't hardcode?
+                        settings.outputShowMultipleTargets ? 5 : 1,
+                        frameStaticProperties); // TODO don't hardcode?
         sortContoursPipe.setParams(sortContoursParams);
 
         Collect2dTargetsPipe.Collect2dTargetsParams collect2dTargetsParams =
@@ -176,8 +175,7 @@ public class ColoredShapePipeline
                         settings.offsetRobotOffsetMode,
                         settings.offsetSinglePoint,
                         dualOffsetValues,
-                        frameStaticProperties
-                );
+                        frameStaticProperties);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dContoursParams =

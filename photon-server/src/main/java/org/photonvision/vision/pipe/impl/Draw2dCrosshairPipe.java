@@ -90,7 +90,10 @@ public class Draw2dCrosshairPipe
 
         public Draw2dCrosshairParams(
                 boolean shouldDraw,
-                RobotOffsetPointMode robotOffsetPointMode, Point singleOffsetPoint, DualOffsetValues dualOffsetValues, FrameStaticProperties frameStaticProperties) {
+                RobotOffsetPointMode robotOffsetPointMode,
+                Point singleOffsetPoint,
+                DualOffsetValues dualOffsetValues,
+                FrameStaticProperties frameStaticProperties) {
             this.shouldDraw = shouldDraw;
             this.frameStaticProperties = frameStaticProperties;
             this.robotOffsetPointMode = robotOffsetPointMode;

@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.opencv.core.Point;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
@@ -66,7 +65,12 @@ public class Collect2dTargetsPipe
         private final FrameStaticProperties frameStaticProperties;
 
         public Collect2dTargetsParams(
-                RobotOffsetPointMode robotOffsetPointMode, Point robotOffsetSinglePoint, DualOffsetValues dualOffsetValues, TargetOffsetPointEdge targetOffsetPointEdge, TargetOrientation orientation, FrameStaticProperties frameStaticProperties) {
+                RobotOffsetPointMode robotOffsetPointMode,
+                Point robotOffsetSinglePoint,
+                DualOffsetValues dualOffsetValues,
+                TargetOffsetPointEdge targetOffsetPointEdge,
+                TargetOrientation orientation,
+                FrameStaticProperties frameStaticProperties) {
             this.frameStaticProperties = frameStaticProperties;
             this.robotOffsetPointMode = robotOffsetPointMode;
             this.robotOffsetSinglePoint = robotOffsetSinglePoint;

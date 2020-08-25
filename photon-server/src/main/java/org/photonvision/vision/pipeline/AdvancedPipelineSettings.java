@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.Objects;
-
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
