@@ -32,6 +32,8 @@ import java.nio.IntBuffer;
 import jogamp.opengl.GLOffscreenAutoDrawableImpl;
 import jogamp.opengl.egl.EGLContext;
 import jogamp.opengl.egl.EGLDrawableFactory;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.opencv.core.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -82,10 +84,11 @@ public class GPUAccelerator {
                     "  vec2 uv = gl_FragCoord.xy/resolution;",
                     // Important! We do this .bgr swizzle because the image comes in as BGR but we pretend
                     // it's RGB for convenience+speed
-                    "  vec3 col = texture2D(texture0, uv).bgr;",
+                    "  vec3 col = texture2D(texture0, uv).rgb;", // TODO: Don't use BGR on ZERO_COPY_OMX
                     // Only the first value in the vec4 gets used for GL_RED, and only the last value gets
                     // used for GL_ALPHA
                     "  gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 1.0, 1.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);",
+//                    "  gl_FragColor = vec4((col.r + col.b + col.g) / 3.0, 1.0, 1.0, 1.0);",
                     "}");
     private static final float[] k_vertexPositions = {
         // Set up a quad that covers the screen
@@ -119,7 +122,8 @@ public class GPUAccelerator {
             textureUniformId,
             resolutionUniformId,
             lowerUniformId,
-            upperUniformId;
+            upperUniformId,
+            vcsmFbId;
     private final int startingWidth, startingHeight;
 
     private final Logger logger = new Logger(GPUAccelerator.class, LogGroup.General);
@@ -154,9 +158,9 @@ public class GPUAccelerator {
         }
         capabilities.setDoubleBuffered(false);
         capabilities.setOnscreen(false);
-        capabilities.setRedBits(0);
-        capabilities.setBlueBits(0);
-        capabilities.setGreenBits(0);
+        capabilities.setRedBits(8);
+        capabilities.setBlueBits(8);
+        capabilities.setGreenBits(8);
         capabilities.setAlphaBits(8);
 
         // Set up the offscreen area we're going to draw to
@@ -227,6 +231,8 @@ public class GPUAccelerator {
             // Cleanup
             gl.glBindTexture(GL_TEXTURE_2D, 0);
             fboDrawable.getFBObject(GL_FRONT).unbind(gl);
+
+            this.vcsmFbId = 0; // Unused
         } else {
             // We need to generate a framebuffer and attach an EGLImage set up as a texture to it; the
             // EGLImage must be of the type EGL_IMAGE_BRCM_VCSM so that we can use VCSM to map the images
@@ -235,7 +241,8 @@ public class GPUAccelerator {
             // First generate our framebuffer and bind it
             var vcsmFbId = GLBuffers.newDirectIntBuffer(1);
             gl.glGenFramebuffers(1, vcsmFbId);
-            gl.glBindFramebuffer(GL_FRAMEBUFFER, vcsmFbId.get(0));
+            new DebugGLES2(gl).glBindFramebuffer(GL_FRAMEBUFFER, vcsmFbId.get(0));
+            this.vcsmFbId = vcsmFbId.get(0);
 
             // Then generate the texture that we'll bind our EGLImage to
             var vcsmFbTextureId = GLBuffers.newDirectIntBuffer(1);
@@ -245,7 +252,7 @@ public class GPUAccelerator {
             gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
             // Create our VCSM info struct
-            long vcsmInfo = PicamJNI.initVCSMInfo(startingWidth, startingHeight);
+            long vcsmInfo = 0;//PicamJNI.initVCSMInfo(startingWidth, startingHeight);
             if (vcsmInfo == 0) {
                 throw new RuntimeException("Couldn't create VCSM info struct (resolution too high?)");
             }
@@ -299,7 +306,7 @@ public class GPUAccelerator {
         var type = GLBuffers.newDirectIntBuffer(1);
         gl.glGetIntegerv(GLES3.GL_IMPLEMENTATION_COLOR_READ_TYPE, type);
 
-        logger.info(
+        logger.trace(
                 "GL_IMPLEMENTATION_COLOR_READ_FORMAT: "
                         + fmt.get(0)
                         + ", GL_IMPLEMENTATION_COLOR_READ_TYPE: "
@@ -389,7 +396,7 @@ public class GPUAccelerator {
 
             // Finally we pass the EGLImage handle to the native code for use by OMX
             logger.info("Setting EGLImage handle");
-            boolean err = PicamJNI.setEGLImageHandle(eglImageHandle);
+            boolean err = true;//PicamJNI.setEGLImageHandle(eglImageHandle);
             if (err) {
                 throw new RuntimeException("Couldn't set EGLImage handle");
             }
@@ -490,12 +497,17 @@ public class GPUAccelerator {
         return shaderId;
     }
 
+    boolean hasCalled = false;
+
     public void redrawGL(Scalar hsvLower, Scalar hsvUpper) {
-        PicamJNI.waitForOMXFillBufferDone();
+        //PicamJNI.waitForOMXFillBufferDone();
+
+        // Bind the framebuffer we'll draw to
+        gl.glBindFramebuffer(GL_FRAMEBUFFER, vcsmFbId);
 
         // Set the viewport to the correct size and clear the screen
         gl.glViewport(0, 0, startingWidth, startingHeight);
-        gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        gl.glClear(GL_COLOR_BUFFER_BIT);
 
         // Use the shaders we set up in the constructor
         gl.glUseProgram(programId);
@@ -528,7 +540,11 @@ public class GPUAccelerator {
         // Draw the fullscreen quad
         gl.glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
+        gl.glFlush();
+        gl.glFinish();
+
         // Cleanup
+        gl.glBindFramebuffer(GL_FRAMEBUFFER, 0);
         texture.disable(gl);
         gl.glDisableVertexAttribArray(k_positionVertexAttribute);
         gl.glUseProgram(0);

@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.opencv;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.ReflectionUtils;

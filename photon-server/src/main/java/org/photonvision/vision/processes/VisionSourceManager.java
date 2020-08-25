@@ -30,6 +30,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.GPUAcceleratedPicamSource;
 import org.photonvision.vision.camera.USBCameraSource;
 
 public class VisionSourceManager {
@@ -292,6 +293,21 @@ public class VisionSourceManager {
     // Replace spaces with underscores
     private static String baseNameToUniqueName(String baseName) {
         return baseName.replaceAll(" ", "_");
+    }
+
+    private static List<VisionSource> loadVisionSourcesFromCamConfigs(
+            List<CameraConfiguration> camConfigs) {
+        List<VisionSource> cameraSources = new ArrayList<>();
+        for (var configuration : camConfigs) {
+            if (configuration.baseName.startsWith("mmal service")) {
+                configuration.cameraType = CameraType.ZeroCopyPicam;
+                VisionSource picamSrc = new GPUAcceleratedPicamSource(configuration);
+                cameraSources.add(picamSrc);
+                continue;
+            }
+            cameraSources.add(new USBCameraSource(configuration));
+        }
+        return cameraSources;
     }
 
     /**

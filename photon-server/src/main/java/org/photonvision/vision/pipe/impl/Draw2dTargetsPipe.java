@@ -53,6 +53,9 @@ public class Draw2dTargetsPipe
 
         if (!params.shouldDraw) return null;
 
+        var fps = in.getRight();
+        var imageSize = Math.sqrt(in.getLeft().rows() * in.getLeft().cols());
+
         if (!in.getMiddle().isEmpty()
                 && (params.showCentroid
                         || params.showMaximumBox
@@ -156,6 +159,18 @@ public class Draw2dTargetsPipe
                 }
             }
         }
+
+        // Draw FPS
+        var textSize = params.kPixelsToText * imageSize;
+        var thickness = params.kPixelsToThickness * imageSize;
+        Imgproc.putText(
+                in.getLeft(),
+                fps.toString(),
+                new Point(10, 10 + textSize * 25),
+                0,
+                textSize,
+                ColorHelper.colorToScalar(params.textColor),
+                (int) thickness);
 
         return null;
     }

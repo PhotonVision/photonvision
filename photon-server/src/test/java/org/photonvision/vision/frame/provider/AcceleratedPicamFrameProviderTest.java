@@ -18,10 +18,28 @@
 package org.photonvision.vision.frame.provider;
 
 import org.junit.jupiter.api.Test;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.util.TestUtils;
+import org.photonvision.vision.camera.GPUAcceleratedPicamSource;
 
 public class AcceleratedPicamFrameProviderTest {
     @Test
     public void testGrabFrame() {
-        var frameProvider = new AcceleratedPicamFrameProvider(null);
+        TestUtils.loadLibraries();
+
+        var frameProvider = new AcceleratedPicamFrameProvider(new GPUAcceleratedPicamSource.PicamSettables(new CameraConfiguration("f", "f", "f", "f")), 960, 720);
+
+        long lastTime = System.currentTimeMillis();
+        for (int i = 0; i < 10; i++) {
+            var frame = frameProvider.get();
+            System.out.println(frame.image.getMat().get(0, 0)[0]);
+
+            long time = System.currentTimeMillis();
+            System.out.println("dt (ms): " + (time - lastTime));
+            lastTime = time;
+        }
+        var mat = frameProvider.get().image.getMat();
+        Imgcodecs.imwrite("out.png", mat);
     }
 }
