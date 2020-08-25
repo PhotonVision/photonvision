@@ -350,7 +350,7 @@ public class VisionModule {
 
     public void setTargetModel(TargetModel targetModel) {
         var settings = pipelineManager.getCurrentUserPipeline().getSettings();
-        if(settings instanceof ReflectivePipelineSettings) {
+        if (settings instanceof ReflectivePipelineSettings) {
             ((ReflectivePipelineSettings) settings).targetModel = targetModel;
             saveAndBroadcastAll();
         } else {
