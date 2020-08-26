@@ -180,7 +180,7 @@
         </v-col>
       </v-row>
     </v-container>
-    <!-- snack bar -->
+    <!-- snack bar and modal -->
     <v-snackbar
       v-model="snackbar"
       :timeout="3000"
@@ -196,6 +196,52 @@
         Close
       </v-btn>
     </v-snackbar>
+
+    <v-dialog
+      v-model="dialog"
+      width="500"
+    >
+      <template v-slot:activator="{ on, attrs }">
+        <v-btn
+          color="red lighten-2"
+          dark
+          v-bind="attrs"
+          v-on="on"
+        >
+          Click Me
+        </v-btn>
+      </template>
+
+      <v-card
+        dark
+      >
+        <v-card-title
+          dark
+          class="headline grey lighten-2"
+        >
+          Current resolution not calibrated
+        </v-card-title>
+
+        <v-card-text>
+          Because the current resolution {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].width }} x
+          {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].height }} is not yet calibrated,
+          3D mode cannot be enabled. Please <a href="/cameras"> visit the Cameras tab</a> to calibrate this resolution.
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="primary"
+            text
+            @click="dialog = false"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -226,6 +272,7 @@
                 selectedTabsData: [0, 0, 0, 0],
                 snackbar: false,
                 counterData: 0,
+                dialog: false
             }
         },
         computed: {
