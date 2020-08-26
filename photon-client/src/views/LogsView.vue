@@ -1,28 +1,74 @@
 <template>
   <div>
-    <v-col
-      cols="12"
-    >
+    <v-col>
       <v-card
         dark
-        class="pa-6"
+        class="pl-6 pb-6 pr-6 pt-6"
         style="background-color: #006492;"
       >
-        <v-row>
-          <v-card-title>
-            Current Log
-          </v-card-title>
-          <v-btn
-            color="secondary"
-            @click="download('photonlog.log', logString)"
-          >
-            <v-icon left>
-              mdi-download
-            </v-icon>
-            Download Log
-          </v-btn>
-        </v-row>
+        <v-card-title>
+          Current Log
+        </v-card-title>
+        <v-row cols="12">
+          <v-col cols="4">
+            <v-btn
+              color="secondary"
+              @click="download('photonlog.log', logString)"
+            >
+              <v-icon left>
+                mdi-download
+              </v-icon>
+              Download Log
+            </v-btn>
+          </v-col>
 
+          <v-col cols="8">
+            <v-btn-toggle
+              v-model="logLevel"
+              :multiple="$vuetify.breakpoint.mdAndUp"
+              mandatory
+              dark
+              class="fill"
+            >
+              <v-btn
+                color="secondary"
+                class="fill"
+              >
+                <span>Off</span>
+              </v-btn>
+              <v-btn
+                color="secondary"
+                class="fill"
+              >
+                <span>Error</span>
+              </v-btn>
+              <v-btn
+                color="secondary"
+                class="fill"
+              >
+                <span>Warn</span>
+              </v-btn>
+              <v-btn
+                color="secondary"
+                class="fill"
+              >
+                <span>Info</span>
+                <v-btn
+                  color="secondary"
+                  class="fill"
+                >
+                  <span>Debug</span>
+                </v-btn>
+                <v-btn
+                  color="secondary"
+                  class="fill"
+                >
+                  <span>Trace</span>
+                </v-btn>
+              </v-btn>
+            </v-btn-toggle>
+          </v-col>
+        </v-row>
         <log-view
           class="loggerClass"
           :log="logString"
@@ -43,6 +89,14 @@ export default {
     computed: {
         logString() {
             return this.$store.state.logString;
+        },
+        logLevel: {
+            get() {
+                return 1
+            },
+            set(value) {
+                console.log(value)
+            }
         }
     },
     methods: {
