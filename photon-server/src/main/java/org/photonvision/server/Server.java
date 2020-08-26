@@ -79,6 +79,7 @@ public class Server {
         app.post("/api/settings/endCalibration", RequestHandler::onCalibrationEnd);
         app.post("/api/restartDevice", RequestHandler::restartDevice);
         app.post("api/restartProgram", RequestHandler::restartProgram);
+        app.post("api/vision/pnpModel", RequestHandler::uploadPnpModel);
 
         app.start(port);
     }

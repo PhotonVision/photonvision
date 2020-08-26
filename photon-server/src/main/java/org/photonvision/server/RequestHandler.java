@@ -36,6 +36,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.vision.processes.VisionModuleManager;
+import org.photonvision.vision.target.TargetModel;
 
 public class RequestHandler {
     private static final Logger logger = new Logger(RequestHandler.class, LogGroup.WebServer);
@@ -148,5 +149,24 @@ public class RequestHandler {
     public static void restartProgram(Context ctx) {
         ctx.status(200);
         System.exit(0);
+    }
+
+    public static void uploadPnpModel(Context ctx) {
+        UITargetData data;
+        try {
+            data = kObjectMapper.readValue(ctx.body(), UITargetData.class);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            ctx.status(500);
+            return;
+        }
+
+        VisionModuleManager.getInstance().getModule(data.index).setTargetModel(data.targetModel);
+        ctx.status(200);
+    }
+
+    public static class UITargetData {
+        public int index;
+        public TargetModel targetModel;
     }
 }

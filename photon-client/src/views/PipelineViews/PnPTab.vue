@@ -66,7 +66,10 @@
                     color: "Success",
                     text: ""
                 },
-                snack: false
+                snack: false,
+                selectedModel: {
+                    isCustom: false
+                }
             }
         },
         computed: {
@@ -164,7 +167,10 @@
                 this.uploadModel(this.selectedModel, true);
             },
             uploadModel(model, premade = false) {
-                this.axios.post("http://" + this.$address + "/api/vision/pnpModel", model).then(() => {
+                this.axios.post("http://" + this.$address + "/api/vision/pnpModel", {
+                    ['targetModel']: model,
+                    ['index']: this.$store.getters.currentCameraIndex
+                }).then(() => {
                     this.snackbar = {
                         color: "success",
                         text: premade ? "Target model changed successfully" : "Custom target model uploaded and selected successfully"

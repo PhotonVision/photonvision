@@ -87,11 +87,9 @@ public class ConfigManager {
         this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
 
         TimedTaskManager.getInstance().addTask("ConfigManager", this::checkSaveAndWrite, 1000);
-
-        load();
     }
 
-    private void load() {
+    public void load() {
         logger.info("Loading settings...");
         if (!configDirectoryFile.exists()) {
             if (configDirectoryFile.mkdirs()) {
@@ -163,6 +161,9 @@ public class ConfigManager {
     public void saveToDisk() {
         logger.info("Saving settings...");
 
+        // Delete old configs
+        FileUtils.deleteDirectory(camerasFolder.toPath());
+
         try {
             JacksonUtils.serialize(hardwareConfigFile.toPath(), config.getHardwareConfig());
         } catch (IOException e) {
@@ -173,9 +174,6 @@ public class ConfigManager {
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
         }
-
-        // Delete old configs
-        FileUtils.deleteDirectory(camerasFolder.toPath());
 
         // save all of our cameras
         var cameraConfigMap = config.getCameraConfigurations();

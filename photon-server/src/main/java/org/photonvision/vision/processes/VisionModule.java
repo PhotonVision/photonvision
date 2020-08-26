@@ -38,8 +38,10 @@ import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
+import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TargetModel;
 
 /**
 * This is the God Class
@@ -343,6 +345,16 @@ public class VisionModule {
                 c.accept(result);
             }
             lastFrameConsumeMillis = System.currentTimeMillis();
+        }
+    }
+
+    public void setTargetModel(TargetModel targetModel) {
+        var settings = pipelineManager.getCurrentUserPipeline().getSettings();
+        if (settings instanceof ReflectivePipelineSettings) {
+            ((ReflectivePipelineSettings) settings).targetModel = targetModel;
+            saveAndBroadcastAll();
+        } else {
+            logger.error("Cannot set target model of non-reflective pipe! Ignoring...");
         }
     }
 }

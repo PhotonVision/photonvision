@@ -162,12 +162,13 @@ public class Main {
 
         try {
             CameraServerCvJNI.forceLoad();
+            TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
         }
 
-        ConfigManager.getInstance(); // init config manager
+        ConfigManager.getInstance().load(); // init config manager
         NetworkManager.getInstance().initialize(false);
 
         NetworkTablesManager.getInstance()
