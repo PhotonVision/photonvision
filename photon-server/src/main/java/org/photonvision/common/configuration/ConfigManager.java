@@ -28,7 +28,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.common.util.file.JacksonUtils;
@@ -277,7 +276,6 @@ public class ConfigManager {
                                                                     .relativize(p)
                                                                     .toString();
                                                     try {
-//                                                        TestUtils.loadLibraries(); // Without this we get unsastisfied link errors
                                                         return JacksonUtils.deserialize(p, CVPipelineSettings.class);
                                                     } catch (JsonProcessingException e) {
                                                         logger.error("Exception while deserializing " + relativizedFilePath, e);
