@@ -73,6 +73,18 @@
         </v-list-item>
 
         <v-list-item
+          link
+          to="logs"
+        >
+          <v-list-item-icon>
+            <v-icon>mdi-laptop</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>View Logs</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item
           v-if="this.$vuetify.breakpoint.mdAndUp"
           link
           @click.stop="toggleCompactMode"
@@ -129,14 +141,6 @@
                 <h4>Saved All changes</h4>
               </div>
             </v-snackbar>
-            <div v-if="isLogger">
-              <keep-alive>
-                <log-view
-                  class="loggerClass"
-                  :log="log"
-                />
-              </keep-alive>
-            </div>
           </v-flex>
         </v-layout>
       </v-container>
@@ -145,19 +149,15 @@
 </template>
 
 <script>
-    import logView from '@femessage/log-viewer';
 
     export default {
         name: 'App',
         components: {
-            logView
         },
         data: () => ({
             // Used so that we can switch back to the previously selected pipeline after camera calibration
             previouslySelectedIndex: undefined,
             timer: undefined,
-            isLogger: false,
-            log: "",
         }),
         computed: {
             saveSnackbar: {
@@ -186,9 +186,6 @@
         created() {
             document.addEventListener("keydown", e => {
                 switch (e.key) {
-                    case '`' :
-                        this.isLogger = !this.isLogger;
-                        break;
                     case "z":
                         if (e.ctrlKey && this.$store.getters.canUndo) {
                             this.$store.dispatch('undo', {vm: this});
@@ -261,11 +258,10 @@
                 }
                 this.timer = setInterval(this.saveSettings, 4000);
             },
-            logMessage(message, level) {
-                const colors = ["\u001B[30m", "\u001B[31m", "\u001B[33m", "\u001B[32m", "\u001B[37m", "\u001B[36m"]
-                const reset = "\u001b[0m"
-                this.log += `${colors[level]}${message}${reset}\n`
+            // eslint-disable-next-line no-unused-vars
+            logMessage(message, colorCode) {
                 console.log(message)
+                this.$store.commit('logString', `${colorCode}${message}\u001b[0m\n`)
             },
             switchToDriverMode() {
                 this.previouslySelectedIndex = this.$store.getters.currentPipelineIndex;
@@ -305,16 +301,6 @@
         width: 100%;
         height: 70px;
         object-fit: contain;
-    }
-
-    .loggerClass {
-        position: absolute;
-        bottom: 0;
-        height: 25% !important;
-        left: 0;
-        right: 0;
-        box-shadow: #282828 0 0 5px 1px;
-        background-color: #2b2b2b;
     }
 
     ::-webkit-scrollbar {

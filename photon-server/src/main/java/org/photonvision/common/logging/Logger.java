@@ -235,7 +235,7 @@ public class Logger {
         public void log(String message, LogLevel level) {
             var messageMap = new SocketHandler.UIMap();
             messageMap.put("logMessage", message);
-            messageMap.put("logLevel", level.code);
+            messageMap.put("logLevel", level.colorCode);
             var superMap = new SocketHandler.UIMap();
             superMap.put("logMessage", messageMap);
             DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>("log", superMap));

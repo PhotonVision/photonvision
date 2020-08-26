@@ -34,6 +34,7 @@
             Save
           </v-btn>
         </v-form>
+        <logs />
       </v-col>
     </v-row>
     <v-snackbar
@@ -51,11 +52,13 @@
     import Lighting from "./SettingsViews/Lighting";
     import cvImage from '../components/common/cv-image'
     import General from "./SettingsViews/General";
+    import Logs from "./LogsView"
 
     export default {
         name: 'SettingsTab',
         components: {
             cvImage,
+            Logs
             // General,
         },
         data() {
