@@ -41,8 +41,8 @@ import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TargetModel;
+import org.photonvision.vision.target.TrackedTarget;
 
 /**
 * This is the God Class
