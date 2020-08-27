@@ -17,10 +17,13 @@
 
 package org.photonvision.vision.target;
 
+import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import org.apache.commons.math3.util.FastMath;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
+import org.photonvision.vision.opencv.DualOffsetValues;
 
 public class TargetCalculations {
     public static double calculateYaw(
@@ -84,7 +87,7 @@ public class TargetCalculations {
     public static Point calculateRobotOffsetPoint(
             Point offsetPoint,
             Point camCenterPoint,
-            DoubleCouple offsetEquationValues,
+            DualOffsetValues dualOffsetValues,
             RobotOffsetPointMode offsetMode) {
         switch (offsetMode) {
             case None:
@@ -97,12 +100,39 @@ public class TargetCalculations {
                     return offsetPoint;
                 }
             case Dual:
-                Point resultPoint = new Point();
-                resultPoint.x =
-                        (offsetPoint.x - offsetEquationValues.getFirst()) / offsetEquationValues.getSecond();
-                resultPoint.y =
-                        (offsetPoint.y * offsetEquationValues.getSecond()) + offsetEquationValues.getFirst();
+                var resultPoint = new Point();
+                var lineValues = dualOffsetValues.getLineValues();
+                var offsetSlope = lineValues.getFirst();
+                var offsetIntercept = lineValues.getSecond();
+
+                resultPoint.x = (offsetPoint.x - offsetIntercept) / offsetSlope;
+                resultPoint.y = (offsetPoint.y * offsetSlope) + offsetIntercept;
                 return resultPoint;
         }
+    }
+
+    public static Point calculateDualOffsetCrosshair(
+            DualOffsetValues dualOffsetValues, double currentArea) {
+        boolean firstLarger = dualOffsetValues.firstPointArea >= dualOffsetValues.secondPointArea;
+        double upperArea =
+                firstLarger ? dualOffsetValues.secondPointArea : dualOffsetValues.firstPointArea;
+        double lowerArea =
+                firstLarger ? dualOffsetValues.firstPointArea : dualOffsetValues.secondPointArea;
+
+        var areaFraction = MathUtils.map(currentArea, lowerArea, upperArea, 0, 1);
+        var xLerp =
+                Trajectory.State.lerp(
+                        dualOffsetValues.firstPoint.x, dualOffsetValues.secondPoint.x, areaFraction);
+        var yLerp =
+                Trajectory.State.lerp(
+                        dualOffsetValues.firstPoint.y, dualOffsetValues.secondPoint.y, areaFraction);
+
+        return new Point(xLerp, yLerp);
+    }
+
+    public static DoubleCouple getLineFromPoints(Point firstPoint, Point secondPoint) {
+        var offsetLineSlope = (secondPoint.y - firstPoint.y) / (secondPoint.x - firstPoint.x);
+        var offsetLineIntercept = firstPoint.y - (offsetLineSlope * firstPoint.x);
+        return new DoubleCouple(offsetLineSlope, offsetLineIntercept);
     }
 }

@@ -52,8 +52,6 @@ public class SocketHandler {
 
     public static class UIMap extends HashMap<String, Object> {}
 
-    abstract static class SelectiveBroadcastPair extends Pair<UIMap, WsContext> {}
-
     private static class ThreadSafeSingleton {
         private static final SocketHandler INSTANCE = new SocketHandler();
     }
@@ -199,30 +197,28 @@ public class SocketHandler {
                                 dcService.publishEvent(newPipelineEvent);
                                 break;
                             }
-                        case SMT_COMMAND:
+                        case SMT_DELETECURRENTPIPELINE:
                             {
-                                var cmd = SocketMessageCommandType.fromEntryKey((String) entryValue);
-                                switch (cmd) {
-                                    case SMCT_DELETECURRENTPIPELINE:
-                                        {
-                                            var deleteCurrentPipelineEvent =
-                                                    new IncomingWebSocketEvent<>(
-                                                            DataChangeDestination.DCD_ACTIVEMODULE,
-                                                            "deleteCurrPipeline",
-                                                            0,
-                                                            cameraIndex,
-                                                            context);
-                                            dcService.publishEvent(deleteCurrentPipelineEvent);
-                                            break;
-                                        }
-                                    case SMCT_SAVE:
-                                        {
-                                            var saveEvent =
-                                                    new IncomingWebSocketEvent<>(DataChangeDestination.DCD_OTHER, "save", 0);
-                                            dcService.publishEvent(saveEvent);
-                                            break;
-                                        }
-                                }
+                                var deleteCurrentPipelineEvent =
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "deleteCurrPipeline",
+                                                0,
+                                                cameraIndex,
+                                                context);
+                                dcService.publishEvent(deleteCurrentPipelineEvent);
+                                break;
+                            }
+                        case SMT_ROBOTOFFSETPOINT:
+                            {
+                                var robotOffsetPointEvent =
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "robotOffsetPoint",
+                                                (Integer) entryValue,
+                                                cameraIndex,
+                                                null);
+                                dcService.publishEvent(robotOffsetPointEvent);
                                 break;
                             }
                         case SMT_CURRENTCAMERA:

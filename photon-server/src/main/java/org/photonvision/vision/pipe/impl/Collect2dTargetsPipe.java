@@ -20,8 +20,8 @@ package org.photonvision.vision.pipe.impl;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Point;
-import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.*;
 
@@ -42,15 +42,12 @@ public class Collect2dTargetsPipe
 
         var calculationParams =
                 new TrackedTarget.TargetCalculationParameters(
-                        params.getOrientation() == TargetOrientation.Landscape,
-                        params.getOffsetPointRegion(),
-                        params.getUserOffsetPoint(),
-                        params.getFrameStaticProperties().centerPoint,
-                        new DoubleCouple(params.getCalibrationB(), params.getCalibrationM()),
-                        params.getOffsetMode(),
-                        params.getFrameStaticProperties().horizontalFocalLength,
-                        params.getFrameStaticProperties().verticalFocalLength,
-                        params.getFrameStaticProperties().imageArea);
+                        params.targetOrientation == TargetOrientation.Landscape,
+                        params.targetOffsetPointEdge,
+                        params.robotOffsetPointMode,
+                        params.robotOffsetSinglePoint,
+                        params.dualOffsetValues,
+                        params.frameStaticProperties);
 
         for (PotentialTarget target : in) {
             targets.add(new TrackedTarget(target, calculationParams));
@@ -60,57 +57,26 @@ public class Collect2dTargetsPipe
     }
 
     public static class Collect2dTargetsParams {
-        private final FrameStaticProperties m_frameStaticProperties;
-        private final RobotOffsetPointMode m_offsetMode;
-        private final double m_calibrationM;
-        private final double m_calibrationB;
-        private final Point m_userOffsetPoint;
-        private final TargetOffsetPointEdge m_region;
-        private final TargetOrientation m_orientation;
+        private final RobotOffsetPointMode robotOffsetPointMode;
+        private final Point robotOffsetSinglePoint;
+        private final DualOffsetValues dualOffsetValues;
+        private final TargetOffsetPointEdge targetOffsetPointEdge;
+        private final TargetOrientation targetOrientation;
+        private final FrameStaticProperties frameStaticProperties;
 
         public Collect2dTargetsParams(
-                FrameStaticProperties frameStaticProperties,
-                RobotOffsetPointMode offsetMode,
-                double calibrationM,
-                double calibrationB,
-                Point calibrationPoint,
-                TargetOffsetPointEdge region,
-                TargetOrientation orientation) {
-            m_frameStaticProperties = frameStaticProperties;
-            m_offsetMode = offsetMode;
-            m_calibrationM = calibrationM;
-            m_calibrationB = calibrationB;
-            m_userOffsetPoint = calibrationPoint;
-            m_region = region;
-            m_orientation = orientation;
-        }
-
-        public FrameStaticProperties getFrameStaticProperties() {
-            return m_frameStaticProperties;
-        }
-
-        public RobotOffsetPointMode getOffsetMode() {
-            return m_offsetMode;
-        }
-
-        public double getCalibrationM() {
-            return m_calibrationM;
-        }
-
-        public double getCalibrationB() {
-            return m_calibrationB;
-        }
-
-        public Point getUserOffsetPoint() {
-            return m_userOffsetPoint;
-        }
-
-        public TargetOffsetPointEdge getOffsetPointRegion() {
-            return m_region;
-        }
-
-        public TargetOrientation getOrientation() {
-            return m_orientation;
+                RobotOffsetPointMode robotOffsetPointMode,
+                Point robotOffsetSinglePoint,
+                DualOffsetValues dualOffsetValues,
+                TargetOffsetPointEdge targetOffsetPointEdge,
+                TargetOrientation orientation,
+                FrameStaticProperties frameStaticProperties) {
+            this.frameStaticProperties = frameStaticProperties;
+            this.robotOffsetPointMode = robotOffsetPointMode;
+            this.robotOffsetSinglePoint = robotOffsetSinglePoint;
+            this.dualOffsetValues = dualOffsetValues;
+            this.targetOffsetPointEdge = targetOffsetPointEdge;
+            targetOrientation = orientation;
         }
     }
 }

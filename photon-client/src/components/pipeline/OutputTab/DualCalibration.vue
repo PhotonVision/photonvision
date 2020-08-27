@@ -31,7 +31,7 @@
           small
           color="yellow darken-3"
           style="width: 100%;"
-          @click="clearSlope"
+          @click="clearPoints"
         >
           Clear All Points
         </v-btn>
@@ -43,45 +43,16 @@
 <script>
     export default {
         name: "DualCalibration",
-      // eslint-disable-next-line vue/require-prop-types
-        props: ['rawPoint'],
-        data() {
-            return {
-                pointA: undefined,
-                pointB: undefined
-            }
-        },
+
         methods: {
+            clearPoints() {
+              this.handleInputWithIndex("robotOffsetPoint", 0, this.$store.state.currentCameraIndex)
+            },
             takePointA() {
-                this.pointA = this.rawPoint;
-                this.calcSlope();
+              this.handleInputWithIndex("robotOffsetPoint", 2, this.$store.state.currentCameraIndex)
             },
             takePointB() {
-                this.pointB = this.rawPoint;
-                this.calcSlope();
-            },
-            calcSlope() {
-                if (this.pointA !== undefined && this.pointB !== undefined) {
-                    let m = (this.pointB[1] - this.pointA[1]) / (this.pointB[0] - this.pointA[0]);
-                    let b = this.pointA[1] - (m * this.pointA[0]);
-                    if (isNaN(m) === false && isNaN(b) === false) {
-                        this.sendSlope(m, b, true);
-                    } else {
-                        this.$emit('snackbar', "Points are too close");
-                    }
-                    this.pointA = undefined;
-                    this.pointB = undefined;
-                }
-            },
-            sendSlope(m, b) {
-                this.handleInput('dualTargetCalibrationM', m);
-                this.handleInput('dualTargetCalibrationB', b);
-                this.$emit('update');
-            },
-            clearSlope() {
-                this.sendSlope(1, 0, false);
-                this.pointA = undefined;
-                this.pointB = undefined;
+              this.handleInputWithIndex("robotOffsetPoint", 3, this.$store.state.currentCameraIndex)
             }
         }
     }

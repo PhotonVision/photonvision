@@ -20,6 +20,7 @@ package org.photonvision.vision.processes;
 import java.util.ArrayList;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -29,8 +30,10 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
+import org.photonvision.vision.target.RobotOffsetPointOperation;
 
 @SuppressWarnings("unchecked")
 public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
@@ -136,6 +139,47 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case "takeCalSnapshot":
                         parentModule.takeCalibrationSnapshot();
                         return;
+                    case "robotOffsetPoint":
+                        if (currentSettings instanceof AdvancedPipelineSettings) {
+                            var curAdvSettings = (AdvancedPipelineSettings) currentSettings;
+                            var offsetOperation = RobotOffsetPointOperation.fromIndex((int) newPropValue);
+                            var latestTarget = parentModule.lastPipelineResultBestTarget;
+
+                            if (latestTarget != null) {
+                                var newPoint = latestTarget.getTargetOffsetPoint();
+
+                                switch (curAdvSettings.offsetRobotOffsetMode) {
+                                    case Single:
+                                        if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
+                                            curAdvSettings.offsetSinglePoint = new Point();
+                                        } else if (offsetOperation == RobotOffsetPointOperation.ROPO_TAKESINGLE) {
+                                            curAdvSettings.offsetSinglePoint = newPoint;
+                                        }
+                                        break;
+                                    case Dual:
+                                        if (offsetOperation == RobotOffsetPointOperation.ROPO_CLEAR) {
+                                            curAdvSettings.offsetDualPointA = new Point();
+                                            curAdvSettings.offsetDualPointAArea = 0;
+                                            curAdvSettings.offsetDualPointB = new Point();
+                                            curAdvSettings.offsetDualPointBArea = 0;
+                                        } else {
+                                            // update point and area
+                                            switch (offsetOperation) {
+                                                case ROPO_TAKEFIRSTDUAL:
+                                                    curAdvSettings.offsetDualPointA = newPoint;
+                                                    curAdvSettings.offsetDualPointAArea = latestTarget.getArea();
+                                                    break;
+                                                case ROPO_TAKESECONDDUAL:
+                                                    curAdvSettings.offsetDualPointB = newPoint;
+                                                    curAdvSettings.offsetDualPointBArea = latestTarget.getArea();
+                                                    break;
+                                            }
+                                        }
+                                        break;
+                                }
+                            }
+                        }
+                        return;
                 }
 
                 // special case for camera settables
@@ -204,7 +248,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     logger.error("Unknown exception when setting PSC prop!", e);
                 }
 
-                //                parentModule.saveModule();
                 parentModule.saveAndBroadcastSelective(wsEvent.originContext, propName, newPropValue);
             }
         }
