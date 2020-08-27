@@ -24,6 +24,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
@@ -84,6 +85,10 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         HSVPipe.HSVParams hsvParams =
                 new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
         hsvPipe.setParams(hsvParams);
+        PicamJNI.setThresholds(
+                settings.hsvHue.getFirst() / 255d, settings.hsvSaturation.getFirst() / 255d, settings.hsvValue.getFirst() / 255d,
+                settings.hsvHue.getSecond() / 255d, settings.hsvSaturation.getSecond() / 255d, settings.hsvValue.getSecond() / 255d
+        );
 
         FindContoursPipe.FindContoursParams findContoursParams =
                 new FindContoursPipe.FindContoursParams();

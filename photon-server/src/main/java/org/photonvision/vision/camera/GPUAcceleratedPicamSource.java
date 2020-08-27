@@ -2,6 +2,7 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.cscore.VideoMode;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.AcceleratedPicamFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
@@ -37,12 +38,17 @@ public class GPUAcceleratedPicamSource implements VisionSource {
 
   public static class PicamSettables extends VisionSourceSettables {
 
-    private final HashMap<Integer, VideoMode> videoModes = new HashMap<>();
+    private VideoMode currentVideoMode;
 
     public PicamSettables(CameraConfiguration configuration) {
       super(configuration);
 
+      videoModes = new HashMap<>();
       videoModes.put(0, new VideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 90));
+      videoModes.put(1, new VideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 45));
+      videoModes.put(2, new VideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 20));
+
+      currentVideoMode = videoModes.get(0);
     }
 
     @Override
@@ -62,12 +68,15 @@ public class GPUAcceleratedPicamSource implements VisionSource {
 
     @Override
     public VideoMode getCurrentVideoMode() {
-      return videoModes.get(0);
+      return currentVideoMode;
     }
 
     @Override
     protected void setVideoModeInternal(VideoMode videoMode) {
+      PicamJNI.destroyCamera();
+      PicamJNI.createCamera(videoMode.width, videoMode.height, videoMode.fps);
 
+      currentVideoMode = videoMode;
     }
 
     @Override

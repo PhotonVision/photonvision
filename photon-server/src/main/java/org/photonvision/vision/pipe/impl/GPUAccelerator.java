@@ -84,7 +84,7 @@ public class GPUAccelerator {
                     "  vec2 uv = gl_FragCoord.xy/resolution;",
                     // Important! We do this .bgr swizzle because the image comes in as BGR but we pretend
                     // it's RGB for convenience+speed
-                    "  vec3 col = texture2D(texture0, uv).rgb;", // TODO: Don't use BGR on ZERO_COPY_OMX
+                    "  vec3 col = texture2D(texture0, uv).bgr;", // TODO: Don't use BGR on ZERO_COPY_OMX
                     // Only the first value in the vec4 gets used for GL_RED, and only the last value gets
                     // used for GL_ALPHA
                     "  gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 1.0, 1.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);",

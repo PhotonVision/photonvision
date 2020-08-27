@@ -256,12 +256,6 @@ public class VisionSourceManager {
         return cfg;
     }
 
-    private List<VisionSource> loadVisionSourcesFromCamConfigs(List<CameraConfiguration> camConfigs) {
-        List<VisionSource> usbCameraSources = new ArrayList<>();
-        camConfigs.forEach(configuration -> usbCameraSources.add(new USBCameraSource(configuration)));
-        return usbCameraSources;
-    }
-
     private List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
         List<UsbCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {

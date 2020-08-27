@@ -42,6 +42,8 @@ public class PicamJNI {
     */
     public static native boolean destroyCamera();
 
+    public static native boolean setThresholds(double hL, double sL, double vL, double hU, double sU, double vU);
+
     private static native boolean setExposure(int exposure);
 
     private static native boolean setBrightness(int exposure);
