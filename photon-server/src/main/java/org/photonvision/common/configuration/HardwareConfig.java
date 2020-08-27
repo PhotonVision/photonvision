@@ -34,6 +34,7 @@ public class HardwareConfig {
     public final int ledPWMFrequency;
     public final String ledDimCommand;
     public final String ledBlinkCommand;
+    public final ArrayList<Integer> statusRGBPins;
 
     // Metrics
     public final String cpuTempCommand;
@@ -55,6 +56,7 @@ public class HardwareConfig {
         ledSetCommand = "";
         ledsCanDim = false;
         ledPWMRange = new ArrayList<>();
+        statusRGBPins = new ArrayList<>();
         ledPWMFrequency = 0;
         ledPWMSetRange = "";
         ledDimCommand = "";
@@ -79,11 +81,12 @@ public class HardwareConfig {
             ArrayList<Integer> ledPins,
             String ledSetCommand,
             boolean ledsCanDim,
-            ArrayList<Integer> ledPWMRange,
+            ArrayList<Integer> statusRGBPins,
             String ledPWMSetRange,
             int ledPWMFrequency,
             String ledDimCommand,
             String ledBlinkCommand,
+            ArrayList<Integer> ledPWMRange,
             String cpuTempCommand,
             String cpuMemoryCommand,
             String cpuUtilCommand,
@@ -103,6 +106,7 @@ public class HardwareConfig {
         this.ledPWMFrequency = ledPWMFrequency;
         this.ledDimCommand = ledDimCommand;
         this.ledBlinkCommand = ledBlinkCommand;
+        this.statusRGBPins = statusRGBPins;
         this.cpuTempCommand = cpuTempCommand;
         this.cpuMemoryCommand = cpuMemoryCommand;
         this.cpuUtilCommand = cpuUtilCommand;
