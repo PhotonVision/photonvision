@@ -34,48 +34,59 @@ public class CustomGPIO extends GPIOBase {
 
     @Override
     public void togglePin() {
-        execute(
-                commands
-                        .get("setState")
-                        .replace("{s}", String.valueOf(!currentState))
-                        .replace("{p}", String.valueOf(this.port)));
-        currentState = !currentState;
+        if (this.port != -1) {
+            execute(
+                    commands
+                            .get("setState")
+                            .replace("{s}", String.valueOf(!currentState))
+                            .replace("{p}", String.valueOf(this.port)));
+            currentState = !currentState;
+        }
     }
 
     @Override
     public void setLow() {
-        execute(
-                commands
-                        .get("setState")
-                        .replace("{s}", String.valueOf(false))
-                        .replace("{p}", String.valueOf(this.port)));
-        currentState = false;
+        if (this.port != -1) {
+            execute(
+                    commands
+                            .get("setState")
+                            .replace("{s}", String.valueOf(false))
+                            .replace("{p}", String.valueOf(this.port)));
+            currentState = false;
+        }
     }
 
     @Override
     public void setHigh() {
-        execute(
-                commands
-                        .get("setState")
-                        .replace("{s}", String.valueOf(true))
-                        .replace("{p}", String.valueOf(this.port)));
-        currentState = true;
+        if (this.port != -1) {
+            execute(
+                    commands
+                            .get("setState")
+                            .replace("{s}", String.valueOf(true))
+                            .replace("{p}", String.valueOf(this.port)));
+            currentState = true;
+        }
     }
 
     @Override
     public void setState(boolean state) {
-        execute(
-                commands
-                        .get("setState")
-                        .replace("{s}", String.valueOf(state))
-                        .replace("{p}", String.valueOf(this.port)));
-        currentState = state;
+        if (this.port != -1) {
+            execute(
+                    commands
+                            .get("setState")
+                            .replace("{s}", String.valueOf(state))
+                            .replace("{p}", String.valueOf(this.port)));
+            currentState = state;
+        }
     }
 
     @Override
     public boolean shutdown() {
-        execute(commands.get("shutdown"));
-        return true;
+        if (this.port != -1) {
+            execute(commands.get("shutdown"));
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -85,13 +96,15 @@ public class CustomGPIO extends GPIOBase {
 
     @Override
     public void setPwmRange(List<Integer> range) {
-        execute(
-                commands
-                        .get("setRange")
-                        .replace("{lower_range}", String.valueOf(range.get(0)))
-                        .replace("{upper_range}", String.valueOf(range.get(1)))
-                        .replace("{p}", String.valueOf(port)));
-        pwmRange = range;
+        if (this.port != -1) {
+            execute(
+                    commands
+                            .get("setRange")
+                            .replace("{lower_range}", String.valueOf(range.get(0)))
+                            .replace("{upper_range}", String.valueOf(range.get(1)))
+                            .replace("{p}", String.valueOf(port)));
+            pwmRange = range;
+        }
     }
 
     @Override
@@ -101,23 +114,27 @@ public class CustomGPIO extends GPIOBase {
 
     @Override
     public void blink(int pulseTimeMillis, int blinks) {
-        execute(
-                commands
-                        .get("blink")
-                        .replace("{pulseTime}", String.valueOf(pulseTimeMillis))
-                        .replace("{blinks}", String.valueOf(blinks))
-                        .replace("{p}", String.valueOf(this.port)));
+        if (this.port != -1) {
+            execute(
+                    commands
+                            .get("blink")
+                            .replace("{pulseTime}", String.valueOf(pulseTimeMillis))
+                            .replace("{blinks}", String.valueOf(blinks))
+                            .replace("{p}", String.valueOf(this.port)));
+        }
     }
 
     @Override
     public void dimLED(int dimValue) {
-        // Check to see if dimValue is within the range
-        if (dimValue < pwmRange.get(0) || dimValue > pwmRange.get(1)) return;
-        execute(
-                commands
-                        .get("dim")
-                        .replace("{p}", String.valueOf(port))
-                        .replace("{v}", String.valueOf(dimValue)));
+        if (this.port != -1) {
+            // Check to see if dimValue is within the range
+            if (dimValue < pwmRange.get(0) || dimValue > pwmRange.get(1)) return;
+            execute(
+                    commands
+                            .get("dim")
+                            .replace("{p}", String.valueOf(port))
+                            .replace("{v}", String.valueOf(dimValue)));
+        }
     }
 
     public static void setConfig(HardwareConfig config) {
