@@ -48,6 +48,5 @@ public class HardwareManagerTest {
         Assertions.assertEquals(config.statusRGBPins.get(0), -1);
         Assertions.assertEquals(config.statusRGBPins.get(1), -1);
         Assertions.assertEquals(config.statusRGBPins.get(2), -1);
-
     }
 }

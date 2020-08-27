@@ -91,11 +91,17 @@ public class HardwareManager {
         LEDs.values().forEach(GPIOBase::shutdown);
     }
 
-    public GPIOBase redStatusLED(){ return LEDs.get(hardwareConfig.statusRGBPins.get(0));}
+    public GPIOBase redStatusLED() {
+        return LEDs.get(hardwareConfig.statusRGBPins.get(0));
+    }
 
-    public GPIOBase greenStatusLED(){ return LEDs.get(hardwareConfig.statusRGBPins.get(1));}
+    public GPIOBase greenStatusLED() {
+        return LEDs.get(hardwareConfig.statusRGBPins.get(1));
+    }
 
-    public GPIOBase blueStatusLED(){ return LEDs.get(hardwareConfig.statusRGBPins.get(2));}
+    public GPIOBase blueStatusLED() {
+        return LEDs.get(hardwareConfig.statusRGBPins.get(2));
+    }
 
     public boolean restartDevice() {
         try {

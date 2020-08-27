@@ -26,7 +26,7 @@ public class CustomGPIO extends GPIOBase {
 
     private boolean currentState;
     private List<Integer> pwmRange = new ArrayList<>();
-    public int port;
+    private int port;
 
     public CustomGPIO(int port) {
         this.port = port;
