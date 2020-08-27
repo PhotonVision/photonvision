@@ -3,6 +3,7 @@
   "deviceLogoPath": "photonvision.png",
   "supportURL": "https://support.photonvision.com",
   "ledPins" : [2, 13],
+  "statusRGBPins" : [-1, -1, -1],
   "ledSetCommand" : "",
   "ledsCanDim" : true,
   "ledPWMRange" : [0, 100],

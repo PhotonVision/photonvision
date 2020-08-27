@@ -29,7 +29,7 @@ import org.photonvision.common.logging.Logger;
 public class PiGPIO extends GPIOBase {
     private static final Logger logger = new Logger(PiGPIO.class, LogGroup.General);
     private final ArrayList<Pulse> pulses = new ArrayList<>();
-    private final int pin;
+    public final int pin;
 
     public static JPigpio getPigpioDaemon() {
         return Singleton.INSTANCE;
