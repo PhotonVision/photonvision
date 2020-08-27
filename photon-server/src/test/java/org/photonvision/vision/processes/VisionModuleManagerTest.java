@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import org.junit.jupiter.api.*;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
@@ -103,6 +104,7 @@ public class VisionModuleManagerTest {
 
     @Test
     public void setupManager() {
+        ConfigManager.getInstance().load();
         var sources = new HashMap<VisionSource, List<CVPipelineSettings>>();
         sources.put(
                 new TestSource(

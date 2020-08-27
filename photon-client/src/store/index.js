@@ -70,6 +70,7 @@ export default new Vuex.Store({
                     contourGroupingMode: 0,
                     contourIntersection: 0,
                     contourSortMode: 0,
+                    outputShouldDraw: true,
                     outputShowMultipleTargets: false,
                     offsetRobotOffsetMode: 0,
                     solvePNPEnabled: false,
@@ -92,7 +93,7 @@ export default new Vuex.Store({
                     skew: 0,
                     area: 0,
                     // 3D only
-                    pose: {x: 0, y: 0, rotation: 0},
+                    pose: {x: 0, y: 0, rot: 0},
                 }]
             },
         settings: {

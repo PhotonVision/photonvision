@@ -34,10 +34,6 @@ import org.photonvision.vision.target.TargetModel;
 
 public class ConfigTest {
 
-    static {
-        TestUtils.loadLibraries();
-    }
-
     private static ConfigManager configMgr;
     private static final CameraConfiguration cameraConfig =
             new CameraConfiguration("TestCamera", "/dev/video420");
@@ -48,6 +44,7 @@ public class ConfigTest {
     public static void init() {
         TestUtils.loadLibraries();
         configMgr = new ConfigManager(Path.of("testconfigdir"));
+        configMgr.load();
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
 
         REFLECTIVE_PIPELINE_SETTINGS = new ReflectivePipelineSettings();
@@ -65,7 +62,7 @@ public class ConfigTest {
 
     @Test
     @Order(1)
-    public void serializeConfig() throws IOException {
+    public void serializeConfig() {
         TestUtils.loadLibraries();
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);

@@ -35,7 +35,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public IntegerCouple hsvSaturation = new IntegerCouple(50, 255);
     public IntegerCouple hsvValue = new IntegerCouple(50, 255);
 
-    public boolean outputShowThresholded = true;
+    public boolean outputShouldDraw = true;
     public boolean outputShowMultipleTargets = false;
 
     public boolean erode = false;
@@ -74,7 +74,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         AdvancedPipelineSettings that = (AdvancedPipelineSettings) o;
-        return outputShowThresholded == that.outputShowThresholded
+        return outputShouldDraw == that.outputShouldDraw
                 && outputShowMultipleTargets == that.outputShowMultipleTargets
                 && erode == that.erode
                 && dilate == that.dilate
@@ -101,7 +101,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 hsvHue,
                 hsvSaturation,
                 hsvValue,
-                outputShowThresholded,
+                outputShouldDraw,
                 outputShowMultipleTargets,
                 erode,
                 dilate,

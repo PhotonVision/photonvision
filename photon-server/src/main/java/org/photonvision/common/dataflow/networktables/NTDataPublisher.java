@@ -30,7 +30,7 @@ import org.photonvision.vision.pipeline.result.SimplePipelineResult;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
 
-    private final NetworkTable rootTable = NetworkTablesManager.kRootTable;
+    private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
     private NetworkTable subTable;
     private NetworkTableEntry rawBytesEntry;
 

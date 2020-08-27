@@ -30,31 +30,45 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dTargetsPipe
         extends MutatingPipe<
-                Triple<Mat, List<TrackedTarget>, Integer>, Draw2dTargetsPipe.Draw2dContoursParams> {
+                Triple<Mat, List<TrackedTarget>, Integer>, Draw2dTargetsPipe.Draw2dTargetsParams> {
 
     private List<MatOfPoint> m_drawnContours = new ArrayList<>();
 
     @Override
     protected Void process(Triple<Mat, List<TrackedTarget>, Integer> in) {
+        // Always draw FPS
+        var imageSize = Math.sqrt(in.getLeft().rows() * in.getLeft().cols());
+
+        var fps = in.getRight();
+        var textSize = params.kPixelsToText * imageSize;
+        var thickness = params.kPixelsToThickness * imageSize;
+        Imgproc.putText(
+                in.getLeft(),
+                fps.toString(),
+                new Point(10, 10 + textSize * 25),
+                0,
+                textSize,
+                ColorHelper.colorToScalar(params.textColor),
+                (int) thickness);
+
+        if (!params.shouldDraw) return null;
+
         if (!in.getMiddle().isEmpty()
                 && (params.showCentroid
                         || params.showMaximumBox
                         || params.showRotatedBox
                         || params.showShape)) {
 
-            var fps = in.getRight();
-            var imageSize = Math.sqrt(in.getLeft().rows() * in.getLeft().cols());
-
             var centroidColour = ColorHelper.colorToScalar(params.centroidColor);
             var maximumBoxColour = ColorHelper.colorToScalar(params.maximumBoxColor);
             var rotatedBoxColour = ColorHelper.colorToScalar(params.rotatedBoxColor);
             var shapeColour = ColorHelper.colorToScalar(params.shapeOutlineColour);
 
-            for (int i = 0; i < (params.showMultiple ? in.getMiddle().size() : 1); i++) {
+            for (int i = 0; i < (params.showMultipleTargets ? in.getMiddle().size() : 1); i++) {
                 Point[] vertices = new Point[4];
                 MatOfPoint contour = new MatOfPoint();
 
-                if (i != 0 && !params.showMultiple) {
+                if (i != 0 && !params.showMultipleTargets) {
                     break;
                 }
 
@@ -100,8 +114,6 @@ public class Draw2dTargetsPipe
                 }
 
                 if (params.showContourNumber) {
-                    var textSize = params.kPixelsToText * imageSize;
-                    var thickness = params.kPixelsToThickness * imageSize;
                     var center = target.m_mainContour.getCenterPoint();
                     var textPos =
                             new Point(
@@ -142,47 +154,36 @@ public class Draw2dTargetsPipe
                             centroidColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
                 }
-
-                // Draw FPS
-                var textSize = params.kPixelsToText * imageSize;
-                var thickness = params.kPixelsToThickness * imageSize;
-                Imgproc.putText(
-                        in.getLeft(),
-                        fps.toString(),
-                        new Point(10, 10 + textSize * 25),
-                        0,
-                        textSize,
-                        ColorHelper.colorToScalar(params.textColor),
-                        (int) thickness);
             }
         }
 
         return null;
     }
 
-    public static class Draw2dContoursParams {
-        public final double kPixelsToText = 0.0025;
-        public final double kPixelsToThickness = 0.008;
-        public final double kPixelsToOffset = 0.02;
-
-        public final double kPixelsToBoxThickness = 0.007;
-        public final double kPixelsToCentroidRadius = 0.03;
-
+    public static class Draw2dTargetsParams {
+        public double kPixelsToText = 0.0025;
+        public double kPixelsToThickness = 0.008;
+        public double kPixelsToOffset = 0.02;
+        public double kPixelsToBoxThickness = 0.007;
+        public double kPixelsToCentroidRadius = 0.03;
         public boolean showCentroid = true;
-        public boolean showMultiple;
         public boolean showRotatedBox = true;
         public boolean showShape = false;
         public boolean showMaximumBox = true;
         public boolean showContourNumber = true;
-        public Color centroidColor = Color.green; // Color.decode("#ff5ebf");
+        public Color centroidColor = Color.GREEN; // Color.decode("#ff5ebf");
         public Color rotatedBoxColor = Color.BLUE;
         public Color maximumBoxColor = Color.RED;
         public Color shapeOutlineColour = Color.MAGENTA;
         public Color textColor = Color.GREEN;
 
+        public final boolean showMultipleTargets;
+        public final boolean shouldDraw;
+
         // TODO: set other params from UI/settings file?
-        public Draw2dContoursParams(boolean showMultipleTargets) {
-            this.showMultiple = showMultipleTargets;
+        public Draw2dTargetsParams(boolean shouldDraw, boolean showMultipleTargets) {
+            this.shouldDraw = shouldDraw;
+            this.showMultipleTargets = showMultipleTargets;
         }
     }
 }

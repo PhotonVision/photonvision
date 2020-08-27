@@ -28,6 +28,6 @@ public class TimedTaskManagerTest {
         AtomicInteger i = new AtomicInteger();
         TimedTaskManager.getInstance().addTask("TaskManagerTest", i::getAndIncrement, 2);
         Thread.sleep(400);
-        Assertions.assertEquals(200, i.get(), 5);
+        Assertions.assertEquals(200, i.get(), 15);
     }
 }

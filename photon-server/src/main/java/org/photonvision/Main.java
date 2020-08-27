@@ -162,14 +162,17 @@ public class Main {
 
         try {
             CameraServerCvJNI.forceLoad();
+            TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
         }
 
-        ConfigManager.getInstance(); // init config manager
-        NetworkManager.getInstance().initialize(false); // basically empty. todo: link to ConfigManager?
-        NetworkTablesManager.setClientMode("127.0.0.1");
+        ConfigManager.getInstance().load(); // init config manager
+        NetworkManager.getInstance().initialize(false);
+
+        NetworkTablesManager.getInstance()
+                .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
         HashMap<VisionSource, List<CVPipelineSettings>> allSources = gatherSources();
 

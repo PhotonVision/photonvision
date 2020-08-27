@@ -37,6 +37,8 @@ public class Draw3dTargetsPipe
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
+        if (!params.shouldDraw) return null;
+
         for (var target : in.getRight()) {
 
             // draw convex hull
@@ -125,13 +127,18 @@ public class Draw3dTargetsPipe
     }
 
     public static class Draw3dContoursParams {
-        private final int radius = 2;
-        private final Color color = Color.RED;
-        private final TargetModel targetModel;
-        private final CameraCalibrationCoefficients cameraCalibrationCoefficients;
+        public int radius = 2;
+        public Color color = Color.RED;
+
+        public final boolean shouldDraw;
+        public final TargetModel targetModel;
+        public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
 
         public Draw3dContoursParams(
-                CameraCalibrationCoefficients cameraCalibrationCoefficients, TargetModel targetModel) {
+                boolean shouldDraw,
+                CameraCalibrationCoefficients cameraCalibrationCoefficients,
+                TargetModel targetModel) {
+            this.shouldDraw = shouldDraw;
             this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
             this.targetModel = targetModel;
         }

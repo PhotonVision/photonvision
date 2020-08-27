@@ -17,7 +17,6 @@
 
 package org.photonvision.common.networking;
 
-import java.io.IOException;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
@@ -59,10 +58,12 @@ public class NetworkManager {
                 try {
                     new ShellExec()
                             .executeBashCommand("ip addr add " + config.staticIp + "/24" + " dev eth0");
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+        } else {
+            logger.info("Not managing network on non-Linux platforms");
         }
     }
 
