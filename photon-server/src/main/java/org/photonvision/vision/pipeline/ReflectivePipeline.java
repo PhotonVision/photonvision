@@ -50,11 +50,11 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
     private final CornerDetectionPipe cornerDetectionPipe = new CornerDetectionPipe();
     private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
-    private final OutputMatPipe outputMatPipe = new OutputMatPipe();
-    private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
-    private final Draw2dTargetsPipe draw2dTargetsPipe = new Draw2dTargetsPipe();
-    private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
-    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+    //    private final OutputMatPipe outputMatPipe = new OutputMatPipe();
+    //    private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
+    //    private final Draw2dTargetsPipe draw2dTargetsPipe = new Draw2dTargetsPipe();
+    //    private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
+    //    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private Mat rawInputMat = new Mat();
     private final long[] pipeProfileNanos = new long[PipelineProfiler.ReflectivePipeCount];
@@ -135,26 +135,26 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         settings.cornerDetectionAccuracyPercentage);
         cornerDetectionPipe.setParams(cornerDetectionPipeParams);
 
-        var draw2DTargetsParams =
-                new Draw2dTargetsPipe.Draw2dTargetsParams(
-                        settings.outputShouldDraw, settings.outputShowMultipleTargets);
-        draw2dTargetsPipe.setParams(draw2DTargetsParams);
-
-        var draw2dCrosshairParams =
-                new Draw2dCrosshairPipe.Draw2dCrosshairParams(
-                        settings.outputShouldDraw,
-                        settings.offsetRobotOffsetMode,
-                        settings.offsetSinglePoint,
-                        dualOffsetValues,
-                        frameStaticProperties);
-        draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
-
-        var draw3dTargetsParams =
-                new Draw3dTargetsPipe.Draw3dContoursParams(
-                        settings.outputShouldDraw,
-                        frameStaticProperties.cameraCalibration,
-                        settings.targetModel);
-        draw3dTargetsPipe.setParams(draw3dTargetsParams);
+        //        var draw2DTargetsParams =
+        //                new Draw2dTargetsPipe.Draw2dTargetsParams(
+        //                        settings.outputShouldDraw, settings.outputShowMultipleTargets);
+        //        draw2dTargetsPipe.setParams(draw2DTargetsParams);
+        //
+        //        var draw2dCrosshairParams =
+        //                new Draw2dCrosshairPipe.Draw2dCrosshairParams(
+        //                        settings.outputShouldDraw,
+        //                        settings.offsetRobotOffsetMode,
+        //                        settings.offsetSinglePoint,
+        //                        dualOffsetValues,
+        //                        frameStaticProperties);
+        //        draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
+        //
+        //        var draw3dTargetsParams =
+        //                new Draw3dTargetsPipe.Draw3dContoursParams(
+        //                        settings.outputShouldDraw,
+        //                        frameStaticProperties.cameraCalibration,
+        //                        settings.targetModel);
+        //        draw3dTargetsPipe.setParams(draw3dTargetsParams);
 
         var solvePNPParams =
                 new SolvePNPPipe.SolvePNPPipeParams(
@@ -166,7 +166,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
     @Override
     public CVPipelineResult process(Frame frame, ReflectivePipelineSettings settings) {
-        setPipeParams(frame.frameStaticProperties, settings);
 
         long sumPipeNanosElapsed = 0L;
 

@@ -17,7 +17,9 @@
 
 package org.photonvision.vision.frame;
 
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import org.opencv.core.Mat;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 
@@ -34,6 +36,12 @@ public class Frame implements Releasable {
 
     public Frame(CVMat image, FrameStaticProperties frameStaticProperties) {
         this(image, System.nanoTime(), frameStaticProperties);
+    }
+
+    public Frame() {
+        timestampNanos = 0;
+        image = new CVMat(new Mat());
+        frameStaticProperties = new FrameStaticProperties(0, 0, 0, new Rotation2d(), null);
     }
 
     public void copyTo(Frame destFrame) {
