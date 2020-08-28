@@ -19,7 +19,6 @@ package org.photonvision.vision.frame;
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import org.opencv.core.Mat;
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 

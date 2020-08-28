@@ -171,7 +171,11 @@ public class VisionModule {
             this.targets = targets;
             this.fps = fps;
 
-            shouldRun = inputFrame != null && !inputFrame.image.getMat().empty() && outputFrame != null && !outputFrame.image.getMat().empty();
+            shouldRun =
+                    inputFrame != null
+                            && !inputFrame.image.getMat().empty()
+                            && outputFrame != null
+                            && !outputFrame.image.getMat().empty();
         }
 
         @Override
