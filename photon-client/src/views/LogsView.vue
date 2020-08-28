@@ -22,49 +22,27 @@
             </v-btn>
           </v-col>
 
-          <v-col cols="8">
+          <v-col
+            cols="12"
+            sm="6"
+            class="py-2"
+          >
+            <p>Filter logs</p>
+
             <v-btn-toggle
               v-model="logLevel"
-              :multiple="$vuetify.breakpoint.mdAndUp"
-              mandatory
+              group
               dark
+              multiple
               class="fill"
             >
               <v-btn
+                v-for="(level) in possibleLevelArray"
+                :key="level"
                 color="secondary"
                 class="fill"
               >
-                <span>Off</span>
-              </v-btn>
-              <v-btn
-                color="secondary"
-                class="fill"
-              >
-                <span>Error</span>
-              </v-btn>
-              <v-btn
-                color="secondary"
-                class="fill"
-              >
-                <span>Warn</span>
-              </v-btn>
-              <v-btn
-                color="secondary"
-                class="fill"
-              >
-                <span>Info</span>
-                <v-btn
-                  color="secondary"
-                  class="fill"
-                >
-                  <span>Debug</span>
-                </v-btn>
-                <v-btn
-                  color="secondary"
-                  class="fill"
-                >
-                  <span>Trace</span>
-                </v-btn>
+                {{ level }}
               </v-btn>
             </v-btn-toggle>
           </v-col>
@@ -86,15 +64,34 @@ export default {
     components: {
         logView
     },
+    data() {
+        return {
+            selectedLevel: [0, 1],
+            possibleLevelArray: ['ERROR', 'WARN', 'INFO', 'DEBUG']
+        }
+    },
     computed: {
         logString() {
-            return this.$store.state.logString;
+            const logArray = this.$store.state.logString.split('\n');
+            const regexs = this.selectedLevel.map(level => `\\[[0-9 \\-:]*\\] \\[[a-zA-Z \\- 0-9]*\\] \\[${this.possibleLevelArray[level]}\\]`)
+            const out = []
+            logArray.forEach(s => {
+                for(let patternIdx in regexs) {
+                    if (s.match(regexs[patternIdx])) {
+                        out.push(s);
+                        return;
+                    }
+                }
+            })
+
+            return out.join('\n')
         },
         logLevel: {
             get() {
-                return 1
+                return this.selectedLevel
             },
             set(value) {
+                this.selectedLevel = value;
                 console.log(value)
             }
         }
@@ -128,4 +125,15 @@ export default {
     /*    background-color: #2b2b2b;*/
     background-color: #232C37 !important;
 }
+
+.v-btn-toggle.fill {
+    width: 100%;
+    height: 100%;
+}
+
+.v-btn-toggle.fill > .v-btn {
+    width: 20%;
+    height: 100%;
+}
+
 </style>

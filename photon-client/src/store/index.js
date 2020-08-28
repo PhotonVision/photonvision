@@ -18,7 +18,7 @@ export default new Vuex.Store({
         colorPicking: false,
         saveBar: false,
         compactMode: localStorage.getItem("compactMode") === undefined ? undefined : localStorage.getItem("compactMode") === "true", // Compact mode is initially unset on purpose
-        logString: "F o o",
+        logString: "",
         currentCameraIndex: 0,
         selectedOutputs: [0, 1], // 0 indicates normal, 1 indicates threshold
         cameraSettings: [ // This is a list of objects representing the settings of all cameras
