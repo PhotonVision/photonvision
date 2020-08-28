@@ -35,6 +35,8 @@ public class HardwareManager {
     private final ShellExec shellExec = new ShellExec(true, false);
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
+    private int visionLedPercentage = 100;
+
     public static HardwareManager getInstance() {
         if (Singleton.INSTANCE == null) {
             Singleton.INSTANCE = new HardwareManager();
@@ -72,23 +74,18 @@ public class HardwareManager {
     }
 
     public void setBrightnessPercentage(int percentage) {
+        visionLedPercentage = percentage;
         LEDs.values().forEach(led -> led.dimLED(percentage));
     }
 
-    public void turnLEDsOn() {
-        LEDs.values().forEach(GPIOBase::setHigh);
-    }
-
-    public void turnLEDsOff() {
-        LEDs.values().forEach(GPIOBase::setLow);
-    }
-
-    public void toggleLEDs() {
-        LEDs.values().forEach(GPIOBase::togglePin);
-    }
-
-    public void shutdown() {
-        LEDs.values().forEach(GPIOBase::shutdown);
+    public void setVisionLEDs(final boolean on) {
+        LEDs.values().forEach(led -> {
+            if (on && visionLedPercentage != 100) {
+                led.dimLED(visionLedPercentage);
+            } else {
+                led.setState(on);
+            }
+        });
     }
 
     public GPIOBase redStatusLED() {

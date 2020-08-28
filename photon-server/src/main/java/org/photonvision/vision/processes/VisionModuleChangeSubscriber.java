@@ -114,23 +114,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                             HardwareManager.getInstance().blinkLEDs(params.getLeft(), params.getRight());
                         }
                         return;
-                    case "setLED":
-                        if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            var state = (boolean) newPropValue;
-                            if (state) HardwareManager.getInstance().turnLEDsOn();
-                            else HardwareManager.getInstance().turnLEDsOff();
-                        }
-                        return;
-                    case "toggleLED":
-                        if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            HardwareManager.getInstance().toggleLEDs();
-                        }
-                        return;
-                    case "shutdownLEDs":
-                        if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            HardwareManager.getInstance().shutdown();
-                        }
-                        return;
                     case "startcalibration":
                         var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
                         parentModule.startCalibration(data);

@@ -29,6 +29,7 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -223,6 +224,10 @@ public class VisionModule {
             config.cameraGain = -1;
         } else {
             visionSource.getSettables().setGain(config.cameraGain);
+        }
+
+        if (isVendorCamera()) {
+            HardwareManager.getInstance().setVisionLEDs(config.ledMode);
         }
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
