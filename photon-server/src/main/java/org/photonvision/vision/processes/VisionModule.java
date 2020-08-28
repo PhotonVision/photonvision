@@ -42,6 +42,7 @@ import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
+import org.photonvision.vision.target.TrackedTarget;
 
 /**
 * This is the God Class
@@ -65,6 +66,7 @@ public class VisionModule {
     protected final QuirkyCamera cameraQuirks;
 
     private long lastFrameConsumeMillis;
+    protected TrackedTarget lastPipelineResultBestTarget;
 
     MJPGFrameConsumer dashboardInputStreamer;
     MJPGFrameConsumer dashboardOutputStreamer;
@@ -112,6 +114,9 @@ public class VisionModule {
         uiDataConsumer = new UIDataPublisher(index);
         addResultConsumer(ntConsumer);
         addResultConsumer(uiDataConsumer);
+        addResultConsumer(
+                (result) ->
+                        lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
 
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 

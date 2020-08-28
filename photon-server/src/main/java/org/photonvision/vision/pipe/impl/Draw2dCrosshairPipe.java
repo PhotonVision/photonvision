@@ -24,9 +24,11 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
-import org.photonvision.common.util.numbers.DoubleCouple;
+import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.RobotOffsetPointMode;
+import org.photonvision.vision.target.TargetCalculations;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dCrosshairPipe
@@ -37,22 +39,32 @@ public class Draw2dCrosshairPipe
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         if (!params.shouldDraw) return null;
 
-        Mat image = in.getLeft();
+        var camCenterPoint = params.frameStaticProperties.centerPoint;
+        var image = in.getLeft();
 
         if (params.showCrosshair) {
-            double x = image.cols() / 2.0;
-            double y = image.rows() / 2.0;
-            double scale = image.cols() / 32.0;
+            double x = params.frameStaticProperties.centerX;
+            double y = params.frameStaticProperties.centerY;
+            double scale = params.frameStaticProperties.imageWidth / 32.0;
 
-            switch (params.calibrationMode) {
+            switch (params.robotOffsetPointMode) {
                 case Single:
-                    if (!params.calibrationPoint.isEmpty()) {
-                        x = params.calibrationPoint.getFirst();
-                        y = params.calibrationPoint.getSecond();
+                    if (params.singleOffsetPoint.x != 0 && params.singleOffsetPoint.y != 0) {
+                        x = params.singleOffsetPoint.x;
+                        y = params.singleOffsetPoint.y;
                     }
                     break;
                 case Dual:
-                    // TODO: draw crosshair based on dual calibration
+                    if (in.getRight().size() >= 1) {
+                        var target = in.getRight().get(0);
+                        if (target != null) {
+                            var area = target.getArea();
+                            var offsetCrosshair =
+                                    TargetCalculations.calculateDualOffsetCrosshair(params.dualOffsetValues, area);
+                            x = offsetCrosshair.x;
+                            y = offsetCrosshair.y;
+                        }
+                    }
                     break;
             }
 
@@ -72,14 +84,30 @@ public class Draw2dCrosshairPipe
         public Color crosshairColor = Color.GREEN;
 
         public final boolean shouldDraw;
-        public final RobotOffsetPointMode calibrationMode;
-        public final DoubleCouple calibrationPoint;
+        public final FrameStaticProperties frameStaticProperties;
+        public final RobotOffsetPointMode robotOffsetPointMode;
+        public final Point singleOffsetPoint;
+        public final DualOffsetValues dualOffsetValues;
+
+        public Draw2dCrosshairParams(FrameStaticProperties frameStaticProperties) {
+            shouldDraw = true;
+            this.frameStaticProperties = frameStaticProperties;
+            robotOffsetPointMode = RobotOffsetPointMode.None;
+            singleOffsetPoint = new Point();
+            dualOffsetValues = new DualOffsetValues();
+        }
 
         public Draw2dCrosshairParams(
-                boolean shouldDraw, RobotOffsetPointMode calibrationMode, DoubleCouple calibrationPoint) {
+                boolean shouldDraw,
+                RobotOffsetPointMode robotOffsetPointMode,
+                Point singleOffsetPoint,
+                DualOffsetValues dualOffsetValues,
+                FrameStaticProperties frameStaticProperties) {
             this.shouldDraw = shouldDraw;
-            this.calibrationMode = calibrationMode;
-            this.calibrationPoint = calibrationPoint;
+            this.frameStaticProperties = frameStaticProperties;
+            this.robotOffsetPointMode = robotOffsetPointMode;
+            this.singleOffsetPoint = singleOffsetPoint;
+            this.dualOffsetValues = dualOffsetValues;
         }
     }
 }

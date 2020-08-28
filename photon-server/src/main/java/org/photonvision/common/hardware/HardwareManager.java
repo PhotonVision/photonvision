@@ -91,6 +91,30 @@ public class HardwareManager {
         LEDs.values().forEach(GPIOBase::shutdown);
     }
 
+    public GPIOBase redStatusLED() {
+        try {
+            return LEDs.get(hardwareConfig.statusRGBPins.get(0));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return LEDs.get(-1);
+        }
+    }
+
+    public GPIOBase greenStatusLED() {
+        try {
+            return LEDs.get(hardwareConfig.statusRGBPins.get(1));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return LEDs.get(-1);
+        }
+    }
+
+    public GPIOBase blueStatusLED() {
+        try {
+            return LEDs.get(hardwareConfig.statusRGBPins.get(2));
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return LEDs.get(-1);
+        }
+    }
+
     public boolean restartDevice() {
         try {
             return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;

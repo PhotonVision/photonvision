@@ -321,7 +321,7 @@
             },
             deleteCurrentPipeline() {
                 if (this.$store.getters.pipelineList.length > 1) {
-                    this.handleInputWithIndex('command', 'deleteCurrentPipeline');
+                    this.handleInputWithIndex('deleteCurrentPipeline');
                 } else {
                     this.snackbar = true;
                 }

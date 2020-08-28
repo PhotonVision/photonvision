@@ -24,8 +24,9 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
-import org.photonvision.common.util.numbers.DoubleCouple;
+import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.opencv.Releasable;
 
 public class TrackedTarget implements Releasable {
@@ -103,9 +104,9 @@ public class TrackedTarget implements Releasable {
                         params.isLandscape, params.targetOffsetPointEdge, getMinAreaRect());
         m_robotOffsetPoint =
                 TargetCalculations.calculateRobotOffsetPoint(
-                        m_targetOffsetPoint,
+                        params.robotOffsetSinglePoint,
                         params.cameraCenterPoint,
-                        params.offsetEquationValues,
+                        params.dualOffsetValues,
                         params.robotOffsetPointMode);
 
         // order of this stuff doesnt matter though
@@ -193,10 +194,12 @@ public class TrackedTarget implements Releasable {
         final TargetOffsetPointEdge targetOffsetPointEdge;
 
         // RobotOffset calculation values
-        final Point userOffsetPoint;
-        final Point cameraCenterPoint;
-        final DoubleCouple offsetEquationValues;
         final RobotOffsetPointMode robotOffsetPointMode;
+        final Point robotOffsetSinglePoint;
+        final DualOffsetValues dualOffsetValues;
+
+        // center point of image
+        final Point cameraCenterPoint;
 
         // yaw calculation values
         final double horizontalFocalLength;
@@ -210,22 +213,43 @@ public class TrackedTarget implements Releasable {
         public TargetCalculationParameters(
                 boolean isLandscape,
                 TargetOffsetPointEdge targetOffsetPointEdge,
-                Point userOffsetPoint,
-                Point cameraCenterPoint,
-                DoubleCouple offsetEquationValues,
                 RobotOffsetPointMode robotOffsetPointMode,
+                Point robotOffsetSinglePoint,
+                DualOffsetValues dualOffsetValues,
+                Point cameraCenterPoint,
                 double horizontalFocalLength,
                 double verticalFocalLength,
                 double imageArea) {
+
             this.isLandscape = isLandscape;
             this.targetOffsetPointEdge = targetOffsetPointEdge;
-            this.userOffsetPoint = userOffsetPoint;
-            this.cameraCenterPoint = cameraCenterPoint;
-            this.offsetEquationValues = offsetEquationValues;
             this.robotOffsetPointMode = robotOffsetPointMode;
+            this.robotOffsetSinglePoint = robotOffsetSinglePoint;
+            this.dualOffsetValues = dualOffsetValues;
+            this.cameraCenterPoint = cameraCenterPoint;
             this.horizontalFocalLength = horizontalFocalLength;
             this.verticalFocalLength = verticalFocalLength;
             this.imageArea = imageArea;
+        }
+
+        public TargetCalculationParameters(
+                boolean isLandscape,
+                TargetOffsetPointEdge targetOffsetPointEdge,
+                RobotOffsetPointMode robotOffsetPointMode,
+                Point robotOffsetSinglePoint,
+                DualOffsetValues dualOffsetValues,
+                FrameStaticProperties frameStaticProperties) {
+
+            this.isLandscape = isLandscape;
+            this.targetOffsetPointEdge = targetOffsetPointEdge;
+            this.robotOffsetPointMode = robotOffsetPointMode;
+            this.robotOffsetSinglePoint = robotOffsetSinglePoint;
+            this.dualOffsetValues = dualOffsetValues;
+
+            this.cameraCenterPoint = frameStaticProperties.centerPoint;
+            this.horizontalFocalLength = frameStaticProperties.horizontalFocalLength;
+            this.verticalFocalLength = frameStaticProperties.verticalFocalLength;
+            this.imageArea = frameStaticProperties.imageArea;
         }
     }
 }
