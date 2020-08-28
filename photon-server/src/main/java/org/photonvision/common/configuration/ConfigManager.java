@@ -159,8 +159,6 @@ public class ConfigManager {
     }
 
     public void saveToDisk() {
-        logger.info("Saving settings...");
-
         // Delete old configs
         FileUtils.deleteDirectory(camerasFolder.toPath());
 
@@ -214,6 +212,7 @@ public class ConfigManager {
                 }
             }
         }
+        logger.info("Settings saved!");
     }
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs() {
@@ -341,7 +340,7 @@ public class ConfigManager {
     }
 
     public void requestSave() {
-        logger.debug("Requesting save...");
+        logger.trace("Requesting save...");
         saveRequestTimestamp = System.currentTimeMillis();
     }
 

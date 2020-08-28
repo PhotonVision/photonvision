@@ -105,7 +105,7 @@ public class SocketHandler {
                     var entryValue = entry.getValue();
                     var socketMessageType = SocketMessageType.fromEntryKey(entryKey);
 
-                    logger.debug(
+                    logger.trace(() ->
                             "Got WS message: ["
                                     + socketMessageType
                                     + "] ==> ["

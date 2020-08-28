@@ -110,28 +110,18 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-content>
+    <v-main>
       <v-container
         fluid
         fill-height
       >
         <v-layout>
           <v-flex>
-            <router-view @save="startTimer" />
-            <v-snackbar
-              v-model="saveSnackbar"
-              :timeout="1000"
-              top
-              color="accent"
-            >
-              <div style="text-align: center;width: 100%;">
-                <h4>Saved All changes</h4>
-              </div>
-            </v-snackbar>
+            <router-view />
           </v-flex>
         </v-layout>
       </v-container>
-    </v-content>
+    </v-main>
 
     <v-dialog
       v-model="logsOverlay"
@@ -168,17 +158,9 @@ import Logs from "./views/LogsView"
             // Used so that we can switch back to the previously selected pipeline after camera calibration
             previouslySelectedIndex: undefined,
             timer: undefined,
-            logsOverlay: false,
+            logsOverlay: true,
         }),
         computed: {
-            saveSnackbar: {
-                get() {
-                    return this.$store.state.saveBar;
-                },
-                set(value) {
-                    this.$store.commit("saveBar", value);
-                }
-            },
             compact: {
                 get() {
                     if (this.$store.state.compactMode === undefined) {
@@ -261,21 +243,13 @@ import Logs from "./views/LogsView"
             toggleCompactMode() {
                 this.compact = !this.compact;
             },
-            saveSettings() {
-                clearInterval(this.timer);
-                this.saveSnackbar = true;
-                this.handleInput("command", "save");
-            },
-            startTimer() {
-                if (this.timer !== undefined) {
-                    clearInterval(this.timer);
-                }
-                this.timer = setInterval(this.saveSettings, 4000);
-            },
             // eslint-disable-next-line no-unused-vars
-            logMessage(message, colorCode) {
+            logMessage(message, levelInt) {
                 console.log(message)
-                this.$store.commit('logString', `${colorCode}${message}\u001b[0m\n`)
+                this.$store.commit('logString', {
+                    ['level']: levelInt,
+                    ['message']: message
+                })
             },
             switchToDriverMode() {
                 this.previouslySelectedIndex = this.$store.getters.currentPipelineIndex;
@@ -343,7 +317,7 @@ import Logs from "./views/LogsView"
     }
 
     span {
-        color: white;
+        color: white !important;
     }
 </style>
 
