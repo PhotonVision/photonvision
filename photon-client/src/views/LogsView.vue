@@ -92,7 +92,6 @@ export default {
             },
             set(value) {
                 this.selectedLevel = value;
-                console.log(value)
             }
         }
     },

@@ -43,6 +43,13 @@ public class SolvePNPPipe
 
     @Override
     protected List<TrackedTarget> process(List<TrackedTarget> targetList) {
+        if(params.cameraCoefficients == null
+            || params.cameraCoefficients.getCameraIntrinsicsMat() == null
+            || params.cameraCoefficients.getCameraExtrinsicsMat() == null) {
+            logger.warn("Cannot perform solvePNP with null coefficients! Returning...");
+            return targetList;
+        }
+
         for (var target : targetList) {
             calculateTargetPose(target);
         }
@@ -55,6 +62,7 @@ public class SolvePNPPipe
         var corners = target.getTargetCorners();
         if (corners == null
                 || corners.isEmpty()
+                || params.cameraCoefficients == null
                 || params.cameraCoefficients.getCameraIntrinsicsMat() == null
                 || params.cameraCoefficients.getCameraExtrinsicsMat() == null) {
             return;

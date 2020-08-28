@@ -132,19 +132,43 @@
         </v-layout>
       </v-container>
     </v-content>
+
+    <v-dialog
+      v-model="logsOverlay"
+      width="1500"
+      dark
+    >
+      <logs />
+
+      <v-divider />
+
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+          color="primary"
+          text
+          @click="logsOverlay = false"
+        >
+          OK
+        </v-btn>
+      </v-card-actions>
+    </v-dialog>
   </v-app>
 </template>
 
 <script>
+import Logs from "./views/LogsView"
 
     export default {
         name: 'App',
         components: {
+            Logs
         },
         data: () => ({
             // Used so that we can switch back to the previously selected pipeline after camera calibration
             previouslySelectedIndex: undefined,
             timer: undefined,
+            logsOverlay: false,
         }),
         computed: {
             saveSnackbar: {
@@ -173,6 +197,9 @@
         created() {
             document.addEventListener("keydown", e => {
                 switch (e.key) {
+                    case "`":
+                        this.logsOverlay = !this.logsOverlay;
+                        break;
                     case "z":
                         if (e.ctrlKey && this.$store.getters.canUndo) {
                             this.$store.dispatch('undo', {vm: this});
