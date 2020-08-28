@@ -37,7 +37,10 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
+import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
+import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -58,6 +61,7 @@ public class VisionModule {
     protected final PipelineManager pipelineManager;
     protected final VisionSource visionSource;
     private final VisionRunner visionRunner;
+    private final StreamRunnable streamRunnable;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     private final LinkedList<CVPipelineResultConsumer> fpsLimitedResultConsumers = new LinkedList<>();
     private final NTDataPublisher ntConsumer;
@@ -84,6 +88,7 @@ public class VisionModule {
                         this.visionSource.getFrameProvider(),
                         this.pipelineManager::getCurrentUserPipeline,
                         this::consumeResult);
+        this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
         this.moduleIndex = index;
 
         // do this
@@ -140,6 +145,54 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
+    private class StreamRunnable extends Thread {
+        private final OutputStreamPipeline outputStreamPipeline;
+
+        private Frame inputFrame, outputFrame;
+        private AdvancedPipelineSettings settings = new AdvancedPipelineSettings();
+        private List<TrackedTarget> targets = new ArrayList<>();
+        private double fps = 0;
+
+        private boolean shouldRun = false;
+
+        public StreamRunnable(OutputStreamPipeline outputStreamPipeline) {
+            this.outputStreamPipeline = outputStreamPipeline;
+        }
+
+        public void updateData(
+                Frame inputFrame,
+                Frame outputFrame,
+                AdvancedPipelineSettings settings,
+                List<TrackedTarget> targets,
+                double fps) {
+            this.inputFrame = inputFrame;
+            this.outputFrame = outputFrame;
+            this.settings = settings;
+            this.targets = targets;
+            this.fps = fps;
+
+            shouldRun = inputFrame != null && !inputFrame.image.getMat().empty() && outputFrame != null && !outputFrame.image.getMat().empty();
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                if (shouldRun) {
+                    var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets, fps);
+                    consumeFpsLimitedResult(osr);
+                    shouldRun = false;
+                } else {
+                    // busy wait! hurray!
+                    try {
+                        Thread.sleep(1);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+    }
+
     void setDriverMode(boolean isDriverMode) {
         pipelineManager.setDriverMode(isDriverMode);
         setVisionLEDs(!isDriverMode);
@@ -148,6 +201,7 @@ public class VisionModule {
 
     public void start() {
         visionRunner.startProcess();
+        streamRunnable.start();
     }
 
     public void setFovAndPitch(double fov, Rotation2d pitch) {
@@ -347,9 +401,21 @@ public class VisionModule {
 
     private void consumeResult(CVPipelineResult result) {
         consumePipelineResult(result);
-        consumeFpsLimitedResult(result);
 
-        result.release();
+        // total hack. kms
+        if (pipelineManager.getCurrentPipelineIndex() >= 0) {
+            var fps = 1000.0 / result.getLatencyMillis();
+            streamRunnable.updateData(
+                    result.inputFrame,
+                    result.outputFrame,
+                    (AdvancedPipelineSettings) pipelineManager.getCurrentPipelineSettings(),
+                    result.targets,
+                    fps);
+            // the streamRunnable manages releasing in this case
+        } else {
+            consumeFpsLimitedResult(result);
+            result.release();
+        }
     }
 
     private void consumePipelineResult(CVPipelineResult result) {
@@ -365,6 +431,7 @@ public class VisionModule {
             }
             lastFrameConsumeMillis = System.currentTimeMillis();
         }
+        result.release();
     }
 
     public void setTargetModel(TargetModel targetModel) {
