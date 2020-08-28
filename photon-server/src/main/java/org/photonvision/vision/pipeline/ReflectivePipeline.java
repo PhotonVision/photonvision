@@ -71,18 +71,17 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     protected void setPipeParams(
             FrameStaticProperties frameStaticProperties, ReflectivePipelineSettings settings) {
 
-        DualOffsetValues dualOffsetValues =
+        var dualOffsetValues =
                 new DualOffsetValues(
                         settings.offsetDualPointA,
                         settings.offsetDualPointAArea,
                         settings.offsetDualPointB,
                         settings.offsetDualPointBArea);
 
-        RotateImagePipe.RotateImageParams rotateImageParams =
-                new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
+        var rotateImageParams = new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
 
-        HSVPipe.HSVParams hsvParams =
+        var hsvParams =
                 new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
         hsvPipe.setParams(hsvParams);
         PicamJNI.setThresholds(
@@ -90,15 +89,14 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                 settings.hsvHue.getSecond() / 255d, settings.hsvSaturation.getSecond() / 255d, settings.hsvValue.getSecond() / 255d
         );
 
-        FindContoursPipe.FindContoursParams findContoursParams =
-                new FindContoursPipe.FindContoursParams();
+        var findContoursParams = new FindContoursPipe.FindContoursParams();
         findContoursPipe.setParams(findContoursParams);
 
-        SpeckleRejectPipe.SpeckleRejectParams speckleRejectParams =
+        var speckleRejectParams =
                 new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage);
         speckleRejectPipe.setParams(speckleRejectParams);
 
-        FilterContoursPipe.FilterContoursParams filterContoursParams =
+        var filterContoursParams =
                 new FilterContoursPipe.FilterContoursParams(
                         settings.contourArea,
                         settings.contourRatio,
@@ -106,19 +104,19 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         frameStaticProperties);
         filterContoursPipe.setParams(filterContoursParams);
 
-        GroupContoursPipe.GroupContoursParams groupContoursParams =
+        var groupContoursParams =
                 new GroupContoursPipe.GroupContoursParams(
                         settings.contourGroupingMode, settings.contourIntersection);
         groupContoursPipe.setParams(groupContoursParams);
 
-        SortContoursPipe.SortContoursParams sortContoursParams =
+        var sortContoursParams =
                 new SortContoursPipe.SortContoursParams(
                         settings.contourSortMode,
                         settings.outputShowMultipleTargets ? 5 : 1, // TODO don't hardcode?
                         frameStaticProperties);
         sortContoursPipe.setParams(sortContoursParams);
 
-        Collect2dTargetsPipe.Collect2dTargetsParams collect2dTargetsParams =
+        var collect2dTargetsParams =
                 new Collect2dTargetsPipe.Collect2dTargetsParams(
                         settings.offsetRobotOffsetMode,
                         settings.offsetSinglePoint,
@@ -128,21 +126,21 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         frameStaticProperties);
         collect2dTargetsPipe.setParams(collect2dTargetsParams);
 
-        var params =
+        var cornerDetectionPipeParams =
                 new CornerDetectionPipe.CornerDetectionPipeParameters(
                         settings.cornerDetectionStrategy,
                         settings.cornerDetectionUseConvexHulls,
                         settings.cornerDetectionExactSideCount,
                         settings.cornerDetectionSideCount,
                         settings.cornerDetectionAccuracyPercentage);
-        cornerDetectionPipe.setParams(params);
+        cornerDetectionPipe.setParams(cornerDetectionPipeParams);
 
-        Draw2dTargetsPipe.Draw2dTargetsParams draw2DTargetsParams =
+        var draw2DTargetsParams =
                 new Draw2dTargetsPipe.Draw2dTargetsParams(
                         settings.outputShouldDraw, settings.outputShowMultipleTargets);
         draw2dTargetsPipe.setParams(draw2DTargetsParams);
 
-        Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
+        var draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
                         settings.outputShouldDraw,
                         settings.offsetRobotOffsetMode,
@@ -151,12 +149,12 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         frameStaticProperties);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
-        var draw3dContoursParams =
+        var draw3dTargetsParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
                         settings.targetModel);
-        draw3dTargetsPipe.setParams(draw3dContoursParams);
+        draw3dTargetsPipe.setParams(draw3dTargetsParams);
 
         var solvePNPParams =
                 new SolvePNPPipe.SolvePNPPipeParams(

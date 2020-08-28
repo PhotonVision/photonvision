@@ -43,6 +43,10 @@ public class CVPipelineResult implements Releasable {
         this(processingMillis, targets, outputFrame, null);
     }
 
+    public CVPipelineResult(double processingMillis, Frame outputFrame) {
+        this(processingMillis, List.of(), outputFrame);
+    }
+
     public boolean hasTargets() {
         return !targets.isEmpty();
     }

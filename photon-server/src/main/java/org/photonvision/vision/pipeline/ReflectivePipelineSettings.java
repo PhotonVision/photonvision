@@ -18,11 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.util.Objects;
-import org.photonvision.vision.opencv.ContourGroupingMode;
-import org.photonvision.vision.opencv.ContourIntersectionDirection;
-import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
-import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("ReflectivePipelineSettings")
 public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
@@ -47,38 +42,5 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
     public ReflectivePipelineSettings() {
         super();
         pipelineType = PipelineType.Reflective;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
-        ReflectivePipelineSettings that = (ReflectivePipelineSettings) o;
-        return solvePNPEnabled == that.solvePNPEnabled
-                && cornerDetectionUseConvexHulls == that.cornerDetectionUseConvexHulls
-                && cornerDetectionExactSideCount == that.cornerDetectionExactSideCount
-                && cornerDetectionSideCount == that.cornerDetectionSideCount
-                && Double.compare(that.cornerDetectionAccuracyPercentage, cornerDetectionAccuracyPercentage)
-                        == 0
-                && contourGroupingMode == that.contourGroupingMode
-                && contourIntersection == that.contourIntersection
-                && targetModel.equals(that.targetModel)
-                && cornerDetectionStrategy == that.cornerDetectionStrategy;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(
-                super.hashCode(),
-                contourGroupingMode,
-                contourIntersection,
-                solvePNPEnabled,
-                targetModel,
-                cornerDetectionStrategy,
-                cornerDetectionUseConvexHulls,
-                cornerDetectionExactSideCount,
-                cornerDetectionSideCount,
-                cornerDetectionAccuracyPercentage);
     }
 }
