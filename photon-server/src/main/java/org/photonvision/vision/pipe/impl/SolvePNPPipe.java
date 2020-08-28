@@ -41,12 +41,17 @@ public class SolvePNPPipe
 
     private final MatOfPoint2f imagePoints = new MatOfPoint2f();
 
+    private boolean hasWarned = false;
+
     @Override
     protected List<TrackedTarget> process(List<TrackedTarget> targetList) {
         if(params.cameraCoefficients == null
             || params.cameraCoefficients.getCameraIntrinsicsMat() == null
             || params.cameraCoefficients.getCameraExtrinsicsMat() == null) {
-            logger.warn("Cannot perform solvePNP with null coefficients! Returning...");
+            if(!hasWarned) {
+                logger.warn("Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
+                hasWarned = true;
+            }
             return targetList;
         }
 
