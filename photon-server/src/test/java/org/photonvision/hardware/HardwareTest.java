@@ -74,10 +74,10 @@ public class HardwareTest {
         gpio.togglePin(); // LOW
         assertFalse(gpio.getState());
 
-        gpio.setState(true); // HIGH
+        gpio.setStateImpl(true); // HIGH
         assertTrue(gpio.getState());
 
-        gpio.setState(false); // LOW
+        gpio.setStateImpl(false); // LOW
         assertFalse(gpio.getState());
 
         var success = gpio.shutdown();

@@ -19,6 +19,8 @@ package org.photonvision.common.hardware;
 
 import java.io.IOException;
 import java.util.HashMap;
+
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
@@ -30,21 +32,23 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public class HardwareManager {
-    HardwareConfig hardwareConfig;
-    private final HashMap<Integer, GPIOBase> LEDs = new HashMap<>();
+    private static HardwareManager instance;
+
+    private final HardwareConfig hardwareConfig;
+    private final HashMap<Integer, GPIOBase> VisionLEDs = new HashMap<>();
     private final ShellExec shellExec = new ShellExec(true, false);
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
     private int visionLedPercentage = 100;
 
     public static HardwareManager getInstance() {
-        if (Singleton.INSTANCE == null) {
-            Singleton.INSTANCE = new HardwareManager();
+        if (instance == null) {
+            instance = new HardwareManager(ConfigManager.getInstance().getConfig().getHardwareConfig());
         }
-        return Singleton.INSTANCE;
+        return instance;
     }
 
-    public void setConfig(HardwareConfig hardwareConfig) {
+    private HardwareManager(HardwareConfig hardwareConfig) {
         this.hardwareConfig = hardwareConfig;
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
@@ -52,64 +56,36 @@ public class HardwareManager {
         hardwareConfig.ledPins.forEach(
                 pin -> {
                     if (Platform.isRaspberryPi()) {
-                        LEDs.put(
+                        VisionLEDs.put(
                                 pin,
                                 new PiGPIO(pin, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1)));
                     } else {
-                        LEDs.put(pin, new CustomGPIO(pin));
+                        VisionLEDs.put(pin, new CustomGPIO(pin));
                     }
-                });
+                }
+        );
 
         // Start hardware metrics thread
         if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
-    /** Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue); */
-    public GPIOBase getGPIO(int pin) {
-        return LEDs.get(pin);
-    }
-
-    public void blinkLEDs(int pulseTimeMillis, int blinks) {
-        LEDs.values().forEach(led -> led.blink(pulseTimeMillis, blinks));
+    public void blinkVisionLEDs(int pulseTimeMillis, int blinks) {
+        VisionLEDs.values().forEach(led -> led.blink(pulseTimeMillis, blinks));
     }
 
     public void setBrightnessPercentage(int percentage) {
         visionLedPercentage = percentage;
-        LEDs.values().forEach(led -> led.dimLED(percentage));
+        VisionLEDs.values().forEach(led -> led.setBrightness(percentage));
     }
 
     public void setVisionLEDs(final boolean on) {
-        LEDs.values().forEach(led -> {
+        VisionLEDs.values().forEach(led -> {
             if (on && visionLedPercentage != 100) {
-                led.dimLED(visionLedPercentage);
+                led.setBrightness(visionLedPercentage);
             } else {
                 led.setState(on);
             }
         });
-    }
-
-    public GPIOBase redStatusLED() {
-        try {
-            return LEDs.get(hardwareConfig.statusRGBPins.get(0));
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return LEDs.get(-1);
-        }
-    }
-
-    public GPIOBase greenStatusLED() {
-        try {
-            return LEDs.get(hardwareConfig.statusRGBPins.get(1));
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return LEDs.get(-1);
-        }
-    }
-
-    public GPIOBase blueStatusLED() {
-        try {
-            return LEDs.get(hardwareConfig.statusRGBPins.get(2));
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return LEDs.get(-1);
-        }
     }
 
     public boolean restartDevice() {
@@ -123,9 +99,5 @@ public class HardwareManager {
 
     public HardwareConfig getConfig() {
         return hardwareConfig;
-    }
-
-    private static class Singleton {
-        private static HardwareManager INSTANCE;
     }
 }

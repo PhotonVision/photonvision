@@ -28,11 +28,10 @@ public abstract class GPIOBase {
     private static final Logger logger = new Logger(GPIOBase.class, LogGroup.General);
     private static final ShellExec runCommand = new ShellExec(true, true);
 
-    public static HashMap<String, String> commands =
+    protected static HashMap<String, String> commands =
             new HashMap<>() {
                 {
                     put("setState", "");
-                    put("shutdown", "");
                     put("setRange", "");
                     put("shutdown", "");
                     put("dim", "");
@@ -40,7 +39,7 @@ public abstract class GPIOBase {
                 }
             };
 
-    public static String execute(String command) {
+    protected static String execute(String command) {
         try {
             runCommand.executeBashCommand(command);
         } catch (Exception e) {
@@ -50,23 +49,73 @@ public abstract class GPIOBase {
         return runCommand.getOutput();
     }
 
-    public abstract void togglePin();
+    public abstract int getPinNumber();
 
-    public abstract void setLow();
+    public void setOff() {
+        if (getPinNumber() != -1) {
+            setStateImpl(false);
+        }
+    }
 
-    public abstract void setHigh();
+    public void setOn() {
+        if (getPinNumber() != -1) {
+            setStateImpl(true);
+        }
+    }
 
-    public abstract void setState(boolean state);
+    public void togglePin() {
+        if (getPinNumber() != -1) {
+            setStateImpl(!getStateImpl());
+        }
+    }
+
+    public void setState(boolean state) {
+        if (getPinNumber() != -1) {
+            setStateImpl(state);
+        }
+    }
+
+    public abstract void setStateImpl(boolean state);
 
     public abstract boolean shutdown();
 
-    public abstract boolean getState();
+    public boolean getState() {
+        if (getPinNumber() != -1) {
+            return getStateImpl();
+        } else return false;
+    }
 
-    public abstract void setPwmRange(List<Integer> range);
+    public abstract boolean getStateImpl();
 
-    public abstract List<Integer> getPwmRange();
+    public void setPwmRange(List<Integer> range) {
+        if (getPinNumber() != -1) {
+            setPwmRangeImpl(range);
+        }
+    }
 
-    public abstract void blink(int pulseTimeMillis, int blinks);
+    protected abstract void setPwmRangeImpl(List<Integer> range);
 
-    public abstract void dimLED(int dimPercentage);
+    public List<Integer> getPwmRange() {
+        if (getPinNumber() != -1) {
+            return getPwmRangeImpl();
+        } else return List.of(0, 255);
+    }
+
+    protected abstract List<Integer> getPwmRangeImpl();
+
+    public void blink(int pulseTimeMillis, int blinks) {
+        if (getPinNumber() != -1) {
+            blinkImpl(pulseTimeMillis, blinks);
+        }
+    }
+
+    protected abstract void blinkImpl(int pulseTimeMillis, int blinks);
+
+    public void setBrightness(int brightness) {
+        if (getPinNumber() != -1) {
+            setBrightnessImpl(brightness);
+        }
+    }
+
+    protected abstract void setBrightnessImpl(int brightness);
 }

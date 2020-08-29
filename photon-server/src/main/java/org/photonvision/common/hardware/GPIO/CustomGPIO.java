@@ -69,7 +69,7 @@ public class CustomGPIO extends GPIOBase {
     }
 
     @Override
-    public void setState(boolean state) {
+    public void setStateImpl(boolean state) {
         if (this.port != -1) {
             execute(
                     commands
@@ -95,7 +95,7 @@ public class CustomGPIO extends GPIOBase {
     }
 
     @Override
-    public void setPwmRange(List<Integer> range) {
+    public void setPwmRangeImpl(List<Integer> range) {
         if (this.port != -1) {
             execute(
                     commands
@@ -108,12 +108,12 @@ public class CustomGPIO extends GPIOBase {
     }
 
     @Override
-    public List<Integer> getPwmRange() {
+    public List<Integer> getPwmRangeImpl() {
         return pwmRange;
     }
 
     @Override
-    public void blink(int pulseTimeMillis, int blinks) {
+    public void blinkImpl(int pulseTimeMillis, int blinks) {
         if (this.port != -1) {
             execute(
                     commands
@@ -125,15 +125,15 @@ public class CustomGPIO extends GPIOBase {
     }
 
     @Override
-    public void dimLED(int dimValue) {
+    public void setBrightnessImpl(int brightness) {
         if (this.port != -1) {
             // Check to see if dimValue is within the range
-            if (dimValue < pwmRange.get(0) || dimValue > pwmRange.get(1)) return;
+            if (brightness < pwmRange.get(0) || brightness > pwmRange.get(1)) return;
             execute(
                     commands
                             .get("dim")
                             .replace("{p}", String.valueOf(port))
-                            .replace("{v}", String.valueOf(dimValue)));
+                            .replace("{v}", String.valueOf(brightness)));
         }
     }
 

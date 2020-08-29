@@ -35,9 +35,14 @@ public class PiGPIO extends GPIOBase {
         return Singleton.INSTANCE;
     }
 
+    public PiGPIO(int address) {
+        this(address, 8000, 255);
+    }
+
     public PiGPIO(int address, int frequency, int range) {
         this.port = address;
         try {
+//            var pigpioRange = (int) (range / 255.0) * 40000; // TODO: is this conversion correct/necessary?
             getPigpioDaemon().setPWMFrequency(this.port, frequency);
             getPigpioDaemon().setPWMRange(this.port, range);
         } catch (PigpioException e) {
@@ -47,50 +52,17 @@ public class PiGPIO extends GPIOBase {
     }
 
     @Override
-    public void togglePin() {
-        if (this.port != -1) {
-            try {
-                getPigpioDaemon().gpioWrite(this.port, !getPigpioDaemon().gpioRead(this.port));
-            } catch (PigpioException e) {
-                logger.error("Could not toggle on pin " + this.port);
-                e.printStackTrace();
-            }
-        }
+    public int getPinNumber() {
+        return port;
     }
 
     @Override
-    public void setLow() {
-        if (this.port != -1) {
-            try {
-                getPigpioDaemon().gpioWrite(this.port, false);
-            } catch (PigpioException e) {
-                logger.error("Could not set pin low on port " + this.port);
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void setHigh() {
-        if (this.port != -1) {
-            try {
-                getPigpioDaemon().gpioWrite(this.port, true);
-            } catch (PigpioException e) {
-                logger.error("Could not set pin high on port " + this.port);
-                e.printStackTrace();
-            }
-        }
-    }
-
-    @Override
-    public void setState(boolean state) {
-        if (this.port != -1) {
-            try {
-                getPigpioDaemon().gpioWrite(this.port, state);
-            } catch (PigpioException e) {
-                logger.error("Could not set pin state on port " + this.port);
-                e.printStackTrace();
-            }
+    public void setStateImpl(boolean state) {
+        try {
+            getPigpioDaemon().gpioWrite(this.port, state);
+        } catch (PigpioException e) {
+            logger.error("Could not set pin state on port " + this.port);
+            e.printStackTrace();
         }
     }
 
@@ -109,47 +81,39 @@ public class PiGPIO extends GPIOBase {
     }
 
     @Override
-    public boolean getState() {
-        if (this.port != -1) {
-            try {
-                return getPigpioDaemon().gpioRead(this.port);
-            } catch (PigpioException e) {
-                logger.error("Could not read pin on port " + this.port);
-                e.printStackTrace();
-                return false;
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public void setPwmRange(List<Integer> range) {
-        if (this.port != -1) {
-            try {
-                getPigpioDaemon().setPWMRange(this.port, range.get(0));
-            } catch (PigpioException e) {
-                logger.error("Could not set PWM range on port " + this.port);
-                e.printStackTrace();
-            }
+    public boolean getStateImpl() {
+        try {
+            return getPigpioDaemon().gpioRead(this.port);
+        } catch (PigpioException e) {
+            logger.error("Could not read pin on port " + this.port);
+            e.printStackTrace();
+            return false;
         }
     }
 
     @Override
-    public List<Integer> getPwmRange() {
-        if (this.port != -1) {
-            try {
-                return List.of(0, getPigpioDaemon().getPWMRange(this.port));
-            } catch (PigpioException e) {
-                logger.error("Could not get PWM range on port " + this.port);
-                e.printStackTrace();
-                return null;
-            }
+    public void setPwmRangeImpl(List<Integer> range) {
+        try {
+            getPigpioDaemon().setPWMRange(this.port, range.get(0));
+        } catch (PigpioException e) {
+            logger.error("Could not set PWM range on port " + this.port);
+            e.printStackTrace();
         }
-        return null;
     }
 
     @Override
-    public void blink(int pulseTimeMillis, int blinks) {
+    public List<Integer> getPwmRangeImpl() {
+        try {
+            return List.of(0, getPigpioDaemon().getPWMRange(this.port));
+        } catch (PigpioException e) {
+            logger.error("Could not get PWM range on port " + this.port);
+            e.printStackTrace();
+            return List.of(0, 255);
+        }
+    }
+
+    @Override
+    public void blinkImpl(int pulseTimeMillis, int blinks) {
         if (this.port != -1) {
             try {
                 pulses.clear();
@@ -166,15 +130,13 @@ public class PiGPIO extends GPIOBase {
     }
 
     @Override
-    public void dimLED(int dimPercentage) {
-        if (this.port != -1) {
+    public void setBrightnessImpl(int brightness) {
             try {
-                getPigpioDaemon().setPWMDutycycle(this.port, getPwmRange().get(1) * (dimPercentage / 100));
+                getPigpioDaemon().setPWMDutycycle(this.port, getPwmRangeImpl().get(1) * (brightness / 100));
             } catch (PigpioException e) {
                 logger.error("Could not dim PWM on port " + this.port);
                 e.printStackTrace();
             }
-        }
     }
 
     private static class Singleton {

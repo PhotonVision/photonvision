@@ -177,10 +177,6 @@ public class Main {
             addTestModeSources();
         }
 
-        // Add hardware config to hardware manager
-        HardwareManager.getInstance()
-                .setConfig(ConfigManager.getInstance().getConfig().getHardwareConfig());
-
         Server.main(DEFAULT_WEBPORT);
     }
 }

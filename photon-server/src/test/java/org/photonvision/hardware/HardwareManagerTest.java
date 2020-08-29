@@ -42,7 +42,7 @@ public class HardwareManagerTest {
         Assertions.assertEquals(instance.getGPIO(13).getPwmRange().get(1), 100);
         instance.getGPIO(13).blink(250, 5);
         for (int i = 0; i < 101; i++) {
-            instance.getGPIO(13).dimLED(i);
+            instance.getGPIO(13).setBrightness(i);
         }
 
         Assertions.assertEquals(config.statusRGBPins.get(0), -1);
