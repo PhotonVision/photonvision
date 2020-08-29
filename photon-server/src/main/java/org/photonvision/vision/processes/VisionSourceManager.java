@@ -203,10 +203,13 @@ public class VisionSourceManager {
                                 + " with path "
                                 + config.path);
                 cameraInfo =
-                        detectedCameraList.stream()
-                                .filter(usbCameraInfo -> usbCameraInfo.path.equals(config.path))
-                                .findFirst()
-                                .orElse(null);
+                    detectedCameraList.stream()
+                        .filter(
+                            usbCameraInfo ->
+                                usbCameraInfo.path.equals(config.path)
+                                    && cameraNameToBaseName(usbCameraInfo.name).equals(config.baseName))
+                        .findFirst()
+                        .orElse(null);
             }
 
             // If we actually matched a camera to a config, remove that camera from the list and add it to
