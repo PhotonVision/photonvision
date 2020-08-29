@@ -106,10 +106,12 @@ public class VisionSourceManager {
                 notYetLoadedCams.add(connectedCam);
             }
         }
-        if (notYetLoadedCams.isEmpty() && connectedCameras.isEmpty()) {
+
+        if (notYetLoadedCams.isEmpty()) return null;
+
+        if (connectedCameras.isEmpty()) {
             logger.warn(
-                    "No configs were matched, but there are no unmatched USB cameras."
-                            + "\nCheck that all cameras are connected, or that the path is correct?");
+                    "No USB cameras were detected! Check that all cameras are connected, and that the path is correct.");
             return null;
         }
         logger.trace("Matching " + notYetLoadedCams.size() + " new cameras!");

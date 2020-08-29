@@ -201,7 +201,6 @@ public class ConfigManager {
 
             for (var pipe : camConfig.pipelineSettings) {
                 var pipePath = Path.of(subdir.toString(), "pipelines", pipe.pipelineNickname + ".json");
-                logger.debug("Saving " + camConfig.pipelineSettings.size() + " pipes!");
 
                 if (!pipePath.getParent().toFile().exists()) {
                     // TODO: check for error
