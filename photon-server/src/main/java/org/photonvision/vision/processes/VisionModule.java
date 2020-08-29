@@ -29,7 +29,6 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -131,6 +130,8 @@ public class VisionModule {
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
         }
+
+        saveAndBroadcastAll();
     }
 
     void setDriverMode(boolean isDriverMode) {
@@ -312,7 +313,7 @@ public class VisionModule {
         ret.calibrations = calList;
 
         ret.isFovConfigurable =
-                !(HardwareManager.getInstance().getConfig().hasPresetFOV()
+                !(ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
                         && cameraQuirks.hasQuirk(CameraQuirk.PiCam));
 
         return ret;

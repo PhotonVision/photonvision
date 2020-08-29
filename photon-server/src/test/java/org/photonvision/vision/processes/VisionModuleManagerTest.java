@@ -114,12 +114,12 @@ public class VisionModuleManagerTest {
                                 TestUtils.WPI2019Image.FOV)),
                 List.of());
 
-        VisionModuleManager.getInstance().addSources(sources);
+        var modules = VisionModuleManager.getInstance().addSources(sources);
         var module0DataConsumer = new TestDataConsumer();
 
         VisionModuleManager.getInstance().visionModules.get(0).addResultConsumer(module0DataConsumer);
 
-        VisionModuleManager.getInstance().startModules();
+        modules.forEach(VisionModule::start);
 
         sleep(500);
 

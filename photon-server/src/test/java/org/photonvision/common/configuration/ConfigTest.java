@@ -45,6 +45,7 @@ public class ConfigTest {
         TestUtils.loadLibraries();
         configMgr = new ConfigManager(Path.of("testconfigdir"));
         configMgr.load();
+
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);
 
         REFLECTIVE_PIPELINE_SETTINGS = new ReflectivePipelineSettings();
