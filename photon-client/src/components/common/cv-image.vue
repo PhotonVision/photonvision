@@ -29,7 +29,6 @@
                       height: `${this.scale}%`,
                       cursor: (this.colorPicking ? `url(${require("../../assets/eyedropper.svg")}),` : "") + "default",
                     };
-                    console.log(ret);
 
                     if (this.$vuetify.breakpoint.xl) {
                       ret["max-height"] = this.maxHeightXl;

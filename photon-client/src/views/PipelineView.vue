@@ -82,6 +82,7 @@
               align="center"
               class="pl-3 pr-3"
             >
+              <!--  -->
               <v-col lg="12">
                 <p style="color: white;">
                   Processing mode:
@@ -100,6 +101,7 @@
                   </v-btn>
                   <v-btn
                     color="secondary"
+                    @click="on3DClick"
                   >
                     <v-icon>mdi-cube-outline</v-icon>
                     <span>3D</span>
@@ -202,19 +204,15 @@
       width="500"
     >
       <v-card
+        color="primary"
         dark
       >
-        <v-card-title
-          dark
-          class="headline grey lighten-2"
-        >
+        <v-card-title>
           Current resolution not calibrated
         </v-card-title>
 
         <v-card-text>
-          Because the current resolution {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].width }} x
-          {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].height }} is not yet calibrated,
-          3D mode cannot be enabled. Please <a href="/cameras"> visit the Cameras tab</a> to calibrate this resolution. For now, SolvePNP will do nothing.
+          Because the current resolution {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].width }} x {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].height }} is not yet calibrated, 3D mode cannot be enabled. Please <a href="/cameras"> visit the Cameras tab</a> to calibrate this resolution. For now, SolvePNP will do nothing.
         </v-card-text>
 
         <v-divider />
@@ -222,9 +220,9 @@
         <v-card-actions>
           <v-spacer />
           <v-btn
-            color="primary"
+            color="white"
             text
-            @click="dialog = false"
+            @click="closeUncalibratedDialog"
           >
             OK
           </v-btn>
@@ -261,7 +259,8 @@
                 selectedTabsData: [0, 0, 0, 0],
                 snackbar: false,
                 counterData: 0,
-                dialog: false
+                dialog: false,
+                processingModeOverride: false
             }
         },
         computed: {
@@ -329,14 +328,13 @@
             },
             processingMode: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.solvePNPEnabled ? 1 : 0;
+                    return (this.$store.getters.currentPipelineSettings.solvePNPEnabled || this.processingModeOverride) ? 1 : 0;
                 },
                 set(value) {
-                    if (!this.isCalibrated() && value === 1) {
-                        this.dialog = true;
+                    if (this.$store.getters.isCalibrated) {
+                      this.$store.getters.currentPipelineSettings.solvePNPEnabled = value === 1;
+                      this.handlePipelineUpdate("solvePNPEnabled", value === 1);
                     }
-                    this.$store.getters.currentPipelineSettings.solvePNPEnabled = value === 1;
-                    this.handlePipelineUpdate("solvePNPEnabled", value === 1);
                 }
             },
             driverMode: {
@@ -402,6 +400,18 @@
                 if (ref && ref[0])
                   ref[0].onClick(event)
             },
+            on3DClick() {
+                if (!this.$store.getters.isCalibrated) {
+                  this.dialog = true;
+                  this.processingModeOverride = true;
+                }
+            },
+            closeUncalibratedDialog() {
+                this.dialog = false;
+                this.processingModeOverride = false;
+                // this.$store.getters.currentPipelineSettings.solvePNPEnabled = false;
+                this.handlePipelineUpdate("solvePNPEnabled", false);
+            }
         }
     }
 </script>

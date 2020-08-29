@@ -78,6 +78,7 @@
         <v-menu
           offset-y
           auto
+          v-if="!$store.getters.isDriverMode"
         >
           <template v-slot:activator="{ on }">
             <v-icon

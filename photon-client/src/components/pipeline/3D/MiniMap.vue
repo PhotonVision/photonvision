@@ -5,7 +5,7 @@
         align="center"
         cols="12"
       >
-        <span class="text--white">Target Location</span>
+        <span class="white--text">Target Location</span>
         <canvas
           id="canvasId"
           class="mt-2"

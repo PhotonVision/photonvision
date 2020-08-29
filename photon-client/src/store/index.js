@@ -16,6 +16,7 @@ export default new Vuex.Store({
     state: {
         backendConnected: false,
         colorPicking: false,
+        logsOverlay: false,
         compactMode: localStorage.getItem("compactMode") === undefined ? undefined : localStorage.getItem("compactMode") === "true", // Compact mode is initially unset on purpose
         logMessages: [],
         currentCameraIndex: 0,
@@ -203,6 +204,11 @@ export default new Vuex.Store({
                 "http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].outputStreamPort + "/stream.mjpg"],
         currentPipelineResults: state => {
             return state.pipelineResults;
+        },
+        isCalibrated: state => {
+            let resolution = state.cameraSettings[state.currentCameraIndex].videoFormatList[state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.cameraVideoModeIndex];
+            return state.cameraSettings[state.currentCameraIndex].calibrations
+                .some(e => e.width === resolution.width && e.height === resolution.height);
         },
         cameraList: state => state.cameraSettings.map(it => it.nickname),
         currentCameraSettings: state => state.cameraSettings[state.currentCameraIndex],

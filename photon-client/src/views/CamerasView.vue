@@ -232,7 +232,7 @@
                   <v-icon left>
                     mdi-download
                   </v-icon>
-                  Download Checkerboard
+                  Download Chessboard
                 </v-btn>
                 <a
                   ref="calibrationFile"
@@ -415,8 +415,8 @@ export default {
                 return this.filteredVideomodeIndex
             },
             set(i) {
-                console.log(`Setting filtered index to ${i}`)
-                this.filteredVideomodeIndex = i
+                console.log(`Setting filtered index to ${i}`);
+                this.filteredVideomodeIndex = i;
                 this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[i].index});
             }
         },
@@ -430,13 +430,13 @@ export default {
                 if(cal.width === resolution.width && cal.height === resolution.height) {
                     ret = cal
                 }
-            })
+            });
             return ret;
         },
         downloadBoard() {
             this.axios.get("http://" + this.$address + require('../assets/chessboard.png'), {responseType: 'blob'}).then((response) => {
-                require('downloadjs')(response.data, "Calibration Board", "image/png")
-            })
+                require('downloadjs')(response.data, "Calibration Board", "image/png");
+            });
         },
         sendCameraSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
@@ -453,7 +453,7 @@ export default {
 
         isCalibrated(resolution) {
             return this.$store.getters.currentCameraSettings.calibrations
-                .some(e => e.width === resolution.width && e.height === resolution.height)
+                .some(e => e.width === resolution.width && e.height === resolution.height);
         },
 
         sendCalibrationMode() {
@@ -464,20 +464,20 @@ export default {
             if (this.isCalibrating === true) {
                 data['takeCalibrationSnapshot'] = true
             } else {
-                const calData = this.calibrationData
-                calData.isCalibrating = true
-                data['startPnpCalibration'] = calData
+                const calData = this.calibrationData;
+                calData.isCalibrating = true;
+                data['startPnpCalibration'] = calData;
 
-                console.log("starting calibration with index " + calData.videoModeIndex)
+                console.log("starting calibration with index " + calData.videoModeIndex);
             }
 
             this.$socket.send(this.$msgPack.encode(data));
         },
         sendCalibrationFinish() {
-            console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex)
+            console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex);
 
             this.snackbar.text = "Calibrating...";
-            this.snackbar.color = "secondary"
+            this.snackbar.color = "secondary";
             this.snack = true;
 
             this.axios.post("http://" + this.$address + "/api/settings/endCalibration", this.$store.getters.currentCameraIndex)
@@ -524,10 +524,5 @@ export default {
 
     .v-data-table th,td {
         font-size: 1rem !important;
-    }
-
-    /** This is unfortunately the only way to override table background color **/
-    .theme--dark.v-data-table tbody tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
-        background: #005281;
     }
 </style>

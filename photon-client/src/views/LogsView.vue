@@ -1,60 +1,67 @@
 <template>
-  <div>
-    <v-col>
-      <v-card
-        dark
-        class="pl-6 pb-6 pr-6 pt-6"
-        style="background-color: #006492;"
-      >
-        <v-card-title>
-          View Program Logs
-        </v-card-title>
-        <v-row cols="12">
-          <v-col cols="4">
-            <v-btn-toggle
-              v-model="logLevel"
-              dark
-              multiple
-              class="fill"
-            >
-              <v-btn
-                v-for="(level) in possibleLevelArray"
-                :key="level"
-                color="secondary"
-                class="fill"
-                small
-              >
-                {{ level }}
-              </v-btn>
-            </v-btn-toggle>
-          </v-col>
+    <v-card
+      dark
+      class="pt-3"
+      color="primary"
+      flat
+    >
+      <v-card-title>
+        View Program Logs
 
-          <v-col cols="4">
-            <v-btn
-              color="secondary"
-              @click="download('photonlog.log', rawLogs.map(it => it.message).join('\n'))"
-            >
-              <v-icon left>
-                mdi-download
-              </v-icon>
-              Download Log
-            </v-btn>
-          </v-col>
-        </v-row>
+        <v-btn
+                color="secondary"
+                style="margin-left: auto;"
+                depressed
+                @click="download('photonlog.log', rawLogs.map(it => it.message).join('\n'))"
+        >
+          <v-icon left>
+            mdi-download
+          </v-icon>
+          Download Log
+        </v-btn>
+      </v-card-title>
+      <div class="pr-6 pl-6">
+        <v-btn-toggle
+          v-model="logLevel"
+          dark
+          multiple
+          class="fill mb-4"
+        >
+          <v-btn
+            v-for="(level) in possibleLevelArray"
+            :key="level"
+            color="secondary"
+            class="fill"
+          >
+            {{ level }}
+          </v-btn>
+        </v-btn-toggle>
         <!-- Logs -->
 
         <v-virtual-scroll
           :items="logMessageArray"
-          :item-height="25"
+          item-height="50"
           height="600"
         >
           <template v-slot="{ item }">
-            <span :class="getColor(item) + '--text'">{{ item.message }}</span>
+            <div :class="[getColor(item) + '--text', 'log-item']">{{ item.message }}</div>
           </template>
         </v-virtual-scroll>
-      </v-card>
-    </v-col>
-  </div>
+      </div>
+
+      <v-divider />
+
+      <v-card-actions>
+        <v-spacer />
+        <v-btn
+                color="white"
+                text
+                @click="$store.state.logsOverlay = false"
+        >
+          Close
+        </v-btn>
+      </v-card-actions>
+    </v-card>
 </template>
 
 <script>
@@ -110,17 +117,6 @@ export default {
 </script>
 
 <style scoped>
-.loggerClass {
-    /*    position: absolute;*/
-    /*    bottom: 0;*/
-    /*    height: 25% !important;*/
-    /*    left: 0;*/
-    /*    right: 0;*/
-    /*    box-shadow: #282828 0 0 5px 1px;*/
-    /*    background-color: #2b2b2b;*/
-    background-color: #232C37 !important;
-}
-
 .v-btn-toggle.fill {
     width: 100%;
     height: 100%;

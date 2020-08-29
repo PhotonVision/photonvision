@@ -40,6 +40,7 @@
         <v-list-item
           link
           to="cameras"
+          ref="camerasTabOpener"
           @click="switchToDriverMode()"
         >
           <v-list-item-icon>
@@ -117,31 +118,18 @@
       >
         <v-layout>
           <v-flex>
-            <router-view />
+            <router-view v-on:switch-to-cameras="switchToDriverMode" />
           </v-flex>
         </v-layout>
       </v-container>
     </v-main>
 
     <v-dialog
-      v-model="logsOverlay"
+      v-model="$store.state.logsOverlay"
       width="1500"
       dark
     >
       <logs />
-
-      <v-divider />
-
-      <v-card-actions>
-        <v-spacer />
-        <v-btn
-          color="primary"
-          text
-          @click="logsOverlay = false"
-        >
-          OK
-        </v-btn>
-      </v-card-actions>
     </v-dialog>
   </v-app>
 </template>
@@ -158,7 +146,6 @@ import Logs from "./views/LogsView"
             // Used so that we can switch back to the previously selected pipeline after camera calibration
             previouslySelectedIndex: undefined,
             timer: undefined,
-            logsOverlay: true,
         }),
         computed: {
             compact: {
@@ -180,7 +167,7 @@ import Logs from "./views/LogsView"
             document.addEventListener("keydown", e => {
                 switch (e.key) {
                     case "`":
-                        this.logsOverlay = !this.logsOverlay;
+                        this.$store.state.logsOverlay = !this.$store.state.logsOverlay;
                         break;
                     case "z":
                         if (e.ctrlKey && this.$store.getters.canUndo) {
@@ -245,7 +232,6 @@ import Logs from "./views/LogsView"
             },
             // eslint-disable-next-line no-unused-vars
             logMessage(message, levelInt) {
-                console.log(message)
                 this.$store.commit('logString', {
                     ['level']: levelInt,
                     ['message']: message
@@ -315,21 +301,23 @@ import Logs from "./views/LogsView"
     #title {
         color: #ffd843;
     }
-
-    span {
-        color: white !important;
-    }
 </style>
 
 <style>
-  /* Hack */
+  /* Hacks */
+
   .v-divider {
     border-color: white !important;
   }
 
-    .v-input {
-        font-size: 1rem !important;
-    }
+  .v-input {
+      font-size: 1rem !important;
+  }
+
+  /* This is unfortunately the only way to override table background color */
+  .theme--dark.v-data-table > .v-data-table__wrapper > table > tbody > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
+    background: #005281 !important;
+  }
 </style>
 
 <style lang="scss">
