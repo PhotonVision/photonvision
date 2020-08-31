@@ -59,11 +59,11 @@ public abstract class GPIOBase {
 
     protected abstract void setStateImpl(boolean state);
 
-    public void setOff() {
+    public final void setOff() {
         setState(false);
     }
 
-    public void setOn() {
+    public final void setOn() {
         setState(true);
     }
 
@@ -73,7 +73,7 @@ public abstract class GPIOBase {
 
     public abstract boolean shutdown();
 
-    public boolean getState() {
+    public final boolean getState() {
         if (getPinNumber() != -1) {
             return getStateImpl();
         } else return false;
@@ -81,7 +81,7 @@ public abstract class GPIOBase {
 
     public abstract boolean getStateImpl();
 
-    public void setPwmRange(List<Integer> range) {
+    public final void setPwmRange(List<Integer> range) {
         if (getPinNumber() != -1) {
             setPwmRangeImpl(range);
         }
@@ -89,7 +89,7 @@ public abstract class GPIOBase {
 
     protected abstract void setPwmRangeImpl(List<Integer> range);
 
-    public List<Integer> getPwmRange() {
+    public final List<Integer> getPwmRange() {
         if (getPinNumber() != -1) {
             return getPwmRangeImpl();
         } else return List.of(0, 255);
@@ -97,7 +97,7 @@ public abstract class GPIOBase {
 
     protected abstract List<Integer> getPwmRangeImpl();
 
-    public void blink(int pulseTimeMillis, int blinks) {
+    public final void blink(int pulseTimeMillis, int blinks) {
         if (getPinNumber() != -1) {
             blinkImpl(pulseTimeMillis, blinks);
         }
@@ -105,7 +105,7 @@ public abstract class GPIOBase {
 
     protected abstract void blinkImpl(int pulseTimeMillis, int blinks);
 
-    public void setBrightness(int brightness) {
+    public final void setBrightness(int brightness) {
         if (getPinNumber() != -1) {
             setBrightnessImpl(brightness);
         }

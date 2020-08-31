@@ -26,7 +26,7 @@ public class CustomGPIO extends GPIOBase {
 
     private boolean currentState;
     private List<Integer> pwmRange = new ArrayList<>();
-    private int port;
+    private final int port;
 
     public CustomGPIO(int port) {
         this.port = port;
@@ -45,27 +45,8 @@ public class CustomGPIO extends GPIOBase {
     }
 
     @Override
-    public void setLow() {
-        if (this.port != -1) {
-            execute(
-                    commands
-                            .get("setState")
-                            .replace("{s}", String.valueOf(false))
-                            .replace("{p}", String.valueOf(this.port)));
-            currentState = false;
-        }
-    }
-
-    @Override
-    public void setHigh() {
-        if (this.port != -1) {
-            execute(
-                    commands
-                            .get("setState")
-                            .replace("{s}", String.valueOf(true))
-                            .replace("{p}", String.valueOf(this.port)));
-            currentState = true;
-        }
+    public int getPinNumber() {
+        return port;
     }
 
     @Override
@@ -75,7 +56,7 @@ public class CustomGPIO extends GPIOBase {
                     commands
                             .get("setState")
                             .replace("{s}", String.valueOf(state))
-                            .replace("{p}", String.valueOf(this.port)));
+                            .replace("{p}", String.valueOf(port)));
             currentState = state;
         }
     }
@@ -90,21 +71,19 @@ public class CustomGPIO extends GPIOBase {
     }
 
     @Override
-    public boolean getState() {
+    public boolean getStateImpl() {
         return currentState;
     }
 
     @Override
     public void setPwmRangeImpl(List<Integer> range) {
-        if (this.port != -1) {
-            execute(
-                    commands
-                            .get("setRange")
-                            .replace("{lower_range}", String.valueOf(range.get(0)))
-                            .replace("{upper_range}", String.valueOf(range.get(1)))
-                            .replace("{p}", String.valueOf(port)));
-            pwmRange = range;
-        }
+        execute(
+                commands
+                        .get("setRange")
+                        .replace("{lower_range}", String.valueOf(range.get(0)))
+                        .replace("{upper_range}", String.valueOf(range.get(1)))
+                        .replace("{p}", String.valueOf(port)));
+        pwmRange = range;
     }
 
     @Override
@@ -114,27 +93,23 @@ public class CustomGPIO extends GPIOBase {
 
     @Override
     public void blinkImpl(int pulseTimeMillis, int blinks) {
-        if (this.port != -1) {
-            execute(
-                    commands
-                            .get("blink")
-                            .replace("{pulseTime}", String.valueOf(pulseTimeMillis))
-                            .replace("{blinks}", String.valueOf(blinks))
-                            .replace("{p}", String.valueOf(this.port)));
-        }
+        execute(
+                commands
+                        .get("blink")
+                        .replace("{pulseTime}", String.valueOf(pulseTimeMillis))
+                        .replace("{blinks}", String.valueOf(blinks))
+                        .replace("{p}", String.valueOf(this.port)));
     }
 
     @Override
     public void setBrightnessImpl(int brightness) {
-        if (this.port != -1) {
-            // Check to see if dimValue is within the range
-            if (brightness < pwmRange.get(0) || brightness > pwmRange.get(1)) return;
-            execute(
-                    commands
-                            .get("dim")
-                            .replace("{p}", String.valueOf(port))
-                            .replace("{v}", String.valueOf(brightness)));
-        }
+        // Check to see if dimValue is within the range
+        if (brightness < pwmRange.get(0) || brightness > pwmRange.get(1)) return;
+        execute(
+                commands
+                        .get("dim")
+                        .replace("{p}", String.valueOf(port))
+                        .replace("{v}", String.valueOf(brightness)));
     }
 
     public static void setConfig(HardwareConfig config) {
