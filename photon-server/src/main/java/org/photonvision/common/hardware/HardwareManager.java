@@ -20,6 +20,7 @@ package org.photonvision.common.hardware;
 import java.io.IOException;
 import java.util.HashMap;
 
+import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
@@ -34,10 +35,12 @@ import org.photonvision.common.util.ShellExec;
 public class HardwareManager {
     private static HardwareManager instance;
 
-    private final HardwareConfig hardwareConfig;
     private final HashMap<Integer, GPIOBase> VisionLEDs = new HashMap<>();
     private final ShellExec shellExec = new ShellExec(true, false);
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
+
+    private final HardwareConfig hardwareConfig;
+    private final StatusLED statusLED;
 
     private int visionLedPercentage = 100;
 
@@ -64,6 +67,8 @@ public class HardwareManager {
                     }
                 }
         );
+
+        statusLED = new StatusLED(hardwareConfig.statusRGBPins);
 
         // Start hardware metrics thread
         if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
@@ -94,6 +99,23 @@ public class HardwareManager {
         } catch (IOException e) {
             logger.error("Could not restart device!", e);
             return false;
+        }
+    }
+
+    public void setStatus(ProgramStatus status) {
+        switch (status) {
+            case UHOH:
+                // red flashing, green off
+                break;
+            case RUNNING:
+                // red solid, green off
+                break;
+            case RUNNING_NT:
+                // red off, green solid
+                break;
+            case RUNNING_NT_TARGET:
+                // red off, green flashing
+                break;
         }
     }
 

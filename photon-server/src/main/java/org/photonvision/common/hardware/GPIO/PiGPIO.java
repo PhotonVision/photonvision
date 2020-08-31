@@ -26,6 +26,8 @@ import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
+import static eu.xeli.jpigpio.PigpioException.*;
+
 public class PiGPIO extends GPIOBase {
     private static final Logger logger = new Logger(PiGPIO.class, LogGroup.General);
     private final ArrayList<Pulse> pulses = new ArrayList<>();
@@ -40,14 +42,13 @@ public class PiGPIO extends GPIOBase {
     }
 
     public PiGPIO(int address, int frequency, int range) {
-        this.port = address;
+        port = address;
         try {
 //            var pigpioRange = (int) (range / 255.0) * 40000; // TODO: is this conversion correct/necessary?
-            getPigpioDaemon().setPWMFrequency(this.port, frequency);
-            getPigpioDaemon().setPWMRange(this.port, range);
+            getPigpioDaemon().setPWMFrequency(port, frequency);
+            getPigpioDaemon().setPWMRange(port, range);
         } catch (PigpioException e) {
-            logger.error("Could not set PWM settings on port " + this.port);
-            e.printStackTrace();
+            logger.error("Could not set PWM settings on port " + port, e);
         }
     }
 
@@ -59,34 +60,29 @@ public class PiGPIO extends GPIOBase {
     @Override
     public void setStateImpl(boolean state) {
         try {
-            getPigpioDaemon().gpioWrite(this.port, state);
+            getPigpioDaemon().gpioWrite(port, state);
         } catch (PigpioException e) {
-            logger.error("Could not set pin state on port " + this.port);
-            e.printStackTrace();
+            logger.error("Could not set pin state on port " + port, e);
         }
     }
 
     @Override
     public boolean shutdown() {
-        if (this.port != -1) {
             try {
                 getPigpioDaemon().gpioTerminate();
             } catch (PigpioException e) {
-                logger.error("Could not terminate GPIO instance");
-                e.printStackTrace();
+                logger.error("Could not terminate GPIO instance", e);
+                return false;
             }
             return true;
-        }
-        return false;
     }
 
     @Override
     public boolean getStateImpl() {
         try {
-            return getPigpioDaemon().gpioRead(this.port);
+            return getPigpioDaemon().gpioRead(port);
         } catch (PigpioException e) {
-            logger.error("Could not read pin on port " + this.port);
-            e.printStackTrace();
+            logger.error("Could not read pin on port " + port, e);
             return false;
         }
     }
@@ -94,47 +90,63 @@ public class PiGPIO extends GPIOBase {
     @Override
     public void setPwmRangeImpl(List<Integer> range) {
         try {
-            getPigpioDaemon().setPWMRange(this.port, range.get(0));
+            getPigpioDaemon().setPWMRange(port, range.get(0));
         } catch (PigpioException e) {
-            logger.error("Could not set PWM range on port " + this.port);
-            e.printStackTrace();
+            logger.error("Could not set PWM range on port " + port, e);
         }
     }
 
     @Override
     public List<Integer> getPwmRangeImpl() {
         try {
-            return List.of(0, getPigpioDaemon().getPWMRange(this.port));
+            return List.of(0, getPigpioDaemon().getPWMRange(port));
         } catch (PigpioException e) {
-            logger.error("Could not get PWM range on port " + this.port);
-            e.printStackTrace();
+            logger.error("Could not get PWM range on port " + port, e);
             return List.of(0, 255);
         }
     }
 
     @Override
     public void blinkImpl(int pulseTimeMillis, int blinks) {
-        if (this.port != -1) {
-            try {
-                pulses.clear();
+        boolean repeat = blinks == -1;
+        try {
+            pulses.clear();
+            if (repeat) {
+                pulses.add(new Pulse(1 << port, 0, pulseTimeMillis * 100));
+                pulses.add(new Pulse(0, 1 << port, pulseTimeMillis * 100));
+            } else {
                 for (int i = 0; i < blinks; i++) {
-                    pulses.add(new Pulse(1 << this.port, 0, pulseTimeMillis * 100));
-                    pulses.add(new Pulse(0, 1 << this.port, pulseTimeMillis * 100));
+                    pulses.add(new Pulse(1 << port, 0, pulseTimeMillis * 100));
+                    pulses.add(new Pulse(0, 1 << port, pulseTimeMillis * 100));
                 }
-                getPigpioDaemon().waveAddGeneric(this.pulses);
-                getPigpioDaemon().waveSendOnce(getPigpioDaemon().waveCreate());
-            } catch (PigpioException e) {
-                e.printStackTrace();
             }
+            getPigpioDaemon().waveAddGeneric(pulses);
+            var waveId = getPigpioDaemon().waveCreate();
+            if (waveId >= 0) {
+                if (repeat) getPigpioDaemon().waveSendRepeat(waveId);
+                else getPigpioDaemon().waveSendOnce(waveId);
+            } else {
+                String error = "";
+                switch (waveId) {
+                    case PI_EMPTY_WAVEFORM: error = "Waveform empty"; break;
+                    case PI_TOO_MANY_CBS: error = "Too many CBS"; break;
+                    case PI_TOO_MANY_OOL: error = "Too many OOL"; break;
+                    case PI_NO_WAVEFORM_ID: error = "No waveform ID"; break;
+                }
+                logger.error("Failed to send wave: " + error);
+            }
+
+        } catch (PigpioException e) {
+            logger.error("Could not set blink on port " + port, e);
         }
     }
 
     @Override
     public void setBrightnessImpl(int brightness) {
             try {
-                getPigpioDaemon().setPWMDutycycle(this.port, getPwmRangeImpl().get(1) * (brightness / 100));
+                getPigpioDaemon().setPWMDutycycle(port, getPwmRangeImpl().get(1) * (brightness / 100));
             } catch (PigpioException e) {
-                logger.error("Could not dim PWM on port " + this.port);
+                logger.error("Could not dim PWM on port " + port);
                 e.printStackTrace();
             }
     }

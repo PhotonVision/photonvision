@@ -51,31 +51,25 @@ public abstract class GPIOBase {
 
     public abstract int getPinNumber();
 
-    public void setOff() {
-        if (getPinNumber() != -1) {
-            setStateImpl(false);
-        }
-    }
-
-    public void setOn() {
-        if (getPinNumber() != -1) {
-            setStateImpl(true);
-        }
-    }
-
-    public void togglePin() {
-        if (getPinNumber() != -1) {
-            setStateImpl(!getStateImpl());
-        }
-    }
-
     public void setState(boolean state) {
         if (getPinNumber() != -1) {
             setStateImpl(state);
         }
     }
 
-    public abstract void setStateImpl(boolean state);
+    protected abstract void setStateImpl(boolean state);
+
+    public void setOff() {
+        setState(false);
+    }
+
+    public void setOn() {
+        setState(true);
+    }
+
+    public void togglePin() {
+        setState(!getStateImpl());
+    }
 
     public abstract boolean shutdown();
 
