@@ -30,6 +30,7 @@ import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
 import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.HardwareManager.VisionLEDMode;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -227,7 +228,7 @@ public class VisionModule {
         }
 
         if (isVendorCamera()) {
-            HardwareManager.getInstance().setVisionLEDs(config.ledMode);
+            HardwareManager.getInstance().setVisionLEDMode(config.ledMode ? VisionLEDMode.VLM_ON : VisionLEDMode.VLM_OFF);
         }
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
