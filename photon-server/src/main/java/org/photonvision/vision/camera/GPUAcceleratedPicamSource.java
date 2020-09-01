@@ -44,9 +44,11 @@ public class GPUAcceleratedPicamSource implements VisionSource {
       super(configuration);
 
       videoModes = new HashMap<>();
-      videoModes.put(0, new VideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 90));
-      videoModes.put(1, new VideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 45));
-      videoModes.put(2, new VideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 20));
+      videoModes.put(0, new VideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 100));
+      videoModes.put(1, new VideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65));
+      videoModes.put(2, new VideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 55));
+      videoModes.put(3, new VideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 40));
+      videoModes.put(4, new VideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 20));
 
       currentVideoMode = videoModes.get(0);
     }
