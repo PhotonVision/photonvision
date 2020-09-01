@@ -35,6 +35,7 @@ import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
+import org.photonvision.common.util.TimedTaskManager;
 
 public class HardwareManager {
     private static HardwareManager instance;
@@ -150,6 +151,8 @@ public class HardwareManager {
         currentLedMode = ledMode;
         if (ledMode == VisionLEDMode.VLM_BLINK) {
             blinkVisionLEDs(250, 3);
+            var blinkTime = 3 * 250 * 2; // 2x for on/off time
+            TimedTaskManager.getInstance().addOneShotTask(() -> setVisionLEDsInternal(ledMode), blinkTime);
         } else {
             boolean on = ledMode == VisionLEDMode.VLM_ON;
             VisionLEDs.values().forEach(led -> {
