@@ -24,6 +24,7 @@ import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.PiGPIO;
 import org.photonvision.common.hardware.metrics.MetricsBase;
+import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
@@ -56,9 +57,7 @@ public class HardwareManager {
                         LEDs.put(pin, new CustomGPIO(pin));
                     }
                 });
-
-        // Disabled until fix for why valid strings aren't being parsed to a double
-        // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
+        if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
     /** Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue); */
