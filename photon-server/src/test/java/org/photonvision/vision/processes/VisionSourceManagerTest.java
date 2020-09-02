@@ -17,14 +17,15 @@
 
 package org.photonvision.vision.processes;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import edu.wpi.cscore.UsbCameraInfo;
-import java.util.List;
-import org.junit.jupiter.api.Assertions;
+import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.vision.camera.USBCameraSource;
 
 public class VisionSourceManagerTest {
     @BeforeEach
@@ -32,39 +33,32 @@ public class VisionSourceManagerTest {
         TestUtils.loadLibraries();
     }
 
-    final List<UsbCameraInfo> usbCameraInfos =
-            List.of(
-                    new UsbCameraInfo(0, "/this-is-a-real-path", "cameraByPath", new String[] {""}, 1, 1),
-                    new UsbCameraInfo(2, "/this-is-a-fake-path1", "cameraById", new String[] {""}, 420, 1),
-                    new UsbCameraInfo(1, "/this-is-a-real-path2", "cameraByPath", new String[] {""}, 1, 1),
-                    new UsbCameraInfo(3, "/this-is-a-fake-path2", "cameraById", new String[] {""}, 420, 1),
-                    new UsbCameraInfo(4, "/fake-path420", "notExisting", new String[] {""}, 420, 1),
-                    new UsbCameraInfo(5, "/fake-path421", "notExisting", new String[] {""}, 420, 1));
-
-    final List<CameraConfiguration> camConfig =
-            List.of(
-                    new CameraConfiguration("cameraByPath", "dank meme", "good name", "/this-is-a-real-path"),
-                    new CameraConfiguration(
-                            "cameraByPath", "dank meme2", "very original", "/this-is-a-real-path2"),
-                    new CameraConfiguration("cameraById", "camera", "my camera", "2"),
-                    new CameraConfiguration("cameraById", "camera2", "my camera", "3"));
-
-    final List<USBCameraSource> usbCameraSources =
-            List.of(
-                    new USBCameraSource(camConfig.get(0)),
-                    new USBCameraSource(camConfig.get(1)),
-                    new USBCameraSource(camConfig.get(2)),
-                    new USBCameraSource(camConfig.get(3)),
-                    new USBCameraSource(
-                            new CameraConfiguration("notExisting", "notExisting", "notExisting", "4")),
-                    new USBCameraSource(
-                            new CameraConfiguration("notExisting", "notExisting (1)", "notExisting (1)", "5")));
-
     @Test
     public void visionSourceTest() {
-        List<VisionSource> i = VisionSourceManager.loadAllSources(camConfig, usbCameraInfos);
-        for (var source : i) {
-            Assertions.assertEquals(source, usbCameraSources.get(i.indexOf(source)));
-        }
+        var inst = new VisionSourceManager();
+        var infoList = new ArrayList<UsbCameraInfo>();
+        inst.cameraInfoSupplier = () -> infoList;
+
+        inst.tryMatchUSBCamImpl();
+        var config = new CameraConfiguration("secondTestVideo", "dev/video1");
+        UsbCameraInfo info1 = new UsbCameraInfo(0, "dev/video0", "testVideo", new String[0], 1, 2);
+        infoList.add(info1);
+
+        inst.registerLoadedConfigs(config);
+        inst.tryMatchUSBCamImpl();
+        inst.tryMatchUSBCamImpl();
+
+        assertTrue(inst.knownUsbCameras.contains(info1));
+        assertEquals(1, inst.unmatchedLoadedConfigs.size());
+
+        UsbCameraInfo info2 =
+                new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
+        infoList.add(info2);
+
+        inst.tryMatchUSBCamImpl();
+
+        assertTrue(inst.knownUsbCameras.contains(info2));
+        assertEquals(2, inst.knownUsbCameras.size());
+        assertEquals(0, inst.unmatchedLoadedConfigs.size());
     }
 }
