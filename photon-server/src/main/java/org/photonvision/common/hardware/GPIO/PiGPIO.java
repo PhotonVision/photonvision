@@ -33,6 +33,8 @@ public class PiGPIO extends GPIOBase {
     private final ArrayList<Pulse> pulses = new ArrayList<>();
     private final int port;
 
+    private int activeWaveId = -1;
+
     public static JPigpio getPigpioDaemon() {
         return Singleton.INSTANCE;
     }
@@ -43,12 +45,23 @@ public class PiGPIO extends GPIOBase {
 
     public PiGPIO(int address, int frequency, int range) {
         port = address;
-        try {
+        if (port != -1) {
+            try {
 //            var pigpioRange = (int) (range / 255.0) * 40000; // TODO: is this conversion correct/necessary?
-            getPigpioDaemon().setPWMFrequency(port, frequency);
-            getPigpioDaemon().setPWMRange(port, range);
-        } catch (PigpioException e) {
-            logger.error("Could not set PWM settings on port " + port, e);
+                getPigpioDaemon().setPWMFrequency(port, frequency);
+                getPigpioDaemon().setPWMRange(port, range);
+            } catch (PigpioException e) {
+                logger.error("Could not set PWM settings on port " + port, e);
+            }
+        }
+    }
+
+    private void cancelWave() throws PigpioException {
+        if (activeWaveId != -1) {
+            logger.debug("Cancelling wave with id " + activeWaveId);
+            getPigpioDaemon().waveDelete(activeWaveId);
+            getPigpioDaemon().waveTxStop();
+            activeWaveId = -1;
         }
     }
 
@@ -60,6 +73,7 @@ public class PiGPIO extends GPIOBase {
     @Override
     public void setStateImpl(boolean state) {
         try {
+            cancelWave();
             getPigpioDaemon().gpioWrite(port, state);
         } catch (PigpioException e) {
             logger.error("Could not set pin state on port " + port, e);
@@ -90,6 +104,7 @@ public class PiGPIO extends GPIOBase {
     @Override
     public void setPwmRangeImpl(List<Integer> range) {
         try {
+            cancelWave();
             getPigpioDaemon().setPWMRange(port, range.get(0));
         } catch (PigpioException e) {
             logger.error("Could not set PWM range on port " + port, e);
@@ -109,22 +124,30 @@ public class PiGPIO extends GPIOBase {
     @Override
     public void blinkImpl(int pulseTimeMillis, int blinks) {
         boolean repeat = blinks == -1;
+
+        if (repeat) {
+            blinks = 1;
+        }
+
         try {
+            cancelWave();
             pulses.clear();
-            if (repeat) {
-                pulses.add(new Pulse(1 << port, 0, pulseTimeMillis * 100));
-                pulses.add(new Pulse(0, 1 << port, pulseTimeMillis * 100));
-            } else {
-                for (int i = 0; i < blinks; i++) {
-                    pulses.add(new Pulse(1 << port, 0, pulseTimeMillis * 100));
-                    pulses.add(new Pulse(0, 1 << port, pulseTimeMillis * 100));
-                }
+
+            var startPulse = new Pulse(1 << port, 0, pulseTimeMillis * 1000);
+            var endPulse = new Pulse(0, 1 << port, pulseTimeMillis * 1000);
+
+            for (int i = 0; i < blinks; i++) {
+                pulses.add(startPulse);
+                pulses.add(endPulse);
             }
+
             getPigpioDaemon().waveAddGeneric(pulses);
             var waveId = getPigpioDaemon().waveCreate();
+
             if (waveId >= 0) {
                 if (repeat) getPigpioDaemon().waveSendRepeat(waveId);
                 else getPigpioDaemon().waveSendOnce(waveId);
+                activeWaveId = waveId;
             } else {
                 String error = "";
                 switch (waveId) {
@@ -144,6 +167,7 @@ public class PiGPIO extends GPIOBase {
     @Override
     public void setBrightnessImpl(int brightness) {
             try {
+                cancelWave();
                 getPigpioDaemon().setPWMDutycycle(port, getPwmRangeImpl().get(1) * (brightness / 100));
             } catch (PigpioException e) {
                 logger.error("Could not dim PWM on port " + port);

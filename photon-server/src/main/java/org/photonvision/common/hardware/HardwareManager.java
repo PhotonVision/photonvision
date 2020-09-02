@@ -150,9 +150,7 @@ public class HardwareManager {
         var lastLedMode = currentLedMode;
         currentLedMode = ledMode;
         if (ledMode == VisionLEDMode.VLM_BLINK) {
-            blinkVisionLEDs(250, 3);
-            var blinkTime = 3 * 250 * 2; // 2x for on/off time
-            TimedTaskManager.getInstance().addOneShotTask(() -> setVisionLEDsInternal(ledMode), blinkTime);
+            blinkVisionLEDs(250, -1);
         } else {
             boolean on = ledMode == VisionLEDMode.VLM_ON;
             VisionLEDs.values().forEach(led -> {

@@ -105,7 +105,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case "dimLED":
                         if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                             var dimPercentage = (int) newPropValue;
-                            HardwareManager.getInstance().setVisionLEDBrightness(dimPercentage);
+                            HardwareManager.getInstance().setBrightnessPercentage(dimPercentage);
                         }
                         return;
                     case "blinkLED":
