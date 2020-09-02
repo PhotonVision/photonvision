@@ -17,10 +17,7 @@
 
 package org.photonvision.common.hardware.GPIO;
 
-import eu.xeli.jpigpio.JPigpio;
-import eu.xeli.jpigpio.PigpioException;
-import eu.xeli.jpigpio.PigpioSocket;
-import eu.xeli.jpigpio.Pulse;
+import eu.xeli.jpigpio.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
@@ -182,9 +179,12 @@ public class PiGPIO extends GPIOBase {
 
         static {
             try {
+                // Make sure daemon is running before connecting to it
+                execute("pigpiod");
                 INSTANCE = new PigpioSocket("localhost", 8888);
             } catch (PigpioException e) {
-                logger.error("Could not connect to pigpio daemon");
+                INSTANCE = new Pigpio();
+                logger.error("Could not connect to pigpio daemon.");
                 e.printStackTrace();
             }
         }
