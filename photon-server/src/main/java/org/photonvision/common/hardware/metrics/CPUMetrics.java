@@ -21,18 +21,18 @@ public class CPUMetrics extends MetricsBase {
 
     public CPUMetrics() {}
 
-    public double getMemory() {
-        if (cpuMemoryCommand.isEmpty()) return 0;
+    public String getMemory() {
+        if (cpuMemoryCommand.isEmpty()) return "";
         return execute(cpuMemoryCommand);
     }
 
     // TODO: Command should return in Celsius
-    public double getTemp() {
-        if (cpuTemperatureCommand.isEmpty()) return 0;
-        return execute(cpuTemperatureCommand) / 1000;
+    public String getTemp() {
+        if (cpuTemperatureCommand.isEmpty()) return "";
+        return execute(cpuTemperatureCommand);
     }
 
-    public double getUtilization() {
+    public String getUtilization() {
         return execute(cpuUtilizationCommand);
     }
 }

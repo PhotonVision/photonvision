@@ -25,11 +25,11 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 
 public class MetricsPublisher {
-    private final HashMap<String, Double> metrics;
+    private final HashMap<String, String> metrics;
     private static final Logger logger = new Logger(MetricsPublisher.class, LogGroup.General);
     private static CPUMetrics cpuMetrics;
-    // private static GPUMetrics gpuMetrics;
-    // private static RAMMetrics ramMetrics;
+    private static GPUMetrics gpuMetrics;
+    private static RAMMetrics ramMetrics;
 
     public static MetricsPublisher getInstance() {
         return Singleton.INSTANCE;
@@ -37,8 +37,8 @@ public class MetricsPublisher {
 
     private MetricsPublisher() {
         cpuMetrics = new CPUMetrics();
-        // gpuMetrics = new GPUMetrics();
-        // ramMetrics = new RAMMetrics();
+        gpuMetrics = new GPUMetrics();
+        ramMetrics = new RAMMetrics();
 
         metrics = new HashMap<>();
     }
@@ -51,12 +51,9 @@ public class MetricsPublisher {
                             metrics.put("cpuTemp", cpuMetrics.getTemp());
                             metrics.put("cpuUtil", cpuMetrics.getUtilization());
                             metrics.put("cpuMem", cpuMetrics.getMemory());
-                            /*Following metrics throw occasional errors and hence are commented out
-                            until a better solution for grabbing the metrics is found or patch for error is found.
-                            */
-                            // metrics.put("gpuTemp", gpuMetrics.getTemp());
-                            // metrics.put("gpuMem", gpuMetrics.getMemory());
-                            // metrics.put("ramUtil", ramMetrics.getUsedRam());
+                            metrics.put("gpuTemp", gpuMetrics.getTemp());
+                            metrics.put("gpuMem", gpuMetrics.getMemory());
+                            metrics.put("ramUtil", ramMetrics.getUsedRam());
 
                             DataChangeService.getInstance()
                                     .publishEvent(new OutgoingUIEvent<>("metrics", metrics));
