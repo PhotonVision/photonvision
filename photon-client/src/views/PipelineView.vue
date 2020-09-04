@@ -212,7 +212,13 @@
         </v-card-title>
 
         <v-card-text>
-          Because the current resolution {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].width }} x {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].height }} is not yet calibrated, 3D mode cannot be enabled. Please <a href="/cameras"> visit the Cameras tab</a> to calibrate this resolution. For now, SolvePNP will do nothing.
+          Because the current resolution {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].width }}
+          x {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].height }}
+          is not yet calibrated, 3D mode cannot be enabled. Please
+          <a
+            class="white--text"
+            href="/#/cameras"
+          > visit the Cameras tab</a> to calibrate this resolution. For now, SolvePNP will do nothing.
         </v-card-text>
 
         <v-divider />
