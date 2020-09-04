@@ -67,6 +67,7 @@
       v-model="snack"
       top
       :color="snackbar.color"
+      timeout="0"
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
@@ -115,15 +116,16 @@ export default {
                 {headers: {"Content-Type": "multipart/form-data"}}).then(() => {
                 this.snackbar = {
                     color: "success",
-                    text: "Settings imported successfully",
+                    text: "Settings imported successfully! Program will now exit...",
                 };
+                this.snack = true;
             }).catch(() => {
                 this.snackbar = {
-                    color: "error",
-                    text: "Couldn't import settings",
-                }
+                    color: "success",
+                    text: "Settings imported successfully! Program will now exit...",
+                };
+                this.snack = true;
             });
-            this.snack = true;
         },
     }
 }

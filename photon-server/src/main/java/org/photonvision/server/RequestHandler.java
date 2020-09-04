@@ -60,7 +60,7 @@ public class RequestHandler {
             ctx.status(200);
             logger.info("Settings uploaded, going down for restart.");
 
-            if(!Platform.isRaspberryPi()) {
+            if (!Platform.isRaspberryPi()) {
                 logger.info("(On non-PI platforms, the program may not restart manually...)");
             }
 

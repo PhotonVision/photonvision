@@ -45,11 +45,12 @@ public class SolvePNPPipe
 
     @Override
     protected List<TrackedTarget> process(List<TrackedTarget> targetList) {
-        if(params.cameraCoefficients == null
-            || params.cameraCoefficients.getCameraIntrinsicsMat() == null
-            || params.cameraCoefficients.getCameraExtrinsicsMat() == null) {
-            if(!hasWarned) {
-                logger.warn("Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
+        if (params.cameraCoefficients == null
+                || params.cameraCoefficients.getCameraIntrinsicsMat() == null
+                || params.cameraCoefficients.getCameraExtrinsicsMat() == null) {
+            if (!hasWarned) {
+                logger.warn(
+                        "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
                 hasWarned = true;
             }
             return targetList;
