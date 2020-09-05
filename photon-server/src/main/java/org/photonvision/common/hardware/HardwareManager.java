@@ -29,7 +29,6 @@ import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.VisionLED.VisionLEDMode;
 import org.photonvision.common.hardware.metrics.MetricsBase;
-import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
