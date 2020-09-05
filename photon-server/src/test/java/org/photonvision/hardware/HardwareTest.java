@@ -62,10 +62,10 @@ public class HardwareTest {
             gpio = new CustomGPIO(18);
         }
 
-        gpio.setHigh(); // HIGH
+        gpio.setOn(); // HIGH
         assertTrue(gpio.getState());
 
-        gpio.setLow(); // LOW
+        gpio.setOff(); // LOW
         assertFalse(gpio.getState());
 
         gpio.togglePin(); // HIGH
