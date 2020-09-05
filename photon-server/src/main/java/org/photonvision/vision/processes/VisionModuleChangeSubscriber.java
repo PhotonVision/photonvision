@@ -102,18 +102,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.setPipeline(index);
                         parentModule.saveAndBroadcastAll();
                         return;
-                    case "dimLED":
-                        if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            var dimPercentage = (int) newPropValue;
-                            HardwareManager.getInstance().setBrightnessPercentage(dimPercentage);
-                        }
-                        return;
-                    case "blinkLED":
-                        if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            var params = (Pair<Integer, Integer>) newPropValue;
-                            HardwareManager.getInstance().blinkVisionLEDs(params.getLeft(), params.getRight());
-                        }
-                        return;
                     case "startcalibration":
                         var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
                         parentModule.startCalibration(data);

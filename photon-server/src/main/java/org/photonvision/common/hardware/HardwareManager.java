@@ -30,6 +30,7 @@ import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.PiGPIO;
+import org.photonvision.common.hardware.VisionLED.VisionLEDMode;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
@@ -49,8 +50,7 @@ public class HardwareManager {
     private final NetworkTableEntry ledModeEntry;
     private final NTDataChangeListener ledModeListener;
 
-    private VisionLEDMode currentLedMode = VisionLEDMode.VLM_OFF;
-    private int visionLedPercentage = 100;
+    public final VisionLED visionLED;
 
     public static HardwareManager getInstance() {
         if (instance == null) {
@@ -59,108 +59,20 @@ public class HardwareManager {
         return instance;
     }
 
-    public enum VisionLEDMode {
-        VLM_OFF(0),
-        VLM_ON(1),
-        VLM_BLINK(2);
-
-        public final int value;
-
-        VisionLEDMode(int value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            switch (this) {
-                case VLM_OFF: return "Off";
-                case VLM_ON: return "On";
-                case VLM_BLINK: return "Blink";
-            }
-            return "";
-        }
-    }
-
     private HardwareManager(HardwareConfig hardwareConfig) {
         this.hardwareConfig = hardwareConfig;
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
 
-        ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
-        ledModeEntry.setNumber(currentLedMode.value);
-        ledModeListener = new NTDataChangeListener(ledModeEntry, this::onLedModeChange);
-
-        hardwareConfig.ledPins.forEach(
-                pin -> {
-                    if (Platform.isRaspberryPi()) {
-                        VisionLEDs.put(
-                                pin,
-                                new PiGPIO(pin, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1)));
-                    } else {
-                        VisionLEDs.put(pin, new CustomGPIO(pin));
-                    }
-                }
-        );
-
         statusLED = new StatusLED(hardwareConfig.statusRGBPins);
+        visionLED = new VisionLED(hardwareConfig.ledPins, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1));
+
+        ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
+        ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);
+        ledModeListener = new NTDataChangeListener(ledModeEntry, visionLED::onLedModeChange);
 
         // Start hardware metrics thread
         if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
-    }
-
-    private void onLedModeChange(EntryNotification entryNotification) {
-        var newLedModeRaw = (int)entryNotification.value.getDouble();
-        VisionLEDMode newLedMode = null;
-        switch (newLedModeRaw) {
-            case 0:
-                newLedMode = VisionLEDMode.VLM_OFF;
-                break;
-            case 1:
-                newLedMode = VisionLEDMode.VLM_ON;
-                break;
-            case 2:
-                newLedMode = VisionLEDMode.VLM_BLINK;
-                break;
-            default:
-                logger.warn("User supplied invalid LED mode, defaulting to nearest mode");
-                if (newLedModeRaw < 0) newLedMode = VisionLEDMode.VLM_OFF;
-                if (newLedModeRaw > 2) newLedMode = VisionLEDMode.VLM_BLINK;
-        }
-
-        logger.info("Changing LED mode from \"" + currentLedMode.toString() + "\" to \"" + newLedMode.toString() + "\"");
-
-        setVisionLEDsInternal(newLedMode);
-    }
-
-    public void blinkVisionLEDs(int pulseTimeMillis, int blinks) {
-        VisionLEDs.values().forEach(led -> led.blink(pulseTimeMillis, blinks));
-    }
-
-    public void setBrightnessPercentage(int percentage) {
-        visionLedPercentage = percentage;
-        VisionLEDs.values().forEach(led -> led.setBrightness(percentage));
-    }
-
-    public void setVisionLEDMode(VisionLEDMode ledMode) {
-        ledModeEntry.setNumber(ledMode.value);
-        setVisionLEDsInternal(ledMode);
-    }
-
-    private void setVisionLEDsInternal(VisionLEDMode ledMode) {
-        var lastLedMode = currentLedMode;
-        currentLedMode = ledMode;
-        if (ledMode == VisionLEDMode.VLM_BLINK) {
-            blinkVisionLEDs(250, -1);
-        } else {
-            boolean on = ledMode == VisionLEDMode.VLM_ON;
-            VisionLEDs.values().forEach(led -> {
-                if (on && visionLedPercentage != 100) {
-                    led.setBrightness(visionLedPercentage);
-                } else {
-                    led.setState(on);
-                }
-            });
-        }
     }
 
     public boolean restartDevice() {

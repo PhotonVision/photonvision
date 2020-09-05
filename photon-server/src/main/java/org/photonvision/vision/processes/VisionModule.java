@@ -30,7 +30,6 @@ import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
 import org.photonvision.common.hardware.HardwareManager;
-import org.photonvision.common.hardware.HardwareManager.VisionLEDMode;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
@@ -131,6 +130,10 @@ public class VisionModule {
             var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV;
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
+
+            HardwareManager.getInstance().visionLED.setPipelineModeSupplier(
+                    () -> pipelineManager.getCurrentPipelineSettings().ledMode);
+            setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
 
         saveAndBroadcastAll();
@@ -138,6 +141,7 @@ public class VisionModule {
 
     void setDriverMode(boolean isDriverMode) {
         pipelineManager.setDriverMode(isDriverMode);
+        setVisionLEDs(!isDriverMode);
         saveAndBroadcastAll();
     }
 
@@ -227,12 +231,14 @@ public class VisionModule {
             visionSource.getSettables().setGain(config.cameraGain);
         }
 
-        if (isVendorCamera()) {
-            HardwareManager.getInstance().setVisionLEDMode(config.ledMode ? VisionLEDMode.VLM_ON : VisionLEDMode.VLM_OFF);
-        }
+        setVisionLEDs(config.ledMode);
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
                 pipelineManager.getCurrentPipelineIndex();
+    }
+
+    private void setVisionLEDs(boolean on) {
+        if (isVendorCamera()) HardwareManager.getInstance().visionLED.setState(on);
     }
 
     public void saveModule() {
