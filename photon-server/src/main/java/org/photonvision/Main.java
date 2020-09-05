@@ -25,7 +25,6 @@ import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -176,10 +175,6 @@ public class Main {
         } else {
             addTestModeSources();
         }
-
-        // Add hardware config to hardware manager
-        HardwareManager.getInstance()
-                .setConfig(ConfigManager.getInstance().getConfig().getHardwareConfig());
 
         Server.main(DEFAULT_WEBPORT);
     }

@@ -41,8 +41,21 @@ public class SolvePNPPipe
 
     private final MatOfPoint2f imagePoints = new MatOfPoint2f();
 
+    private boolean hasWarned = false;
+
     @Override
     protected List<TrackedTarget> process(List<TrackedTarget> targetList) {
+        if (params.cameraCoefficients == null
+                || params.cameraCoefficients.getCameraIntrinsicsMat() == null
+                || params.cameraCoefficients.getCameraExtrinsicsMat() == null) {
+            if (!hasWarned) {
+                logger.warn(
+                        "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
+                hasWarned = true;
+            }
+            return targetList;
+        }
+
         for (var target : targetList) {
             calculateTargetPose(target);
         }
@@ -55,6 +68,7 @@ public class SolvePNPPipe
         var corners = target.getTargetCorners();
         if (corners == null
                 || corners.isEmpty()
+                || params.cameraCoefficients == null
                 || params.cameraCoefficients.getCameraIntrinsicsMat() == null
                 || params.cameraCoefficients.getCameraExtrinsicsMat() == null) {
             return;

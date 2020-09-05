@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
+import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -46,6 +47,11 @@ public class Logger {
 
     private static final SimpleDateFormat simpleDateFormat =
             new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+    private static final List<Pair<String, LogLevel>> uiBacklog = new ArrayList<>();
+    private static boolean connected = false;
+
+    private static UILogAppender uiLogAppender = new UILogAppender();
 
     private final String className;
     private final LogGroup group;
@@ -97,7 +103,7 @@ public class Logger {
 
     static {
         currentAppenders.add(new ConsoleLogAppender());
-        currentAppenders.add(new UILogAppender());
+        currentAppenders.add(uiLogAppender);
         addFileAppender(ConfigManager.getInstance().getLogPath());
     }
 
@@ -126,6 +132,15 @@ public class Logger {
             var formattedMessage = format(message, level, group, clazz, shouldColor);
             a.log(formattedMessage, level);
         }
+        if (!connected) uiBacklog.add(Pair.of(format(message, level, group, clazz, false), level));
+    }
+
+    public static void sendConnectedBacklog() {
+        for (var message : uiBacklog) {
+            uiLogAppender.log(message.getLeft(), message.getRight());
+        }
+        connected = true;
+        uiBacklog.clear();
     }
 
     public boolean shouldLog(LogLevel logLevel) {
@@ -244,6 +259,7 @@ public class Logger {
 
     private static class FileLogAppender implements LogAppender {
         private OutputStream out;
+        private boolean wantsFlush;
 
         public FileLogAppender(Path logFilePath) {
             try {
@@ -253,7 +269,10 @@ public class Logger {
                                 "FileLogAppender",
                                 () -> {
                                     try {
-                                        out.flush();
+                                        if (wantsFlush) {
+                                            out.flush();
+                                            wantsFlush = false;
+                                        }
                                     } catch (IOException ignored) {
                                     }
                                 },
@@ -269,6 +288,7 @@ public class Logger {
             message += "\n";
             try {
                 out.write(message.getBytes());
+                wantsFlush = true;
             } catch (IOException e) {
                 e.printStackTrace();
             }

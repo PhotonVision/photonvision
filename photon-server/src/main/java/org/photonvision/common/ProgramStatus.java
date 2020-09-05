@@ -15,14 +15,11 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.common;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
-
-@JsonTypeName("ReflectivePipelineSettings")
-public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
-    public ReflectivePipelineSettings() {
-        super();
-        pipelineType = PipelineType.Reflective;
-    }
+public enum ProgramStatus {
+    UHOH,
+    RUNNING,
+    RUNNING_NT,
+    RUNNING_NT_TARGET
 }

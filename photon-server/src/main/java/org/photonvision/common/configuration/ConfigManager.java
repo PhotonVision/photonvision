@@ -57,17 +57,17 @@ public class ConfigManager {
     }
 
     public static void saveUploadedSettingsZip(File uploadPath) {
-        logger.info(uploadPath.getAbsolutePath());
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
         folderPath.mkdirs();
         ZipUtil.unpack(uploadPath, folderPath);
         FileUtils.deleteDirectory(getRootFolder());
         try {
             org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
+            logger.info("Copied settings successfully!");
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Exception copying uploaded settings!", e);
+            return;
         }
-        System.exit(666);
     }
 
     public PhotonConfiguration getConfig() {
@@ -159,8 +159,6 @@ public class ConfigManager {
     }
 
     public void saveToDisk() {
-        logger.info("Saving settings...");
-
         // Delete old configs
         FileUtils.deleteDirectory(camerasFolder.toPath());
 
@@ -214,6 +212,7 @@ public class ConfigManager {
                 }
             }
         }
+        logger.info("Settings saved!");
     }
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs() {
@@ -341,7 +340,7 @@ public class ConfigManager {
     }
 
     public void requestSave() {
-        logger.debug("Requesting save...");
+        logger.trace("Requesting save...");
         saveRequestTimestamp = System.currentTimeMillis();
     }
 

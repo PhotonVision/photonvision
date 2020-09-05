@@ -96,11 +96,6 @@
                     return Math.atan(Math.tan(diagonalView / 2) * (resolution.width / diagonalAspect)) * 2 * (180 / Math.PI)
                 }
             },
-            allow3D: {
-                get() {
-                    return this.$store.getters.currentCameraSettings.calibrated;
-                }
-            }
         },
         mounted() {
             let tmp = [];

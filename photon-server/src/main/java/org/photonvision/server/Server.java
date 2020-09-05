@@ -53,7 +53,7 @@ public class Server {
                                     ws ->
                                             ws.onBinaryMessage(
                                                     ctx ->
-                                                            logger.debug(
+                                                            logger.trace(
                                                                     () -> {
                                                                         var insa = ctx.session.getRemote().getInetSocketAddress();
                                                                         var host = insa.getAddress().toString() + ":" + insa.getPort();

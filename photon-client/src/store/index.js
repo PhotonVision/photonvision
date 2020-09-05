@@ -11,18 +11,14 @@ const set = key => (state, val) => {
 
 export default new Vuex.Store({
     modules: {
-        reflectivePipelineSettings: {
-            state: {
-                currentResolutionIndex: 0,
-            },
-        },
         undoRedo: undoRedo
     },
     state: {
         backendConnected: false,
         colorPicking: false,
-        saveBar: false,
+        logsOverlay: false,
         compactMode: localStorage.getItem("compactMode") === undefined ? undefined : localStorage.getItem("compactMode") === "true", // Compact mode is initially unset on purpose
+        logMessages: [],
         currentCameraIndex: 0,
         selectedOutputs: [0, 1], // 0 indicates normal, 1 indicates threshold
         cameraSettings: [ // This is a list of objects representing the settings of all cameras
@@ -132,13 +128,17 @@ export default new Vuex.Store({
         },
     },
     mutations: {
-        saveBar: set('saveBar'),
         compactMode: set('compactMode'),
         cameraSettings: set('cameraSettings'),
         currentCameraIndex: set('currentCameraIndex'),
         selectedOutputs: set('selectedOutputs'),
         settings: set('settings'),
         calibrationData: set('calibrationData'),
+        logString: (state, newStr) => {
+            const str = state.logMessages;
+            str.push(newStr)
+            Vue.set(state, 'logString', str)
+        },
 
         solvePNPEnabled: (state, val) => {
             state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.solvePNPEnabled = val;
@@ -204,6 +204,11 @@ export default new Vuex.Store({
                 "http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].outputStreamPort + "/stream.mjpg"],
         currentPipelineResults: state => {
             return state.pipelineResults;
+        },
+        isCalibrated: state => {
+            let resolution = state.cameraSettings[state.currentCameraIndex].videoFormatList[state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.cameraVideoModeIndex];
+            return state.cameraSettings[state.currentCameraIndex].calibrations
+                .some(e => e.width === resolution.width && e.height === resolution.height);
         },
         cameraList: state => state.cameraSettings.map(it => it.nickname),
         currentCameraSettings: state => state.cameraSettings[state.currentCameraIndex],

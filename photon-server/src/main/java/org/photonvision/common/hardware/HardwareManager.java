@@ -17,12 +17,17 @@
 
 package org.photonvision.common.hardware;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
 import java.io.IOException;
 import java.util.HashMap;
+import org.photonvision.common.ProgramStatus;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.PiGPIO;
+import org.photonvision.common.hardware.VisionLED.VisionLEDMode;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
@@ -30,87 +35,44 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public class HardwareManager {
-    HardwareConfig hardwareConfig;
-    private final HashMap<Integer, GPIOBase> LEDs = new HashMap<>();
+    private static HardwareManager instance;
+
+    private final HashMap<Integer, GPIOBase> VisionLEDs = new HashMap<>();
     private final ShellExec shellExec = new ShellExec(true, false);
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
+    private final HardwareConfig hardwareConfig;
+    private final StatusLED statusLED;
+    private final NetworkTableEntry ledModeEntry;
+    private final NTDataChangeListener ledModeListener;
+
+    public final VisionLED visionLED;
+
     public static HardwareManager getInstance() {
-        if (Singleton.INSTANCE == null) {
-            Singleton.INSTANCE = new HardwareManager();
+        if (instance == null) {
+            instance = new HardwareManager(ConfigManager.getInstance().getConfig().getHardwareConfig());
         }
-        return Singleton.INSTANCE;
+        return instance;
     }
 
-    public void setConfig(HardwareConfig hardwareConfig) {
+    private HardwareManager(HardwareConfig hardwareConfig) {
         this.hardwareConfig = hardwareConfig;
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
 
-        hardwareConfig.ledPins.forEach(
-                pin -> {
-                    if (Platform.isRaspberryPi()) {
-                        LEDs.put(
-                                pin,
-                                new PiGPIO(pin, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1)));
-                    } else {
-                        LEDs.put(pin, new CustomGPIO(pin));
-                    }
-                });
-        if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
-    }
+        statusLED = new StatusLED(hardwareConfig.statusRGBPins);
+        visionLED =
+                new VisionLED(
+                        hardwareConfig.ledPins,
+                        hardwareConfig.ledPWMFrequency,
+                        hardwareConfig.ledPWMRange.get(1));
 
-    /** Example: HardwareManager.getInstance().getPWM(port).dimLEDs(int dimValue); */
-    public GPIOBase getGPIO(int pin) {
-        return LEDs.get(pin);
-    }
+        ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
+        ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);
+        ledModeListener = new NTDataChangeListener(ledModeEntry, visionLED::onLedModeChange);
 
-    public void blinkLEDs(int pulseTimeMillis, int blinks) {
-        LEDs.values().forEach(led -> led.blink(pulseTimeMillis, blinks));
-    }
-
-    public void setBrightnessPercentage(int percentage) {
-        LEDs.values().forEach(led -> led.dimLED(percentage));
-    }
-
-    public void turnLEDsOn() {
-        LEDs.values().forEach(GPIOBase::setHigh);
-    }
-
-    public void turnLEDsOff() {
-        LEDs.values().forEach(GPIOBase::setLow);
-    }
-
-    public void toggleLEDs() {
-        LEDs.values().forEach(GPIOBase::togglePin);
-    }
-
-    public void shutdown() {
-        LEDs.values().forEach(GPIOBase::shutdown);
-    }
-
-    public GPIOBase redStatusLED() {
-        try {
-            return LEDs.get(hardwareConfig.statusRGBPins.get(0));
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return LEDs.get(-1);
-        }
-    }
-
-    public GPIOBase greenStatusLED() {
-        try {
-            return LEDs.get(hardwareConfig.statusRGBPins.get(1));
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return LEDs.get(-1);
-        }
-    }
-
-    public GPIOBase blueStatusLED() {
-        try {
-            return LEDs.get(hardwareConfig.statusRGBPins.get(2));
-        } catch (ArrayIndexOutOfBoundsException e) {
-            return LEDs.get(-1);
-        }
+        // Start hardware metrics thread (Disabled until implemented)
+        // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
     public boolean restartDevice() {
@@ -122,11 +84,24 @@ public class HardwareManager {
         }
     }
 
-    public HardwareConfig getConfig() {
-        return hardwareConfig;
+    public void setStatus(ProgramStatus status) {
+        switch (status) {
+            case UHOH:
+                // red flashing, green off
+                break;
+            case RUNNING:
+                // red solid, green off
+                break;
+            case RUNNING_NT:
+                // red off, green solid
+                break;
+            case RUNNING_NT_TARGET:
+                // red off, green flashing
+                break;
+        }
     }
 
-    private static class Singleton {
-        private static HardwareManager INSTANCE;
+    public HardwareConfig getConfig() {
+        return hardwareConfig;
     }
 }

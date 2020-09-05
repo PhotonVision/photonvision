@@ -71,6 +71,10 @@ public class TimedTaskManager {
         }
     }
 
+    public void addOneShotTask(Runnable runnable, long millisStartDelay) {
+        timedTaskExecutorPool.schedule(runnable, millisStartDelay, TimeUnit.MILLISECONDS);
+    }
+
     public void cancelTask(String identifier) {
         var future = activeTasks.getOrDefault(identifier, null);
         if (future != null) {

@@ -24,12 +24,10 @@ import org.opencv.core.Point;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
-import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -101,35 +99,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         }
                         parentModule.setPipeline(index);
                         parentModule.saveAndBroadcastAll();
-                        return;
-                    case "dimLED":
-                        if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            var dimPercentage = (int) newPropValue;
-                            HardwareManager.getInstance().setBrightnessPercentage(dimPercentage);
-                        }
-                        return;
-                    case "blinkLED":
-                        if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            var params = (Pair<Integer, Integer>) newPropValue;
-                            HardwareManager.getInstance().blinkLEDs(params.getLeft(), params.getRight());
-                        }
-                        return;
-                    case "setLED":
-                        if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            var state = (boolean) newPropValue;
-                            if (state) HardwareManager.getInstance().turnLEDsOn();
-                            else HardwareManager.getInstance().turnLEDsOff();
-                        }
-                        return;
-                    case "toggleLED":
-                        if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            HardwareManager.getInstance().toggleLEDs();
-                        }
-                        return;
-                    case "shutdownLEDs":
-                        if (parentModule.cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                            HardwareManager.getInstance().shutdown();
-                        }
                         return;
                     case "startcalibration":
                         var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
