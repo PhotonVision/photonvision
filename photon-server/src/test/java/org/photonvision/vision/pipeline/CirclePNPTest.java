@@ -96,7 +96,9 @@ public class CirclePNPTest {
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+        pipeline.getSettings().cameraCalibration = getCoeffs(LIFECAM_480P_CAL_FILE);
         pipeline.getSettings().targetModel = TargetModel.getCircleTarget(7);
+        pipeline.getSettings().cameraPitch = Rotation2d.fromDegrees(0.0);
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().outputShowMultipleTargets = false;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
@@ -109,9 +111,7 @@ public class CirclePNPTest {
         var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
-                        TestUtils.WPI2020Image.FOV,
-                        new Rotation2d(),
-                        TestUtils.get2020LifeCamCoeffs(true));
+                        TestUtils.WPI2020Image.FOV);
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
         printTestResults(pipelineResult);
