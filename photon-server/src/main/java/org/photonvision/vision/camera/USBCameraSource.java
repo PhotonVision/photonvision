@@ -128,10 +128,19 @@ public class USBCameraSource implements VisionSource {
                 List<VideoMode> videoModesList = new ArrayList<>();
                 try {
                     for (var videoMode : camera.enumerateVideoModes()) {
+                        // Filter grey modes
                         if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray
                                 || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {
                             continue;
                         }
+
+                        // On picam, filter non-bgr modes for performance
+                        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                            if (videoMode.pixelFormat != VideoMode.PixelFormat.kBGR) {
+                                continue;
+                            }
+                        }
+
                         videoModesList.add(videoMode);
                     }
                 } catch (Exception e) {
