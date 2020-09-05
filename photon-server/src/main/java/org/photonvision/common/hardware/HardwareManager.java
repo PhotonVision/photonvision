@@ -29,7 +29,6 @@ import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.VisionLED.VisionLEDMode;
 import org.photonvision.common.hardware.metrics.MetricsBase;
-import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
@@ -71,8 +70,8 @@ public class HardwareManager {
         ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);
         ledModeListener = new NTDataChangeListener(ledModeEntry, visionLED::onLedModeChange);
 
-        // Start hardware metrics thread
-        if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
+        // Start hardware metrics thread (Disabled until implemented)
+        // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
     public boolean restartDevice() {

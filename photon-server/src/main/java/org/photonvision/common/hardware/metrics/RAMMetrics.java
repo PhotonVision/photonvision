@@ -19,8 +19,8 @@ package org.photonvision.common.hardware.metrics;
 
 public class RAMMetrics extends MetricsBase {
     // TODO: Output in MBs for consistency
-    public double getUsedRam() {
-        if (ramUsageCommand.isEmpty()) return 0;
-        return execute(ramUsageCommand) / 1000;
+    public String getUsedRam() {
+        if (ramUsageCommand.isEmpty()) return "";
+        return execute(ramUsageCommand);
     }
 }

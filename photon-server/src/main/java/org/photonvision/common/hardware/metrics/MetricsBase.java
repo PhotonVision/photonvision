@@ -17,7 +17,6 @@
 
 package org.photonvision.common.hardware.metrics;
 
-import java.io.IOException;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
@@ -54,15 +53,15 @@ public abstract class MetricsBase {
         ramUsageCommand = config.ramUtilCommand;
     }
 
-    public static double execute(String command) {
+    public static String execute(String command) {
         try {
             runCommand.executeBashCommand(command);
-            return Double.parseDouble(runCommand.getOutput());
-        } catch (NumberFormatException e) {
+            return runCommand.getOutput();
+        } catch (Exception e) {
             logger.error(
                     "Command: \""
                             + command
-                            + "\" returned a non-double output!"
+                            + "\" returned an error!"
                             + "\nOutput Received: "
                             + runCommand.getOutput()
                             + "\nStandard Error: "
@@ -73,10 +72,7 @@ public abstract class MetricsBase {
                             + runCommand.isErrorCompleted()
                             + "\nExit code: "
                             + runCommand.getExitCode());
-            return Double.NaN;
-        } catch (IOException e) {
-            MetricsPublisher.getInstance().stopTask();
-            return -1;
+            return "";
         }
     }
 }

@@ -189,9 +189,11 @@ public class PiGPIO extends GPIOBase {
 
         static {
             try {
+                // Make sure daemon is running before connecting to it
+                execute("pigpiod");
                 INSTANCE = new PigpioSocket("localhost", 8888);
             } catch (PigpioException e) {
-                logger.error("Could not connect to pigpio daemon");
+                logger.error("Could not connect to pigpio daemon.");
                 e.printStackTrace();
             }
         }
