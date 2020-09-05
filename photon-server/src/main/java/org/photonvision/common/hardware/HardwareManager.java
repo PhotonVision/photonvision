@@ -17,11 +17,9 @@
 
 package org.photonvision.common.hardware;
 
+import edu.wpi.first.networktables.NetworkTableEntry;
 import java.io.IOException;
 import java.util.HashMap;
-
-import edu.wpi.first.networktables.EntryNotification;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
@@ -29,14 +27,12 @@ import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.PiGPIO;
 import org.photonvision.common.hardware.VisionLED.VisionLEDMode;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
-import org.photonvision.common.util.TimedTaskManager;
 
 public class HardwareManager {
     private static HardwareManager instance;
@@ -65,7 +61,11 @@ public class HardwareManager {
         MetricsBase.setConfig(hardwareConfig);
 
         statusLED = new StatusLED(hardwareConfig.statusRGBPins);
-        visionLED = new VisionLED(hardwareConfig.ledPins, hardwareConfig.ledPWMFrequency, hardwareConfig.ledPWMRange.get(1));
+        visionLED =
+                new VisionLED(
+                        hardwareConfig.ledPins,
+                        hardwareConfig.ledPWMFrequency,
+                        hardwareConfig.ledPWMRange.get(1));
 
         ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
         ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);

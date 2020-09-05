@@ -17,6 +17,8 @@
 
 package org.photonvision.common.hardware.GPIO;
 
+import static eu.xeli.jpigpio.PigpioException.*;
+
 import eu.xeli.jpigpio.JPigpio;
 import eu.xeli.jpigpio.PigpioException;
 import eu.xeli.jpigpio.PigpioSocket;
@@ -25,8 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-
-import static eu.xeli.jpigpio.PigpioException.*;
 
 public class PiGPIO extends GPIOBase {
     private static final Logger logger = new Logger(PiGPIO.class, LogGroup.General);
@@ -47,7 +47,8 @@ public class PiGPIO extends GPIOBase {
         port = address;
         if (port != -1) {
             try {
-//            var pigpioRange = (int) (range / 255.0) * 40000; // TODO: is this conversion correct/necessary?
+                //            var pigpioRange = (int) (range / 255.0) * 40000; // TODO: is this conversion
+                // correct/necessary?
                 getPigpioDaemon().setPWMFrequency(port, frequency);
                 getPigpioDaemon().setPWMRange(port, range);
             } catch (PigpioException e) {
@@ -82,13 +83,13 @@ public class PiGPIO extends GPIOBase {
 
     @Override
     public boolean shutdown() {
-            try {
-                getPigpioDaemon().gpioTerminate();
-            } catch (PigpioException e) {
-                logger.error("Could not terminate GPIO instance", e);
-                return false;
-            }
-            return true;
+        try {
+            getPigpioDaemon().gpioTerminate();
+        } catch (PigpioException e) {
+            logger.error("Could not terminate GPIO instance", e);
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -151,10 +152,18 @@ public class PiGPIO extends GPIOBase {
             } else {
                 String error = "";
                 switch (waveId) {
-                    case PI_EMPTY_WAVEFORM: error = "Waveform empty"; break;
-                    case PI_TOO_MANY_CBS: error = "Too many CBS"; break;
-                    case PI_TOO_MANY_OOL: error = "Too many OOL"; break;
-                    case PI_NO_WAVEFORM_ID: error = "No waveform ID"; break;
+                    case PI_EMPTY_WAVEFORM:
+                        error = "Waveform empty";
+                        break;
+                    case PI_TOO_MANY_CBS:
+                        error = "Too many CBS";
+                        break;
+                    case PI_TOO_MANY_OOL:
+                        error = "Too many OOL";
+                        break;
+                    case PI_NO_WAVEFORM_ID:
+                        error = "No waveform ID";
+                        break;
                 }
                 logger.error("Failed to send wave: " + error);
             }
@@ -166,13 +175,13 @@ public class PiGPIO extends GPIOBase {
 
     @Override
     public void setBrightnessImpl(int brightness) {
-            try {
-                cancelWave();
-                getPigpioDaemon().setPWMDutycycle(port, getPwmRangeImpl().get(1) * (brightness / 100));
-            } catch (PigpioException e) {
-                logger.error("Could not dim PWM on port " + port);
-                e.printStackTrace();
-            }
+        try {
+            cancelWave();
+            getPigpioDaemon().setPWMDutycycle(port, getPwmRangeImpl().get(1) * (brightness / 100));
+        } catch (PigpioException e) {
+            logger.error("Could not dim PWM on port " + port);
+            e.printStackTrace();
+        }
     }
 
     private static class Singleton {

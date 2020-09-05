@@ -1,15 +1,31 @@
+/*
+ * Copyright (C) 2020 Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.common.hardware;
 
 import edu.wpi.first.networktables.EntryNotification;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BooleanSupplier;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.PiGPIO;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BooleanSupplier;
 
 public class VisionLED {
     private static final Logger logger = new Logger(VisionLED.class, LogGroup.VisionModule);
@@ -27,8 +43,7 @@ public class VisionLED {
                     } else {
                         leds.add(new CustomGPIO(pin));
                     }
-                }
-        );
+                });
         pipelineModeSupplier = () -> false;
     }
 
@@ -53,7 +68,7 @@ public class VisionLED {
     }
 
     void onLedModeChange(EntryNotification entryNotification) {
-        var newLedModeRaw = (int)entryNotification.value.getDouble();
+        var newLedModeRaw = (int) entryNotification.value.getDouble();
         if (newLedModeRaw != currentLedMode.value) {
             VisionLEDMode newLedMode;
             switch (newLedModeRaw) {
@@ -97,7 +112,12 @@ public class VisionLED {
                     break;
             }
             currentLedMode = newLedMode;
-            logger.info("Changing LED mode from \"" + lastLedMode.toString() + "\" to \"" + newLedMode.toString() + "\"");
+            logger.info(
+                    "Changing LED mode from \""
+                            + lastLedMode.toString()
+                            + "\" to \""
+                            + newLedMode.toString()
+                            + "\"");
         } else {
             if (currentLedMode == VisionLEDMode.VLM_DEFAULT) {
                 switch (newLedMode) {
@@ -128,10 +148,14 @@ public class VisionLED {
         @Override
         public String toString() {
             switch (this) {
-                case VLM_DEFAULT: return "Default";
-                case VLM_OFF: return "Off";
-                case VLM_ON: return "On";
-                case VLM_BLINK: return "Blink";
+                case VLM_DEFAULT:
+                    return "Default";
+                case VLM_OFF:
+                    return "Off";
+                case VLM_ON:
+                    return "On";
+                case VLM_BLINK:
+                    return "Blink";
             }
             return "";
         }

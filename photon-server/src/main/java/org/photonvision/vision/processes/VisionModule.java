@@ -131,8 +131,9 @@ public class VisionModule {
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
 
-            HardwareManager.getInstance().visionLED.setPipelineModeSupplier(
-                    () -> pipelineManager.getCurrentPipelineSettings().ledMode);
+            HardwareManager.getInstance()
+                    .visionLED
+                    .setPipelineModeSupplier(() -> pipelineManager.getCurrentPipelineSettings().ledMode);
             setVisionLEDs(pipelineManager.getCurrentPipelineSettings().ledMode);
         }
 
