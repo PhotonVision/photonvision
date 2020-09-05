@@ -40,6 +40,7 @@
         <v-list-item
           link
           to="cameras"
+          ref="camerasTabOpener"
           @click="switchToDriverMode()"
         >
           <v-list-item-icon>
@@ -71,7 +72,6 @@
             <v-list-item-title>Documentation</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-
         <v-list-item
           v-if="this.$vuetify.breakpoint.mdAndUp"
           link
@@ -111,63 +111,43 @@
         </v-list-item>
       </v-list>
     </v-navigation-drawer>
-    <v-content>
+    <v-main>
       <v-container
         fluid
         fill-height
       >
         <v-layout>
           <v-flex>
-            <router-view @save="startTimer" />
-            <v-snackbar
-              v-model="saveSnackbar"
-              :timeout="1000"
-              top
-              color="accent"
-            >
-              <div style="text-align: center;width: 100%;">
-                <h4>Saved All changes</h4>
-              </div>
-            </v-snackbar>
-            <div v-if="isLogger">
-              <keep-alive>
-                <log-view
-                  class="loggerClass"
-                  :log="log"
-                />
-              </keep-alive>
-            </div>
+            <router-view v-on:switch-to-cameras="switchToDriverMode" />
           </v-flex>
         </v-layout>
       </v-container>
-    </v-content>
+    </v-main>
+
+    <v-dialog
+      v-model="$store.state.logsOverlay"
+      width="1500"
+      dark
+    >
+      <logs />
+    </v-dialog>
   </v-app>
 </template>
 
 <script>
-    import logView from '@femessage/log-viewer';
+import Logs from "./views/LogsView"
 
     export default {
         name: 'App',
         components: {
-            logView
+            Logs
         },
         data: () => ({
             // Used so that we can switch back to the previously selected pipeline after camera calibration
             previouslySelectedIndex: undefined,
             timer: undefined,
-            isLogger: false,
-            log: "",
         }),
         computed: {
-            saveSnackbar: {
-                get() {
-                    return this.$store.state.saveBar;
-                },
-                set(value) {
-                    this.$store.commit("saveBar", value);
-                }
-            },
             compact: {
                 get() {
                     if (this.$store.state.compactMode === undefined) {
@@ -186,8 +166,8 @@
         created() {
             document.addEventListener("keydown", e => {
                 switch (e.key) {
-                    case '`' :
-                        this.isLogger = !this.isLogger;
+                    case "`":
+                        this.$store.state.logsOverlay = !this.$store.state.logsOverlay;
                         break;
                     case "z":
                         if (e.ctrlKey && this.$store.getters.canUndo) {
@@ -250,22 +230,12 @@
             toggleCompactMode() {
                 this.compact = !this.compact;
             },
-            saveSettings() {
-                clearInterval(this.timer);
-                this.saveSnackbar = true;
-                this.handleInput("command", "save");
-            },
-            startTimer() {
-                if (this.timer !== undefined) {
-                    clearInterval(this.timer);
-                }
-                this.timer = setInterval(this.saveSettings, 4000);
-            },
-            logMessage(message, level) {
-                const colors = ["\u001B[30m", "\u001B[31m", "\u001B[33m", "\u001B[32m", "\u001B[37m", "\u001B[36m"]
-                const reset = "\u001b[0m"
-                this.log += `${colors[level]}${message}${reset}\n`
-                console.log(message)
+            // eslint-disable-next-line no-unused-vars
+            logMessage(message, levelInt) {
+                this.$store.commit('logString', {
+                    ['level']: levelInt,
+                    ['message']: message
+                })
             },
             switchToDriverMode() {
                 this.previouslySelectedIndex = this.$store.getters.currentPipelineIndex;
@@ -307,16 +277,6 @@
         object-fit: contain;
     }
 
-    .loggerClass {
-        position: absolute;
-        bottom: 0;
-        height: 25% !important;
-        left: 0;
-        right: 0;
-        box-shadow: #282828 0 0 5px 1px;
-        background-color: #2b2b2b;
-    }
-
     ::-webkit-scrollbar {
         width: 0.5em;
         border-radius: 5px;
@@ -341,21 +301,23 @@
     #title {
         color: #ffd843;
     }
-
-    span {
-        color: white;
-    }
 </style>
 
 <style>
-  /* Hack */
+  /* Hacks */
+
   .v-divider {
     border-color: white !important;
   }
 
-    .v-input {
-        font-size: 1rem !important;
-    }
+  .v-input {
+      font-size: 1rem !important;
+  }
+
+  /* This is unfortunately the only way to override table background color */
+  .theme--dark.v-data-table > .v-data-table__wrapper > table > tbody > tr:hover:not(.v-data-table__expanded__content):not(.v-data-table__empty-wrapper) {
+    background: #005281 !important;
+  }
 </style>
 
 <style lang="scss">

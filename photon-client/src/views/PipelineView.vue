@@ -82,6 +82,7 @@
               align="center"
               class="pl-3 pr-3"
             >
+              <!--  -->
               <v-col lg="12">
                 <p style="color: white;">
                   Processing mode:
@@ -100,6 +101,7 @@
                   </v-btn>
                   <v-btn
                     color="secondary"
+                    @click="on3DClick"
                   >
                     <v-icon>mdi-cube-outline</v-icon>
                     <span>3D</span>
@@ -180,7 +182,7 @@
         </v-col>
       </v-row>
     </v-container>
-    <!-- snack bar -->
+    <!-- snack bar and modal -->
     <v-snackbar
       v-model="snackbar"
       :timeout="3000"
@@ -196,6 +198,44 @@
         Close
       </v-btn>
     </v-snackbar>
+
+    <v-dialog
+      v-model="dialog"
+      width="500"
+    >
+      <v-card
+        color="primary"
+        dark
+      >
+        <v-card-title>
+          Current resolution not calibrated
+        </v-card-title>
+
+        <v-card-text>
+          Because the current resolution {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].width }}
+          x {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].height }}
+          is not yet calibrated, 3D mode cannot be enabled. Please
+          <a
+            href="/#/cameras"
+            class="white--text"
+            @click="$emit('switch-to-cameras')"
+          > visit the Cameras tab</a> to calibrate this resolution. For now, SolvePNP will do nothing.
+        </v-card-text>
+
+        <v-divider />
+
+        <v-card-actions>
+          <v-spacer />
+          <v-btn
+            color="white"
+            text
+            @click="closeUncalibratedDialog"
+          >
+            OK
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -226,6 +266,8 @@
                 selectedTabsData: [0, 0, 0, 0],
                 snackbar: false,
                 counterData: 0,
+                dialog: false,
+                processingModeOverride: false
             }
         },
         computed: {
@@ -293,11 +335,13 @@
             },
             processingMode: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.solvePNPEnabled ? 1 : 0;
+                    return (this.$store.getters.currentPipelineSettings.solvePNPEnabled || this.processingModeOverride) ? 1 : 0;
                 },
                 set(value) {
-                    this.$store.getters.currentPipelineSettings.solvePNPEnabled = value === 1;
-                    this.handlePipelineUpdate("solvePNPEnabled", value === 1);
+                    if (this.$store.getters.isCalibrated) {
+                      this.$store.getters.currentPipelineSettings.solvePNPEnabled = value === 1;
+                      this.handlePipelineUpdate("solvePNPEnabled", value === 1);
+                    }
                 }
             },
             driverMode: {
@@ -350,6 +394,11 @@
             }
         },
         methods: {
+            isCalibrated() {
+                const resolution = this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex];
+                return this.$store.getters.currentCameraSettings.calibrations
+                    .some(e => e.width === resolution.width && e.height === resolution.height)
+            },
             onImageClick(event) {
                 // Only run on the input stream
                 if (event.target.alt !== "Stream0") return;
@@ -358,6 +407,18 @@
                 if (ref && ref[0])
                   ref[0].onClick(event)
             },
+            on3DClick() {
+                if (!this.$store.getters.isCalibrated) {
+                  this.dialog = true;
+                  this.processingModeOverride = true;
+                }
+            },
+            closeUncalibratedDialog() {
+                this.dialog = false;
+                this.processingModeOverride = false;
+                // this.$store.getters.currentPipelineSettings.solvePNPEnabled = false;
+                this.handlePipelineUpdate("solvePNPEnabled", false);
+            }
         }
     }
 </script>

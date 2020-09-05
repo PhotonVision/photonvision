@@ -40,6 +40,7 @@ public class VisionSourceManager {
 
     final List<UsbCameraInfo> knownUsbCameras = new CopyOnWriteArrayList<>();
     final List<CameraConfiguration> unmatchedLoadedConfigs = new CopyOnWriteArrayList<>();
+    private boolean hasWarned;
 
     private static class SingletonHolder {
         private static final VisionSourceManager INSTANCE = new VisionSourceManager();
@@ -132,12 +133,14 @@ public class VisionSourceManager {
         // Match camera configs to physical cameras
         var matchedCameras = matchUSBCameras(notYetLoadedCams, unmatchedLoadedConfigs);
         unmatchedLoadedConfigs.removeAll(matchedCameras);
-        if (!unmatchedLoadedConfigs.isEmpty())
+        if (!unmatchedLoadedConfigs.isEmpty() && !hasWarned) {
             logger.warn(
                     () ->
                             "After matching, "
                                     + unmatchedLoadedConfigs.size()
                                     + " configs remained unmatched. Is your camera disconnected?");
+            hasWarned = true;
+        }
 
         // We add the matched cameras to the known camera list
         for (var cam : notYetLoadedCams) {

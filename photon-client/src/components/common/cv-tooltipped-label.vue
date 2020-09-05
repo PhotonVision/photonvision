@@ -8,6 +8,7 @@
       <template v-slot:activator="{ on, attrs }">
         <span
           style="cursor: text !important;"
+          class="white--text"
           v-bind="attrs"
           v-on="on"
         >{{ text }}</span>

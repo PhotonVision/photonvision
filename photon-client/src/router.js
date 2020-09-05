@@ -4,6 +4,7 @@ import Dashboard from "./views/PipelineView";
 import Cameras from "./views/CamerasView";
 import Settings from "./views/SettingsView";
 import Docs from "./views/DocsView";
+
 Vue.use(Router);
 
 export default new Router({

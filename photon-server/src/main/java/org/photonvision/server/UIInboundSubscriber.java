@@ -26,6 +26,7 @@ import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.logging.Logger;
 
 public class UIInboundSubscriber extends DataChangeSubscriber {
 
@@ -46,6 +47,7 @@ public class UIInboundSubscriber extends DataChangeSubscriber {
                 var message =
                         new OutgoingUIEvent<>("fullsettings", settings, incomingWSEvent.originContext);
                 DataChangeService.getInstance().publishEvent(message);
+                Logger.sendConnectedBacklog();
             }
         }
     }
