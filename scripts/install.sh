@@ -33,7 +33,7 @@ if service --status-all | grep -Fq 'photonvision'; then
   systemctl disable photonvision
   rm /lib/systemd/system/photonvision.service
   rm /etc/systemd/system/photonvision.service
-  systemctl dameon-relaod
+  systemctl daemon-reload
   systemctl reset-failed
 fi
 
