@@ -35,8 +35,8 @@ public class CVPipelineResult implements Releasable {
         this.processingMillis = processingMillis;
         this.targets = targets != null ? targets : Collections.emptyList();
 
-        this.outputFrame = outputFrame;
-        this.inputFrame = inputFrame;
+        this.outputFrame = Frame.copyFromAndRelease(outputFrame);
+        this.inputFrame = inputFrame != null ? Frame.copyFromAndRelease(inputFrame) : null;
     }
 
     public CVPipelineResult(double processingMillis, List<TrackedTarget> targets, Frame outputFrame) {

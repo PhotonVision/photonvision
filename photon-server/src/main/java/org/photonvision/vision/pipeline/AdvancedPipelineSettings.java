@@ -21,12 +21,8 @@ import java.util.Objects;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
-import org.photonvision.vision.opencv.ContourGroupingMode;
-import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.opencv.ContourSortMode;
-import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
 import org.photonvision.vision.target.RobotOffsetPointMode;
-import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TargetOffsetPointEdge;
 import org.photonvision.vision.target.TargetOrientation;
 
@@ -75,28 +71,10 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public Point offsetDualPointB = new Point();
     public double offsetDualPointBArea = 0;
 
-    // how many contours to attempt to group (Single, Dual)
-    public ContourGroupingMode contourGroupingMode = ContourGroupingMode.Single;
-
-    // the direction in which contours must intersect to be considered intersecting
-    public ContourIntersectionDirection contourIntersection = ContourIntersectionDirection.Up;
-
-    // 3d settings
-    public boolean solvePNPEnabled = false;
-    public TargetModel targetModel = TargetModel.get2020Target();
-
-    // Corner detection settings
-    public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
-            CornerDetectionPipe.DetectionStrategy.APPROX_POLY_DP_AND_EXTREME_CORNERS;
-    public boolean cornerDetectionUseConvexHulls = true;
-    public boolean cornerDetectionExactSideCount = false;
-    public int cornerDetectionSideCount = 4;
-    public double cornerDetectionAccuracyPercentage = 10;
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof AdvancedPipelineSettings)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         AdvancedPipelineSettings that = (AdvancedPipelineSettings) o;
         return outputShouldDraw == that.outputShouldDraw
@@ -104,31 +82,23 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 && erode == that.erode
                 && dilate == that.dilate
                 && contourSpecklePercentage == that.contourSpecklePercentage
+                && Double.compare(that.offsetDualPointA.x, offsetDualPointA.x) == 0
+                && Double.compare(that.offsetDualPointA.y, offsetDualPointA.y) == 0
                 && Double.compare(that.offsetDualPointAArea, offsetDualPointAArea) == 0
+                && Double.compare(that.offsetDualPointB.x, offsetDualPointB.x) == 0
+                && Double.compare(that.offsetDualPointB.y, offsetDualPointB.y) == 0
                 && Double.compare(that.offsetDualPointBArea, offsetDualPointBArea) == 0
-                && solvePNPEnabled == that.solvePNPEnabled
-                && cornerDetectionUseConvexHulls == that.cornerDetectionUseConvexHulls
-                && cornerDetectionExactSideCount == that.cornerDetectionExactSideCount
-                && cornerDetectionSideCount == that.cornerDetectionSideCount
-                && Double.compare(that.cornerDetectionAccuracyPercentage, cornerDetectionAccuracyPercentage)
-                        == 0
-                && Objects.equals(hsvHue, that.hsvHue)
-                && Objects.equals(hsvSaturation, that.hsvSaturation)
-                && Objects.equals(hsvValue, that.hsvValue)
-                && Objects.equals(contourArea, that.contourArea)
-                && Objects.equals(contourRatio, that.contourRatio)
-                && Objects.equals(contourFullness, that.contourFullness)
+                && hsvHue.equals(that.hsvHue)
+                && hsvSaturation.equals(that.hsvSaturation)
+                && hsvValue.equals(that.hsvValue)
+                && contourArea.equals(that.contourArea)
+                && contourRatio.equals(that.contourRatio)
+                && contourFullness.equals(that.contourFullness)
                 && contourSortMode == that.contourSortMode
                 && contourTargetOffsetPointEdge == that.contourTargetOffsetPointEdge
                 && contourTargetOrientation == that.contourTargetOrientation
                 && offsetRobotOffsetMode == that.offsetRobotOffsetMode
-                && Objects.equals(offsetSinglePoint, that.offsetSinglePoint)
-                && Objects.equals(offsetDualPointA, that.offsetDualPointA)
-                && Objects.equals(offsetDualPointB, that.offsetDualPointB)
-                && contourGroupingMode == that.contourGroupingMode
-                && contourIntersection == that.contourIntersection
-                && Objects.equals(targetModel, that.targetModel)
-                && cornerDetectionStrategy == that.cornerDetectionStrategy;
+                && offsetSinglePoint.equals(that.offsetSinglePoint);
     }
 
     @Override
@@ -154,15 +124,6 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 offsetDualPointA,
                 offsetDualPointAArea,
                 offsetDualPointB,
-                offsetDualPointBArea,
-                contourGroupingMode,
-                contourIntersection,
-                solvePNPEnabled,
-                targetModel,
-                cornerDetectionStrategy,
-                cornerDetectionUseConvexHulls,
-                cornerDetectionExactSideCount,
-                cornerDetectionSideCount,
-                cornerDetectionAccuracyPercentage);
+                offsetDualPointBArea);
     }
 }

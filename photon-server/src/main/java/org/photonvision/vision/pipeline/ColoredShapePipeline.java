@@ -158,9 +158,7 @@ public class ColoredShapePipeline
 
         var solvePNPParams =
                 new SolvePNPPipe.SolvePNPPipeParams(
-                        frameStaticProperties.cameraCalibration,
-                        frameStaticProperties.cameraPitch,
-                        settings.targetModel);
+                        settings.cameraCalibration, settings.cameraPitch, settings.targetModel);
         solvePNPPipe.setParams(solvePNPParams);
 
         Draw2dTargetsPipe.Draw2dTargetsParams draw2DTargetsParams =
@@ -180,12 +178,10 @@ public class ColoredShapePipeline
                         frameStaticProperties);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
-        var draw3dTargetsParams =
+        var draw3dContoursParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
-                        settings.outputShouldDraw,
-                        frameStaticProperties.cameraCalibration,
-                        settings.targetModel);
-        draw3dTargetsPipe.setParams(draw3dTargetsParams);
+                        settings.outputShouldDraw, settings.cameraCalibration, settings.targetModel);
+        draw3dTargetsPipe.setParams(draw3dContoursParams);
     }
 
     @Override
