@@ -49,7 +49,8 @@ public class USBCameraSource implements VisionSource {
         cvSink = CameraServer.getInstance().getVideo(this.camera);
 
         cameraQuirks =
-                QuirkyCamera.getQuirkyCamera(camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
+                QuirkyCamera.getQuirkyCamera(
+                        camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
 
         if (cameraQuirks.hasQuirks()) {
             logger.info("Quirky camera detected: " + cameraQuirks.baseName);
@@ -82,7 +83,9 @@ public class USBCameraSource implements VisionSource {
             try {
                 if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                     camera.getProperty("auto_exposure").set(1); // auto exposure off
-                    camera.getProperty("exposure_time_absolute").set(MathUtils.safeDivide(10000, exposure)); // exposure time is a range, 0-10000
+                    camera
+                            .getProperty("exposure_time_absolute")
+                            .set(MathUtils.safeDivide(10000, exposure)); // exposure time is a range, 0-10000
                 } else {
                     camera.setExposureManual(exposure);
                     camera.setExposureManual(exposure);
