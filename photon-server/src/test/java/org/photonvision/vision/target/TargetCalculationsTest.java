@@ -28,6 +28,7 @@ import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
 
@@ -174,6 +175,16 @@ public class TargetCalculationsTest {
         // Assert result
         result = TargetCalculations.calculateSkew(isLandscape, minAreaRect);
         assertEquals(-70, result, 0.01);
+    }
+
+    @Test
+    public void testCameraFOVCalculation() {
+        final DoubleCouple glowormHorizVert =
+                FrameStaticProperties.calculateHorizontalVerticalFoV(74.8, 640, 480);
+        var gwHorizDeg = FastMath.toDegrees(glowormHorizVert.getFirst());
+        var gwVertDeg = FastMath.toDegrees(glowormHorizVert.getSecond());
+        assertEquals(62.7, gwHorizDeg, .3);
+        assertEquals(49, gwVertDeg, .3);
     }
 
     @Test

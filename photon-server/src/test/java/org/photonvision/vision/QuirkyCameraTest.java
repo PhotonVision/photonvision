@@ -32,8 +32,20 @@ public class QuirkyCameraTest {
             ps3EyeQuirks.putIfAbsent(q, false);
         }
 
-        QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x2000, 0x1415, "psEye");
+        QuirkyCamera psEye = QuirkyCamera.getQuirkyCamera(0x2000, 0x1415);
         Assertions.assertEquals(psEye.quirks, ps3EyeQuirks);
+    }
+
+    @Test
+    public void picamTest() {
+        HashMap<CameraQuirk, Boolean> picamQuirks = new HashMap<>();
+        picamQuirks.put(CameraQuirk.PiCam, true);
+        for (var q : CameraQuirk.values()) {
+            picamQuirks.putIfAbsent(q, false);
+        }
+
+        QuirkyCamera picam = QuirkyCamera.getQuirkyCamera(-1, -1, "mmal service 16.1");
+        Assertions.assertEquals(picam.quirks, picamQuirks);
     }
 
     @Test
@@ -43,7 +55,7 @@ public class QuirkyCameraTest {
             noQuirks.put(q, false);
         }
 
-        QuirkyCamera quirkless = QuirkyCamera.getQuirkyCamera(1234, 888, "empty");
+        QuirkyCamera quirkless = QuirkyCamera.getQuirkyCamera(1234, 8888);
         Assertions.assertEquals(quirkless.quirks, noQuirks);
     }
 }

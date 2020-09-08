@@ -25,22 +25,37 @@ public class QuirkyCamera {
 
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
-                    new QuirkyCamera(0x2000, 0x1415, "PS3Eye", CameraQuirk.Gain),
-                    new QuirkyCamera(0x72E, 0x45D, "LifeCam VX-5500", CameraQuirk.DoubleSet),
-                    new QuirkyCamera(-1, -1, "PiCam", CameraQuirk.PiCam));
+                    new QuirkyCamera(0x2000, 0x1415, CameraQuirk.Gain), // PS3Eye
+                    new QuirkyCamera(-1, -1, "mmal service 16.1", CameraQuirk.PiCam) // PiCam
+                    );
 
-    public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "", List.of());
+    public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
 
+    public final String baseName;
     public final int usbVid;
     public final int usbPid;
-    public final String baseName;
     public final HashMap<CameraQuirk, Boolean> quirks;
 
-    private QuirkyCamera(int usbVid, int usbPid, String baseName, CameraQuirk quirk) {
-        this(usbVid, usbPid, baseName, List.of(quirk));
+    /**
+    * Creates a QuirkyCamera that matches by USB VID/PID
+    *
+    * @param usbVid USB VID of camera
+    * @param usbPid USB PID of camera
+    * @param quirks Camera quirks
+    */
+    private QuirkyCamera(int usbVid, int usbPid, CameraQuirk... quirks) {
+        this(usbVid, usbPid, "", quirks);
     }
 
-    private QuirkyCamera(int usbVid, int usbPid, String baseName, List<CameraQuirk> quirks) {
+    /**
+    * Creates a QuirkyCamera that matches by USB VID/PID and name
+    *
+    * @param usbVid USB VID of camera
+    * @param usbPid USB PID of camera
+    * @param baseName CSCore name of camera
+    * @param quirks Camera quirks
+    */
+    private QuirkyCamera(int usbVid, int usbPid, String baseName, CameraQuirk... quirks) {
         this.usbVid = usbVid;
         this.usbPid = usbPid;
         this.baseName = baseName;
@@ -58,13 +73,23 @@ public class QuirkyCamera {
         return quirks.get(quirk);
     }
 
+    public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid) {
+        return getQuirkyCamera(usbVid, usbPid, "");
+    }
+
     public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid, String baseName) {
         for (var qc : quirkyCameras) {
-            if (qc.usbVid == usbVid && qc.usbPid == usbPid) {
+            boolean hasBaseName = !qc.baseName.equals("");
+            boolean matchesBaseName = qc.baseName.equals(baseName) || !hasBaseName;
+            if (qc.usbVid == usbVid && qc.usbPid == usbPid && matchesBaseName) {
                 return qc;
             }
         }
-        return new QuirkyCamera(usbVid, usbPid, baseName, List.of());
+        return new QuirkyCamera(usbVid, usbPid, baseName);
+    }
+
+    public boolean hasQuirks() {
+        return quirks.containsValue(true);
     }
 
     @Override
