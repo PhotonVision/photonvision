@@ -49,11 +49,10 @@ public class USBCameraSource implements VisionSource {
         cvSink = CameraServer.getInstance().getVideo(this.camera);
 
         cameraQuirks =
-                QuirkyCamera.getQuirkyCamera(
-                        config.baseName, camera.getInfo().productId, camera.getInfo().vendorId);
+                QuirkyCamera.getQuirkyCamera(camera.getInfo().productId, camera.getInfo().vendorId, config.baseName);
 
         if (cameraQuirks.hasQuirks()) {
-            logger.info("Quirky camera detected: " + cameraQuirks.replacementName);
+            logger.info("Quirky camera detected: " + cameraQuirks.baseName);
         }
 
         usbCameraSettables = new USBCameraSettables(config);

@@ -43,7 +43,7 @@ public class QuirkyCameraTest {
             noQuirks.put(q, false);
         }
 
-        QuirkyCamera quirkless = QuirkyCamera.getQuirkyCamera("empty", 1234, 888);
+        QuirkyCamera quirkless = QuirkyCamera.getQuirkyCamera(1234, 8888, "empty");
         Assertions.assertEquals(quirkless.quirks, noQuirks);
     }
 }
