@@ -71,9 +71,15 @@ public class QuirkyCamera {
         return quirks.get(quirk);
     }
 
+    public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid) {
+        return getQuirkyCamera(usbVid, usbPid, "");
+    }
+
     public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid, String baseName) {
         for (var qc : quirkyCameras) {
-            if (qc.usbVid == usbVid && qc.usbPid == usbPid && (!qc.baseName.equals("") && qc.baseName.equals(baseName))) {
+            boolean hasBaseName = !qc.baseName.equals("");
+            boolean matchesBaseName = qc.baseName.equals(baseName) || !hasBaseName;
+            if (qc.usbVid == usbVid && qc.usbPid == usbPid && matchesBaseName) {
                 return qc;
             }
         }
