@@ -22,6 +22,7 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import org.apache.commons.math3.fraction.Fraction;
 import org.apache.commons.math3.util.FastMath;
 import org.opencv.core.Point;
+import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 /** Represents the properties of a frame. */
@@ -75,8 +76,17 @@ public class FrameStaticProperties {
         centerPoint = new Point(centerX, centerY);
 
         // pinhole model calculations
-        double diagonalView = FastMath.toRadians(this.fov);
-        Fraction aspectFraction = new Fraction(this.imageWidth, this.imageHeight);
+        DoubleCouple horizVertViews =
+                calculateHorizontalVerticalFoV(this.fov, this.imageWidth, this.imageHeight);
+
+        horizontalFocalLength = this.imageWidth / (2 * FastMath.tan(horizVertViews.getFirst() / 2));
+        verticalFocalLength = this.imageHeight / (2 * FastMath.tan(horizVertViews.getSecond() / 2));
+    }
+
+    public static DoubleCouple calculateHorizontalVerticalFoV(
+            double diagonalFoV, int imageWidth, int imageHeight) {
+        double diagonalView = FastMath.toRadians(diagonalFoV);
+        Fraction aspectFraction = new Fraction(imageWidth, imageHeight);
 
         int horizontalRatio = aspectFraction.getNumerator();
         int verticalRatio = aspectFraction.getDenominator();
@@ -87,7 +97,6 @@ public class FrameStaticProperties {
         double verticalView =
                 FastMath.atan(FastMath.tan(diagonalView / 2) * (verticalRatio / diagonalAspect)) * 2;
 
-        horizontalFocalLength = this.imageWidth / (2 * FastMath.tan(horizontalView / 2));
-        verticalFocalLength = this.imageHeight / (2 * FastMath.tan(verticalView / 2));
+        return new DoubleCouple(horizontalView, verticalView);
     }
 }
