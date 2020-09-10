@@ -55,6 +55,11 @@ public class VisionModuleManagerTest {
         public VisionSourceSettables getSettables() {
             return new TestSettables(new CameraConfiguration("", "", "", ""));
         }
+
+        @Override
+        public boolean isVendorCamera() {
+            return false;
+        }
     }
 
     private static class TestSettables extends VisionSourceSettables {

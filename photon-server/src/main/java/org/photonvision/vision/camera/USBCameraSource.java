@@ -185,17 +185,19 @@ public class USBCameraSource implements VisionSource {
                 }
 
                 // Sort by resolution
-                videoModesList.sort((a, b) -> (b.width + b.height) - (a.width + a.height));
-                Collections.reverse(videoModesList);
+                var sortedList = videoModesList.stream()
+                    .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
+                    .collect(Collectors.toList());
+                Collections.reverse(sortedList);
 
                 // On vendor cameras, respect blacklisted indices
-                var indexBlacklist = HardwareManager.getInstance().getConfig().blacklistedResIndices;
+                var indexBlacklist = ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices;
                 for (int badIdx : indexBlacklist) {
-                    videoModesList.remove(badIdx);
+                    sortedList.remove(badIdx);
                 }
 
-                for (VideoMode videoMode : videoModesList) {
-                    videoModes.put(videoModesList.indexOf(videoMode), videoMode);
+                for (VideoMode videoMode : sortedList) {
+                    videoModes.put(sortedList.indexOf(videoMode), videoMode);
                 }
             }
             logger.debug("Adding " + videoModes.size() + " modes!");
