@@ -124,7 +124,7 @@ public class VisionModuleManagerTest {
 
         modules.forEach(VisionModule::start);
 
-        sleep(500);
+        sleep(1500);
 
         Assertions.assertNotNull(module0DataConsumer.result);
         printTestResults(module0DataConsumer.result);
