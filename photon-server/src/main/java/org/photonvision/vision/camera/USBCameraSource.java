@@ -23,7 +23,11 @@ import edu.wpi.cscore.VideoException;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -141,7 +145,10 @@ public class USBCameraSource implements VisionSource {
                 videoModes = new HashMap<>();
                 List<VideoMode> videoModesList = new ArrayList<>();
                 try {
-                    for (var videoMode : camera.enumerateVideoModes()) {
+                    var modes = camera.enumerateVideoModes();
+                    for (int i = 0; i < modes.length; i++) {
+                        var videoMode = modes[i];
+
                         // Filter grey modes
                         if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray
                                 || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {
@@ -161,6 +168,11 @@ public class USBCameraSource implements VisionSource {
                     logger.error("Exception while enumerating video modes!", e);
                     videoModesList = List.of();
                 }
+
+                // Sort by resolution
+                videoModesList.sort((a, b) -> (b.width + b.height) - (a.width + a.height));
+                Collections.reverse(videoModesList);
+
                 // On vendor cameras, respect blacklisted indices
                 var indexBlacklist = HardwareManager.getInstance().getConfig().blacklistedResIndices;
                 for(int badIdx: indexBlacklist) {
