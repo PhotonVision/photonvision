@@ -88,7 +88,7 @@ public enum Platform {
         return false;
     }
 
-    private static Platform getCurrentPlatform() {
+    public static Platform getCurrentPlatform() {
         if (RuntimeDetector.isWindows()) {
             if (RuntimeDetector.is32BitIntel()) return WINDOWS_32;
             if (RuntimeDetector.is64BitIntel()) return WINDOWS_64;

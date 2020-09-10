@@ -2,8 +2,10 @@
   <div>
     <span>Version: {{ settings.version }}</span>
     &mdash;
-    <span>Hardware model: {{ settings.hardwareModel }}</span>
-    &mdash;
+    <div v-if="settings.hardwareModel !== ''">
+      <span>Hardware model: {{ settings.hardwareModel }}</span>
+      &mdash;
+    </div>
     <span>Platform: {{ settings.hardwarePlatform }}</span>
     &mdash;
     <span>GPU Acceleration: {{ settings.gpuAcceleration ? "Enabled" : "Unsupported" }}{{ settings.gpuAcceleration ? " (" + settings.gpuAcceleration + " mode)" : "" }}</span>
