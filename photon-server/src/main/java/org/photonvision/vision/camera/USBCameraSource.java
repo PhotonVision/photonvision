@@ -26,7 +26,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -185,13 +184,15 @@ public class USBCameraSource implements VisionSource {
                 }
 
                 // Sort by resolution
-                var sortedList = videoModesList.stream()
-                    .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
-                    .collect(Collectors.toList());
+                var sortedList =
+                        videoModesList.stream()
+                                .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
+                                .collect(Collectors.toList());
                 Collections.reverse(sortedList);
 
                 // On vendor cameras, respect blacklisted indices
-                var indexBlacklist = ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices;
+                var indexBlacklist =
+                        ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices;
                 for (int badIdx : indexBlacklist) {
                     sortedList.remove(badIdx);
                 }
