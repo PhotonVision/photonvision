@@ -17,6 +17,7 @@
 
 package org.photonvision.common.configuration;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,7 @@ public class PhotonConfiguration {
         return cameraConfigurations;
     }
 
-    public void addCameraConfigs(List<CameraConfiguration> config) {
+    public void addCameraConfigs(Collection<CameraConfiguration> config) {
         for (var c : config) {
             addCameraConfig(c);
         }

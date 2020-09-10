@@ -36,13 +36,14 @@ import org.photonvision.common.util.ShellExec;
 public class HardwareManager {
     private static HardwareManager instance;
 
-    private final HashMap<Integer, GPIOBase> VisionLEDs = new HashMap<>();
     private final ShellExec shellExec = new ShellExec(true, false);
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
     private final HardwareConfig hardwareConfig;
+    @SuppressWarnings("FieldCanBeLocal")
     private final StatusLED statusLED;
     private final NetworkTableEntry ledModeEntry;
+    @SuppressWarnings("FieldCanBeLocal")
     private final NTDataChangeListener ledModeListener;
 
     public final VisionLED visionLED;
@@ -64,17 +65,32 @@ public class HardwareManager {
                 new VisionLED(
                         hardwareConfig.ledPins,
                         hardwareConfig.ledPWMFrequency,
-                        hardwareConfig.ledPWMRange.get(1));
+                    (hardwareConfig.ledPWMRange != null && hardwareConfig.ledPWMRange.size() == 2) ? hardwareConfig.ledPWMRange.get(1) : 0);
 
         ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
         ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);
         ledModeListener = new NTDataChangeListener(ledModeEntry, visionLED::onLedModeChange);
 
+        Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
+
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
+    private void onJvmExit() {
+        System.err.println("Going down for EXIT");
+        visionLED.setBrightness(0);
+    }
+
     public boolean restartDevice() {
+        if (Platform.isRaspberryPi()) {
+            try {
+                return shellExec.executeBashCommand("reboot") == 0;
+            } catch (IOException e) {
+                logger.error("Could not restart device!", e);
+                return false;
+            }
+        }
         try {
             return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;
         } catch (IOException e) {

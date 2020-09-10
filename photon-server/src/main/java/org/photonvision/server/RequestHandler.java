@@ -36,6 +36,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
+import org.photonvision.common.util.ShellExec;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.target.TargetModel;
 
@@ -62,9 +63,14 @@ public class RequestHandler {
 
             if (!Platform.isRaspberryPi()) {
                 logger.info("(On non-PI platforms, the program may not restart manually...)");
+                System.exit(0);
+            } else {
+                try {
+                    new ShellExec().executeBashCommand("systemctl restart photonvision");
+                } catch (IOException e) {
+                    logger.error("Could not restart device!", e);
+                }
             }
-
-            System.exit(0);
         } else {
             logger.error("Couldn't read uploaded settings ZIP! Ignoring.");
             ctx.status(500);
@@ -89,7 +95,6 @@ public class RequestHandler {
         NetworkManager.getInstance().reinitialize();
         NetworkTablesManager.getInstance().setConfig(networkConfig);
 
-        logger.info("Responding to general settings with http 200");
         context.status(200);
     }
 
@@ -157,7 +162,16 @@ public class RequestHandler {
     */
     public static void restartProgram(Context ctx) {
         ctx.status(200);
-        System.exit(0);
+
+        if (Platform.isRaspberryPi()) {
+            try {
+                new ShellExec().executeBashCommand("systemctl restart photonvision");
+            } catch (IOException e) {
+                logger.error("Could not restart device!", e);
+            }
+        } else {
+            System.exit(0);
+        }
     }
 
     public static void uploadPnpModel(Context ctx) {

@@ -20,7 +20,7 @@ package org.photonvision.vision.processes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.common.configuration.CameraConfiguration;
 
 /** VisionModuleManager has many VisionModules, and provides camera configuration data to them. */
 public class VisionModuleManager {
@@ -52,12 +52,11 @@ public class VisionModuleManager {
         return visionModules.get(i);
     }
 
-    public List<VisionModule> addSources(
-            HashMap<VisionSource, List<CVPipelineSettings>> visionSources) {
+    public List<VisionModule> addSources(HashMap<VisionSource, CameraConfiguration> visionSources) {
         var addedModules = new ArrayList<VisionModule>();
         for (var entry : visionSources.entrySet()) {
             var visionSource = entry.getKey();
-            var pipelineManager = new PipelineManager(entry.getValue());
+            var pipelineManager = new PipelineManager(entry.getValue(), visionSource.isVendorCamera());
             var module = new VisionModule(pipelineManager, visionSource, visionModules.size());
             visionModules.add(module);
             addedModules.add(module);

@@ -171,10 +171,8 @@ public class VisionModule {
         }
     }
 
-    // TODO improve robustness of this detection
     private boolean isVendorCamera() {
-        return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
-                && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+        return visionSource.isVendorCamera();
     }
 
     public void startCalibration(UICalibrationData data) {

@@ -301,12 +301,8 @@ public class ConfigManager {
         return loadedConfigurations;
     }
 
-    public void addCameraConfigurations(HashMap<VisionSource, List<CVPipelineSettings>> sources) {
-        List<CameraConfiguration> list =
-                sources.keySet().stream()
-                        .map(it -> it.getSettables().getConfiguration())
-                        .collect(Collectors.toList());
-        getConfig().addCameraConfigs(list);
+    public void addCameraConfigurations(HashMap<VisionSource, CameraConfiguration> sources) {
+        getConfig().addCameraConfigs(sources.values());
         requestSave();
     }
 

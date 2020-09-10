@@ -20,7 +20,6 @@ package org.photonvision.vision.processes;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.HashMap;
-import java.util.List;
 import org.junit.jupiter.api.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -29,7 +28,6 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class VisionModuleManagerTest {
@@ -105,14 +103,14 @@ public class VisionModuleManagerTest {
     @Test
     public void setupManager() {
         ConfigManager.getInstance().load();
-        var sources = new HashMap<VisionSource, List<CVPipelineSettings>>();
+        var sources = new HashMap<VisionSource, CameraConfiguration>();
         sources.put(
                 new TestSource(
                         new FileFrameProvider(
                                 TestUtils.getWPIImagePath(
                                         TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
                                 TestUtils.WPI2019Image.FOV)),
-                List.of());
+                new CameraConfiguration("Foo", "Barr"));
 
         var modules = VisionModuleManager.getInstance().addSources(sources);
         var module0DataConsumer = new TestDataConsumer();

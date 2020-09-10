@@ -42,7 +42,7 @@
       >
         <v-btn
           color="red"
-          @click="axios.post('http://' + this.$address + '/api/restartProgram')"
+          @click="restartProgram()"
         >
           <v-icon left>
             mdi-restart
@@ -55,7 +55,7 @@
       >
         <v-btn
           color="red"
-          @click="axios.post('http://' + this.$address + '/api/restartDevice')"
+          @click="restartDevice()"
         >
           <v-icon left>
             mdi-restart
@@ -109,6 +109,12 @@ export default {
         }
     },
     methods: {
+        restartProgram() {
+            this.axios.post('http://' + this.$address + '/api/restartProgram', {});
+        },
+        restartDevice() {
+            this.axios.post('http://' + this.$address + '/api/restartDevice', {});
+        },
         readImportedSettings(event) {
             let formData = new FormData();
             formData.append("zipData", event.target.files[0]);

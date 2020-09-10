@@ -20,6 +20,9 @@ package org.photonvision.vision.processes;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
@@ -32,6 +35,7 @@ public class PipelineManager {
     public static final int CAL_3D_INDEX = -2;
 
     protected final List<CVPipelineSettings> userPipelineSettings;
+    private final boolean isVendorCam;
     protected final Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline();
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
@@ -54,10 +58,17 @@ public class PipelineManager {
     *
     * @param userPipelines Pipelines to add to the manager.
     */
-    public PipelineManager(List<CVPipelineSettings> userPipelines) {
+    public PipelineManager(DriverModePipelineSettings driverSettings, List<CVPipelineSettings> userPipelines, boolean isVendorCam) {
         this.userPipelineSettings = new ArrayList<>(userPipelines);
+        this.isVendorCam = isVendorCam;
+
+        this.driverModePipeline.setSettings(driverSettings);
 
         if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
+    }
+
+    public PipelineManager(CameraConfiguration config, boolean isVendorCam) {
+        this(config.driveModeSettings, config.pipelineSettings, isVendorCam);
     }
 
     /**
@@ -239,6 +250,10 @@ public class PipelineManager {
                 {
                     var added = new ReflectivePipelineSettings();
                     added.pipelineNickname = nickname;
+                    if(this.isVendorCam) {
+                        var idx = ConfigManager.getInstance().getConfig().getHardwareConfig().defaultReflectiveResIndex;
+                        if(idx >= 0) added.cameraVideoModeIndex = idx;
+                    }
                     addPipelineInternal(added);
                     return added;
                 }

@@ -247,7 +247,7 @@ public class SocketHandler {
                                 var changePipelineEvent =
                                         new IncomingWebSocketEvent<>(
                                                 DataChangeDestination.DCD_ACTIVEMODULE,
-                                                "startcalibration",
+                                                "startCalibration",
                                                 (Map) entryValue,
                                                 cameraIndex,
                                                 context);

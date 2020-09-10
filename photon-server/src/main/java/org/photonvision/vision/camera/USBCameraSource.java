@@ -161,12 +161,26 @@ public class USBCameraSource implements VisionSource {
                     logger.error("Exception while enumerating video modes!", e);
                     videoModesList = List.of();
                 }
+                // On vendor cameras, respect blacklisted indices
+                var indexBlacklist = HardwareManager.getInstance().getConfig().blacklistedResIndices;
+                for(int badIdx: indexBlacklist) {
+                    videoModesList.remove(badIdx);
+                }
+
                 for (VideoMode videoMode : videoModesList) {
                     videoModes.put(videoModesList.indexOf(videoMode), videoMode);
                 }
             }
+            logger.debug("Adding " + videoModes.size() + " modes!");
             return videoModes;
         }
+    }
+
+    // TODO improve robustness of this detection
+    @Override
+    public boolean isVendorCamera() {
+        return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
+            && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
     }
 
     @Override

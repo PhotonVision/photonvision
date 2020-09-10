@@ -31,7 +31,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.USBCameraSource;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
 
 public class VisionSourceManager {
 
@@ -87,7 +86,7 @@ public class VisionSourceManager {
                                 "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
-    protected HashMap<VisionSource, List<CVPipelineSettings>> tryMatchUSBCamImpl() {
+    protected HashMap<VisionSource, CameraConfiguration> tryMatchUSBCamImpl() {
         // Detect cameras using CSCore
         List<UsbCameraInfo> connectedCameras =
                 new ArrayList<>(filterAllowedDevices(cameraInfoSupplier.get()));
@@ -154,10 +153,10 @@ public class VisionSourceManager {
         var sources = loadVisionSourcesFromCamConfigs(matchedCameras);
 
         // These sources can be turned into USB cameras, which can be added to the config manager
-        var visionSourceMap = new HashMap<VisionSource, List<CVPipelineSettings>>();
+        var visionSourceMap = new HashMap<VisionSource, CameraConfiguration>();
         for (var src : sources) {
             var usbSrc = (USBCameraSource) src;
-            visionSourceMap.put(usbSrc, usbSrc.configuration.pipelineSettings);
+            visionSourceMap.put(usbSrc, usbSrc.configuration);
             logger.debug(
                     () ->
                             "Matched config for camera \""
