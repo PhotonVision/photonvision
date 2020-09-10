@@ -163,6 +163,18 @@ public class USBCameraSource implements VisionSource {
                         }
 
                         videoModesList.add(videoMode);
+
+                        // We look for modes with the same height/width/pixelformat as this mode
+                        // and remove all the ones that are slower. This is sorted low to high.
+                        // So we remove the last element (the fastest FPS) from the duplicate list,
+                        // and remove all remaining elements from the final list
+                        var duplicateModes = videoModesList.stream()
+                            .filter(it -> it.height == videoMode.height
+                                && it.width == videoMode.width
+                                && it.pixelFormat == videoMode.pixelFormat)
+                            .sorted(Comparator.comparingDouble(it -> it.fps)).collect(Collectors.toList());
+                        duplicateModes.remove(duplicateModes.size() - 1);
+                        videoModesList.removeAll(duplicateModes);
                     }
                 } catch (Exception e) {
                     logger.error("Exception while enumerating video modes!", e);
