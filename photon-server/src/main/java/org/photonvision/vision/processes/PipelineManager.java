@@ -22,7 +22,6 @@ import java.util.Comparator;
 import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
@@ -58,7 +57,10 @@ public class PipelineManager {
     *
     * @param userPipelines Pipelines to add to the manager.
     */
-    public PipelineManager(DriverModePipelineSettings driverSettings, List<CVPipelineSettings> userPipelines, boolean isVendorCam) {
+    public PipelineManager(
+            DriverModePipelineSettings driverSettings,
+            List<CVPipelineSettings> userPipelines,
+            boolean isVendorCam) {
         this.userPipelineSettings = new ArrayList<>(userPipelines);
         this.isVendorCam = isVendorCam;
 
@@ -250,9 +252,13 @@ public class PipelineManager {
                 {
                     var added = new ReflectivePipelineSettings();
                     added.pipelineNickname = nickname;
-                    if(this.isVendorCam) {
-                        var idx = ConfigManager.getInstance().getConfig().getHardwareConfig().defaultReflectiveResIndex;
-                        if(idx >= 0) added.cameraVideoModeIndex = idx;
+                    if (this.isVendorCam) {
+                        var idx =
+                                ConfigManager.getInstance()
+                                        .getConfig()
+                                        .getHardwareConfig()
+                                        .defaultReflectiveResIndex;
+                        if (idx >= 0) added.cameraVideoModeIndex = idx;
                     }
                     addPipelineInternal(added);
                     return added;

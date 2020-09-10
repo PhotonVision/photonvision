@@ -24,7 +24,6 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.hardware.HardwareManager;
@@ -168,11 +167,15 @@ public class USBCameraSource implements VisionSource {
                         // and remove all the ones that are slower. This is sorted low to high.
                         // So we remove the last element (the fastest FPS) from the duplicate list,
                         // and remove all remaining elements from the final list
-                        var duplicateModes = videoModesList.stream()
-                            .filter(it -> it.height == videoMode.height
-                                && it.width == videoMode.width
-                                && it.pixelFormat == videoMode.pixelFormat)
-                            .sorted(Comparator.comparingDouble(it -> it.fps)).collect(Collectors.toList());
+                        var duplicateModes =
+                                videoModesList.stream()
+                                        .filter(
+                                                it ->
+                                                        it.height == videoMode.height
+                                                                && it.width == videoMode.width
+                                                                && it.pixelFormat == videoMode.pixelFormat)
+                                        .sorted(Comparator.comparingDouble(it -> it.fps))
+                                        .collect(Collectors.toList());
                         duplicateModes.remove(duplicateModes.size() - 1);
                         videoModesList.removeAll(duplicateModes);
                     }
@@ -187,7 +190,7 @@ public class USBCameraSource implements VisionSource {
 
                 // On vendor cameras, respect blacklisted indices
                 var indexBlacklist = HardwareManager.getInstance().getConfig().blacklistedResIndices;
-                for(int badIdx: indexBlacklist) {
+                for (int badIdx : indexBlacklist) {
                     videoModesList.remove(badIdx);
                 }
 
@@ -204,7 +207,7 @@ public class USBCameraSource implements VisionSource {
     @Override
     public boolean isVendorCamera() {
         return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
-            && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+                && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
     }
 
     @Override
