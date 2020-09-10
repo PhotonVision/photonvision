@@ -199,6 +199,8 @@ public class VisionModule {
         var ret = pipelineManager.calibration3dPipeline.tryCalibration();
         pipelineManager.setCalibrationMode(false);
 
+        setPipeline(pipelineManager.getCurrentPipelineIndex());
+
         if (ret != null) {
             logger.debug("Saving calibration...");
             visionSource.getSettables().getConfiguration().addCalibration(ret);
