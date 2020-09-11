@@ -61,16 +61,7 @@ public class RequestHandler {
             ctx.status(200);
             logger.info("Settings uploaded, going down for restart.");
 
-            if (!Platform.isRaspberryPi()) {
-                logger.info("(On non-PI platforms, the program may not restart manually...)");
-                System.exit(0);
-            } else {
-                try {
-                    new ShellExec().executeBashCommand("systemctl restart photonvision");
-                } catch (IOException e) {
-                    logger.error("Could not restart device!", e);
-                }
-            }
+            restartProgram(ctx);
         } else {
             logger.error("Couldn't read uploaded settings ZIP! Ignoring.");
             ctx.status(500);
@@ -168,6 +159,7 @@ public class RequestHandler {
                 new ShellExec().executeBashCommand("systemctl restart photonvision");
             } catch (IOException e) {
                 logger.error("Could not restart device!", e);
+                System.exit(0);
             }
         } else {
             System.exit(0);
