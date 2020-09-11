@@ -8,32 +8,19 @@
         cols="12"
         style="max-width: 1400px"
       >
-        <v-form
-          ref="form"
-          v-model="valid"
+        <v-card
+          v-for="item in tabList"
+          :key="item.name"
+          dark
+          class="mb-3 pr-6 pb-3"
+          style="background-color: #006492;"
         >
-          <v-card
-            v-for="item in tabList"
-            :key="item.name"
-            dark
-            class="mb-3 pr-6 pb-3"
-            style="background-color: #006492;"
-          >
-            <v-card-title>{{ item.name }}</v-card-title>
-            <component
-              :is="item"
-              class="ml-5"
-            />
-          </v-card>
-          <v-btn
-            color="accent"
-            style="color: black; width: 100%;"
-            :disabled="!valid"
-            @click="sendGeneralSettings()"
-          >
-            Save
-          </v-btn>
-        </v-form>
+          <v-card-title>{{ item.name }}</v-card-title>
+          <component
+            :is="item"
+            class="ml-5"
+          />
+        </v-card>
       </v-col>
     </v-row>
     <v-snackbar
@@ -61,7 +48,6 @@
         data() {
             return {
                 selectedTab: 0,
-                valid: true, // Are all settings valid
                 snack: false,
                 snackbar: {
                   color: "accent",
@@ -86,28 +72,6 @@
                 }
             }
         },
-        methods: {
-            sendGeneralSettings() {
-                this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
-                    function (response) {
-                        if (response.status === 200) {
-                            this.snackbar = {
-                                color: "success",
-                                text: "Settings updated successfully"
-                            };
-                            this.snack = true;
-                        }
-                    },
-                    function (error) {
-                        this.snackbar = {
-                            color: "error",
-                            text: (error.response || {data: "Couldn't save settings"}).data
-                        };
-                        this.snack = true;
-                    }
-                )
-            },
-        }
     }
 </script>
 

@@ -191,8 +191,12 @@ export default new Vuex.Store({
                     Vue.set(state, 'pipelineResults', payload[key])
                 }
             }
+        },
 
-
+        mutateEnabledLEDPercentage(state, payload)  {
+            const settings = state.settings;
+            settings.lighting.brightness = payload;
+            Vue.set(state, "settings", settings);
         },
 
         mutateCalibrationState: (state, payload) => {

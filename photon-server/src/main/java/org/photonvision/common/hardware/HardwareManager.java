@@ -80,6 +80,13 @@ public class HardwareManager {
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
+    public void setBrightnessPercent(int percent) {
+        ConfigManager.getInstance().getConfig().getHardwareConfig().enabledLEDPercentage = percent;
+        visionLED.setBrightness(percent);
+        ConfigManager.getInstance().requestSave();
+        logger.info("Bright: " + percent);
+    }
+
     private void onJvmExit() {
         logger.info("Shutting down...");
         visionLED.setState(false);
