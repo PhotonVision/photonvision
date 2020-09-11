@@ -56,7 +56,7 @@ public class VisionModuleManager {
         var addedModules = new ArrayList<VisionModule>();
         for (var entry : visionSources.entrySet()) {
             var visionSource = entry.getKey();
-            var pipelineManager = new PipelineManager(entry.getValue(), visionSource.isVendorCamera());
+            var pipelineManager = new PipelineManager(entry.getValue());
             var module = new VisionModule(pipelineManager, visionSource, visionModules.size());
             visionModules.add(module);
             addedModules.add(module);

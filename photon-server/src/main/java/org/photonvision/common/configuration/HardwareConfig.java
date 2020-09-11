@@ -50,7 +50,6 @@ public class HardwareConfig {
     public final String restartHardwareCommand;
     public final double vendorFOV; // -1 for unmanaged
     public final List<Integer> blacklistedResIndices; // this happens before the defaults are applied
-    public final int defaultReflectiveResIndex; // -1 for unmanaged
 
     public HardwareConfig() {
         deviceName = "";
@@ -75,7 +74,6 @@ public class HardwareConfig {
 
         restartHardwareCommand = "";
         vendorFOV = -1;
-        defaultReflectiveResIndex = -1;
         blacklistedResIndices = Collections.emptyList();
     }
 
@@ -124,7 +122,6 @@ public class HardwareConfig {
         this.ramUtilCommand = ramUtilCommand;
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;
-        this.defaultReflectiveResIndex = defaultReflectiveResIndex;
         this.blacklistedResIndices = blacklistedResIndices;
     }
 

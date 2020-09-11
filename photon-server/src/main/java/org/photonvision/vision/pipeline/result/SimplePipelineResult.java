@@ -48,7 +48,6 @@ public class SimplePipelineResult {
     *
     * @return The size of the packet needed to store this pipeline result.
     */
-    @JsonIgnore
     public int getPacketSize() {
         return targets.size() * SimpleTrackedTarget.PACK_SIZE_BYTES + 8 + 2;
     }

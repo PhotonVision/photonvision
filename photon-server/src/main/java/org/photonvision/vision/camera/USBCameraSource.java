@@ -197,6 +197,24 @@ public class USBCameraSource implements VisionSource {
                     sortedList.remove(badIdx);
                 }
 
+                // Filter bogus modes on picam
+                if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                    sortedList.removeIf(
+                            it ->
+                                    (it.width == 1296
+                                                    && it.height == 730
+                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR)
+                                            || (it.width == 1296
+                                                    && it.height == 972
+                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR)
+                                            || (it.width == 2592
+                                                    && it.height == 1944
+                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR)
+                                            || (it.width == 160
+                                                    && it.height == 120
+                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR));
+                }
+
                 for (VideoMode videoMode : sortedList) {
                     videoModes.put(sortedList.indexOf(videoMode), videoMode);
                 }
