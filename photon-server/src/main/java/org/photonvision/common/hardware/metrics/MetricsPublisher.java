@@ -17,11 +17,8 @@
 
 package org.photonvision.common.hardware.metrics;
 
-import java.util.HashMap;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
-import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import java.util.HashMap;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;

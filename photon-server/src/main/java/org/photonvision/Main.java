@@ -165,7 +165,7 @@ public class Main {
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
-        if(Platform.isRaspberryPi()) MetricsPublisher.getInstance().startTask();
+        if (Platform.isRaspberryPi()) MetricsPublisher.getInstance().startTask();
 
         if (!isTestMode) {
             VisionSourceManager.getInstance()

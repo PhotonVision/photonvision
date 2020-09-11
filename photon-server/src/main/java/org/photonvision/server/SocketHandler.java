@@ -184,10 +184,11 @@ public class SocketHandler {
                                 break;
                             }
                         case SMT_CHANGEBRIGHTNESS:
-                        {
-                            HardwareManager.getInstance().setBrightnessPercent(Integer.parseInt(entryValue.toString()));
-                            break;
-                        }
+                            {
+                                HardwareManager.getInstance()
+                                        .setBrightnessPercent(Integer.parseInt(entryValue.toString()));
+                                break;
+                            }
                         case SMT_DUPLICATEPIPELINE:
                             {
                                 var pipeIndex = (Integer) entryValue;
