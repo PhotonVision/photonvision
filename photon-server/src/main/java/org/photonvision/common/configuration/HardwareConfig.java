@@ -99,8 +99,6 @@ public class HardwareConfig {
             String ramUtilCommand,
             String restartHardwareCommand,
             double vendorFOV,
-            int defaultReflectiveResIndex,
-            int defaultDriverModeResIndex,
             List<Integer> blacklistedResIndices) {
         this.deviceName = deviceName;
         this.deviceLogoPath = deviceLogoPath;
