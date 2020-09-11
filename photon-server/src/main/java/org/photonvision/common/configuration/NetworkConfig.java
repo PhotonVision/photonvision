@@ -19,6 +19,7 @@ package org.photonvision.common.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
 
 public class NetworkConfig {
@@ -28,7 +29,6 @@ public class NetworkConfig {
     public String netmask = "";
     public String hostname = "photonvision";
 
-    // TODO implement networking
     public boolean shouldManage;
 
     public NetworkConfig() {}
@@ -45,7 +45,8 @@ public class NetworkConfig {
         this.staticIp = staticIp;
         this.netmask = netmask;
         this.hostname = hostname;
-        this.shouldManage = shouldManage;
+
+        this.shouldManage = shouldManage || Platform.isRaspberryPi();
     }
 
     public static NetworkConfig fromHashMap(Map<String, Object> map) {
