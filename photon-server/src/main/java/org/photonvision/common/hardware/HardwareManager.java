@@ -81,8 +81,8 @@ public class HardwareManager {
     }
 
     private void onJvmExit() {
-        System.err.println("Going down for EXIT");
-        visionLED.setBrightness(0);
+        logger.info("Shutting down...");
+        visionLED.setState(false);
     }
 
     public boolean restartDevice() {
