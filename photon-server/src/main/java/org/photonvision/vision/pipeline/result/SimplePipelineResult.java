@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline.result;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -47,6 +48,7 @@ public class SimplePipelineResult {
     *
     * @return The size of the packet needed to store this pipeline result.
     */
+    @JsonIgnore
     public int getPacketSize() {
         return targets.size() * SimpleTrackedTarget.PACK_SIZE_BYTES + 8 + 2;
     }
