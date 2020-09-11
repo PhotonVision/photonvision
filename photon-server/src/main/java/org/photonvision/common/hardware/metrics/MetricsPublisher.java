@@ -49,14 +49,12 @@ public class MetricsPublisher {
                         "Metrics",
                         () -> {
                             final var metrics = new HashMap<String, String>();
-//                            metrics.put("cpuTemp", cpuMetrics.getTemp());
-//                            metrics.put("cpuUtil", cpuMetrics.getUtilization());
-//                            metrics.put("cpuMem", cpuMetrics.getMemory());
-//                            metrics.put("gpuTemp", gpuMetrics.getTemp());
-//                            metrics.put("gpuMem", gpuMetrics.getMemory());
-//                            metrics.put("ramUtil", ramMetrics.getUsedRam());
-
-                            metrics.put("cpuTemp", "foobar");
+                            metrics.put("cpuTemp", cpuMetrics.getTemp());
+                            metrics.put("cpuUtil", cpuMetrics.getUtilization());
+                            metrics.put("cpuMem", cpuMetrics.getMemory());
+                            metrics.put("gpuTemp", gpuMetrics.getTemp());
+                            metrics.put("gpuMem", gpuMetrics.getMemory());
+                            metrics.put("ramUtil", ramMetrics.getUsedRam());
 
                             var retMap = new HashMap<String, Object>();
                             retMap.put("metrics", metrics);

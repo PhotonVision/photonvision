@@ -1,14 +1,11 @@
 <template>
   <div>
-    <v-row cols="12">
-      <v-col
-        v-for="item in infoTabs"
-        :key="item"
-        align="center"
-        :cols="4"
-      >
-        {{ item }}
-      </v-col>
+    <v-row class="pa-4">
+      <span>{{ infoTabs.join('  —  ') }}</span>
+    </v-row>
+
+    <v-row class="pa-4">
+      <span>{{ metricsData.join('  —  ') }}</span>
     </v-row>
 
     <v-row>
@@ -125,6 +122,16 @@ export default {
             ret[idx++] = `Platform: ${this.settings.hardwarePlatform}`;
             ret[idx++] = `GPU Acceleration: ${this.settings.gpuAcceleration ? "Enabled" : "Unsupported"}${this.settings.gpuAcceleration ? " (" + this.settings.gpuAcceleration + " mode)" : ""}`
 
+            return ret;
+        },
+        metricsData() {
+            const metrics = this.$store.state.metrics;
+            let ret = [];
+            for(let prop in metrics) {
+                const value = metrics[prop];
+                if(value === '') continue;
+                ret.push(`${prop}: ${value}`);
+            }
             return ret;
         }
     },
