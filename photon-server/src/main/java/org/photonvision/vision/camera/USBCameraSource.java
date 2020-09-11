@@ -201,7 +201,6 @@ public class USBCameraSource implements VisionSource {
                     videoModes.put(sortedList.indexOf(videoMode), videoMode);
                 }
             }
-            logger.debug("Adding " + videoModes.size() + " modes!");
             return videoModes;
         }
     }
