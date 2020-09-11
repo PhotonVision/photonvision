@@ -18,14 +18,16 @@
 package org.photonvision.common.hardware.metrics;
 
 import java.util.HashMap;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.server.SocketHandler;
 
 public class MetricsPublisher {
-    private final HashMap<String, String> metrics;
     private static final Logger logger = new Logger(MetricsPublisher.class, LogGroup.General);
     private static CPUMetrics cpuMetrics;
     private static GPUMetrics gpuMetrics;
@@ -39,8 +41,6 @@ public class MetricsPublisher {
         cpuMetrics = new CPUMetrics();
         gpuMetrics = new GPUMetrics();
         ramMetrics = new RAMMetrics();
-
-        metrics = new HashMap<>();
     }
 
     public void startTask() {
@@ -48,15 +48,24 @@ public class MetricsPublisher {
                 .addTask(
                         "Metrics",
                         () -> {
-                            metrics.put("cpuTemp", cpuMetrics.getTemp());
-                            metrics.put("cpuUtil", cpuMetrics.getUtilization());
-                            metrics.put("cpuMem", cpuMetrics.getMemory());
-                            metrics.put("gpuTemp", gpuMetrics.getTemp());
-                            metrics.put("gpuMem", gpuMetrics.getMemory());
-                            metrics.put("ramUtil", ramMetrics.getUsedRam());
+                            final var metrics = new HashMap<String, String>();
+//                            metrics.put("cpuTemp", cpuMetrics.getTemp());
+//                            metrics.put("cpuUtil", cpuMetrics.getUtilization());
+//                            metrics.put("cpuMem", cpuMetrics.getMemory());
+//                            metrics.put("gpuTemp", gpuMetrics.getTemp());
+//                            metrics.put("gpuMem", gpuMetrics.getMemory());
+//                            metrics.put("ramUtil", ramMetrics.getUsedRam());
 
-                            DataChangeService.getInstance()
-                                    .publishEvent(new OutgoingUIEvent<>("metrics", metrics));
+                            metrics.put("cpuTemp", "foobar");
+
+                            var retMap = new HashMap<String, Object>();
+                            retMap.put("metrics", metrics);
+
+                            try {
+                                SocketHandler.getInstance().broadcastMessage(retMap, null);
+                            } catch (JsonProcessingException e) {
+                                logger.error("Exception while sending metrics!", e);
+                            }
                         },
                         1000);
     }

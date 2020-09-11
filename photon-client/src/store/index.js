@@ -127,6 +127,14 @@ export default new Vuex.Store({
             patternHeight: 7,
             boardType: 0, // Chessboard, dotboard
         },
+        metrics: {
+            cpuTemp: "",
+            cpuUtil: "",
+            cpuMem: "",
+            gpuTemp: "",
+            gpuMem: "",
+            ramUtil: ""
+        }
     },
     mutations: {
         compactMode: set('compactMode'),
@@ -135,6 +143,7 @@ export default new Vuex.Store({
         selectedOutputs: set('selectedOutputs'),
         settings: set('settings'),
         calibrationData: set('calibrationData'),
+        metrics: set('metrics'),
         logString: (state, newStr) => {
             const str = state.logMessages;
             str.push(newStr)

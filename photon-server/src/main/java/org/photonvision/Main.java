@@ -25,6 +25,7 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
@@ -164,11 +165,7 @@ public class Main {
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
-        //        HashMap<VisionSource, List<CVPipelineSettings>> allSources = gatherSources();
-
-        //        logger.info("Adding " + allSources.size() + " configs to VMM.");
-        //        VisionModuleManager.getInstance().addSources(allSources);
-        //        ConfigManager.getInstance().addCameraConfigurations(allSources);
+        if(Platform.isRaspberryPi()) MetricsPublisher.getInstance().startTask();
 
         if (!isTestMode) {
             VisionSourceManager.getInstance()

@@ -91,7 +91,9 @@ public class PhotonConfiguration {
                         .map(SerializationUtils::objectToHashMap)
                         .collect(Collectors.toList()));
 
-        settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(hardwareConfig));
+        var lightingConfig = new UILightingConfig();
+        // TODO set constants
+        settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
 
         var generalSubmap = new HashMap<String, Object>();
         generalSubmap.put("version", PhotonVersion.versionString);
@@ -103,6 +105,11 @@ public class PhotonConfiguration {
 
         map.put("settings", settingsSubmap);
         return map;
+    }
+
+    public static class UILightingConfig {
+        public int brightness = 0;
+        public boolean supported = true;
     }
 
     public static class UICameraConfiguration {

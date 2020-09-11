@@ -1,14 +1,16 @@
 <template>
   <div>
-    <span>Version: {{ settings.version }}</span>
-    &mdash;
-    <div v-if="settings.hardwareModel !== ''">
-      <span>Hardware model: {{ settings.hardwareModel }}</span>
-      &mdash;
-    </div>
-    <span>Platform: {{ settings.hardwarePlatform }}</span>
-    &mdash;
-    <span>GPU Acceleration: {{ settings.gpuAcceleration ? "Enabled" : "Unsupported" }}{{ settings.gpuAcceleration ? " (" + settings.gpuAcceleration + " mode)" : "" }}</span>
+    <v-row cols="12">
+      <v-col
+        v-for="item in infoTabs"
+        :key="item"
+        align="center"
+        :cols="4"
+      >
+        {{ item }}
+      </v-col>
+    </v-row>
+
     <v-row>
       <v-col
         cols="12"
@@ -21,7 +23,8 @@
         >
           <v-icon left>
             mdi-download
-          </v-icon> Export Settings
+          </v-icon>
+          Export Settings
         </v-btn>
       </v-col>
       <v-col
@@ -35,7 +38,8 @@
         >
           <v-icon left>
             mdi-upload
-          </v-icon> Import Settings
+          </v-icon>
+          Import Settings
         </v-btn>
       </v-col>
       <v-col
@@ -48,7 +52,8 @@
         >
           <v-icon left>
             mdi-restart
-          </v-icon> Restart Photon
+          </v-icon>
+          Restart Photon
         </v-btn>
       </v-col>
       <v-col
@@ -61,7 +66,8 @@
         >
           <v-icon left>
             mdi-restart
-          </v-icon> Restart Device
+          </v-icon>
+          Restart Device
         </v-btn>
       </v-col>
     </v-row>
@@ -108,6 +114,18 @@ export default {
     computed: {
         settings() {
             return this.$store.state.settings.general;
+        },
+        infoTabs() {
+            let ret = [];
+            let idx = 0;
+            ret[idx++] = `Version: ${this.settings.version}`;
+            if (this.settings.hardwareModel !== '') {
+                ret[idx++] = `Hardware model: ${this.settings.hardwareModel}`;
+            }
+            ret[idx++] = `Platform: ${this.settings.hardwarePlatform}`;
+            ret[idx++] = `GPU Acceleration: ${this.settings.gpuAcceleration ? "Enabled" : "Unsupported"}${this.settings.gpuAcceleration ? " (" + this.settings.gpuAcceleration + " mode)" : ""}`
+
+            return ret;
         }
     },
     methods: {
