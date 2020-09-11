@@ -34,7 +34,7 @@ public class PipelineManager {
     public static final int CAL_3D_INDEX = -2;
 
     protected final List<CVPipelineSettings> userPipelineSettings;
-    private final boolean isVendorCam;
+    private final boolean isVendorCam; // This is to respect the default res idx for vendor cameras
     protected final Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline();
     protected final DriverModePipeline driverModePipeline = new DriverModePipeline();
 
