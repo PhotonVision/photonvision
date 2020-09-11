@@ -88,7 +88,7 @@ public class HardwareManager {
     public boolean restartDevice() {
         if (Platform.isRaspberryPi()) {
             try {
-                return shellExec.executeBashCommand("reboot") == 0;
+                return shellExec.executeBashCommand("reboot now") == 0;
             } catch (IOException e) {
                 logger.error("Could not restart device!", e);
                 return false;
