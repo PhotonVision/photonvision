@@ -26,10 +26,9 @@ public class CPUMetrics extends MetricsBase {
         return execute(cpuMemoryCommand);
     }
 
-    // TODO: Command should return in Celsius
     public String getTemp() {
         if (cpuTemperatureCommand.isEmpty()) return "";
-        return execute(cpuTemperatureCommand);
+        return String.valueOf(Double.parseDouble(execute(cpuTemperatureCommand)) / 1000);
     }
 
     public String getUtilization() {

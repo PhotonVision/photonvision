@@ -34,10 +34,10 @@ public abstract class MetricsBase {
 
     // GPU
     public static String gpuMemoryCommand = "sudo vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
-    public static String gpuTemperatureCommand = "sudo vcgencmd measure_temp | sed 's/[^0-9]*//g'\n";
+    public static String gpuTemperatureCommand = "sudo vcgencmd measure_temp | sed 's/[^0-9.]*//g'\n";
 
     // RAM
-    public static String ramUsageCommand = "sudo free  | awk -v i=2 -v j=3 'FNR == i {print $j}'";
+    public static String ramUsageCommand = "sudo free --mega | awk -v i=2 -v j=3 'FNR == i {print $j}'";
 
     private static ShellExec runCommand = new ShellExec(true, true);
 

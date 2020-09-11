@@ -26,7 +26,7 @@ public final class SerializationUtils {
 
     public static HashMap<String, Object> objectToHashMap(Object src) {
         var ret = new HashMap<String, Object>();
-        for (var field : src.getClass().getDeclaredFields()) {
+        for (var field : src.getClass().getFields()) {
             try {
                 field.setAccessible(true);
                 if (!field

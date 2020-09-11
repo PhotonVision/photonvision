@@ -5,7 +5,17 @@
     </v-row>
 
     <v-row class="pa-4">
-      <span>{{ metricsData.join('  —  ') }}</span>
+      <span>CPU Temp: {{ parseInt(metrics.cpuTemp) }}&nbsp;&deg;C</span>
+      &mdash;
+      <span>GPU Temp: {{ parseInt(metrics.gpuTemp) }}&nbsp;&deg;C</span>
+      &mdash;
+      <span>CPU Memory Allocation: {{ metrics.cpuMem }}mb</span>
+      &mdash;
+      <span>GPU Memory Allocation: {{ metrics.gpuMem }}</span>
+      &mdash;
+      <span>CPU Usage: {{ metrics.cpuUtil }}%</span>
+      &mdash;
+      <span>Memory Usage: {{ metrics.ramUtil.replace(" ", "") }}</span>
     </v-row>
 
     <v-row>
@@ -124,15 +134,8 @@ export default {
 
             return ret;
         },
-        metricsData() {
-            const metrics = this.$store.state.metrics;
-            let ret = [];
-            for(let prop in metrics) {
-                const value = metrics[prop];
-                if(value === '') continue;
-                ret.push(`${prop}: ${value}`);
-            }
-            return ret;
+        metrics() {
+            return this.$store.state.metrics;
         }
     },
     methods: {

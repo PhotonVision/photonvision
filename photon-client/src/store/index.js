@@ -128,12 +128,12 @@ export default new Vuex.Store({
             boardType: 0, // Chessboard, dotboard
         },
         metrics: {
-            cpuTemp: "45",
-            cpuUtil: "50%",
-            cpuMem: "",
-            gpuTemp: "50deg",
-            gpuMem: "100mb",
-            ramUtil: "50"
+            cpuTemp: "41.318",
+            cpuUtil: "4.2",
+            cpuMem: "896",
+            gpuTemp: "40.8",
+            gpuMem: "128mb",
+            ramUtil: "68mb"
         }
     },
     mutations: {
