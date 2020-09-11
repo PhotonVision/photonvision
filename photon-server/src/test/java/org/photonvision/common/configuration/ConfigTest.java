@@ -17,19 +17,31 @@
 
 package org.photonvision.common.configuration;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.cscore.VideoMode;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
+import org.photonvision.vision.pipeline.result.SimplePipelineResult;
 import org.photonvision.vision.target.TargetModel;
 
 public class ConfigTest {
@@ -115,5 +127,15 @@ public class ConfigTest {
 
         FileUtils.cleanDirectory(configMgr.configDirectoryFile);
         configMgr.configDirectoryFile.delete();
+    }
+
+    @Test
+    public void testJacksonHandlesOldVersions() throws IOException {
+        var str = "{\"baseName\":\"aaaaaa\",\"uniqueName\":\"aaaaaa\",\"nickname\":\"aaaaaa\",\"FOV\":70.0,\"path\":\"dev/vid\",\"cameraType\":\"UsbCamera\",\"currentPipelineIndex\":0,\"camPitch\":{\"radians\":0.0},\"calibrations\":[], \"cameraLEDs\":[]}";
+        var writer = new FileWriter("test.json");
+        writer.write(str);
+        writer.flush();
+        writer.close();
+        Assertions.assertDoesNotThrow(() -> JacksonUtils.deserialize(Path.of("test.json"), CameraConfiguration.class));
     }
 }
