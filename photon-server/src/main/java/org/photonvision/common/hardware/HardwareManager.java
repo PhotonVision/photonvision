@@ -19,14 +19,12 @@ package org.photonvision.common.hardware;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import java.io.IOException;
-import java.util.HashMap;
 import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
-import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.VisionLED.VisionLEDMode;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.logging.LogGroup;
@@ -36,13 +34,17 @@ import org.photonvision.common.util.ShellExec;
 public class HardwareManager {
     private static HardwareManager instance;
 
-    private final HashMap<Integer, GPIOBase> VisionLEDs = new HashMap<>();
     private final ShellExec shellExec = new ShellExec(true, false);
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
     private final HardwareConfig hardwareConfig;
+
+    @SuppressWarnings("FieldCanBeLocal")
     private final StatusLED statusLED;
+
     private final NetworkTableEntry ledModeEntry;
+
+    @SuppressWarnings("FieldCanBeLocal")
     private final NTDataChangeListener ledModeListener;
 
     public final VisionLED visionLED;
@@ -64,17 +66,34 @@ public class HardwareManager {
                 new VisionLED(
                         hardwareConfig.ledPins,
                         hardwareConfig.ledPWMFrequency,
-                        hardwareConfig.ledPWMRange.get(1));
+                        (hardwareConfig.ledPWMRange != null && hardwareConfig.ledPWMRange.size() == 2)
+                                ? hardwareConfig.ledPWMRange.get(1)
+                                : 0);
 
         ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
         ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);
         ledModeListener = new NTDataChangeListener(ledModeEntry, visionLED::onLedModeChange);
 
+        Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
+
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
+    private void onJvmExit() {
+        logger.info("Shutting down...");
+        visionLED.setState(false);
+    }
+
     public boolean restartDevice() {
+        if (Platform.isRaspberryPi()) {
+            try {
+                return shellExec.executeBashCommand("reboot now") == 0;
+            } catch (IOException e) {
+                logger.error("Could not restart device!", e);
+                return false;
+            }
+        }
         try {
             return shellExec.executeBashCommand(hardwareConfig.restartHardwareCommand) == 0;
         } catch (IOException e) {

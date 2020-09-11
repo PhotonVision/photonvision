@@ -100,7 +100,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.setPipeline(index);
                         parentModule.saveAndBroadcastAll();
                         return;
-                    case "startcalibration":
+                    case "startCalibration":
                         var data = UICalibrationData.fromMap((Map<String, Object>) newPropValue);
                         parentModule.startCalibration(data);
                         parentModule.saveAndBroadcastAll();

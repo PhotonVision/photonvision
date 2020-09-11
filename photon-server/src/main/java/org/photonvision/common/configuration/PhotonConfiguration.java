@@ -17,11 +17,13 @@
 
 package org.photonvision.common.configuration;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import org.photonvision.PhotonVersion;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
@@ -44,7 +46,7 @@ public class PhotonConfiguration {
         return cameraConfigurations;
     }
 
-    public void addCameraConfigs(List<CameraConfiguration> config) {
+    public void addCameraConfigs(Collection<CameraConfiguration> config) {
         for (var c : config) {
             addCameraConfig(c);
         }
@@ -95,8 +97,8 @@ public class PhotonConfiguration {
         generalSubmap.put("version", PhotonVersion.versionString);
         generalSubmap.put("gpuAcceleration", false); // TODO gpu accel and accel type
         generalSubmap.put("gpuAccelerationType", "Unknown");
-        generalSubmap.put("hardwareModel", "Unknown"); // TODO hardware model and platform
-        generalSubmap.put("hardwarePlatform", "Unknown");
+        generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
+        generalSubmap.put("hardwarePlatform", Platform.getCurrentPlatform().toString());
         settingsSubmap.put("general", generalSubmap);
 
         map.put("settings", settingsSubmap);

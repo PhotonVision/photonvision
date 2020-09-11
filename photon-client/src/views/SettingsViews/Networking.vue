@@ -12,7 +12,7 @@
       />
       <template v-if="!isDHCP">
         <CVinput
-          v-model="settings.ip"
+          v-model="settings.staticIp"
           :input-cols="inputCols"
           :rules="[v => isIPv4(v) || 'Invalid IPv4 address']"
           name="IP"

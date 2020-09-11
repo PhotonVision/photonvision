@@ -18,6 +18,8 @@
 package org.photonvision.common.configuration;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class HardwareConfig {
 
@@ -47,6 +49,7 @@ public class HardwareConfig {
     // Device stuff
     public final String restartHardwareCommand;
     public final double vendorFOV; // -1 for unmanaged
+    public final List<Integer> blacklistedResIndices; // this happens before the defaults are applied
 
     public HardwareConfig() {
         deviceName = "";
@@ -71,6 +74,7 @@ public class HardwareConfig {
 
         restartHardwareCommand = "";
         vendorFOV = -1;
+        blacklistedResIndices = Collections.emptyList();
     }
 
     @SuppressWarnings("unused")
@@ -94,7 +98,8 @@ public class HardwareConfig {
             String gpuTempCommand,
             String ramUtilCommand,
             String restartHardwareCommand,
-            double vendorFOV) {
+            double vendorFOV,
+            List<Integer> blacklistedResIndices) {
         this.deviceName = deviceName;
         this.deviceLogoPath = deviceLogoPath;
         this.supportURL = supportURL;
@@ -115,6 +120,7 @@ public class HardwareConfig {
         this.ramUtilCommand = ramUtilCommand;
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;
+        this.blacklistedResIndices = blacklistedResIndices;
     }
 
     public final boolean hasPresetFOV() {

@@ -23,4 +23,6 @@ public interface VisionSource {
     FrameProvider getFrameProvider();
 
     VisionSourceSettables getSettables();
+
+    boolean isVendorCamera();
 }

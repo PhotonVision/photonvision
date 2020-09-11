@@ -20,6 +20,7 @@ package org.photonvision.vision.processes;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
@@ -54,10 +55,18 @@ public class PipelineManager {
     *
     * @param userPipelines Pipelines to add to the manager.
     */
-    public PipelineManager(List<CVPipelineSettings> userPipelines) {
+    public PipelineManager(
+            DriverModePipelineSettings driverSettings, List<CVPipelineSettings> userPipelines) {
         this.userPipelineSettings = new ArrayList<>(userPipelines);
+        // This is to respect the default res idx for vendor cameras
+
+        this.driverModePipeline.setSettings(driverSettings);
 
         if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
+    }
+
+    public PipelineManager(CameraConfiguration config) {
+        this(config.driveModeSettings, config.pipelineSettings);
     }
 
     /**

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 
 public class VisionSourceManagerTest {
@@ -38,6 +39,7 @@ public class VisionSourceManagerTest {
         var inst = new VisionSourceManager();
         var infoList = new ArrayList<UsbCameraInfo>();
         inst.cameraInfoSupplier = () -> infoList;
+        ConfigManager.getInstance().load();
 
         inst.tryMatchUSBCamImpl();
         var config = new CameraConfiguration("secondTestVideo", "dev/video1");

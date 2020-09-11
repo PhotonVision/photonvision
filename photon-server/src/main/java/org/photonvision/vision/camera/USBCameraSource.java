@@ -23,7 +23,9 @@ import edu.wpi.cscore.VideoException;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
 import java.util.*;
+import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
@@ -141,7 +143,10 @@ public class USBCameraSource implements VisionSource {
                 videoModes = new HashMap<>();
                 List<VideoMode> videoModesList = new ArrayList<>();
                 try {
-                    for (var videoMode : camera.enumerateVideoModes()) {
+                    var modes = camera.enumerateVideoModes();
+                    for (int i = 0; i < modes.length; i++) {
+                        var videoMode = modes[i];
+
                         // Filter grey modes
                         if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray
                                 || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {
@@ -156,17 +161,73 @@ public class USBCameraSource implements VisionSource {
                         }
 
                         videoModesList.add(videoMode);
+
+                        // We look for modes with the same height/width/pixelformat as this mode
+                        // and remove all the ones that are slower. This is sorted low to high.
+                        // So we remove the last element (the fastest FPS) from the duplicate list,
+                        // and remove all remaining elements from the final list
+                        var duplicateModes =
+                                videoModesList.stream()
+                                        .filter(
+                                                it ->
+                                                        it.height == videoMode.height
+                                                                && it.width == videoMode.width
+                                                                && it.pixelFormat == videoMode.pixelFormat)
+                                        .sorted(Comparator.comparingDouble(it -> it.fps))
+                                        .collect(Collectors.toList());
+                        duplicateModes.remove(duplicateModes.size() - 1);
+                        videoModesList.removeAll(duplicateModes);
                     }
                 } catch (Exception e) {
                     logger.error("Exception while enumerating video modes!", e);
                     videoModesList = List.of();
                 }
-                for (VideoMode videoMode : videoModesList) {
-                    videoModes.put(videoModesList.indexOf(videoMode), videoMode);
+
+                // Sort by resolution
+                var sortedList =
+                        videoModesList.stream()
+                                .sorted(((a, b) -> (b.width + b.height) - (a.width + a.height)))
+                                .collect(Collectors.toList());
+                Collections.reverse(sortedList);
+
+                // On vendor cameras, respect blacklisted indices
+                var indexBlacklist =
+                        ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices;
+                for (int badIdx : indexBlacklist) {
+                    sortedList.remove(badIdx);
+                }
+
+                // Filter bogus modes on picam
+                if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                    sortedList.removeIf(
+                            it ->
+                                    (it.width == 1296
+                                                    && it.height == 730
+                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR)
+                                            || (it.width == 1296
+                                                    && it.height == 972
+                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR)
+                                            || (it.width == 2592
+                                                    && it.height == 1944
+                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR)
+                                            || (it.width == 160
+                                                    && it.height == 120
+                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR));
+                }
+
+                for (VideoMode videoMode : sortedList) {
+                    videoModes.put(sortedList.indexOf(videoMode), videoMode);
                 }
             }
             return videoModes;
         }
+    }
+
+    // TODO improve robustness of this detection
+    @Override
+    public boolean isVendorCamera() {
+        return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV()
+                && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
     }
 
     @Override
