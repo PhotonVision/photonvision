@@ -18,13 +18,17 @@
 package org.photonvision.common.logging;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -104,7 +108,37 @@ public class Logger {
     static {
         currentAppenders.add(new ConsoleLogAppender());
         currentAppenders.add(uiLogAppender);
-        addFileAppender(ConfigManager.getInstance().getLogPath());
+        addFileAppender(getLogPath());
+    }
+
+    private static Path getLogPath() {
+        var logFolder = Path.of("logs");
+        if(!logFolder.toFile().exists()) logFolder.toFile().mkdir();
+        try {
+            var maxLogs = 15;
+
+            // Delete files older than 20 old
+            var logs = Files.list(logFolder).map(it -> {
+                var fileName = it.getFileName().toString();
+                var fileNum = fileName.replaceAll("[^0-9]", "");
+                return Pair.of(Integer.parseInt(fileNum), it);
+            })
+                .sorted(Comparator.comparingInt(Pair::getLeft))
+                .collect(Collectors.toList());
+
+            int newLogNum = logs.get(logs.size() - 1).getLeft() + 1;
+            logs.stream().limit(logs.size() - (maxLogs + 1)).forEach(it -> it.getRight().toFile().delete());
+
+            var name = "photonvision-" + newLogNum + ".log";
+            var logPath = Path.of(logFolder.toString(), name);
+            logPath.toFile().createNewFile();
+
+            System.out.println(logPath);
+            return logPath;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return Path.of(logFolder.toString(), "photonvision-" + System.currentTimeMillis() + ".log");
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
