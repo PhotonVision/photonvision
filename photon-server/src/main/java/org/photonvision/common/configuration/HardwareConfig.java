@@ -73,6 +73,7 @@ public class HardwareConfig {
         gpuTempCommand = "";
         ramUtilCommand = "";
         ledBlinkCommand = "";
+        gpuMemUsageCommand = "";
 
         restartHardwareCommand = "";
         vendorFOV = -1;
@@ -101,6 +102,7 @@ public class HardwareConfig {
             String gpuMemoryCommand,
             String gpuTempCommand,
             String ramUtilCommand,
+            String gpuMemUsageCommand,
             String restartHardwareCommand,
             double vendorFOV,
             List<Integer> blacklistedResIndices) {
@@ -126,6 +128,7 @@ public class HardwareConfig {
         this.vendorFOV = vendorFOV;
         this.blacklistedResIndices = blacklistedResIndices;
         this.enabledLEDPercentage = enabledLEDPercentage;
+        this.gpuMemUsageCommand = gpuMemUsageCommand;
     }
 
     public final boolean hasPresetFOV() {
