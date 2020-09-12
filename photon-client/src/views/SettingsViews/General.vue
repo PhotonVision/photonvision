@@ -13,7 +13,7 @@
       &ndash;
       <span>GPU Temp: {{ parseInt(metrics.gpuTemp) }}&deg;&nbsp;C</span>
       &ndash;
-      <span>GPU Memory Usage: {{ metrics.gpuMem }}MB of {{ metrics.gpuMemUtil }}MB</span>
+      <span>GPU Memory Usage: {{ metrics.gpuMemUtil }}MB of {{ metrics.gpuMem }}MB</span>
     </v-row>
 
     <v-row>
