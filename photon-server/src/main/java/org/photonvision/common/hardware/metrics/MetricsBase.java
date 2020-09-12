@@ -26,19 +26,19 @@ import org.photonvision.common.util.ShellExec;
 public abstract class MetricsBase {
     private static final Logger logger = new Logger(MetricsBase.class, LogGroup.General);
     // CPU
-    public static String cpuMemoryCommand = "sudo vcgencmd get_mem arm | grep -Eo '[0-9]+'";
+    public static String cpuMemoryCommand = "vcgencmd get_mem arm | grep -Eo '[0-9]+'";
     public static String cpuTemperatureCommand =
-            "sudo cat /sys/class/thermal/thermal_zone0/temp | grep -x -E '[0-9]+'";
+            "cat /sys/class/thermal/thermal_zone0/temp | grep -x -E '[0-9]+'";
     public static String cpuUtilizationCommand =
-            "sudo top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'";
+            "top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'";
 
     // GPU
-    public static String gpuMemoryCommand = "sudo vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
-    public static String gpuTemperatureCommand = "sudo vcgencmd measure_temp | sed 's/[^0-9.]*//g'\n";
+    public static String gpuMemoryCommand = "vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
+    public static String gpuTemperatureCommand = "vcgencmd measure_temp | sed 's/[^0-9.]*//g'\n";
+    public static String gpuMemUsageCommand = "vcgencmd get_mem malloc | grep -Eo '[0-9]+'";
 
     // RAM
-    public static String ramUsageCommand =
-            "sudo free --mega | awk -v i=2 -v j=3 'FNR == i {print $j}'";
+    public static String ramUsageCommand = "free --mega | awk -v i=2 -v j=3 'FNR == i {print $j}'";
 
     private static ShellExec runCommand = new ShellExec(true, true);
 
@@ -50,6 +50,7 @@ public abstract class MetricsBase {
 
         gpuMemoryCommand = config.gpuMemoryCommand;
         gpuTemperatureCommand = config.gpuTempCommand;
+        gpuMemUsageCommand = config.gpuMemUsageCommand;
 
         ramUsageCommand = config.ramUtilCommand;
     }

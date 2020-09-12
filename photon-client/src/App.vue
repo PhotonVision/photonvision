@@ -38,9 +38,9 @@
           </v-list-item-content>
         </v-list-item>
         <v-list-item
+          ref="camerasTabOpener"
           link
           to="cameras"
-          ref="camerasTabOpener"
           @click="switchToDriverMode()"
         >
           <v-list-item-icon>
@@ -53,6 +53,7 @@
         <v-list-item
           link
           to="settings"
+          @click="switchToSettingsTab()"
         >
           <v-list-item-icon>
             <v-icon>mdi-settings</v-icon>
@@ -118,7 +119,7 @@
       >
         <v-layout>
           <v-flex>
-            <router-view v-on:switch-to-cameras="switchToDriverMode" />
+            <router-view @switch-to-cameras="switchToDriverMode" />
           </v-flex>
         </v-layout>
       </v-container>
@@ -246,6 +247,9 @@ import Logs from "./views/LogsView"
                     this.handleInputWithIndex('currentPipeline', this.previouslySelectedIndex || 0);
                 }
                 this.previouslySelectedIndex = null;
+            },
+            switchToSettingsTab() {
+                this.axios.post('http://' + this.$address + '/api/sendMetrics', {})
             }
         }
     };

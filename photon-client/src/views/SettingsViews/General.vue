@@ -5,17 +5,15 @@
     </v-row>
 
     <v-row class="pa-4">
-      <span>CPU Temp: {{ parseInt(metrics.cpuTemp) }}&nbsp;&deg;C</span>
-      &mdash;
-      <span>GPU Temp: {{ parseInt(metrics.gpuTemp) }}&nbsp;&deg;C</span>
-      &mdash;
-      <span>CPU Memory Allocation: {{ metrics.cpuMem }}mb</span>
-      &mdash;
-      <span>GPU Memory Allocation: {{ metrics.gpuMem }}</span>
-      &mdash;
-      <span>CPU Usage: {{ metrics.cpuUtil }}%</span>
-      &mdash;
-      <span>Memory Usage: {{ metrics.ramUtil.replace(" ", "") }}</span>
+      <span>CPU Usage: {{ metrics.cpuUtil.replace(" ", "") }}%</span>
+      &nbsp;&ndash;&nbsp;
+      <span>CPU Temp: {{ parseInt(metrics.cpuTemp) }}&deg;&nbsp;C</span>
+      &nbsp;&ndash;&nbsp;
+      <span>CPU Memory Usage: {{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB</span>
+      &ndash;
+      <span>GPU Temp: {{ parseInt(metrics.gpuTemp) }}&deg;&nbsp;C</span>
+      &ndash;
+      <span>GPU Memory Usage: {{ metrics.gpuMem }}MB of {{ metrics.gpuMemUtil }}MB</span>
     </v-row>
 
     <v-row>

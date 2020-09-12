@@ -46,6 +46,7 @@ public class HardwareConfig {
     public final String gpuMemoryCommand;
     public final String gpuTempCommand;
     public final String ramUtilCommand;
+    public String gpuMemUsageCommand;
 
     // Device stuff
     public final String restartHardwareCommand;

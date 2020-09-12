@@ -6,6 +6,7 @@
     >
       <CVnumberinput
         v-model="settings.teamNumber"
+        :disabled="settings.runNTServer"
         name="Team Number"
         :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
         class="mb-4"

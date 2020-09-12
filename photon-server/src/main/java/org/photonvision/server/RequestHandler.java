@@ -33,6 +33,7 @@ import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
@@ -177,6 +178,11 @@ public class RequestHandler {
         }
 
         VisionModuleManager.getInstance().getModule(data.index).setTargetModel(data.targetModel);
+        ctx.status(200);
+    }
+
+    public static void sendMetrics(Context ctx) {
+        MetricsPublisher.getInstance().publish();
         ctx.status(200);
     }
 

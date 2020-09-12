@@ -18,8 +18,12 @@
 package org.photonvision.common.hardware.metrics;
 
 public class GPUMetrics extends MetricsBase {
-    public String getMemory() {
-        return execute(gpuMemoryCommand) + "mb";
+    public String getGPUMemorySplit() {
+        return execute(gpuMemoryCommand);
+    }
+
+    public String getMallocedMemory() {
+        return execute(gpuMemUsageCommand);
     }
 
     public String getTemp() {

@@ -28,7 +28,11 @@ public class CPUMetrics extends MetricsBase {
 
     public String getTemp() {
         if (cpuTemperatureCommand.isEmpty()) return "";
-        return String.valueOf(Double.parseDouble(execute(cpuTemperatureCommand)) / 1000);
+        try {
+            return String.valueOf(Double.parseDouble(execute(cpuTemperatureCommand)) / 1000);
+        } catch (Exception e) {
+            return "N/A";
+        }
     }
 
     public String getUtilization() {
