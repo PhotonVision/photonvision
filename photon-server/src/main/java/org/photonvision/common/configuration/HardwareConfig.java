@@ -37,7 +37,6 @@ public class HardwareConfig {
     public final String ledDimCommand;
     public final String ledBlinkCommand;
     public final ArrayList<Integer> statusRGBPins;
-    public int enabledLEDPercentage;
 
     // Metrics
     public final String cpuTempCommand;
@@ -78,7 +77,6 @@ public class HardwareConfig {
         restartHardwareCommand = "";
         vendorFOV = -1;
         blacklistedResIndices = Collections.emptyList();
-        enabledLEDPercentage = 100;
     }
 
     @SuppressWarnings("unused")
@@ -90,7 +88,6 @@ public class HardwareConfig {
             String ledSetCommand,
             boolean ledsCanDim,
             ArrayList<Integer> statusRGBPins,
-            int enabledLEDPercentage,
             String ledPWMSetRange,
             int ledPWMFrequency,
             String ledDimCommand,
@@ -127,7 +124,6 @@ public class HardwareConfig {
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;
         this.blacklistedResIndices = blacklistedResIndices;
-        this.enabledLEDPercentage = enabledLEDPercentage;
         this.gpuMemUsageCommand = gpuMemUsageCommand;
     }
 

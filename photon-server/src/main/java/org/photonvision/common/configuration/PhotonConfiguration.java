@@ -30,12 +30,40 @@ import org.photonvision.vision.processes.VisionModuleManager;
 
 // TODO rename this class
 public class PhotonConfiguration {
+
+    private HardwareConfig hardwareConfig;
+    private HardwareSettings hardwareSettings;
+    private NetworkConfig networkConfig;
+    private HashMap<String, CameraConfiguration> cameraConfigurations;
+
+    public PhotonConfiguration(
+            HardwareConfig hardwareConfig,
+            HardwareSettings hardwareSettings,
+            NetworkConfig networkConfig) {
+        this(hardwareConfig, hardwareSettings, networkConfig, new HashMap<>());
+    }
+
+    public PhotonConfiguration(
+            HardwareConfig hardwareConfig,
+            HardwareSettings hardwareSettings,
+            NetworkConfig networkConfig,
+            HashMap<String, CameraConfiguration> cameraConfigurations) {
+        this.hardwareConfig = hardwareConfig;
+        this.hardwareSettings = hardwareSettings;
+        this.networkConfig = networkConfig;
+        this.cameraConfigurations = cameraConfigurations;
+    }
+
     public HardwareConfig getHardwareConfig() {
         return hardwareConfig;
     }
 
     public NetworkConfig getNetworkConfig() {
         return networkConfig;
+    }
+
+    public HardwareSettings getHardwareSettings() {
+        return hardwareSettings;
     }
 
     public void setNetworkConfig(NetworkConfig networkConfig) {
@@ -58,25 +86,6 @@ public class PhotonConfiguration {
 
     public void addCameraConfig(String name, CameraConfiguration config) {
         cameraConfigurations.put(name, config);
-    }
-
-    private HardwareConfig hardwareConfig;
-
-    private NetworkConfig networkConfig;
-
-    private HashMap<String, CameraConfiguration> cameraConfigurations;
-
-    public PhotonConfiguration(HardwareConfig hardwareConfig, NetworkConfig networkConfig) {
-        this(hardwareConfig, networkConfig, new HashMap<>());
-    }
-
-    public PhotonConfiguration(
-            HardwareConfig hardwareConfig,
-            NetworkConfig networkConfig,
-            HashMap<String, CameraConfiguration> cameraConfigurations) {
-        this.hardwareConfig = hardwareConfig;
-        this.networkConfig = networkConfig;
-        this.cameraConfigurations = cameraConfigurations;
     }
 
     public Map<String, Object> toHashMap() {

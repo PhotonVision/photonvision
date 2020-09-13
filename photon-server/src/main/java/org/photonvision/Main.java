@@ -24,6 +24,7 @@ import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -157,6 +158,9 @@ public class Main {
 
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();
+
+        // Force load the hardware manager
+        HardwareManager.getInstance();
 
         NetworkManager.getInstance().initialize(false);
 
