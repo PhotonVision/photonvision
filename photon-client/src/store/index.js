@@ -108,7 +108,6 @@ export default new Vuex.Store({
                 // Below options are only configurable if supported is true
                 connectionType: 0, // 0 = DHCP, 1 = Static
                 staticIp: "",
-                netmask: "",
                 hostname: "photonvision",
                 runNTServer: false,
             },
@@ -176,6 +175,17 @@ export default new Vuex.Store({
                 if (!payload.hasOwnProperty(key)) continue;
                 const value = payload[key];
                 const settings = state.settings;
+                if (settings.hasOwnProperty(key)) {
+                    Vue.set(settings, key, value);
+                }
+            }
+        },
+
+        mutateNetworkSettings: (state, payload) => {
+            for (let key in payload) {
+                if (!payload.hasOwnProperty(key)) continue;
+                const value = payload[key];
+                const settings = state.settings.networkSettings;
                 if (settings.hasOwnProperty(key)) {
                     Vue.set(settings, key, value);
                 }

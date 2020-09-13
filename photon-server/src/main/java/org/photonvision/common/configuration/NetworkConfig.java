@@ -26,7 +26,6 @@ public class NetworkConfig {
     public int teamNumber = 0;
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String staticIp = "";
-    public String netmask = "";
     public String hostname = "photonvision";
     public boolean runNTServer = false;
 
@@ -38,18 +37,16 @@ public class NetworkConfig {
             int teamNumber,
             NetworkMode connectionType,
             String staticIp,
-            String netmask,
             String hostname,
             boolean runNTServer,
             boolean shouldManage) {
         this.teamNumber = teamNumber;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
-        this.netmask = netmask;
         this.hostname = hostname;
         this.runNTServer = runNTServer;
 
-        this.shouldManage = shouldManage || Platform.isRaspberryPi();
+        this.shouldManage = shouldManage;
     }
 
     public static NetworkConfig fromHashMap(Map<String, Object> map) {
@@ -60,7 +57,6 @@ public class NetworkConfig {
         ret.shouldManage = (Boolean) map.get("supported");
         ret.connectionType = NetworkMode.values()[(Integer) map.get("connectionType")];
         ret.staticIp = (String) map.get("staticIp");
-        ret.netmask = (String) map.get("netmask");
         ret.hostname = (String) map.get("hostname");
         ret.runNTServer = (Boolean) map.get("runNTServer");
         return ret;
@@ -69,12 +65,15 @@ public class NetworkConfig {
     public HashMap<String, Object> toHashMap() {
         HashMap<String, Object> tmp = new HashMap<>();
         tmp.put("teamNumber", teamNumber);
-        tmp.put("supported", shouldManage);
+        tmp.put("supported", shouldManage());
         tmp.put("connectionType", connectionType.ordinal());
         tmp.put("staticIp", staticIp);
-        tmp.put("netmask", netmask);
         tmp.put("hostname", hostname);
         tmp.put("runNTServer", runNTServer);
         return tmp;
+    }
+
+    public boolean shouldManage() {
+        return this.shouldManage || Platform.isRaspberryPi();
     }
 }

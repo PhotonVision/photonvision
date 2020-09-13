@@ -162,7 +162,7 @@ public class Main {
         // Force load the hardware manager
         HardwareManager.getInstance();
 
-        NetworkManager.getInstance().initialize(false);
+        NetworkManager.getInstance().reinitialize();
 
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());

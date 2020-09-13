@@ -76,12 +76,20 @@ public class NetworkManager {
             }
 
             if (config.connectionType == NetworkMode.DHCP) {
-                return; // TODO do we need to reconnect or something?
+                var shell = new ShellExec();
+                try {
+                    if (config.staticIp != "") {
+                        shell.executeBashCommand("ip addr del " + config.staticIp + "/8 dev eth0");
+                    }
+                    shell.executeBashCommand("dhclient eth0");
+                } catch (Exception e) {
+                    logger.error("Exception while setting DHCP!");
+                }
             } else if (config.connectionType == NetworkMode.STATIC) {
                 var shell = new ShellExec();
                 if (config.staticIp.length() > 0) {
                     try {
-                        shell.executeBashCommand("ip addr add " + config.staticIp + "/24" + " dev eth0");
+                        shell.executeBashCommand("ip addr add " + config.staticIp + "/8" + " dev eth0");
                     } catch (Exception e) {
                         logger.error("Error while setting static IP!", e);
                     }
@@ -95,6 +103,6 @@ public class NetworkManager {
     }
 
     public void reinitialize() {
-        initialize(ConfigManager.getInstance().getConfig().getNetworkConfig().shouldManage);
+        initialize(ConfigManager.getInstance().getConfig().getNetworkConfig().shouldManage());
     }
 }
