@@ -4,18 +4,20 @@
       <span>{{ infoTabs.join('  —  ') }}</span>
     </v-row>
 
-    <v-row class="pa-4">
-      <span>CPU Usage: {{ metrics.cpuUtil.replace(" ", "") }}%</span>
-      &nbsp;&ndash;&nbsp;
-      <span>CPU Temp: {{ parseInt(metrics.cpuTemp) }}&deg;&nbsp;C</span>
-      &nbsp;&ndash;&nbsp;
-      <span>CPU Memory Usage: {{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB</span>
-      &ndash;
-      <span>GPU Temp: {{ parseInt(metrics.gpuTemp) }}&deg;&nbsp;C</span>
-      &ndash;
-      <span>GPU Memory Usage: {{ metrics.gpuMemUtil }}MB of {{ metrics.gpuMem }}MB</span>
-    </v-row>
-
+    <div v-if="metrics.cpuUtil !== 'N/A'">
+      <v-row class="pa-4">
+        <span>CPU Usage: {{ metrics.cpuUtil.replace(" ", "") }}%</span>
+        &nbsp;&ndash;&nbsp;
+        <span>CPU Temp: {{ parseInt(metrics.cpuTemp) }}&deg;&nbsp;C</span>
+        &nbsp;&ndash;&nbsp;
+        <span>CPU Memory Usage: {{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB</span>
+        &ndash;
+        <span>GPU Temp: {{ parseInt(metrics.gpuTemp) }}&deg;&nbsp;C</span>
+        &ndash;
+        <span>GPU Memory Usage: {{ metrics.gpuMemUtil }}MB of {{ metrics.gpuMem }}MB</span>
+      </v-row>
+    </div>
+      
     <v-row>
       <v-col
         cols="12"
