@@ -42,15 +42,19 @@ public class PicamJNI {
     */
     public static native boolean destroyCamera();
 
-    public static native boolean setThresholds(double hL, double sL, double vL, double hU, double sU, double vU);
+    public static native void setThresholds(double hL, double sL, double vL, double hU, double sU, double vU);
 
-    private static native boolean setExposure(int exposure);
+    public static native boolean setExposure(int exposure);
 
-    private static native boolean setBrightness(int exposure);
+    public static native boolean setBrightness(int brightness);
 
-    private static native boolean setISO(int iso);
+    public static native boolean setGain(int gain);
 
-    private static native boolean setRotation(int rotation);
+    public static native boolean setRotation(int rotation);
 
-    public static native long grabFrame();
+    public static native void setShouldCopyColor(boolean shouldCopyColor);
+ 
+    public static native long getFrameLatency();
+
+    public static native long grabFrame(boolean shouldReturnColor);
 }

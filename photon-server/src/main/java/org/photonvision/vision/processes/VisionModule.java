@@ -56,7 +56,7 @@ import org.photonvision.vision.target.TrackedTarget;
 */
 public class VisionModule {
 
-    private static final int StreamFPSCap = 30;
+    private static final int streamFPSCap = 30;
 
     private final Logger logger;
     protected final PipelineManager pipelineManager;
@@ -177,6 +177,7 @@ public class VisionModule {
     private class StreamRunnable extends Thread {
         private final OutputStreamPipeline outputStreamPipeline;
 
+        private Object frameLock = new Object();
         private Frame inputFrame, outputFrame;
         private AdvancedPipelineSettings settings = new AdvancedPipelineSettings();
         private List<TrackedTarget> targets = new ArrayList<>();
@@ -194,26 +195,50 @@ public class VisionModule {
                 AdvancedPipelineSettings settings,
                 List<TrackedTarget> targets,
                 double fps) {
-            this.inputFrame = inputFrame;
-            this.outputFrame = outputFrame;
-            this.settings = settings;
-            this.targets = targets;
-            this.fps = fps;
+            synchronized (frameLock) {
+                this.inputFrame = inputFrame;
+                this.outputFrame = outputFrame;
+                this.settings = settings;
+                this.targets = targets;
+                this.fps = fps;
 
-            shouldRun =
-                    inputFrame != null
-                            && !inputFrame.image.getMat().empty()
-                            && outputFrame != null
-                            && !outputFrame.image.getMat().empty();
+                if (shouldRun && this.inputFrame != null && this.outputFrame != null) {
+                    this.inputFrame.release();
+                    this.outputFrame.release();
+                }
+                shouldRun =
+                        inputFrame != null
+                                && !inputFrame.image.getMat().empty()
+                                && outputFrame != null
+                                && !outputFrame.image.getMat().empty();
+            }
         }
 
         @Override
         public void run() {
             while (true) {
+                final Frame inputFrame, outputFrame;
+                final AdvancedPipelineSettings settings;
+                final List<TrackedTarget> targets;
+                final double fps;
+                final boolean shouldRun;
+                synchronized (frameLock) {
+                    inputFrame = this.inputFrame;
+                    outputFrame = this.outputFrame;
+                    this.inputFrame = null;
+                    this.outputFrame = null;
+
+                    settings = this.settings;
+                    targets = this.targets;
+                    fps = this.fps;
+                    shouldRun = this.shouldRun;
+                }
                 if (shouldRun) {
                     var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets, fps);
                     consumeFpsLimitedResult(osr);
-                    shouldRun = false;
+                    synchronized (frameLock) {
+                        this.shouldRun = false;
+                    }
                 } else {
                     // busy wait! hurray!
                     try {
@@ -477,7 +502,8 @@ public class VisionModule {
     }
 
     private void consumeFpsLimitedResult(CVPipelineResult result) {
-        if (System.currentTimeMillis() - lastFrameConsumeMillis > 1000 / StreamFPSCap) {
+        long dt = System.currentTimeMillis() - lastFrameConsumeMillis;
+        if (dt > 1000 / streamFPSCap) {
             for (var c : fpsLimitedResultConsumers) {
                 c.accept(result);
             }

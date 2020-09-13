@@ -51,7 +51,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         }
         R result = process(frame, settings);
 
-        result.setLatencyMillis(MathUtils.nanosToMillis(System.nanoTime() - pipelineStartNanos));
+        result.setLatencyMillis(MathUtils.nanosToMillis(System.nanoTime() - frame.timestampNanos));
 
         return result;
     }

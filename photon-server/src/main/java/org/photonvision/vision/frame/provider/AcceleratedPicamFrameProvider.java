@@ -17,25 +17,25 @@
 
 package org.photonvision.vision.frame.provider;
 
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.pipe.impl.GPUAccelerator;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class AcceleratedPicamFrameProvider implements FrameProvider {
 
     private final VisionSourceSettables settables;
+
     private CVMat mat;
 
     public AcceleratedPicamFrameProvider(
-            VisionSourceSettables visionSettables, int width, int height) {
+            VisionSourceSettables visionSettables) {
         this.settables = visionSettables;
-        PicamJNI.createCamera(width, height, 90);
+
+        var vidMode = settables.getCurrentVideoMode();
+        PicamJNI.createCamera(vidMode.width, vidMode.height, vidMode.fps);
     }
 
     @Override
@@ -45,10 +45,8 @@ public class AcceleratedPicamFrameProvider implements FrameProvider {
 
     @Override
     public Frame get() {
-        // TODO: Figure out how to pass in HSV bounds
-        long time = System.nanoTime();
-        long matHandle = PicamJNI.grabFrame();
+        long matHandle = PicamJNI.grabFrame(false);
         mat = new CVMat(new Mat(matHandle));
-        return new Frame(mat, time, settables.getFrameStaticProperties());
+        return new Frame(mat, System.nanoTime() + PicamJNI.getFrameLatency(), settables.getFrameStaticProperties());
     }
 }
