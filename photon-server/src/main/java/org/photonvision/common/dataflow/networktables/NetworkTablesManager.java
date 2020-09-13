@@ -69,10 +69,10 @@ public class NetworkTablesManager {
     }
 
     public void setConfig(NetworkConfig config) {
-        if (config.teamNumber > 0) {
-            setClientMode(config.teamNumber);
-        } else {
+        if (config.runNTServer) {
             setServerMode();
+        } else {
+            setClientMode(config.teamNumber);
         }
     }
 
