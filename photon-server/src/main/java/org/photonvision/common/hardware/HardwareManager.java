@@ -61,22 +61,32 @@ public class HardwareManager {
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
 
-        statusLED = hardwareConfig.statusRGBPins.size() == 3 ? new StatusLED(hardwareConfig.statusRGBPins) : null;
-        visionLED = hardwareConfig.ledPins.isEmpty() ? null :
-                new VisionLED(
-                        hardwareConfig.ledPins,
-                        hardwareConfig.ledPWMFrequency,
-                        (hardwareConfig.ledPWMRange != null && hardwareConfig.ledPWMRange.size() == 2)
-                                ? hardwareConfig.ledPWMRange.get(1)
-                                : 0);
+        statusLED =
+                hardwareConfig.statusRGBPins.size() == 3
+                        ? new StatusLED(hardwareConfig.statusRGBPins)
+                        : null;
+        visionLED =
+                hardwareConfig.ledPins.isEmpty()
+                        ? null
+                        : new VisionLED(
+                                hardwareConfig.ledPins,
+                                hardwareConfig.ledPWMFrequency,
+                                (hardwareConfig.ledPWMRange != null && hardwareConfig.ledPWMRange.size() == 2)
+                                        ? hardwareConfig.ledPWMRange.get(1)
+                                        : 0);
 
         ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
         ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);
-        ledModeListener = visionLED == null ? null : new NTDataChangeListener(ledModeEntry, visionLED::onLedModeChange);
+        ledModeListener =
+                visionLED == null
+                        ? null
+                        : new NTDataChangeListener(ledModeEntry, visionLED::onLedModeChange);
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 
-        if(visionLED != null) visionLED.setBrightness(ConfigManager.getInstance().getConfig().getHardwareSettings().ledBrightnessPercentage);
+        if (visionLED != null)
+            visionLED.setBrightness(
+                    ConfigManager.getInstance().getConfig().getHardwareSettings().ledBrightnessPercentage);
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
@@ -84,7 +94,7 @@ public class HardwareManager {
 
     public void setBrightnessPercent(int percent) {
         ConfigManager.getInstance().getConfig().getHardwareSettings().ledBrightnessPercentage = percent;
-        if(visionLED != null) visionLED.setBrightness(percent);
+        if (visionLED != null) visionLED.setBrightness(percent);
         ConfigManager.getInstance().requestSave();
         logger.info("Setting led brightness to " + percent + "%");
     }
