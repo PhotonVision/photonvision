@@ -4,6 +4,12 @@
       v-model="settings.teamNumber"
       name="Team Number"
       :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
+      class="mb-4"
+    />
+    <CVSwitch
+      v-model="settings.runNTServer"
+      name="Run NetworkTables Server"
+      tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
     />
     <template v-if="$store.state.settings.networkSettings.supported">
       <CVradio
@@ -32,6 +38,7 @@
     import CVnumberinput from '../../components/common/cv-number-input'
     import CVradio from '../../components/common/cv-radio'
     import CVinput from '../../components/common/cv-input'
+    import CVSwitch from "@/components/common/cv-switch";
 
     // https://stackoverflow.com/a/17871737
     const ipv4Regex = /^((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])$/;
@@ -41,6 +48,7 @@
     export default {
         name: 'Networking',
         components: {
+            CVSwitch,
             CVnumberinput,
             CVradio,
             CVinput

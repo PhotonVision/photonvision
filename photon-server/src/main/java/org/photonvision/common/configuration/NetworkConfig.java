@@ -28,6 +28,7 @@ public class NetworkConfig {
     public String staticIp = "";
     public String netmask = "";
     public String hostname = "photonvision";
+    public boolean runNTServer = false;
 
     public boolean shouldManage;
 
@@ -39,12 +40,14 @@ public class NetworkConfig {
             String staticIp,
             String netmask,
             String hostname,
+            boolean runNTServer,
             boolean shouldManage) {
         this.teamNumber = teamNumber;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
         this.netmask = netmask;
         this.hostname = hostname;
+        this.runNTServer = runNTServer;
 
         this.shouldManage = shouldManage || Platform.isRaspberryPi();
     }
@@ -59,6 +62,7 @@ public class NetworkConfig {
         ret.staticIp = (String) map.get("staticIp");
         ret.netmask = (String) map.get("netmask");
         ret.hostname = (String) map.get("hostname");
+        ret.runNTServer = (Boolean) map.get("runNTServer");
         return ret;
     }
 
@@ -70,6 +74,7 @@ public class NetworkConfig {
         tmp.put("staticIp", staticIp);
         tmp.put("netmask", netmask);
         tmp.put("hostname", hostname);
+        tmp.put("runNTServer", runNTServer);
         return tmp;
     }
 }

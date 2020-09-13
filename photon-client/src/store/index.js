@@ -110,6 +110,7 @@ export default new Vuex.Store({
                 staticIp: "",
                 netmask: "",
                 hostname: "photonvision",
+                runNTServer: false,
             },
             lighting: {
                 supported: true,
