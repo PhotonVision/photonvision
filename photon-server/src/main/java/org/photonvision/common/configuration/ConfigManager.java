@@ -163,11 +163,6 @@ public class ConfigManager {
         FileUtils.deleteDirectory(camerasFolder.toPath());
 
         try {
-            JacksonUtils.serialize(hardwareConfigFile.toPath(), config.getHardwareConfig());
-        } catch (IOException e) {
-            logger.error("Could not save hardware config!", e);
-        }
-        try {
             JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
