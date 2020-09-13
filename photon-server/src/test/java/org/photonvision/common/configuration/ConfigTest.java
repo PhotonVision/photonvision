@@ -80,9 +80,6 @@ public class ConfigTest {
         Assertions.assertTrue(camConfDir.exists(), "TestCamera config folder not found!");
 
         Assertions.assertTrue(
-                Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "hardwareConfig.json")),
-                "hardwareConfig.json file not found!");
-        Assertions.assertTrue(
                 Files.exists(Path.of(configMgr.configDirectoryFile.toString(), "networkSettings.json")),
                 "networkSettings.json file not found!");
     }
