@@ -18,7 +18,6 @@
 package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -69,16 +68,13 @@ public class VisionModuleManager {
     }
 
     private void assignCameraIndex(CameraConfiguration config) {
-        // First, check if the index is less than the max
-        var optional =
+        var max =
                 visionModules.stream()
-                        .max(
-                                Comparator.comparingInt(
-                                        it -> it.visionSource.getSettables().getConfiguration().streamIndex));
-        int max =
-                optional
-                        .map(it -> it.visionSource.getSettables().getConfiguration().streamIndex)
+                        .mapToInt(it -> it.visionSource.getSettables().getConfiguration().streamIndex)
+                        .max()
                         .orElse(-1);
+
+        // If the current stream index is reserved, increase by 1
         if (config.streamIndex <= max) {
             config.streamIndex = max + 1;
         }
