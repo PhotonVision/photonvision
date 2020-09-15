@@ -38,14 +38,13 @@ public class MJPGFrameConsumer {
     private final MjpegServer mjpegServer;
     private FrameDivisor divisor = FrameDivisor.NONE;
 
-    @SuppressWarnings("All")
-    private VideoListener listener;
+    @SuppressWarnings("FieldCanBeLocal")
+    private final VideoListener listener;
 
-    private NetworkTable table;
+    private final NetworkTable table;
 
     public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
         this.cvSource = new CvSource(sourceName, VideoMode.PixelFormat.kMJPEG, width, height, 30);
-        // this.mjpegServer = addServer(cvSource, port);
         this.table =
                 NetworkTableInstance.getDefault().getTable("/CameraPublisher").getSubTable(sourceName);
 
@@ -56,16 +55,6 @@ public class MJPGFrameConsumer {
                 new VideoListener(
                         event -> {
                             if (event.kind == VideoEvent.Kind.kNetworkInterfacesChanged) {
-                                // We publish sources to NetworkTables using the following structure:
-                                // "/CameraPublisher/{Source.Name}/" - root
-                                // - "source" (string): Descriptive, prefixed with type (e.g. "usb:0")
-                                // - "streams" (string array): URLs that can be used to stream data
-                                // - "description" (string): Description of the source
-                                // - "connected" (boolean): Whether source is connected
-                                // - "mode" (string): Current video mode
-                                // - "modes" (string array): Available video modes
-                                // - "Property/{Property}" - Property values
-                                // - "PropertyInfo/{Property}" - Property supporting information
                                 table.getEntry("source").setString("cv:");
                                 table.getEntry("streams");
                                 table.getEntry("connected").setBoolean(true);
@@ -102,6 +91,36 @@ public class MJPGFrameConsumer {
 
         String[] streamAddresses = values.toArray(new String[0]);
         table.getEntry("streams").setStringArray(streamAddresses);
+    }
+
+    public MJPGFrameConsumer(String name, int port) {
+        this(name, 320, 240, port);
+    }
+
+    public void setFrameDivisor(FrameDivisor divisor) {
+        this.divisor = divisor;
+    }
+
+    public void accept(Frame frame) {
+        if (frame != null && !frame.image.getMat().empty()) {
+            if (divisor != FrameDivisor.NONE) {
+                var tempMat = new Mat();
+                Imgproc.resize(
+                        frame.image.getMat(), tempMat, getScaledSize(frame.image.getMat().size(), divisor));
+                cvSource.putFrame(tempMat);
+                tempMat.release();
+            } else {
+                cvSource.putFrame(frame.image.getMat());
+            }
+        }
+    }
+
+    private Size getScaledSize(Size orig, FrameDivisor divisor) {
+        return new Size(orig.width / divisor.value, orig.height / divisor.value);
+    }
+
+    public int getCurrentStreamPort() {
+        return mjpegServer.getPort();
     }
 
     private static String makeStreamValue(String address, int port) {
@@ -143,35 +162,5 @@ public class MJPGFrameConsumer {
             default:
                 return "Unknown";
         }
-    }
-
-    public MJPGFrameConsumer(String name, int port) {
-        this(name, 320, 240, port);
-    }
-
-    public void setFrameDivisor(FrameDivisor divisor) {
-        this.divisor = divisor;
-    }
-
-    public void accept(Frame frame) {
-        if (frame != null && !frame.image.getMat().empty()) {
-            if (divisor != FrameDivisor.NONE) {
-                var tempMat = new Mat();
-                Imgproc.resize(
-                        frame.image.getMat(), tempMat, getScaledSize(frame.image.getMat().size(), divisor));
-                cvSource.putFrame(tempMat);
-                tempMat.release();
-            } else {
-                cvSource.putFrame(frame.image.getMat());
-            }
-        }
-    }
-
-    private Size getScaledSize(Size orig, FrameDivisor divisor) {
-        return new Size(orig.width / divisor.value, orig.height / divisor.value);
-    }
-
-    public int getCurrentStreamPort() {
-        return mjpegServer.getPort();
     }
 }
