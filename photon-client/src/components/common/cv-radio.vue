@@ -12,6 +12,7 @@
         color="#ffd843"
         :label="name"
         :value="index"
+        :disabled="disabled"
       />
     </v-radio-group>
   </div>
@@ -21,7 +22,7 @@
     export default {
         name: 'Radio',
       // eslint-disable-next-line vue/require-prop-types
-        props: ['value', 'list'],
+        props: ['value', 'list', 'disabled'],
         data() {
             return {}
         },

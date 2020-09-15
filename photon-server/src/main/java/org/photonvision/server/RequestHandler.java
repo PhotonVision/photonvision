@@ -73,15 +73,8 @@ public class RequestHandler {
     public static void onGeneralSettings(Context context) throws JsonProcessingException {
         Map<String, Object> map =
                 (Map<String, Object>) kObjectMapper.readValue(context.body(), Map.class);
-        var networking =
-                (Map<String, Object>)
-                        map.get("networkSettings"); // teamNumber (int), supported (bool), connectionType (int),
-        // staticIp (str), netmask (str), gateway (str), hostname (str)
-        var lighting =
-                (Map<String, Object>) map.get("lighting"); // supported (true/false), brightness (int)
-        // TODO do stuff with lighting
 
-        var networkConfig = NetworkConfig.fromHashMap(networking);
+        var networkConfig = NetworkConfig.fromHashMap(map);
         ConfigManager.getInstance().setNetworkSettings(networkConfig);
         ConfigManager.getInstance().requestSave();
         NetworkManager.getInstance().reinitialize();
