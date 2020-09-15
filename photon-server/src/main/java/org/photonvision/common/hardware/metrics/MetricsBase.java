@@ -34,7 +34,6 @@ public abstract class MetricsBase {
 
     // GPU
     public static String gpuMemoryCommand = "vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
-    public static String gpuTemperatureCommand = "vcgencmd measure_temp | sed 's/[^0-9.]*//g'\n";
     public static String gpuMemUsageCommand = "vcgencmd get_mem malloc | grep -Eo '[0-9]+'";
 
     // RAM
