@@ -23,7 +23,7 @@ import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
 
 public class NetworkConfig {
-    public int teamNumber = -1;
+    public int teamNumber = 0;
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String staticIp = "";
     public String netmask = "";

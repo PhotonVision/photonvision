@@ -15,19 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.hardware.metrics;
+package org.photonvision.common.configuration;
 
-public class GPUMetrics extends MetricsBase {
-    private String gpuMemSplit = null;
-
-    public String getGPUMemorySplit() {
-        if (gpuMemSplit == null) {
-            gpuMemSplit = execute(gpuMemoryCommand);
-        }
-        return gpuMemSplit;
-    }
-
-    public String getMallocedMemory() {
-        return execute(gpuMemUsageCommand);
-    }
+public class HardwareSettings {
+    public int ledBrightnessPercentage = 100;
 }

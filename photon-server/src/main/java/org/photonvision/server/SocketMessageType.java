@@ -34,6 +34,7 @@ public enum SocketMessageType {
     SMT_STARTPNPCALIBRATION("startPnpCalibration"),
     SMT_TAKECALIBRATIONSNAPSHOT("takeCalibrationSnapshot"),
     SMT_DUPLICATEPIPELINE("duplicatePipeline"),
+    SMT_CHANGEBRIGHTNESS("enabledLEDPercentage"),
     SMT_ROBOTOFFSETPOINT("robotOffsetPoint");
 
     public final String entryKey;

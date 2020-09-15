@@ -1,14 +1,21 @@
 <template>
   <div>
-    <span>Version: {{ settings.version }}</span>
-    &mdash;
-    <div v-if="settings.hardwareModel !== ''">
-      <span>Hardware model: {{ settings.hardwareModel }}</span>
-      &mdash;
+    <v-row class="pa-4">
+      <span>{{ infoTabs.join('  —  ') }}</span>
+    </v-row>
+
+    <div v-if="metrics.cpuUtil !== 'N/A'">
+      <v-row class="pa-4">
+        <span>CPU Usage: {{ metrics.cpuUtil.replace(" ", "") }}%</span>
+        &nbsp;&ndash;&nbsp;
+        <span>CPU Temp: {{ parseInt(metrics.cpuTemp) }}&deg;&nbsp;C</span>
+        &nbsp;&ndash;&nbsp;
+        <span>CPU Memory Usage: {{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB</span>
+        &ndash;
+        <span>GPU Memory Usage: {{ metrics.gpuMemUtil }}MB of {{ metrics.gpuMem }}MB</span>
+      </v-row>
     </div>
-    <span>Platform: {{ settings.hardwarePlatform }}</span>
-    &mdash;
-    <span>GPU Acceleration: {{ settings.gpuAcceleration ? "Enabled" : "Unsupported" }}{{ settings.gpuAcceleration ? " (" + settings.gpuAcceleration + " mode)" : "" }}</span>
+      
     <v-row>
       <v-col
         cols="12"
@@ -21,7 +28,8 @@
         >
           <v-icon left>
             mdi-download
-          </v-icon> Export Settings
+          </v-icon>
+          Export Settings
         </v-btn>
       </v-col>
       <v-col
@@ -35,7 +43,8 @@
         >
           <v-icon left>
             mdi-upload
-          </v-icon> Import Settings
+          </v-icon>
+          Import Settings
         </v-btn>
       </v-col>
       <v-col
@@ -48,7 +57,8 @@
         >
           <v-icon left>
             mdi-restart
-          </v-icon> Restart Photon
+          </v-icon>
+          Restart Photon
         </v-btn>
       </v-col>
       <v-col
@@ -61,7 +71,8 @@
         >
           <v-icon left>
             mdi-restart
-          </v-icon> Restart Device
+          </v-icon>
+          Restart Device
         </v-btn>
       </v-col>
     </v-row>
@@ -108,6 +119,21 @@ export default {
     computed: {
         settings() {
             return this.$store.state.settings.general;
+        },
+        infoTabs() {
+            let ret = [];
+            let idx = 0;
+            ret[idx++] = `Version: ${this.settings.version}`;
+            if (this.settings.hardwareModel !== '') {
+                ret[idx++] = `Hardware model: ${this.settings.hardwareModel}`;
+            }
+            ret[idx++] = `Platform: ${this.settings.hardwarePlatform}`;
+            ret[idx++] = `GPU Acceleration: ${this.settings.gpuAcceleration ? "Enabled" : "Unsupported"}${this.settings.gpuAcceleration ? " (" + this.settings.gpuAcceleration + " mode)" : ""}`
+
+            return ret;
+        },
+        metrics() {
+            return this.$store.state.metrics;
         }
     },
     methods: {

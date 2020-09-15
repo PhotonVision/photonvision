@@ -47,7 +47,7 @@ public class HardwareManager {
     @SuppressWarnings("FieldCanBeLocal")
     private final NTDataChangeListener ledModeListener;
 
-    public final VisionLED visionLED;
+    public final VisionLED visionLED; // May be null if no LED is specified
 
     public static HardwareManager getInstance() {
         if (instance == null) {
@@ -61,28 +61,47 @@ public class HardwareManager {
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
 
-        statusLED = new StatusLED(hardwareConfig.statusRGBPins);
+        statusLED =
+                hardwareConfig.statusRGBPins.size() == 3
+                        ? new StatusLED(hardwareConfig.statusRGBPins)
+                        : null;
         visionLED =
-                new VisionLED(
-                        hardwareConfig.ledPins,
-                        hardwareConfig.ledPWMFrequency,
-                        (hardwareConfig.ledPWMRange != null && hardwareConfig.ledPWMRange.size() == 2)
-                                ? hardwareConfig.ledPWMRange.get(1)
-                                : 0);
+                hardwareConfig.ledPins.isEmpty()
+                        ? null
+                        : new VisionLED(
+                                hardwareConfig.ledPins,
+                                hardwareConfig.ledPWMFrequency,
+                                (hardwareConfig.ledPWMRange != null && hardwareConfig.ledPWMRange.size() == 2)
+                                        ? hardwareConfig.ledPWMRange.get(1)
+                                        : 0);
 
         ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
         ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);
-        ledModeListener = new NTDataChangeListener(ledModeEntry, visionLED::onLedModeChange);
+        ledModeListener =
+                visionLED == null
+                        ? null
+                        : new NTDataChangeListener(ledModeEntry, visionLED::onLedModeChange);
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
+
+        if (visionLED != null)
+            visionLED.setBrightness(
+                    ConfigManager.getInstance().getConfig().getHardwareSettings().ledBrightnessPercentage);
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
+    public void setBrightnessPercent(int percent) {
+        ConfigManager.getInstance().getConfig().getHardwareSettings().ledBrightnessPercentage = percent;
+        if (visionLED != null) visionLED.setBrightness(percent);
+        ConfigManager.getInstance().requestSave();
+        logger.info("Setting led brightness to " + percent + "%");
+    }
+
     private void onJvmExit() {
-        logger.info("Shutting down...");
-        visionLED.setState(false);
+        logger.info("Shutting down LEDs...");
+        if (visionLED != null) visionLED.setState(false);
     }
 
     public boolean restartDevice() {

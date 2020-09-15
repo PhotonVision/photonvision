@@ -28,6 +28,7 @@ public final class SerializationUtils {
         var ret = new HashMap<String, Object>();
         for (var field : src.getClass().getFields()) {
             try {
+                field.setAccessible(true);
                 if (!field
                         .getType()
                         .isEnum()) { // if the field is not an enum, get it based on the current pipeline

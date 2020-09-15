@@ -17,15 +17,15 @@
 
 package org.photonvision.common.hardware.metrics;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
-import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.server.SocketHandler;
 
 public class MetricsPublisher {
-    private final HashMap<String, String> metrics;
     private static final Logger logger = new Logger(MetricsPublisher.class, LogGroup.General);
     private static CPUMetrics cpuMetrics;
     private static GPUMetrics gpuMetrics;
@@ -39,31 +39,37 @@ public class MetricsPublisher {
         cpuMetrics = new CPUMetrics();
         gpuMetrics = new GPUMetrics();
         ramMetrics = new RAMMetrics();
-
-        metrics = new HashMap<>();
-    }
-
-    public void startTask() {
-        TimedTaskManager.getInstance()
-                .addTask(
-                        "Metrics",
-                        () -> {
-                            metrics.put("cpuTemp", cpuMetrics.getTemp());
-                            metrics.put("cpuUtil", cpuMetrics.getUtilization());
-                            metrics.put("cpuMem", cpuMetrics.getMemory());
-                            metrics.put("gpuTemp", gpuMetrics.getTemp());
-                            metrics.put("gpuMem", gpuMetrics.getMemory());
-                            metrics.put("ramUtil", ramMetrics.getUsedRam());
-
-                            DataChangeService.getInstance()
-                                    .publishEvent(new OutgoingUIEvent<>("metrics", metrics));
-                        },
-                        1000);
     }
 
     public void stopTask() {
         TimedTaskManager.getInstance().cancelTask("Metrics");
         logger.info("This device does not support running bash commands. Stopped metrics thread.");
+    }
+
+    public void publish() {
+        if (!Platform.isRaspberryPi()) {
+            logger.debug("Ignoring metrics on non-Pi devices");
+            return;
+        }
+
+        logger.debug("Publishing Metrics...");
+        final var metrics = new HashMap<String, String>();
+
+        metrics.put("cpuTemp", cpuMetrics.getTemp());
+        metrics.put("cpuUtil", cpuMetrics.getUtilization());
+        metrics.put("cpuMem", cpuMetrics.getMemory());
+        metrics.put("gpuMem", gpuMetrics.getGPUMemorySplit());
+        metrics.put("ramUtil", ramMetrics.getUsedRam());
+        metrics.put("gpuMemUtil", gpuMetrics.getMallocedMemory());
+
+        var retMap = new HashMap<String, Object>();
+        retMap.put("metrics", metrics);
+
+        try {
+            SocketHandler.getInstance().broadcastMessage(retMap, null);
+        } catch (JsonProcessingException e) {
+            logger.error("Exception while sending metrics!", e);
+        }
     }
 
     private static class Singleton {

@@ -30,12 +30,40 @@ import org.photonvision.vision.processes.VisionModuleManager;
 
 // TODO rename this class
 public class PhotonConfiguration {
+
+    private HardwareConfig hardwareConfig;
+    private HardwareSettings hardwareSettings;
+    private NetworkConfig networkConfig;
+    private HashMap<String, CameraConfiguration> cameraConfigurations;
+
+    public PhotonConfiguration(
+            HardwareConfig hardwareConfig,
+            HardwareSettings hardwareSettings,
+            NetworkConfig networkConfig) {
+        this(hardwareConfig, hardwareSettings, networkConfig, new HashMap<>());
+    }
+
+    public PhotonConfiguration(
+            HardwareConfig hardwareConfig,
+            HardwareSettings hardwareSettings,
+            NetworkConfig networkConfig,
+            HashMap<String, CameraConfiguration> cameraConfigurations) {
+        this.hardwareConfig = hardwareConfig;
+        this.hardwareSettings = hardwareSettings;
+        this.networkConfig = networkConfig;
+        this.cameraConfigurations = cameraConfigurations;
+    }
+
     public HardwareConfig getHardwareConfig() {
         return hardwareConfig;
     }
 
     public NetworkConfig getNetworkConfig() {
         return networkConfig;
+    }
+
+    public HardwareSettings getHardwareSettings() {
+        return hardwareSettings;
     }
 
     public void setNetworkConfig(NetworkConfig networkConfig) {
@@ -60,25 +88,6 @@ public class PhotonConfiguration {
         cameraConfigurations.put(name, config);
     }
 
-    private HardwareConfig hardwareConfig;
-
-    private NetworkConfig networkConfig;
-
-    private HashMap<String, CameraConfiguration> cameraConfigurations;
-
-    public PhotonConfiguration(HardwareConfig hardwareConfig, NetworkConfig networkConfig) {
-        this(hardwareConfig, networkConfig, new HashMap<>());
-    }
-
-    public PhotonConfiguration(
-            HardwareConfig hardwareConfig,
-            NetworkConfig networkConfig,
-            HashMap<String, CameraConfiguration> cameraConfigurations) {
-        this.hardwareConfig = hardwareConfig;
-        this.networkConfig = networkConfig;
-        this.cameraConfigurations = cameraConfigurations;
-    }
-
     public Map<String, Object> toHashMap() {
         Map<String, Object> map = new HashMap<>();
         var settingsSubmap = new HashMap<String, Object>();
@@ -91,7 +100,9 @@ public class PhotonConfiguration {
                         .map(SerializationUtils::objectToHashMap)
                         .collect(Collectors.toList()));
 
-        settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(hardwareConfig));
+        var lightingConfig = new UILightingConfig();
+        // TODO set constants
+        settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
 
         var generalSubmap = new HashMap<String, Object>();
         generalSubmap.put("version", PhotonVersion.versionString);
@@ -103,6 +114,11 @@ public class PhotonConfiguration {
 
         map.put("settings", settingsSubmap);
         return map;
+    }
+
+    public static class UILightingConfig {
+        public int brightness = 0;
+        public boolean supported = true;
     }
 
     public static class UICameraConfiguration {

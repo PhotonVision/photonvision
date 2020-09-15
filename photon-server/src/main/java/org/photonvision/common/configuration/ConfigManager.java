@@ -42,6 +42,7 @@ public class ConfigManager {
 
     private PhotonConfiguration config;
     private final File hardwareConfigFile;
+    private final File hardwareSettingsFile;
     private final File networkConfigFile;
     private final File camerasFolder;
 
@@ -82,6 +83,8 @@ public class ConfigManager {
         this.configDirectoryFile = new File(configDirectoryFile.toUri());
         this.hardwareConfigFile =
                 new File(Path.of(configDirectoryFile.toString(), "hardwareConfig.json").toUri());
+        this.hardwareSettingsFile =
+                new File(Path.of(configDirectoryFile.toString(), "hardwareSettings.json").toUri());
         this.networkConfigFile =
                 new File(Path.of(configDirectoryFile.toString(), "networkSettings.json").toUri());
         this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
@@ -110,6 +113,7 @@ public class ConfigManager {
         }
 
         HardwareConfig hardwareConfig;
+        HardwareSettings hardwareSettings;
         NetworkConfig networkConfig;
 
         if (hardwareConfigFile.exists()) {
@@ -127,6 +131,23 @@ public class ConfigManager {
         } else {
             logger.info("Hardware config does not exist! Loading defaults");
             hardwareConfig = new HardwareConfig();
+        }
+
+        if (hardwareSettingsFile.exists()) {
+            try {
+                hardwareSettings =
+                        JacksonUtils.deserialize(hardwareSettingsFile.toPath(), HardwareSettings.class);
+                if (hardwareSettings == null) {
+                    logger.error("Could not deserialize hardware settings! Loading defaults");
+                    hardwareSettings = new HardwareSettings();
+                }
+            } catch (IOException e) {
+                logger.error("Could not deserialize hardware settings! Loading defaults");
+                hardwareSettings = new HardwareSettings();
+            }
+        } else {
+            logger.info("Hardware settings does not exist! Loading defaults");
+            hardwareSettings = new HardwareSettings();
         }
 
         if (networkConfigFile.exists()) {
@@ -155,7 +176,9 @@ public class ConfigManager {
 
         HashMap<String, CameraConfiguration> cameraConfigurations = loadCameraConfigs();
 
-        this.config = new PhotonConfiguration(hardwareConfig, networkConfig, cameraConfigurations);
+        this.config =
+                new PhotonConfiguration(
+                        hardwareConfig, hardwareSettings, networkConfig, cameraConfigurations);
     }
 
     public void saveToDisk() {
@@ -166,6 +189,11 @@ public class ConfigManager {
             JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
+        }
+        try {
+            JacksonUtils.serialize(hardwareSettingsFile.toPath(), config.getHardwareSettings());
+        } catch (IOException e) {
+            logger.error("Could not save hardware config!", e);
         }
 
         // save all of our cameras

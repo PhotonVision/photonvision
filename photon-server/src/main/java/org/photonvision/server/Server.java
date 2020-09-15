@@ -80,6 +80,7 @@ public class Server {
         app.post("/api/restartDevice", RequestHandler::restartDevice);
         app.post("api/restartProgram", RequestHandler::restartProgram);
         app.post("api/vision/pnpModel", RequestHandler::uploadPnpModel);
+        app.post("api/sendMetrics", RequestHandler::sendMetrics);
 
         app.start(port);
     }

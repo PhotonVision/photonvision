@@ -43,8 +43,8 @@ public class HardwareConfig {
     public final String cpuMemoryCommand;
     public final String cpuUtilCommand;
     public final String gpuMemoryCommand;
-    public final String gpuTempCommand;
     public final String ramUtilCommand;
+    public final String gpuMemUsageCommand;
 
     // Device stuff
     public final String restartHardwareCommand;
@@ -68,9 +68,9 @@ public class HardwareConfig {
         cpuMemoryCommand = "";
         cpuUtilCommand = "";
         gpuMemoryCommand = "";
-        gpuTempCommand = "";
         ramUtilCommand = "";
         ledBlinkCommand = "";
+        gpuMemUsageCommand = "";
 
         restartHardwareCommand = "";
         vendorFOV = -1;
@@ -95,8 +95,8 @@ public class HardwareConfig {
             String cpuMemoryCommand,
             String cpuUtilCommand,
             String gpuMemoryCommand,
-            String gpuTempCommand,
             String ramUtilCommand,
+            String gpuMemUsageCommand,
             String restartHardwareCommand,
             double vendorFOV,
             List<Integer> blacklistedResIndices) {
@@ -116,11 +116,11 @@ public class HardwareConfig {
         this.cpuMemoryCommand = cpuMemoryCommand;
         this.cpuUtilCommand = cpuUtilCommand;
         this.gpuMemoryCommand = gpuMemoryCommand;
-        this.gpuTempCommand = gpuTempCommand;
         this.ramUtilCommand = ramUtilCommand;
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;
         this.blacklistedResIndices = blacklistedResIndices;
+        this.gpuMemUsageCommand = gpuMemUsageCommand;
     }
 
     public final boolean hasPresetFOV() {

@@ -24,6 +24,7 @@ import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -133,14 +134,13 @@ public class Main {
             logger.error("Failed to parse command-line options!", e);
         }
 
-        logger.info("Running in " + (isRelease ? "release" : "development") + " mode!");
-        var logLevel = (isRelease || printDebugLogs) ? LogLevel.INFO : LogLevel.DEBUG;
+        var logLevel = LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
         Logger.setLevel(LogGroup.WebServer, logLevel);
         Logger.setLevel(LogGroup.VisionModule, logLevel);
         Logger.setLevel(LogGroup.Data, logLevel);
         Logger.setLevel(LogGroup.General, logLevel);
-        logger.info("Logging initialized in " + (isRelease ? "Release" : "Debug") + " mode.");
+        logger.info("Logging initialized in debug mode.");
 
         logger.info(
                 "Starting PhotonVision version "
@@ -159,16 +159,13 @@ public class Main {
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();
 
+        // Force load the hardware manager
+        HardwareManager.getInstance();
+
         NetworkManager.getInstance().initialize(false);
 
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
-
-        //        HashMap<VisionSource, List<CVPipelineSettings>> allSources = gatherSources();
-
-        //        logger.info("Adding " + allSources.size() + " configs to VMM.");
-        //        VisionModuleManager.getInstance().addSources(allSources);
-        //        ConfigManager.getInstance().addCameraConfigurations(allSources);
 
         if (!isTestMode) {
             VisionSourceManager.getInstance()

@@ -46,8 +46,7 @@ public class HardwareTest {
         System.out.println("Utilization: : " + cpuMetrics.getUtilization() + "%");
 
         System.out.println("Printing GPU Info:");
-        System.out.println("Memory: " + gpuMetrics.getMemory() + "MB");
-        System.out.println("Temperature: " + gpuMetrics.getTemp() + "C");
+        System.out.println("Memory: " + gpuMetrics.getGPUMemorySplit() + "MB");
 
         System.out.println("Printing RAM Info: ");
         System.out.println("Used RAM: : " + ramMetrics.getUsedRam() + "MB");

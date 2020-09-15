@@ -127,6 +127,14 @@ export default new Vuex.Store({
             patternHeight: 7,
             boardType: 0, // Chessboard, dotboard
         },
+        metrics: {
+            cpuTemp: "N/A",
+            cpuUtil: "N/A",
+            cpuMem: "N/A",
+            gpuMem: "N/A",
+            ramUtil: "N/A",
+            gpuMemUtil: "N/A",
+        }
     },
     mutations: {
         compactMode: set('compactMode'),
@@ -135,6 +143,7 @@ export default new Vuex.Store({
         selectedOutputs: set('selectedOutputs'),
         settings: set('settings'),
         calibrationData: set('calibrationData'),
+        metrics: set('metrics'),
         logString: (state, newStr) => {
             const str = state.logMessages;
             str.push(newStr)
@@ -182,8 +191,12 @@ export default new Vuex.Store({
                     Vue.set(state, 'pipelineResults', payload[key])
                 }
             }
+        },
 
-
+        mutateEnabledLEDPercentage(state, payload)  {
+            const settings = state.settings;
+            settings.lighting.brightness = payload;
+            Vue.set(state, "settings", settings);
         },
 
         mutateCalibrationState: (state, payload) => {

@@ -1,36 +1,50 @@
 <template>
   <div>
-    <CVnumberinput
-      v-model="settings.teamNumber"
-      name="Team Number"
-      :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
-      class="mb-4"
-    />
-    <CVSwitch
-      v-model="settings.runNTServer"
-      name="Run NetworkTables Server"
-      tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
-    />
-    <template v-if="$store.state.settings.networkSettings.supported">
-      <CVradio
-        v-model="settings.connectionType"
-        :list="['DHCP','Static']"
+    <v-form
+      ref="form"
+      v-model="valid"
+    >
+      <CVnumberinput
+        v-model="settings.teamNumber"
+        :disabled="settings.runNTServer"
+        name="Team Number"
+        :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
+        class="mb-4"
       />
-      <template v-if="!isDHCP">
-        <CVinput
-          v-model="settings.staticIp"
-          :input-cols="inputCols"
-          :rules="[v => isIPv4(v) || 'Invalid IPv4 address']"
-          name="IP"
+      <CVSwitch
+        v-model="settings.runNTServer"
+        name="Run NetworkTables Server"
+        tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
+      />
+      <template v-if="$store.state.settings.networkSettings.supported">
+        <CVradio
+          v-model="settings.connectionType"
+          :list="['DHCP','Static']"
         />
+        <template v-if="!isDHCP">
+          <CVinput
+            v-model="settings.staticIp"
+            :input-cols="inputCols"
+            :rules="[v => isIPv4(v) || 'Invalid IPv4 address']"
+            name="IP"
+          />
+        </template>
       </template>
-    </template>
-    <CVinput
-      v-model="settings.hostname"
-      :input-cols="inputCols"
-      :rules="[v => isHostname(v) || 'Invalid hostname']"
-      name="Hostname"
-    />
+      <CVinput
+        v-model="settings.hostname"
+        :input-cols="inputCols"
+        :rules="[v => isHostname(v) || 'Invalid hostname']"
+        name="Hostname"
+      />
+    </v-form>
+    <v-btn
+      color="accent"
+      style="color: black; width: 100%;"
+      :disabled="!valid"
+      @click="sendGeneralSettings()"
+    >
+      Save
+    </v-btn>
   </div>
 </template>
 
@@ -61,7 +75,8 @@
                     text: ""
                 },
                 snack: false,
-                isLoading: false
+                isLoading: false,
+                valid: true, // Are all settings valid
             }
         },
         computed: {
@@ -99,7 +114,27 @@
                 }
               }
               return true;
-            }
+            },
+            sendGeneralSettings() {
+                this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
+                    function (response) {
+                        if (response.status === 200) {
+                            this.snackbar = {
+                                color: "success",
+                                text: "Settings updated successfully"
+                            };
+                            this.snack = true;
+                        }
+                    },
+                    function (error) {
+                        this.snackbar = {
+                            color: "error",
+                            text: (error.response || {data: "Couldn't save settings"}).data
+                        };
+                        this.snack = true;
+                    }
+                )
+            },
         },
     }
 </script>
