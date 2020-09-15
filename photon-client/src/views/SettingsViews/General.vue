@@ -12,8 +12,6 @@
         &nbsp;&ndash;&nbsp;
         <span>CPU Memory Usage: {{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB</span>
         &ndash;
-        <span>GPU Temp: {{ parseInt(metrics.gpuTemp) }}&deg;&nbsp;C</span>
-        &ndash;
         <span>GPU Memory Usage: {{ metrics.gpuMemUtil }}MB of {{ metrics.gpuMem }}MB</span>
       </v-row>
     </div>

@@ -43,7 +43,6 @@ public class HardwareConfig {
     public final String cpuMemoryCommand;
     public final String cpuUtilCommand;
     public final String gpuMemoryCommand;
-    public final String gpuTempCommand;
     public final String ramUtilCommand;
     public final String gpuMemUsageCommand;
 
@@ -69,7 +68,6 @@ public class HardwareConfig {
         cpuMemoryCommand = "";
         cpuUtilCommand = "";
         gpuMemoryCommand = "";
-        gpuTempCommand = "";
         ramUtilCommand = "";
         ledBlinkCommand = "";
         gpuMemUsageCommand = "";
@@ -97,7 +95,6 @@ public class HardwareConfig {
             String cpuMemoryCommand,
             String cpuUtilCommand,
             String gpuMemoryCommand,
-            String gpuTempCommand,
             String ramUtilCommand,
             String gpuMemUsageCommand,
             String restartHardwareCommand,
@@ -119,7 +116,6 @@ public class HardwareConfig {
         this.cpuMemoryCommand = cpuMemoryCommand;
         this.cpuUtilCommand = cpuUtilCommand;
         this.gpuMemoryCommand = gpuMemoryCommand;
-        this.gpuTempCommand = gpuTempCommand;
         this.ramUtilCommand = ramUtilCommand;
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;

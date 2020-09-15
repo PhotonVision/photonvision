@@ -58,7 +58,6 @@ public class MetricsPublisher {
         metrics.put("cpuTemp", cpuMetrics.getTemp());
         metrics.put("cpuUtil", cpuMetrics.getUtilization());
         metrics.put("cpuMem", cpuMetrics.getMemory());
-        metrics.put("gpuTemp", gpuMetrics.getTemp());
         metrics.put("gpuMem", gpuMetrics.getGPUMemorySplit());
         metrics.put("ramUtil", ramMetrics.getUsedRam());
         metrics.put("gpuMemUtil", gpuMetrics.getMallocedMemory());

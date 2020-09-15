@@ -131,7 +131,6 @@ export default new Vuex.Store({
             cpuTemp: "N/A",
             cpuUtil: "N/A",
             cpuMem: "N/A",
-            gpuTemp: "N/A",
             gpuMem: "N/A",
             ramUtil: "N/A",
             gpuMemUtil: "N/A",

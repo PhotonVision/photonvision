@@ -28,7 +28,7 @@ public abstract class MetricsBase {
     // CPU
     public static String cpuMemoryCommand = "vcgencmd get_mem arm | grep -Eo '[0-9]+'";
     public static String cpuTemperatureCommand =
-            "cat /sys/class/thermal/thermal_zone0/temp | grep -x -E '[0-9]+'";
+            "sed 's/.\\{3\\}$/.&/' <<< cat /sys/class/thermal/thermal_zone0/temp";
     public static String cpuUtilizationCommand =
             "top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'";
 
@@ -49,7 +49,6 @@ public abstract class MetricsBase {
         cpuUtilizationCommand = config.cpuUtilCommand;
 
         gpuMemoryCommand = config.gpuMemoryCommand;
-        gpuTemperatureCommand = config.gpuTempCommand;
         gpuMemUsageCommand = config.gpuMemUsageCommand;
 
         ramUsageCommand = config.ramUtilCommand;

@@ -101,7 +101,7 @@ public class HardwareManager {
 
     private void onJvmExit() {
         logger.info("Shutting down LEDs...");
-        visionLED.setState(false);
+        if (visionLED != null) visionLED.setState(false);
     }
 
     public boolean restartDevice() {
