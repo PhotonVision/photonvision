@@ -142,10 +142,12 @@ public class VisionModule {
         var outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
 
         dashboardOutputStreamer =
-            new MJPGFrameConsumer(
-                visionSource.getSettables().getConfiguration().uniqueName + "-output", outputStreamPort);
+                new MJPGFrameConsumer(
+                        visionSource.getSettables().getConfiguration().uniqueName + "-output",
+                        outputStreamPort);
         dashboardInputStreamer =
-            new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
+                new MJPGFrameConsumer(
+                        visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
     }
 
     void setDriverMode(boolean isDriverMode) {
@@ -363,7 +365,7 @@ public class VisionModule {
     }
 
     private void consumeFpsLimitedResult(CVPipelineResult result) {
-        if ( System.currentTimeMillis() - lastFrameConsumeMillis> 1000 / StreamFPSCap) {
+        if (System.currentTimeMillis() - lastFrameConsumeMillis > 1000 / StreamFPSCap) {
             for (var c : fpsLimitedResultConsumers) {
                 c.accept(result);
             }

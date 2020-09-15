@@ -18,7 +18,6 @@
 package org.photonvision.vision.frame.consumer;
 
 import edu.wpi.cscore.CameraServerJNI;
-import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.MjpegServer;
 import edu.wpi.cscore.VideoEvent;
@@ -26,13 +25,12 @@ import edu.wpi.cscore.VideoListener;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import java.util.ArrayList;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameDivisor;
-
-import java.util.ArrayList;
 
 public class MJPGFrameConsumer {
 
@@ -42,36 +40,42 @@ public class MJPGFrameConsumer {
 
     @SuppressWarnings("All")
     private VideoListener listener;
+
     private NetworkTable table;
 
     public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
         this.cvSource = new CvSource(sourceName, VideoMode.PixelFormat.kMJPEG, width, height, 30);
-        //this.mjpegServer = addServer(cvSource, port);
-        this.table = NetworkTableInstance.getDefault().getTable("/CameraPublisher").getSubTable(sourceName);
+        // this.mjpegServer = addServer(cvSource, port);
+        this.table =
+                NetworkTableInstance.getDefault().getTable("/CameraPublisher").getSubTable(sourceName);
 
         this.mjpegServer = new MjpegServer("serve_" + cvSource.getName(), port);
         mjpegServer.setSource(cvSource);
 
-        listener = new VideoListener(event -> {
-            if (event.kind == VideoEvent.Kind.kNetworkInterfacesChanged) {
-                // We publish sources to NetworkTables using the following structure:
-                // "/CameraPublisher/{Source.Name}/" - root
-                // - "source" (string): Descriptive, prefixed with type (e.g. "usb:0")
-                // - "streams" (string array): URLs that can be used to stream data
-                // - "description" (string): Description of the source
-                // - "connected" (boolean): Whether source is connected
-                // - "mode" (string): Current video mode
-                // - "modes" (string array): Available video modes
-                // - "Property/{Property}" - Property values
-                // - "PropertyInfo/{Property}" - Property supporting information
-                table.getEntry("source").setString("cv:");
-                table.getEntry("streams");
-                table.getEntry("connected").setBoolean(true);
-                table.getEntry("mode").setString(videoModeToString(cvSource.getVideoMode()));
-                table.getEntry("modes").setStringArray(getSourceModeValues(cvSource.getHandle()));
-                updateStreamValues();
-            }
-        }, 0x4fff, true);
+        listener =
+                new VideoListener(
+                        event -> {
+                            if (event.kind == VideoEvent.Kind.kNetworkInterfacesChanged) {
+                                // We publish sources to NetworkTables using the following structure:
+                                // "/CameraPublisher/{Source.Name}/" - root
+                                // - "source" (string): Descriptive, prefixed with type (e.g. "usb:0")
+                                // - "streams" (string array): URLs that can be used to stream data
+                                // - "description" (string): Description of the source
+                                // - "connected" (boolean): Whether source is connected
+                                // - "mode" (string): Current video mode
+                                // - "modes" (string array): Available video modes
+                                // - "Property/{Property}" - Property values
+                                // - "PropertyInfo/{Property}" - Property supporting information
+                                table.getEntry("source").setString("cv:");
+                                table.getEntry("streams");
+                                table.getEntry("connected").setBoolean(true);
+                                table.getEntry("mode").setString(videoModeToString(cvSource.getVideoMode()));
+                                table.getEntry("modes").setStringArray(getSourceModeValues(cvSource.getHandle()));
+                                updateStreamValues();
+                            }
+                        },
+                        0x4fff,
+                        true);
     }
 
     private synchronized void updateStreamValues() {
@@ -90,7 +94,7 @@ public class MJPGFrameConsumer {
             values.add(makeStreamValue(CameraServerJNI.getHostname() + ".local", port));
             for (String addr : addresses) {
                 if ("127.0.0.1".equals(addr)) {
-                    continue;  // ignore localhost
+                    continue; // ignore localhost
                 }
                 values.add(makeStreamValue(addr, port));
             }
@@ -114,8 +118,14 @@ public class MJPGFrameConsumer {
     }
 
     private static String videoModeToString(VideoMode mode) {
-        return mode.width + "x" + mode.height + " " + pixelFormatToString(mode.pixelFormat)
-            + " " + mode.fps + " fps";
+        return mode.width
+                + "x"
+                + mode.height
+                + " "
+                + pixelFormatToString(mode.pixelFormat)
+                + " "
+                + mode.fps
+                + " fps";
     }
 
     private static String pixelFormatToString(VideoMode.PixelFormat pixelFormat) {
@@ -148,7 +158,7 @@ public class MJPGFrameConsumer {
             if (divisor != FrameDivisor.NONE) {
                 var tempMat = new Mat();
                 Imgproc.resize(
-                    frame.image.getMat(), tempMat, getScaledSize(frame.image.getMat().size(), divisor));
+                        frame.image.getMat(), tempMat, getScaledSize(frame.image.getMat().size(), divisor));
                 cvSource.putFrame(tempMat);
                 tempMat.release();
             } else {

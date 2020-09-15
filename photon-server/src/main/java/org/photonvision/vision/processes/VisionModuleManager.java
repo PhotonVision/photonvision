@@ -69,10 +69,17 @@ public class VisionModuleManager {
     }
 
     private void assignCameraIndex(CameraConfiguration config) {
-       // First, check if the index is less than the max
-        var optional = visionModules.stream().max(Comparator.comparingInt(it -> it.visionSource.getSettables().getConfiguration().streamIndex));
-        int max = optional.map(it -> it.visionSource.getSettables().getConfiguration().streamIndex).orElse(-1);
-        if(config.streamIndex <= max) {
+        // First, check if the index is less than the max
+        var optional =
+                visionModules.stream()
+                        .max(
+                                Comparator.comparingInt(
+                                        it -> it.visionSource.getSettables().getConfiguration().streamIndex));
+        int max =
+                optional
+                        .map(it -> it.visionSource.getSettables().getConfiguration().streamIndex)
+                        .orElse(-1);
+        if (config.streamIndex <= max) {
             config.streamIndex = max + 1;
         }
     }
