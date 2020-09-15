@@ -18,6 +18,7 @@
 package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -57,10 +58,22 @@ public class VisionModuleManager {
         for (var entry : visionSources.entrySet()) {
             var visionSource = entry.getKey();
             var pipelineManager = new PipelineManager(entry.getValue());
+
+            assignCameraIndex(visionSource.getSettables().getConfiguration());
+
             var module = new VisionModule(pipelineManager, visionSource, visionModules.size());
             visionModules.add(module);
             addedModules.add(module);
         }
         return addedModules;
+    }
+
+    private void assignCameraIndex(CameraConfiguration config) {
+       // First, check if the index is less than the max
+        var optional = visionModules.stream().max(Comparator.comparingInt(it -> it.visionSource.getSettables().getConfiguration().streamIndex));
+        int max = optional.map(it -> it.visionSource.getSettables().getConfiguration().streamIndex).orElse(-1);
+        if(config.streamIndex <= max) {
+            config.streamIndex = max + 1;
+        }
     }
 }

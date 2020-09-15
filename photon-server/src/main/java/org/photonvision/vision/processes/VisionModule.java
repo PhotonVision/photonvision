@@ -95,12 +95,7 @@ public class VisionModule {
 
         DataChangeService.getInstance().addSubscriber(new VisionModuleChangeSubscriber(this));
 
-        dashboardOutputStreamer =
-                new MJPGFrameConsumer(
-                        visionSource.getSettables().getConfiguration().uniqueName + "-output");
-        dashboardInputStreamer =
-                new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input");
-
+        createStreams();
         fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
 
@@ -138,6 +133,19 @@ public class VisionModule {
         }
 
         saveAndBroadcastAll();
+    }
+
+    private void createStreams() {
+        var camStreamIdx = visionSource.getSettables().getConfiguration().streamIndex;
+        // If idx = 0, we want (1181, 1182)
+        var inputStreamPort = 1181 + (camStreamIdx * 2);
+        var outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
+
+        dashboardOutputStreamer =
+            new MJPGFrameConsumer(
+                visionSource.getSettables().getConfiguration().uniqueName + "-output", outputStreamPort);
+        dashboardInputStreamer =
+            new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
     }
 
     void setDriverMode(boolean isDriverMode) {
@@ -271,11 +279,7 @@ public class VisionModule {
         // rename streams
         fpsLimitedResultConsumers.clear();
 
-        dashboardOutputStreamer =
-                new MJPGFrameConsumer(
-                        visionSource.getSettables().getConfiguration().uniqueName + "-output");
-        dashboardInputStreamer =
-                new MJPGFrameConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input");
+        createStreams();
 
         fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
@@ -359,7 +363,7 @@ public class VisionModule {
     }
 
     private void consumeFpsLimitedResult(CVPipelineResult result) {
-        if (System.currentTimeMillis() - lastFrameConsumeMillis > 1000 / StreamFPSCap) {
+        if ( System.currentTimeMillis() - lastFrameConsumeMillis> 1000 / StreamFPSCap) {
             for (var c : fpsLimitedResultConsumers) {
                 c.accept(result);
             }

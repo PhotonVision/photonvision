@@ -52,6 +52,8 @@ public class CameraConfiguration {
     public int currentPipelineIndex = 0;
     public Rotation2d camPitch = new Rotation2d();
 
+    public int streamIndex = 0; // 0 index means ports [1181, 1182], 1 means [1183, 1184], etc...
+
     @JsonIgnore // this ignores the pipes as we serialize them to their own subfolder
     public List<CVPipelineSettings> pipelineSettings = new ArrayList<>();
 
