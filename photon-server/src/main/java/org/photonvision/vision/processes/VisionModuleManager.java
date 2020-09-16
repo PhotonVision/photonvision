@@ -57,10 +57,26 @@ public class VisionModuleManager {
         for (var entry : visionSources.entrySet()) {
             var visionSource = entry.getKey();
             var pipelineManager = new PipelineManager(entry.getValue());
+
+            assignCameraIndex(visionSource.getSettables().getConfiguration());
+
             var module = new VisionModule(pipelineManager, visionSource, visionModules.size());
             visionModules.add(module);
             addedModules.add(module);
         }
         return addedModules;
+    }
+
+    private void assignCameraIndex(CameraConfiguration config) {
+        var max =
+                visionModules.stream()
+                        .mapToInt(it -> it.visionSource.getSettables().getConfiguration().streamIndex)
+                        .max()
+                        .orElse(-1);
+
+        // If the current stream index is reserved, increase by 1
+        if (config.streamIndex <= max) {
+            config.streamIndex = max + 1;
+        }
     }
 }
