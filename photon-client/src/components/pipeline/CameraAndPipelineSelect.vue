@@ -76,9 +76,9 @@
         lg="2"
       >
         <v-menu
+          v-if="!$store.getters.isDriverMode"
           offset-y
           auto
-          v-if="!$store.getters.isDriverMode"
         >
           <template v-slot:activator="{ on }">
             <v-icon
@@ -322,7 +322,7 @@
             },
             deleteCurrentPipeline() {
                 if (this.$store.getters.pipelineList.length > 1) {
-                    this.handleInputWithIndex('deleteCurrentPipeline');
+                    this.handleInputWithIndex('deleteCurrentPipeline', {});
                 } else {
                     this.snackbar = true;
                 }
