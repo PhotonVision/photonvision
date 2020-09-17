@@ -15,7 +15,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.hardware.GPIO;
+package org.photonvision.common.hardware.GPIO.pi;
 
 import static eu.xeli.jpigpio.PigpioException.*;
 
@@ -24,7 +24,8 @@ import eu.xeli.jpigpio.PigpioException;
 import eu.xeli.jpigpio.PigpioSocket;
 import eu.xeli.jpigpio.Pulse;
 import java.util.ArrayList;
-import java.util.List;
+
+import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -103,26 +104,6 @@ public class PiGPIO extends GPIOBase {
     }
 
     @Override
-    public void setPwmRangeImpl(List<Integer> range) {
-        try {
-            cancelWave();
-            getPigpioDaemon().setPWMRange(port, range.get(0));
-        } catch (PigpioException e) {
-            logger.error("Could not set PWM range on port " + port, e);
-        }
-    }
-
-    @Override
-    public List<Integer> getPwmRangeImpl() {
-        try {
-            return List.of(0, getPigpioDaemon().getPWMRange(port));
-        } catch (PigpioException e) {
-            logger.error("Could not get PWM range on port " + port, e);
-            return List.of(0, 255);
-        }
-    }
-
-    @Override
     public void blinkImpl(int pulseTimeMillis, int blinks) {
         boolean repeat = blinks == -1;
 
@@ -177,7 +158,7 @@ public class PiGPIO extends GPIOBase {
     public void setBrightnessImpl(int brightness) {
         try {
             cancelWave();
-            getPigpioDaemon().setPWMDutycycle(port, getPwmRangeImpl().get(1) * (brightness / 100));
+            getPigpioDaemon().setPWMDutycycle(port, (int) (255 * (brightness / 100.0)));
         } catch (PigpioException e) {
             logger.error("Could not dim PWM on port " + port);
             e.printStackTrace();

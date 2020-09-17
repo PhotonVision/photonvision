@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.PiGPIO;
+import org.photonvision.common.hardware.GPIO.pi.PiGPIO;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.metrics.CPUMetrics;
 import org.photonvision.common.hardware.metrics.GPUMetrics;

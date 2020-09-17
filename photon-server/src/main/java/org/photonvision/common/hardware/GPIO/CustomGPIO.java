@@ -17,15 +17,12 @@
 
 package org.photonvision.common.hardware.GPIO;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.Platform;
 
 public class CustomGPIO extends GPIOBase {
 
     private boolean currentState;
-    private List<Integer> pwmRange = new ArrayList<>();
     private final int port;
 
     public CustomGPIO(int port) {
@@ -76,22 +73,6 @@ public class CustomGPIO extends GPIOBase {
     }
 
     @Override
-    public void setPwmRangeImpl(List<Integer> range) {
-        execute(
-                commands
-                        .get("setRange")
-                        .replace("{lower_range}", String.valueOf(range.get(0)))
-                        .replace("{upper_range}", String.valueOf(range.get(1)))
-                        .replace("{p}", String.valueOf(port)));
-        pwmRange = range;
-    }
-
-    @Override
-    public List<Integer> getPwmRangeImpl() {
-        return pwmRange;
-    }
-
-    @Override
     public void blinkImpl(int pulseTimeMillis, int blinks) {
         execute(
                 commands
@@ -103,8 +84,6 @@ public class CustomGPIO extends GPIOBase {
 
     @Override
     public void setBrightnessImpl(int brightness) {
-        // Check to see if dimValue is within the range
-        if (brightness < pwmRange.get(0) || brightness > pwmRange.get(1)) return;
         execute(
                 commands
                         .get("dim")
