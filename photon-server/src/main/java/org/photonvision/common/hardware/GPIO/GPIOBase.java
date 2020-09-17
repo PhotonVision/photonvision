@@ -19,7 +19,6 @@ package org.photonvision.common.hardware.GPIO;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
