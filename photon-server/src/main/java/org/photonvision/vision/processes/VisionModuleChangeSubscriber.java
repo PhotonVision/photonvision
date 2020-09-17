@@ -108,6 +108,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case "takeCalSnapshot":
                         parentModule.takeCalibrationSnapshot();
                         return;
+                    case "duplicatePipeline":
+                        parentModule.pipelineManager.duplicatePipeline((Integer) newPropValue);
+                        parentModule.saveAndBroadcastAll();
+                        return;
                     case "robotOffsetPoint":
                         if (currentSettings instanceof AdvancedPipelineSettings) {
                             var curAdvSettings = (AdvancedPipelineSettings) currentSettings;
