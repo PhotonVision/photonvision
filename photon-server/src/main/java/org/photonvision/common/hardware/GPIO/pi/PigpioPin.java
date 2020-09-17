@@ -6,7 +6,7 @@ import org.photonvision.common.logging.Logger;
 
 import java.util.ArrayList;
 
-import static eu.xeli.jpigpio.PigpioException.*;
+import static org.photonvision.common.hardware.GPIO.pi.PigpioException.*;
 
 public class PigpioPin extends GPIOBase {
 
