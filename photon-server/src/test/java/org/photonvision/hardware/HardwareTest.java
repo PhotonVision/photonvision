@@ -22,7 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.pi.PiGPIO;
+import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.hardware.metrics.CPUMetrics;
 import org.photonvision.common.hardware.metrics.GPUMetrics;
@@ -56,7 +56,7 @@ public class HardwareTest {
     public void testGPIO() {
         GPIOBase gpio;
         if (Platform.isRaspberryPi()) {
-            gpio = new PiGPIO(18, 0, 100);
+            gpio = new PigpioPin(18);
         } else {
             gpio = new CustomGPIO(18);
         }
@@ -86,7 +86,7 @@ public class HardwareTest {
     @Test
     public void testBlink() {
         if (!Platform.isRaspberryPi()) return;
-        GPIOBase pwm = new PiGPIO(18, 0, 100);
+        GPIOBase pwm = new PigpioPin(18);
         pwm.blink(125, 3);
         var startms = System.currentTimeMillis();
         while (true) {

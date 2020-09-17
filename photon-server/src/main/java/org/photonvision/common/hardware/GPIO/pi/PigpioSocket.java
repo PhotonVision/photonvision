@@ -15,6 +15,11 @@ public class PigpioSocket {
 
     private PigpioSocketLock commandSocket;
 
+    public static void main(String[] args) throws PigpioException {
+        var daemon = new PigpioSocket("172.16.255.243", 8888);
+        daemon.gpioWrite(18, true);
+    }
+
     /**
      * Creates and starts a socket connection to a pigpio daemon on localhost
      */
@@ -231,7 +236,11 @@ public class PigpioSocket {
      */
     public void hardwarePWM(int pin, int pwmFrequency, int pwmDuty) throws PigpioException {
         try {
-            int retCode = commandSocket.sendCmd(PigpioCommand.PCMD_HP.value, pin, pwmFrequency, pwmDuty);
+            ByteBuffer bb = ByteBuffer.allocate(4);
+            bb.order(ByteOrder.LITTLE_ENDIAN);
+            bb.putInt(pwmDuty);
+
+            int retCode = commandSocket.sendCmd(PigpioCommand.PCMD_HP.value, pin, pwmFrequency, 4, bb.array());
             if (retCode < 0) throw new PigpioException(retCode);
         } catch (IOException e) {
             throw new PigpioException("hardwarePWM", e);

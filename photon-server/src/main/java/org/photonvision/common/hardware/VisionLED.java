@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.pi.PiGPIO;
+import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -39,7 +39,7 @@ public class VisionLED {
         ledPins.forEach(
                 pin -> {
                     if (Platform.isRaspberryPi()) {
-                        leds.add(new PiGPIO(pin, pwmFreq, pwmRangeMax));
+                        leds.add(new PigpioPin(pin));
                     } else {
                         leds.add(new CustomGPIO(pin));
                     }
