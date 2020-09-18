@@ -19,10 +19,26 @@ package org.photonvision.raspi;
 
 import java.nio.file.Path;
 
+import org.photonvision.common.hardware.Platform;
+
 public class PicamJNI {
 
+    private static boolean isSupported = true;
+
     static {
-        System.load(Path.of("src/main/resources/native/libpicam.so").toAbsolutePath().toString());
+        try {
+            System.load(Path.of("src/main/resources/native/libpicam.so").toAbsolutePath().toString());
+        } catch (UnsatisfiedLinkError e) {
+            if (Platform.isRaspberryPi()) {
+                throw e;
+            }
+
+            isSupported = false;
+        }
+    }
+
+    public static boolean isSupported() {
+        return isSupported;
     }
 
     // Everything here is static because multiple picams are unsupported at the hardware level

@@ -2,6 +2,7 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.cscore.VideoMode;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.AcceleratedPicamFrameProvider;
@@ -42,13 +43,13 @@ public class GPUAcceleratedPicamSource implements VisionSource {
       super(configuration);
 
       videoModes = new HashMap<>();
-      videoModes.put(0, new VideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 120));
-      videoModes.put(1, new VideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65)); // TODO: 70 might result in ok latency too?
-      videoModes.put(2, new VideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 45));
-      videoModes.put(3, new VideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 40));
-      videoModes.put(4, new VideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15));
+      videoModes.put(0, new VideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 90)); // Was 120 on OM
+      videoModes.put(1, new VideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 90)); // Was 65-70 on OM
+      videoModes.put(2, new VideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 60)); // Was 45 on OM
+      videoModes.put(3, new VideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 45)); // Was 40 on OM
+      videoModes.put(4, new VideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 20)); // Was 15 on OM
 
-      currentVideoMode = videoModes.get(0);
+      currentVideoMode = videoModes.get(1);
     }
 
     @Override
@@ -73,15 +74,20 @@ public class GPUAcceleratedPicamSource implements VisionSource {
 
     @Override
     protected void setVideoModeInternal(VideoMode videoMode) {
-      /*PicamJNI.destroyCamera();
+      PicamJNI.destroyCamera();
       PicamJNI.createCamera(videoMode.width, videoMode.height, videoMode.fps);
 
-      currentVideoMode = videoMode;*/
+      currentVideoMode = videoMode;
     }
 
     @Override
     public HashMap<Integer, VideoMode> getAllVideoModes() {
       return videoModes;
     }
+  }
+
+  @Override
+  public boolean isVendorCamera() {
+    return ConfigManager.getInstance().getConfig().getHardwareConfig().hasPresetFOV();
   }
 }

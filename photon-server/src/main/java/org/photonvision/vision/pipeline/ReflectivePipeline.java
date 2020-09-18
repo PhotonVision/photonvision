@@ -166,7 +166,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
     @Override
     public CVPipelineResult process(Frame frame, ReflectivePipelineSettings settings) {
-
         long sumPipeNanosElapsed = 0L;
 
         CVPipeResult<Mat> hsvPipeResult;

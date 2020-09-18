@@ -29,6 +29,7 @@ import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.GPUAcceleratedPicamSource;
 import org.photonvision.vision.camera.USBCameraSource;
@@ -153,17 +154,18 @@ public class VisionSourceManager {
         // Turn these camera configs into vision sources
         var sources = loadVisionSourcesFromCamConfigs(matchedCameras);
 
-        // These sources can be turned into USB cameras, which can be added to the config manager
+        // We want to return a map between vision sources and camera configurations
         var visionSourceMap = new HashMap<VisionSource, CameraConfiguration>();
+        logger.info(sources.toString());
         for (var src : sources) {
-            var usbSrc = (USBCameraSource) src;
-            visionSourceMap.put(usbSrc, usbSrc.configuration);
+            var usbSrc = src;
+            visionSourceMap.put(usbSrc, usbSrc.getSettables().getConfiguration());
             logger.debug(
                     () ->
                             "Matched config for camera \""
                                     + src.getFrameProvider().getName()
                                     + "\" and loaded "
-                                    + usbSrc.configuration.pipelineSettings.size()
+                                    + usbSrc.getSettables().getConfiguration().pipelineSettings.size()
                                     + " pipelines");
         }
         return visionSourceMap;
@@ -293,7 +295,7 @@ public class VisionSourceManager {
             List<CameraConfiguration> camConfigs) {
         List<VisionSource> cameraSources = new ArrayList<>();
         for (var configuration : camConfigs) {
-            if (configuration.baseName.startsWith("mmal service")) {
+            if (configuration.baseName.startsWith("mmal service") && PicamJNI.isSupported()) {
                 configuration.cameraType = CameraType.ZeroCopyPicam;
                 VisionSource picamSrc = new GPUAcceleratedPicamSource(configuration);
                 cameraSources.add(picamSrc);

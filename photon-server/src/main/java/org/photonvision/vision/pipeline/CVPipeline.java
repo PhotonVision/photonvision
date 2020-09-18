@@ -39,8 +39,6 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
     }
 
     public R run(Frame frame) {
-        long pipelineStartNanos = System.nanoTime();
-
         if (settings == null) {
             throw new RuntimeException("No settings provided for pipeline!");
         }
