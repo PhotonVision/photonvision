@@ -31,8 +31,9 @@ public class PigpioPin extends GPIOBase {
 
     private final boolean isHardwarePWMPin;
     private final int pinNo;
-
     private final ArrayList<PigpioPulse> pulses = new ArrayList<>();
+
+    private boolean hasFailedHardwarePWM;
 
     public PigpioPin(int pinNo) {
         isHardwarePWMPin = pinNo == 12 || pinNo == 13 || pinNo == 17 || pinNo == 18;
@@ -64,7 +65,7 @@ public class PigpioPin extends GPIOBase {
         try {
             return piSocket.gpioRead(pinNo);
         } catch (PigpioException e) {
-            logger.error("gpioWrite FAIL - " + e.getMessage());
+            logger.error("gpioRead FAIL - " + e.getMessage());
             return false;
         }
     }
@@ -127,6 +128,9 @@ public class PigpioPin extends GPIOBase {
             } catch (PigpioException e) {
                 logger.error("Failed to hardPWM - " + e.getMessage());
             }
+        } else if (!hasFailedHardwarePWM) {
+            logger.warn("Specified pin (" + pinNo + ") is not capable of hardware PWM - no action will be taken.");
+            hasFailedHardwarePWM = true;
         }
     }
 }
