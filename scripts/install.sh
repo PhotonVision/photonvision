@@ -19,7 +19,7 @@ echo "JDK installation complete."
 echo "Downloading latest stable release of PhotonVision..."
 mkdir -p /opt/photonvision
 cd /opt/photonvision
-curl -s https://api.github.com/repos/photonvision/photonvision/releases/latest | 
+curl -sk https://api.github.com/repos/photonvision/photonvision/releases/latest | 
     grep "browser_download_url.*jar" | 
     cut -d : -f 2,3 | 
     tr -d '"' | 
@@ -46,6 +46,10 @@ Description=Service that runs PhotonVision
 [Service]
 WorkingDirectory=/opt/photonvision
 ExecStart=/usr/bin/java -jar /opt/photonvision/photonvision.jar
+ExecStop=/bin/systemctl kill photonvision
+Type=simple
+Restart=on-failure
+RestartSec=1
     
 [Install]
 WantedBy=multi-user.target" >> photonvision.service
