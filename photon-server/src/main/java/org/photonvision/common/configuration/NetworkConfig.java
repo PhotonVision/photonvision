@@ -17,13 +17,12 @@
 
 package org.photonvision.common.configuration;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import java.util.HashMap;
+import java.util.Map;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
 
