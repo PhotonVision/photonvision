@@ -166,8 +166,6 @@ public class ConfigManager {
             networkConfig = new NetworkConfig();
         }
 
-        networkConfig.shouldManage = networkConfig.shouldManage();
-
         if (!camerasFolder.exists()) {
             if (camerasFolder.mkdirs()) {
                 logger.debug("Cameras config folder did not exist. Created!");
