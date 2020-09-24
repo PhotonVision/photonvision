@@ -17,6 +17,10 @@
 
 package org.photonvision.common.configuration;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import java.util.HashMap;
 import java.util.Map;
 import org.photonvision.common.hardware.Platform;
@@ -29,24 +33,26 @@ public class NetworkConfig {
     public String hostname = "photonvision";
     public boolean runNTServer = false;
 
-    public boolean shouldManage;
+    private boolean shouldManage;
 
-    public NetworkConfig() {}
+    public NetworkConfig() {
+        setShouldManage(false);
+    }
 
+    @JsonCreator
     public NetworkConfig(
-            int teamNumber,
-            NetworkMode connectionType,
-            String staticIp,
-            String hostname,
-            boolean runNTServer,
-            boolean shouldManage) {
+            @JsonProperty("teamNumber") int teamNumber,
+            @JsonProperty("connectionType") NetworkMode connectionType,
+            @JsonProperty("staticIp") String staticIp,
+            @JsonProperty("hostname") String hostname,
+            @JsonProperty("runNTServer") boolean runNTServer,
+            @JsonProperty("shouldManage") boolean shouldManage) {
         this.teamNumber = teamNumber;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
         this.hostname = hostname;
         this.runNTServer = runNTServer;
-
-        this.shouldManage = shouldManage;
+        setShouldManage(shouldManage);
     }
 
     public static NetworkConfig fromHashMap(Map<String, Object> map) {
@@ -54,11 +60,11 @@ public class NetworkConfig {
         // staticIp (str), netmask (str), hostname (str)
         var ret = new NetworkConfig();
         ret.teamNumber = Integer.parseInt(map.get("teamNumber").toString());
-        ret.shouldManage = (Boolean) map.get("supported");
         ret.connectionType = NetworkMode.values()[(Integer) map.get("connectionType")];
         ret.staticIp = (String) map.get("staticIp");
         ret.hostname = (String) map.get("hostname");
         ret.runNTServer = (Boolean) map.get("runNTServer");
+        ret.setShouldManage((Boolean) map.get("supported"));
         return ret;
     }
 
@@ -73,7 +79,13 @@ public class NetworkConfig {
         return tmp;
     }
 
+    @JsonGetter("shouldManage")
     public boolean shouldManage() {
         return this.shouldManage || Platform.isRaspberryPi();
+    }
+
+    @JsonSetter("shouldManage")
+    public void setShouldManage(boolean shouldManage) {
+        this.shouldManage = shouldManage || Platform.isRaspberryPi();
     }
 }
