@@ -132,15 +132,21 @@ public class Logger {
             var formattedMessage = format(message, level, group, clazz, shouldColor);
             a.log(formattedMessage, level);
         }
-        if (!connected) uiBacklog.add(Pair.of(format(message, level, group, clazz, false), level));
+        if (!connected) {
+            synchronized (uiBacklog) {
+                uiBacklog.add(Pair.of(format(message, level, group, clazz, false), level));
+            }
+        }
     }
 
     public static void sendConnectedBacklog() {
-        for (var message : uiBacklog) {
-            uiLogAppender.log(message.getLeft(), message.getRight());
-        }
         connected = true;
-        uiBacklog.clear();
+        synchronized (uiBacklog) {
+            for (var message : uiBacklog) {
+                uiLogAppender.log(message.getLeft(), message.getRight());
+            }
+            uiBacklog.clear();
+        }
     }
 
     public boolean shouldLog(LogLevel logLevel) {
