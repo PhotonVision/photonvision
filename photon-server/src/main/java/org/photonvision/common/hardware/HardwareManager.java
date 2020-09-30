@@ -25,6 +25,7 @@ import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
+import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
 import org.photonvision.common.hardware.VisionLED.VisionLEDMode;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.logging.LogGroup;
@@ -39,15 +40,18 @@ public class HardwareManager {
 
     private final HardwareConfig hardwareConfig;
 
-    @SuppressWarnings("FieldCanBeLocal")
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final StatusLED statusLED;
 
+    @SuppressWarnings("FieldCanBeLocal")
     private final NetworkTableEntry ledModeEntry;
 
-    @SuppressWarnings("FieldCanBeLocal")
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final NTDataChangeListener ledModeListener;
 
     public final VisionLED visionLED; // May be null if no LED is specified
+
+    private final PigpioSocket pigpioSocket; // will be null unless on Raspi
 
     public static HardwareManager getInstance() {
         if (instance == null) {
@@ -61,19 +65,27 @@ public class HardwareManager {
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
 
+        if(Platform.isRaspberryPi()) {
+            pigpioSocket = new PigpioSocket();
+        } else {
+            pigpioSocket = null;
+        }
+
         statusLED =
                 hardwareConfig.statusRGBPins.size() == 3
                         ? new StatusLED(hardwareConfig.statusRGBPins)
                         : null;
+
+        var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
                 hardwareConfig.ledPins.isEmpty()
                         ? null
                         : new VisionLED(
                                 hardwareConfig.ledPins,
-                                hardwareConfig.ledPWMFrequency,
-                                (hardwareConfig.ledPWMRange != null && hardwareConfig.ledPWMRange.size() == 2)
-                                        ? hardwareConfig.ledPWMRange.get(1)
-                                        : 0);
+                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
+                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
+                                pigpioSocket
+                        );
 
         ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
         ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);

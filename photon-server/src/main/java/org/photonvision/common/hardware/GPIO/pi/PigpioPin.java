@@ -72,49 +72,10 @@ public class PigpioPin extends GPIOBase {
 
     @Override
     protected void blinkImpl(int pulseTimeMillis, int blinks) {
-        boolean repeat = blinks == -1;
-
-        if (repeat) {
-            blinks = 1;
-        }
-
         try {
-            piSocket.waveTxStop();
-            pulses.clear();
-
-            var startPulse = new PigpioPulse(pinNo, 0, pulseTimeMillis * 1000);
-            var endPulse = new PigpioPulse(0, pinNo, pulseTimeMillis * 1000);
-
-            for (int i = 0; i < blinks; i++) {
-                pulses.add(startPulse);
-                pulses.add(endPulse);
-            }
-
-            piSocket.waveAddGeneric(pulses);
-            var waveId = piSocket.waveCreate();
-
-            if (waveId >= 0) {
-                if (repeat) piSocket.waveSendRepeat(waveId);
-                else piSocket.waveSendOnce(waveId);
-            } else {
-                String error = "";
-                switch (waveId) {
-                    case PI_EMPTY_WAVEFORM:
-                        error = "Waveform empty";
-                        break;
-                    case PI_TOO_MANY_CBS:
-                        error = "Too many CBS";
-                        break;
-                    case PI_TOO_MANY_OOL:
-                        error = "Too many OOL";
-                        break;
-                    case PI_NO_WAVEFORM_ID:
-                        error = "No waveform ID";
-                        break;
-                }
-                logger.error("Failed to send wave: " + error);
-            }
-
+            piSocket.generateAndSendWaveform(pulseTimeMillis, blinks, pinNo);
+//            addBlinkPulses(pulseTimeMillis, blinks);
+//            piSocket.createAndSendWaveform(blinks == -1);
         } catch (PigpioException e) {
             logger.error("Could not set blink - " + e.getMessage());
         }

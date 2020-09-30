@@ -21,27 +21,38 @@ import edu.wpi.first.networktables.EntryNotification;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+
+import org.eclipse.jetty.util.log.Log;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
+import org.photonvision.common.hardware.GPIO.pi.PigpioException;
 import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
+import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.math.MathUtils;
 
 public class VisionLED {
     private static final Logger logger = new Logger(VisionLED.class, LogGroup.VisionModule);
 
-    public final List<GPIOBase> leds = new ArrayList<>();
+    private final List<GPIOBase> visionLEDs = new ArrayList<>();
+    private final int brightnessMin;
+    private final int brightnessMax;
+    private final PigpioSocket pigpioSocket;
 
     private VisionLEDMode currentLedMode = VisionLEDMode.VLM_DEFAULT;
     private BooleanSupplier pipelineModeSupplier;
 
-    public VisionLED(List<Integer> ledPins, int pwmFreq, int pwmRangeMax) {
+    public VisionLED(List<Integer> ledPins, int brightnessMin, int brightnessMax, PigpioSocket pigpioSocket) {
+        this.brightnessMin = brightnessMin;
+        this.brightnessMax = brightnessMax;
+        this.pigpioSocket = pigpioSocket;
         ledPins.forEach(
                 pin -> {
                     if (Platform.isRaspberryPi()) {
-                        leds.add(new PigpioPin(pin));
+                        visionLEDs.add(new PigpioPin(pin));
                     } else {
-                        leds.add(new CustomGPIO(pin));
+                        visionLEDs.add(new CustomGPIO(pin));
                     }
                 });
         pipelineModeSupplier = () -> false;
@@ -52,15 +63,26 @@ public class VisionLED {
     }
 
     public void setBrightness(int percentage) {
-        leds.forEach((led) -> led.setBrightness(percentage));
+        int mappedPercentage = MathUtils.map(percentage, 0, 100, brightnessMin, brightnessMax);
+        visionLEDs.forEach((led) -> led.setBrightness(mappedPercentage));
     }
 
     private void blinkImpl(int pulseLengthMillis, int blinkCount) {
-        leds.forEach((led) -> led.blink(pulseLengthMillis, blinkCount));
+        if (Platform.isRaspberryPi()) {
+            try {
+                pigpioSocket.generateAndSendWaveform(pulseLengthMillis, blinkCount);
+            } catch (PigpioException e) {
+                logger.error("Failed to blink!", e);
+            }
+        } else {
+            for (GPIOBase led : visionLEDs) {
+                led.blink(pulseLengthMillis, blinkCount);
+            }
+        }
     }
 
     private void setStateImpl(boolean state) {
-        leds.forEach((led) -> led.setState(state));
+        visionLEDs.forEach((led) -> led.setState(state));
     }
 
     public void setState(boolean on) {

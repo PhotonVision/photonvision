@@ -32,8 +32,8 @@ public class PigpioPulse {
     * @param delayMicros the delay in microseconds before the next pulse.
     */
     public PigpioPulse(int gpioOn, int gpioOff, int delayMicros) {
-        this.gpioOn = 1 << gpioOn;
-        this.gpioOff = 1 << gpioOff;
+        this.gpioOn = gpioOn != 0 ? 1 << gpioOn : 0;
+        this.gpioOff = gpioOff != 0 ? 1 << gpioOff : 0;
         this.delayMicros = delayMicros;
     }
 }

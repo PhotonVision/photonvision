@@ -21,8 +21,12 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+
+import static org.photonvision.common.hardware.GPIO.pi.PigpioException.*;
+import static org.photonvision.common.hardware.GPIO.pi.PigpioException.PI_NO_WAVEFORM_ID;
 
 @SuppressWarnings({"SpellCheckingInspection", "unused"})
 public class PigpioSocket {
@@ -30,11 +34,7 @@ public class PigpioSocket {
     private static final int PIGPIOD_MESSAGE_SIZE = 12;
 
     private PigpioSocketLock commandSocket;
-
-    public static void main(String[] args) throws PigpioException {
-        var daemon = new PigpioSocket("172.16.255.243", 8888);
-        daemon.gpioWrite(18, true);
-    }
+    private int activeWaveformID = -1;
 
     /** Creates and starts a socket connection to a pigpio daemon on localhost */
     public PigpioSocket() {
@@ -141,7 +141,7 @@ public class PigpioSocket {
     * @return the new total number of pulses in the current waveform
     * @throws PigpioException on failure
     */
-    public int waveAddGeneric(ArrayList<PigpioPulse> pulses) throws PigpioException {
+    private int waveAddGeneric(ArrayList<PigpioPulse> pulses) throws PigpioException {
         // pigpio wave message format
 
         // I p1 0
@@ -172,6 +172,91 @@ public class PigpioSocket {
         } catch (IOException e) {
             logger.error("Failed to add pulse(s) to waveform", e);
             throw new PigpioException("waveAddGeneric", e);
+        }
+    }
+
+    /**
+     * Creates pulses and adds them to the current waveform
+     * @param pulseTimeMillis Pulse length in milliseconds
+     * @param blinks Number of times to pulse. -1 for repeat
+     * @param pinNo Pin to pulse
+     */
+    private void addBlinkPulsesToWaveform(int pulseTimeMillis, int blinks, int pinNo) {
+        boolean repeat = blinks == -1;
+
+        if (blinks == 0) return;
+
+        if (repeat) {
+            blinks = 1;
+        }
+
+        try {
+            ArrayList<PigpioPulse> pulses = new ArrayList<>();
+            var startPulse = new PigpioPulse(pinNo, 0, pulseTimeMillis * 1000);
+            var endPulse = new PigpioPulse(0, pinNo, pulseTimeMillis * 1000);
+
+            for (int i = 0; i < blinks; i++) {
+                pulses.add(startPulse);
+                pulses.add(endPulse);
+            }
+
+            waveAddGeneric(pulses);
+            pulses.clear();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Generates and sends a waveform to the given pins with the specified parameters.
+     * @param pulseTimeMillis Pulse length in milliseconds
+     * @param blinks Number of times to pulse. -1 for repeat
+     * @param pins Pins to pulse
+     * @throws PigpioException on failure
+     */
+    public void generateAndSendWaveform(int pulseTimeMillis, int blinks, int... pins) throws PigpioException {
+        if (pins.length == 0) return;
+        boolean repeat = blinks == -1;
+        if (blinks == 0) return;
+
+        // stop any active waves
+        waveTxStop();
+        waveClear();
+
+        if (activeWaveformID != -1) {
+            waveDelete(activeWaveformID);
+            activeWaveformID = -1;
+        }
+
+        int waveformId = waveCreate();
+
+        for (int pin : pins) {
+            addBlinkPulsesToWaveform(pulseTimeMillis, blinks, pin);
+        }
+
+        if (waveformId >= 0) {
+            if (repeat) {
+                waveSendRepeat(waveformId);
+            } else {
+                waveSendOnce(waveformId);
+            }
+        } else {
+            String error = "";
+            switch (waveformId) {
+                case PI_EMPTY_WAVEFORM:
+                    error = "Waveform empty";
+                    break;
+                case PI_TOO_MANY_CBS:
+                    error = "Too many CBS";
+                    break;
+                case PI_TOO_MANY_OOL:
+                    error = "Too many OOL";
+                    break;
+                case PI_NO_WAVEFORM_ID:
+                    error = "No waveform ID";
+                    break;
+            }
+            logger.error("Failed to send wave: " + error);
         }
     }
 

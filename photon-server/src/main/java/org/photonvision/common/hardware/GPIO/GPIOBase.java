@@ -31,7 +31,6 @@ public abstract class GPIOBase {
             new HashMap<>() {
                 {
                     put("setState", "");
-                    put("setRange", "");
                     put("shutdown", "");
                     put("dim", "");
                     put("blink", "");
