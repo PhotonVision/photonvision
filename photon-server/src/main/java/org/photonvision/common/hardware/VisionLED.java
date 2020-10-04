@@ -21,7 +21,6 @@ import edu.wpi.first.networktables.EntryNotification;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
-
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.pi.PigpioException;
@@ -46,11 +45,12 @@ public class VisionLED {
 
     private int mappedBrightnessPercentage;
 
-    public VisionLED(List<Integer> ledPins, int brightnessMin, int brightnessMax, PigpioSocket pigpioSocket) {
+    public VisionLED(
+            List<Integer> ledPins, int brightnessMin, int brightnessMax, PigpioSocket pigpioSocket) {
         this.brightnessMin = brightnessMin;
         this.brightnessMax = brightnessMax;
         this.pigpioSocket = pigpioSocket;
-        this.ledPins = ledPins.stream().mapToInt(i->i).toArray();
+        this.ledPins = ledPins.stream().mapToInt(i -> i).toArray();
         ledPins.forEach(
                 pin -> {
                     if (Platform.isRaspberryPi()) {
@@ -74,7 +74,8 @@ public class VisionLED {
     public void blink(int pulseLengthMillis, int blinkCount) {
         blinkImpl(pulseLengthMillis, blinkCount);
         int blinkDuration = pulseLengthMillis * blinkCount * 2;
-        TimedTaskManager.getInstance().addOneShotTask(() -> setInternal(this.currentLedMode, false), blinkDuration + 150);
+        TimedTaskManager.getInstance()
+                .addOneShotTask(() -> setInternal(this.currentLedMode, false), blinkDuration + 150);
     }
 
     private void blinkImpl(int pulseLengthMillis, int blinkCount) {

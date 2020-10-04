@@ -69,7 +69,7 @@ public class HardwareManager {
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
 
-        if(Platform.isRaspberryPi()) {
+        if (Platform.isRaspberryPi()) {
             pigpioSocket = new PigpioSocket();
         } else {
             pigpioSocket = null;
@@ -88,8 +88,7 @@ public class HardwareManager {
                                 hardwareConfig.ledPins,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
-                                pigpioSocket
-                        );
+                                pigpioSocket);
 
         ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
         ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);

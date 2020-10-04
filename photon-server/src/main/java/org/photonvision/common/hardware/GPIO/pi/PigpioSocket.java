@@ -17,16 +17,15 @@
 
 package org.photonvision.common.hardware.GPIO.pi;
 
+import static org.photonvision.common.hardware.GPIO.pi.PigpioException.*;
+import static org.photonvision.common.hardware.GPIO.pi.PigpioException.PI_NO_WAVEFORM_ID;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-
-import static org.photonvision.common.hardware.GPIO.pi.PigpioException.*;
-import static org.photonvision.common.hardware.GPIO.pi.PigpioException.PI_NO_WAVEFORM_ID;
 
 @SuppressWarnings({"SpellCheckingInspection", "unused"})
 public class PigpioSocket {
@@ -176,11 +175,12 @@ public class PigpioSocket {
     }
 
     /**
-     * Creates pulses and adds them to the current waveform
-     * @param pulseTimeMillis Pulse length in milliseconds
-     * @param blinks Number of times to pulse. -1 for repeat
-     * @param pinNo Pin to pulse
-     */
+    * Creates pulses and adds them to the current waveform
+    *
+    * @param pulseTimeMillis Pulse length in milliseconds
+    * @param blinks Number of times to pulse. -1 for repeat
+    * @param pinNo Pin to pulse
+    */
     private void addBlinkPulsesToWaveform(int pulseTimeMillis, int blinks, int pinNo) {
         boolean repeat = blinks == -1;
 
@@ -208,13 +208,15 @@ public class PigpioSocket {
     }
 
     /**
-     * Generates and sends a waveform to the given pins with the specified parameters.
-     * @param pulseTimeMillis Pulse length in milliseconds
-     * @param blinks Number of times to pulse. -1 for repeat
-     * @param pins Pins to pulse
-     * @throws PigpioException on failure
-     */
-    public void generateAndSendWaveform(int pulseTimeMillis, int blinks, int... pins) throws PigpioException {
+    * Generates and sends a waveform to the given pins with the specified parameters.
+    *
+    * @param pulseTimeMillis Pulse length in milliseconds
+    * @param blinks Number of times to pulse. -1 for repeat
+    * @param pins Pins to pulse
+    * @throws PigpioException on failure
+    */
+    public void generateAndSendWaveform(int pulseTimeMillis, int blinks, int... pins)
+            throws PigpioException {
         if (pins.length == 0) return;
         boolean repeat = blinks == -1;
         if (blinks == 0) return;

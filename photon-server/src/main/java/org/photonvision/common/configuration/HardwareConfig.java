@@ -74,7 +74,26 @@ public class HardwareConfig {
     }
 
     @SuppressWarnings("unused")
-    public HardwareConfig(String deviceName, String deviceLogoPath, String supportURL, ArrayList<Integer> ledPins, String ledSetCommand, boolean ledsCanDim, ArrayList<Integer> ledBrightnessRange, String ledDimCommand, String ledBlinkCommand, ArrayList<Integer> statusRGBPins, String cpuTempCommand, String cpuMemoryCommand, String cpuUtilCommand, String gpuMemoryCommand, String ramUtilCommand, String gpuMemUsageCommand, String restartHardwareCommand, double vendorFOV, List<Integer> blacklistedResIndices) {
+    public HardwareConfig(
+            String deviceName,
+            String deviceLogoPath,
+            String supportURL,
+            ArrayList<Integer> ledPins,
+            String ledSetCommand,
+            boolean ledsCanDim,
+            ArrayList<Integer> ledBrightnessRange,
+            String ledDimCommand,
+            String ledBlinkCommand,
+            ArrayList<Integer> statusRGBPins,
+            String cpuTempCommand,
+            String cpuMemoryCommand,
+            String cpuUtilCommand,
+            String gpuMemoryCommand,
+            String ramUtilCommand,
+            String gpuMemUsageCommand,
+            String restartHardwareCommand,
+            double vendorFOV,
+            List<Integer> blacklistedResIndices) {
         this.deviceName = deviceName;
         this.deviceLogoPath = deviceLogoPath;
         this.supportURL = supportURL;

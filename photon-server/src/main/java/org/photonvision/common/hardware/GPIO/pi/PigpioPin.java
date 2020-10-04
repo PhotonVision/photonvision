@@ -19,7 +19,6 @@ package org.photonvision.common.hardware.GPIO.pi;
 
 import static org.photonvision.common.hardware.GPIO.pi.PigpioException.*;
 
-import java.util.ArrayList;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -87,7 +86,10 @@ public class PigpioPin extends GPIOBase {
                 logger.error("Failed to hardPWM - " + e.getMessage());
             }
         } else if (!hasFailedHardwarePWM) {
-            logger.warn("Specified pin (" + pinNo + ") is not capable of hardware PWM - no action will be taken.");
+            logger.warn(
+                    "Specified pin ("
+                            + pinNo
+                            + ") is not capable of hardware PWM - no action will be taken.");
             hasFailedHardwarePWM = true;
         }
     }
