@@ -17,30 +17,31 @@
 
 package org.photonvision.hardware;
 
-import java.io.IOException;
 import org.junit.jupiter.api.Test;
+import org.photonvision.common.hardware.GPIO.pi.PigpioException;
+import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
+import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 public class HardwareManagerTest {
 
+    public static final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
+
     @Test
-    public void managementTest() throws IOException {
-        //        var config =
-        //                new ObjectMapper().readValue(TestUtils.getHardwareConfigJson(),
-        // HardwareConfig.class);
-        //
-        //        var instance = HardwareManager.getInstance();
-        // TODO: fix
-
-        //        instance.getGPIO(13).setPwmRange(List.of(0, 100));
-        //        Assertions.assertEquals(instance.getGPIO(13).getPwmRange().get(0), 0);
-        //        Assertions.assertEquals(instance.getGPIO(13).getPwmRange().get(1), 100);
-        //        instance.getGPIO(13).blink(250, 5);
-        //        for (int i = 0; i < 101; i++) {
-        //            instance.getGPIO(13).setBrightness(i);
-        //        }
-
-        //        Assertions.assertEquals(config.statusRGBPins.get(0), -1);
-        //        Assertions.assertEquals(config.statusRGBPins.get(1), -1);
-        //        Assertions.assertEquals(config.statusRGBPins.get(2), -1);
+    public void managementTest() throws InterruptedException {
+        var socket = new PigpioSocket();
+        try {
+            socket.gpioWrite(18, false);
+            socket.gpioWrite(13, false);
+            Thread.sleep(500);
+            for (int i = 0; i < 1000000; i++) {
+                int duty = 1000000 - i;
+                socket.hardwarePWM(18, 1000000, duty);
+                Thread.sleep(0, 25);
+            }
+        } catch (PigpioException e) {
+            logger.error("error", e);
+        }
     }
 }
