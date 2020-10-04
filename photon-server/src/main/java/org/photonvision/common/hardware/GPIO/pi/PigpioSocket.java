@@ -228,11 +228,11 @@ public class PigpioSocket {
             activeWaveformID = -1;
         }
 
-        int waveformId = waveCreate();
-
         for (int pin : pins) {
             addBlinkPulsesToWaveform(pulseTimeMillis, blinks, pin);
         }
+
+        int waveformId = waveCreate();
 
         if (waveformId >= 0) {
             if (repeat) {

@@ -31,7 +31,6 @@ public class PigpioPin extends GPIOBase {
 
     private final boolean isHardwarePWMPin;
     private final int pinNo;
-    private final ArrayList<PigpioPulse> pulses = new ArrayList<>();
 
     private boolean hasFailedHardwarePWM;
 
@@ -74,8 +73,6 @@ public class PigpioPin extends GPIOBase {
     protected void blinkImpl(int pulseTimeMillis, int blinks) {
         try {
             piSocket.generateAndSendWaveform(pulseTimeMillis, blinks, pinNo);
-//            addBlinkPulses(pulseTimeMillis, blinks);
-//            piSocket.createAndSendWaveform(blinks == -1);
         } catch (PigpioException e) {
             logger.error("Could not set blink - " + e.getMessage());
         }
