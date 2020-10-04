@@ -17,10 +17,12 @@
 
 package org.photonvision.hardware;
 
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.pi.PigpioException;
 import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
 import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -30,6 +32,7 @@ public class HardwareManagerTest {
 
     @Test
     public void managementTest() throws InterruptedException {
+        Assumptions.assumeTrue(Platform.isRaspberryPi());
         var socket = new PigpioSocket();
         try {
             socket.gpioWrite(18, false);
