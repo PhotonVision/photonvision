@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
@@ -51,12 +52,15 @@ public class HardwareManager {
 
     public static HardwareManager getInstance() {
         if (instance == null) {
-            instance = new HardwareManager(ConfigManager.getInstance().getConfig().getHardwareConfig());
+            instance =
+                    new HardwareManager(
+                            ConfigManager.getInstance().getConfig().getHardwareConfig(),
+                            ConfigManager.getInstance().getConfig().getHardwareSettings());
         }
         return instance;
     }
 
-    private HardwareManager(HardwareConfig hardwareConfig) {
+    private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
@@ -84,9 +88,7 @@ public class HardwareManager {
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 
-        if (visionLED != null)
-            visionLED.setBrightness(
-                    ConfigManager.getInstance().getConfig().getHardwareSettings().ledBrightnessPercentage);
+        if (visionLED != null) visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
