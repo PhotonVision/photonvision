@@ -22,6 +22,7 @@ import java.io.IOException;
 import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
@@ -39,6 +40,7 @@ public class HardwareManager {
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
     private final HardwareConfig hardwareConfig;
+    private final HardwareSettings hardwareSettings;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final StatusLED statusLED;
@@ -55,13 +57,15 @@ public class HardwareManager {
 
     public static HardwareManager getInstance() {
         if (instance == null) {
-            instance = new HardwareManager(ConfigManager.getInstance().getConfig().getHardwareConfig());
+            var conf = ConfigManager.getInstance().getConfig();
+            instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
         }
         return instance;
     }
 
-    private HardwareManager(HardwareConfig hardwareConfig) {
+    private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
+        this.hardwareSettings = hardwareSettings;
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
 
@@ -97,8 +101,7 @@ public class HardwareManager {
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 
         if (visionLED != null) {
-            visionLED.setBrightness(
-                    ConfigManager.getInstance().getConfig().getHardwareSettings().ledBrightnessPercentage);
+            visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
             visionLED.blink(85, 4); // bootup blink
         }
 
@@ -107,10 +110,12 @@ public class HardwareManager {
     }
 
     public void setBrightnessPercent(int percent) {
-        ConfigManager.getInstance().getConfig().getHardwareSettings().ledBrightnessPercentage = percent;
-        if (visionLED != null) visionLED.setBrightness(percent);
-        ConfigManager.getInstance().requestSave();
-        logger.info("Setting led brightness to " + percent + "%");
+        if (percent != hardwareSettings.ledBrightnessPercentage) {
+            hardwareSettings.ledBrightnessPercentage = percent;
+            if (visionLED != null) visionLED.setBrightness(percent);
+            ConfigManager.getInstance().requestSave();
+            logger.info("Setting led brightness to " + percent + "%");
+        }
     }
 
     private void onJvmExit() {
