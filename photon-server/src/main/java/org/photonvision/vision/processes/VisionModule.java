@@ -38,6 +38,7 @@ import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
+import org.photonvision.vision.frame.consumer.MJPGFrameFileSaveConsumer;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -71,6 +72,9 @@ public class VisionModule {
     MJPGFrameConsumer dashboardInputStreamer;
     MJPGFrameConsumer dashboardOutputStreamer;
 
+    MJPGFrameFileSaveConsumer inputFrameSaver;
+    MJPGFrameFileSaveConsumer outputFrameSaver;
+
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
                 new Logger(
@@ -98,6 +102,8 @@ public class VisionModule {
         createStreams();
         fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
+        fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
+        fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
 
         ntConsumer =
                 new NTDataPublisher(
@@ -148,6 +154,9 @@ public class VisionModule {
         dashboardInputStreamer =
                 new MJPGFrameConsumer(
                         visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
+
+        inputFrameSaver  = new MJPGFrameFileSaveConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input");
+        outputFrameSaver = new MJPGFrameFileSaveConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-output");
     }
 
     void setDriverMode(boolean isDriverMode) {
@@ -285,6 +294,8 @@ public class VisionModule {
 
         fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
+        fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
+        fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
     }
 
     public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {

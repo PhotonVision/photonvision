@@ -358,6 +358,13 @@ public class ConfigManager {
         return logFile.toPath();
     }
 
+    public Path getImageSavePath() {
+        var imgFilePath =
+                Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        return imgFilePath.toPath();
+    }
+
     public void requestSave() {
         logger.trace("Requesting save...");
         saveRequestTimestamp = System.currentTimeMillis();
