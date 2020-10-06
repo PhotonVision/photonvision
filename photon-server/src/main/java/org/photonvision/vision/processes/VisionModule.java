@@ -37,8 +37,8 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
-import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
+import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -155,8 +155,11 @@ public class VisionModule {
                 new MJPGFrameConsumer(
                         visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
 
-        inputFrameSaver  = new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
-        outputFrameSaver = new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "output");
+        inputFrameSaver =
+                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
+        outputFrameSaver =
+                new FileSaveFrameConsumer(
+                        visionSource.getSettables().getConfiguration().nickname, "output");
     }
 
     void setDriverMode(boolean isDriverMode) {

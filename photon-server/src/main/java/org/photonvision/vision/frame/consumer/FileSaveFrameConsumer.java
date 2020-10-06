@@ -57,7 +57,6 @@ public class FileSaveFrameConsumer {
         this.rootTable = NetworkTableInstance.getDefault().getTable("/photonvision");
         updateCameraNickname(camNickname);
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
-        
     }
 
     public void accept(Frame frame) {
@@ -68,10 +67,15 @@ public class FileSaveFrameConsumer {
 
                 if (curCommand == true && prevCommand == false) {
                     Date now = new Date();
-                    String savefile = FILE_PATH + File.separator + 
-                                      fnamePrefix + "_" + 
-                                      df.format(now) + "T" + 
-                                      tf.format(now) + FILE_EXTENSION;
+                    String savefile =
+                            FILE_PATH
+                                    + File.separator
+                                    + fnamePrefix
+                                    + "_"
+                                    + df.format(now)
+                                    + "T"
+                                    + tf.format(now)
+                                    + FILE_EXTENSION;
 
                     Imgcodecs.imwrite(savefile.toString(), frame.image.getMat());
 
@@ -94,8 +98,8 @@ public class FileSaveFrameConsumer {
     }
 
     private void removeEntries() {
-        if(this.subTable != null){
-            if(this.subTable.containsKey(ntEntryName)){
+        if (this.subTable != null) {
+            if (this.subTable.containsKey(ntEntryName)) {
                 this.subTable.delete(ntEntryName);
             }
         }
@@ -107,5 +111,4 @@ public class FileSaveFrameConsumer {
         this.subTable = rootTable.getSubTable(this.camNickname);
         resetCommand();
     }
-
 }

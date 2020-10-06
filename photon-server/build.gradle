@@ -130,6 +130,7 @@ task generateJavaDocs(type: Javadoc) {
 
 spotless {
     java {
+        lineEndings='unix' 
         googleJavaFormat()
         paddedCell()
         indentWithTabs(2)

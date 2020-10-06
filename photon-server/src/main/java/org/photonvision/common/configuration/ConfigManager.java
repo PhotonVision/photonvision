@@ -359,8 +359,7 @@ public class ConfigManager {
     }
 
     public Path getImageSavePath() {
-        var imgFilePath =
-                Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
+        var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
         if (!imgFilePath.exists()) imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
