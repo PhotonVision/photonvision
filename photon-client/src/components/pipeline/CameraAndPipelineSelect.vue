@@ -298,9 +298,18 @@
             },
             saveCameraNameChange() {
                 if (this.checkCameraName === "") {
-                    this.handleInputWithIndex("changeCameraName", this.newCameraName);
+                    // this.handleInputWithIndex("changeCameraName", this.newCameraName);
+                    this.axios.post('http://' + this.$address + '/api/setCameraNickname',
+                        {name: this.newCameraName, cameraIndex: this.$store.getters.currentCameraIndex})
+                        .then(r => {
+                            console.log("Name changed! " + r);
+                            this.$emit('camera-name-changed')
+                        })
+                        .catch(e => {
+                            console.log("HTTP error while changing camera name " + e);
+                            this.$emit('camera-name-changed')
+                        })
                     this.discardCameraNameChange();
-                    this.$emit('camera-name-changed')
                 }
             },
             discardCameraNameChange() {

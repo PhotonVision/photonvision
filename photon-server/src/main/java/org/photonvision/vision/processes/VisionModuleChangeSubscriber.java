@@ -62,12 +62,11 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
                 // special case for non-PipelineSetting changes
                 switch (propName) {
-                    case "cameraNickname": // rename camera
-                        var newNickname = (String) newPropValue;
-                        logger.info("Changing nickname to " + newNickname);
-                        parentModule.setCameraNickname(newNickname);
-                        parentModule.saveAndBroadcastAll();
-                        return;
+//                    case "cameraNickname": // rename camera
+//                        var newNickname = (String) newPropValue;
+//                        logger.info("Changing nickname to " + newNickname);
+//                        parentModule.setCameraNickname(newNickname);
+//                        return;
                     case "pipelineName": // rename current pipeline
                         logger.info("Changing nick to " + newPropValue);
                         parentModule.pipelineManager.getCurrentPipelineSettings().pipelineNickname =

@@ -284,7 +284,7 @@ public class VisionModule {
                         OutgoingUIEvent.wrappedOf("mutatePipeline", propertyName, value, originContext));
     }
 
-    void setCameraNickname(String newName) {
+    public void setCameraNickname(String newName) {
         visionSource.getSettables().getConfiguration().nickname = newName;
         ntConsumer.updateCameraNickname(newName);
 
@@ -297,6 +297,9 @@ public class VisionModule {
 
         fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
+
+        // Push new data to the UI
+        saveAndBroadcastAll();
     }
 
     public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {

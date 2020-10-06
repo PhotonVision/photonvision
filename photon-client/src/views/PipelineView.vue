@@ -390,6 +390,12 @@ export default {
                 this.$store.commit("selectedOutputs", valToCommit);
                 // TODO: Currently the backend just sends both streams regardless of the selected outputs value, so we don't need to send anything
                 // this.handlePipelineUpdate('selectedOutputs', valToCommit);
+                setTimeout(() => {
+                    for(let idx in valToCommit) {
+                        console.log("Reloading idx " + idx)
+                        this.$refs.streams[idx].reload();
+                    }
+                }, 10)
             }
         },
         latency: {

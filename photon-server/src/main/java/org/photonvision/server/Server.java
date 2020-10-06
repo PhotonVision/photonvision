@@ -81,6 +81,7 @@ public class Server {
         app.post("api/restartProgram", RequestHandler::restartProgram);
         app.post("api/vision/pnpModel", RequestHandler::uploadPnpModel);
         app.post("api/sendMetrics", RequestHandler::sendMetrics);
+        app.post("api/setCameraNickname", RequestHandler::setCameraNickname);
 
         app.start(port);
     }

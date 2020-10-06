@@ -16,7 +16,7 @@
         props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
         data() {
             return {
-                seed: Math.random(),
+                seed: 1.0,
             }
         },
         computed: {
@@ -46,14 +46,13 @@
             },
             src: {
               get() {
-                return this.disconnected ? require("../../assets/noStream.jpg") : this.address + "?" + (this.seed || Math.random()) // This bit of hackery prevents caching
+                return this.disconnected ? require("../../assets/noStream.jpg") : this.address + "?" + this.seed // This prevents caching
               },
             },
         },
         methods: {
             reload() {
-                // This very hacky reload changes the URL of our stream to force it to reload
-                this.seed = Math.random();
+                this.seed = new Date().getTime();
             }
         },
     }
