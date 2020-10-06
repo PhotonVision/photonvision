@@ -198,6 +198,12 @@ public class VisionModule {
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
+
+        // Disable gain if not applicable
+        if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
+            settings.cameraGain = -1;
+        }
+
         pipelineManager.setCalibrationMode(true);
     }
 
