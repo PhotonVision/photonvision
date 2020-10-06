@@ -155,8 +155,8 @@ public class VisionModule {
                 new MJPGFrameConsumer(
                         visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
 
-        inputFrameSaver  = new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().baseName, "input");
-        outputFrameSaver = new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().baseName, "output");
+        inputFrameSaver  = new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
+        outputFrameSaver = new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "output");
     }
 
     void setDriverMode(boolean isDriverMode) {

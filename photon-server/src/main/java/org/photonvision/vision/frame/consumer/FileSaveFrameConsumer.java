@@ -40,7 +40,7 @@ public class FileSaveFrameConsumer {
     DateFormat tf = new SimpleDateFormat("hhmmssSS");
     private final String NT_SUFFIX = "SaveImgCmd";
     private final String ntEntryName;
-    private final NetworkTable subTable;
+    private NetworkTable subTable;
     private final NetworkTable rootTable;
     private final Logger logger;
     private boolean prevCommand = false;
@@ -51,18 +51,13 @@ public class FileSaveFrameConsumer {
     private ReentrantLock lock;
 
     public FileSaveFrameConsumer(String camNickname, String streamPrefix) {
-        this.fnamePrefix = camNickname + "_" + streamPrefix;
-        updateCameraNickname(camNickname);
-
-        this.rootTable = NetworkTableInstance.getDefault().getTable("/photonvision");
-        this.subTable = rootTable.getSubTable(this.camNickname);
-
-        this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
-
         this.lock = new ReentrantLock();
-
+        this.fnamePrefix = camNickname + "_" + streamPrefix;
         this.ntEntryName = streamPrefix + NT_SUFFIX;
-
+        this.rootTable = NetworkTableInstance.getDefault().getTable("/photonvision");
+        updateCameraNickname(camNickname);
+        this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
+        
     }
 
     public void accept(Frame frame) {
@@ -72,7 +67,6 @@ public class FileSaveFrameConsumer {
                 boolean curCommand = subTable.getEntry(ntEntryName).getBoolean(false);
 
                 if (curCommand == true && prevCommand == false) {
-
                     Date now = new Date();
                     String savefile = FILE_PATH + File.separator + 
                                       fnamePrefix + "_" + 
@@ -85,8 +79,8 @@ public class FileSaveFrameConsumer {
                     TimedTaskManager.getInstance().addOneShotTask(() -> resetCommand(), CMD_RESET_TIME_MS);
 
                     logger.info("Saved new image at " + savefile);
-
                 }
+
                 prevCommand = curCommand;
                 lock.unlock();
             }
@@ -100,12 +94,17 @@ public class FileSaveFrameConsumer {
     }
 
     private void removeEntries() {
-        this.subTable.delete(ntEntryName);
+        if(this.subTable != null){
+            if(this.subTable.containsKey(ntEntryName)){
+                this.subTable.delete(ntEntryName);
+            }
+        }
     }
 
     public void updateCameraNickname(String newCameraNickname) {
         removeEntries();
         this.camNickname = newCameraNickname;
+        this.subTable = rootTable.getSubTable(this.camNickname);
         resetCommand();
     }
 
