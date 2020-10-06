@@ -178,7 +178,7 @@
                   @input="e => handlePipelineUpdate('cameraExposure', e)"
                 />
                 <CVslider
-                  v-model="this.$store.getters.currentPipelineSettings.cameraBrightness"
+                  v-model="$store.getters.currentPipelineSettings.cameraBrightness"
                   name="Brightness"
                   :min="0"
                   :max="100"
