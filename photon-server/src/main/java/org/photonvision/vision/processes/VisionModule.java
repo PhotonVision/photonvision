@@ -38,7 +38,7 @@ import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
-import org.photonvision.vision.frame.consumer.MJPGFrameFileSaveConsumer;
+import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -72,8 +72,8 @@ public class VisionModule {
     MJPGFrameConsumer dashboardInputStreamer;
     MJPGFrameConsumer dashboardOutputStreamer;
 
-    MJPGFrameFileSaveConsumer inputFrameSaver;
-    MJPGFrameFileSaveConsumer outputFrameSaver;
+    FileSaveFrameConsumer inputFrameSaver;
+    FileSaveFrameConsumer outputFrameSaver;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
@@ -155,8 +155,8 @@ public class VisionModule {
                 new MJPGFrameConsumer(
                         visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
 
-        inputFrameSaver  = new MJPGFrameFileSaveConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-input");
-        outputFrameSaver = new MJPGFrameFileSaveConsumer(visionSource.getSettables().getConfiguration().uniqueName + "-output");
+        inputFrameSaver  = new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().baseName, "input");
+        outputFrameSaver = new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().baseName, "output");
     }
 
     void setDriverMode(boolean isDriverMode) {
@@ -286,6 +286,8 @@ public class VisionModule {
     void setCameraNickname(String newName) {
         visionSource.getSettables().getConfiguration().nickname = newName;
         ntConsumer.updateCameraNickname(newName);
+        inputFrameSaver.updateCameraNickname(newName);
+        outputFrameSaver.updateCameraNickname(newName);
 
         // rename streams
         fpsLimitedResultConsumers.clear();
