@@ -72,6 +72,9 @@
           <v-card
             color="primary"
           >
+            <!--            <v-btn @click="onCamNameChange">-->
+            <!--              Reload-->
+            <!--            </v-btn>-->
             <camera-and-pipeline-select @camera-name-changed="onCamNameChange" />
           </v-card>
           <v-card
@@ -390,10 +393,6 @@ export default {
                 this.$store.commit("selectedOutputs", valToCommit);
                 // TODO: Currently the backend just sends both streams regardless of the selected outputs value, so we don't need to send anything
                 // this.handlePipelineUpdate('selectedOutputs', valToCommit);
-                setTimeout(() => {
-                    const streams = this.$refs.streams;
-                    streams.forEach(it => it.reload());
-                }, 50)
             }
         },
         latency: {

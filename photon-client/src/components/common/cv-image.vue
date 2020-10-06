@@ -50,6 +50,9 @@
               },
             },
         },
+        created() {
+            this.reload(); // Force reload image on creation
+        },
         methods: {
             reload() {
                 this.seed = new Date().getTime();
