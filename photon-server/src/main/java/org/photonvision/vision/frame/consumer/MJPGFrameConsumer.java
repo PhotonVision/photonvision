@@ -34,12 +34,12 @@ import org.photonvision.vision.frame.FrameDivisor;
 
 public class MJPGFrameConsumer {
 
-    private final CvSource cvSource;
-    private final MjpegServer mjpegServer;
+    private CvSource cvSource;
+    private MjpegServer mjpegServer;
     private FrameDivisor divisor = FrameDivisor.NONE;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private final VideoListener listener;
+    private VideoListener listener;
 
     private final NetworkTable table;
 
@@ -162,5 +162,15 @@ public class MJPGFrameConsumer {
             default:
                 return "Unknown";
         }
+    }
+
+    public void close() {
+        table.getEntry("connected").setBoolean(false);
+        mjpegServer.close();
+        cvSource.close();
+        listener.close();
+        mjpegServer = null;
+        cvSource = null;
+        listener = null;
     }
 }

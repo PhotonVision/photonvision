@@ -45,8 +45,9 @@
                 style="height: 100%;"
               >
                 <div style="position: relative; width: 100%; height: 100%;">
-                  <cvImage
+                  <cv-image
                     :id="idx === 0 ? 'normal-stream' : ''"
+                    ref="streams"
                     :address="$store.getters.streamAddress[idx]"
                     :disconnected="!$store.state.backendConnected"
                     scale="100"
@@ -71,7 +72,7 @@
           <v-card
             color="primary"
           >
-            <camera-and-pipeline-select />
+            <camera-and-pipeline-select @camera-name-changed="onCamNameChange" />
           </v-card>
           <v-card
             :disabled="$store.getters.isDriverMode || $store.state.colorPicking"
@@ -212,8 +213,12 @@
         </v-card-title>
 
         <v-card-text>
-          Because the current resolution {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].width }}
-          x {{ this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].height }}
+          Because the current resolution {{
+            this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].width
+          }}
+          x {{
+            this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].height
+          }}
           is not yet calibrated, 3D mode cannot be enabled. Please
           <a
             href="/#/cameras"
@@ -240,202 +245,206 @@
 </template>
 
 <script>
-    import CameraAndPipelineSelect from "../components/pipeline/CameraAndPipelineSelect";
-    import cvImage from '../components/common/cv-image';
-    import InputTab from './PipelineViews/InputTab';
-    import ThresholdTab from './PipelineViews/ThresholdTab';
-    import ContoursTab from './PipelineViews/ContoursTab';
-    import OutputTab from './PipelineViews/OutputTab';
-    import TargetsTab from "./PipelineViews/TargetsTab";
-    import PnPTab from './PipelineViews/PnPTab';
+import CameraAndPipelineSelect from "../components/pipeline/CameraAndPipelineSelect";
+import cvImage from '../components/common/cv-image';
+import InputTab from './PipelineViews/InputTab';
+import ThresholdTab from './PipelineViews/ThresholdTab';
+import ContoursTab from './PipelineViews/ContoursTab';
+import OutputTab from './PipelineViews/OutputTab';
+import TargetsTab from "./PipelineViews/TargetsTab";
+import PnPTab from './PipelineViews/PnPTab';
 
-    export default {
-        name: 'CameraTab',
-        components: {
-            CameraAndPipelineSelect,
-            cvImage,
-            InputTab,
-            ThresholdTab,
-            ContoursTab,
-            OutputTab,
-            TargetsTab,
-            PnPTab,
-        },
-        data() {
-            return {
-                selectedTabsData: [0, 0, 0, 0],
-                snackbar: false,
-                counterData: 0,
-                dialog: false,
-                processingModeOverride: false
+export default {
+    name: 'CameraTab',
+    components: {
+        CameraAndPipelineSelect,
+        cvImage,
+        InputTab,
+        ThresholdTab,
+        ContoursTab,
+        OutputTab,
+        TargetsTab,
+        PnPTab,
+    },
+    data() {
+        return {
+            selectedTabsData: [0, 0, 0, 0],
+            snackbar: false,
+            counterData: 0,
+            dialog: false,
+            processingModeOverride: false
+        }
+    },
+    computed: {
+        selectedTabs: {
+            get() {
+                return this.$store.getters.isDriverMode ? [0] : this.selectedTabsData;
+            },
+            set(value) {
+                this.selectedTabsData = value;
             }
         },
-        computed: {
-            selectedTabs: {
-                get() {
-                  return this.$store.getters.isDriverMode ? [0] : this.selectedTabsData;
-                },
-                set(value) {
-                  this.selectedTabsData = value;
-                }
-            },
-            tabGroups: {
-                get() {
-                    let tabs = {
-                        input: {
-                            name: "Input",
-                            component: "InputTab",
-                        },
-                        threshold: {
-                            name: "Threshold",
-                            component: "ThresholdTab",
-                        },
-                        contours: {
-                            name: "Contours",
-                            component: "ContoursTab",
-                        },
-                        output: {
-                            name: "Output",
-                            component: "OutputTab",
-                        },
-                        targets: {
-                            name: "Target Info",
-                            component: "TargetsTab",
-                        },
-                        pnp: {
-                            name: "3D",
-                            component: "PnPTab",
-                        }
-                    };
-
-                    // 2D array of tab names and component names; each sub-array is a separate tab group
-                    let ret = [];
-                    if (this.$vuetify.breakpoint.smAndDown || this.$store.getters.isDriverMode || (this.$vuetify.breakpoint.mdAndDown && !this.$store.state.compactMode)) {
-                        // One big tab group with all the tabs
-                        ret[0] = Object.values(tabs);
-                    } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
-                        // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
-                        ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.output];
-                        ret[1] = [tabs.targets, tabs.pnp];
-                    } else if (this.$vuetify.breakpoint.lgAndDown) {
-                        // Three tab groups, one with "input", one with "threshold, contours, output", and the other with "target info, 3D"
-                        ret[0] = [tabs.input];
-                        ret[1] = [tabs.threshold, tabs.contours, tabs.output];
-                        ret[2] = [tabs.targets, tabs.pnp];
-                    } else if (this.$vuetify.breakpoint.xl) {
-                        // Three tab groups, one with "input", one with "threshold, contours", and the other with "output, target info, 3D"
-                        ret[0] = [tabs.input];
-                        ret[1] = [tabs.threshold];
-                        ret[2] = [tabs.contours, tabs.output]
-                        ret[3] = [tabs.targets, tabs.pnp];
+        tabGroups: {
+            get() {
+                let tabs = {
+                    input: {
+                        name: "Input",
+                        component: "InputTab",
+                    },
+                    threshold: {
+                        name: "Threshold",
+                        component: "ThresholdTab",
+                    },
+                    contours: {
+                        name: "Contours",
+                        component: "ContoursTab",
+                    },
+                    output: {
+                        name: "Output",
+                        component: "OutputTab",
+                    },
+                    targets: {
+                        name: "Target Info",
+                        component: "TargetsTab",
+                    },
+                    pnp: {
+                        name: "3D",
+                        component: "PnPTab",
                     }
+                };
 
+                // 2D array of tab names and component names; each sub-array is a separate tab group
+                let ret = [];
+                if (this.$vuetify.breakpoint.smAndDown || this.$store.getters.isDriverMode || (this.$vuetify.breakpoint.mdAndDown && !this.$store.state.compactMode)) {
+                    // One big tab group with all the tabs
+                    ret[0] = Object.values(tabs);
+                } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
+                    // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
+                    ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.output];
+                    ret[1] = [tabs.targets, tabs.pnp];
+                } else if (this.$vuetify.breakpoint.lgAndDown) {
+                    // Three tab groups, one with "input", one with "threshold, contours, output", and the other with "target info, 3D"
+                    ret[0] = [tabs.input];
+                    ret[1] = [tabs.threshold, tabs.contours, tabs.output];
+                    ret[2] = [tabs.targets, tabs.pnp];
+                } else if (this.$vuetify.breakpoint.xl) {
+                    // Three tab groups, one with "input", one with "threshold, contours", and the other with "output, target info, 3D"
+                    ret[0] = [tabs.input];
+                    ret[1] = [tabs.threshold];
+                    ret[2] = [tabs.contours, tabs.output]
+                    ret[3] = [tabs.targets, tabs.pnp];
+                }
+
+                return ret;
+            }
+        },
+        processingMode: {
+            get() {
+                return (this.$store.getters.currentPipelineSettings.solvePNPEnabled || this.processingModeOverride) ? 1 : 0;
+            },
+            set(value) {
+                if (this.$store.getters.isCalibrated) {
+                    this.$store.getters.currentPipelineSettings.solvePNPEnabled = value === 1;
+                    this.handlePipelineUpdate("solvePNPEnabled", value === 1);
+                }
+            }
+        },
+        driverMode: {
+            get() {
+                return this.$store.getters.isDriverMode;
+            },
+            set(value) {
+                this.$store.getters.currentCameraSettings.currentPipelineIndex = value ? -1 : 0;
+                this.handleInputWithIndex('currentPipeline', value ? -1 : 0);
+            }
+        },
+        selectedOutputs: {
+            // All this logic exists to deal with the reality that the output select buttons sometimes need an array and sometimes need a number (depending on whether or not they're exclusive)
+            get() {
+                // We switch the selector to single-select only on sm-and-down size devices, so we have to return a Number instead of an Array in that state
+                let ret;
+                if (this.$store.state.colorPicking) {
+                    ret = [0]; // We want the input stream only while color picking
+                } else if (!this.$store.getters.isDriverMode) {
+                    ret = this.$store.state.selectedOutputs || [0];
+                } else {
+                    ret = [1]; // We want the output stream in driver mode
+                }
+
+                if (this.$vuetify.breakpoint.mdAndUp) {
                     return ret;
+                } else {
+                    return ret[0] || 0;
                 }
             },
-            processingMode: {
-                get() {
-                    return (this.$store.getters.currentPipelineSettings.solvePNPEnabled || this.processingModeOverride) ? 1 : 0;
-                },
-                set(value) {
-                    if (this.$store.getters.isCalibrated) {
-                      this.$store.getters.currentPipelineSettings.solvePNPEnabled = value === 1;
-                      this.handlePipelineUpdate("solvePNPEnabled", value === 1);
-                    }
+            set(value) {
+                let valToCommit = [0];
+                if (value instanceof Array) {
+                    // Value is already an array, we don't need to do anything
+                    value.sort(); // Sort for visual consistency
+                    valToCommit = value;
+                } else if (value) {
+                    // Value is assumed to be a number, so we wrap it into an array
+                    valToCommit = [value];
                 }
-            },
-            driverMode: {
-                get() {
-                  return this.$store.getters.isDriverMode;
-                },
-                set(value) {
-                  this.$store.getters.currentCameraSettings.currentPipelineIndex = value ? -1 : 0;
-                  this.handleInputWithIndex('currentPipeline', value ? -1 : 0);
-                }
-            },
-            selectedOutputs: {
-                // All this logic exists to deal with the reality that the output select buttons sometimes need an array and sometimes need a number (depending on whether or not they're exclusive)
-                get() {
-                    // We switch the selector to single-select only on sm-and-down size devices, so we have to return a Number instead of an Array in that state
-                    let ret;
-                    if (this.$store.state.colorPicking) {
-                        ret = [0]; // We want the input stream only while color picking
-                    } else if (!this.$store.getters.isDriverMode) {
-                        ret = this.$store.state.selectedOutputs || [0];
-                    } else {
-                        ret = [1]; // We want the output stream in driver mode
-                    }
-
-                    if (this.$vuetify.breakpoint.mdAndUp) {
-                        return ret;
-                    } else {
-                        return ret[0] || 0;
-                    }
-                },
-                set(value) {
-                    let valToCommit = [0];
-                    if (value instanceof Array) {
-                        // Value is already an array, we don't need to do anything
-                        value.sort(); // Sort for visual consistency
-                        valToCommit = value;
-                    } else if (value) {
-                        // Value is assumed to be a number, so we wrap it into an array
-                        valToCommit = [value];
-                    }
-                    this.$store.commit("selectedOutputs", valToCommit);
-                    // TODO: Currently the backend just sends both streams regardless of the selected outputs value, so we don't need to send anything
-                    // this.handlePipelineUpdate('selectedOutputs', valToCommit);
-                }
-            },
-            latency: {
-                get() {
-                    return this.$store.getters.currentPipelineResults.latency;
-                }
+                this.$store.commit("selectedOutputs", valToCommit);
+                // TODO: Currently the backend just sends both streams regardless of the selected outputs value, so we don't need to send anything
+                // this.handlePipelineUpdate('selectedOutputs', valToCommit);
             }
         },
-        methods: {
-            isCalibrated() {
-                const resolution = this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex];
-                return this.$store.getters.currentCameraSettings.calibrations
-                    .some(e => e.width === resolution.width && e.height === resolution.height)
-            },
-            onImageClick(event) {
-                // Only run on the input stream
-                if (event.target.alt !== "Stream0") return;
-                // Get a reference to the threshold tab (if it is shown) and call its "onClick" method
-                let ref = this.$refs["Threshold"];
-                if (ref && ref[0])
-                  ref[0].onClick(event)
-            },
-            on3DClick() {
-                if (!this.$store.getters.isCalibrated) {
-                  this.dialog = true;
-                  this.processingModeOverride = true;
-                }
-            },
-            closeUncalibratedDialog() {
-                this.dialog = false;
-                this.processingModeOverride = false;
-                // this.$store.getters.currentPipelineSettings.solvePNPEnabled = false;
-                this.handlePipelineUpdate("solvePNPEnabled", false);
+        latency: {
+            get() {
+                return this.$store.getters.currentPipelineResults.latency;
             }
         }
+    },
+    methods: {
+        onCamNameChange() {
+            // Reload the streams as we technically close and reopen them
+            this.$refs.streams.forEach(it => it.reload())
+        },
+        isCalibrated() {
+            const resolution = this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex];
+            return this.$store.getters.currentCameraSettings.calibrations
+                .some(e => e.width === resolution.width && e.height === resolution.height)
+        },
+        onImageClick(event) {
+            // Only run on the input stream
+            if (event.target.alt !== "Stream0") return;
+            // Get a reference to the threshold tab (if it is shown) and call its "onClick" method
+            let ref = this.$refs["Threshold"];
+            if (ref && ref[0])
+                ref[0].onClick(event)
+        },
+        on3DClick() {
+            if (!this.$store.getters.isCalibrated) {
+                this.dialog = true;
+                this.processingModeOverride = true;
+            }
+        },
+        closeUncalibratedDialog() {
+            this.dialog = false;
+            this.processingModeOverride = false;
+            // this.$store.getters.currentPipelineSettings.solvePNPEnabled = false;
+            this.handlePipelineUpdate("solvePNPEnabled", false);
+        }
     }
+}
 </script>
 
 <style scoped>
-    .v-btn-toggle.fill {
-        width: 100%;
-        height: 100%;
-    }
+.v-btn-toggle.fill {
+    width: 100%;
+    height: 100%;
+}
 
-    .v-btn-toggle.fill > .v-btn {
-        width: 50%;
-        height: 100%;
-    }
+.v-btn-toggle.fill > .v-btn {
+    width: 50%;
+    height: 100%;
+}
 
-    th {
-        width: 80px;
-        text-align: center;
-    }
+th {
+    width: 80px;
+    text-align: center;
+}
 </style>

@@ -34,7 +34,7 @@
           :hover="true"
           text="edit"
           tooltip="Edit camera name"
-          @click="toCameraNameChange"
+          @click="changeCameraName"
         />
         <div v-else>
           <CVicon
@@ -292,7 +292,7 @@
             }
         },
         methods: {
-            toCameraNameChange() {
+            changeCameraName() {
                 this.newCameraName = this.$store.getters.cameraList[this.currentCameraIndex];
                 this.isCameraNameEdit = true;
             },
@@ -300,6 +300,7 @@
                 if (this.checkCameraName === "") {
                     this.handleInputWithIndex("changeCameraName", this.newCameraName);
                     this.discardCameraNameChange();
+                    this.$emit('camera-name-changed')
                 }
             },
             discardCameraNameChange() {
