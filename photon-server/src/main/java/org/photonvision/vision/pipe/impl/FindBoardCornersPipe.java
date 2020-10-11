@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import java.util.Objects;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
@@ -26,11 +27,10 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
 
-import java.util.Objects;
-
 public class FindBoardCornersPipe
         extends CVPipe<Mat, Triple<Size, Mat, Mat>, FindBoardCornersPipe.FindCornersPipeParams> {
-    private static final Logger logger = new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
+    private static final Logger logger =
+            new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
 
     MatOfPoint3f objectPoints = new MatOfPoint3f();
 
@@ -56,7 +56,10 @@ public class FindBoardCornersPipe
         We subtract 1 for chessboard because the UI prompts users for the number of squares, not the
         number of corners.
         * */
-        this.patternSize = params.type == UICalibrationData.BoardType.CHESSBOARD ? new Size(params.boardWidth - 1, params.boardHeight - 1) : new Size(params.boardWidth, params.boardHeight);
+        this.patternSize =
+                params.type == UICalibrationData.BoardType.CHESSBOARD
+                        ? new Size(params.boardWidth - 1, params.boardHeight - 1)
+                        : new Size(params.boardWidth, params.boardHeight);
 
         // Chessboard and dot board have different 3D points to project as a dot board has alternating
         // dots per column
@@ -167,10 +170,10 @@ public class FindBoardCornersPipe
             if (this == o) return true;
             if (o == null || getClass() != o.getClass()) return false;
             FindCornersPipeParams that = (FindCornersPipeParams) o;
-            return boardHeight == that.boardHeight &&
-                boardWidth == that.boardWidth &&
-                Double.compare(that.gridSize, gridSize) == 0 &&
-                type == that.type;
+            return boardHeight == that.boardHeight
+                    && boardWidth == that.boardWidth
+                    && Double.compare(that.gridSize, gridSize) == 0
+                    && type == that.type;
         }
 
         @Override
