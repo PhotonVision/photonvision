@@ -291,7 +291,7 @@ export default {
                 text: ""
             },
             snack: false,
-            filteredVideomodeIndex: 0
+            filteredVideomodeIndex: undefined,
         }
     },
     computed: {
