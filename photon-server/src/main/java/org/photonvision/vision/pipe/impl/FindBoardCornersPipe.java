@@ -21,11 +21,17 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
 
+import java.util.Objects;
+
 public class FindBoardCornersPipe
         extends CVPipe<Mat, Triple<Size, Mat, Mat>, FindBoardCornersPipe.FindCornersPipeParams> {
+    private static final Logger logger = new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
+
     MatOfPoint3f objectPoints = new MatOfPoint3f();
 
     Size imageSize;
@@ -38,25 +44,19 @@ public class FindBoardCornersPipe
     private final Size zeroZone = new Size(-1, -1);
     private final TermCriteria criteria = new TermCriteria(3, 30, 0.001);
 
-    private boolean objectPointsCreated = false;
-
-    @Override
-    public void setParams(FindCornersPipeParams params) {
-        super.setParams(params);
-
-        if (new Size(params.boardWidth, params.boardHeight).equals(patternSize)) return;
-
-        objectPointsCreated = false;
-    }
+    private FindCornersPipeParams lastParams = null;
 
     public void createObjectPoints() {
-        if (objectPointsCreated) return; // TODO reinstantiate on settings change
+        if (this.lastParams != null && this.lastParams.equals(this.params)) return;
+        this.lastParams = this.params;
 
         /*If using a chessboard, then the pattern size if the inner corners of the board. For example, the pattern size of a 9x9 chessboard would be 8x8
         If using a dot board, then the pattern size width is the sum of the bottom 2 rows and the height is the left or right most column
         For example, a 5x4 dot board would have a pattern size of 11x4
+        We subtract 1 for chessboard because the UI prompts users for the number of squares, not the
+        number of corners.
         * */
-        this.patternSize = new Size(params.boardWidth, params.boardHeight);
+        this.patternSize = params.type == UICalibrationData.BoardType.CHESSBOARD ? new Size(params.boardWidth - 1, params.boardHeight - 1) : new Size(params.boardWidth, params.boardHeight);
 
         // Chessboard and dot board have different 3D points to project as a dot board has alternating
         // dots per column
@@ -81,9 +81,8 @@ public class FindBoardCornersPipe
                 }
             }
         } else {
-            // TOOD log
+            logger.error("Can't create pattern for unknown board type " + params.type);
         }
-        objectPointsCreated = true;
     }
 
     /**
@@ -161,6 +160,22 @@ public class FindBoardCornersPipe
             this.boardWidth = boardWidth;
             this.type = type;
             this.gridSize = gridSize; // mm
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            FindCornersPipeParams that = (FindCornersPipeParams) o;
+            return boardHeight == that.boardHeight &&
+                boardWidth == that.boardWidth &&
+                Double.compare(that.gridSize, gridSize) == 0 &&
+                type == that.type;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(boardHeight, boardWidth, type, gridSize);
         }
     }
 }

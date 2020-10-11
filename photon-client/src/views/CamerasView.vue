@@ -93,14 +93,14 @@
                   v-model="boardWidth"
                   name="Board width"
                   label-cols="5"
-                  tooltip="Width of the board in dots or corners; with the standard chessboard, this is usually 7"
+                  tooltip="Width of the board in dots or chessboard squares; with the standard chessboard, this is usually 8"
                   :disabled="isCalibrating"
                 />
                 <CVnumberinput
                   v-model="boardHeight"
                   name="Board height"
                   label-cols="5"
-                  tooltip="Height of the board in dots or corners; with the standard chessboard, this is usually 7"
+                  tooltip="Height of the board in dots or chessboard squares; with the standard chessboard, this is usually 8"
                   :disabled="isCalibrating"
                 />
               </v-col>
@@ -409,7 +409,6 @@ export default {
                 return this.$store.getters.currentPipelineIndex === -2;
             }
         },
-
         selectedFilteredResIndex: {
             get() {
                 return this.filteredVideomodeIndex

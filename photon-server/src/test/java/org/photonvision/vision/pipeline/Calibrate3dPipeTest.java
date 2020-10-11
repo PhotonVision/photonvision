@@ -81,8 +81,8 @@ public class Calibrate3dPipeTest {
         File[] directoryListing = dir.listFiles();
 
         Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
-        calibration3dPipeline.getSettings().boardHeight = 11;
-        calibration3dPipeline.getSettings().boardWidth = 4;
+        calibration3dPipeline.getSettings().boardHeight = 12;
+        calibration3dPipeline.getSettings().boardWidth = 5;
         calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.DOTBOARD;
         calibration3dPipeline.getSettings().gridSize = 15;
         calibration3dPipeline.getSettings().resolution = new Size(640, 480);
