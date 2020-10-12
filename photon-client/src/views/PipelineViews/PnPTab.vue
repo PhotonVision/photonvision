@@ -19,7 +19,7 @@
       :items="targetList"
       item-text="name"
       item-value="data"
-      @change="uploadModel"
+      @input="handlePipelineUpdate('targetModel', targetList.indexOf(selectedModel))"
     />
     <CVslider
       v-model="cornerDetectionAccuracyPercentage"
@@ -66,10 +66,19 @@
                     text: ""
                 },
                 snack: false,
-                selectedModel: undefined,
             }
         },
         computed: {
+            selectedModel: {
+                get() {
+                    let ret = this.$store.getters.currentPipelineSettings.targetModel
+                    console.log(ret)
+                    return this.targetList[ret];
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"targetModel": this.targetList.indexOf(val)})
+                }
+            },
             cornerDetectionAccuracyPercentage: {
                 get() {
                     return this.$store.getters.currentPipelineSettings.cornerDetectionAccuracyPercentage
@@ -134,26 +143,6 @@
                     this.selectedModel = null;
                 }
             },
-            uploadModel() {
-                this.axios.post("http://" + this.$address + "/api/vision/pnpModel", {
-                    ['targetModel']: this.targetList.indexOf(this.selectedModel),
-                    ['index']: this.$store.getters.currentCameraIndex
-                }).then(() => {
-                    this.snackbar = {
-                        color: "success",
-                        text: "Target model changed successfully"
-                    };
-                    this.snack = true;
-                }).catch(() => {
-                    this.snackbar = {
-                        color: "error",
-                        text: "An error occurred selecting a target model"
-                    };
-                    this.snack = true;
-
-                    this.selectedModel = null;
-                });
-            }
         }
     }
 </script>
