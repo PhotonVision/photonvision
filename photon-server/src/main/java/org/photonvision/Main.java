@@ -93,7 +93,7 @@ public class Main {
 
         var pipeline2019 = new ReflectivePipelineSettings();
         pipeline2019.pipelineNickname = "CargoShip";
-        pipeline2019.targetModel = TargetModel.k2020HighGoalOuter;
+        pipeline2019.targetModel = TargetModel.k2019DualTarget;
 
         var psList2019 = new ArrayList<CVPipelineSettings>();
         psList2019.add(pipeline2019);
