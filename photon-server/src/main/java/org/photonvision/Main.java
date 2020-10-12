@@ -33,6 +33,7 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
+import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.processes.VisionModule;
@@ -94,6 +95,8 @@ public class Main {
         var pipeline2019 = new ReflectivePipelineSettings();
         pipeline2019.pipelineNickname = "CargoShip";
         pipeline2019.targetModel = TargetModel.k2019DualTarget;
+        pipeline2019.outputShowMultipleTargets = true;
+        pipeline2019.contourGroupingMode = ContourGroupingMode.Dual;
 
         var psList2019 = new ArrayList<CVPipelineSettings>();
         psList2019.add(pipeline2019);
