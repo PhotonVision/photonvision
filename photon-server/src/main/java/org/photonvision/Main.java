@@ -93,7 +93,7 @@ public class Main {
 
         var pipeline2019 = new ReflectivePipelineSettings();
         pipeline2019.pipelineNickname = "CargoShip";
-        pipeline2019.targetModel = TargetModel.get2019Target();
+        pipeline2019.targetModel = TargetModel.k2020HighGoalOuter;
 
         var psList2019 = new ArrayList<CVPipelineSettings>();
         psList2019.add(pipeline2019);
@@ -107,7 +107,7 @@ public class Main {
 
         var pipeline2020 = new ReflectivePipelineSettings();
         pipeline2020.pipelineNickname = "OuterPort";
-        pipeline2020.targetModel = TargetModel.get2020Target();
+        pipeline2020.targetModel = TargetModel.k2020HighGoalOuter;
         camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs(true));
 
         var psList2020 = new ArrayList<CVPipelineSettings>();
