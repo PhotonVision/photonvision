@@ -105,7 +105,10 @@ public class VisionModule {
         DataChangeService.getInstance().addSubscriber(new VisionModuleChangeSubscriber(this));
 
         createStreams();
-        fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
+        fpsLimitedResultConsumers.add(result -> {
+            if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow) dashboardInputStreamer.accept(result.inputFrame);
+            else result.inputFrame.release();
+        });
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
         fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
@@ -177,11 +180,10 @@ public class VisionModule {
     private class StreamRunnable extends Thread {
         private final OutputStreamPipeline outputStreamPipeline;
 
-        private Object frameLock = new Object();
+        private final Object frameLock = new Object();
         private Frame inputFrame, outputFrame;
         private AdvancedPipelineSettings settings = new AdvancedPipelineSettings();
         private List<TrackedTarget> targets = new ArrayList<>();
-        private double fps = 0;
 
         private boolean shouldRun = false;
 
@@ -193,14 +195,12 @@ public class VisionModule {
                 Frame inputFrame,
                 Frame outputFrame,
                 AdvancedPipelineSettings settings,
-                List<TrackedTarget> targets,
-                double fps) {
+                List<TrackedTarget> targets) {
             synchronized (frameLock) {
                 this.inputFrame = inputFrame;
                 this.outputFrame = outputFrame;
                 this.settings = settings;
                 this.targets = targets;
-                this.fps = fps;
 
                 if (shouldRun && this.inputFrame != null && this.outputFrame != null) {
                     this.inputFrame.release();
@@ -220,7 +220,6 @@ public class VisionModule {
                 final Frame inputFrame, outputFrame;
                 final AdvancedPipelineSettings settings;
                 final List<TrackedTarget> targets;
-                final double fps;
                 final boolean shouldRun;
                 synchronized (frameLock) {
                     inputFrame = this.inputFrame;
@@ -230,11 +229,10 @@ public class VisionModule {
 
                     settings = this.settings;
                     targets = this.targets;
-                    fps = this.fps;
                     shouldRun = this.shouldRun;
                 }
                 if (shouldRun) {
-                    var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets, fps);
+                    var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
                     consumeFpsLimitedResult(osr);
                     synchronized (frameLock) {
                         this.shouldRun = false;
@@ -479,15 +477,13 @@ public class VisionModule {
     private void consumeResult(CVPipelineResult result) {
         consumePipelineResult(result);
 
-        // total hack. kms
+        // Total hack
         if (pipelineManager.getCurrentPipelineIndex() >= 0) {
-            var fps = 1000.0 / result.getLatencyMillis();
             streamRunnable.updateData(
                     result.inputFrame,
                     result.outputFrame,
                     (AdvancedPipelineSettings) pipelineManager.getCurrentPipelineSettings(),
-                    result.targets,
-                    fps);
+                    result.targets);
             // the streamRunnable manages releasing in this case
         } else {
             consumeFpsLimitedResult(result);

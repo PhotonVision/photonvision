@@ -148,10 +148,14 @@
             streamResolutionList: {
                 get() {
                     let cam_res = this.$store.getters.videoFormatList[
-                        this.$store.getters.currentCameraSettings.currentPipelineSettings.cameraVideoModeIndex]
+                        this.$store.getters.currentCameraSettings.currentPipelineSettings.cameraVideoModeIndex];
                     let tmp_list = [];
-                    tmp_list.push(`${Math.floor(cam_res['width'])} X ${Math.floor(cam_res['height'])}`);
-                    for (let x = 2; x <= 6; x += 2) {
+                    for (const x of [1, 2, 4, 6]) {
+                        // Limit stream res when GPU acceleration is enabled because we *know* that we won't be able to get smooth streams above ~640x480
+                        // It would probably be cleaner if this checked that we're on the Raspi 3 instead of checking for GPU accel status
+                        if (this.$store.state.settings.general.gpuAcceleration && cam_res['width'] / x > 400) {
+                          continue;
+                        }
                         tmp_list.push(`${Math.floor(cam_res['width'] / x)} X ${Math.floor(cam_res['height'] / x)}`);
                     }
                     return tmp_list;

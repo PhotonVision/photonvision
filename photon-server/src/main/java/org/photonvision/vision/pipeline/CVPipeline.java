@@ -45,7 +45,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         setPipeParams(frame.frameStaticProperties, settings);
 
         if (frame.image.getMat().empty()) {
-            return (R) new CVPipelineResult(0, List.of(), frame);
+            return (R) new CVPipelineResult(0, 0, List.of(), frame);
         }
         R result = process(frame, settings);
 

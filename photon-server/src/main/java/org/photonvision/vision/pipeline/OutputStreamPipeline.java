@@ -25,10 +25,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.DualOffsetValues;
-import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
-import org.photonvision.vision.pipe.impl.Draw2dTargetsPipe;
-import org.photonvision.vision.pipe.impl.Draw3dTargetsPipe;
-import org.photonvision.vision.pipe.impl.OutputMatPipe;
+import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -42,6 +39,7 @@ public class OutputStreamPipeline {
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
     private final Draw2dTargetsPipe draw2dTargetsPipe = new Draw2dTargetsPipe();
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
+    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private final long[] pipeProfileNanos = new long[10];
 
@@ -81,8 +79,7 @@ public class OutputStreamPipeline {
             Frame inputFrame,
             Frame outputFrame,
             AdvancedPipelineSettings settings,
-            List<TrackedTarget> targetsToDraw,
-            double fpsToDraw) {
+            List<TrackedTarget> targetsToDraw) {
         setPipeParams(inputFrame.frameStaticProperties, settings);
         var inMat = inputFrame.image.getMat();
         var outMat = outputFrame.image.getMat();
@@ -102,11 +99,11 @@ public class OutputStreamPipeline {
 
         // Draw 2D contours on input and output
         var draw2dTargetsOnInput =
-                draw2dTargetsPipe.run(Triple.of(inMat, targetsToDraw, (int) fpsToDraw));
+                draw2dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
         sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dTargetsOnInput.nanosElapsed;
 
         var draw2dTargetsOnOutput =
-                draw2dTargetsPipe.run(Triple.of(outMat, targetsToDraw, (int) fpsToDraw));
+                draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
         sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dTargetsOnOutput.nanosElapsed;
 
         // Draw 3D Targets on input and output if necessary
@@ -121,8 +118,12 @@ public class OutputStreamPipeline {
             pipeProfileNanos[6] = 0;
         }
 
+        var fpsResult = calculateFPSPipe.run(null);
+        var fps = fpsResult.output;
+
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                fps, // Unused but here just in case
                 targetsToDraw,
                 new Frame(new CVMat(outMat), outputFrame.frameStaticProperties),
                 new Frame(new CVMat(inMat), inputFrame.frameStaticProperties));

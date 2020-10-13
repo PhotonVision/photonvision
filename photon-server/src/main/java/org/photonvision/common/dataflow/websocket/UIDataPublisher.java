@@ -47,6 +47,7 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         var uiMap = new HashMap<Integer, HashMap<String, Object>>();
         var dataMap = new HashMap<String, Object>();
 
+        dataMap.put("fps", result.fps);
         dataMap.put("latency", result.getLatencyMillis());
 
         var targets = result.targets;

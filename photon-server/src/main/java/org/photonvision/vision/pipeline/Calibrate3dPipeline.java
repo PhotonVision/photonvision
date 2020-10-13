@@ -40,6 +40,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
+import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -53,6 +54,7 @@ public class Calibrate3dPipeline
     // Only 2 pipes needed, one for finding the board corners and one for actually calibrating
     private final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
     private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
+    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     // Getter methods have been set for calibrate and takeSnapshot
     private boolean takeSnapshot = false;
@@ -111,6 +113,9 @@ public class Calibrate3dPipeline
         frame.image.getMat().copyTo(outFrame);
         var findBoardResult = findBoardCornersPipe.run(Pair.of(frame.image.getMat(), outFrame)).output;
 
+        var fpsResult = calculateFPSPipe.run(null);
+        var fps = fpsResult.output;
+
         if (takeSnapshot) {
             // Set snapshot to false even if we don't find a board
             takeSnapshot = false;
@@ -125,13 +130,14 @@ public class Calibrate3dPipeline
                 broadcastState();
 
                 return new CVPipelineResult(
-                        MathUtils.nanosToMillis(sumPipeNanosElapsed), Collections.emptyList(), frame);
+                        MathUtils.nanosToMillis(sumPipeNanosElapsed), fps, Collections.emptyList(), frame);
             }
         }
 
         // Return the drawn chessboard if corners are found, if not, then return the input image.
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                fps, // Unused but here in case
                 null,
                 new Frame(new CVMat(outFrame), frame.frameStaticProperties));
     }

@@ -26,6 +26,18 @@
               style="height: 15%; min-height: 50px;"
             >
               Cameras
+              <v-chip
+                :class="fpsTooLow ? 'ml-2 mt-1' : 'mt-2'"
+                x-small
+                label
+                :color="fpsTooLow ? 'red' : 'transparent'"
+                :text-color="fpsTooLow ? 'white' : 'grey'"
+              >
+                <span class="pr-1">{{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
+                <span v-if="!fpsTooLow">{{ Math.round($store.state.pipelineResults.latency) }} ms latency</span>
+                <span v-else-if="!$store.getters.currentPipelineSettings.inputShouldShow">HSV thresholds are too broad; narrow them for better performance</span>
+                <span v-else>stop viewing the color stream for better performance</span>
+              </v-chip>
               <v-switch
                 v-model="driverMode"
                 label="Driver Mode"
@@ -55,7 +67,7 @@
                     :max-height-md="$store.getters.isDriverMode ? '50vh' : '320px'"
                     :max-height-xl="$store.getters.isDriverMode ? '60vh' : '450px'"
                     :alt="'Stream' + idx"
-                    :color-picking="$store.state.colorPicking && idx == 0"
+                    :color-picking="$store.state.colorPicking && idx === 0"
                     @click="onImageClick"
                   />
                 </div>
@@ -216,13 +228,7 @@
         </v-card-title>
 
         <v-card-text>
-          Because the current resolution {{
-            this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].width
-          }}
-          x {{
-            this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex].height
-          }}
-          is not yet calibrated, 3D mode cannot be enabled. Please
+          Because the current resolution {{ this.$store.getters.currentVideoFormat.width }} x {{ this.$store.getters.currentVideoFormat.height }} is not yet calibrated, 3D mode cannot be enabled. Please
           <a
             href="/#/cameras"
             class="white--text"
@@ -287,59 +293,68 @@ export default {
                 this.selectedTabsData = value;
             }
         },
-        tabGroups: {
-            get() {
-                let tabs = {
-                    input: {
-                        name: "Input",
-                        component: "InputTab",
-                    },
-                    threshold: {
-                        name: "Threshold",
-                        component: "ThresholdTab",
-                    },
-                    contours: {
-                        name: "Contours",
-                        component: "ContoursTab",
-                    },
-                    output: {
-                        name: "Output",
-                        component: "OutputTab",
-                    },
-                    targets: {
-                        name: "Target Info",
-                        component: "TargetsTab",
-                    },
-                    pnp: {
-                        name: "3D",
-                        component: "PnPTab",
-                    }
-                };
-
-                // 2D array of tab names and component names; each sub-array is a separate tab group
-                let ret = [];
-                if (this.$vuetify.breakpoint.smAndDown || this.$store.getters.isDriverMode || (this.$vuetify.breakpoint.mdAndDown && !this.$store.state.compactMode)) {
-                    // One big tab group with all the tabs
-                    ret[0] = Object.values(tabs);
-                } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
-                    // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
-                    ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.output];
-                    ret[1] = [tabs.targets, tabs.pnp];
-                } else if (this.$vuetify.breakpoint.lgAndDown) {
-                    // Three tab groups, one with "input", one with "threshold, contours, output", and the other with "target info, 3D"
-                    ret[0] = [tabs.input];
-                    ret[1] = [tabs.threshold, tabs.contours, tabs.output];
-                    ret[2] = [tabs.targets, tabs.pnp];
-                } else if (this.$vuetify.breakpoint.xl) {
-                    // Three tab groups, one with "input", one with "threshold, contours", and the other with "output, target info, 3D"
-                    ret[0] = [tabs.input];
-                    ret[1] = [tabs.threshold];
-                    ret[2] = [tabs.contours, tabs.output]
-                    ret[3] = [tabs.targets, tabs.pnp];
+        computed: {
+            selectedTabs: {
+                get() {
+                  return this.$store.getters.isDriverMode ? [0] : this.selectedTabsData;
+                },
+                set(value) {
+                  this.selectedTabsData = value;
                 }
+            },
+            tabGroups: {
+                get() {
+                    let tabs = {
+                        input: {
+                            name: "Input",
+                            component: "InputTab",
+                        },
+                        threshold: {
+                            name: "Threshold",
+                            component: "ThresholdTab",
+                        },
+                        contours: {
+                            name: "Contours",
+                            component: "ContoursTab",
+                        },
+                        output: {
+                            name: "Output",
+                            component: "OutputTab",
+                        },
+                        targets: {
+                            name: "Target Info",
+                            component: "TargetsTab",
+                        },
+                        pnp: {
+                            name: "3D",
+                            component: "PnPTab",
+                        }
+                    };
 
-                return ret;
-            }
+                    // 2D array of tab names and component names; each sub-array is a separate tab group
+                    let ret = [];
+                    if (this.$vuetify.breakpoint.smAndDown || this.$store.getters.isDriverMode || (this.$vuetify.breakpoint.mdAndDown && !this.$store.state.compactMode)) {
+                        // One big tab group with all the tabs
+                        ret[0] = Object.values(tabs);
+                    } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
+                        // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
+                        ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.output];
+                        ret[1] = [tabs.targets, tabs.pnp];
+                    } else if (this.$vuetify.breakpoint.lgAndDown) {
+                        // Three tab groups, one with "input", one with "threshold, contours, output", and the other with "target info, 3D"
+                        ret[0] = [tabs.input];
+                        ret[1] = [tabs.threshold, tabs.contours, tabs.output];
+                        ret[2] = [tabs.targets, tabs.pnp];
+                    } else if (this.$vuetify.breakpoint.xl) {
+                        // Three tab groups, one with "input", one with "threshold, contours", and the other with "output, target info, 3D"
+                        ret[0] = [tabs.input];
+                        ret[1] = [tabs.threshold];
+                        ret[2] = [tabs.contours, tabs.output];
+                        ret[3] = [tabs.targets, tabs.pnp];
+                    }
+
+                    return ret;
+                }
         },
         processingMode: {
             get() {
@@ -365,13 +380,15 @@ export default {
             // All this logic exists to deal with the reality that the output select buttons sometimes need an array and sometimes need a number (depending on whether or not they're exclusive)
             get() {
                 // We switch the selector to single-select only on sm-and-down size devices, so we have to return a Number instead of an Array in that state
-                let ret;
+                let ret = [];
                 if (this.$store.state.colorPicking) {
                     ret = [0]; // We want the input stream only while color picking
-                } else if (!this.$store.getters.isDriverMode) {
-                    ret = this.$store.state.selectedOutputs || [0];
+                } else if (this.$store.getters.isDriverMode) {
+                    ret = [1]; // We want only the output stream in driver mode
                 } else {
-                    ret = [1]; // We want the output stream in driver mode
+                  if (this.$store.getters.currentPipelineSettings.inputShouldShow) ret = ret.concat([0]);
+                  if (this.$store.getters.currentPipelineSettings.outputShouldShow) ret = ret.concat([1]);
+                  if (!ret.length) ret = [0];
                 }
 
                 if (this.$vuetify.breakpoint.mdAndUp) {
@@ -383,16 +400,22 @@ export default {
             set(value) {
                 let valToCommit = [0];
                 if (value instanceof Array) {
-                    // Value is already an array, we don't need to do anything
-                    value.sort(); // Sort for visual consistency
-                    valToCommit = value;
+                  // Value is already an array, we don't need to do anything
+                  valToCommit = value;
                 } else if (value) {
-                    // Value is assumed to be a number, so we wrap it into an array
-                    valToCommit = [value];
+                  // Value is assumed to be a number, so we wrap it into an array
+                  valToCommit = [value];
                 }
-                this.$store.commit("selectedOutputs", valToCommit);
-                // TODO: Currently the backend just sends both streams regardless of the selected outputs value, so we don't need to send anything
-                // this.handlePipelineUpdate('selectedOutputs', valToCommit);
+
+                this.$store.commit("mutatePipeline", {"inputShouldShow": valToCommit.includes(0)});
+                this.$store.commit("mutatePipeline", {"outputShouldShow": valToCommit.includes(1)});
+                this.handlePipelineUpdate("inputShouldShow", valToCommit.includes(0));
+            }
+        },
+        fpsTooLow: {
+            get() {
+                // For now we only show the FPS is too low warning when GPU acceleration is enabled, because we don't really trust the presented video modes otherwise
+                return this.$store.state.pipelineResults.fps - this.$store.getters.currentVideoFormat.fps < -5 && this.$store.state.pipelineResults.fps !== 0 && this.$store.state.settings.general.gpuAcceleration;
             }
         },
         latency: {

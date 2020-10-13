@@ -23,6 +23,7 @@ import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
 import org.photonvision.vision.pipe.impl.RotateImagePipe;
 import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
@@ -32,6 +33,7 @@ public class DriverModePipeline
 
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
+    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     public DriverModePipeline() {
         settings = new DriverModePipelineSettings();
@@ -60,8 +62,12 @@ public class DriverModePipeline
         // calculate elapsed nanoseconds
         long totalNanos = rotateImageResult.nanosElapsed + draw2dCrosshairResult.nanosElapsed;
 
+        var fpsResult = calculateFPSPipe.run(null);
+        var fps = fpsResult.output;
+
         return new DriverModePipelineResult(
                 MathUtils.nanosToMillis(totalNanos),
+                fps,
                 new Frame(new CVMat(inputMat), frame.frameStaticProperties));
     }
 }

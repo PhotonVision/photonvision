@@ -55,6 +55,7 @@ public class ColoredShapePipeline
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
     private final Draw2dTargetsPipe draw2DTargetsPipe = new Draw2dTargetsPipe();
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
+    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private final Mat rawInputMat = new Mat();
     private final Point[] rectPoints = new Point[4];
@@ -273,12 +274,12 @@ public class ColoredShapePipeline
 
         // Draw 2D contours on input and output
         var draw2dContoursResultOnInput =
-                draw2DTargetsPipe.run(Triple.of(rawInputMat, collect2dTargetsResult.output, -12345));
+                draw2DTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
         sumPipeNanosElapsed += draw2dContoursResultOnInput.nanosElapsed;
 
         var draw2dContoursResultOnOutput =
                 draw2DTargetsPipe.run(
-                        Triple.of(hsvPipeResult.output, collect2dTargetsResult.output, -12345));
+                        Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
         sumPipeNanosElapsed += draw2dContoursResultOnOutput.nanosElapsed;
 
         if (settings.solvePNPEnabled && settings.desiredShape == ContourShape.Circle) {
@@ -295,8 +296,12 @@ public class ColoredShapePipeline
         var outputMatPipeResult = outputMatPipe.run(hsvPipeResult.output);
         sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
 
+        var fpsResult = calculateFPSPipe.run(null);
+        var fps = fpsResult.output;
+
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                fps,
                 targetList,
                 new Frame(new CVMat(hsvPipeResult.output), frame.frameStaticProperties),
                 new Frame(new CVMat(rawInputMat), frame.frameStaticProperties));

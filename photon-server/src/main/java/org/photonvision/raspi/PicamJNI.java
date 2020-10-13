@@ -20,20 +20,27 @@ package org.photonvision.raspi;
 import java.nio.file.Path;
 
 import org.photonvision.common.hardware.Platform;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 public class PicamJNI {
 
-    private static boolean isSupported = true;
+    private static boolean isSupported = false;
+    private static Logger logger = new Logger(PicamJNI.class, LogGroup.Camera);
 
     static {
+        logger.info(Path.of("/opt/vc/src/hello_pi/photon-picam-driver/libpicam.so").toAbsolutePath().toString());
+
         try {
-            System.load(Path.of("src/main/resources/native/libpicam.so").toAbsolutePath().toString());
+            System.load(Path.of("/opt/vc/src/hello_pi/photon-picam-driver/libpicam.so").toAbsolutePath().toString());
+
+            isSupported = true;
+            logger.info("Successfully loaded libpicam shared object");
         } catch (UnsatisfiedLinkError e) {
             if (Platform.isRaspberryPi()) {
-                throw e;
+                logger.error("Couldn't load libpicam shared object");
+                e.printStackTrace();
             }
-
-            isSupported = false;
         }
     }
 

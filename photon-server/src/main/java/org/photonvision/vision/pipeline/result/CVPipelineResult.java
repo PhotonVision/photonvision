@@ -26,21 +26,23 @@ import org.photonvision.vision.target.TrackedTarget;
 public class CVPipelineResult implements Releasable {
     private double latencyMillis;
     public final double processingMillis;
+    public final double fps;
     public final List<TrackedTarget> targets;
     public final Frame outputFrame;
     public final Frame inputFrame;
 
     public CVPipelineResult(
-            double processingMillis, List<TrackedTarget> targets, Frame outputFrame, Frame inputFrame) {
+            double processingMillis, double fps, List<TrackedTarget> targets, Frame outputFrame, Frame inputFrame) {
         this.processingMillis = processingMillis;
+        this.fps = fps;
         this.targets = targets != null ? targets : Collections.emptyList();
 
         this.outputFrame = outputFrame;
         this.inputFrame = inputFrame;
     }
 
-    public CVPipelineResult(double processingMillis, List<TrackedTarget> targets, Frame outputFrame) {
-        this(processingMillis, targets, outputFrame, null);
+    public CVPipelineResult(double processingMillis, double fps, List<TrackedTarget> targets, Frame outputFrame) {
+        this(processingMillis, fps, targets, outputFrame, null);
     }
 
     public boolean hasTargets() {

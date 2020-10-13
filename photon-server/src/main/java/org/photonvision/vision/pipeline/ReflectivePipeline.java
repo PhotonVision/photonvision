@@ -50,11 +50,10 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
     private final CornerDetectionPipe cornerDetectionPipe = new CornerDetectionPipe();
     private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
-    //    private final OutputMatPipe outputMatPipe = new OutputMatPipe();
-    //    private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
-    //    private final Draw2dTargetsPipe draw2dTargetsPipe = new Draw2dTargetsPipe();
-    //    private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+
+    private int lastRotation = Integer.MIN_VALUE;
+    private boolean lastShouldCopyColor = false;
 
     private Mat rawInputMat = new Mat();
     private final long[] pipeProfileNanos = new long[PipelineProfiler.ReflectivePipeCount];
@@ -81,13 +80,25 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         var rotateImageParams = new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
 
-        var hsvParams =
-                new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
-        hsvPipe.setParams(hsvParams);
-        PicamJNI.setThresholds(
-                settings.hsvHue.getFirst() / 255d, settings.hsvSaturation.getFirst() / 255d, settings.hsvValue.getFirst() / 255d,
-                settings.hsvHue.getSecond() / 255d, settings.hsvSaturation.getSecond() / 255d, settings.hsvValue.getSecond() / 255d
-        );
+        if (!PicamJNI.isSupported()) {
+                var hsvParams =
+                        new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
+                hsvPipe.setParams(hsvParams);
+        } else {
+                PicamJNI.setThresholds(
+                        settings.hsvHue.getFirst() / 180d, settings.hsvSaturation.getFirst() / 255d, settings.hsvValue.getFirst() / 255d,
+                        settings.hsvHue.getSecond() / 180d, settings.hsvSaturation.getSecond() / 255d, settings.hsvValue.getSecond() / 255d
+                );
+
+                if (lastRotation != settings.inputImageRotationMode.value) {
+                    PicamJNI.setRotation((settings.inputImageRotationMode.value + 1) * 90);
+                    lastRotation = settings.inputImageRotationMode.value;
+                }
+                if (lastShouldCopyColor != settings.inputShouldShow) {
+                    PicamJNI.setShouldCopyColor(settings.inputShouldShow);
+                    lastShouldCopyColor = settings.inputShouldShow;
+                }
+        }
 
         var findContoursParams = new FindContoursPipe.FindContoursParams();
         findContoursPipe.setParams(findContoursParams);
@@ -135,27 +146,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         settings.cornerDetectionAccuracyPercentage);
         cornerDetectionPipe.setParams(cornerDetectionPipeParams);
 
-        //        var draw2DTargetsParams =
-        //                new Draw2dTargetsPipe.Draw2dTargetsParams(
-        //                        settings.outputShouldDraw, settings.outputShowMultipleTargets);
-        //        draw2dTargetsPipe.setParams(draw2DTargetsParams);
-        //
-        //        var draw2dCrosshairParams =
-        //                new Draw2dCrosshairPipe.Draw2dCrosshairParams(
-        //                        settings.outputShouldDraw,
-        //                        settings.offsetRobotOffsetMode,
-        //                        settings.offsetSinglePoint,
-        //                        dualOffsetValues,
-        //                        frameStaticProperties);
-        //        draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
-        //
-        //        var draw3dTargetsParams =
-        //                new Draw3dTargetsPipe.Draw3dContoursParams(
-        //                        settings.outputShouldDraw,
-        //                        frameStaticProperties.cameraCalibration,
-        //                        settings.targetModel);
-        //        draw3dTargetsPipe.setParams(draw3dTargetsParams);
-
         var solvePNPParams =
                 new SolvePNPPipe.SolvePNPPipeParams(
                         frameStaticProperties.cameraCalibration,
@@ -190,7 +180,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             else
                 rawInputMat = frame.image.getMat();
 
-            // We can skip a few steps if the image is single channel, because we've already done them on the GPU
+            // We can skip a few steps if the image is single channel because we've already done them on the GPU
             hsvPipeResult = new CVPipeResult<>();
             hsvPipeResult.output = frame.image.getMat();
             hsvPipeResult.nanosElapsed = System.nanoTime() - frame.timestampNanos;
@@ -238,10 +228,14 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             targetList = collect2dTargetsResult.output;
         }
 
+        var fpsResult = calculateFPSPipe.run(null);
+        var fps = fpsResult.output;
+
         PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                fps,
                 targetList,
                 new Frame(new CVMat(hsvPipeResult.output), frame.frameStaticProperties),
                 new Frame(new CVMat(rawInputMat), frame.frameStaticProperties));

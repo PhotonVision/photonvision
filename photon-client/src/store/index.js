@@ -21,7 +21,6 @@ export default new Vuex.Store({
         compactMode: localStorage.getItem("compactMode") === undefined ? undefined : localStorage.getItem("compactMode") === "true", // Compact mode is initially unset on purpose
         logMessages: [],
         currentCameraIndex: 0,
-        selectedOutputs: [0, 1], // 0 indicates normal, 1 indicates threshold
         cameraSettings: [ // This is a list of objects representing the settings of all cameras
             {
                 tiltDegrees: 0.0,
@@ -65,6 +64,8 @@ export default new Vuex.Store({
                     contourGroupingMode: 0,
                     contourIntersection: 0,
                     contourSortMode: 0,
+                    inputShouldShow: true,
+                    outputShouldShow: true,
                     outputShouldDraw: true,
                     outputShowMultipleTargets: false,
                     offsetRobotOffsetMode: 0,
@@ -144,7 +145,7 @@ export default new Vuex.Store({
         metrics: set('metrics'),
         logString: (state, newStr) => {
             const str = state.logMessages;
-            str.push(newStr)
+            str.push(newStr);
             Vue.set(state, 'logString', str)
         },
 
@@ -238,6 +239,7 @@ export default new Vuex.Store({
         currentCameraIndex: state => state.currentCameraIndex,
         currentPipelineIndex: state => state.cameraSettings[state.currentCameraIndex].currentPipelineIndex,
         currentPipelineSettings: state => state.cameraSettings[state.currentCameraIndex].currentPipelineSettings,
+        currentVideoFormat: state => state.cameraSettings[state.currentCameraIndex].videoFormatList[state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.cameraVideoModeIndex],
         videoFormatList: state => {
             return Object.values(state.cameraSettings[state.currentCameraIndex].videoFormatList); // convert to a list
         },

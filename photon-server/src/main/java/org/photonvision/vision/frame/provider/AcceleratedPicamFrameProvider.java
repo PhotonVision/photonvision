@@ -36,7 +36,6 @@ public class AcceleratedPicamFrameProvider implements FrameProvider {
 
         var vidMode = settables.getCurrentVideoMode();
         PicamJNI.createCamera(vidMode.width, vidMode.height, vidMode.fps);
-        PicamJNI.setShouldCopyColor(false);
     }
 
     @Override

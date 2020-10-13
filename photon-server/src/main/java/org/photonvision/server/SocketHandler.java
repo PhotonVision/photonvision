@@ -39,6 +39,8 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.PipelineType;
+import org.photonvision.vision.processes.PipelineManager;
+import org.photonvision.vision.processes.VisionModule;
 
 @SuppressWarnings("rawtypes")
 public class SocketHandler {
@@ -84,6 +86,12 @@ public class SocketHandler {
         var reason = context.reason() != null ? context.reason() : "Connection closed by client";
         logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         users.remove(context);
+
+        if (users.size() == 0) {
+            dcService.publishEvent(
+                    new IncomingWebSocketEvent<>(
+                            DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS, "inputShouldShow", false));
+        }
     }
 
     @SuppressWarnings({"unchecked"})

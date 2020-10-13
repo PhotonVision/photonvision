@@ -18,6 +18,7 @@
 package org.photonvision.vision.frame.provider;
 
 import edu.wpi.cscore.CvSink;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.opencv.CVMat;
@@ -45,7 +46,7 @@ public class USBFrameProvider implements FrameProvider {
             mat.release();
         }
         long time = cvSink.grabFrame(mat.getMat());
-        return new Frame(mat, time, settables.getFrameStaticProperties());
+        return new Frame(mat, MathUtils.millisToNanos(time), settables.getFrameStaticProperties());
     }
 
     @Override
