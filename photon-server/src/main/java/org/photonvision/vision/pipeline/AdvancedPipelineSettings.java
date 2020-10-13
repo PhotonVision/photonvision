@@ -80,7 +80,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
 
     // 3d settings
     public boolean solvePNPEnabled = false;
-    public TargetModel targetModel = TargetModel.get2020Target();
+    public TargetModel targetModel = TargetModel.k2020HighGoalOuter;
 
     // Corner detection settings
     public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
