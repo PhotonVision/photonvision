@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.util.math.MathUtils;
@@ -278,8 +277,7 @@ public class ColoredShapePipeline
         sumPipeNanosElapsed += draw2dContoursResultOnInput.nanosElapsed;
 
         var draw2dContoursResultOnOutput =
-                draw2DTargetsPipe.run(
-                        Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
+                draw2DTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
         sumPipeNanosElapsed += draw2dContoursResultOnOutput.nanosElapsed;
 
         if (settings.solvePNPEnabled && settings.desiredShape == ContourShape.Circle) {

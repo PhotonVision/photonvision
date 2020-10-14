@@ -30,8 +30,7 @@ public class AcceleratedPicamFrameProvider implements FrameProvider {
 
     private CVMat mat;
 
-    public AcceleratedPicamFrameProvider(
-            VisionSourceSettables visionSettables) {
+    public AcceleratedPicamFrameProvider(VisionSourceSettables visionSettables) {
         this.settables = visionSettables;
 
         var vidMode = settables.getCurrentVideoMode();
@@ -47,6 +46,7 @@ public class AcceleratedPicamFrameProvider implements FrameProvider {
     public Frame get() {
         long matHandle = PicamJNI.grabFrame(false);
         mat = new CVMat(new Mat(matHandle));
-        return new Frame(mat, System.nanoTime() + PicamJNI.getFrameLatency(), settables.getFrameStaticProperties());
+        return new Frame(
+                mat, System.nanoTime() + PicamJNI.getFrameLatency(), settables.getFrameStaticProperties());
     }
 }

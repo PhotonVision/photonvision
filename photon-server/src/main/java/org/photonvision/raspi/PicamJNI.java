@@ -18,7 +18,6 @@
 package org.photonvision.raspi;
 
 import java.nio.file.Path;
-
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -29,10 +28,11 @@ public class PicamJNI {
     private static Logger logger = new Logger(PicamJNI.class, LogGroup.Camera);
 
     static {
-        logger.info(Path.of("/opt/vc/src/hello_pi/photon-picam-driver/libpicam.so").toAbsolutePath().toString());
-
         try {
-            System.load(Path.of("/opt/vc/src/hello_pi/photon-picam-driver/libpicam.so").toAbsolutePath().toString());
+            System.load(
+                    Path.of("/opt/vc/src/hello_pi/photon-picam-driver/libpicam.so")
+                            .toAbsolutePath()
+                            .toString());
 
             isSupported = true;
             logger.info("Successfully loaded libpicam shared object");
@@ -51,21 +51,22 @@ public class PicamJNI {
     // Everything here is static because multiple picams are unsupported at the hardware level
 
     /**
-    * Called once for each video mode change. Starts a native thread running MMAL that stays alive until destroyCamera is called.
+    * Called once for each video mode change. Starts a native thread running MMAL that stays alive
+    * until destroyCamera is called.
     *
     * @return true on error.
     */
     public static native boolean createCamera(int width, int height, int fps);
 
     /**
-    * Destroys MMAL and EGL contexts. Called once for each video mode change *before*
-    * createCamera.
+    * Destroys MMAL and EGL contexts. Called once for each video mode change *before* createCamera.
     *
     * @return true on error.
     */
     public static native boolean destroyCamera();
 
-    public static native void setThresholds(double hL, double sL, double vL, double hU, double sU, double vU);
+    public static native void setThresholds(
+            double hL, double sL, double vL, double hU, double sU, double vU);
 
     public static native boolean setExposure(int exposure);
 
@@ -76,7 +77,7 @@ public class PicamJNI {
     public static native boolean setRotation(int rotation);
 
     public static native void setShouldCopyColor(boolean shouldCopyColor);
- 
+
     public static native long getFrameLatency();
 
     public static native long grabFrame(boolean shouldReturnColor);

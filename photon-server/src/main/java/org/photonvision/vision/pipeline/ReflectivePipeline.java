@@ -18,11 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
-import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.Frame;
@@ -81,23 +77,26 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         rotateImagePipe.setParams(rotateImageParams);
 
         if (!PicamJNI.isSupported()) {
-                var hsvParams =
-                        new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
-                hsvPipe.setParams(hsvParams);
+            var hsvParams =
+                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
+            hsvPipe.setParams(hsvParams);
         } else {
-                PicamJNI.setThresholds(
-                        settings.hsvHue.getFirst() / 180d, settings.hsvSaturation.getFirst() / 255d, settings.hsvValue.getFirst() / 255d,
-                        settings.hsvHue.getSecond() / 180d, settings.hsvSaturation.getSecond() / 255d, settings.hsvValue.getSecond() / 255d
-                );
+            PicamJNI.setThresholds(
+                    settings.hsvHue.getFirst() / 180d,
+                    settings.hsvSaturation.getFirst() / 255d,
+                    settings.hsvValue.getFirst() / 255d,
+                    settings.hsvHue.getSecond() / 180d,
+                    settings.hsvSaturation.getSecond() / 255d,
+                    settings.hsvValue.getSecond() / 255d);
 
-                if (lastRotation != settings.inputImageRotationMode.value) {
-                    PicamJNI.setRotation((settings.inputImageRotationMode.value + 1) * 90);
-                    lastRotation = settings.inputImageRotationMode.value;
-                }
-                if (lastShouldCopyColor != settings.inputShouldShow) {
-                    PicamJNI.setShouldCopyColor(settings.inputShouldShow);
-                    lastShouldCopyColor = settings.inputShouldShow;
-                }
+            if (lastRotation != settings.inputImageRotationMode.value) {
+                PicamJNI.setRotation((settings.inputImageRotationMode.value + 1) * 90);
+                lastRotation = settings.inputImageRotationMode.value;
+            }
+            if (lastShouldCopyColor != settings.inputShouldShow) {
+                PicamJNI.setShouldCopyColor(settings.inputShouldShow);
+                lastShouldCopyColor = settings.inputShouldShow;
+            }
         }
 
         var findContoursParams = new FindContoursPipe.FindContoursParams();
@@ -175,12 +174,11 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             pipeProfileNanos[3] = pipeProfileNanos[3] = hsvPipeResult.nanosElapsed;
         } else {
             long inputMatPtr = PicamJNI.grabFrame(true);
-            if (inputMatPtr != 0)
-                rawInputMat = new Mat(inputMatPtr);
-            else
-                rawInputMat = frame.image.getMat();
+            if (inputMatPtr != 0) rawInputMat = new Mat(inputMatPtr);
+            else rawInputMat = frame.image.getMat();
 
-            // We can skip a few steps if the image is single channel because we've already done them on the GPU
+            // We can skip a few steps if the image is single channel because we've already done them on
+            // the GPU
             hsvPipeResult = new CVPipeResult<>();
             hsvPipeResult.output = frame.image.getMat();
             hsvPipeResult.nanosElapsed = System.nanoTime() - frame.timestampNanos;

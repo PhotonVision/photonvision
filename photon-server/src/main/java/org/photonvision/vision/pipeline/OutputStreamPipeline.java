@@ -19,7 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -98,12 +97,10 @@ public class OutputStreamPipeline {
         sumPipeNanosElapsed += pipeProfileNanos[2] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
         // Draw 2D contours on input and output
-        var draw2dTargetsOnInput =
-                draw2dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
+        var draw2dTargetsOnInput = draw2dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
         sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dTargetsOnInput.nanosElapsed;
 
-        var draw2dTargetsOnOutput =
-                draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
+        var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
         sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dTargetsOnOutput.nanosElapsed;
 
         // Draw 3D Targets on input and output if necessary

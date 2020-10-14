@@ -39,8 +39,6 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.PipelineType;
-import org.photonvision.vision.processes.PipelineManager;
-import org.photonvision.vision.processes.VisionModule;
 
 @SuppressWarnings("rawtypes")
 public class SocketHandler {

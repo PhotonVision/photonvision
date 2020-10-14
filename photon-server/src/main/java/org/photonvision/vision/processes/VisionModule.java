@@ -105,10 +105,12 @@ public class VisionModule {
         DataChangeService.getInstance().addSubscriber(new VisionModuleChangeSubscriber(this));
 
         createStreams();
-        fpsLimitedResultConsumers.add(result -> {
-            if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow) dashboardInputStreamer.accept(result.inputFrame);
-            else result.inputFrame.release();
-        });
+        fpsLimitedResultConsumers.add(
+                result -> {
+                    if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
+                        dashboardInputStreamer.accept(result.inputFrame);
+                    else result.inputFrame.release();
+                });
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
         fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));

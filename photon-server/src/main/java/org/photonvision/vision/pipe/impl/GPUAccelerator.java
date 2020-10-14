@@ -32,8 +32,6 @@ import java.nio.IntBuffer;
 import jogamp.opengl.GLOffscreenAutoDrawableImpl;
 import jogamp.opengl.egl.EGLContext;
 import jogamp.opengl.egl.EGLDrawableFactory;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import org.opencv.core.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -88,7 +86,8 @@ public class GPUAccelerator {
                     // Only the first value in the vec4 gets used for GL_RED, and only the last value gets
                     // used for GL_ALPHA
                     "  gl_FragColor = inRange(rgb2hsv(col)) ? vec4(1.0, 1.0, 1.0, 1.0) : vec4(0.0, 0.0, 0.0, 0.0);",
-//                    "  gl_FragColor = vec4((col.r + col.b + col.g) / 3.0, 1.0, 1.0, 1.0);",
+                    //                    "  gl_FragColor = vec4((col.r + col.b + col.g) / 3.0, 1.0, 1.0,
+                    // 1.0);",
                     "}");
     private static final float[] k_vertexPositions = {
         // Set up a quad that covers the screen
@@ -252,7 +251,7 @@ public class GPUAccelerator {
             gl.glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
             // Create our VCSM info struct
-            long vcsmInfo = 0;//PicamJNI.initVCSMInfo(startingWidth, startingHeight);
+            long vcsmInfo = 0; // PicamJNI.initVCSMInfo(startingWidth, startingHeight);
             if (vcsmInfo == 0) {
                 throw new RuntimeException("Couldn't create VCSM info struct (resolution too high?)");
             }
@@ -396,7 +395,7 @@ public class GPUAccelerator {
 
             // Finally we pass the EGLImage handle to the native code for use by OMX
             logger.info("Setting EGLImage handle");
-            boolean err = true;//PicamJNI.setEGLImageHandle(eglImageHandle);
+            boolean err = true; // PicamJNI.setEGLImageHandle(eglImageHandle);
             if (err) {
                 throw new RuntimeException("Couldn't set EGLImage handle");
             }
@@ -500,7 +499,7 @@ public class GPUAccelerator {
     boolean hasCalled = false;
 
     public void redrawGL(Scalar hsvLower, Scalar hsvUpper) {
-        //PicamJNI.waitForOMXFillBufferDone();
+        // PicamJNI.waitForOMXFillBufferDone();
 
         // Bind the framebuffer we'll draw to
         gl.glBindFramebuffer(GL_FRAMEBUFFER, vcsmFbId);

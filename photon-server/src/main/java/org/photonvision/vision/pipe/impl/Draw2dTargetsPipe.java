@@ -20,7 +20,6 @@ package org.photonvision.vision.pipe.impl;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
 import org.opencv.core.Point;
@@ -30,8 +29,7 @@ import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dTargetsPipe
-        extends MutatingPipe<
-                        Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
+        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
 
     private List<MatOfPoint> m_drawnContours = new ArrayList<>();
 

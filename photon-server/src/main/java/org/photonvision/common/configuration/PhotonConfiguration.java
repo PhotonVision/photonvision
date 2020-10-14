@@ -108,7 +108,11 @@ public class PhotonConfiguration {
 
         var generalSubmap = new HashMap<String, Object>();
         generalSubmap.put("version", PhotonVersion.versionString);
-        generalSubmap.put("gpuAcceleration", PicamJNI.isSupported() ? "Zerocopy MMAL" : ""); // TODO add support for other types of GPU accel
+        generalSubmap.put(
+                "gpuAcceleration",
+                PicamJNI.isSupported()
+                        ? "Zerocopy MMAL"
+                        : ""); // TODO add support for other types of GPU accel
         generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
         generalSubmap.put("hardwarePlatform", Platform.getCurrentPlatform().toString());
         settingsSubmap.put("general", generalSubmap);

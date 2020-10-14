@@ -28,7 +28,12 @@ public class AcceleratedPicamFrameProviderTest {
     public void testGrabFrame() {
         TestUtils.loadLibraries();
 
-        var frameProvider = new AcceleratedPicamFrameProvider(new GPUAcceleratedPicamSource.PicamSettables(new CameraConfiguration("f", "f", "f", "f")), 1280, 720);
+        var frameProvider =
+                new AcceleratedPicamFrameProvider(
+                        new GPUAcceleratedPicamSource.PicamSettables(
+                                new CameraConfiguration("f", "f", "f", "f")),
+                        1280,
+                        720);
 
         long lastTime = System.currentTimeMillis();
         for (int i = 0; i < 10; i++) {

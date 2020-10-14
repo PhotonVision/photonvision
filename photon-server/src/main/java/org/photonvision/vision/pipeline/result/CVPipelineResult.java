@@ -32,7 +32,11 @@ public class CVPipelineResult implements Releasable {
     public final Frame inputFrame;
 
     public CVPipelineResult(
-            double processingMillis, double fps, List<TrackedTarget> targets, Frame outputFrame, Frame inputFrame) {
+            double processingMillis,
+            double fps,
+            List<TrackedTarget> targets,
+            Frame outputFrame,
+            Frame inputFrame) {
         this.processingMillis = processingMillis;
         this.fps = fps;
         this.targets = targets != null ? targets : Collections.emptyList();
@@ -41,7 +45,8 @@ public class CVPipelineResult implements Releasable {
         this.inputFrame = inputFrame;
     }
 
-    public CVPipelineResult(double processingMillis, double fps, List<TrackedTarget> targets, Frame outputFrame) {
+    public CVPipelineResult(
+            double processingMillis, double fps, List<TrackedTarget> targets, Frame outputFrame) {
         this(processingMillis, fps, targets, outputFrame, null);
     }
 
