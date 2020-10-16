@@ -301,6 +301,7 @@
                     // this.handleInputWithIndex("changeCameraName", this.newCameraName);
                     this.axios.post('http://' + this.$address + '/api/setCameraNickname',
                         {name: this.newCameraName, cameraIndex: this.$store.getters.currentCameraIndex})
+                        // eslint-disable-next-line
                         .then(r => {
                             this.$emit('camera-name-changed')
                         })
