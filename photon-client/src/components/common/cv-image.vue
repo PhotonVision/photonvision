@@ -50,7 +50,7 @@
               },
             },
         },
-        created() {
+        mounted() {
             this.reload(); // Force reload image on creation
         },
         methods: {

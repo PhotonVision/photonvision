@@ -75,7 +75,7 @@
             <!--            <v-btn @click="onCamNameChange">-->
             <!--              Reload-->
             <!--            </v-btn>-->
-            <camera-and-pipeline-select @camera-name-changed="onCamNameChange" />
+            <camera-and-pipeline-select @camera-name-changed="reloadStreams" />
           </v-card>
           <v-card
             :disabled="$store.getters.isDriverMode || $store.state.colorPicking"
@@ -401,8 +401,11 @@ export default {
             }
         }
     },
+    created() {
+        this.$store.state.connectedCallbacks.push(this.reloadStreams)
+    },
     methods: {
-        onCamNameChange() {
+        reloadStreams() {
             // Reload the streams as we technically close and reopen them
             this.$refs.streams.forEach(it => it.reload())
         },

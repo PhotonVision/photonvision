@@ -302,7 +302,6 @@
                     this.axios.post('http://' + this.$address + '/api/setCameraNickname',
                         {name: this.newCameraName, cameraIndex: this.$store.getters.currentCameraIndex})
                         .then(r => {
-                            console.log("Name changed! " + r);
                             this.$emit('camera-name-changed')
                         })
                         .catch(e => {

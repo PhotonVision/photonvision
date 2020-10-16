@@ -198,6 +198,7 @@ import Logs from "./views/LogsView"
             };
             this.$options.sockets.onopen = () => {
                 this.$store.state.backendConnected = true;
+                this.$store.state.connectedCallbacks.forEach(it => it())
             };
 
             let closed = () => {
