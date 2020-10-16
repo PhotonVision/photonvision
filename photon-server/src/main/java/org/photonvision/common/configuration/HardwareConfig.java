@@ -31,9 +31,7 @@ public class HardwareConfig {
     public final ArrayList<Integer> ledPins;
     public final String ledSetCommand;
     public final boolean ledsCanDim;
-    public final ArrayList<Integer> ledPWMRange;
-    public final String ledPWMSetRange;
-    public final int ledPWMFrequency;
+    public final ArrayList<Integer> ledBrightnessRange;
     public final String ledDimCommand;
     public final String ledBlinkCommand;
     public final ArrayList<Integer> statusRGBPins;
@@ -58,10 +56,8 @@ public class HardwareConfig {
         ledPins = new ArrayList<>();
         ledSetCommand = "";
         ledsCanDim = false;
-        ledPWMRange = new ArrayList<>();
+        ledBrightnessRange = new ArrayList<>();
         statusRGBPins = new ArrayList<>();
-        ledPWMFrequency = 0;
-        ledPWMSetRange = "";
         ledDimCommand = "";
 
         cpuTempCommand = "";
@@ -85,12 +81,10 @@ public class HardwareConfig {
             ArrayList<Integer> ledPins,
             String ledSetCommand,
             boolean ledsCanDim,
-            ArrayList<Integer> statusRGBPins,
-            String ledPWMSetRange,
-            int ledPWMFrequency,
+            ArrayList<Integer> ledBrightnessRange,
             String ledDimCommand,
             String ledBlinkCommand,
-            ArrayList<Integer> ledPWMRange,
+            ArrayList<Integer> statusRGBPins,
             String cpuTempCommand,
             String cpuMemoryCommand,
             String cpuUtilCommand,
@@ -106,9 +100,7 @@ public class HardwareConfig {
         this.ledPins = ledPins;
         this.ledSetCommand = ledSetCommand;
         this.ledsCanDim = ledsCanDim;
-        this.ledPWMRange = ledPWMRange;
-        this.ledPWMSetRange = ledPWMSetRange;
-        this.ledPWMFrequency = ledPWMFrequency;
+        this.ledBrightnessRange = ledBrightnessRange;
         this.ledDimCommand = ledDimCommand;
         this.ledBlinkCommand = ledBlinkCommand;
         this.statusRGBPins = statusRGBPins;
@@ -117,10 +109,10 @@ public class HardwareConfig {
         this.cpuUtilCommand = cpuUtilCommand;
         this.gpuMemoryCommand = gpuMemoryCommand;
         this.ramUtilCommand = ramUtilCommand;
+        this.gpuMemUsageCommand = gpuMemUsageCommand;
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;
         this.blacklistedResIndices = blacklistedResIndices;
-        this.gpuMemUsageCommand = gpuMemUsageCommand;
     }
 
     public final boolean hasPresetFOV() {

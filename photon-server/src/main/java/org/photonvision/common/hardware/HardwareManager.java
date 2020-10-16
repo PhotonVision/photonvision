@@ -22,9 +22,11 @@ import java.io.IOException;
 import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
+import org.photonvision.common.configuration.HardwareSettings;
 import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
+import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
 import org.photonvision.common.hardware.VisionLED.VisionLEDMode;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.logging.LogGroup;
@@ -38,42 +40,55 @@ public class HardwareManager {
     private final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
     private final HardwareConfig hardwareConfig;
+    private final HardwareSettings hardwareSettings;
 
-    @SuppressWarnings("FieldCanBeLocal")
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final StatusLED statusLED;
 
+    @SuppressWarnings("FieldCanBeLocal")
     private final NetworkTableEntry ledModeEntry;
 
-    @SuppressWarnings("FieldCanBeLocal")
+    @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final NTDataChangeListener ledModeListener;
 
     public final VisionLED visionLED; // May be null if no LED is specified
 
+    private final PigpioSocket pigpioSocket; // will be null unless on Raspi
+
     public static HardwareManager getInstance() {
         if (instance == null) {
-            instance = new HardwareManager(ConfigManager.getInstance().getConfig().getHardwareConfig());
+            var conf = ConfigManager.getInstance().getConfig();
+            instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
         }
         return instance;
     }
 
-    private HardwareManager(HardwareConfig hardwareConfig) {
+    private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
+        this.hardwareSettings = hardwareSettings;
         CustomGPIO.setConfig(hardwareConfig);
         MetricsBase.setConfig(hardwareConfig);
+
+        if (Platform.isRaspberryPi()) {
+            pigpioSocket = new PigpioSocket();
+        } else {
+            pigpioSocket = null;
+        }
 
         statusLED =
                 hardwareConfig.statusRGBPins.size() == 3
                         ? new StatusLED(hardwareConfig.statusRGBPins)
                         : null;
+
+        var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
                 hardwareConfig.ledPins.isEmpty()
                         ? null
                         : new VisionLED(
                                 hardwareConfig.ledPins,
-                                hardwareConfig.ledPWMFrequency,
-                                (hardwareConfig.ledPWMRange != null && hardwareConfig.ledPWMRange.size() == 2)
-                                        ? hardwareConfig.ledPWMRange.get(1)
-                                        : 0);
+                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(0) : 0,
+                                hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
+                                pigpioSocket);
 
         ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
         ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);
@@ -84,19 +99,22 @@ public class HardwareManager {
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 
-        if (visionLED != null)
-            visionLED.setBrightness(
-                    ConfigManager.getInstance().getConfig().getHardwareSettings().ledBrightnessPercentage);
+        if (visionLED != null) {
+            visionLED.setBrightness(hardwareSettings.ledBrightnessPercentage);
+            visionLED.blink(85, 4); // bootup blink
+        }
 
         // Start hardware metrics thread (Disabled until implemented)
         // if (Platform.isLinux()) MetricsPublisher.getInstance().startTask();
     }
 
     public void setBrightnessPercent(int percent) {
-        ConfigManager.getInstance().getConfig().getHardwareSettings().ledBrightnessPercentage = percent;
-        if (visionLED != null) visionLED.setBrightness(percent);
-        ConfigManager.getInstance().requestSave();
-        logger.info("Setting led brightness to " + percent + "%");
+        if (percent != hardwareSettings.ledBrightnessPercentage) {
+            hardwareSettings.ledBrightnessPercentage = percent;
+            if (visionLED != null) visionLED.setBrightness(percent);
+            ConfigManager.getInstance().requestSave();
+            logger.info("Setting led brightness to " + percent + "%");
+        }
     }
 
     private void onJvmExit() {
