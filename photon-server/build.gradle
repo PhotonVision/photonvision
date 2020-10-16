@@ -30,10 +30,6 @@ ext {
 
 dependencies {
     implementation "io.javalin:javalin:3.7.0"
-    compile group: 'eu.xeli', name: 'jpigpio_2.12', version: '0.1.0'
-
-
-
 
     implementation "com.fasterxml.jackson.core:jackson-annotations:2.10.0"
     implementation "com.fasterxml.jackson.core:jackson-core:2.10.0"

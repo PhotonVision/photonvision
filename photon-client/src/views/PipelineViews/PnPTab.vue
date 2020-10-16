@@ -16,10 +16,10 @@
       color="accent"
       item-color="secondary"
       label="Select a target model"
-      :items="FRCtargets"
+      :items="targetList"
       item-text="name"
       item-value="data"
-      @change="onModelSelect"
+      @input="handlePipelineUpdate('targetModel', targetList.indexOf(selectedModel))"
     />
     <CVslider
       v-model="cornerDetectionAccuracyPercentage"
@@ -51,7 +51,6 @@
     import Papa from 'papaparse';
     import miniMap from '../../components/pipeline/3D/MiniMap';
     import CVslider from '../../components/common/cv-slider'
-    import FRCtargetsConfig from '../../assets/FRCtargets'
 
     export default {
         name: "SolvePNP",
@@ -61,18 +60,25 @@
         },
         data() {
             return {
-                FRCtargets: null,
+                targetList: ['2020 High Goal Outer', '2020 High Goal Inner', '2019 Dual Target', 'Power Cell (7in)'],
                 snackbar: {
                     color: "Success",
                     text: ""
                 },
                 snack: false,
-                selectedModel: {
-                    isCustom: false
-                }
             }
         },
         computed: {
+            selectedModel: {
+                get() {
+                    let ret = this.$store.getters.currentPipelineSettings.targetModel
+                    console.log(ret)
+                    return this.targetList[ret];
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"targetModel": this.targetList.indexOf(val)})
+                }
+            },
             cornerDetectionAccuracyPercentage: {
                 get() {
                     return this.$store.getters.currentPipelineSettings.cornerDetectionAccuracyPercentage
@@ -97,20 +103,6 @@
                 }
             },
         },
-        mounted() {
-            let tmp = [];
-            for (let t in FRCtargetsConfig) {
-                if (FRCtargetsConfig.hasOwnProperty(t)) {
-                    tmp.push({name: t, data: FRCtargetsConfig[t]});
-                }
-            }
-
-            // Special dropdown item for uploading your own model
-            // data is what gets put in selectedMode, so we add a special field
-            tmp.push({name: "Custom model", data: {isCustom: true}});
-
-            this.FRCtargets = tmp;
-        },
         methods: {
             readFile(event) {
                 let file = event.target.files[0];
@@ -118,13 +110,6 @@
                     complete: this.onParse,
                     skipEmptyLines: true
                 });
-            },
-            onModelSelect() {
-              if (this.selectedModel.isCustom) {
-                this.$refs.file.click();
-              } else {
-                this.uploadPremade();
-              }
             },
             onParse(result) {
                 if (result.data.length > 0) {
@@ -158,29 +143,6 @@
                     this.selectedModel = null;
                 }
             },
-            uploadPremade() {
-                this.uploadModel(this.selectedModel, true);
-            },
-            uploadModel(model, premade = false) {
-                this.axios.post("http://" + this.$address + "/api/vision/pnpModel", {
-                    ['targetModel']: model,
-                    ['index']: this.$store.getters.currentCameraIndex
-                }).then(() => {
-                    this.snackbar = {
-                        color: "success",
-                        text: premade ? "Target model changed successfully" : "Custom target model uploaded and selected successfully"
-                    };
-                    this.snack = true;
-                }).catch(() => {
-                    this.snackbar = {
-                        color: "error",
-                        text: "An error occurred selecting a target model"
-                    };
-                    this.snack = true;
-
-                    this.selectedModel = null;
-                });
-            }
         }
     }
 </script>

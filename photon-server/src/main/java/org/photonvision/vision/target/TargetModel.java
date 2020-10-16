@@ -23,21 +23,71 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.wpilibj.util.Units;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
 import org.photonvision.vision.opencv.Releasable;
 
-public class TargetModel implements Releasable {
+public enum TargetModel implements Releasable {
+    k2020HighGoalOuter(
+            List.of(
+                    new Point3(Units.inchesToMeters(-19.625), 0, 0),
+                    new Point3(Units.inchesToMeters(-9.819867), Units.inchesToMeters(-17), 0),
+                    new Point3(Units.inchesToMeters(9.819867), Units.inchesToMeters(-17), 0),
+                    new Point3(Units.inchesToMeters(19.625), 0, 0)),
+            Units.inchesToMeters(12)),
+    k2020HighGoalInner(
+            List.of(
+                    new Point3(Units.inchesToMeters(-19.625), 0, Units.inchesToMeters(2d * 12d + 5.25)),
+                    new Point3(
+                            Units.inchesToMeters(-9.819867),
+                            Units.inchesToMeters(-17),
+                            Units.inchesToMeters(2d * 12d + 5.25)),
+                    new Point3(
+                            Units.inchesToMeters(9.819867),
+                            Units.inchesToMeters(-17),
+                            Units.inchesToMeters(2d * 12d + 5.25)),
+                    new Point3(Units.inchesToMeters(19.625), 0, Units.inchesToMeters(2d * 12d + 5.25))),
+            Units.inchesToMeters(12)),
+    k2019DualTarget(
+            List.of(
+                    new Point3(Units.inchesToMeters(-5.936), Units.inchesToMeters(2.662), 0),
+                    new Point3(Units.inchesToMeters(-7.313), Units.inchesToMeters(-2.662), 0),
+                    new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(-2.662), 0),
+                    new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(2.662), 0)),
+            0.1),
+    kCircularPowerCell7in(
+            List.of(
+                    new Point3(
+                            -Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2),
+                    new Point3(
+                            -Units.inchesToMeters(7) / 2,
+                            Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2),
+                    new Point3(
+                            Units.inchesToMeters(7) / 2,
+                            Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2),
+                    new Point3(
+                            Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2,
+                            -Units.inchesToMeters(7) / 2)),
+            0);
 
-    @JsonIgnore private final MatOfPoint3f realWorldTargetCoordinates;
-    @JsonIgnore private final MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
-    @JsonIgnore private final MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
+    @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
+    @JsonIgnore private MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
+    @JsonIgnore private MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
 
-    public final List<Point3> realWorldCoordinatesArray;
-    public final double boxHeight;
+    @JsonProperty("realWorldCoordinatesArray")
+    private List<Point3> realWorldCoordinatesArray;
 
-    public TargetModel(MatOfPoint3f realWorldTargetCoordinates, double boxHeight) {
+    @JsonProperty("boxHeight")
+    private double boxHeight;
+
+    TargetModel() {}
+
+    TargetModel(MatOfPoint3f realWorldTargetCoordinates, double boxHeight) {
         this.realWorldTargetCoordinates = realWorldTargetCoordinates;
         this.realWorldCoordinatesArray = realWorldTargetCoordinates.toList();
         this.boxHeight = boxHeight;
@@ -53,10 +103,26 @@ public class TargetModel implements Releasable {
     }
 
     @JsonCreator
-    public TargetModel(
+    TargetModel(
             @JsonProperty(value = "realWorldCoordinatesArray") List<Point3> points,
             @JsonProperty(value = "boxHeight") double boxHeight) {
         this(listToMat(points), boxHeight);
+    }
+
+    public List<Point3> getRealWorldCoordinatesArray() {
+        return this.realWorldCoordinatesArray;
+    }
+
+    public double getBoxHeight() {
+        return boxHeight;
+    }
+
+    public void setRealWorldCoordinatesArray(List<Point3> realWorldCoordinatesArray) {
+        this.realWorldCoordinatesArray = realWorldCoordinatesArray;
+    }
+
+    public void setBoxHeight(double boxHeight) {
+        this.boxHeight = boxHeight;
     }
 
     private static MatOfPoint3f listToMat(List<Point3> points) {
@@ -77,58 +143,15 @@ public class TargetModel implements Releasable {
         return visualizationBoxTop;
     }
 
-    public static TargetModel get2020Target() {
-        return get2020Target(0);
-    }
-
-    public static TargetModel get2020TargetInnerPort() {
-        // Per the game manual, the inner port is 2ft 5.25in behind the outer port
-        return get2020Target(Units.inchesToMeters(2d * 12d + 5.25));
-    }
-
-    public static TargetModel get2020Target(double offsetMeters) {
-        var corners =
-                List.of(
-                        new Point3(Units.inchesToMeters(-19.625), 0, offsetMeters),
-                        new Point3(Units.inchesToMeters(-9.819867), Units.inchesToMeters(-17), offsetMeters),
-                        new Point3(Units.inchesToMeters(9.819867), Units.inchesToMeters(-17), offsetMeters),
-                        new Point3(Units.inchesToMeters(19.625), 0, offsetMeters));
-        return new TargetModel(corners, Units.inchesToMeters(12));
-    }
-
-    public static TargetModel get2019Target() {
-        var corners =
-                List.of(
-                        new Point3(Units.inchesToMeters(-5.936), Units.inchesToMeters(2.662), 0),
-                        new Point3(Units.inchesToMeters(-7.313), Units.inchesToMeters(-2.662), 0),
-                        new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(-2.662), 0),
-                        new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(2.662), 0));
-        return new TargetModel(corners, 0.1);
-    }
-
-    public static TargetModel getCircleTarget(double radius) {
-        var corners =
-                List.of(
-                        new Point3(-radius / 2, -radius / 2, -radius / 2),
-                        new Point3(-radius / 2, radius / 2, -radius / 2),
-                        new Point3(radius / 2, radius / 2, -radius / 2),
-                        new Point3(radius / 2, -radius / 2, -radius / 2));
-        return new TargetModel(corners, 0);
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof TargetModel)) return false;
-        TargetModel that = (TargetModel) o;
-        return Double.compare(that.boxHeight, boxHeight) == 0
-                && Objects.equals(realWorldCoordinatesArray, that.realWorldCoordinatesArray);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(realWorldCoordinatesArray, boxHeight);
-    }
+    //    public static TargetModel getCircleTarget(double Units.inchesToMeters(7)) {
+    //        var corners =
+    //            List.of(
+    //                new Point3(-Units.inchesToMeters(7) / 2, -radius / 2, -radius / 2),
+    //                new Point3(-Units.inchesToMeters(7) / 2, radius / 2, -radius / 2),
+    //                new Point3(Units.inchesToMeters(7) / 2, radius / 2, -radius / 2),
+    //                new Point3(Units.inchesToMeters(7) / 2, -radius / 2, -radius / 2));
+    //        return new TargetModel(corners, 0);
+    //    }
 
     @Override
     public void release() {

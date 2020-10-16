@@ -15,6 +15,7 @@ export default new Vuex.Store({
     },
     state: {
         backendConnected: false,
+        connectedCallbacks: [],
         colorPicking: false,
         logsOverlay: false,
         compactMode: localStorage.getItem("compactMode") === undefined ? undefined : localStorage.getItem("compactMode") === "true", // Compact mode is initially unset on purpose
@@ -122,8 +123,8 @@ export default new Vuex.Store({
             minCount: 25,
             hasEnough: false,
             squareSizeIn: 1.0,
-            patternWidth: 7,
-            patternHeight: 7,
+            patternWidth: 8,
+            patternHeight: 8,
             boardType: 0, // Chessboard, dotboard
         },
         metrics: {

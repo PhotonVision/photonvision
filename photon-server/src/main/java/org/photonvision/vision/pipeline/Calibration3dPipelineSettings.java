@@ -21,8 +21,8 @@ import edu.wpi.first.wpilibj.util.Units;
 import org.opencv.core.Size;
 
 public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
-    public int boardHeight = 7;
-    public int boardWidth = 7;
+    public int boardHeight = 8;
+    public int boardWidth = 8;
     public UICalibrationData.BoardType boardType = UICalibrationData.BoardType.CHESSBOARD;
     public double gridSize = Units.inchesToMeters(1.0);
 

@@ -101,7 +101,8 @@ public class PhotonConfiguration {
                         .collect(Collectors.toList()));
 
         var lightingConfig = new UILightingConfig();
-        // TODO set constants
+        lightingConfig.brightness = hardwareSettings.ledBrightnessPercentage;
+        lightingConfig.supported = Platform.isRaspberryPi(); // TODO check non pi??
         settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
 
         var generalSubmap = new HashMap<String, Object>();

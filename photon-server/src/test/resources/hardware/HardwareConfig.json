@@ -15,7 +15,6 @@
   "cpuMemoryCommand" : "echo 10",
   "cpuUtilCommand" : "echo 10",
   "gpuMemoryCommand" : "echo 10",
-  "gpuTempCommand" : "echo 10",
   "ramUtilCommand" : "echo 10",
   "restartHardwareCommand" : "echo 10",
   "vendorFOV" : 40.0

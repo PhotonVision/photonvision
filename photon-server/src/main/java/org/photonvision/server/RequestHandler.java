@@ -160,6 +160,20 @@ public class RequestHandler {
         }
     }
 
+    public static void setCameraNickname(Context ctx) {
+        try {
+            var data = kObjectMapper.readValue(ctx.body(), HashMap.class);
+            String name = String.valueOf(data.get("name"));
+            int idx = Integer.parseInt(String.valueOf(data.get("cameraIndex")));
+            VisionModuleManager.getInstance().getModule(idx).setCameraNickname(name);
+            ctx.status(200);
+            return;
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        ctx.status(500);
+    }
+
     public static void uploadPnpModel(Context ctx) {
         UITargetData data;
         try {

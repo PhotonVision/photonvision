@@ -141,6 +141,11 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
+    private void destroyStreams() {
+        dashboardInputStreamer.close();
+        dashboardOutputStreamer.close();
+    }
+
     private void createStreams() {
         var camStreamIdx = visionSource.getSettables().getConfiguration().streamIndex;
         // If idx = 0, we want (1181, 1182)
@@ -149,8 +154,7 @@ public class VisionModule {
 
         dashboardOutputStreamer =
                 new MJPGFrameConsumer(
-                        visionSource.getSettables().getConfiguration().uniqueName + "-output",
-                        outputStreamPort);
+                        visionSource.getSettables().getConfiguration().nickname + "-output", outputStreamPort);
         dashboardInputStreamer =
                 new MJPGFrameConsumer(
                         visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
@@ -210,6 +214,12 @@ public class VisionModule {
         settings.boardHeight = data.patternHeight;
         settings.boardWidth = data.patternWidth;
         settings.boardType = data.boardType;
+
+        // Disable gain if not applicable
+        if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
+            settings.cameraGain = -1;
+        }
+
         pipelineManager.setCalibrationMode(true);
     }
 
@@ -286,7 +296,7 @@ public class VisionModule {
                         OutgoingUIEvent.wrappedOf("mutatePipeline", propertyName, value, originContext));
     }
 
-    void setCameraNickname(String newName) {
+    public void setCameraNickname(String newName) {
         visionSource.getSettables().getConfiguration().nickname = newName;
         ntConsumer.updateCameraNickname(newName);
         inputFrameSaver.updateCameraNickname(newName);
@@ -295,12 +305,17 @@ public class VisionModule {
         // rename streams
         fpsLimitedResultConsumers.clear();
 
+        // Teardown and recreate streams
+        destroyStreams();
         createStreams();
 
         fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
         fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
+
+        // Push new data to the UI
+        saveAndBroadcastAll();
     }
 
     public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {

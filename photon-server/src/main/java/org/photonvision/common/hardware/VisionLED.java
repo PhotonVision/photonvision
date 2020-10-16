@@ -23,25 +23,40 @@ import java.util.List;
 import java.util.function.BooleanSupplier;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
-import org.photonvision.common.hardware.GPIO.PiGPIO;
+import org.photonvision.common.hardware.GPIO.pi.PigpioException;
+import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
+import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.common.util.math.MathUtils;
 
 public class VisionLED {
     private static final Logger logger = new Logger(VisionLED.class, LogGroup.VisionModule);
 
-    public final List<GPIOBase> leds = new ArrayList<>();
+    private final int[] ledPins;
+    private final List<GPIOBase> visionLEDs = new ArrayList<>();
+    private final int brightnessMin;
+    private final int brightnessMax;
+    private final PigpioSocket pigpioSocket;
 
     private VisionLEDMode currentLedMode = VisionLEDMode.VLM_DEFAULT;
     private BooleanSupplier pipelineModeSupplier;
 
-    public VisionLED(List<Integer> ledPins, int pwmFreq, int pwmRangeMax) {
+    private int mappedBrightnessPercentage;
+
+    public VisionLED(
+            List<Integer> ledPins, int brightnessMin, int brightnessMax, PigpioSocket pigpioSocket) {
+        this.brightnessMin = brightnessMin;
+        this.brightnessMax = brightnessMax;
+        this.pigpioSocket = pigpioSocket;
+        this.ledPins = ledPins.stream().mapToInt(i -> i).toArray();
         ledPins.forEach(
                 pin -> {
                     if (Platform.isRaspberryPi()) {
-                        leds.add(new PiGPIO(pin, pwmFreq, pwmRangeMax));
+                        visionLEDs.add(new PigpioPin(pin));
                     } else {
-                        leds.add(new CustomGPIO(pin));
+                        visionLEDs.add(new CustomGPIO(pin));
                     }
                 });
         pipelineModeSupplier = () -> false;
@@ -52,15 +67,47 @@ public class VisionLED {
     }
 
     public void setBrightness(int percentage) {
-        leds.forEach((led) -> led.setBrightness(percentage));
+        mappedBrightnessPercentage = MathUtils.map(percentage, 0, 100, brightnessMin, brightnessMax);
+        setInternal(currentLedMode, false);
+    }
+
+    public void blink(int pulseLengthMillis, int blinkCount) {
+        blinkImpl(pulseLengthMillis, blinkCount);
+        int blinkDuration = pulseLengthMillis * blinkCount * 2;
+        TimedTaskManager.getInstance()
+                .addOneShotTask(() -> setInternal(this.currentLedMode, false), blinkDuration + 150);
     }
 
     private void blinkImpl(int pulseLengthMillis, int blinkCount) {
-        leds.forEach((led) -> led.blink(pulseLengthMillis, blinkCount));
+        if (Platform.isRaspberryPi()) {
+            try {
+                setStateImpl(false); // hack to ensure hardware PWM has stopped before trying to blink
+                pigpioSocket.generateAndSendWaveform(pulseLengthMillis, blinkCount, ledPins);
+            } catch (PigpioException e) {
+                logger.error("Failed to blink!", e);
+            }
+        } else {
+            for (GPIOBase led : visionLEDs) {
+                led.blink(pulseLengthMillis, blinkCount);
+            }
+        }
     }
 
     private void setStateImpl(boolean state) {
-        leds.forEach((led) -> led.setState(state));
+        if (Platform.isRaspberryPi()) {
+            try {
+                // stop any active blink
+                pigpioSocket.waveTxStop();
+            } catch (PigpioException e) {
+                logger.error("Failed to stop blink!", e);
+            }
+        }
+        // if the user has set an LED brightness other than 100%, use that instead
+        if (mappedBrightnessPercentage == 100 || !state) {
+            visionLEDs.forEach((led) -> led.setState(state));
+        } else {
+            visionLEDs.forEach((led) -> led.setBrightness(mappedBrightnessPercentage));
+        }
     }
 
     public void setState(boolean on) {
@@ -108,7 +155,7 @@ public class VisionLED {
                     setStateImpl(true);
                     break;
                 case VLM_BLINK:
-                    blinkImpl(175, -1);
+                    blinkImpl(85, -1);
                     break;
             }
             currentLedMode = newLedMode;
@@ -121,6 +168,9 @@ public class VisionLED {
         } else {
             if (currentLedMode == VisionLEDMode.VLM_DEFAULT) {
                 switch (newLedMode) {
+                    case VLM_DEFAULT:
+                        setStateImpl(pipelineModeSupplier.getAsBoolean());
+                        break;
                     case VLM_OFF:
                         setStateImpl(false);
                         break;

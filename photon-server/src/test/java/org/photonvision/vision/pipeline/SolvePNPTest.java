@@ -98,7 +98,7 @@ public class SolvePNPTest {
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.get2019Target();
+        pipeline.getSettings().targetModel = TargetModel.k2019DualTarget;
 
         var frameProvider =
                 new FileFrameProvider(
@@ -133,7 +133,7 @@ public class SolvePNPTest {
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-        pipeline.getSettings().targetModel = TargetModel.get2020Target();
+        pipeline.getSettings().targetModel = TargetModel.k2020HighGoalOuter;
 
         var frameProvider =
                 new FileFrameProvider(

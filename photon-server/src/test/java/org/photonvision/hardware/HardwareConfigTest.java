@@ -40,10 +40,6 @@ public class HardwareConfigTest {
             assertEquals(config.supportURL, "https://support.photonvision.com");
             Assertions.assertArrayEquals(
                     config.ledPins.stream().mapToInt(i -> i).toArray(), new int[] {2, 13});
-            Assertions.assertArrayEquals(
-                    config.ledPWMRange.stream().mapToInt(i -> i).toArray(), new int[] {0, 100});
-            Assertions.assertEquals(config.ledPWMFrequency, 800);
-
             CustomGPIO.setConfig(config);
 
         } catch (IOException e) {

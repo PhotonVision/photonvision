@@ -19,7 +19,6 @@ package org.photonvision.common.hardware.GPIO;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
@@ -32,7 +31,6 @@ public abstract class GPIOBase {
             new HashMap<>() {
                 {
                     put("setState", "");
-                    put("setRange", "");
                     put("shutdown", "");
                     put("dim", "");
                     put("blink", "");
@@ -81,22 +79,6 @@ public abstract class GPIOBase {
 
     public abstract boolean getStateImpl();
 
-    public final void setPwmRange(List<Integer> range) {
-        if (getPinNumber() != -1) {
-            setPwmRangeImpl(range);
-        }
-    }
-
-    protected abstract void setPwmRangeImpl(List<Integer> range);
-
-    public final List<Integer> getPwmRange() {
-        if (getPinNumber() != -1) {
-            return getPwmRangeImpl();
-        } else return List.of(0, 255);
-    }
-
-    protected abstract List<Integer> getPwmRangeImpl();
-
     public final void blink(int pulseTimeMillis, int blinks) {
         if (getPinNumber() != -1) {
             blinkImpl(pulseTimeMillis, blinks);
@@ -107,6 +89,8 @@ public abstract class GPIOBase {
 
     public final void setBrightness(int brightness) {
         if (getPinNumber() != -1) {
+            if (brightness > 100) brightness = 100;
+            if (brightness < 0) brightness = 0;
             setBrightnessImpl(brightness);
         }
     }

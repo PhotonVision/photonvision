@@ -54,7 +54,7 @@ public class ConfigTest {
         COLORED_SHAPE_PIPELINE_SETTINGS = new ColoredShapePipelineSettings();
 
         REFLECTIVE_PIPELINE_SETTINGS.pipelineNickname = "2019Tape";
-        REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.get2019Target();
+        REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.k2019DualTarget;
 
         COLORED_SHAPE_PIPELINE_SETTINGS.pipelineNickname = "2019Cargo";
         COLORED_SHAPE_PIPELINE_SETTINGS.pipelineIndex = 1;
