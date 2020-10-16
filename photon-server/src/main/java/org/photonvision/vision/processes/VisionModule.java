@@ -135,6 +135,11 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
+    private void destroyStreams() {
+        dashboardInputStreamer.close();
+        dashboardOutputStreamer.close();
+    }
+
     private void createStreams() {
         var camStreamIdx = visionSource.getSettables().getConfiguration().streamIndex;
         // If idx = 0, we want (1181, 1182)
@@ -143,11 +148,10 @@ public class VisionModule {
 
         dashboardOutputStreamer =
                 new MJPGFrameConsumer(
-                        visionSource.getSettables().getConfiguration().uniqueName + "-output",
-                        outputStreamPort);
+                        visionSource.getSettables().getConfiguration().nickname + "-output", outputStreamPort);
         dashboardInputStreamer =
                 new MJPGFrameConsumer(
-                        visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
+                        visionSource.getSettables().getConfiguration().nickname + "-input", inputStreamPort);
     }
 
     void setDriverMode(boolean isDriverMode) {
@@ -280,17 +284,22 @@ public class VisionModule {
                         OutgoingUIEvent.wrappedOf("mutatePipeline", propertyName, value, originContext));
     }
 
-    void setCameraNickname(String newName) {
+    public void setCameraNickname(String newName) {
         visionSource.getSettables().getConfiguration().nickname = newName;
         ntConsumer.updateCameraNickname(newName);
 
         // rename streams
         fpsLimitedResultConsumers.clear();
 
+        // Teardown and recreate streams
+        destroyStreams();
         createStreams();
 
         fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
+
+        // Push new data to the UI
+        saveAndBroadcastAll();
     }
 
     public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
