@@ -37,6 +37,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
+import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -71,6 +72,9 @@ public class VisionModule {
     MJPGFrameConsumer dashboardInputStreamer;
     MJPGFrameConsumer dashboardOutputStreamer;
 
+    FileSaveFrameConsumer inputFrameSaver;
+    FileSaveFrameConsumer outputFrameSaver;
+
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
                 new Logger(
@@ -98,6 +102,8 @@ public class VisionModule {
         createStreams();
         fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
+        fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
+        fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
 
         ntConsumer =
                 new NTDataPublisher(
@@ -151,7 +157,13 @@ public class VisionModule {
                         visionSource.getSettables().getConfiguration().nickname + "-output", outputStreamPort);
         dashboardInputStreamer =
                 new MJPGFrameConsumer(
-                        visionSource.getSettables().getConfiguration().nickname + "-input", inputStreamPort);
+                        visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
+
+        inputFrameSaver =
+                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
+        outputFrameSaver =
+                new FileSaveFrameConsumer(
+                        visionSource.getSettables().getConfiguration().nickname, "output");
     }
 
     void setDriverMode(boolean isDriverMode) {
@@ -287,6 +299,8 @@ public class VisionModule {
     public void setCameraNickname(String newName) {
         visionSource.getSettables().getConfiguration().nickname = newName;
         ntConsumer.updateCameraNickname(newName);
+        inputFrameSaver.updateCameraNickname(newName);
+        outputFrameSaver.updateCameraNickname(newName);
 
         // rename streams
         fpsLimitedResultConsumers.clear();
@@ -297,6 +311,8 @@ public class VisionModule {
 
         fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
+        fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
+        fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
 
         // Push new data to the UI
         saveAndBroadcastAll();
