@@ -107,9 +107,7 @@ public class FileFrameProvider implements FrameProvider {
 
     @Override
     public Frame get() {
-        if (outputFrame.image.getMat().empty()) {
-            originalFrame.copyTo(outputFrame);
-        }
+        originalFrame.copyTo(outputFrame);
 
         // block to keep FPS at a defined rate
         if (System.currentTimeMillis() - lastGetMillis < millisDelay) {
