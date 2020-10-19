@@ -39,7 +39,7 @@
     <v-btn
       color="accent"
       style="color: black; width: 100%;"
-      :disabled="!valid"
+      :disabled="!valid && !runNTServer"
       @click="sendGeneralSettings()"
     >
       Save
@@ -93,7 +93,7 @@ export default {
                 return this.settings.teamNumber
             },
             set(value) {
-                this.$store.commit('mutateNetworkSettings', {['teamNumber']: value});
+                this.$store.commit('mutateNetworkSettings', {['teamNumber']: value || 0});
            }
         },
         runNTServer: {
