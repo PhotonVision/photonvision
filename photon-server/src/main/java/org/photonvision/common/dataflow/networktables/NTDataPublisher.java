@@ -71,6 +71,12 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         var newIndex = (int) entryNotification.value.getDouble();
         var originalIndex = pipelineIndexSupplier.get();
 
+        // ignore indexes below 0
+        if (newIndex < 0) {
+            pipelineIndexEntry.forceSetNumber(originalIndex);
+            return;
+        }
+
         if (newIndex == originalIndex) {
             // TODO: Log
             return;
