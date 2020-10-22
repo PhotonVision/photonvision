@@ -183,4 +183,4 @@ task deployToPi {
     }
 }
 
-// deployToPi.dependsOn assemble
+deployToPi.dependsOn assemble

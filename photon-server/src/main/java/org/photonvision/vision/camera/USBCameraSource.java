@@ -19,9 +19,12 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.UsbCamera;
+import edu.wpi.cscore.VideoCamera;
 import edu.wpi.cscore.VideoException;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
+
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -60,6 +63,18 @@ public class USBCameraSource implements VisionSource {
 
         usbCameraSettables = new USBCameraSettables(config);
         usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
+
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+            //Pick a bunch of reasonable setting defaults for vision processing.
+            camera.getProperty("exposure_dynamic_framerate").set(0); 
+            camera.getProperty("auto_exposure_bias").set(0); 
+            camera.getProperty("image_stabilization").set(0); 
+            camera.getProperty("iso_sensitivity").set(0); 
+            camera.getProperty("iso_sensitivity_auto").set(0); 
+            camera.getProperty("exposure_metering_mode").set(0); 
+            camera.getProperty("scene_mode").set(0); 
+            camera.getProperty("power_line_frequency").set(2); 
+        }
     }
 
     @Override
@@ -83,16 +98,19 @@ public class USBCameraSource implements VisionSource {
         @Override
         public void setExposure(int exposure) {
             try {
+                logger.info("Setting camera exposure to " + Integer.toString(exposure));
                 if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                    camera.getProperty("white_balance_auto_preset").set(2); //Auto white-balance off
                     camera.getProperty("auto_exposure").set(1); // auto exposure off
-                    camera
-                            .getProperty("exposure_time_absolute")
-                            .set(MathUtils.safeDivide(10000, exposure)); // exposure time is a range, 0-10000
+                    Runtime.getRuntime().exec("v4l2-ctl -c exposure_time_absolute=" + Integer.toString(exposure));
+                    //camera.getProperty("exposure_time_absolute").set(exposure); // exposure time is in units of 100us/bit
                 } else {
                     camera.setExposureManual(exposure);
                     camera.setExposureManual(exposure);
                 }
             } catch (VideoException e) {
+                logger.error("Failed to set camera exposure!", e);
+            } catch (IOException e) {
                 logger.error("Failed to set camera exposure!", e);
             }
         }
