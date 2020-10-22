@@ -3,6 +3,7 @@ plugins {
     id 'application'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
     id "com.diffplug.gradle.spotless" version "3.28.0"
+    id 'org.hidetake.ssh' version '2.10.1'
     id "jacoco"
 }
 
@@ -155,3 +156,31 @@ jacocoTestReport {
         }))
     }
 }
+
+
+remotes {
+    rpi {
+        host = 'photonvision.local'
+        user = 'pi'
+        password = 'raspberry'
+        knownHosts = allowAnyHosts
+    }
+}
+
+task deployToPi {
+    doLast {
+        println 'Starting deployment to Raspberry Pi photonvision.local'
+        ssh.run{
+            session(remotes.rpi) {
+                execute 'sudo systemctl stop photonvision.service'
+                execute 'sleep 3'
+                execute 'rm -f /opt/photonvision/photonvision.jar'
+                put from: "${projectDir}/build/libs/photonvision-${project.version}.jar", into: "/opt/photonvision/photonvision.jar"
+                execute 'chmod 777 /opt/photonvision/photonvision.jar'
+                execute 'sudo systemctl start photonvision.service'
+            }
+        }
+    }
+}
+
+// deployToPi.dependsOn assemble
