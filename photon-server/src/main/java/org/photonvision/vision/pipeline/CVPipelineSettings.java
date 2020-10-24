@@ -39,7 +39,7 @@ public class CVPipelineSettings implements Cloneable {
     public ImageFlipMode inputImageFlipMode = ImageFlipMode.NONE;
     public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
     public String pipelineNickname = "New Pipeline";
-    public int cameraExposure = 50;
+    public double cameraExposure = 50;
     public int cameraBrightness = 50;
     public int cameraGain = 50;
     public int cameraVideoModeIndex = 0;

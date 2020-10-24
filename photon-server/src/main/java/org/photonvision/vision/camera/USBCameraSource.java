@@ -96,21 +96,22 @@ public class USBCameraSource implements VisionSource {
         }
 
         @Override
-        public void setExposure(int exposure) {
+        public void setExposure(double exposure) {
             try {
-                logger.info("Setting camera exposure to " + Integer.toString(exposure));
+                int scaledExposure = 1;
                 if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                     camera.getProperty("white_balance_auto_preset").set(2); //Auto white-balance off
                     camera.getProperty("auto_exposure").set(1); // auto exposure off
-                    Runtime.getRuntime().exec("v4l2-ctl -c exposure_time_absolute=" + Integer.toString(exposure));
-                    //camera.getProperty("exposure_time_absolute").set(exposure); // exposure time is in units of 100us/bit
+                    scaledExposure = (int) Math.round(MathUtils.map(exposure, 0.0, 100.0, 1.0, 10000.0)); //PiV2 Cam allows exposure times between 1 to 10000
+                    camera.getProperty("raw_exposure_time_absolute").set(scaledExposure); 
                 } else {
-                    camera.setExposureManual(exposure);
-                    camera.setExposureManual(exposure);
+                    scaledExposure = (int) Math.round(exposure);
+                    logger.info("Setting camera exposure to " + Integer.toString(scaledExposure));
+                    camera.setExposureManual(scaledExposure);
+                    camera.setExposureManual(scaledExposure);
                 }
+                logger.info("Set camera exposure to " + Integer.toString(scaledExposure));
             } catch (VideoException e) {
-                logger.error("Failed to set camera exposure!", e);
-            } catch (IOException e) {
                 logger.error("Failed to set camera exposure!", e);
             }
         }
