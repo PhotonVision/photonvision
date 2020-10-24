@@ -95,6 +95,18 @@ public class USBCameraSource implements VisionSource {
             calculateFrameStaticProps();
         }
 
+        private int timeToPiCamV2RawExposure(double time_us){
+            int retVal = (int) Math.round(time_us/100.0); //PiCamV2 needs exposure time in units of 100us/bit
+            return Math.min(Math.max(retVal, 1), 10000); //Cap to allowable range for parameter
+        }
+
+        private double pctToExposureTimeUs(double pct_in){
+            //Mirror the photonvision raspicam driver's algorithm for picking an exposure time from a 0-100% input
+            final double PADDING_LOW_US = 100;
+            final double PADDING_HIGH_US = 200;
+            return PADDING_LOW_US + (pct_in/100.0) * ( (1e6/(double)camera.getVideoMode().fps) - PADDING_HIGH_US);
+        }
+
         @Override
         public void setExposure(double exposure) {
             try {
@@ -102,15 +114,18 @@ public class USBCameraSource implements VisionSource {
                 if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
                     camera.getProperty("white_balance_auto_preset").set(2); //Auto white-balance off
                     camera.getProperty("auto_exposure").set(1); // auto exposure off
-                    scaledExposure = (int) Math.round(MathUtils.map(exposure, 0.0, 100.0, 1.0, 10000.0)); //PiV2 Cam allows exposure times between 1 to 10000
+
+                    scaledExposure = (int) Math.round(timeToPiCamV2RawExposure(pctToExposureTimeUs(exposure))); 
+                    logger.info("Setting camera raw exposure to " + Integer.toString(scaledExposure));
                     camera.getProperty("raw_exposure_time_absolute").set(scaledExposure); 
+                    camera.getProperty("raw_exposure_time_absolute").set(scaledExposure); 
+
                 } else {
                     scaledExposure = (int) Math.round(exposure);
                     logger.info("Setting camera exposure to " + Integer.toString(scaledExposure));
                     camera.setExposureManual(scaledExposure);
                     camera.setExposureManual(scaledExposure);
                 }
-                logger.info("Set camera exposure to " + Integer.toString(scaledExposure));
             } catch (VideoException e) {
                 logger.error("Failed to set camera exposure!", e);
             }
