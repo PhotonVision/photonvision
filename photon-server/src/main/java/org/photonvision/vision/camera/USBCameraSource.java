@@ -19,19 +19,15 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.UsbCamera;
-import edu.wpi.cscore.VideoCamera;
 import edu.wpi.cscore.VideoException;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.cameraserver.CameraServer;
-
-import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
@@ -65,15 +61,15 @@ public class USBCameraSource implements VisionSource {
         usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
 
         if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-            //Pick a bunch of reasonable setting defaults for vision processing.
-            camera.getProperty("exposure_dynamic_framerate").set(0); 
-            camera.getProperty("auto_exposure_bias").set(0); 
-            camera.getProperty("image_stabilization").set(0); 
-            camera.getProperty("iso_sensitivity").set(0); 
-            camera.getProperty("iso_sensitivity_auto").set(0); 
-            camera.getProperty("exposure_metering_mode").set(0); 
-            camera.getProperty("scene_mode").set(0); 
-            camera.getProperty("power_line_frequency").set(2); 
+            // Pick a bunch of reasonable setting defaults for vision processing.
+            camera.getProperty("exposure_dynamic_framerate").set(0);
+            camera.getProperty("auto_exposure_bias").set(0);
+            camera.getProperty("image_stabilization").set(0);
+            camera.getProperty("iso_sensitivity").set(0);
+            camera.getProperty("iso_sensitivity_auto").set(0);
+            camera.getProperty("exposure_metering_mode").set(0);
+            camera.getProperty("scene_mode").set(0);
+            camera.getProperty("power_line_frequency").set(2);
         }
     }
 
@@ -95,16 +91,19 @@ public class USBCameraSource implements VisionSource {
             calculateFrameStaticProps();
         }
 
-        private int timeToPiCamV2RawExposure(double time_us){
-            int retVal = (int) Math.round(time_us/100.0); //PiCamV2 needs exposure time in units of 100us/bit
-            return Math.min(Math.max(retVal, 1), 10000); //Cap to allowable range for parameter
+        private int timeToPiCamV2RawExposure(double time_us) {
+            int retVal =
+                    (int) Math.round(time_us / 100.0); // PiCamV2 needs exposure time in units of 100us/bit
+            return Math.min(Math.max(retVal, 1), 10000); // Cap to allowable range for parameter
         }
 
-        private double pctToExposureTimeUs(double pct_in){
-            //Mirror the photonvision raspicam driver's algorithm for picking an exposure time from a 0-100% input
+        private double pctToExposureTimeUs(double pct_in) {
+            // Mirror the photonvision raspicam driver's algorithm for picking an exposure time from a
+            // 0-100% input
             final double PADDING_LOW_US = 100;
             final double PADDING_HIGH_US = 200;
-            return PADDING_LOW_US + (pct_in/100.0) * ( (1e6/(double)camera.getVideoMode().fps) - PADDING_HIGH_US);
+            return PADDING_LOW_US
+                    + (pct_in / 100.0) * ((1e6 / (double) camera.getVideoMode().fps) - PADDING_HIGH_US);
         }
 
         @Override
@@ -112,13 +111,14 @@ public class USBCameraSource implements VisionSource {
             try {
                 int scaledExposure = 1;
                 if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                    camera.getProperty("white_balance_auto_preset").set(2); //Auto white-balance off
+                    camera.getProperty("white_balance_auto_preset").set(2); // Auto white-balance off
                     camera.getProperty("auto_exposure").set(1); // auto exposure off
 
-                    scaledExposure = (int) Math.round(timeToPiCamV2RawExposure(pctToExposureTimeUs(exposure))); 
+                    scaledExposure =
+                            (int) Math.round(timeToPiCamV2RawExposure(pctToExposureTimeUs(exposure)));
                     logger.info("Setting camera raw exposure to " + Integer.toString(scaledExposure));
-                    camera.getProperty("raw_exposure_time_absolute").set(scaledExposure); 
-                    camera.getProperty("raw_exposure_time_absolute").set(scaledExposure); 
+                    camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
+                    camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
 
                 } else {
                     scaledExposure = (int) Math.round(exposure);
