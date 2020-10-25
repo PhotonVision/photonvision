@@ -98,8 +98,8 @@ public class USBCameraSource implements VisionSource {
         }
 
         private double pctToExposureTimeUs(double pct_in) {
-            // Mirror the photonvision raspicam driver's algorithm for picking an exposure time from a
-            // 0-100% input
+            // Mirror the photonvision raspicam driver's algorithm for picking an exposure time
+            // from a 0-100% input
             final double PADDING_LOW_US = 100;
             final double PADDING_HIGH_US = 200;
             return PADDING_LOW_US

@@ -159,19 +159,53 @@ jacocoTestReport {
 
 
 remotes {
-    rpi {
-        host = 'photonvision.local'
-        user = 'pi'
-        password = 'raspberry'
-        knownHosts = allowAnyHosts
+    [
+        pi {
+            host = 'photonvision.local'
+            //host = 'fe80::87fc:c2d9:38be:d683'
+            user = 'pi'
+            password = 'raspberry'
+            knownHosts = allowAnyHosts
+        },
+        gloworm {
+            host = 'gloworm.local'
+            user = 'pi'
+            password = 'raspberry'
+            knownHosts = allowAnyHosts
+        }
+    ]
+}
+
+
+task findDeployTarget {
+    doLast {
+        findDeployTarget.ext.rmt = null
+        for(testRmt in remotes){
+            println "Checking for " + testRmt.host
+            def pingProc = ('ping -n 1 ' + testRmt.host).execute()
+            pingProc.waitFor()
+            if(pingProc.exitValue() == 0){
+                println "Found!"
+                findDeployTarget.ext.rmt = testRmt
+                break
+            } else {
+                println "Not Found."
+            }
+        }
+        if(findDeployTarget.ext.rmt == null ){
+            throw new GradleException("Could not find a target for deployment!")
+        }
     }
 }
 
-task deployToPi {
+
+task deploy {
+    dependsOn assemble
+    dependsOn findDeployTarget
     doLast {
-        println 'Starting deployment to Raspberry Pi photonvision.local'
+        println 'Starting deployment to ' + findDeployTarget.rmt.host
         ssh.run{
-            session(remotes.rpi) {
+            session(findDeployTarget.rmt) {
                 execute 'sudo systemctl stop photonvision.service'
                 execute 'sleep 3'
                 execute 'rm -f /opt/photonvision/photonvision.jar'
@@ -183,4 +217,3 @@ task deployToPi {
     }
 }
 
-deployToPi.dependsOn assemble
