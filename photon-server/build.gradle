@@ -159,32 +159,36 @@ jacocoTestReport {
 
 
 remotes {
-    [
-        pi {
-            host = 'photonvision.local'
-            //host = 'fe80::87fc:c2d9:38be:d683'
-            user = 'pi'
-            password = 'raspberry'
-            knownHosts = allowAnyHosts
-        },
-        gloworm {
-            host = 'gloworm.local'
-            user = 'pi'
-            password = 'raspberry'
-            knownHosts = allowAnyHosts
-        }
-    ]
+    pi {
+        host = 'photonvision.local'
+        user = 'pi'
+        password = 'raspberry'
+        knownHosts = allowAnyHosts
+    }
+    gloworm {
+        host = 'gloworm.local'
+        user = 'pi'
+        password = 'raspberry'
+        knownHosts = allowAnyHosts
+    }
 }
 
+import java.io.*; 
+import java.net.*; 
 
 task findDeployTarget {
     doLast {
         findDeployTarget.ext.rmt = null
         for(testRmt in remotes){
             println "Checking for " + testRmt.host
-            def pingProc = ('ping -n 1 ' + testRmt.host).execute()
-            pingProc.waitFor()
-            if(pingProc.exitValue() == 0){
+            boolean canContact = false;
+            try {
+                InetAddress testAddr = InetAddress.getByName(testRmt.host);
+                canContact = testAddr.isReachable(5000);
+            } catch(UnknownHostException e) {
+                canContact = false;
+            }
+            if(canContact){
                 println "Found!"
                 findDeployTarget.ext.rmt = testRmt
                 break
@@ -193,14 +197,14 @@ task findDeployTarget {
             }
         }
         if(findDeployTarget.ext.rmt == null ){
-            throw new GradleException("Could not find a target for deployment!")
+            throw new GradleException("Could not find a supported target for deployment!")
         }
     }
 }
 
 
 task deploy {
-    dependsOn assemble
+    //dependsOn assemble
     dependsOn findDeployTarget
     doLast {
         println 'Starting deployment to ' + findDeployTarget.rmt.host
