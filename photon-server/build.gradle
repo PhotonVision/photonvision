@@ -3,6 +3,7 @@ plugins {
     id 'application'
     id 'com.github.johnrengelman.shadow' version '5.2.0'
     id "com.diffplug.gradle.spotless" version "3.28.0"
+    id 'org.hidetake.ssh' version '2.10.1'
     id "jacoco"
 }
 
@@ -155,3 +156,84 @@ jacocoTestReport {
         }))
     }
 }
+
+
+remotes {
+    pi {
+        host = 'photonvision.local'
+        user = 'pi'
+        password = 'raspberry'
+        knownHosts = allowAnyHosts
+    }
+    gloworm {
+        host = 'gloworm.local'
+        user = 'pi'
+        password = 'raspberry'
+        knownHosts = allowAnyHosts
+    }
+}
+
+import java.io.*; 
+import java.net.*; 
+
+task findDeployTarget {
+    doLast {
+        if(project.hasProperty('tgtIP')){
+            //If user specificed IP, default to using the PI profile
+            // but adjust hostname to match the provided IP address
+            findDeployTarget.ext.rmt = remotes.pi
+            findDeployTarget.ext.rmt.host=tgtIP
+        } else {
+            findDeployTarget.ext.rmt = null
+            for(testRmt in remotes){
+                println "Checking for " + testRmt.host
+                boolean canContact = false;
+                try {
+                    InetAddress testAddr = InetAddress.getByName(testRmt.host)
+                    canContact = testAddr.isReachable(5000)
+                } catch(UnknownHostException e) {
+                    canContact = false;
+                }
+                if(canContact){
+                    println "Found!"
+                    findDeployTarget.ext.rmt = testRmt
+                    break
+                } else {
+                    println "Not Found."
+                }
+            }
+            if(findDeployTarget.ext.rmt == null ){
+                throw new GradleException("Could not find a supported target for deployment!")
+            }
+        }
+    }
+}
+
+
+task deploy {
+    dependsOn assemble
+    dependsOn findDeployTarget
+    doLast {
+        println 'Starting deployment to ' + findDeployTarget.rmt.host
+        ssh.run{
+            session(findDeployTarget.rmt) {
+                //Stop photonvision before manipulating its files
+                execute 'sudo systemctl stop photonvision.service'
+                // gerth2 - I was having issues with the .jar being in use still - waiting a tiny bit here seems to get rid of it on a pi4
+                execute 'sleep 3'
+                // Copy into a folder owned by PI. Mostly because, as far as I can tell, the put command doesn't support sudo.
+                put from: "${projectDir}/build/libs/photonvision-${project.version}.jar", into: "/tmp/photonvision.jar"
+                 //belt-and-suspenders. Make sure the old jar is gone first.
+                execute 'sudo rm -f /opt/photonvision/photonvision.jar'
+                //Copy in the new .jar and make sure it's executable
+                execute 'sudo mv /tmp/photonvision.jar /opt/photonvision/photonvision.jar'
+                execute 'sudo chmod +x /opt/photonvision/photonvision.jar'
+                //Fire up photonvision again
+                execute 'sudo systemctl start photonvision.service'
+                //Cleanup
+                execute 'sudo rm -f /tmp/photonvision.jar'
+            }
+        }
+    }
+}
+
