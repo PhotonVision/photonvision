@@ -89,7 +89,7 @@ public class FileVisionSource implements VisionSource {
         }
 
         @Override
-        public void setExposure(int exposure) {}
+        public void setExposure(double exposure) {}
 
         @Override
         public void setBrightness(int brightness) {}

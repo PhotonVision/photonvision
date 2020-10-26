@@ -5,6 +5,7 @@
       name="Exposure"
       min="0"
       max="100"
+      step="0.1"
       tooltip="Directly controls how much light is allowed to fall onto the sensor, which affects brightness"
       :slider-cols="largeBox"
       @input="handlePipelineData('cameraExposure')"
@@ -87,10 +88,10 @@
             },
             cameraExposure: {
                 get() {
-                    return parseInt(this.$store.getters.currentPipelineSettings.cameraExposure);
+                    return parseFloat(this.$store.getters.currentPipelineSettings.cameraExposure);
                 },
                 set(val) {
-                    this.$store.commit("mutatePipeline", {"cameraExposure": parseInt(val)});
+                    this.$store.commit("mutatePipeline", {"cameraExposure": parseFloat(val)});
                 }
             },
             cameraBrightness: {

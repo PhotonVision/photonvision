@@ -28,7 +28,6 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
@@ -60,6 +59,18 @@ public class USBCameraSource implements VisionSource {
 
         usbCameraSettables = new USBCameraSettables(config);
         usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
+
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+            // Pick a bunch of reasonable setting defaults for vision processing.
+            camera.getProperty("exposure_dynamic_framerate").set(0);
+            camera.getProperty("auto_exposure_bias").set(0);
+            camera.getProperty("image_stabilization").set(0);
+            camera.getProperty("iso_sensitivity").set(0);
+            camera.getProperty("iso_sensitivity_auto").set(0);
+            camera.getProperty("exposure_metering_mode").set(0);
+            camera.getProperty("scene_mode").set(0);
+            camera.getProperty("power_line_frequency").set(2);
+        }
     }
 
     @Override
@@ -80,17 +91,40 @@ public class USBCameraSource implements VisionSource {
             calculateFrameStaticProps();
         }
 
+        private int timeToPiCamV2RawExposure(double time_us) {
+            int retVal =
+                    (int) Math.round(time_us / 100.0); // PiCamV2 needs exposure time in units of 100us/bit
+            return Math.min(Math.max(retVal, 1), 10000); // Cap to allowable range for parameter
+        }
+
+        private double pctToExposureTimeUs(double pct_in) {
+            // Mirror the photonvision raspicam driver's algorithm for picking an exposure time
+            // from a 0-100% input
+            final double PADDING_LOW_US = 100;
+            final double PADDING_HIGH_US = 200;
+            return PADDING_LOW_US
+                    + (pct_in / 100.0) * ((1e6 / (double) camera.getVideoMode().fps) - PADDING_HIGH_US);
+        }
+
         @Override
-        public void setExposure(int exposure) {
+        public void setExposure(double exposure) {
             try {
+                int scaledExposure = 1;
                 if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                    camera.getProperty("white_balance_auto_preset").set(2); // Auto white-balance off
                     camera.getProperty("auto_exposure").set(1); // auto exposure off
-                    camera
-                            .getProperty("exposure_time_absolute")
-                            .set(MathUtils.safeDivide(10000, exposure)); // exposure time is a range, 0-10000
+
+                    scaledExposure =
+                            (int) Math.round(timeToPiCamV2RawExposure(pctToExposureTimeUs(exposure)));
+                    logger.info("Setting camera raw exposure to " + Integer.toString(scaledExposure));
+                    camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
+                    camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
+
                 } else {
-                    camera.setExposureManual(exposure);
-                    camera.setExposureManual(exposure);
+                    scaledExposure = (int) Math.round(exposure);
+                    logger.info("Setting camera exposure to " + Integer.toString(scaledExposure));
+                    camera.setExposureManual(scaledExposure);
+                    camera.setExposureManual(scaledExposure);
                 }
             } catch (VideoException e) {
                 logger.error("Failed to set camera exposure!", e);
