@@ -122,7 +122,7 @@ public class USBCameraSource implements VisionSource {
 
                 } else {
                     scaledExposure = (int) Math.round(exposure);
-                    logger.info("Setting camera exposure to " + Integer.toString(scaledExposure));
+                    logger.debug("Setting camera exposure to " + Integer.toString(scaledExposure));
                     camera.setExposureManual(scaledExposure);
                     camera.setExposureManual(scaledExposure);
                 }
