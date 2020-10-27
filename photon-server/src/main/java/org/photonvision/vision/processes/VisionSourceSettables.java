@@ -42,7 +42,7 @@ public abstract class VisionSourceSettables {
         return configuration;
     }
 
-    public abstract void setExposure(int exposure);
+    public abstract void setExposure(double exposure);
 
     public abstract void setBrightness(int brightness);
 
