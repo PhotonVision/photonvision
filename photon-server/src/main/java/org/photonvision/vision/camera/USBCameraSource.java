@@ -116,7 +116,7 @@ public class USBCameraSource implements VisionSource {
 
                     scaledExposure =
                             (int) Math.round(timeToPiCamV2RawExposure(pctToExposureTimeUs(exposure)));
-                    logger.info("Setting camera raw exposure to " + Integer.toString(scaledExposure));
+                    logger.debug("Setting camera raw exposure to " + Integer.toString(scaledExposure));
                     camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
                     camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
 
