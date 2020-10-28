@@ -131,7 +131,10 @@ public class VisionModule {
             var fov = ConfigManager.getInstance().getConfig().getHardwareConfig().vendorFOV;
             logger.info("Setting FOV of vendor camera to " + fov);
             visionSource.getSettables().setFOV(fov);
+        }
 
+        // Configure LED's if supported by the underlying hardware
+        if (HardwareManager.getInstance().visionLED != null) {
             HardwareManager.getInstance()
                     .visionLED
                     .setPipelineModeSupplier(() -> pipelineManager.getCurrentPipelineSettings().ledMode);
@@ -271,7 +274,7 @@ public class VisionModule {
     }
 
     private void setVisionLEDs(boolean on) {
-        if (isVendorCamera()) HardwareManager.getInstance().visionLED.setState(on);
+        if (HardwareManager.getInstance().visionLED != null) HardwareManager.getInstance().visionLED.setState(on);
     }
 
     public void saveModule() {
