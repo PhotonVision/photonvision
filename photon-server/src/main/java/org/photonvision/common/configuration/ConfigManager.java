@@ -395,7 +395,6 @@ public class ConfigManager {
         FileUtils.copyFile(uploadPath, this.getNetworkConfigFile());
     }
 
-
     public void requestSave() {
         logger.trace("Requesting save...");
         saveRequestTimestamp = System.currentTimeMillis();

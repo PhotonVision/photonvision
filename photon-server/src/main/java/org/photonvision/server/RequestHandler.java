@@ -29,7 +29,6 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
@@ -51,7 +50,7 @@ public class RequestHandler {
         var file = ctx.uploadedFile("zipData");
         if (file != null) {
 
-            //Copy the file from the client to a temporary location
+            // Copy the file from the client to a temporary location
             var tempFilePath =
                     new File(Path.of(System.getProperty("java.io.tmpdir"), file.getFilename()).toString());
             tempFilePath.getParentFile().mkdirs();
@@ -64,28 +63,34 @@ public class RequestHandler {
             }
 
             // Process the file by its extension
-            if(file.getExtension().contains("zip")){
-                //.zip files are assumed to be full packages of configuration files
+            if (file.getExtension().contains("zip")) {
+                // .zip files are assumed to be full packages of configuration files
                 logger.debug("Processing uploaded settings zip " + file.getFilename());
                 ConfigManager.saveUploadedSettingsZip(tempFilePath);
 
-            } else if(file.getFilename().equals(ConfigManager.HW_CFG_FNAME)) {
-                //Filenames matching the hardware config .json file are assumed to be hardware config .json's
+            } else if (file.getFilename().equals(ConfigManager.HW_CFG_FNAME)) {
+                // Filenames matching the hardware config .json file are assumed to be
+                // hardware config .json's
                 logger.debug("Processing uploaded hardware config " + file.getFilename());
                 ConfigManager.getInstance().saveUploadedHardwareConfig(tempFilePath.toPath());
 
-            } else if(file.getFilename().equals(ConfigManager.HW_SET_FNAME)) {
-                //Filenames matching the hardware settings .json file are assumed to be hardware settings .json's
+            } else if (file.getFilename().equals(ConfigManager.HW_SET_FNAME)) {
+                // Filenames matching the hardware settings .json file are assumed to be
+                // hardware settings.json's
                 logger.debug("Processing uploaded hardware settings" + file.getFilename());
                 ConfigManager.getInstance().saveUploadedHardwareSettings(tempFilePath.toPath());
 
-            } else if(file.getFilename().equals(ConfigManager.NET_SET_FNAME)) {
-                //Filenames matching the network config .json file are assumed to be network config .json's
+            } else if (file.getFilename().equals(ConfigManager.NET_SET_FNAME)) {
+                // Filenames matching the network config .json file are assumed to be
+                // network config .json's
                 logger.debug("Processing uploaded network config " + file.getFilename());
                 ConfigManager.getInstance().saveUploadedNetworkConfig(tempFilePath.toPath());
 
             } else {
-                logger.error("Couldn't apply provided settings file - did not recognize " + file.getFilename() + " as a supported file.");
+                logger.error(
+                        "Couldn't apply provided settings file - did not recognize "
+                                + file.getFilename()
+                                + " as a supported file.");
                 ctx.status(500);
                 return;
             }

@@ -58,7 +58,7 @@ public class FileUtils {
         }
     }
 
-    public static void deleteFile(Path path){
+    public static void deleteFile(Path path) {
         try {
             Files.delete(path);
         } catch (IOException e) {
@@ -66,7 +66,7 @@ public class FileUtils {
         }
     }
 
-    public static void copyFile(Path src, Path dst){
+    public static void copyFile(Path src, Path dst) {
         try {
             Files.copy(src, dst);
         } catch (IOException e) {
