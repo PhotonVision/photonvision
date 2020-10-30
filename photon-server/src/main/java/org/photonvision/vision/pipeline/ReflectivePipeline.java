@@ -55,6 +55,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private final Mat rawInputMat = new Mat();
+    private final Mat preProcInputMat = new Mat();
     private final long[] pipeProfileNanos = new long[PipelineProfiler.ReflectivePipeCount];
 
     public ReflectivePipeline() {
@@ -177,14 +178,16 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         // TODO: make this a pipe?
         long inputCopyStartNanos = System.nanoTime();
         rawInputMat.release();
+        preProcInputMat.release();
         frame.image.getMat().copyTo(rawInputMat);
+        frame.image.getMat().copyTo(preProcInputMat);
         long inputCopyElapsedNanos = System.nanoTime() - inputCopyStartNanos;
         sumPipeNanosElapsed += pipeProfileNanos[1] = inputCopyElapsedNanos;
 
-        var erodeDilateResult = erodeDilatePipe.run(rawInputMat);
+        var erodeDilateResult = erodeDilatePipe.run(preProcInputMat);
         sumPipeNanosElapsed += pipeProfileNanos[2] = erodeDilateResult.nanosElapsed;
 
-        CVPipeResult<Mat> hsvPipeResult = hsvPipe.run(rawInputMat);
+        CVPipeResult<Mat> hsvPipeResult = hsvPipe.run(preProcInputMat);
         sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
         pipeProfileNanos[3] = pipeProfileNanos[3] = hsvPipeResult.nanosElapsed;
 
