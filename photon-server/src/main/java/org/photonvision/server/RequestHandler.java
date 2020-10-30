@@ -57,12 +57,23 @@ public class RequestHandler {
             } catch (IOException e) {
                 logger.error("Exception uploading settings file!");
                 e.printStackTrace();
+                return;
             }
-            ConfigManager.saveUploadedSettingsZip(tempZipPath);
+
+            if(file.getExtension().contains("zip")){
+                ConfigManager.saveUploadedSettingsZip(tempZipPath);
+            } else if(file.getFilename() == "hardwareConfig.json") {
+                
+            } else {
+                logger.error("Couldn't apply provided settings file!");
+                ctx.status(500);
+                return;
+            }
+
             ctx.status(200);
             logger.info("Settings uploaded, going down for restart.");
-
             restartProgram(ctx);
+
         } else {
             logger.error("Couldn't read uploaded settings ZIP! Ignoring.");
             ctx.status(500);

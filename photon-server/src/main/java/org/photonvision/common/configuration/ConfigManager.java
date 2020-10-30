@@ -71,6 +71,8 @@ public class ConfigManager {
         }
     }
 
+    //TODO: Make more things like saveUploadedSettingsZip, but specific to the different config files.
+
     public PhotonConfiguration getConfig() {
         return config;
     }
