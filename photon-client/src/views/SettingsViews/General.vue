@@ -89,7 +89,7 @@
     <input
       ref="importSettings"
       type="file"
-      accept=".zip"
+      accept=".zip, .json"
       style="display: none;"
 
       @change="readImportedSettings"
@@ -153,11 +153,23 @@ export default {
                     text: "Settings imported successfully! Program will now exit...",
                 };
                 this.snack = true;
-            }).catch(() => {
-                this.snackbar = {
-                    color: "success",
-                    text: "Settings imported successfully! Program will now exit...",
-                };
+            }).catch(err => {
+                if (err.response) {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading settings file! Could not process provided file.",
+                  };               
+                } else if (err.request) {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading settings file! No respond to upload attempt.",
+                  };
+                } else {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading settings file!",
+                  };
+                }
                 this.snack = true;
             });
         },

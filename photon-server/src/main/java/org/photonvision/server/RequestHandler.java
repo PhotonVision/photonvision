@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
@@ -49,23 +50,42 @@ public class RequestHandler {
     public static void onSettingUpload(Context ctx) {
         var file = ctx.uploadedFile("zipData");
         if (file != null) {
-            var tempZipPath =
+
+            //Copy the file from the client to a temporary location
+            var tempFilePath =
                     new File(Path.of(System.getProperty("java.io.tmpdir"), file.getFilename()).toString());
-            tempZipPath.getParentFile().mkdirs();
+            tempFilePath.getParentFile().mkdirs();
             try {
-                FileUtils.copyInputStreamToFile(file.getContent(), tempZipPath);
+                FileUtils.copyInputStreamToFile(file.getContent(), tempFilePath);
             } catch (IOException e) {
-                logger.error("Exception uploading settings file!");
+                logger.error("Exception while uploading settings file to temp folder!");
                 e.printStackTrace();
                 return;
             }
 
+            // Process the file by its extension
             if(file.getExtension().contains("zip")){
-                ConfigManager.saveUploadedSettingsZip(tempZipPath);
-            } else if(file.getFilename() == "hardwareConfig.json") {
-                
+                //.zip files are assumed to be full packages of configuration files
+                logger.debug("Processing uploaded settings zip " + file.getFilename());
+                ConfigManager.saveUploadedSettingsZip(tempFilePath);
+
+            } else if(file.getFilename().equals(ConfigManager.HW_CFG_FNAME)) {
+                //Filenames matching the hardware config .json file are assumed to be hardware config .json's
+                logger.debug("Processing uploaded hardware config " + file.getFilename());
+                ConfigManager.getInstance().saveUploadedHardwareConfig(tempFilePath.toPath());
+
+            } else if(file.getFilename().equals(ConfigManager.HW_SET_FNAME)) {
+                //Filenames matching the hardware settings .json file are assumed to be hardware settings .json's
+                logger.debug("Processing uploaded hardware settings" + file.getFilename());
+                ConfigManager.getInstance().saveUploadedHardwareSettings(tempFilePath.toPath());
+
+            } else if(file.getFilename().equals(ConfigManager.NET_SET_FNAME)) {
+                //Filenames matching the network config .json file are assumed to be network config .json's
+                logger.debug("Processing uploaded network config " + file.getFilename());
+                ConfigManager.getInstance().saveUploadedNetworkConfig(tempFilePath.toPath());
+
             } else {
-                logger.error("Couldn't apply provided settings file!");
+                logger.error("Couldn't apply provided settings file - did not recognize " + file.getFilename() + " as a supported file.");
                 ctx.status(500);
                 return;
             }
@@ -75,7 +95,7 @@ public class RequestHandler {
             restartProgram(ctx);
 
         } else {
-            logger.error("Couldn't read uploaded settings ZIP! Ignoring.");
+            logger.error("Couldn't read uploaded file! Ignoring.");
             ctx.status(500);
         }
     }
