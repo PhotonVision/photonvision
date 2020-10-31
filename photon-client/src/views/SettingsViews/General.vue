@@ -145,25 +145,6 @@ export default {
             },
         }
     },
-    created() {
-      console.log("On Created hit!");
-      
-      //Periodically update hardware metrics
-      metricsGetter = setInterval(function () {
-        this.axios.post('http://' + this.$address + '/api/sendMetrics', {});
-      }.bind(this), 4000); 
-
-    },
-    beforeDestroy() {
-      console.log("On Destroy!");
-
-      //Stop periodic metrics getter
-      if(metricsGetter != null){
-        clearInterval(metricsGetter);
-        console.log("Cleared periodc getter!");
-      }
-
-    },
     computed: {
         settings() {
             return this.$store.state.settings.general;
