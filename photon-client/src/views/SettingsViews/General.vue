@@ -131,9 +131,6 @@
 </template>
 
 <script>
-
-var metricsGetter = null;
-
 export default {
     name: 'General',
     data() {
