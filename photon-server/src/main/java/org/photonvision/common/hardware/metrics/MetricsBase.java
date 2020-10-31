@@ -19,7 +19,6 @@ package org.photonvision.common.hardware.metrics;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
@@ -42,9 +41,8 @@ public abstract class MetricsBase {
     // RAM
     public static String ramUsageCommand = "free --mega | awk -v i=2 -v j=3 'FNR == i {print $j}'";
 
-    //Disk
+    // Disk
     public static String diskUsageCommand = "df ./ --output=pcent | tail -n +2";
-
 
     private static ShellExec runCommand = new ShellExec(true, true);
 
@@ -68,7 +66,7 @@ public abstract class MetricsBase {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
-            
+
             logger.error(
                     "Command: \""
                             + command
