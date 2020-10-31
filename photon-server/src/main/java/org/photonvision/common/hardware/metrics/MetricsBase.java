@@ -39,6 +39,10 @@ public abstract class MetricsBase {
     // RAM
     public static String ramUsageCommand = "free --mega | awk -v i=2 -v j=3 'FNR == i {print $j}'";
 
+    //Disk
+    public static String diskUsageCommand = "df ./ --output=pcent | tail -n +2";
+
+
     private static ShellExec runCommand = new ShellExec(true, true);
 
     public static void setConfig(HardwareConfig config) {

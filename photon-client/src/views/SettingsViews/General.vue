@@ -13,6 +13,8 @@
         <span>CPU Memory Usage: {{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB</span>
         &ndash;
         <span>GPU Memory Usage: {{ metrics.gpuMemUtil }}MB of {{ metrics.gpuMem }}MB</span>
+        &ndash;
+        <span>Disk Usage: {{ metrics.diskUtilPct }}</span>
       </v-row>
     </div>
       
