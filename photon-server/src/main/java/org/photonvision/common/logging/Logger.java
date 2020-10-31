@@ -18,8 +18,6 @@
 package org.photonvision.common.logging;
 
 import java.io.*;
-import java.lang.reflect.Array;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -38,7 +36,6 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.server.SocketHandler;
-
 
 @SuppressWarnings("unused")
 public class Logger {
@@ -132,41 +129,44 @@ public class Logger {
         currentAppenders.add(new FileLogAppender(logFilePath));
     }
 
-    public static void cleanLogs(Path folderToClean){
+    public static void cleanLogs(Path folderToClean) {
 
-        LinkedList<File> logFileList = new LinkedList<>(Arrays.asList(folderToClean.toFile().listFiles()));
+        LinkedList<File> logFileList =
+                new LinkedList<>(Arrays.asList(folderToClean.toFile().listFiles()));
         HashMap<File, Date> logFileStartDateMap = new HashMap<>();
 
         // Remove any files from the list for which we can't parse a start date from their name.
         // Simultaneously populate our HashMap with Date objects repeseting the file-name
         // indicated log start time.
-        logFileList.removeIf(new Predicate<File>() {
-            @Override
-            public boolean test(File arg0) {
-                try{
-                    logFileStartDateMap.put(arg0, ConfigManager.getInstance().logFnameToTA(arg0.getName()));
-                    return false;
-                } catch(ParseException e){
-                    return true;
-                }
-            }
-        });
+        logFileList.removeIf(
+                new Predicate<File>() {
+                    @Override
+                    public boolean test(File arg0) {
+                        try {
+                            logFileStartDateMap.put(
+                                    arg0, ConfigManager.getInstance().logFnameToTA(arg0.getName()));
+                            return false;
+                        } catch (ParseException e) {
+                            return true;
+                        }
+                    }
+                });
 
-        //Execute a sort on the log file list by date in the filename.
-        logFileList.sort(new Comparator <File>(){
-                @Override
-                public int compare(File arg0, File arg1) {
-                    Date date0 = logFileStartDateMap.get(arg0);
-                    Date date1 = logFileStartDateMap.get(arg1);
-                    return date0.compareTo(date1);
-                }
-            }
-        );
+        // Execute a sort on the log file list by date in the filename.
+        logFileList.sort(
+                new Comparator<File>() {
+                    @Override
+                    public int compare(File arg0, File arg1) {
+                        Date date0 = logFileStartDateMap.get(arg0);
+                        Date date1 = logFileStartDateMap.get(arg1);
+                        return date0.compareTo(date1);
+                    }
+                });
 
         int logCounter = 0;
         for (File file : logFileList) {
             // Due to filtering above, everything in logFileList should be a log file
-            if(logCounter < MAX_LOGS_TO_KEEP){
+            if (logCounter < MAX_LOGS_TO_KEEP) {
                 // Skip over the first MAX_LOGS_TO_KEEP files
                 logCounter++;
                 continue;
