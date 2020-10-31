@@ -159,7 +159,7 @@ public class Logger {
                     public int compare(File arg0, File arg1) {
                         Date date0 = logFileStartDateMap.get(arg0);
                         Date date1 = logFileStartDateMap.get(arg1);
-                        return date0.compareTo(date1);
+                        return date1.compareTo(date0);
                     }
                 });
 
