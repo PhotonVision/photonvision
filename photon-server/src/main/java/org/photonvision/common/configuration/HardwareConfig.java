@@ -43,6 +43,7 @@ public class HardwareConfig {
     public final String gpuMemoryCommand;
     public final String ramUtilCommand;
     public final String gpuMemUsageCommand;
+    public final String diskUsageCommand;
 
     // Device stuff
     public final String restartHardwareCommand;
@@ -67,6 +68,7 @@ public class HardwareConfig {
         ramUtilCommand = "";
         ledBlinkCommand = "";
         gpuMemUsageCommand = "";
+        diskUsageCommand = "";
 
         restartHardwareCommand = "";
         vendorFOV = -1;
@@ -91,6 +93,7 @@ public class HardwareConfig {
             String gpuMemoryCommand,
             String ramUtilCommand,
             String gpuMemUsageCommand,
+            String diskUsageCommand,
             String restartHardwareCommand,
             double vendorFOV,
             List<Integer> blacklistedResIndices) {
@@ -110,6 +113,7 @@ public class HardwareConfig {
         this.gpuMemoryCommand = gpuMemoryCommand;
         this.ramUtilCommand = ramUtilCommand;
         this.gpuMemUsageCommand = gpuMemUsageCommand;
+        this.diskUsageCommand = diskUsageCommand;
         this.restartHardwareCommand = restartHardwareCommand;
         this.vendorFOV = vendorFOV;
         this.blacklistedResIndices = blacklistedResIndices;

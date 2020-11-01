@@ -55,6 +55,8 @@ public abstract class MetricsBase {
         gpuMemoryCommand = config.gpuMemoryCommand;
         gpuMemUsageCommand = config.gpuMemUsageCommand;
 
+        diskUsageCommand = config.diskUsageCommand;
+
         ramUsageCommand = config.ramUtilCommand;
     }
 
