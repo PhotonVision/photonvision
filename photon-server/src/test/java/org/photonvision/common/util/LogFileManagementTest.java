@@ -70,6 +70,10 @@ public class LogFileManagementTest {
         // Confirm we deleted log files
         Assertions.assertEquals(
                 true, Logger.MAX_LOGS_TO_KEEP == countLogFiles(testDir), "Not enough log files deleted");
+
+        // Clean uptest directory
+        org.photonvision.common.util.file.FileUtils.deleteDirectory(Path.of(testDir));
+        Files.delete(Path.of(testDir));
     }
 
     private int countLogFiles(String testDir) {
