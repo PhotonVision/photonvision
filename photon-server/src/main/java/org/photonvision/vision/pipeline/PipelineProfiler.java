@@ -27,22 +27,31 @@ public class PipelineProfiler {
     private static final Logger coloredShapeLogger =
             new Logger(ColoredShapePipeline.class, LogGroup.VisionModule);
 
-    public static final int ReflectivePipeCount = 19;
-
     /**
-    * Indices for Reflective profiling 0 - rotateImagePipe 1 - inputCopy (not a pipe) 2 -
-    * erodeDilatePipe 3 - hsvPipe 4 - findContoursPipe 5 - speckleRejectPipe 6 - filterContoursPipe 7
-    * - groupContoursPipe 8 - sortContoursPipe 9 - collect2dTargetsPipe 10 - cornerDetectionPipe
-    * (OPTIONAL) 11 - solvePNPPipe (OPTIONAL) 12 - outputMatPipe 13 - draw2dCrosshairPipe (on input)
-    * 14 - draw2dCrosshairPipe (on output) 15 - draw2dTargetsPipe (on input) 16 - draw2dTargetsPipe
-    * (on output) 17 - draw3dTargetsPipe (OPTIONAL, on input) 18 - draw3dTargetsPipe (OPTIONAL, on
-    * output)
+    * Indices for Reflective profiling 
+    * 0  - rotateImagePipe 
+    * 1  - inputCopy (not a pipe) 
+    * 2  - hsvPipe 
+    * 3  - findContoursPipe  
+    * 4  - speckleRejectPipe  
+    * 5  - filterContoursPipe  
+    * 6  - groupContoursPipe  
+    * 7  - sortContoursPipe  
+    * 8  - collect2dTargetsPipe  
+    * 9  - cornerDetectionPipe 
+    * 10 - solvePNPPipe (OPTIONAL) 
+    * 11 - outputMatPipe (OPTIONAL) 
+    * 12 - draw2dCrosshairPipe (on input)
+    * 13 - draw2dCrosshairPipe (on output) 
+    * 14 - draw2dTargetsPipe (on input) 
+    * 15 - draw2dTargetsPipe (on output) 
+    * 16 - draw3dTargetsPipe (OPTIONAL, on input) 
+    * 17 - draw3dTargetsPipe (OPTIONAL, on output)
     */
     private static final String[] ReflectivePipeNames =
             new String[] {
                 "RotateImage",
                 "InputCopy",
-                "ErodeDilate",
                 "HSV",
                 "FindContours",
                 "SpeckleReject",
@@ -60,6 +69,9 @@ public class PipelineProfiler {
                 "Draw3dTargetsInput",
                 "Draw3dTargetsOutput",
             };
+
+    public static final int ReflectivePipeCount = ReflectivePipeNames.length;
+
 
     protected static String getReflectiveProfileString(long[] nanos) {
         if (nanos.length != ReflectivePipeCount) {

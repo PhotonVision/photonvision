@@ -62,6 +62,9 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     public int cornerDetectionSideCount = 4;
     public double cornerDetectionAccuracyPercentage = 10;
 
+    public boolean erode = false;
+    public boolean dilate = false;
+
     public ColoredShapePipelineSettings() {
         super();
         pipelineType = PipelineType.ColoredShape;
@@ -96,7 +99,9 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                 && Objects.equals(cameraCalibration, that.cameraCalibration)
                 && Objects.equals(targetModel, that.targetModel)
                 && Objects.equals(cameraPitch, that.cameraPitch)
-                && cornerDetectionStrategy == that.cornerDetectionStrategy;
+                && cornerDetectionStrategy == that.cornerDetectionStrategy
+                && erode == that.erode
+                && dilate == that.dilate;
     }
 
     @Override
@@ -125,6 +130,8 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                 cornerDetectionUseConvexHulls,
                 cornerDetectionExactSideCount,
                 cornerDetectionSideCount,
-                cornerDetectionAccuracyPercentage);
+                cornerDetectionAccuracyPercentage,
+                erode,
+                dilate);
     }
 }
