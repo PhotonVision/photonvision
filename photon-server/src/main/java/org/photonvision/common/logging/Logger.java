@@ -23,12 +23,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.function.Supplier;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.common.configuration.ConfigManager;
@@ -139,28 +137,21 @@ public class Logger {
         // Simultaneously populate our HashMap with Date objects repeseting the file-name
         // indicated log start time.
         logFileList.removeIf(
-                new Predicate<File>() {
-                    @Override
-                    public boolean test(File arg0) {
-                        try {
-                            logFileStartDateMap.put(
-                                    arg0, ConfigManager.getInstance().logFnameToTA(arg0.getName()));
-                            return false;
-                        } catch (ParseException e) {
-                            return true;
-                        }
+                (File arg0) -> {
+                    try {
+                        logFileStartDateMap.put(arg0, ConfigManager.getInstance().logFnameToTA(arg0.getName()));
+                        return false;
+                    } catch (ParseException e) {
+                        return true;
                     }
                 });
 
         // Execute a sort on the log file list by date in the filename.
         logFileList.sort(
-                new Comparator<File>() {
-                    @Override
-                    public int compare(File arg0, File arg1) {
-                        Date date0 = logFileStartDateMap.get(arg0);
-                        Date date1 = logFileStartDateMap.get(arg1);
-                        return date1.compareTo(date0);
-                    }
+                (File arg0, File arg1) -> {
+                    Date date0 = logFileStartDateMap.get(arg0);
+                    Date date1 = logFileStartDateMap.get(arg1);
+                    return date1.compareTo(date0);
                 });
 
         int logCounter = 0;
