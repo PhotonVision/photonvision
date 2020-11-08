@@ -366,7 +366,7 @@ public class ConfigManager {
         return LOG_PREFIX + dateString + LOG_EXT;
     }
 
-    public Date logFnameToTA(String fname) throws ParseException {
+    public Date logFnameToDate(String fname) throws ParseException {
         // Strip away known unneded portions of the log file name
         fname = fname.replace(LOG_PREFIX, "").replace(LOG_EXT, "");
         DateFormat format = new SimpleDateFormat(LOG_DATE_TIME_FORMAT);
