@@ -422,6 +422,32 @@ export default {
             get() {
                 return this.$store.getters.currentPipelineResults.latency;
             }
+        },
+        methods: {
+            isCalibrated() {
+                const resolution = this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex];
+                return this.$store.getters.currentCameraSettings.calibrations
+                    .some(e => e.width === resolution.width && e.height === resolution.height)
+            },
+            onImageClick(event) {
+                // Only run on the input stream
+                if (event.target.alt !== "Stream0") return;
+                // Get a reference to the threshold tab (if it is shown) and call its "onClick" method
+                let ref = this.$refs["Threshold"];
+                if (ref && ref[0])
+                  ref[0].onClick(event)
+            },
+            on3DClick() {
+                if (!this.$store.getters.isCalibrated) {
+                  this.dialog = true;
+                  this.processingModeOverride = true;
+                }
+            },
+            closeUncalibratedDialog() {
+                this.dialog = false;
+                this.processingModeOverride = false;
+                this.handlePipelineUpdate("solvePNPEnabled", false);
+            }
         }
     },
     created() {
