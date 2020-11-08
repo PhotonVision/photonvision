@@ -84,33 +84,16 @@
         </v-btn>
       </template>
     </v-row>
-    <v-divider class="mb-3" />
-    <CVswitch
-      v-model="erode"
-      name="Erode"
-      tooltip="Removes pixels around the edges of white areas in the thresholded image"
-      @input="handlePipelineData('erode')"
-      @rollback="e => rollback('erode',e)"
-    />
-    <CVswitch
-      v-model="dilate"
-      name="Dilate"
-      tooltip="Adds pixels around the edges of white areas in the thresholded image"
-      @input="handlePipelineData('dilate')"
-      @rollback="e => rollback('dilate',e)"
-    />
   </div>
 </template>
 
 <script>
     import CVrangeSlider from '../../components/common/cv-range-slider'
-    import CVswitch from '../../components/common/cv-switch'
-
+    
     export default {
         name: 'Threshold',
         components: {
-            CVrangeSlider,
-            CVswitch
+            CVrangeSlider
         },
         // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
@@ -145,23 +128,7 @@
                 set(val) {
                     this.$store.commit("mutatePipeline", {"hsvValue": val})
                 }
-            },
-            erode: {
-                get() {
-                    return this.$store.getters.currentPipelineSettings.erode
-                },
-                set(val) {
-                    this.$store.commit("mutatePipeline", {"erode": val});
-                }
-            },
-            dilate: {
-                get() {
-                    return this.$store.getters.currentPipelineSettings.dilate
-                },
-                set(val) {
-                    this.$store.commit("mutatePipeline", {"dilate": val});
-                }
-            },
+            }
         },
         mounted: function () {
             const self = this;

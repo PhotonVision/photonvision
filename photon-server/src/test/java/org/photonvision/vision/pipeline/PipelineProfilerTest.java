@@ -35,7 +35,7 @@ public class PipelineProfilerTest {
         var validResult = PipelineProfiler.getReflectiveProfileString(validNanos);
 
         Assertions.assertEquals("Invalid data", invalidResult);
-        Assertions.assertTrue(validResult.contains("Total: 171.0ms"));
+        Assertions.assertTrue(validResult.contains("Total: 153.0ms"));
         System.out.println(validResult);
     }
 }
