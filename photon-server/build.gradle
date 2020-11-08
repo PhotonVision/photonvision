@@ -50,23 +50,21 @@ dependencies {
     implementation "org.apache.commons:commons-collections4:4.4"
     implementation "org.apache.commons:commons-exec:1.3"
 
-    // JOGL stuff
+    // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
     implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion"
     implementation "org.jogamp.jogl:jogl-all:$joglVersion"
 
-    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-amd64"
-    // implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-armv6"
-    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-armv6hf"
+//    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-amd64"
+//    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-armv6hf"
     implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-aarch64"
-    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-macosx-universal"
-    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-windows-amd64"
+//    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-macosx-universal"
+//    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-windows-amd64"
 
-    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-amd64"
-    // implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-armv6"
-    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-armv6hf"
+//    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-amd64"
+//    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-armv6hf"
     implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-aarch64"
-    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-macosx-universal"
-    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-windows-amd64"
+//    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-macosx-universal"
+//    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-windows-amd64"
 
     // WPILib stuff
     implementation "edu.wpi.first.wpiutil:wpiutil-java:$wpilibVersion"
