@@ -274,7 +274,8 @@ public class VisionModule {
     }
 
     private void setVisionLEDs(boolean on) {
-        if (HardwareManager.getInstance().visionLED != null) HardwareManager.getInstance().visionLED.setState(on);
+        if (HardwareManager.getInstance().visionLED != null)
+            HardwareManager.getInstance().visionLED.setState(on);
     }
 
     public void saveModule() {
