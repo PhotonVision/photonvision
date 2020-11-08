@@ -17,30 +17,45 @@
 
 package org.photonvision.raspi;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.TestUtils;
 
 public class PicamJNI {
 
     private static boolean isSupported = false;
+    private static boolean libraryLoaded = false;
     private static Logger logger = new Logger(PicamJNI.class, LogGroup.Camera);
 
-    static {
+    public static synchronized void forceLoad() throws IOException {
+        if (libraryLoaded || !Platform.isRaspberryPi()) return;
+        libraryLoaded = true;
+
         try {
-            System.load(
-                    Path.of("/opt/vc/src/hello_pi/photon-picam-driver/libpicam.so")
-                            .toAbsolutePath()
-                            .toString());
+            URL resourceURL = PicamJNI.class.getResource("/nativelibraries/libpicam.so");
+            File libFile = Path.of("lib/libpicam.so").toFile();
+            if (!Files.exists(libFile.toPath())) {
+                // Assumes that the directory doesn't exist if libpicam doesn't exist
+                Files.createDirectory(Path.of("lib/")).toFile();
+
+                try (InputStream in = resourceURL.openStream()) {
+                    Files.copy(in, libFile.toPath());
+                }
+            }
+            System.load(libFile.getAbsolutePath());
 
             isSupported = true;
             logger.info("Successfully loaded libpicam shared object");
         } catch (UnsatisfiedLinkError e) {
-            if (Platform.isRaspberryPi()) {
-                logger.error("Couldn't load libpicam shared object");
-                e.printStackTrace();
-            }
+            logger.error("Couldn't load libpicam shared object");
+            e.printStackTrace();
         }
     }
 

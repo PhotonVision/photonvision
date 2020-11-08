@@ -31,6 +31,7 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.raspi.PicamJNI;
 import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.ContourGroupingMode;
@@ -153,6 +154,7 @@ public class Main {
 
         try {
             CameraServerCvJNI.forceLoad();
+            PicamJNI.forceLoad();
             TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
