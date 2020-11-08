@@ -58,6 +58,22 @@ public class FileUtils {
         }
     }
 
+    public static void deleteFile(Path path) {
+        try {
+            Files.delete(path);
+        } catch (IOException e) {
+            logger.error("Exception deleting file " + path + "!", e);
+        }
+    }
+
+    public static void copyFile(Path src, Path dst) {
+        try {
+            Files.copy(src, dst);
+        } catch (IOException e) {
+            logger.error("Exception copying file " + src + " to " + dst + "!", e);
+        }
+    }
+
     public static void setFilePerms(Path path) throws IOException {
         if (!Platform.CurrentPlatform.isWindows()) {
             File thisFile = path.toFile();

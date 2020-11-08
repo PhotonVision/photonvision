@@ -39,9 +39,6 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public boolean outputShouldDraw = true;
     public boolean outputShowMultipleTargets = false;
 
-    public boolean erode = false;
-    public boolean dilate = false;
-
     public DoubleCouple contourArea = new DoubleCouple(0.0, 100.0);
     public DoubleCouple contourRatio = new DoubleCouple(0.0, 20.0);
     public DoubleCouple contourFullness = new DoubleCouple(0.0, 100.0);
@@ -79,8 +76,6 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
         AdvancedPipelineSettings that = (AdvancedPipelineSettings) o;
         return outputShouldDraw == that.outputShouldDraw
                 && outputShowMultipleTargets == that.outputShowMultipleTargets
-                && erode == that.erode
-                && dilate == that.dilate
                 && contourSpecklePercentage == that.contourSpecklePercentage
                 && Double.compare(that.offsetDualPointA.x, offsetDualPointA.x) == 0
                 && Double.compare(that.offsetDualPointA.y, offsetDualPointA.y) == 0
@@ -110,8 +105,6 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 hsvValue,
                 outputShouldDraw,
                 outputShowMultipleTargets,
-                erode,
-                dilate,
                 contourArea,
                 contourRatio,
                 contourFullness,

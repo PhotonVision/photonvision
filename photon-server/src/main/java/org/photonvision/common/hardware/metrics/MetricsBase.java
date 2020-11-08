@@ -17,6 +17,8 @@
 
 package org.photonvision.common.hardware.metrics;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
@@ -39,6 +41,9 @@ public abstract class MetricsBase {
     // RAM
     public static String ramUsageCommand = "free --mega | awk -v i=2 -v j=3 'FNR == i {print $j}'";
 
+    // Disk
+    public static String diskUsageCommand = "df ./ --output=pcent | tail -n +2";
+
     private static ShellExec runCommand = new ShellExec(true, true);
 
     public static void setConfig(HardwareConfig config) {
@@ -50,14 +55,20 @@ public abstract class MetricsBase {
         gpuMemoryCommand = config.gpuMemoryCommand;
         gpuMemUsageCommand = config.gpuMemUsageCommand;
 
+        diskUsageCommand = config.diskUsageCommand;
+
         ramUsageCommand = config.ramUtilCommand;
     }
 
-    public static String execute(String command) {
+    public static synchronized String execute(String command) {
         try {
             runCommand.executeBashCommand(command);
             return runCommand.getOutput();
         } catch (Exception e) {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            e.printStackTrace(pw);
+
             logger.error(
                     "Command: \""
                             + command
@@ -71,7 +82,10 @@ public abstract class MetricsBase {
                             + "\nError completed: "
                             + runCommand.isErrorCompleted()
                             + "\nExit code: "
-                            + runCommand.getExitCode());
+                            + runCommand.getExitCode()
+                            + "\n Exception: "
+                            + e.toString()
+                            + sw.toString());
             return "";
         }
     }

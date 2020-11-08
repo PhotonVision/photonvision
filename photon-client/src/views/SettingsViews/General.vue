@@ -1,21 +1,47 @@
 <template>
   <div>
     <v-row class="pa-4">
-      <span>{{ infoTabs.join('  —  ') }}</span>
+      <table class="infoTable">
+        <tr>
+          <th class="infoElem"> Version </th>
+          <th class="infoElem"> Hardware Model </th>
+          <th class="infoElem"> Platform </th>
+          <th class="infoElem"> GPU Acceleration </th>
+        </tr>
+        <tr>
+          <td class="infoElem">{{ version.replace(" ", "") }}</td>
+          <td class="infoElem">{{ hwModel.replace(" ", "") }}</td>
+          <td class="infoElem">{{ platform.replace(" ", "") }}</td>
+          <td class="infoElem">{{ gpuAccel.replace(" ", "") }}</td>
+        </tr>
+      </table>
+
+      <table class="infoTable">
+        <tr>
+          <th class="infoElem"> CPU Usage </th>
+          <th class="infoElem"> CPU Temp </th>
+          <th class="infoElem"> CPU Memory Usage </th>
+          <th class="infoElem"> GPU Memory Usage </th>
+          <th class="infoElem"> Disk Usage </th>
+        </tr>
+        <tr v-if="metrics.cpuUtil !== 'N/A'">
+          <td class="infoElem">{{ metrics.cpuUtil.replace(" ", "") }}%</td>
+          <td class="infoElem">{{ parseInt(metrics.cpuTemp) }}&deg;&nbsp;C</td>
+          <td class="infoElem">{{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB</td>
+          <td class="infoElem">{{ metrics.gpuMemUtil.replace(" ", "") }}MB of {{ metrics.gpuMem }}MB</td>
+          <td class="infoElem">{{ metrics.diskUtilPct.replace(" ", "") }}</td>
+        </tr>
+        <tr v-if="metrics.cpuUtil === 'N/A'">
+          <td class="infoElem">---</td>
+          <td class="infoElem">---</td>
+          <td class="infoElem">---</td>
+          <td class="infoElem">---</td>
+          <td class="infoElem">---</td>
+        </tr>
+      </table>
+
     </v-row>
 
-    <div v-if="metrics.cpuUtil !== 'N/A'">
-      <v-row class="pa-4">
-        <span>CPU Usage: {{ metrics.cpuUtil.replace(" ", "") }}%</span>
-        &nbsp;&ndash;&nbsp;
-        <span>CPU Temp: {{ parseInt(metrics.cpuTemp) }}&deg;&nbsp;C</span>
-        &nbsp;&ndash;&nbsp;
-        <span>CPU Memory Usage: {{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB</span>
-        &ndash;
-        <span>GPU Memory Usage: {{ metrics.gpuMemUtil }}MB of {{ metrics.gpuMem }}MB</span>
-      </v-row>
-    </div>
-      
     <v-row>
       <v-col
         cols="12"
@@ -89,7 +115,7 @@
     <input
       ref="importSettings"
       type="file"
-      accept=".zip"
+      accept=".zip, .json"
       style="display: none;"
 
       @change="readImportedSettings"
@@ -120,19 +146,24 @@ export default {
         settings() {
             return this.$store.state.settings.general;
         },
-        infoTabs() {
-            let ret = [];
-            let idx = 0;
-            ret[idx++] = `Version: ${this.settings.version}`;
+        version() {
+          return `${this.settings.version}`;
+        },
+        hwModel() {
             if (this.settings.hardwareModel !== '') {
-                ret[idx++] = `Hardware model: ${this.settings.hardwareModel}`;
+                return `${this.settings.hardwareModel}`;
+            } else {
+              return `Unknown`;
             }
-            ret[idx++] = `Platform: ${this.settings.hardwarePlatform}`;
-            ret[idx++] = `GPU Acceleration: ${this.settings.gpuAcceleration ? "Enabled" : "Unsupported"}${this.settings.gpuAcceleration ? " (" + this.settings.gpuAcceleration + " mode)" : ""}`
-
-            return ret;
+        },
+        platform() {
+          return `${this.settings.hardwarePlatform}`;
+        },
+        gpuAccel() {
+          return  `${this.settings.gpuAcceleration ? "Enabled" : "Unsupported"}${this.settings.gpuAcceleration ? " (" + this.settings.gpuAcceleration + " mode)" : ""}`
         },
         metrics() {
+          console.log(this.$store.state.metrics);
             return this.$store.state.metrics;
         }
     },
@@ -153,11 +184,23 @@ export default {
                     text: "Settings imported successfully! Program will now exit...",
                 };
                 this.snack = true;
-            }).catch(() => {
-                this.snackbar = {
-                    color: "success",
-                    text: "Settings imported successfully! Program will now exit...",
-                };
+            }).catch(err => {
+                if (err.response) {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading settings file! Could not process provided file.",
+                  };               
+                } else if (err.request) {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading settings file! No respond to upload attempt.",
+                  };
+                } else {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading settings file!",
+                  };
+                }
                 this.snack = true;
             });
         },
@@ -169,4 +212,23 @@ export default {
 .v-btn {
     width: 100%;
 }
+
+.infoTable{
+  border: 1px solid;
+  border-collapse: separate;
+  border-spacing: 0px;
+  border-radius: 5px;
+  text-align: left;
+  margin-bottom: 10px;
+  width: 100%;
+}
+
+.infoElem {
+  padding-right: 15px;
+  padding-bottom: 1px;
+  padding-top: 1px;
+  padding-left: 10px;
+  border-right: 1px solid;
+}
+
 </style>

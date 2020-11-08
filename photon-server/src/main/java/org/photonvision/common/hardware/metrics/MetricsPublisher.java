@@ -30,6 +30,7 @@ public class MetricsPublisher {
     private static CPUMetrics cpuMetrics;
     private static GPUMetrics gpuMetrics;
     private static RAMMetrics ramMetrics;
+    private static DiskMetrics diskMetrics;
 
     public static MetricsPublisher getInstance() {
         return Singleton.INSTANCE;
@@ -39,6 +40,7 @@ public class MetricsPublisher {
         cpuMetrics = new CPUMetrics();
         gpuMetrics = new GPUMetrics();
         ramMetrics = new RAMMetrics();
+        diskMetrics = new DiskMetrics();
     }
 
     public void stopTask() {
@@ -61,6 +63,7 @@ public class MetricsPublisher {
         metrics.put("gpuMem", gpuMetrics.getGPUMemorySplit());
         metrics.put("ramUtil", ramMetrics.getUsedRam());
         metrics.put("gpuMemUtil", gpuMetrics.getMallocedMemory());
+        metrics.put("diskUtilPct", diskMetrics.getUsedDiskPct());
 
         var retMap = new HashMap<String, Object>();
         retMap.put("metrics", metrics);

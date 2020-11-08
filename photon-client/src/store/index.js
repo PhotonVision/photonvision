@@ -58,8 +58,6 @@ export default new Vuex.Store({
                     hsvHue: [0, 15],
                     hsvSaturation: [0, 15],
                     hsvValue: [0, 25],
-                    erode: false,
-                    dilate: false,
                     contourArea: [0, 12],
                     contourRatio: [0, 12],
                     contourFullness: [0, 12],
