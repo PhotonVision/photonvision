@@ -26,7 +26,6 @@ import java.nio.file.Path;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.TestUtils;
 
 public class PicamJNI {
 
