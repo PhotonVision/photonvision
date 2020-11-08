@@ -40,6 +40,10 @@ public class ConfigManager {
     private static final Logger logger = new Logger(ConfigManager.class, LogGroup.General);
     private static ConfigManager INSTANCE;
 
+    public static final String HW_CFG_FNAME = "hardwareConfig.json";
+    public static final String HW_SET_FNAME = "hardwareSettings.json";
+    public static final String NET_SET_FNAME = "networkSettings.json";
+
     private PhotonConfiguration config;
     private final File hardwareConfigFile;
     private final File hardwareSettingsFile;
@@ -82,11 +86,11 @@ public class ConfigManager {
     ConfigManager(Path configDirectoryFile) {
         this.configDirectoryFile = new File(configDirectoryFile.toUri());
         this.hardwareConfigFile =
-                new File(Path.of(configDirectoryFile.toString(), "hardwareConfig.json").toUri());
+                new File(Path.of(configDirectoryFile.toString(), HW_CFG_FNAME).toUri());
         this.hardwareSettingsFile =
-                new File(Path.of(configDirectoryFile.toString(), "hardwareSettings.json").toUri());
+                new File(Path.of(configDirectoryFile.toString(), HW_SET_FNAME).toUri());
         this.networkConfigFile =
-                new File(Path.of(configDirectoryFile.toString(), "networkSettings.json").toUri());
+                new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
         this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
 
         TimedTaskManager.getInstance().addTask("ConfigManager", this::checkSaveAndWrite, 1000);
@@ -362,6 +366,33 @@ public class ConfigManager {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
         if (!imgFilePath.exists()) imgFilePath.mkdirs();
         return imgFilePath.toPath();
+    }
+
+    public Path getHardwareConfigFile() {
+        return this.hardwareConfigFile.toPath();
+    }
+
+    public Path getHardwareSettingsFile() {
+        return this.hardwareSettingsFile.toPath();
+    }
+
+    public Path getNetworkConfigFile() {
+        return this.networkConfigFile.toPath();
+    }
+
+    public void saveUploadedHardwareConfig(Path uploadPath) {
+        FileUtils.deleteFile(this.getHardwareConfigFile());
+        FileUtils.copyFile(uploadPath, this.getHardwareConfigFile());
+    }
+
+    public void saveUploadedHardwareSettings(Path uploadPath) {
+        FileUtils.deleteFile(this.getHardwareSettingsFile());
+        FileUtils.copyFile(uploadPath, this.getHardwareSettingsFile());
+    }
+
+    public void saveUploadedNetworkConfig(Path uploadPath) {
+        FileUtils.deleteFile(this.getNetworkConfigFile());
+        FileUtils.copyFile(uploadPath, this.getNetworkConfigFile());
     }
 
     public void requestSave() {
