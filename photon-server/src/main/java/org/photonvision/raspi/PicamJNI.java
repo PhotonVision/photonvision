@@ -29,13 +29,11 @@ import org.photonvision.common.logging.Logger;
 
 public class PicamJNI {
 
-    private static boolean isSupported = false;
     private static boolean libraryLoaded = false;
     private static Logger logger = new Logger(PicamJNI.class, LogGroup.Camera);
 
     public static synchronized void forceLoad() throws IOException {
-        if (libraryLoaded || !Platform.isRaspberryPi()) return;
-        libraryLoaded = true;
+        if (!libraryLoaded || !Platform.isRaspberryPi()) return;
 
         try {
             URL resourceURL = PicamJNI.class.getResource("/nativelibraries/libpicam.so");
@@ -50,7 +48,7 @@ public class PicamJNI {
             }
             System.load(libFile.getAbsolutePath());
 
-            isSupported = true;
+            libraryLoaded = true;
             logger.info("Successfully loaded libpicam shared object");
         } catch (UnsatisfiedLinkError e) {
             logger.error("Couldn't load libpicam shared object");
@@ -59,7 +57,7 @@ public class PicamJNI {
     }
 
     public static boolean isSupported() {
-        return isSupported;
+        return libraryLoaded;
     }
 
     // Everything here is static because multiple picams are unsupported at the hardware level

@@ -173,7 +173,7 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         drawable.getFBObject(GL_FRONT).detachColorbuffer(gl, 0, true);
         // Equivalent to calling glBindFramebuffer
         drawable.getFBObject(GL_FRONT).bind(gl);
-        if (true) {
+        if (true) { // For now renderbuffers are disabled
             // Create a color attachment texture to hold our rendered output
             var colorBufferIds = GLBuffers.newDirectIntBuffer(1);
             gl.glGenTextures(1, colorBufferIds);
@@ -229,7 +229,7 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
                             + String.format("0x%08X", fboStatus));
         }
 
-        logger.info(
+        logger.debug(
                 "Created an OpenGL context with renderer '"
                         + gl.glGetString(GL_RENDERER)
                         + "', version '"
@@ -242,12 +242,6 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         gl.glGetIntegerv(GLES3.GL_IMPLEMENTATION_COLOR_READ_FORMAT, fmt);
         var type = GLBuffers.newDirectIntBuffer(1);
         gl.glGetIntegerv(GLES3.GL_IMPLEMENTATION_COLOR_READ_TYPE, type);
-
-        logger.info(
-                "GL_IMPLEMENTATION_COLOR_READ_FORMAT: "
-                        + fmt.get(0)
-                        + ", GL_IMPLEMENTATION_COLOR_READ_TYPE: "
-                        + type.get(0));
 
         // Tell OpenGL that the attribute in the vertex shader named position is bound to index 0 (the
         // index for the generic position input)
