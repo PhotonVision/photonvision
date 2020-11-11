@@ -109,7 +109,6 @@ public class VisionModule {
                 result -> {
                     if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
                         dashboardInputStreamer.accept(result.inputFrame);
-                    else result.inputFrame.release();
                 });
         fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
         fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
@@ -205,7 +204,6 @@ public class VisionModule {
                 this.targets = targets;
 
                 if (shouldRun && this.inputFrame != null && this.outputFrame != null) {
-                    this.inputFrame.release();
                     this.outputFrame.release();
                 }
                 shouldRun =
@@ -489,7 +487,6 @@ public class VisionModule {
             // the streamRunnable manages releasing in this case
         } else {
             consumeFpsLimitedResult(result);
-            result.release();
         }
     }
 
@@ -507,7 +504,6 @@ public class VisionModule {
             }
             lastFrameConsumeMillis = System.currentTimeMillis();
         }
-        result.release();
     }
 
     public void setTargetModel(TargetModel targetModel) {
