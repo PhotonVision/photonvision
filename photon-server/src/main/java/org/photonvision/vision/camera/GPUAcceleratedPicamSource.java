@@ -103,8 +103,8 @@ public class GPUAcceleratedPicamSource implements VisionSource {
         }
 
         @Override
-        public void setExposure(int exposure) {
-            PicamJNI.setExposure(exposure);
+        public void setExposure(double exposure) {
+            PicamJNI.setExposure((int) Math.round(exposure));
         }
 
         @Override

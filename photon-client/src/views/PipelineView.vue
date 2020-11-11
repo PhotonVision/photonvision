@@ -293,68 +293,59 @@ export default {
                 this.selectedTabsData = value;
             }
         },
-        computed: {
-            selectedTabs: {
-                get() {
-                  return this.$store.getters.isDriverMode ? [0] : this.selectedTabsData;
-                },
-                set(value) {
-                  this.selectedTabsData = value;
-                }
-            },
-            tabGroups: {
-                get() {
-                    let tabs = {
-                        input: {
-                            name: "Input",
-                            component: "InputTab",
-                        },
-                        threshold: {
-                            name: "Threshold",
-                            component: "ThresholdTab",
-                        },
-                        contours: {
-                            name: "Contours",
-                            component: "ContoursTab",
-                        },
-                        output: {
-                            name: "Output",
-                            component: "OutputTab",
-                        },
-                        targets: {
-                            name: "Target Info",
-                            component: "TargetsTab",
-                        },
-                        pnp: {
-                            name: "3D",
-                            component: "PnPTab",
-                        }
-                    };
-
-                    // 2D array of tab names and component names; each sub-array is a separate tab group
-                    let ret = [];
-                    if (this.$vuetify.breakpoint.smAndDown || this.$store.getters.isDriverMode || (this.$vuetify.breakpoint.mdAndDown && !this.$store.state.compactMode)) {
-                        // One big tab group with all the tabs
-                        ret[0] = Object.values(tabs);
-                    } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
-                        // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
-                        ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.output];
-                        ret[1] = [tabs.targets, tabs.pnp];
-                    } else if (this.$vuetify.breakpoint.lgAndDown) {
-                        // Three tab groups, one with "input", one with "threshold, contours, output", and the other with "target info, 3D"
-                        ret[0] = [tabs.input];
-                        ret[1] = [tabs.threshold, tabs.contours, tabs.output];
-                        ret[2] = [tabs.targets, tabs.pnp];
-                    } else if (this.$vuetify.breakpoint.xl) {
-                        // Three tab groups, one with "input", one with "threshold, contours", and the other with "output, target info, 3D"
-                        ret[0] = [tabs.input];
-                        ret[1] = [tabs.threshold];
-                        ret[2] = [tabs.contours, tabs.output];
-                        ret[3] = [tabs.targets, tabs.pnp];
+        tabGroups: {
+            get() {
+                let tabs = {
+                    input: {
+                        name: "Input",
+                        component: "InputTab",
+                    },
+                    threshold: {
+                        name: "Threshold",
+                        component: "ThresholdTab",
+                    },
+                    contours: {
+                        name: "Contours",
+                        component: "ContoursTab",
+                    },
+                    output: {
+                        name: "Output",
+                        component: "OutputTab",
+                    },
+                    targets: {
+                        name: "Target Info",
+                        component: "TargetsTab",
+                    },
+                    pnp: {
+                        name: "3D",
+                        component: "PnPTab",
                     }
+                };
 
-                    return ret;
+                // 2D array of tab names and component names; each sub-array is a separate tab group
+                let ret = [];
+                if (this.$vuetify.breakpoint.smAndDown || this.$store.getters.isDriverMode || (this.$vuetify.breakpoint.mdAndDown && !this.$store.state.compactMode)) {
+                    // One big tab group with all the tabs
+                    ret[0] = Object.values(tabs);
+                } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
+                    // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
+                    ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.output];
+                    ret[1] = [tabs.targets, tabs.pnp];
+                } else if (this.$vuetify.breakpoint.lgAndDown) {
+                    // Three tab groups, one with "input", one with "threshold, contours, output", and the other with "target info, 3D"
+                    ret[0] = [tabs.input];
+                    ret[1] = [tabs.threshold, tabs.contours, tabs.output];
+                    ret[2] = [tabs.targets, tabs.pnp];
+                } else if (this.$vuetify.breakpoint.xl) {
+                    // Three tab groups, one with "input", one with "threshold, contours", and the other with "output, target info, 3D"
+                    ret[0] = [tabs.input];
+                    ret[1] = [tabs.threshold];
+                    ret[2] = [tabs.contours, tabs.output];
+                    ret[3] = [tabs.targets, tabs.pnp];
                 }
+
+                return ret;
+            }
         },
         processingMode: {
             get() {
