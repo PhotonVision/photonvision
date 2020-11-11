@@ -37,8 +37,8 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
-import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
@@ -173,7 +173,8 @@ public class VisionModule {
     }
 
     private void recreateFpsLimitedResultConsumers() {
-        // Important! These must come before the stream result consumers because the stream result consumers release the frame
+        // Important! These must come before the stream result consumers because the stream result
+        // consumers release the frame
         fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
         fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
 
