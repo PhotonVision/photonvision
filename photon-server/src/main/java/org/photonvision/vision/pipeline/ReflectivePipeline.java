@@ -164,7 +164,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
             // TODO: make this a pipe?
             long inputCopyStartNanos = System.nanoTime();
-            rawInputMat.release();
+            rawInputMat = new Mat(frame.image.getMat().size(), frame.image.getMat().type());
             frame.image.getMat().copyTo(rawInputMat);
             long inputCopyElapsedNanos = System.nanoTime() - inputCopyStartNanos;
             sumPipeNanosElapsed += pipeProfileNanos[1] = inputCopyElapsedNanos;

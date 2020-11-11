@@ -105,14 +105,8 @@ public class VisionModule {
         DataChangeService.getInstance().addSubscriber(new VisionModuleChangeSubscriber(this));
 
         createStreams();
-        fpsLimitedResultConsumers.add(
-                result -> {
-                    if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
-                        dashboardInputStreamer.accept(result.inputFrame);
-                });
-        fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
-        fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
-        fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
+
+        recreateFpsLimitedResultConsumers();
 
         ntConsumer =
                 new NTDataPublisher(
@@ -178,6 +172,25 @@ public class VisionModule {
                         visionSource.getSettables().getConfiguration().nickname, "output");
     }
 
+    private void recreateFpsLimitedResultConsumers() {
+        // Important! These must come before the stream result consumers because the stream result consumers release the frame
+        fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
+        fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
+
+        fpsLimitedResultConsumers.add(
+                result -> {
+                    if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
+                        dashboardInputStreamer.accept(result.inputFrame);
+                    else result.inputFrame.release();
+                });
+        fpsLimitedResultConsumers.add(
+                result -> {
+                    if (this.pipelineManager.getCurrentPipelineSettings().outputShouldShow)
+                        dashboardOutputStreamer.accept(result.outputFrame);
+                    else result.outputFrame.release();
+                });
+    }
+
     private class StreamRunnable extends Thread {
         private final OutputStreamPipeline outputStreamPipeline;
 
@@ -204,6 +217,7 @@ public class VisionModule {
                 this.targets = targets;
 
                 if (shouldRun && this.inputFrame != null && this.outputFrame != null) {
+                    this.inputFrame.release();
                     this.outputFrame.release();
                 }
                 shouldRun =
@@ -233,7 +247,10 @@ public class VisionModule {
                 }
                 if (shouldRun) {
                     var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
+
                     consumeFpsLimitedResult(osr);
+                    osr.release();
+
                     synchronized (frameLock) {
                         this.shouldRun = false;
                     }
@@ -394,17 +411,15 @@ public class VisionModule {
         inputFrameSaver.updateCameraNickname(newName);
         outputFrameSaver.updateCameraNickname(newName);
 
-        // rename streams
+        // Rename streams
         fpsLimitedResultConsumers.clear();
 
         // Teardown and recreate streams
         destroyStreams();
         createStreams();
 
-        fpsLimitedResultConsumers.add(result -> dashboardInputStreamer.accept(result.inputFrame));
-        fpsLimitedResultConsumers.add(result -> dashboardOutputStreamer.accept(result.outputFrame));
-        fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
-        fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
+        // Rebuild streamers
+        recreateFpsLimitedResultConsumers();
 
         // Push new data to the UI
         saveAndBroadcastAll();
@@ -477,16 +492,19 @@ public class VisionModule {
     private void consumeResult(CVPipelineResult result) {
         consumePipelineResult(result);
 
-        // Total hack
-        if (pipelineManager.getCurrentPipelineIndex() >= 0) {
+        // Total hack.
+        if (!pipelineManager.getDriverMode()) {
             streamRunnable.updateData(
                     result.inputFrame,
                     result.outputFrame,
                     (AdvancedPipelineSettings) pipelineManager.getCurrentPipelineSettings(),
                     result.targets);
-            // the streamRunnable manages releasing in this case
+            // The streamRunnable manages releasing in this case
         } else {
             consumeFpsLimitedResult(result);
+
+            result.release();
+            // In this case we don't bother with a separate streaming thread and we release
         }
     }
 
