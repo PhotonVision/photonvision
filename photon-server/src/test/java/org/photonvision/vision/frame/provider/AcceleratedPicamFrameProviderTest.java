@@ -21,19 +21,20 @@ import org.junit.jupiter.api.Test;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.camera.GPUAcceleratedPicamSource;
 
 public class AcceleratedPicamFrameProviderTest {
     @Test
     public void testGrabFrame() {
+        if (!PicamJNI.isSupported()) return;
+
         TestUtils.loadLibraries();
 
         var frameProvider =
                 new AcceleratedPicamFrameProvider(
                         new GPUAcceleratedPicamSource.PicamSettables(
-                                new CameraConfiguration("f", "f", "f", "f")),
-                        1280,
-                        720);
+                                new CameraConfiguration("f", "f", "f", "f")));
 
         long lastTime = System.currentTimeMillis();
         for (int i = 0; i < 10; i++) {
