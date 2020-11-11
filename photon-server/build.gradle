@@ -20,7 +20,7 @@ repositories {
     jcenter()
     mavenCentral()
     maven {
-        url = "https://maven.0x778.tk"
+        url = "https://maven.photonvision.org/repository/internal/"
     }
     maven {
         url = 'https://frcmaven.wpi.edu:443/artifactory/development'
