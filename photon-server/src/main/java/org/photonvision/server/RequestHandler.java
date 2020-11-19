@@ -162,6 +162,7 @@ public class RequestHandler {
     }
 
     public static void onCalibrationEnd(Context ctx) {
+        logger.info("Calibrating camera! This will take a long time...");
         var index = Integer.parseInt(ctx.body());
         var calData = VisionModuleManager.getInstance().getModule(index).endCalibration();
         if (calData == null) {
@@ -171,6 +172,7 @@ public class RequestHandler {
 
         ctx.result(String.valueOf(calData.standardDeviation));
         ctx.status(200);
+        logger.info("Camera calibrated!");
     }
 
     public static void restartDevice(Context ctx) {

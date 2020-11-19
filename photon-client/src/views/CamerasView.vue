@@ -143,7 +143,7 @@
                         v-for="(value, index) in filteredResolutionList"
                         :key="index"
                       >
-                        <td> {{ value.width }} X {{ value.height }} </td>
+                        <td> {{ value.width }} X {{ value.height }}</td>
                         <td>
                           {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "—" }}
                         </td>
@@ -218,7 +218,7 @@
                   :disabled="checkCancellation"
                   @click="sendCalibrationFinish"
                 >
-                  {{ hasEnough ? "End Calibration" : "Cancel Calibration" }}
+                  {{ hasEnough ? "Finish Calibration" : "Cancel Calibration" }}
                 </v-btn>
               </v-col>
               <v-col>
@@ -250,21 +250,72 @@
         cols="12"
         md="5"
       >
-        <CVimage
-          :address="$store.getters.streamAddress[1]"
-          :disconnected="!$store.state.backendConnected"
-          scale="100"
-          style="border-radius: 5px;"
-        />
+        <template>
+          <CVimage
+            :address="$store.getters.streamAddress[1]"
+            :disconnected="!$store.state.backendConnected"
+            scale="100"
+            style="border-radius: 5px;"
+          />
+          <v-dialog
+            v-model="snack"
+            width="500px"
+            persistent="true"
+          >
+            <v-card
+              color="primary"
+              dark
+            >
+              <v-card-title> Camera Calibration </v-card-title>
+              <div
+                class="ml-3"
+              >
+                <v-col align="center">
+                  <template v-if="calibrationInProgress">
+                    <v-progress-circular
+                      indeterminate
+                      :size="70"
+                      :width="8"
+                      color="accent"
+                    />
+                    <v-card-text>Camera is being calibrated. This process make take several minutes...</v-card-text>
+                  </template>
+                  <template v-else-if="!calibrationFailed">
+                    <v-icon
+                      color="green"
+                      size="70"
+                    >
+                      mdi-check-bold
+                    </v-icon>
+                    <v-card-text>Camera has been successfully calibrated at {{ stringResolutionList[selectedFilteredResIndex] }}!</v-card-text>
+                  </template>
+                  <template v-else>
+                    <v-icon
+                      color="red"
+                      size="70"
+                    >
+                      mdi-close
+                    </v-icon>
+                    <v-card-text>Camera calibration failed! Make sure that the photos are taken such that the rainbow grid circles align with the corners of the chessboard, and try again. More information is available in the program logs.</v-card-text>
+                  </template>
+                </v-col>
+              </div>
+              <v-card-actions>
+                <v-spacer />
+                <v-btn
+                  v-if="!calibrationInProgress"
+                  color="white"
+                  text
+                  @click="closeDialog"
+                >
+                  OK
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </template>
       </v-col>
     </v-row>
-    <v-snackbar
-      v-model="snack"
-      top
-      :color="snackbar.color"
-    >
-      <span>{{ snackbar.text }}</span>
-    </v-snackbar>
   </div>
 </template>
 
@@ -278,7 +329,7 @@ import TooltippedLabel from "../components/common/cv-tooltipped-label";
 export default {
     name: 'Cameras',
     components: {
-      TooltippedLabel,
+        TooltippedLabel,
         CVselect,
         CVnumberinput,
         CVslider,
@@ -286,11 +337,9 @@ export default {
     },
     data() {
         return {
-            snackbar: {
-                color: "success",
-                text: ""
-            },
             snack: false,
+            calibrationInProgress: false,
+            calibrationFailed: false,
             filteredVideomodeIndex: undefined,
         }
     },
@@ -325,7 +374,7 @@ export default {
                     if (!filtered.some(e => e.width === it.width && e.height === it.height)) {
                         it['index'] = i;
                         const calib = this.getCalibrationCoeffs(it);
-                        if(calib != null) {
+                        if (calib != null) {
                             it['standardDeviation'] = calib.standardDeviation;
                             it['mean'] = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
                         }
@@ -421,12 +470,16 @@ export default {
         },
     },
     methods: {
-
+        closeDialog() {
+            this.snack = false;
+            this.calibrationInProgress = false;
+            this.calibrationFailed = false;
+        },
         getCalibrationCoeffs(resolution) {
             const calList = this.$store.getters.calibrationList;
             let ret = null;
             calList.forEach(cal => {
-                if(cal.width === resolution.width && cal.height === resolution.height) {
+                if (cal.width === resolution.width && cal.height === resolution.height) {
                     ret = cal
                 }
             });
@@ -475,34 +528,19 @@ export default {
         sendCalibrationFinish() {
             console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex);
 
-            this.snackbar.text = "Calibrating...";
-            this.snackbar.color = "secondary";
             this.snack = true;
+            this.calibrationInProgress = true;
 
             this.axios.post("http://" + this.$address + "/api/settings/endCalibration", this.$store.getters.currentCameraIndex)
                 .then((response) => {
-                    if (response.status === 200) {
-                        this.snackbar = {
-                            color: "success",
-                            text: "Calibration successful! \n" +
-                                "Standard deviation: " + response.data.toFixed(5)
-                        };
-                        this.snack = true;
+                        if (response.status === 200) {
+                            this.calibrationInProgress = false;
+                        } else {
+                            this.calibrationFailed = true;
+                        }
                     }
-                    else {
-                        this.snackbar = {
-                            color: "error",
-                            text: "Calibration Failed!"
-                        };
-                        this.snack = true;
-                    }
-                }
-            ).catch(() => {
-                this.snackbar = {
-                    color: "error",
-                    text: "Calibration Failed!"
-                };
-                this.snack = true;
+                ).catch(() => {
+                    this.calibrationFailed = true;
             });
         }
     }
@@ -510,18 +548,19 @@ export default {
 </script>
 
 <style scoped>
-    .v-data-table {
-        text-align: center;
-        background-color: transparent !important;
-        width: 100%;
-        height: 100%;
-        overflow-y: auto;
-    }
-    .v-data-table th {
-        background-color: #006492 !important;
-    }
+.v-data-table {
+    text-align: center;
+    background-color: transparent !important;
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+}
 
-    .v-data-table th,td {
-        font-size: 1rem !important;
-    }
+.v-data-table th {
+    background-color: #006492 !important;
+}
+
+.v-data-table th, td {
+    font-size: 1rem !important;
+}
 </style>

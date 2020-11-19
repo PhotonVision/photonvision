@@ -60,6 +60,8 @@ public class Calibrate3dPipeline
 
     private int minSnapshots;
 
+    private boolean calibrating = false;
+
     public Calibrate3dPipeline() {
         this(25);
     }
@@ -88,6 +90,13 @@ public class Calibrate3dPipeline
     protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
         // Set the pipe parameters
         setPipeParams(frame.frameStaticProperties, settings);
+
+        if(this.calibrating) {
+            return new CVPipelineResult(
+                0,
+                null,
+                new Frame(new CVMat(frame.image.getMat()), frame.frameStaticProperties));
+        }
 
         long sumPipeNanosElapsed = 0L;
 
@@ -131,9 +140,13 @@ public class Calibrate3dPipeline
             return null;
         }
 
+        this.calibrating = true;
+
         /*Pass the board corners to the pipe, which will check again to see if all boards are valid
         and returns the corresponding image and object points*/
         calibrationOutput = calibrate3dPipe.run(foundCornersList);
+
+        this.calibrating = false;
 
         return calibrationOutput.output;
     }
