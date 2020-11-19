@@ -91,11 +91,9 @@ public class Calibrate3dPipeline
         // Set the pipe parameters
         setPipeParams(frame.frameStaticProperties, settings);
 
-        if(this.calibrating) {
+        if (this.calibrating) {
             return new CVPipelineResult(
-                0,
-                null,
-                new Frame(new CVMat(frame.image.getMat()), frame.frameStaticProperties));
+                    0, null, new Frame(new CVMat(frame.image.getMat()), frame.frameStaticProperties));
         }
 
         long sumPipeNanosElapsed = 0L;
