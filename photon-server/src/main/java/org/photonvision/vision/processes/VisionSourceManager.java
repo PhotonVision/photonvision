@@ -217,7 +217,7 @@ public class VisionSourceManager {
             if (cameraInfo != null) {
                 logger.debug("Matched the config for " + config.baseName + " to a physical camera!");
                 detectedCameraList.remove(cameraInfo);
-                cameraConfigurations.add(config);
+                cameraConfigurations.add(mergeInfoIntoConfig(config, cameraInfo));
             }
         }
 
@@ -244,6 +244,15 @@ public class VisionSourceManager {
 
         logger.debug("Matched or created " + cameraConfigurations.size() + " camera configs!");
         return cameraConfigurations;
+    }
+
+    private CameraConfiguration mergeInfoIntoConfig(CameraConfiguration cfg, UsbCameraInfo info) {
+        if (!cfg.path.equals(info.path)) {
+            logger.debug("Updating path config from " + cfg.path + " to " + info.path);
+            cfg.path = info.path;
+        }
+
+        return cfg;
     }
 
     private List<VisionSource> loadVisionSourcesFromCamConfigs(List<CameraConfiguration> camConfigs) {
