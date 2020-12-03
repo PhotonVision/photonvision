@@ -64,13 +64,23 @@ public class NetworkManager {
                     var shell = new ShellExec(true, false);
                     shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
                     var oldHostname = shell.getOutput().replace("\n", "");
-                    var setHostnameRetCode = shell.executeBashCommand("hostnamectl set-hostname" + config.hostname);
+                    var setHostnameRetCode =
+                            shell.executeBashCommand("hostnamectl set-hostname" + config.hostname);
                     // Add to /etc/hosts
-                    var addHostRetCode = shell.executeBashCommand(String.format("sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts", oldHostname, config.hostname));
+                    var addHostRetCode =
+                            shell.executeBashCommand(
+                                    String.format(
+                                            "sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts",
+                                            oldHostname, config.hostname));
 
                     var success = setHostnameRetCode == 0 && addHostRetCode == 0;
                     if (!success) {
-                        logger.error("Setting hostname returned non-zero codes " + setHostnameRetCode  + "|" + addHostRetCode+ "!");
+                        logger.error(
+                                "Setting hostname returned non-zero codes "
+                                        + setHostnameRetCode
+                                        + "|"
+                                        + addHostRetCode
+                                        + "!");
                     }
                 } catch (Exception e) {
                     logger.error("Failed to set hostname!", e);
