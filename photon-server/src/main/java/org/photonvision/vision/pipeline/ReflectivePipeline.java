@@ -48,9 +48,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
-    private int lastRotation = Integer.MIN_VALUE;
-    private boolean lastShouldCopyColor = false;
-
     private Mat rawInputMat = new Mat();
     private final long[] pipeProfileNanos = new long[PipelineProfiler.ReflectivePipeCount];
 
@@ -89,14 +86,8 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                     settings.hsvSaturation.getSecond() / 255d,
                     settings.hsvValue.getSecond() / 255d);
 
-            if (lastRotation != settings.inputImageRotationMode.value) {
-                PicamJNI.setRotation((settings.inputImageRotationMode.value + 1) * 90);
-                lastRotation = settings.inputImageRotationMode.value;
-            }
-            if (lastShouldCopyColor != settings.inputShouldShow) {
-                PicamJNI.setShouldCopyColor(settings.inputShouldShow);
-                lastShouldCopyColor = settings.inputShouldShow;
-            }
+            PicamJNI.setRotation(settings.inputImageRotationMode.value);
+            PicamJNI.setShouldCopyColor(settings.inputShouldShow);
         }
 
         var findContoursParams = new FindContoursPipe.FindContoursParams();

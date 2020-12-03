@@ -373,7 +373,7 @@ public class VisionModule {
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             config.cameraGain = -1;
         } else {
-            visionSource.getSettables().setGain(config.cameraGain);
+            visionSource.getSettables().setGain(Math.max(0, config.cameraGain));
         }
 
         setVisionLEDs(config.ledMode);

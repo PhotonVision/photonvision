@@ -73,6 +73,9 @@ public class ZeroCopyPicamSource implements VisionSource {
     public static class PicamSettables extends VisionSourceSettables {
 
         private VideoMode currentVideoMode;
+        private double lastExposure;
+        private int lastBrightness;
+        private int lastGain;
 
         public PicamSettables(CameraConfiguration configuration) {
             super(configuration);
@@ -104,16 +107,19 @@ public class ZeroCopyPicamSource implements VisionSource {
 
         @Override
         public void setExposure(double exposure) {
+            lastExposure = exposure;
             PicamJNI.setExposure((int) Math.round(exposure));
         }
 
         @Override
         public void setBrightness(int brightness) {
+            lastBrightness = brightness;
             PicamJNI.setBrightness(brightness);
         }
 
         @Override
         public void setGain(int gain) {
+            lastGain = gain;
             PicamJNI.setGain(gain);
         }
 
@@ -127,6 +133,12 @@ public class ZeroCopyPicamSource implements VisionSource {
             PicamJNI.destroyCamera();
             PicamJNI.createCamera(
                     videoMode.width, videoMode.height, ((FPSRatedVideoMode) videoMode).fpsActual);
+
+            // We don't store last settings on the native side, and when you change video mode these get
+            // reset on MMAL's end
+            setExposure(lastExposure);
+            setBrightness(lastBrightness);
+            setGain(lastGain);
 
             currentVideoMode = videoMode;
         }
