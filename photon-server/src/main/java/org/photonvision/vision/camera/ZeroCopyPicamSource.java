@@ -27,12 +27,12 @@ import org.photonvision.vision.frame.provider.AcceleratedPicamFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
-public class GPUAcceleratedPicamSource implements VisionSource {
+public class ZeroCopyPicamSource implements VisionSource {
 
     private final VisionSourceSettables settables;
     private final AcceleratedPicamFrameProvider frameProvider;
 
-    public GPUAcceleratedPicamSource(CameraConfiguration configuration) {
+    public ZeroCopyPicamSource(CameraConfiguration configuration) {
         if (configuration.cameraType != CameraType.ZeroCopyPicam) {
             throw new IllegalArgumentException(
                     "GPUAcceleratedPicamSource only accepts CameraConfigurations with type Picam");

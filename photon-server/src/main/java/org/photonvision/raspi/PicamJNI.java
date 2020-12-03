@@ -33,7 +33,7 @@ public class PicamJNI {
     private static Logger logger = new Logger(PicamJNI.class, LogGroup.Camera);
 
     public static synchronized void forceLoad() throws IOException {
-        if (!libraryLoaded || !Platform.isRaspberryPi()) return;
+        if (libraryLoaded || !Platform.isRaspberryPi()) return;
 
         try {
             URL resourceURL = PicamJNI.class.getResource("/nativelibraries/libpicam.so");
