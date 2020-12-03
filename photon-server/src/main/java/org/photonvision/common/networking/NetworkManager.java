@@ -61,7 +61,7 @@ public class NetworkManager {
                     var oldHostname = shell.getOutput().replace("\n", "");
 
                     var setHostnameRetCode = shell.executeBashCommand("echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", config.hostname));
-                    setHostnameRetCode = shell.executeBashCommand("sudo hostnamectl set-hostname " + config.hostname);
+                    setHostnameRetCode = shell.executeBashCommand("hostnamectl set-hostname " + config.hostname);
 
                     // Add to /etc/hosts
                     var addHostRetCode =
