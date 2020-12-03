@@ -60,8 +60,11 @@ public class NetworkManager {
                     shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
                     var oldHostname = shell.getOutput().replace("\n", "");
 
-                    var setHostnameRetCode = shell.executeBashCommand("echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", config.hostname));
-                    setHostnameRetCode = shell.executeBashCommand("hostnamectl set-hostname " + config.hostname);
+                    var setHostnameRetCode =
+                            shell.executeBashCommand(
+                                    "echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", config.hostname));
+                    setHostnameRetCode =
+                            shell.executeBashCommand("hostnamectl set-hostname " + config.hostname);
 
                     // Add to /etc/hosts
                     var addHostRetCode =

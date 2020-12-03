@@ -17,10 +17,9 @@
 
 package org.photonvision.common.util;
 
+import java.io.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-
-import java.io.*;
 
 /** Execute external process and optionally read output buffer. */
 @SuppressWarnings({"unused", "ConstantConditions"})
