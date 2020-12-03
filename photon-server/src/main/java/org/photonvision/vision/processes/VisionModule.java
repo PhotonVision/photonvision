@@ -37,6 +37,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
+import org.photonvision.vision.camera.ZeroCopyPicamSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
@@ -98,6 +99,8 @@ public class VisionModule {
         // do this
         if (visionSource instanceof USBCameraSource) {
             cameraQuirks = ((USBCameraSource) visionSource).cameraQuirks;
+        } else if (visionSource instanceof ZeroCopyPicamSource) {
+            cameraQuirks = QuirkyCamera.ZeroCopyPiCamera;
         } else {
             cameraQuirks = QuirkyCamera.DefaultCamera;
         }
