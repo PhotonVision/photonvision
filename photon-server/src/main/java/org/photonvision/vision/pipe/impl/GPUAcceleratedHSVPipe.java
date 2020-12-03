@@ -148,10 +148,6 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         drawable.display();
         drawable.getContext().makeCurrent();
 
-        var sb = new StringBuilder();
-        JoglVersion.getDefaultOpenGLInfo(factory.getDefaultDevice(), sb, true);
-        System.out.println(sb.toString());
-
         // Get an OpenGL context; OpenGL ES 2.0 and OpenGL 2.0 are compatible with all the coprocs we
         // care about but not compatible with PBOs. Open GL ES 3.0 and OpenGL 4.0 are compatible with
         // select coprocs *and* PBOs
