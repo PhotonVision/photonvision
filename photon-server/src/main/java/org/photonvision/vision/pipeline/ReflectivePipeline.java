@@ -48,7 +48,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
-    private Mat rawInputMat = new Mat();
     private final long[] pipeProfileNanos = new long[PipelineProfiler.ReflectivePipeCount];
 
     public ReflectivePipeline() {
@@ -149,6 +148,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         long sumPipeNanosElapsed = 0L;
 
         CVPipeResult<Mat> hsvPipeResult;
+        Mat rawInputMat;
         if (frame.image.getMat().channels() != 1) {
             var rotateImageResult = rotateImagePipe.run(frame.image.getMat());
             sumPipeNanosElapsed += pipeProfileNanos[0] = rotateImageResult.nanosElapsed;
