@@ -248,16 +248,14 @@ public class VisionModule {
                     settings = this.settings;
                     targets = this.targets;
                     shouldRun = this.shouldRun;
+
+                    this.shouldRun = false;
                 }
                 if (shouldRun) {
                     var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
 
                     consumeFpsLimitedResult(osr);
                     osr.release();
-
-                    synchronized (frameLock) {
-                        this.shouldRun = false;
-                    }
                 } else {
                     // busy wait! hurray!
                     try {
