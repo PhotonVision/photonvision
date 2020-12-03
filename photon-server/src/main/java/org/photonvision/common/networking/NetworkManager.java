@@ -61,11 +61,16 @@ public class NetworkManager {
             // always set hostname
             if (config.hostname.length() > 0) {
                 try {
-                    var setHostnameRetCode =
-                            new ShellExec().execute("hostnamectl", "set-hostname", config.hostname);
-                    var success = setHostnameRetCode == 0;
+                    var shell = new ShellExec(true, false);
+                    shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
+                    var oldHostname = shell.getOutput().replace("\n", "");
+                    var setHostnameRetCode = shell.executeBashCommand("hostnamectl set-hostname" + config.hostname);
+                    // Add to /etc/hosts
+                    var addHostRetCode = shell.executeBashCommand(String.format("sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts", oldHostname, config.hostname));
+
+                    var success = setHostnameRetCode == 0 && addHostRetCode == 0;
                     if (!success) {
-                        logger.error("hostnamectl return non-zero exit code " + setHostnameRetCode + "!");
+                        logger.error("Setting hostname returned non-zero codes " + setHostnameRetCode  + "|" + addHostRetCode+ "!");
                     }
                 } catch (Exception e) {
                     logger.error("Failed to set hostname!", e);
@@ -78,7 +83,7 @@ public class NetworkManager {
             if (config.connectionType == NetworkMode.DHCP) {
                 var shell = new ShellExec();
                 try {
-                    if (config.staticIp != "") {
+                    if (!config.staticIp.equals("")) {
                         shell.executeBashCommand("ip addr del " + config.staticIp + "/8 dev eth0");
                     }
                     shell.executeBashCommand("dhclient eth0");
