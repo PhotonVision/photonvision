@@ -17,11 +17,16 @@
 
 package org.photonvision.common.util;
 
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+
 import java.io.*;
 
 /** Execute external process and optionally read output buffer. */
 @SuppressWarnings({"unused", "ConstantConditions"})
 public class ShellExec {
+    private static final Logger logger = new Logger(ShellExec.class, LogGroup.General);
+
     private int exitCode;
     private boolean readOutput, readError;
     private StreamGobbler errorGobbler, outputGobbler;
@@ -43,6 +48,8 @@ public class ShellExec {
     * @return true if bash got started, but your command may have failed.
     */
     public int executeBashCommand(String command) throws IOException {
+        logger.debug("Executing \"" + command + "\"");
+
         boolean wait = true;
         boolean success = false;
         Runtime r = Runtime.getRuntime();
@@ -57,7 +64,9 @@ public class ShellExec {
 
         // Consume streams, older jvm's had a memory leak if streams were not read,
         // some other jvm+OS combinations may block unless streams are consumed.
-        return doProcess(wait, process);
+        int retcode = doProcess(wait, process);
+        logger.debug("Got exit code " + retcode);
+        return retcode;
     }
 
     /**

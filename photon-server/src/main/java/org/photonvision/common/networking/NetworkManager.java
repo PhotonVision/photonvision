@@ -46,12 +46,7 @@ public class NetworkManager {
         }
 
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
-        logger.info(
-                "Setting static ip to \""
-                        + config.staticIp
-                        + "\" and hostname to \""
-                        + config.hostname
-                        + "\"");
+        logger.info("Setting " + config.connectionType + " with team team " + config.teamNumber);
         if (Platform.isLinux()) {
             if (!Platform.isRoot) {
                 logger.error("Cannot manage network without root!");
@@ -64,8 +59,10 @@ public class NetworkManager {
                     var shell = new ShellExec(true, false);
                     shell.executeBashCommand("cat /etc/hostname | tr -d \" \\t\\n\\r\"");
                     var oldHostname = shell.getOutput().replace("\n", "");
-                    var setHostnameRetCode =
-                            shell.executeBashCommand("hostnamectl set-hostname" + config.hostname);
+
+                    var setHostnameRetCode = shell.executeBashCommand("echo $NEW_HOSTNAME > /etc/hostname".replace("$NEW_HOSTNAME", config.hostname));
+                    setHostnameRetCode = shell.executeBashCommand("sudo hostnamectl set-hostname " + config.hostname);
+
                     // Add to /etc/hosts
                     var addHostRetCode =
                             shell.executeBashCommand(
@@ -73,14 +70,18 @@ public class NetworkManager {
                                             "sed -i \"s/127.0.1.1.*%s/127.0.1.1\\t%s/g\" /etc/hosts",
                                             oldHostname, config.hostname));
 
+                    shell.executeBashCommand("sudo service avahi-daemon restart");
+
                     var success = setHostnameRetCode == 0 && addHostRetCode == 0;
                     if (!success) {
                         logger.error(
-                                "Setting hostname returned non-zero codes "
+                                "Setting hostname returned non-zero codes (hostname/hosts) "
                                         + setHostnameRetCode
                                         + "|"
                                         + addHostRetCode
                                         + "!");
+                    } else {
+                        logger.info("Set hostname to " + config.hostname);
                     }
                 } catch (Exception e) {
                     logger.error("Failed to set hostname!", e);
