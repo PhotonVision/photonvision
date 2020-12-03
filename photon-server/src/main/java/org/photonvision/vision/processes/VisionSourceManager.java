@@ -31,8 +31,8 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.camera.CameraType;
-import org.photonvision.vision.camera.GPUAcceleratedPicamSource;
 import org.photonvision.vision.camera.USBCameraSource;
+import org.photonvision.vision.camera.ZeroCopyPicamSource;
 
 public class VisionSourceManager {
 
@@ -297,7 +297,7 @@ public class VisionSourceManager {
         for (var configuration : camConfigs) {
             if (configuration.baseName.startsWith("mmal service") && PicamJNI.isSupported()) {
                 configuration.cameraType = CameraType.ZeroCopyPicam;
-                VisionSource picamSrc = new GPUAcceleratedPicamSource(configuration);
+                VisionSource picamSrc = new ZeroCopyPicamSource(configuration);
                 cameraSources.add(picamSrc);
                 continue;
             }

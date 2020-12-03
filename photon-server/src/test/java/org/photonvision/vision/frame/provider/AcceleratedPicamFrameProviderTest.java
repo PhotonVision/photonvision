@@ -22,7 +22,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.raspi.PicamJNI;
-import org.photonvision.vision.camera.GPUAcceleratedPicamSource;
+import org.photonvision.vision.camera.ZeroCopyPicamSource;
 
 public class AcceleratedPicamFrameProviderTest {
     @Test
@@ -33,8 +33,7 @@ public class AcceleratedPicamFrameProviderTest {
 
         var frameProvider =
                 new AcceleratedPicamFrameProvider(
-                        new GPUAcceleratedPicamSource.PicamSettables(
-                                new CameraConfiguration("f", "f", "f", "f")));
+                        new ZeroCopyPicamSource.PicamSettables(new CameraConfiguration("f", "f", "f", "f")));
 
         long lastTime = System.currentTimeMillis();
         for (int i = 0; i < 10; i++) {
