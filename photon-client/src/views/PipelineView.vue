@@ -160,7 +160,7 @@
           v-for="(tabs, idx) in tabGroups"
           :key="idx"
           :cols="Math.floor(12 / tabGroups.length)"
-          :class="idx != tabGroups.length - 1 ? 'pr-3' : ''"
+          :class="idx !== tabGroups.length - 1 ? 'pr-3' : ''"
           align-self="stretch"
         >
           <v-card
@@ -264,7 +264,7 @@ import TargetsTab from "./PipelineViews/TargetsTab";
 import PnPTab from './PipelineViews/PnPTab';
 
 export default {
-    name: 'CameraTab',
+    name: 'Pipeline',
     components: {
         CameraAndPipelineSelect,
         cvImage,
@@ -414,32 +414,13 @@ export default {
                 return this.$store.getters.currentPipelineResults.latency;
             }
         },
-        methods: {
-            isCalibrated() {
-                const resolution = this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex];
-                return this.$store.getters.currentCameraSettings.calibrations
+        isCalibrated: {
+          get() {
+            const resolution = this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex];
+            return this.$store.getters.currentCameraSettings.calibrations
                     .some(e => e.width === resolution.width && e.height === resolution.height)
-            },
-            onImageClick(event) {
-                // Only run on the input stream
-                if (event.target.alt !== "Stream0") return;
-                // Get a reference to the threshold tab (if it is shown) and call its "onClick" method
-                let ref = this.$refs["Threshold"];
-                if (ref && ref[0])
-                  ref[0].onClick(event)
-            },
-            on3DClick() {
-                if (!this.$store.getters.isCalibrated) {
-                  this.dialog = true;
-                  this.processingModeOverride = true;
-                }
-            },
-            closeUncalibratedDialog() {
-                this.dialog = false;
-                this.processingModeOverride = false;
-                this.handlePipelineUpdate("solvePNPEnabled", false);
-            }
-        }
+          }
+        },
     },
     created() {
         this.$store.state.connectedCallbacks.push(this.reloadStreams)
@@ -448,11 +429,6 @@ export default {
         reloadStreams() {
             // Reload the streams as we technically close and reopen them
             this.$refs.streams.forEach(it => it.reload())
-        },
-        isCalibrated() {
-            const resolution = this.$store.getters.videoFormatList[this.$store.getters.currentPipelineSettings.cameraVideoModeIndex];
-            return this.$store.getters.currentCameraSettings.calibrations
-                .some(e => e.width === resolution.width && e.height === resolution.height)
         },
         onImageClick(event) {
             // Only run on the input stream
