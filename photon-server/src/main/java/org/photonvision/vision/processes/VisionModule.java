@@ -215,15 +215,16 @@ public class VisionModule {
                 AdvancedPipelineSettings settings,
                 List<TrackedTarget> targets) {
             synchronized (frameLock) {
+                if (shouldRun && this.inputFrame != null && this.outputFrame != null) {
+                    this.inputFrame.release();
+                    this.outputFrame.release();
+                }
+
                 this.inputFrame = inputFrame;
                 this.outputFrame = outputFrame;
                 this.settings = settings;
                 this.targets = targets;
 
-                if (shouldRun && this.inputFrame != null && this.outputFrame != null) {
-                    this.inputFrame.release();
-                    this.outputFrame.release();
-                }
                 shouldRun =
                         inputFrame != null
                                 && !inputFrame.image.getMat().empty()
