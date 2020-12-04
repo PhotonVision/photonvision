@@ -53,7 +53,7 @@
     import CVslider from '../../components/common/cv-slider'
 
     export default {
-        name: "SolvePNP",
+        name: "PnP",
         components: {
             CVslider,
             miniMap

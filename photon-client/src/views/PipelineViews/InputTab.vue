@@ -170,7 +170,7 @@
             // It would probably be cleaner if this checked that we're on the Raspi 3 instead of checking for GPU accel status
             const width = this.$store.getters.videoFormatList[
                     this.$store.getters.currentCameraSettings.currentPipelineSettings.cameraVideoModeIndex]['width'];
-            return unfilteredStreamDivisors.filter((x) => !this.$store.state.settings.general.gpuAcceleration || (width / x > 100 && width / x < 400));
+            return unfilteredStreamDivisors.filter((x) => !this.$store.state.settings.general.gpuAcceleration || width / x < 400);
           },
           getNumSkippedStreamDivisors() {
             return unfilteredStreamDivisors.length - this.getRawStreamDivisors().length;
