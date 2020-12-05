@@ -81,10 +81,17 @@ public class Calibrate3dPipe
         try {
             // FindBoardCorners pipe outputs all the image points, object points, and frames to calculate
             // imageSize from, other parameters are output Mats
+
+            var objPoints = in.stream().map(Triple::getMiddle).collect(Collectors.toList());
+            var imgPts = in.stream().map(Triple::getRight).collect(Collectors.toList());
+            if (objPoints.size() != imgPts.size()) {
+                logger.error("objpts.size != imgpts.size");
+                return null;
+            }
             calibrationAccuracy =
                     Calib3d.calibrateCameraExtended(
-                            in.stream().map(Triple::getMiddle).collect(Collectors.toList()),
-                            in.stream().map(Triple::getRight).collect(Collectors.toList()),
+                            objPoints,
+                            imgPts,
                             new Size(in.get(0).getLeft().width, in.get(0).getLeft().height),
                             cameraMatrix,
                             distortionCoefficients,

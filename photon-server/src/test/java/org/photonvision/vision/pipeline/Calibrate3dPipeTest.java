@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,7 +63,9 @@ public class Calibrate3dPipeTest {
         List<Triple<Size, Mat, Mat>> foundCornersList = new ArrayList<>();
 
         for (var f : frames) {
-            foundCornersList.add(findBoardCornersPipe.run(f).output);
+            var copy = new Mat();
+            f.copyTo(copy);
+            foundCornersList.add(findBoardCornersPipe.run(Pair.of(f, copy)).output);
         }
 
         Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();

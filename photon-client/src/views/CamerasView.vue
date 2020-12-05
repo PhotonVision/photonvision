@@ -271,7 +271,7 @@
                 class="ml-3"
               >
                 <v-col align="center">
-                  <template v-if="calibrationInProgress">
+                  <template v-if="calibrationInProgress && !calibrationFailed">
                     <v-progress-circular
                       indeterminate
                       :size="70"
@@ -303,7 +303,7 @@
               <v-card-actions>
                 <v-spacer />
                 <v-btn
-                  v-if="!calibrationInProgress"
+                  v-if="!calibrationInProgress || calibrationFailed"
                   color="white"
                   text
                   @click="closeDialog"

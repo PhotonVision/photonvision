@@ -19,15 +19,20 @@ package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.wpilibj.util.Units;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.server.SocketHandler;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -61,6 +66,9 @@ public class Calibrate3dPipeline
     private int minSnapshots;
 
     private boolean calibrating = false;
+
+    // Path to save images
+    private final Path imageDir = ConfigManager.getInstance().getCalibDir();
 
     public Calibrate3dPipeline() {
         this(25);
@@ -99,7 +107,9 @@ public class Calibrate3dPipeline
         long sumPipeNanosElapsed = 0L;
 
         // Check if the frame has chessboard corners
-        var findBoardResult = findBoardCornersPipe.run(frame.image.getMat()).output;
+        var outFrame = new Mat();
+        frame.image.getMat().copyTo(outFrame);
+        var findBoardResult = findBoardCornersPipe.run(Pair.of(frame.image.getMat(), outFrame)).output;
 
         if (takeSnapshot) {
             // Set snapshot to false even if we don't find a board
@@ -107,6 +117,9 @@ public class Calibrate3dPipeline
 
             if (findBoardResult != null) {
                 foundCornersList.add(findBoardResult);
+                Imgcodecs.imwrite(
+                        Path.of(imageDir.toString(), "img" + foundCornersList.size() + ".jpg").toString(),
+                        frame.image.getMat());
 
                 // update the UI
                 broadcastState();
@@ -120,7 +133,13 @@ public class Calibrate3dPipeline
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
                 null,
-                new Frame(new CVMat(frame.image.getMat()), frame.frameStaticProperties));
+                new Frame(new CVMat(outFrame), frame.frameStaticProperties));
+    }
+
+    public void deleteSavedImages() {
+        imageDir.toFile().mkdirs();
+        imageDir.toFile().mkdir();
+        FileUtils.deleteDirectory(imageDir);
     }
 
     public boolean hasEnough() {

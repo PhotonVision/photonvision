@@ -206,6 +206,7 @@ public class VisionModule {
 
     public void startCalibration(UICalibrationData data) {
         var settings = pipelineManager.calibration3dPipeline.getSettings();
+        pipelineManager.calibration3dPipeline.deleteSavedImages();
         settings.cameraVideoModeIndex = data.videoModeIndex;
         visionSource.getSettables().setVideoModeIndex(data.videoModeIndex);
         logger.info(
@@ -223,7 +224,7 @@ public class VisionModule {
             settings.cameraGain = -1;
         }
 
-        pipelineManager.setCalibrationMode(true);
+        setPipeline(PipelineManager.CAL_3D_INDEX);
     }
 
     public void takeCalibrationSnapshot() {
