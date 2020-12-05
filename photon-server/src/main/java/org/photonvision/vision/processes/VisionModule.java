@@ -223,7 +223,7 @@ public class VisionModule {
             settings.cameraGain = -1;
         }
 
-        pipelineManager.setCalibrationMode(true);
+        setPipeline(PipelineManager.CAL_3D_INDEX);
     }
 
     public void takeCalibrationSnapshot() {
