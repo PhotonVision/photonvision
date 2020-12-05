@@ -261,6 +261,12 @@ public class VisionModule {
         visionSource.getSettables().setBrightness(config.cameraBrightness);
         visionSource.getSettables().setExposure(config.cameraExposure);
 
+        // Also set new frame divisor
+        dashboardInputStreamer.setFrameDivisor(
+                pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
+        dashboardOutputStreamer.setFrameDivisor(
+                pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
+
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             config.cameraGain = -1;
         } else {
