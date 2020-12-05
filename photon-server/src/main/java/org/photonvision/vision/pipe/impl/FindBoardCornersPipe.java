@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.Objects;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
@@ -28,7 +29,8 @@ import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
 
 public class FindBoardCornersPipe
-        extends CVPipe<Mat, Triple<Size, Mat, Mat>, FindBoardCornersPipe.FindCornersPipeParams> {
+        extends CVPipe<
+                Pair<Mat, Mat>, Triple<Size, Mat, Mat>, FindBoardCornersPipe.FindCornersPipeParams> {
     private static final Logger logger =
             new Logger(FindBoardCornersPipe.class, LogGroup.VisionModule);
 
@@ -91,11 +93,11 @@ public class FindBoardCornersPipe
     /**
     * Finds the corners in a given image and returns them
     *
-    * @param in Input for pipe processing.
+    * @param in Input for pipe processing. Pair of input and output mat
     * @return All valid Mats for camera calibration
     */
     @Override
-    protected Triple<Size, Mat, Mat> process(Mat in) {
+    protected Triple<Size, Mat, Mat> process(Pair<Mat, Mat> in) {
 
         // Create the object points
         createObjectPoints();
@@ -103,43 +105,50 @@ public class FindBoardCornersPipe
         return findBoardCorners(in);
     }
 
-    private Triple<Size, Mat, Mat> findBoardCorners(Mat frame) {
+    /**
+    * Find chessboard corners given a input mat and output mat to draw on
+    *
+    * @return Frame resolution, object points, board corners
+    */
+    private Triple<Size, Mat, Mat> findBoardCorners(Pair<Mat, Mat> in) {
         createObjectPoints();
 
-        // Convert the frame to grayscale to increase contrast
-        Imgproc.cvtColor(frame, frame, Imgproc.COLOR_BGR2GRAY);
+        var inFrame = in.getLeft();
+        var outFrame = in.getRight();
+
+        // Convert the inFrame to grayscale to increase contrast
+        Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_BGR2GRAY);
         boolean boardFound = false;
 
         if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
             // This is for chessboards
-            boardFound = Calib3d.findChessboardCorners(frame, patternSize, boardCorners);
+            boardFound = Calib3d.findChessboardCorners(inFrame, patternSize, boardCorners);
         } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
             // For dot boards
             boardFound =
                     Calib3d.findCirclesGrid(
-                            frame, patternSize, boardCorners, Calib3d.CALIB_CB_ASYMMETRIC_GRID);
+                            inFrame, patternSize, boardCorners, Calib3d.CALIB_CB_ASYMMETRIC_GRID);
         }
 
         if (!boardFound) {
-            // If we can't find a chessboard/dot board, convert the frame back to BGR and return false.
-            Imgproc.cvtColor(frame, frame, Imgproc.COLOR_GRAY2BGR);
+            // If we can't find a chessboard/dot board, convert the inFrame back to BGR and return false.
 
             return null;
         }
         var outBoardCorners = new MatOfPoint2f();
         boardCorners.copyTo(outBoardCorners);
 
-        // Get the size of the frame
-        this.imageSize = new Size(frame.width(), frame.height());
+        // Get the size of the inFrame
+        this.imageSize = new Size(inFrame.width(), inFrame.height());
 
         // Do sub corner pix for drawing chessboard
-        Imgproc.cornerSubPix(frame, outBoardCorners, windowSize, zeroZone, criteria);
+        Imgproc.cornerSubPix(inFrame, outBoardCorners, windowSize, zeroZone, criteria);
 
         // convert back to BGR
-        Imgproc.cvtColor(frame, frame, Imgproc.COLOR_GRAY2BGR);
+        //        Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_GRAY2BGR);
         // draw the chessboard, doesn't have to be different for a dot board since it just re projects
         // the corners we found
-        Calib3d.drawChessboardCorners(frame, patternSize, outBoardCorners, true);
+        Calib3d.drawChessboardCorners(outFrame, patternSize, outBoardCorners, true);
 
         //        // Add the 3D points and the points of the corners found
         //        if (addToSnapList) {
@@ -147,7 +156,7 @@ public class FindBoardCornersPipe
         //            this.listOfImagePoints.add(boardCorners);
         //        }
 
-        return Triple.of(frame.size(), objectPoints, outBoardCorners);
+        return Triple.of(inFrame.size(), objectPoints, outBoardCorners);
     }
 
     public static class FindCornersPipeParams {

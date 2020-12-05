@@ -361,6 +361,10 @@ public class ConfigManager {
         return Path.of(configDirectoryFile.toString(), "logs");
     }
 
+    public Path getCalibDir() {
+        return Path.of(configDirectoryFile.toString(), "calibImgs");
+    }
+
     public static final String LOG_PREFIX = "photonvision-";
     public static final String LOG_EXT = ".log";
     public static final String LOG_DATE_TIME_FORMAT = "yyyy-M-d_hh-mm-ss";
