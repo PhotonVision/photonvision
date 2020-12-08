@@ -31,9 +31,6 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
     // the direction in which contours must intersect to be considered intersecting
     public ContourIntersectionDirection contourIntersection = ContourIntersectionDirection.Up;
 
-    // 3d settings
-    public TargetModel targetModel = TargetModel.k2020HighGoalOuter;
-
     // Corner detection settings
     public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
             CornerDetectionPipe.DetectionStrategy.APPROX_POLY_DP_AND_EXTREME_CORNERS;
