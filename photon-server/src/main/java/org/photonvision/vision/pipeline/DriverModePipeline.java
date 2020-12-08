@@ -52,7 +52,9 @@ public class DriverModePipeline
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(frameStaticProperties);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
-        PicamJNI.setShouldCopyColor(true);
+        if (PicamJNI.isSupported()) {
+            PicamJNI.setShouldCopyColor(true);
+        }
     }
 
     @Override
