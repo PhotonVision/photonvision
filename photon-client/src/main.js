@@ -21,6 +21,7 @@ import VueNativeSock from 'vue-native-websocket';
 
 Vue.use(VueNativeSock, wsURL, {
     reconnection: true,
+    reconnectionDelay: 100,
     connectManually: true,
     format: "arraybuffer",
 });
