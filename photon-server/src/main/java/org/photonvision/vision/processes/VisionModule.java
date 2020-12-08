@@ -503,8 +503,6 @@ public class VisionModule {
                     result.targets);
             // The streamRunnable manages releasing in this case
         } else {
-            logger.info("In driver mode and releasing");
-
             consumeFpsLimitedResult(result);
 
             result.release();
