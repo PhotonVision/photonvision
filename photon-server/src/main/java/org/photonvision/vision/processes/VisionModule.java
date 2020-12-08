@@ -257,7 +257,7 @@ public class VisionModule {
                         consumeFpsLimitedResult(osr);
                         inputFrame.release();
                         outputFrame.release();
-                    } catch(Exception e) {
+                    } catch (Exception e) {
                         // Never die
                         logger.error("Exception in stream runnable!", e);
                     }

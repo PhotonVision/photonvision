@@ -48,9 +48,10 @@ public class Draw3dTargetsPipe
             // draw convex hull
             var pointMat = new MatOfPoint();
             target.m_mainContour.getConvexHull().convertTo(pointMat, CvType.CV_32S);
-            if(pointMat.size().empty()) {
+            if (pointMat.size().empty()) {
                 logger.error("Convex hull is empty?");
-                logger.debug("Orig. Convex Hull: " + target.m_mainContour.getConvexHull().size().toString());
+                logger.debug(
+                        "Orig. Convex Hull: " + target.m_mainContour.getConvexHull().size().toString());
                 continue;
             }
             Imgproc.drawContours(
