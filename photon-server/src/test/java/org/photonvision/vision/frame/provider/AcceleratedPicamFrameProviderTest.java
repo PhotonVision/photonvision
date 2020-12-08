@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.frame.provider;
 
+import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -26,7 +27,8 @@ import org.photonvision.vision.camera.ZeroCopyPicamSource;
 
 public class AcceleratedPicamFrameProviderTest {
     @Test
-    public void testGrabFrame() {
+    public void testGrabFrame() throws IOException {
+        PicamJNI.forceLoad();
         if (!PicamJNI.isSupported()) return;
 
         TestUtils.loadLibraries();
