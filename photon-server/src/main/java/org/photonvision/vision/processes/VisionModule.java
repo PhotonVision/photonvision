@@ -494,8 +494,8 @@ public class VisionModule {
     private void consumeResult(CVPipelineResult result) {
         consumePipelineResult(result);
 
-        // Total hack.
-        if (!pipelineManager.getDriverMode()) {
+        // Pipelines like DriverMode and Calibrate3dPipeline have null output frames
+        if (result.inputFrame != null) {
             streamRunnable.updateData(
                     result.inputFrame,
                     result.outputFrame,
