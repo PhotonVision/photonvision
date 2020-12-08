@@ -32,7 +32,6 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
     public ContourIntersectionDirection contourIntersection = ContourIntersectionDirection.Up;
 
     // 3d settings
-    public boolean solvePNPEnabled = false;
     public TargetModel targetModel = TargetModel.k2020HighGoalOuter;
 
     // Corner detection settings
