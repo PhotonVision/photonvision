@@ -47,6 +47,6 @@ public class AcceleratedPicamFrameProvider implements FrameProvider {
         long matHandle = PicamJNI.grabFrame(false);
         mat = new CVMat(new Mat(matHandle));
         return new Frame(
-                mat, System.nanoTime() + PicamJNI.getFrameLatency(), settables.getFrameStaticProperties());
+                mat, System.nanoTime() - PicamJNI.getFrameLatency(), settables.getFrameStaticProperties());
     }
 }
