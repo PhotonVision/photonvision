@@ -49,10 +49,7 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     public ContourIntersectionDirection contourIntersection = ContourIntersectionDirection.Up;
 
     // 3d settings
-    public boolean solvePNPEnabled = false;
     public CameraCalibrationCoefficients cameraCalibration;
-    public TargetModel targetModel;
-    public Rotation2d cameraPitch = Rotation2d.fromDegrees(0.0); // TODO where should pitch live?
 
     // Corner detection settings
     public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
@@ -98,7 +95,6 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                 && contourIntersection == that.contourIntersection
                 && Objects.equals(cameraCalibration, that.cameraCalibration)
                 && Objects.equals(targetModel, that.targetModel)
-                && Objects.equals(cameraPitch, that.cameraPitch)
                 && cornerDetectionStrategy == that.cornerDetectionStrategy
                 && erode == that.erode
                 && dilate == that.dilate;
@@ -125,7 +121,6 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                 solvePNPEnabled,
                 cameraCalibration,
                 targetModel,
-                cameraPitch,
                 cornerDetectionStrategy,
                 cornerDetectionUseConvexHulls,
                 cornerDetectionExactSideCount,
