@@ -19,8 +19,12 @@ package org.photonvision.vision.opencv;
 
 import java.util.HashSet;
 import org.opencv.core.Mat;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 public class CVMat implements Releasable {
+    private static final Logger logger = new Logger(CVMat.class, LogGroup.General);
+
     private static final HashSet<Mat> allMats = new HashSet<>();
 
     private static boolean shouldPrint;
@@ -42,12 +46,13 @@ public class CVMat implements Releasable {
     public CVMat(Mat mat) {
         this.mat = mat;
         if (allMats.add(mat) && shouldPrint) {
-            System.out.println("(CVMat) Added new Mat (count: " + allMats.size() + "):");
-
             var trace = Thread.currentThread().getStackTrace();
+
+            final var traceStr = new StringBuilder();
             for (var elem : trace) {
-                System.out.println("\t" + elem);
+                traceStr.append("\t").append(elem);
             }
+            logger.trace(traceStr::toString);
         }
     }
 
