@@ -84,6 +84,12 @@ public class SocketHandler {
         var reason = context.reason() != null ? context.reason() : "Connection closed by client";
         logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         users.remove(context);
+
+        if (users.size() == 0) {
+            dcService.publishEvent(
+                    new IncomingWebSocketEvent<>(
+                            DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS, "inputShouldShow", false));
+        }
     }
 
     @SuppressWarnings({"unchecked"})

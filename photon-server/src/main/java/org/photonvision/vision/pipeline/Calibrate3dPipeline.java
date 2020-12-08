@@ -34,12 +34,14 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.raspi.PicamJNI;
 import org.photonvision.server.SocketHandler;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
+import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -53,6 +55,7 @@ public class Calibrate3dPipeline
     // Only 2 pipes needed, one for finding the board corners and one for actually calibrating
     private final FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
     private final Calibrate3dPipe calibrate3dPipe = new Calibrate3dPipe();
+    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     // Getter methods have been set for calibrate and takeSnapshot
     private boolean takeSnapshot = false;
@@ -78,6 +81,10 @@ public class Calibrate3dPipeline
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
+
+        if (PicamJNI.isSupported()) {
+            PicamJNI.setShouldCopyColor(true);
+        }
     }
 
     @Override
@@ -96,20 +103,30 @@ public class Calibrate3dPipeline
 
     @Override
     protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
+        Mat inputColorMat = frame.image.getMat();
+        if (inputColorMat.channels() == 1 && PicamJNI.isSupported()) {
+            long colorMatPtr = PicamJNI.grabFrame(true);
+            if (colorMatPtr == 0) throw new RuntimeException("Got null Mat from GPU Picam driver");
+            inputColorMat = new Mat(colorMatPtr);
+        }
+
         // Set the pipe parameters
         setPipeParams(frame.frameStaticProperties, settings);
 
         if (this.calibrating) {
             return new CVPipelineResult(
-                    0, null, new Frame(new CVMat(frame.image.getMat()), frame.frameStaticProperties));
+                    0, 0, null, new Frame(new CVMat(inputColorMat), frame.frameStaticProperties));
         }
 
         long sumPipeNanosElapsed = 0L;
 
         // Check if the frame has chessboard corners
-        var outFrame = new Mat();
-        frame.image.getMat().copyTo(outFrame);
-        var findBoardResult = findBoardCornersPipe.run(Pair.of(frame.image.getMat(), outFrame)).output;
+        var outputColorMat = new Mat();
+        inputColorMat.copyTo(outputColorMat);
+        var findBoardResult = findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorMat)).output;
+
+        var fpsResult = calculateFPSPipe.run(null);
+        var fps = fpsResult.output;
 
         if (takeSnapshot) {
             // Set snapshot to false even if we don't find a board
@@ -119,21 +136,25 @@ public class Calibrate3dPipeline
                 foundCornersList.add(findBoardResult);
                 Imgcodecs.imwrite(
                         Path.of(imageDir.toString(), "img" + foundCornersList.size() + ".jpg").toString(),
-                        frame.image.getMat());
+                        inputColorMat);
 
                 // update the UI
                 broadcastState();
 
                 return new CVPipelineResult(
-                        MathUtils.nanosToMillis(sumPipeNanosElapsed), Collections.emptyList(), frame);
+                        MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                        fps,
+                        Collections.emptyList(),
+                        new Frame(new CVMat(inputColorMat), frame.frameStaticProperties));
             }
         }
 
         // Return the drawn chessboard if corners are found, if not, then return the input image.
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                fps, // Unused but here in case
                 null,
-                new Frame(new CVMat(outFrame), frame.frameStaticProperties));
+                new Frame(new CVMat(outputColorMat), frame.frameStaticProperties));
     }
 
     public void deleteSavedImages() {

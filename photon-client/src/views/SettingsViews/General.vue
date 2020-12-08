@@ -3,43 +3,88 @@
     <v-row class="pa-4">
       <table class="infoTable">
         <tr>
-          <th class="infoElem"> Version </th>
-          <th class="infoElem"> Hardware Model </th>
-          <th class="infoElem"> Platform </th>
-          <th class="infoElem"> GPU Acceleration </th>
+          <th class="infoElem">
+            Version
+          </th>
+          <th class="infoElem">
+            Hardware Model
+          </th>
+          <th class="infoElem">
+            Platform
+          </th>
+          <th class="infoElem">
+            GPU Acceleration
+          </th>
         </tr>
         <tr>
-          <td class="infoElem">{{ version.replace(" ", "") }}</td>
-          <td class="infoElem">{{ hwModel.replace(" ", "") }}</td>
-          <td class="infoElem">{{ platform.replace(" ", "") }}</td>
-          <td class="infoElem">{{ gpuAccel.replace(" ", "") }}</td>
+          <td class="infoElem">
+            {{ version.replace(" ", "") }}
+          </td>
+          <td class="infoElem">
+            {{ hwModel.replace(" ", "") }}
+          </td>
+          <td class="infoElem">
+            {{ platform.replace(" ", "") }}
+          </td>
+          <td class="infoElem">
+            {{ gpuAccel.replace(" ", "") }}
+          </td>
         </tr>
       </table>
 
       <table class="infoTable">
         <tr>
-          <th class="infoElem"> CPU Usage </th>
-          <th class="infoElem"> CPU Temp </th>
-          <th class="infoElem"> CPU Memory Usage </th>
-          <th class="infoElem"> GPU Memory Usage </th>
-          <th class="infoElem"> Disk Usage </th>
+          <th class="infoElem">
+            CPU Usage
+          </th>
+          <th class="infoElem">
+            CPU Temp
+          </th>
+          <th class="infoElem">
+            CPU Memory Usage
+          </th>
+          <th class="infoElem">
+            GPU Memory Usage
+          </th>
+          <th class="infoElem">
+            Disk Usage
+          </th>
         </tr>
         <tr v-if="metrics.cpuUtil !== 'N/A'">
-          <td class="infoElem">{{ metrics.cpuUtil.replace(" ", "") }}%</td>
-          <td class="infoElem">{{ parseInt(metrics.cpuTemp) }}&deg;&nbsp;C</td>
-          <td class="infoElem">{{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB</td>
-          <td class="infoElem">{{ metrics.gpuMemUtil.replace(" ", "") }}MB of {{ metrics.gpuMem }}MB</td>
-          <td class="infoElem">{{ metrics.diskUtilPct.replace(" ", "") }}</td>
+          <td class="infoElem">
+            {{ metrics.cpuUtil.replace(" ", "") }}%
+          </td>
+          <td class="infoElem">
+            {{ parseInt(metrics.cpuTemp) }}&deg;&nbsp;C
+          </td>
+          <td class="infoElem">
+            {{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB
+          </td>
+          <td class="infoElem">
+            {{ metrics.gpuMemUtil.replace(" ", "") }}MB of {{ metrics.gpuMem }}MB
+          </td>
+          <td class="infoElem">
+            {{ metrics.diskUtilPct.replace(" ", "") }}
+          </td>
         </tr>
         <tr v-if="metrics.cpuUtil === 'N/A'">
-          <td class="infoElem">---</td>
-          <td class="infoElem">---</td>
-          <td class="infoElem">---</td>
-          <td class="infoElem">---</td>
-          <td class="infoElem">---</td>
+          <td class="infoElem">
+            ---
+          </td>
+          <td class="infoElem">
+            ---
+          </td>
+          <td class="infoElem">
+            ---
+          </td>
+          <td class="infoElem">
+            ---
+          </td>
+          <td class="infoElem">
+            ---
+          </td>
         </tr>
       </table>
-
     </v-row>
 
     <v-row>

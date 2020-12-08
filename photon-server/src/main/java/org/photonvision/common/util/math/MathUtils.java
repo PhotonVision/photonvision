@@ -43,6 +43,14 @@ public class MathUtils {
         return nanos / 1000000.0;
     }
 
+    public static long millisToNanos(long millis) {
+        return millis * 1000000;
+    }
+
+    public static long microsToNanos(long micros) {
+        return micros * 1000;
+    }
+
     public static double map(
             double value, double in_min, double in_max, double out_min, double out_max) {
         return (value - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;

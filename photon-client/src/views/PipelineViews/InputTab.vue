@@ -56,7 +56,6 @@
       tooltip="Resolution to which camera frames are downscaled for streaming to the dashboard"
       :list="streamResolutionList"
       :select-cols="largeBox"
-      @input="handlePipelineData('streamingFrameDivisor')"
       @rollback="e => rollback('streamingFrameDivisor', e)"
     />
   </div>
@@ -65,6 +64,8 @@
 <script>
     import CVslider from '../../components/common/cv-slider'
     import CVselect from '../../components/common/cv-select'
+
+    const unfilteredStreamDivisors = [1, 2, 4, 6];
 
     export default {
         name: 'Input',
@@ -75,7 +76,9 @@
         // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
         data() {
-            return {}
+            return {
+              rawStreamDivisorIndex: 0,
+            }
         },
         computed: {
             largeBox: {
@@ -120,18 +123,22 @@
             },
             cameraVideoModeIndex: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.cameraVideoModeIndex
+                    return this.$store.getters.currentPipelineSettings.cameraVideoModeIndex;
                 },
                 set(val) {
                     this.$store.commit("mutatePipeline", {"cameraVideoModeIndex": val});
+
+                    this.handlePipelineUpdate("streamingFrameDivisor", this.getNumSkippedStreamDivisors());
+                    this.rawStreamDivisorIndex = 0;
                 }
             },
             streamingFrameDivisor: {
                 get() {
-                    return this.$store.getters.currentPipelineSettings.streamingFrameDivisor
+                    return this.rawStreamDivisorIndex;
                 },
                 set(val) {
-                    this.$store.commit("mutatePipeline", {"streamingFrameDivisor": val});
+                    this.rawStreamDivisorIndex = val;
+                    this.handlePipelineUpdate("streamingFrameDivisor", this.getNumSkippedStreamDivisors() + val);
                 }
             },
 
@@ -147,18 +154,28 @@
 
             streamResolutionList: {
                 get() {
-                    let cam_res = this.$store.getters.videoFormatList[
-                        this.$store.getters.currentCameraSettings.currentPipelineSettings.cameraVideoModeIndex]
+                    const cam_res = this.$store.getters.videoFormatList[
+                        this.$store.getters.currentCameraSettings.currentPipelineSettings.cameraVideoModeIndex];
                     let tmp_list = [];
-                    tmp_list.push(`${Math.floor(cam_res['width'])} X ${Math.floor(cam_res['height'])}`);
-                    for (let x = 2; x <= 6; x += 2) {
+                    for (const x of this.getRawStreamDivisors()) {
                         tmp_list.push(`${Math.floor(cam_res['width'] / x)} X ${Math.floor(cam_res['height'] / x)}`);
                     }
                     return tmp_list;
                 }
             }
         },
-        methods: {}
+        methods: {
+          getRawStreamDivisors() {
+            // Limit stream res when GPU acceleration is enabled because we *know* that we won't be able to get smooth streams above ~640x480
+            // It would probably be cleaner if this checked that we're on the Raspi 3 instead of checking for GPU accel status
+            const width = this.$store.getters.videoFormatList[
+                    this.$store.getters.currentCameraSettings.currentPipelineSettings.cameraVideoModeIndex]['width'];
+            return unfilteredStreamDivisors.filter((x) => !this.$store.state.settings.general.gpuAcceleration || width / x < 400);
+          },
+          getNumSkippedStreamDivisors() {
+            return unfilteredStreamDivisors.length - this.getRawStreamDivisors().length;
+          }
+        }
     }
 </script>
 

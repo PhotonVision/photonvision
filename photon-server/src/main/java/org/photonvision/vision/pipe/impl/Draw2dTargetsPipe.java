@@ -20,7 +20,7 @@ package org.photonvision.vision.pipe.impl;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
@@ -29,31 +29,19 @@ import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dTargetsPipe
-        extends MutatingPipe<
-                Triple<Mat, List<TrackedTarget>, Integer>, Draw2dTargetsPipe.Draw2dTargetsParams> {
+        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
 
     private List<MatOfPoint> m_drawnContours = new ArrayList<>();
 
     @Override
-    protected Void process(Triple<Mat, List<TrackedTarget>, Integer> in) {
-        // Always draw FPS
+    protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         var imageSize = Math.sqrt(in.getLeft().rows() * in.getLeft().cols());
-
-        var fps = in.getRight();
         var textSize = params.kPixelsToText * imageSize;
         var thickness = params.kPixelsToThickness * imageSize;
-        Imgproc.putText(
-                in.getLeft(),
-                fps.toString(),
-                new Point(10, 10 + textSize * 25),
-                0,
-                textSize,
-                ColorHelper.colorToScalar(params.textColor),
-                (int) thickness);
 
         if (!params.shouldDraw) return null;
 
-        if (!in.getMiddle().isEmpty()
+        if (!in.getRight().isEmpty()
                 && (params.showCentroid
                         || params.showMaximumBox
                         || params.showRotatedBox
@@ -64,7 +52,7 @@ public class Draw2dTargetsPipe
             var rotatedBoxColour = ColorHelper.colorToScalar(params.rotatedBoxColor);
             var shapeColour = ColorHelper.colorToScalar(params.shapeOutlineColour);
 
-            for (int i = 0; i < (params.showMultipleTargets ? in.getMiddle().size() : 1); i++) {
+            for (int i = 0; i < (params.showMultipleTargets ? in.getRight().size() : 1); i++) {
                 Point[] vertices = new Point[4];
                 MatOfPoint contour = new MatOfPoint();
 
@@ -72,7 +60,7 @@ public class Draw2dTargetsPipe
                     break;
                 }
 
-                TrackedTarget target = in.getMiddle().get(i);
+                TrackedTarget target = in.getRight().get(i);
                 RotatedRect r = target.getMinAreaRect();
 
                 if (r == null) continue;

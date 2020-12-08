@@ -111,7 +111,9 @@ public class CirclePNPTest {
         var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
-                        TestUtils.WPI2020Image.FOV);
+                        TestUtils.WPI2020Image.FOV,
+                        new Rotation2d(),
+                        TestUtils.get2020LifeCamCoeffs(true));
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
         printTestResults(pipelineResult);

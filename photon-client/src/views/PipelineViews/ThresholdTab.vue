@@ -174,6 +174,7 @@
                     case 0:
                         this.currentFunction = undefined;
                         this.$store.state.colorPicking = false;
+
                         this.handlePipelineUpdate("outputShouldDraw", true);
                         return;
                     case 1:
@@ -187,7 +188,10 @@
                         break;
                 }
                 this.$store.state.colorPicking = true;
+
                 this.handlePipelineUpdate("outputShouldDraw", false);
+                this.$store.commit("mutatePipeline", {"inputShouldShow": true});
+                this.handlePipelineUpdate("inputShouldShow", true);
             }
         }
     }

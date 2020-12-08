@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 
@@ -107,8 +108,11 @@ public class PhotonConfiguration {
 
         var generalSubmap = new HashMap<String, Object>();
         generalSubmap.put("version", PhotonVersion.versionString);
-        generalSubmap.put("gpuAcceleration", false); // TODO gpu accel and accel type
-        generalSubmap.put("gpuAccelerationType", "Unknown");
+        generalSubmap.put(
+                "gpuAcceleration",
+                PicamJNI.isSupported()
+                        ? "Zerocopy MMAL"
+                        : ""); // TODO add support for other types of GPU accel
         generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
         generalSubmap.put("hardwarePlatform", Platform.getCurrentPlatform().toString());
         settingsSubmap.put("general", generalSubmap);

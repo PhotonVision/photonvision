@@ -18,34 +18,38 @@
 package org.photonvision.vision.frame.provider;
 
 import edu.wpi.cscore.CvSink;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class USBFrameProvider implements FrameProvider {
+    private static final long unixEpochToNanoEpoch =
+            System.nanoTime()
+                    - MathUtils.millisToNanos(System.currentTimeMillis()); // Units are nanoseconds
     private final CvSink cvSink;
 
     @SuppressWarnings("SpellCheckingInspection")
     private final VisionSourceSettables settables;
-
-    private final CVMat mat;
 
     @SuppressWarnings("SpellCheckingInspection")
     public USBFrameProvider(CvSink sink, VisionSourceSettables visionSettables) {
         cvSink = sink;
         cvSink.setEnabled(true);
         this.settables = visionSettables;
-        mat = new CVMat();
     }
 
     @Override
     public Frame get() {
-        if (mat.getMat() != null) {
-            mat.release();
-        }
-        long time = cvSink.grabFrame(mat.getMat());
-        return new Frame(mat, time, settables.getFrameStaticProperties());
+        var mat = new CVMat(); // We do this so that we don't fill a Mat in use by another thread
+        long time =
+                cvSink.grabFrame(
+                        mat.getMat()); // Units are microseconds, epoch is the same as the Unix epoch
+        return new Frame(
+                mat,
+                MathUtils.microsToNanos(time) + unixEpochToNanoEpoch,
+                settables.getFrameStaticProperties());
     }
 
     @Override

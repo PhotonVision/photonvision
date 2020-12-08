@@ -45,6 +45,8 @@ public class CVPipelineSettings implements Cloneable {
     public int cameraVideoModeIndex = 0;
     public FrameDivisor streamingFrameDivisor = FrameDivisor.NONE;
     public boolean ledMode = false;
+    public boolean inputShouldShow = false;
+    public boolean outputShouldShow = true;
 
     @Override
     public boolean equals(Object o) {
@@ -61,7 +63,9 @@ public class CVPipelineSettings implements Cloneable {
                 && inputImageFlipMode == that.inputImageFlipMode
                 && inputImageRotationMode == that.inputImageRotationMode
                 && pipelineNickname.equals(that.pipelineNickname)
-                && streamingFrameDivisor == that.streamingFrameDivisor;
+                && streamingFrameDivisor == that.streamingFrameDivisor
+                && inputShouldShow == that.inputShouldShow
+                && outputShouldShow == that.outputShouldShow;
     }
 
     @Override
@@ -77,7 +81,9 @@ public class CVPipelineSettings implements Cloneable {
                 cameraGain,
                 cameraVideoModeIndex,
                 streamingFrameDivisor,
-                ledMode);
+                ledMode,
+                inputShouldShow,
+                outputShouldShow);
     }
 
     @Override

@@ -21,7 +21,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.util.math.MathUtils;
@@ -55,6 +54,7 @@ public class ColoredShapePipeline
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
     private final Draw2dTargetsPipe draw2DTargetsPipe = new Draw2dTargetsPipe();
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
+    private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private final Mat rawInputMat = new Mat();
     private final Point[] rectPoints = new Point[4];
@@ -158,7 +158,9 @@ public class ColoredShapePipeline
 
         var solvePNPParams =
                 new SolvePNPPipe.SolvePNPPipeParams(
-                        settings.cameraCalibration, settings.cameraPitch, settings.targetModel);
+                        frameStaticProperties.cameraCalibration,
+                        frameStaticProperties.cameraPitch,
+                        settings.targetModel);
         solvePNPPipe.setParams(solvePNPParams);
 
         Draw2dTargetsPipe.Draw2dTargetsParams draw2DTargetsParams =
@@ -178,10 +180,12 @@ public class ColoredShapePipeline
                         frameStaticProperties);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
-        var draw3dContoursParams =
+        var draw3dTargetsParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
-                        settings.outputShouldDraw, settings.cameraCalibration, settings.targetModel);
-        draw3dTargetsPipe.setParams(draw3dContoursParams);
+                        settings.outputShouldDraw,
+                        frameStaticProperties.cameraCalibration,
+                        settings.targetModel);
+        draw3dTargetsPipe.setParams(draw3dTargetsParams);
     }
 
     @Override
@@ -269,12 +273,11 @@ public class ColoredShapePipeline
 
         // Draw 2D contours on input and output
         var draw2dContoursResultOnInput =
-                draw2DTargetsPipe.run(Triple.of(rawInputMat, collect2dTargetsResult.output, -12345));
+                draw2DTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
         sumPipeNanosElapsed += draw2dContoursResultOnInput.nanosElapsed;
 
         var draw2dContoursResultOnOutput =
-                draw2DTargetsPipe.run(
-                        Triple.of(hsvPipeResult.output, collect2dTargetsResult.output, -12345));
+                draw2DTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
         sumPipeNanosElapsed += draw2dContoursResultOnOutput.nanosElapsed;
 
         if (settings.solvePNPEnabled && settings.desiredShape == ContourShape.Circle) {
@@ -291,8 +294,12 @@ public class ColoredShapePipeline
         var outputMatPipeResult = outputMatPipe.run(hsvPipeResult.output);
         sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
 
+        var fpsResult = calculateFPSPipe.run(null);
+        var fps = fpsResult.output;
+
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                fps,
                 targetList,
                 new Frame(new CVMat(hsvPipeResult.output), frame.frameStaticProperties),
                 new Frame(new CVMat(rawInputMat), frame.frameStaticProperties));

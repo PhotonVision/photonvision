@@ -20,12 +20,16 @@ repositories {
     jcenter()
     mavenCentral()
     maven {
+        url = "https://maven.photonvision.org/repository/internal/"
+    }
+    maven {
         url = 'https://frcmaven.wpi.edu:443/artifactory/development'
     }
 }
 
 ext {
     wpilibVersion = '2020.3.2-99-g9f4de91'
+    joglVersion = '2.4.0-rc-20200307'
     openCVVersion = '3.4.7-2'
 }
 
@@ -46,7 +50,23 @@ dependencies {
     implementation "org.apache.commons:commons-collections4:4.4"
     implementation "org.apache.commons:commons-exec:1.3"
 
-    // wpilib stuff
+    // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
+    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion"
+    implementation "org.jogamp.jogl:jogl-all:$joglVersion"
+
+//    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-amd64"
+//    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-armv6hf"
+    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-linux-aarch64"
+//    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-macosx-universal"
+//    implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion:natives-windows-amd64"
+
+//    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-amd64"
+//    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-armv6hf"
+    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-aarch64"
+//    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-macosx-universal"
+//    implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-windows-amd64"
+
+    // WPILib stuff
     implementation "edu.wpi.first.wpiutil:wpiutil-java:$wpilibVersion"
     implementation "edu.wpi.first.cameraserver:cameraserver-java:$wpilibVersion"
 
@@ -138,6 +158,18 @@ spotless {
         licenseHeaderFile "$rootDir/LicenseHeader.txt"
 
         targetExclude("src/main/java/org/photonvision/PhotonVersion.java")
+    }
+}
+
+run {
+    if (project.hasProperty("profile")) {
+        jvmArgs=[
+                "-Dcom.sun.management.jmxremote=true",
+                "-Dcom.sun.management.jmxremote.ssl=false",
+                "-Dcom.sun.management.jmxremote.authenticate=false",
+                "-Dcom.sun.management.jmxremote.port=5000",
+                "-Djava.rmi.server.hostname=0.0.0.0",
+        ]
     }
 }
 

@@ -24,7 +24,7 @@ public class PipelineProfilerTest {
 
     @Test
     public void reflectiveProfile() {
-        long[] invalidNanos = new long[10];
+        long[] invalidNanos = new long[20];
         long[] validNanos = new long[PipelineProfiler.ReflectivePipeCount];
 
         for (int i = 0; i < validNanos.length; i++) {
@@ -34,8 +34,9 @@ public class PipelineProfilerTest {
         var invalidResult = PipelineProfiler.getReflectiveProfileString(invalidNanos);
         var validResult = PipelineProfiler.getReflectiveProfileString(validNanos);
 
-        Assertions.assertEquals("Invalid data", invalidResult);
-        Assertions.assertTrue(validResult.contains("Total: 153.0ms"));
         System.out.println(validResult);
+
+        Assertions.assertEquals("Invalid data", invalidResult);
+        Assertions.assertTrue(validResult.contains("Total: 45.0ms"));
     }
 }

@@ -132,6 +132,7 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                 cornerDetectionSideCount,
                 cornerDetectionAccuracyPercentage,
                 erode,
-                dilate);
+                dilate,
+                accuracy);
     }
 }

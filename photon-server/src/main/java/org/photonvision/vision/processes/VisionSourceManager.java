@@ -29,8 +29,10 @@ import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.USBCameraSource;
+import org.photonvision.vision.camera.ZeroCopyPicamSource;
 
 public class VisionSourceManager {
 
@@ -152,17 +154,17 @@ public class VisionSourceManager {
         // Turn these camera configs into vision sources
         var sources = loadVisionSourcesFromCamConfigs(matchedCameras);
 
-        // These sources can be turned into USB cameras, which can be added to the config manager
+        // We want to return a map between vision sources and camera configurations
         var visionSourceMap = new HashMap<VisionSource, CameraConfiguration>();
         for (var src : sources) {
-            var usbSrc = (USBCameraSource) src;
-            visionSourceMap.put(usbSrc, usbSrc.configuration);
+            var usbSrc = src;
+            visionSourceMap.put(usbSrc, usbSrc.getSettables().getConfiguration());
             logger.debug(
                     () ->
                             "Matched config for camera \""
                                     + src.getFrameProvider().getName()
                                     + "\" and loaded "
-                                    + usbSrc.configuration.pipelineSettings.size()
+                                    + usbSrc.getSettables().getConfiguration().pipelineSettings.size()
                                     + " pipelines");
         }
         return visionSourceMap;
@@ -255,12 +257,6 @@ public class VisionSourceManager {
         return cfg;
     }
 
-    private List<VisionSource> loadVisionSourcesFromCamConfigs(List<CameraConfiguration> camConfigs) {
-        List<VisionSource> usbCameraSources = new ArrayList<>();
-        camConfigs.forEach(configuration -> usbCameraSources.add(new USBCameraSource(configuration)));
-        return usbCameraSources;
-    }
-
     private List<UsbCameraInfo> filterAllowedDevices(List<UsbCameraInfo> allDevices) {
         List<UsbCameraInfo> filteredDevices = new ArrayList<>();
         for (var device : allDevices) {
@@ -292,6 +288,21 @@ public class VisionSourceManager {
     // Replace spaces with underscores
     private static String baseNameToUniqueName(String baseName) {
         return baseName.replaceAll(" ", "_");
+    }
+
+    private static List<VisionSource> loadVisionSourcesFromCamConfigs(
+            List<CameraConfiguration> camConfigs) {
+        List<VisionSource> cameraSources = new ArrayList<>();
+        for (var configuration : camConfigs) {
+            if (configuration.baseName.startsWith("mmal service") && PicamJNI.isSupported()) {
+                configuration.cameraType = CameraType.ZeroCopyPicam;
+                VisionSource picamSrc = new ZeroCopyPicamSource(configuration);
+                cameraSources.add(picamSrc);
+                continue;
+            }
+            cameraSources.add(new USBCameraSource(configuration));
+        }
+        return cameraSources;
     }
 
     /**
