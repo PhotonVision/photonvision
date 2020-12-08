@@ -185,13 +185,11 @@ public class VisionModule {
                 result -> {
                     if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
                         dashboardInputStreamer.accept(result.inputFrame);
-                    else result.inputFrame.release();
                 });
         fpsLimitedResultConsumers.add(
                 result -> {
                     if (this.pipelineManager.getCurrentPipelineSettings().outputShouldShow)
                         dashboardOutputStreamer.accept(result.outputFrame);
-                    else result.outputFrame.release();
                 });
     }
 
@@ -216,6 +214,7 @@ public class VisionModule {
                 List<TrackedTarget> targets) {
             synchronized (frameLock) {
                 if (shouldRun && this.inputFrame != null && this.outputFrame != null) {
+                    logger.trace("Fell behind; releasing last unused Mats");
                     this.inputFrame.release();
                     this.outputFrame.release();
                 }
@@ -254,9 +253,9 @@ public class VisionModule {
                 }
                 if (shouldRun) {
                     var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
-
                     consumeFpsLimitedResult(osr);
-                    osr.release();
+                    inputFrame.release();
+                    outputFrame.release();
                 } else {
                     // busy wait! hurray!
                     try {
@@ -504,6 +503,8 @@ public class VisionModule {
                     result.targets);
             // The streamRunnable manages releasing in this case
         } else {
+            logger.info("In driver mode and releasing");
+
             consumeFpsLimitedResult(result);
 
             result.release();

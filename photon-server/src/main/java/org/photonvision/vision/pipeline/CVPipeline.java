@@ -49,6 +49,8 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         }
         R result = process(frame, settings);
 
+        // Important! This assumes that the frame timestamp has the same epoch as System.nanoTime (which
+        // itself has an arbitrary epoch)
         result.setLatencyMillis(MathUtils.nanosToMillis(System.nanoTime() - frame.timestampNanos));
 
         return result;

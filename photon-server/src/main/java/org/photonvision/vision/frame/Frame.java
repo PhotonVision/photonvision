@@ -18,7 +18,6 @@
 package org.photonvision.vision.frame;
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import org.opencv.core.Mat;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 
@@ -39,7 +38,7 @@ public class Frame implements Releasable {
 
     public Frame() {
         timestampNanos = 0;
-        image = new CVMat(new Mat());
+        image = new CVMat();
         frameStaticProperties = new FrameStaticProperties(0, 0, 0, new Rotation2d(), null);
     }
 
@@ -48,10 +47,10 @@ public class Frame implements Releasable {
     }
 
     public static Frame copyFromAndRelease(Frame frame) {
-        Mat newMat = new Mat();
-        frame.image.getMat().copyTo(newMat);
+        var mat = new CVMat();
+        frame.image.copyTo(mat);
         frame.release();
-        return new Frame(new CVMat(newMat), frame.timestampNanos, frame.frameStaticProperties);
+        return new Frame(mat, frame.timestampNanos, frame.frameStaticProperties);
     }
 
     @Override

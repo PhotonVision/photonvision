@@ -25,15 +25,13 @@ import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
-
-    private final Mat m_outputMat = new Mat();
-
     @Override
     protected Mat process(Mat in) {
-        in.copyTo(m_outputMat);
-        Imgproc.cvtColor(m_outputMat, m_outputMat, Imgproc.COLOR_BGR2HSV, 3);
-        Core.inRange(m_outputMat, params.getHsvLower(), params.getHsvUpper(), m_outputMat);
-        return m_outputMat;
+        var outputMat = new Mat();
+        in.copyTo(outputMat);
+        Imgproc.cvtColor(outputMat, outputMat, Imgproc.COLOR_BGR2HSV, 3);
+        Core.inRange(outputMat, params.getHsvLower(), params.getHsvUpper(), outputMat);
+        return outputMat;
     }
 
     public static class HSVParams {

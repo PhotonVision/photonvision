@@ -41,7 +41,8 @@ public class FileFrameProvider implements FrameProvider {
     private final Path path;
     private final int millisDelay;
     private final Frame originalFrame;
-    private final Frame outputFrame;
+
+    private final FrameStaticProperties properties;
 
     private long lastGetMillis = System.currentTimeMillis();
 
@@ -74,12 +75,9 @@ public class FileFrameProvider implements FrameProvider {
 
         Mat rawImage = Imgcodecs.imread(path.toString());
         if (rawImage.cols() > 0 && rawImage.rows() > 0) {
-            FrameStaticProperties m_properties =
+            properties =
                     new FrameStaticProperties(rawImage.width(), rawImage.height(), fov, pitch, calibration);
-            Mat originalImage = new Mat();
-            rawImage.copyTo(originalImage);
-            originalFrame = new Frame(new CVMat(rawImage), m_properties);
-            outputFrame = new Frame(new CVMat(originalImage), m_properties);
+            originalFrame = new Frame(new CVMat(rawImage), properties);
         } else {
             throw new RuntimeException("Image loading failed!");
         }
@@ -107,6 +105,7 @@ public class FileFrameProvider implements FrameProvider {
 
     @Override
     public Frame get() {
+        Frame outputFrame = new Frame(new CVMat(), properties);
         originalFrame.copyTo(outputFrame);
 
         // block to keep FPS at a defined rate

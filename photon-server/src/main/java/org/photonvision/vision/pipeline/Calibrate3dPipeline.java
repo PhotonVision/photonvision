@@ -103,7 +103,7 @@ public class Calibrate3dPipeline
 
         if (this.calibrating) {
             return new CVPipelineResult(
-                    0, null, new Frame(new CVMat(frame.image.getMat()), frame.frameStaticProperties));
+                    0, 0, null, new Frame(new CVMat(frame.image.getMat()), frame.frameStaticProperties));
         }
 
         long sumPipeNanosElapsed = 0L;

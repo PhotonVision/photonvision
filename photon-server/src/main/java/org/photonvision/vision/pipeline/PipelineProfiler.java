@@ -38,7 +38,6 @@ public class PipelineProfiler {
     private static final String[] ReflectivePipeNames =
             new String[] {
                 "RotateImage",
-                "InputCopy",
                 "HSV",
                 "FindContours",
                 "SpeckleReject",
@@ -48,13 +47,6 @@ public class PipelineProfiler {
                 "Collect2dTargets",
                 "CornerDetection",
                 "SolvePNP",
-                "OutputConversion",
-                "Draw2dCrosshairInput",
-                "Draw2dCrosshairOutput",
-                "Draw2dTargetsInput",
-                "Draw2dTargetsOutput",
-                "Draw3dTargetsInput",
-                "Draw3dTargetsOutput",
             };
 
     public static final int ReflectivePipeCount = ReflectivePipeNames.length;

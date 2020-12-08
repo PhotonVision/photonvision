@@ -44,7 +44,11 @@ public class MathUtils {
     }
 
     public static long millisToNanos(long millis) {
-        return millis * 1000;
+        return millis * 1000000;
+    }
+
+    public static long microsToNanos(long micros) {
+        return micros * 1000;
     }
 
     public static double map(

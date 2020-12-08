@@ -156,7 +156,6 @@ public class VisionSourceManager {
 
         // We want to return a map between vision sources and camera configurations
         var visionSourceMap = new HashMap<VisionSource, CameraConfiguration>();
-        logger.info(sources.toString());
         for (var src : sources) {
             var usbSrc = src;
             visionSourceMap.put(usbSrc, usbSrc.getSettables().getConfiguration());
