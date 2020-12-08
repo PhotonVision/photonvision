@@ -52,6 +52,10 @@ public class FindBoardCornersPipe
         if (this.lastParams != null && this.lastParams.equals(this.params)) return;
         this.lastParams = this.params;
 
+        this.objectPoints.release();
+        this.objectPoints = null;
+        this.objectPoints = new MatOfPoint3f();
+
         /*If using a chessboard, then the pattern size if the inner corners of the board. For example, the pattern size of a 9x9 chessboard would be 8x8
         If using a dot board, then the pattern size width is the sum of the bottom 2 rows and the height is the left or right most column
         For example, a 5x4 dot board would have a pattern size of 11x4
@@ -138,6 +142,9 @@ public class FindBoardCornersPipe
         var outBoardCorners = new MatOfPoint2f();
         boardCorners.copyTo(outBoardCorners);
 
+        var objPts = new MatOfPoint2f();
+        objectPoints.copyTo(objPts);
+
         // Get the size of the inFrame
         this.imageSize = new Size(inFrame.width(), inFrame.height());
 
@@ -156,7 +163,7 @@ public class FindBoardCornersPipe
         //            this.listOfImagePoints.add(boardCorners);
         //        }
 
-        return Triple.of(inFrame.size(), objectPoints, outBoardCorners);
+        return Triple.of(inFrame.size(), objPts, outBoardCorners);
     }
 
     public static class FindCornersPipeParams {
