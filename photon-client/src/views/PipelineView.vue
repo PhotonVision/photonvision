@@ -406,7 +406,7 @@ export default {
         fpsTooLow: {
             get() {
                 // For now we only show the FPS is too low warning when GPU acceleration is enabled, because we don't really trust the presented video modes otherwise
-                return this.$store.state.pipelineResults.fps - this.$store.getters.currentVideoFormat.fps < -5 && this.$store.state.pipelineResults.fps !== 0 && this.$store.state.settings.general.gpuAcceleration;
+                return this.$store.state.pipelineResults.fps - this.$store.getters.currentVideoFormat.fps < -5 && this.$store.state.pipelineResults.fps !== 0 && !this.$store.getters.isDriverMode && this.$store.state.settings.general.gpuAcceleration;
             }
         },
         latency: {
