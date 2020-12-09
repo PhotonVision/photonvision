@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
-import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("ReflectivePipelineSettings")
 public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
@@ -30,10 +29,6 @@ public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
 
     // the direction in which contours must intersect to be considered intersecting
     public ContourIntersectionDirection contourIntersection = ContourIntersectionDirection.Up;
-
-    // 3d settings
-    public boolean solvePNPEnabled = false;
-    public TargetModel targetModel = TargetModel.k2020HighGoalOuter;
 
     // Corner detection settings
     public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =

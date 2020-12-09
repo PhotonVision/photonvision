@@ -98,7 +98,6 @@ public class CirclePNPTest {
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
         pipeline.getSettings().cameraCalibration = getCoeffs(LIFECAM_480P_CAL_FILE);
         pipeline.getSettings().targetModel = TargetModel.kCircularPowerCell7in;
-        pipeline.getSettings().cameraPitch = Rotation2d.fromDegrees(0.0);
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().outputShowMultipleTargets = false;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;

@@ -18,14 +18,12 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.Objects;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
-import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("ColoredShapePipelineSettings")
 public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
@@ -49,10 +47,7 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     public ContourIntersectionDirection contourIntersection = ContourIntersectionDirection.Up;
 
     // 3d settings
-    public boolean solvePNPEnabled = false;
     public CameraCalibrationCoefficients cameraCalibration;
-    public TargetModel targetModel;
-    public Rotation2d cameraPitch = Rotation2d.fromDegrees(0.0); // TODO where should pitch live?
 
     // Corner detection settings
     public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
@@ -98,7 +93,6 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                 && contourIntersection == that.contourIntersection
                 && Objects.equals(cameraCalibration, that.cameraCalibration)
                 && Objects.equals(targetModel, that.targetModel)
-                && Objects.equals(cameraPitch, that.cameraPitch)
                 && cornerDetectionStrategy == that.cornerDetectionStrategy
                 && erode == that.erode
                 && dilate == that.dilate;
@@ -125,7 +119,6 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                 solvePNPEnabled,
                 cameraCalibration,
                 targetModel,
-                cameraPitch,
                 cornerDetectionStrategy,
                 cornerDetectionUseConvexHulls,
                 cornerDetectionExactSideCount,

@@ -26,6 +26,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.MutatingPipe;
@@ -34,6 +36,8 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw3dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw3dTargetsPipe.Draw3dContoursParams> {
+
+    Logger logger = new Logger(Draw3dTargetsPipe.class, LogGroup.VisionModule);
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
@@ -44,6 +48,12 @@ public class Draw3dTargetsPipe
             // draw convex hull
             var pointMat = new MatOfPoint();
             target.m_mainContour.getConvexHull().convertTo(pointMat, CvType.CV_32S);
+            if (pointMat.size().empty()) {
+                logger.error("Convex hull is empty?");
+                logger.debug(
+                        "Orig. Convex Hull: " + target.m_mainContour.getConvexHull().size().toString());
+                continue;
+            }
             Imgproc.drawContours(
                     in.getLeft(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.green), 1);
 

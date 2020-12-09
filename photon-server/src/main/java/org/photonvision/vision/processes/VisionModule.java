@@ -252,10 +252,15 @@ public class VisionModule {
                     this.shouldRun = false;
                 }
                 if (shouldRun) {
-                    var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
-                    consumeFpsLimitedResult(osr);
-                    inputFrame.release();
-                    outputFrame.release();
+                    try {
+                        var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
+                        consumeFpsLimitedResult(osr);
+                        inputFrame.release();
+                        outputFrame.release();
+                    } catch (Exception e) {
+                        // Never die
+                        logger.error("Exception in stream runnable!", e);
+                    }
                 } else {
                     // busy wait! hurray!
                     try {
