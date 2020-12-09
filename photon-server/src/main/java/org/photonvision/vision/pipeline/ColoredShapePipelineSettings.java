@@ -18,14 +18,12 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.Objects;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
-import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("ColoredShapePipelineSettings")
 public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
