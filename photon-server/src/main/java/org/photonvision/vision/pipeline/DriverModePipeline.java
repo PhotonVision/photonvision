@@ -53,6 +53,7 @@ public class DriverModePipeline
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         if (PicamJNI.isSupported()) {
+            PicamJNI.setRotation(settings.inputImageRotationMode.value);
             PicamJNI.setShouldCopyColor(true);
         }
     }

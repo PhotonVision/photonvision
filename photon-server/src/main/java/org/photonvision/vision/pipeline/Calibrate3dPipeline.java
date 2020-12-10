@@ -83,6 +83,7 @@ public class Calibrate3dPipeline
         this.minSnapshots = minSnapshots;
 
         if (PicamJNI.isSupported()) {
+            PicamJNI.setRotation(settings.inputImageRotationMode.value);
             PicamJNI.setShouldCopyColor(true);
         }
     }
