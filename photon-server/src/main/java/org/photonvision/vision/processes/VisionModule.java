@@ -436,8 +436,7 @@ public class VisionModule {
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
         ret.fov = visionSource.getSettables().getFOV();
-        //        ret.tiltDegrees = this.visionSource.getSettables() // TODO implement tilt in camera
-        // settings
+        ret.tiltDegrees = this.visionSource.getSettables().getCameraPitch().getDegrees();
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
         ret.currentPipelineSettings =
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
