@@ -66,6 +66,10 @@ public abstract class VisionSourceSettables {
         calculateFrameStaticProps();
     }
 
+    public Rotation2d getCameraPitch() {
+        return configuration.camPitch;
+    }
+
     @SuppressWarnings("unused")
     public void setVideoModeIndex(int index) {
         setVideoMode(videoModes.get(index));
