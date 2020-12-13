@@ -19,7 +19,6 @@ package org.photonvision.vision.frame.consumer;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
