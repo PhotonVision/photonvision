@@ -18,7 +18,7 @@
 package org.photonvision.vision.frame.consumer;
 
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
@@ -47,6 +48,7 @@ public class FileSaveFrameConsumer {
     private String camNickname;
     private String fnamePrefix;
     private final long CMD_RESET_TIME_MS = 500;
+    private final NetworkTableEntry entry;
     // Helps prevent race conditions between user set & auto-reset logic
     private ReentrantLock lock;
 
@@ -54,8 +56,10 @@ public class FileSaveFrameConsumer {
         this.lock = new ReentrantLock();
         this.fnamePrefix = camNickname + "_" + streamPrefix;
         this.ntEntryName = streamPrefix + NT_SUFFIX;
-        this.rootTable = NetworkTableInstance.getDefault().getTable("/photonvision");
+        this.rootTable = NetworkTablesManager.getInstance().kRootTable;
         updateCameraNickname(camNickname);
+        entry = subTable.getEntry(ntEntryName);
+        entry.setBoolean(false);
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
     }
 
@@ -63,7 +67,7 @@ public class FileSaveFrameConsumer {
         if (frame != null && !frame.image.getMat().empty()) {
 
             if (lock.tryLock()) {
-                boolean curCommand = subTable.getEntry(ntEntryName).getBoolean(false);
+                boolean curCommand = entry.getBoolean(false);
 
                 if (curCommand == true && prevCommand == false) {
                     Date now = new Date();
