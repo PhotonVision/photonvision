@@ -26,6 +26,7 @@ import java.nio.file.Path;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.file.FileUtils;
 
 public class PicamJNI {
 
@@ -45,7 +46,10 @@ public class PicamJNI {
             URL resourceURL = PicamJNI.class.getResource("/nativelibraries/libpicam.so");
             File libFile = Path.of("lib/libpicam.so").toFile();
             try (InputStream in = resourceURL.openStream()) {
+                if(libFile.exists()) Files.delete(libFile.toPath());
                 Files.copy(in, libFile.toPath());
+            } catch (Exception e) {
+                logger.error("Could not extract the native library!");
             }
             System.load(libFile.getAbsolutePath());
 
