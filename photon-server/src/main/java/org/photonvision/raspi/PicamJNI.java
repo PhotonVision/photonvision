@@ -36,15 +36,16 @@ public class PicamJNI {
         if (libraryLoaded || !Platform.isRaspberryPi()) return;
 
         try {
+            File libDirectory = Path.of("lib/").toFile();
+            if (!libDirectory.exists()) {
+                Files.createDirectory(libDirectory.toPath()).toFile();
+            }
+
+            // We always extract the shared object (we could hash each so, but that's a lot of work)
             URL resourceURL = PicamJNI.class.getResource("/nativelibraries/libpicam.so");
             File libFile = Path.of("lib/libpicam.so").toFile();
-            if (!Files.exists(libFile.toPath())) {
-                // Assumes that the directory doesn't exist if libpicam doesn't exist
-                Files.createDirectory(Path.of("lib/")).toFile();
-
-                try (InputStream in = resourceURL.openStream()) {
-                    Files.copy(in, libFile.toPath());
-                }
+            try (InputStream in = resourceURL.openStream()) {
+                Files.copy(in, libFile.toPath());
             }
             System.load(libFile.getAbsolutePath());
 
