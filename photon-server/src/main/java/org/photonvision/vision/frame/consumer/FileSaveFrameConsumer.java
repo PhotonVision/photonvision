@@ -69,7 +69,7 @@ public class FileSaveFrameConsumer {
             if (lock.tryLock()) {
                 boolean curCommand = entry.getBoolean(false);
 
-                if (curCommand == true && prevCommand == false) {
+                if (curCommand && !prevCommand) {
                     Date now = new Date();
                     String savefile =
                             FILE_PATH
@@ -84,7 +84,7 @@ public class FileSaveFrameConsumer {
                     Imgcodecs.imwrite(savefile.toString(), frame.image.getMat());
 
                     // Help the user a bit - set the NT entry back to false after 500ms
-                    TimedTaskManager.getInstance().addOneShotTask(() -> resetCommand(), CMD_RESET_TIME_MS);
+                    TimedTaskManager.getInstance().addOneShotTask(this::resetCommand, CMD_RESET_TIME_MS);
 
                     logger.info("Saved new image at " + savefile);
                 }
