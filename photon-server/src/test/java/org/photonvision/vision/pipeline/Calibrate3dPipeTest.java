@@ -140,13 +140,15 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.getSettings().resolution = new Size(320, 240);
 
         for (var file : directoryListing) {
-            calibration3dPipeline.takeSnapshot();
-            var output =
-                    calibration3dPipeline.run(
-                            new Frame(
-                                    new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                    new FrameStaticProperties(320, 240, 67, new Rotation2d(), null)));
-                        TestUtils.showImage(output.outputFrame.image.getMat());
+            if(file.isFile()){
+                calibration3dPipeline.takeSnapshot();
+                var output =
+                        calibration3dPipeline.run(
+                                new Frame(
+                                        new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                                        new FrameStaticProperties(320, 240, 67, new Rotation2d(), null)));
+                                TestUtils.showImage(output.outputFrame.image.getMat(), file.getName());
+            }
         }
 
         assertTrue(
