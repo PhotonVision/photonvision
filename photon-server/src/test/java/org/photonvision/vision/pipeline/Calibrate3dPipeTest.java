@@ -128,4 +128,43 @@ public class Calibrate3dPipeTest {
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
     }
+
+    @Test
+    public void calibrateSquaresTest() {
+
+        File dir = new File(TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString());
+        File[] directoryListing = dir.listFiles();
+
+        Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
+        calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
+        calibration3dPipeline.getSettings().resolution = new Size(320, 240);
+
+        for (var file : directoryListing) {
+            calibration3dPipeline.takeSnapshot();
+            var output =
+                    calibration3dPipeline.run(
+                            new Frame(
+                                    new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                                    new FrameStaticProperties(320, 240, 67, new Rotation2d(), null)));
+                        TestUtils.showImage(output.outputFrame.image.getMat());
+        }
+
+        assertTrue(
+                calibration3dPipeline.foundCornersList.stream()
+                        .map(Triple::getRight)
+                        .allMatch(it -> it.width() > 0 && it.height() > 0));
+
+        var cal = calibration3dPipeline.tryCalibration();
+        calibration3dPipeline.finishCalibration();
+
+        assertNotNull(cal);
+        assertNotNull(cal.perViewErrors);
+        System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
+        System.out.println("Camera Intrinsics : " + cal.cameraIntrinsics.toString());
+        System.out.println("Camera Extrinsics : " + cal.cameraExtrinsics.toString());
+        System.out.println("Standard Deviation: " + cal.standardDeviation);
+        System.out.println(
+                "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
+    }
+
 }
