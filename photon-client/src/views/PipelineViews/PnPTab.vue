@@ -60,7 +60,7 @@
         },
         data() {
             return {
-                targetList: ['2020 High Goal Outer', '2020 High Goal Inner', '2019 Dual Target', 'Power Cell (7in)'],
+                targetList: ['2020 High Goal Outer', '2020 High Goal Inner', '2019 Dual Target', 'Power Cell (7in)', '2016 High Goal', 'Gerth U Target'], //Keep in sync with TargetModel.java
                 snackbar: {
                     color: "Success",
                     text: ""
