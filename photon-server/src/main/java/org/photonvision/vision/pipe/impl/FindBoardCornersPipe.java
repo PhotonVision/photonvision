@@ -72,11 +72,9 @@ public class FindBoardCornersPipe
         if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
             // Here we can create an NxN grid since a chessboard is rectangular
             for (int i = 0; i < patternSize.height * patternSize.width; i++) {
-                double boardYCoord =  Math.floor(i / patternSize.width) * params.gridSize;
+                double boardYCoord = Math.floor(i / patternSize.width) * params.gridSize;
                 double boardXCoord = i % patternSize.width * params.gridSize;
-                objectPoints.push_back(
-                        new MatOfPoint3f(
-                                new Point3(boardXCoord, boardYCoord, 0.0)));
+                objectPoints.push_back(new MatOfPoint3f(new Point3(boardXCoord, boardYCoord, 0.0)));
             }
         } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
             // Here we need to alternate the amount of dots per column since a dot board is not

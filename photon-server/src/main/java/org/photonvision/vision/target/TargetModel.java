@@ -74,21 +74,14 @@ public enum TargetModel implements Releasable {
                             -Units.inchesToMeters(7) / 2,
                             -Units.inchesToMeters(7) / 2)),
             0),
-            k2016HighGoal(
-                List.of(
-                        new Point3(Units.inchesToMeters(-10),  Units.inchesToMeters(12), 0),
-                        new Point3(Units.inchesToMeters(-10),  Units.inchesToMeters(0),  0),
-                        new Point3(Units.inchesToMeters( 10),  Units.inchesToMeters(0),  0),
-                        new Point3(Units.inchesToMeters( 10),  Units.inchesToMeters(12), 0)),
-                Units.inchesToMeters(6)),
-            kgerthsTestTarget(
-                List.of(
-                        new Point3(Units.inchesToMeters(-5),  Units.inchesToMeters(8), 0),
-                        new Point3(Units.inchesToMeters(-5),  Units.inchesToMeters(0), 0),
-                        new Point3(Units.inchesToMeters( 5),  Units.inchesToMeters(0), 0),
-                        new Point3(Units.inchesToMeters( 5),  Units.inchesToMeters(8), 0)),
-                Units.inchesToMeters(6)),
-            ;
+    k2016HighGoal(
+            List.of(
+                    new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(12), 0),
+                    new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(0), 0),
+                    new Point3(Units.inchesToMeters(10), Units.inchesToMeters(0), 0),
+                    new Point3(Units.inchesToMeters(10), Units.inchesToMeters(12), 0)),
+            Units.inchesToMeters(6)),
+    ;
 
     @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
     @JsonIgnore private MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
