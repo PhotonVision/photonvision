@@ -432,4 +432,27 @@ public class ConfigManager {
             saveToDisk();
         }
     }
+
+    public List<String> getSnapshots(String cameraUniqueName) {
+        var snapshotDir = Path.of(camerasFolder.toString(), cameraUniqueName, "snapshots").toFile();
+        if(!snapshotDir.exists()) snapshotDir.mkdirs();
+        try {
+            return Files.list(snapshotDir.toPath())
+                .filter(it -> it.toFile().isFile())
+                .map(it -> camerasFolder.toPath().relativize(it).toString())
+                .collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+    public File getSnapshotFile(String relativePath) {
+        return Path.of(camerasFolder.toString(), relativePath).toFile();
+    }
+
+    public static void main(String[] args) {
+        System.out.println(ConfigManager.getInstance().getSnapshots("HP_Wide_Vision_HD_Camera"));
+        System.exit(0);
+    }
 }

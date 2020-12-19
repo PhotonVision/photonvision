@@ -40,6 +40,9 @@ import org.photonvision.common.util.ShellExec;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.target.TargetModel;
 
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.FileImageOutputStream;
+
 public class RequestHandler {
     private static final Logger logger = new Logger(RequestHandler.class, LogGroup.WebServer);
 
@@ -232,5 +235,29 @@ public class RequestHandler {
     public static class UITargetData {
         public int index;
         public TargetModel targetModel;
+    }
+
+    public static void getSnapshotList(Context ctx) {
+        var path = ctx.queryParam("cam");
+        if(path == null) return;
+        logger.debug("getting snapshots for cam " + path);
+        var paths = ConfigManager.getInstance().getSnapshots(path);
+        ctx.json(paths);
+        ctx.status(200);
+    }
+
+    public static void getSnapshot(Context ctx) {
+        var path = ctx.queryParam("path");
+        if(path == null) return;
+        logger.debug("getting path at " + path);
+        try {
+            var snapshot = new FileInputStream(ConfigManager.getInstance().getSnapshotFile(path));
+            ctx.result(snapshot);
+            ctx.contentType("image/jpeg");
+            ctx.status(200);
+        } catch (Exception e) {
+            logger.error("Exception finding uploaded snapshot at " + path, e);
+            ctx.status(501);
+        }
     }
 }

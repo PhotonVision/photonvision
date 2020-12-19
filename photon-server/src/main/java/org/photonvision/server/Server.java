@@ -81,6 +81,9 @@ public class Server {
         app.post("api/sendMetrics", RequestHandler::sendMetrics);
         app.post("api/setCameraNickname", RequestHandler::setCameraNickname);
 
+        app.get("api/getSnapshot", RequestHandler::getSnapshot);
+        app.get("api/allSnapshots", RequestHandler::getSnapshotList);
+
         app.start(port);
     }
 }
