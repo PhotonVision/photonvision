@@ -133,36 +133,24 @@ public class Calibrate3dPipeTest {
 
     @Test
     public void calibrateSquares320x240() {
-        File dir =
-                Path.of(
-                                TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString(),
-                                "piCam",
-                                "320_240_1")
-                        .toFile();
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "piCam", "320_240_1").toFile();
         Size sz = new Size(320, 240);
         calibrateSquaresCommon(sz, dir);
     }
 
     @Test
     public void calibrateSquares640x480() {
-        File dir =
-                Path.of(
-                                TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString(),
-                                "piCam",
-                                "640_480_1")
-                        .toFile();
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "piCam", "640_480_1").toFile();
         Size sz = new Size(640, 480);
         calibrateSquaresCommon(sz, dir);
     }
 
     @Test
     public void calibrateSquares960x720() {
-        File dir =
-                Path.of(
-                                TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString(),
-                                "piCam",
-                                "960_720_1")
-                        .toFile();
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "piCam", "960_720_1").toFile();
         Size sz = new Size(960, 720);
         calibrateSquaresCommon(sz, dir);
     }

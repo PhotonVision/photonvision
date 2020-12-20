@@ -240,6 +240,7 @@ public class FindBoardCornersPipe
             }
 
             smallerInFrame.release();
+            smallerBoardCorners.release();
 
         } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
             // For dot boards
