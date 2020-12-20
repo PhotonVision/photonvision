@@ -124,7 +124,8 @@ public class Calibrate3dPipeline
         // Check if the frame has chessboard corners
         var outputColorCVMat = new CVMat();
         inputColorMat.copyTo(outputColorCVMat.getMat());
-        var findBoardResult = findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
+        var findBoardResult =
+                findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;

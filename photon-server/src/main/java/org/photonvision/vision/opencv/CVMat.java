@@ -44,7 +44,7 @@ public class CVMat implements Releasable {
         srcMat.copyTo(mat);
     }
 
-    public void logStackTrace(){
+    public void logStackTrace() {
         var trace = Thread.currentThread().getStackTrace();
 
         final var traceStr = new StringBuilder();
