@@ -100,6 +100,7 @@ public class Calibrate3dPipeTest {
                                     new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
                                     new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)));
             // TestUtils.showImage(output.outputFrame.image.getMat());
+            output.release();
         }
 
         assertTrue(
@@ -111,7 +112,7 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.run(
                 new Frame(
                         new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
-                        new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)));
+                        new FrameStaticProperties(640, 480, 60, new Rotation2d(), null))).release();
 
         assertTrue(
                 calibration3dPipeline.foundCornersList.stream()
@@ -129,6 +130,9 @@ public class Calibrate3dPipeTest {
         System.out.println("Standard Deviation: " + cal.standardDeviation);
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
+
+        //Confirm we didn't get leaky on our mat usage
+        assertTrue(CVMat.getMatCount() == 0);
     }
 
     @Test
@@ -155,6 +159,15 @@ public class Calibrate3dPipeTest {
         calibrateSquaresCommon(sz, dir);
     }
 
+    @Test
+    public void calibrateSquares1920x1080() {
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "piCam", "1920_1080_1").toFile();
+        Size sz = new Size(1920, 1080);
+        calibrateSquaresCommon(sz, dir);
+    }
+
+    
     public void calibrateSquaresCommon(Size imgRes, File rootFolder) {
 
         File[] directoryListing = rootFolder.listFiles();
@@ -176,6 +189,7 @@ public class Calibrate3dPipeTest {
                                                 (int) imgRes.width, (int) imgRes.height, 67, new Rotation2d(), null)));
 
                 // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
+                output.outputFrame.release();
             }
         }
 
@@ -195,6 +209,8 @@ public class Calibrate3dPipeTest {
                         raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.cameraExtrinsics.getAsMat());
 
                 TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1);
+                raw.release();
+                undistorted.release();
             }
         }
 
@@ -218,5 +234,8 @@ public class Calibrate3dPipeTest {
         System.out.println("Standard Deviation: " + cal.standardDeviation);
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
+
+        //Confirm we didn't get leaky on our mat usage
+        assertTrue(CVMat.getMatCount() == 0);
     }
 }
