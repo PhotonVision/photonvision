@@ -173,11 +173,10 @@ public class FindBoardCornersPipe
     *
     * @param inPoints set of points derived from a call to findChessboardCorner on a shrunken mat
     * @param origFrame Original frame we're rescaling points back to
-    * @return rescaled points
+    * @param outPoints mat into which the output rescaled points get placed
     */
-    private MatOfPoint2f rescalePointsToOrigFrame(MatOfPoint2f inPoints, Mat origFrame) {
-        MatOfPoint2f retMat = new MatOfPoint2f();
-
+    private void rescalePointsToOrigFrame(
+            MatOfPoint2f inPoints, Mat origFrame, MatOfPoint2f outPoints) {
         // Rescale boardCorners back up to the inproc image size
         double sf = getFindCornersScaleFactor(origFrame);
         Point[] inPointsArr = inPoints.toArray();
@@ -187,9 +186,7 @@ public class FindBoardCornersPipe
             double yCoord = inPointsArr[idx].y / sf;
             retPointsArr[idx] = new Point(xCoord, yCoord);
         }
-        retMat.fromArray(retPointsArr);
-
-        return retMat;
+        outPoints.fromArray(retPointsArr);
     }
 
     /**
@@ -239,8 +236,10 @@ public class FindBoardCornersPipe
 
             // Rescale back to original pixel locations
             if (boardFound) {
-                boardCorners = rescalePointsToOrigFrame(smallerBoardCorners, inFrame);
+                rescalePointsToOrigFrame(smallerBoardCorners, inFrame, boardCorners);
             }
+
+            smallerInFrame.release();
 
         } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
             // For dot boards
