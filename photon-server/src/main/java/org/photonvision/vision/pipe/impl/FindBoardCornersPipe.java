@@ -144,19 +144,22 @@ public class FindBoardCornersPipe
     * index is next to each other Which, currently, means it traverses one dimension. This is a rough
     * heuristic approach which could be refined in the future.
     *
-    * @param inPoints point set to analyze
+    * @param inPoints point set to analyze. Must be a "tall" matrix.
     * @return min spacing between neighbors
     */
     private double getMinSpacing(MatOfPoint2f inPoints) {
         double minSpacing = Double.MAX_VALUE;
-        Point[] inPointsArr = inPoints.toArray();
-        for (int idx = 0; idx < inPointsArr.length - 1; idx++) {
-            // Heurestic to find the tightest spacing present in the grid
-            // Only looks in 1 dimension for now
-            double deltaX = inPointsArr[idx + 1].x - inPointsArr[idx].x;
-            double deltaY = inPointsArr[idx + 1].y - inPointsArr[idx].y;
+        for (int pointIdx = 0; pointIdx < inPoints.height() - 1; pointIdx+=2) { //only works for even #'s of points? This feels like an interview whiteboard question.
+
+            //+1 idx Neighbor distance
+            double [] startPoint = inPoints.get(pointIdx, 0);
+            double [] endPoint = inPoints.get(pointIdx+1, 0);
+            double deltaX = startPoint[0] - endPoint[0];
+            double deltaY = startPoint[1] - endPoint[1];
             double distToNext = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+
             minSpacing = Math.min(distToNext, minSpacing);
+
         }
         return minSpacing;
     }
@@ -175,22 +178,22 @@ public class FindBoardCornersPipe
     * Given an input frame and a set of points from the "smaller" findChessboardCorner analysis,
     * re-scale the points back to where they would have been in the input frame
     *
-    * @param inPoints set of points derived from a call to findChessboardCorner on a shrunken mat
+    * @param inPoints set of points derived from a call to findChessboardCorner on a shrunken mat. Must be a "tall" matrix.
     * @param origFrame Original frame we're rescaling points back to
     * @param outPoints mat into which the output rescaled points get placed
     */
     private void rescalePointsToOrigFrame(
             MatOfPoint2f inPoints, Mat origFrame, MatOfPoint2f outPoints) {
         // Rescale boardCorners back up to the inproc image size
+        Point [] outPointsArr = new Point[inPoints.height()];
         double sf = getFindCornersScaleFactor(origFrame);
-        Point[] inPointsArr = inPoints.toArray();
-        Point[] retPointsArr = new Point[inPointsArr.length];
-        for (int idx = 0; idx < inPointsArr.length; idx++) {
-            double xCoord = inPointsArr[idx].x / sf;
-            double yCoord = inPointsArr[idx].y / sf;
-            retPointsArr[idx] = new Point(xCoord, yCoord);
+        for (int pointIdx = 0; pointIdx < inPoints.height(); pointIdx++) { 
+            double [] pointCoords = inPoints.get(pointIdx, 0);
+            double outXCoord = pointCoords[0] / sf;
+            double outYCoord = pointCoords[1] / sf;
+            outPointsArr[pointIdx] =  new Point(outXCoord, outYCoord);
         }
-        outPoints.fromArray(retPointsArr);
+        outPoints.fromArray(outPointsArr);
     }
 
     /**
