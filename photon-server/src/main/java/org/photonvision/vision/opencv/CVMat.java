@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.opencv;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -25,7 +25,8 @@ import org.photonvision.common.logging.Logger;
 public class CVMat implements Releasable {
     private static final Logger logger = new Logger(CVMat.class, LogGroup.General);
 
-    private static final HashSet<Mat> allMats = new HashSet<>();
+    private static int allMatCounter = 0;
+    private static final HashMap<Mat, Integer> allMats = new HashMap<>();
 
     private static boolean shouldPrint;
 
@@ -45,12 +46,16 @@ public class CVMat implements Releasable {
 
     public CVMat(Mat mat) {
         this.mat = mat;
-        if (allMats.add(mat) && shouldPrint) {
+        allMatCounter++;
+        allMats.put(mat, allMatCounter);
+
+        if (shouldPrint) {
+            logger.trace(() -> "CVMat" + allMatCounter + " alloc - new count: " + allMats.size());
             var trace = Thread.currentThread().getStackTrace();
 
             final var traceStr = new StringBuilder();
             for (var elem : trace) {
-                traceStr.append("\t").append(elem);
+                traceStr.append("\t\n").append(elem);
             }
             logger.trace(traceStr::toString);
         }
@@ -58,8 +63,10 @@ public class CVMat implements Releasable {
 
     @Override
     public void release() {
+        int matNo = allMats.get(mat);
         allMats.remove(mat);
         mat.release();
+        logger.trace(() -> "CVMat" + matNo + " de-alloc - new count: " + allMats.size());
     }
 
     public Mat getMat() {
