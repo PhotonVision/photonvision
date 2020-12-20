@@ -141,12 +141,11 @@ public class Calibrate3dPipeline
 
                 // update the UI
                 broadcastState();
-
             }
         }
 
         frame.image.release();
-        
+
         // Return the drawn chessboard if corners are found, if not, then return the input image.
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),

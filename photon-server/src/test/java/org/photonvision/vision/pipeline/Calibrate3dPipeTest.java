@@ -109,10 +109,12 @@ public class Calibrate3dPipeTest {
                         .allMatch(it -> it.width() > 0 && it.height() > 0));
 
         calibration3dPipeline.removeSnapshot(0);
-        calibration3dPipeline.run(
-                new Frame(
-                        new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
-                        new FrameStaticProperties(640, 480, 60, new Rotation2d(), null))).release();
+        calibration3dPipeline
+                .run(
+                        new Frame(
+                                new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
+                                new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)))
+                .release();
 
         assertTrue(
                 calibration3dPipeline.foundCornersList.stream()
@@ -131,7 +133,7 @@ public class Calibrate3dPipeTest {
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
-        //Confirm we didn't get leaky on our mat usage
+        // Confirm we didn't get leaky on our mat usage
         assertTrue(CVMat.getMatCount() == 0);
     }
 
@@ -167,7 +169,6 @@ public class Calibrate3dPipeTest {
         calibrateSquaresCommon(sz, dir);
     }
 
-    
     public void calibrateSquaresCommon(Size imgRes, File rootFolder) {
 
         File[] directoryListing = rootFolder.listFiles();
@@ -235,7 +236,7 @@ public class Calibrate3dPipeTest {
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
-        //Confirm we didn't get leaky on our mat usage
+        // Confirm we didn't get leaky on our mat usage
         assertTrue(CVMat.getMatCount() == 0);
     }
 }

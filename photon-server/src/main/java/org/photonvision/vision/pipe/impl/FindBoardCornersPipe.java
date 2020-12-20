@@ -47,14 +47,14 @@ public class FindBoardCornersPipe
     // Since we return results in real-time, we want ensure it goes as fast as possible
     // and fails as fast as possible.
     final int findChessboardFlags =
-                      Calib3d.CALIB_CB_NORMALIZE_IMAGE
+            Calib3d.CALIB_CB_NORMALIZE_IMAGE
                     | Calib3d.CALIB_CB_ADAPTIVE_THRESH
                     | Calib3d.CALIB_CB_FILTER_QUADS
                     | Calib3d.CALIB_CB_FAST_CHECK;
 
     private MatOfPoint2f boardCorners = new MatOfPoint2f();
 
-    //Intermedeate result mat's
+    // Intermedeate result mat's
     Mat smallerInFrame = new Mat();
     MatOfPoint2f smallerBoardCorners = new MatOfPoint2f();
 
@@ -144,22 +144,29 @@ public class FindBoardCornersPipe
     * index is next to each other Which, currently, means it traverses one dimension. This is a rough
     * heuristic approach which could be refined in the future.
     *
+    * <p>Note that the current implementation can be fooled under the following conditions: (1) The
+    * width of the image is an odd number, and the smallest distance was actually on the between the
+    * last two points in a given row and (2) The smallest distance was actually in the direction
+    * orthogonal to that which was getting traversed by iterating through the MatOfPoint2f in order.
+    *
+    * <p>I've chosen not to handle these for speed's sake, and because, really, you don't need the
+    * exact answer for "min distance". you just need something fairly reasonable.
+    *
     * @param inPoints point set to analyze. Must be a "tall" matrix.
     * @return min spacing between neighbors
     */
-    private double getMinSpacing(MatOfPoint2f inPoints) {
+    private double getApproxMinSpacing(MatOfPoint2f inPoints) {
         double minSpacing = Double.MAX_VALUE;
-        for (int pointIdx = 0; pointIdx < inPoints.height() - 1; pointIdx+=2) { //only works for even #'s of points? This feels like an interview whiteboard question.
+        for (int pointIdx = 0; pointIdx < inPoints.height() - 1; pointIdx += 2) {
 
-            //+1 idx Neighbor distance
-            double [] startPoint = inPoints.get(pointIdx, 0);
-            double [] endPoint = inPoints.get(pointIdx+1, 0);
+            // +1 idx Neighbor distance
+            double[] startPoint = inPoints.get(pointIdx, 0);
+            double[] endPoint = inPoints.get(pointIdx + 1, 0);
             double deltaX = startPoint[0] - endPoint[0];
             double deltaY = startPoint[1] - endPoint[1];
             double distToNext = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
             minSpacing = Math.min(distToNext, minSpacing);
-
         }
         return minSpacing;
     }
@@ -178,20 +185,21 @@ public class FindBoardCornersPipe
     * Given an input frame and a set of points from the "smaller" findChessboardCorner analysis,
     * re-scale the points back to where they would have been in the input frame
     *
-    * @param inPoints set of points derived from a call to findChessboardCorner on a shrunken mat. Must be a "tall" matrix.
+    * @param inPoints set of points derived from a call to findChessboardCorner on a shrunken mat.
+    *     Must be a "tall" matrix.
     * @param origFrame Original frame we're rescaling points back to
     * @param outPoints mat into which the output rescaled points get placed
     */
     private void rescalePointsToOrigFrame(
             MatOfPoint2f inPoints, Mat origFrame, MatOfPoint2f outPoints) {
         // Rescale boardCorners back up to the inproc image size
-        Point [] outPointsArr = new Point[inPoints.height()];
+        Point[] outPointsArr = new Point[inPoints.height()];
         double sf = getFindCornersScaleFactor(origFrame);
-        for (int pointIdx = 0; pointIdx < inPoints.height(); pointIdx++) { 
-            double [] pointCoords = inPoints.get(pointIdx, 0);
+        for (int pointIdx = 0; pointIdx < inPoints.height(); pointIdx++) {
+            double[] pointCoords = inPoints.get(pointIdx, 0);
             double outXCoord = pointCoords[0] / sf;
             double outYCoord = pointCoords[1] / sf;
-            outPointsArr[pointIdx] =  new Point(outXCoord, outYCoord);
+            outPointsArr[pointIdx] = new Point(outXCoord, outYCoord);
         }
         outPoints.fromArray(outPointsArr);
     }
@@ -207,7 +215,7 @@ public class FindBoardCornersPipe
         double windowHalfWidth = 11; // Dot board uses fixed-size window half-width
         if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
             // Chessboard uses a dynamic sized window based on how far apart the corners are
-            windowHalfWidth = Math.floor(getMinSpacing(inPoints) * 0.50);
+            windowHalfWidth = Math.floor(getApproxMinSpacing(inPoints) * 0.50);
             windowHalfWidth = Math.max(1, windowHalfWidth);
         }
         return new Size(windowHalfWidth, windowHalfWidth);
