@@ -47,12 +47,16 @@ public class FindBoardCornersPipe
     // Since we return results in real-time, we want ensure it goes as fast as possible
     // and fails as fast as possible.
     final int findChessboardFlags =
-            Calib3d.CALIB_CB_NORMALIZE_IMAGE
+                      Calib3d.CALIB_CB_NORMALIZE_IMAGE
                     | Calib3d.CALIB_CB_ADAPTIVE_THRESH
                     | Calib3d.CALIB_CB_FILTER_QUADS
                     | Calib3d.CALIB_CB_FAST_CHECK;
 
     private MatOfPoint2f boardCorners = new MatOfPoint2f();
+
+    //Intermedeate result mat's
+    Mat smallerInFrame = new Mat();
+    MatOfPoint2f smallerBoardCorners = new MatOfPoint2f();
 
     // SubCornerPix params
     private final Size zeroZone = new Size(-1, -1);
@@ -225,10 +229,8 @@ public class FindBoardCornersPipe
             // This is for chessboards
 
             // Reduce the image size to be much more manageable
-            Mat smallerInFrame = new Mat();
             Imgproc.resize(inFrame, smallerInFrame, getFindCornersImgSize(inFrame));
 
-            MatOfPoint2f smallerBoardCorners = new MatOfPoint2f();
             // Run the chessboard corner finder on the smaller image
             boardFound =
                     Calib3d.findChessboardCorners(
@@ -238,9 +240,6 @@ public class FindBoardCornersPipe
             if (boardFound) {
                 rescalePointsToOrigFrame(smallerBoardCorners, inFrame, boardCorners);
             }
-
-            smallerInFrame.release();
-            smallerBoardCorners.release();
 
         } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
             // For dot boards
