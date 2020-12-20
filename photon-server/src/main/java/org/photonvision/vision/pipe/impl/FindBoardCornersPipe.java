@@ -46,7 +46,11 @@ public class FindBoardCornersPipe
     // Configure the optimizations used while using openCV's find corners algorithm
     // Since we return results in real-time, we want ensure it goes as fast as possible
     // and fails as fast as possible.
-    final int findChessboardFlags = Calib3d.CALIB_CB_NORMALIZE_IMAGE | Calib3d.CALIB_CB_ADAPTIVE_THRESH | Calib3d.CALIB_CB_FILTER_QUADS | Calib3d.CALIB_CB_FAST_CHECK;
+    final int findChessboardFlags =
+            Calib3d.CALIB_CB_NORMALIZE_IMAGE
+                    | Calib3d.CALIB_CB_ADAPTIVE_THRESH
+                    | Calib3d.CALIB_CB_FILTER_QUADS
+                    | Calib3d.CALIB_CB_FAST_CHECK;
 
     private MatOfPoint2f boardCorners = new MatOfPoint2f();
 
@@ -117,65 +121,68 @@ public class FindBoardCornersPipe
     }
 
     /**
-     * Figures out how much a frame or point cloud must be scaled down by to
-     * match the desired size at which to run FindCorners 
-     * @param inFrame
-     * @return
-     */
-    private double getFindCornersScaleFactor(Mat inFrame){
-        if(inFrame.width() > FIND_CORNERS_WIDTH_PX){
-            return ((double)FIND_CORNERS_WIDTH_PX) / inFrame.width();
+    * Figures out how much a frame or point cloud must be scaled down by to match the desired size at
+    * which to run FindCorners
+    *
+    * @param inFrame
+    * @return
+    */
+    private double getFindCornersScaleFactor(Mat inFrame) {
+        if (inFrame.width() > FIND_CORNERS_WIDTH_PX) {
+            return ((double) FIND_CORNERS_WIDTH_PX) / inFrame.width();
         } else {
             return 1.0;
         }
     }
 
     /**
-     * Finds the minimum spacing between a set of x/y points
-     * Currently only considers points whose index is next to each other
-     * Which, currently, means it traverses one dimension. This is a rough
-     * heuristic approach which could be refined in the future.
-     * @param inPoints point set to analyze
-     * @return min spacing between neighbors
-     */
-    private double getMinSpacing(MatOfPoint2f inPoints){
+    * Finds the minimum spacing between a set of x/y points Currently only considers points whose
+    * index is next to each other Which, currently, means it traverses one dimension. This is a rough
+    * heuristic approach which could be refined in the future.
+    *
+    * @param inPoints point set to analyze
+    * @return min spacing between neighbors
+    */
+    private double getMinSpacing(MatOfPoint2f inPoints) {
         double minSpacing = Double.MAX_VALUE;
-        Point [] inPointsArr = inPoints.toArray();
-        for(int idx = 0; idx < inPointsArr.length-1; idx++){
-            //Heurestic to find the tightest spacing present in the grid
+        Point[] inPointsArr = inPoints.toArray();
+        for (int idx = 0; idx < inPointsArr.length - 1; idx++) {
+            // Heurestic to find the tightest spacing present in the grid
             // Only looks in 1 dimension for now
-            double deltaX = inPointsArr[idx+1].x - inPointsArr[idx].x;
-            double deltaY = inPointsArr[idx+1].y - inPointsArr[idx].y;
-            double distToNext = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
+            double deltaX = inPointsArr[idx + 1].x - inPointsArr[idx].x;
+            double deltaY = inPointsArr[idx + 1].y - inPointsArr[idx].y;
+            double distToNext = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
             minSpacing = Math.min(distToNext, minSpacing);
         }
         return minSpacing;
     }
 
     /**
-     * @param inFrame Full-size mat that is going to get scaled down before passing to findBoardCorners
-     * @return the size to scale the input mat to
-     */
-    private Size getFindCornersImgSize(Mat inFrame){
+    * @param inFrame Full-size mat that is going to get scaled down before passing to
+    *     findBoardCorners
+    * @return the size to scale the input mat to
+    */
+    private Size getFindCornersImgSize(Mat inFrame) {
         var findcorners_height = Math.round(inFrame.height() * getFindCornersScaleFactor(inFrame));
         return new Size(FIND_CORNERS_WIDTH_PX, findcorners_height);
     }
 
     /**
-     * Given an input frame and a set of points from the "smaller" findChessboardCorner analysis, 
-     * re-scale the points back to where they would have been in the input frame
-     * @param inPoints set of points derived from a call to findChessboardCorner on a shrunken mat
-     * @param origFrame Original frame we're rescaling points back to
-     * @return rescaled points
-     */
-    private MatOfPoint2f rescalePointsToOrigFrame(MatOfPoint2f inPoints, Mat origFrame){
+    * Given an input frame and a set of points from the "smaller" findChessboardCorner analysis,
+    * re-scale the points back to where they would have been in the input frame
+    *
+    * @param inPoints set of points derived from a call to findChessboardCorner on a shrunken mat
+    * @param origFrame Original frame we're rescaling points back to
+    * @return rescaled points
+    */
+    private MatOfPoint2f rescalePointsToOrigFrame(MatOfPoint2f inPoints, Mat origFrame) {
         MatOfPoint2f retMat = new MatOfPoint2f();
 
-        //Rescale boardCorners back up to the inproc image size
+        // Rescale boardCorners back up to the inproc image size
         double sf = getFindCornersScaleFactor(origFrame);
-        Point [] inPointsArr = inPoints.toArray();
-        Point [] retPointsArr = new Point[inPointsArr.length];
-        for(int idx = 0; idx < inPointsArr.length; idx++){
+        Point[] inPointsArr = inPoints.toArray();
+        Point[] retPointsArr = new Point[inPointsArr.length];
+        for (int idx = 0; idx < inPointsArr.length; idx++) {
             double xCoord = inPointsArr[idx].x / sf;
             double yCoord = inPointsArr[idx].y / sf;
             retPointsArr[idx] = new Point(xCoord, yCoord);
@@ -186,18 +193,19 @@ public class FindBoardCornersPipe
     }
 
     /**
-     * Picks a window size for doing subpixel optimization based on the board type
-     * and spacing observed between the corners or points in the image
-     * @param inPoints
-     * @return
-     */
-    private Size getWindowSize(MatOfPoint2f inPoints){
-        double windowHalfWidth = 11;  //Dot board uses fixed-size window half-width
-        if(params.type == UICalibrationData.BoardType.CHESSBOARD){
+    * Picks a window size for doing subpixel optimization based on the board type and spacing
+    * observed between the corners or points in the image
+    *
+    * @param inPoints
+    * @return
+    */
+    private Size getWindowSize(MatOfPoint2f inPoints) {
+        double windowHalfWidth = 11; // Dot board uses fixed-size window half-width
+        if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
             // Chessboard uses a dynamic sized window based on how far apart the corners are
-            windowHalfWidth = Math.floor(getMinSpacing(inPoints)*0.50);
-            windowHalfWidth = Math.max(1,windowHalfWidth);
-        } 
+            windowHalfWidth = Math.floor(getMinSpacing(inPoints) * 0.50);
+            windowHalfWidth = Math.max(1, windowHalfWidth);
+        }
         return new Size(windowHalfWidth, windowHalfWidth);
     }
 
@@ -219,19 +227,20 @@ public class FindBoardCornersPipe
         if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
             // This is for chessboards
 
-            //Reduce the image size to be much more manageable
+            // Reduce the image size to be much more manageable
             Mat smallerInFrame = new Mat();
             Imgproc.resize(inFrame, smallerInFrame, getFindCornersImgSize(inFrame));
 
             MatOfPoint2f smallerBoardCorners = new MatOfPoint2f();
-            //Run the chessboard corner finder on the smaller image
-            boardFound = Calib3d.findChessboardCorners(smallerInFrame, patternSize, smallerBoardCorners, findChessboardFlags);
-            
-            //Rescale back to original pixel locations
-            if(boardFound){
+            // Run the chessboard corner finder on the smaller image
+            boardFound =
+                    Calib3d.findChessboardCorners(
+                            smallerInFrame, patternSize, smallerBoardCorners, findChessboardFlags);
+
+            // Rescale back to original pixel locations
+            if (boardFound) {
                 boardCorners = rescalePointsToOrigFrame(smallerBoardCorners, inFrame);
             }
-
 
         } else if (params.type == UICalibrationData.BoardType.DOTBOARD) {
             // For dot boards
@@ -255,7 +264,8 @@ public class FindBoardCornersPipe
         this.imageSize = new Size(inFrame.width(), inFrame.height());
 
         // Do sub corner pix for drawing chessboard
-        Imgproc.cornerSubPix(inFrame, outBoardCorners, getWindowSize(outBoardCorners), zeroZone, criteria);
+        Imgproc.cornerSubPix(
+                inFrame, outBoardCorners, getWindowSize(outBoardCorners), zeroZone, criteria);
 
         // convert back to BGR
         //        Imgproc.cvtColor(inFrame, inFrame, Imgproc.COLOR_GRAY2BGR);

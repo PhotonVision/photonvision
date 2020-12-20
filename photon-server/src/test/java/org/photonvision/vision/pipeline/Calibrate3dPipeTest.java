@@ -30,7 +30,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -133,22 +132,37 @@ public class Calibrate3dPipeTest {
     }
 
     @Test
-    public void calibrateSquares320x240(){
-        File dir = Path.of(TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString(), "piCam", "320_240_1").toFile();
+    public void calibrateSquares320x240() {
+        File dir =
+                Path.of(
+                                TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString(),
+                                "piCam",
+                                "320_240_1")
+                        .toFile();
         Size sz = new Size(320, 240);
         calibrateSquaresCommon(sz, dir);
     }
 
     @Test
-    public void calibrateSquares640x480(){
-        File dir = Path.of(TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString(), "piCam", "640_480_1").toFile();
+    public void calibrateSquares640x480() {
+        File dir =
+                Path.of(
+                                TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString(),
+                                "piCam",
+                                "640_480_1")
+                        .toFile();
         Size sz = new Size(640, 480);
         calibrateSquaresCommon(sz, dir);
     }
 
     @Test
-    public void calibrateSquares960x720(){
-        File dir = Path.of(TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString(), "piCam", "960_720_1").toFile();
+    public void calibrateSquares960x720() {
+        File dir =
+                Path.of(
+                                TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString(),
+                                "piCam",
+                                "960_720_1")
+                        .toFile();
         Size sz = new Size(960, 720);
         calibrateSquaresCommon(sz, dir);
     }
@@ -170,9 +184,10 @@ public class Calibrate3dPipeTest {
                         calibration3dPipeline.run(
                                 new Frame(
                                         new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                        new FrameStaticProperties((int)imgRes.width, (int)imgRes.height, 67, new Rotation2d(), null)));
+                                        new FrameStaticProperties(
+                                                (int) imgRes.width, (int) imgRes.height, 67, new Rotation2d(), null)));
 
-                //TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
+                // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
             }
         }
 
@@ -187,7 +202,7 @@ public class Calibrate3dPipeTest {
         for (var file : directoryListing) {
             if (file.isFile()) {
                 Mat raw = Imgcodecs.imread(file.getAbsolutePath());
-                Mat undistorted = new Mat(new Size(imgRes.width*2, imgRes.height*2), raw.type());
+                Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
                 Imgproc.undistort(
                         raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.cameraExtrinsics.getAsMat());
 
@@ -195,15 +210,17 @@ public class Calibrate3dPipeTest {
             }
         }
 
-
-        //Confirm we have indeed gotten valid calibration objects
+        // Confirm we have indeed gotten valid calibration objects
         assertNotNull(cal);
         assertNotNull(cal.perViewErrors);
 
-        //Confirm the calibrated center pixel is fairly close to of the "expected" location at the center of the sensor.
+        // Confirm the calibrated center pixel is fairly close to of the "expected" location at the
+        // center of the sensor.
         // For all our data samples so far, this should be true.
-        double centerXErrPct = Math.abs(cal.cameraIntrinsics.data[2] - imgRes.width/2 )/(imgRes.width /2) * 100.0;
-        double centerYErrPct = Math.abs(cal.cameraIntrinsics.data[5] - imgRes.height/2)/(imgRes.height/2) * 100.0;
+        double centerXErrPct =
+                Math.abs(cal.cameraIntrinsics.data[2] - imgRes.width / 2) / (imgRes.width / 2) * 100.0;
+        double centerYErrPct =
+                Math.abs(cal.cameraIntrinsics.data[5] - imgRes.height / 2) / (imgRes.height / 2) * 100.0;
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
