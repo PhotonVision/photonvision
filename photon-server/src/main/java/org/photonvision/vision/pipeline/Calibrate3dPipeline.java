@@ -142,19 +142,16 @@ public class Calibrate3dPipeline
                 // update the UI
                 broadcastState();
 
-                return new CVPipelineResult(
-                        MathUtils.nanosToMillis(sumPipeNanosElapsed),
-                        fps,
-                        Collections.emptyList(),
-                        new Frame(new CVMat(outputColorMat), frame.frameStaticProperties));
             }
         }
 
+        frame.image.release();
+        
         // Return the drawn chessboard if corners are found, if not, then return the input image.
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
                 fps, // Unused but here in case
-                null,
+                Collections.emptyList(),
                 new Frame(new CVMat(outputColorMat), frame.frameStaticProperties));
     }
 
