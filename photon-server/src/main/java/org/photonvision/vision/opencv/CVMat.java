@@ -44,7 +44,7 @@ public class CVMat implements Releasable {
         srcMat.copyTo(mat);
     }
 
-    public void logStackTrace() {
+    private StringBuilder getStackTraceBuilder() {
         var trace = Thread.currentThread().getStackTrace();
 
         final var traceStr = new StringBuilder();
@@ -52,6 +52,7 @@ public class CVMat implements Releasable {
             traceStr.append("\t\n").append(trace[idx]);
         }
         logger.trace("\n" + traceStr.toString() + "\n");
+        return traceStr;
     }
 
     public CVMat(Mat mat) {
@@ -61,7 +62,7 @@ public class CVMat implements Releasable {
 
         if (shouldPrint) {
             logger.trace(() -> "CVMat" + allMatCounter + " alloc - new count: " + allMats.size());
-            logStackTrace();
+            logger.trace(getStackTraceBuilder()::toString);
         }
     }
 
@@ -72,7 +73,7 @@ public class CVMat implements Releasable {
         mat.release();
         if (shouldPrint) {
             logger.trace(() -> "CVMat" + matNo + " de-alloc - new count: " + allMats.size());
-            logStackTrace();
+            logger.trace(getStackTraceBuilder()::toString);
         }
     }
 
