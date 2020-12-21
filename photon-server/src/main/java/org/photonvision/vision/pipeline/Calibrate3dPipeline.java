@@ -122,9 +122,10 @@ public class Calibrate3dPipeline
         long sumPipeNanosElapsed = 0L;
 
         // Check if the frame has chessboard corners
-        var outputColorMat = new Mat();
-        inputColorMat.copyTo(outputColorMat);
-        var findBoardResult = findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorMat)).output;
+        var outputColorCVMat = new CVMat();
+        inputColorMat.copyTo(outputColorCVMat.getMat());
+        var findBoardResult =
+                findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
@@ -142,6 +143,7 @@ public class Calibrate3dPipeline
                 // update the UI
                 broadcastState();
 
+                outputColorCVMat.release();
                 return new CVPipelineResult(
                         MathUtils.nanosToMillis(sumPipeNanosElapsed),
                         fps,
@@ -150,12 +152,14 @@ public class Calibrate3dPipeline
             }
         }
 
+        frame.image.release();
+
         // Return the drawn chessboard if corners are found, if not, then return the input image.
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
                 fps, // Unused but here in case
                 null,
-                new Frame(new CVMat(outputColorMat), frame.frameStaticProperties));
+                new Frame(outputColorCVMat, frame.frameStaticProperties));
     }
 
     public void deleteSavedImages() {

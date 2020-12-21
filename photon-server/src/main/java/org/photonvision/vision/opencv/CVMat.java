@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.opencv;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -25,7 +25,8 @@ import org.photonvision.common.logging.Logger;
 public class CVMat implements Releasable {
     private static final Logger logger = new Logger(CVMat.class, LogGroup.General);
 
-    private static final HashSet<Mat> allMats = new HashSet<>();
+    private static int allMatCounter = 0;
+    private static final HashMap<Mat, Integer> allMats = new HashMap<>();
 
     private static boolean shouldPrint;
 
@@ -43,23 +44,38 @@ public class CVMat implements Releasable {
         srcMat.copyTo(mat);
     }
 
+    private StringBuilder getStackTraceBuilder() {
+        var trace = Thread.currentThread().getStackTrace();
+
+        final int STACK_FRAMES_TO_SKIP = 4;
+        final var traceStr = new StringBuilder();
+        for (int idx = STACK_FRAMES_TO_SKIP; idx < trace.length; idx++) {
+            traceStr.append("\t\n").append(trace[idx]);
+        }
+        traceStr.append("\n");
+        return traceStr;
+    }
+
     public CVMat(Mat mat) {
         this.mat = mat;
-        if (allMats.add(mat) && shouldPrint) {
-            var trace = Thread.currentThread().getStackTrace();
+        allMatCounter++;
+        allMats.put(mat, allMatCounter);
 
-            final var traceStr = new StringBuilder();
-            for (var elem : trace) {
-                traceStr.append("\t").append(elem);
-            }
-            logger.trace(traceStr::toString);
+        if (shouldPrint) {
+            logger.trace(() -> "CVMat" + allMatCounter + " alloc - new count: " + allMats.size());
+            logger.trace(getStackTraceBuilder()::toString);
         }
     }
 
     @Override
     public void release() {
+        int matNo = allMats.get(mat);
         allMats.remove(mat);
         mat.release();
+        if (shouldPrint) {
+            logger.trace(() -> "CVMat" + matNo + " de-alloc - new count: " + allMats.size());
+            logger.trace(getStackTraceBuilder()::toString);
+        }
     }
 
     public Mat getMat() {
