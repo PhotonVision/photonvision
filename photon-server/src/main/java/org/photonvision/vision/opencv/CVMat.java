@@ -51,7 +51,6 @@ public class CVMat implements Releasable {
         for (int idx = 3; idx < trace.length; idx++) {
             traceStr.append("\t\n").append(trace[idx]);
         }
-        logger.trace("\n" + traceStr.toString() + "\n");
         return traceStr;
     }
 
