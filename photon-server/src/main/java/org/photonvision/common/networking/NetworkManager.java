@@ -100,7 +100,7 @@ public class NetworkManager {
                     if (!config.staticIp.equals("")) {
                         shell.executeBashCommand("ip addr del " + config.staticIp + "/8 dev eth0");
                     }
-                    shell.executeBashCommand("dhclient eth0");
+                    shell.executeBashCommand("dhclient eth0", false);
                 } catch (Exception e) {
                     logger.error("Exception while setting DHCP!");
                 }

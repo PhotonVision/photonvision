@@ -39,6 +39,10 @@ public class ShellExec {
         this.readError = readError;
     }
 
+    public int executeBashCommand(String command) throws IOException {
+        return executeBashCommand(command, true);
+    }
+
     /**
     * Execute a bash command. We can handle complex bash commands including multiple executions (; |
     * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
@@ -46,10 +50,9 @@ public class ShellExec {
     * @param command Bash command to execute
     * @return true if bash got started, but your command may have failed.
     */
-    public int executeBashCommand(String command) throws IOException {
+    public int executeBashCommand(String command, boolean wait) throws IOException {
         logger.debug("Executing \"" + command + "\"");
 
-        boolean wait = true;
         boolean success = false;
         Runtime r = Runtime.getRuntime();
         // Use bash -c so we can handle things like multi commands separated by ; and
