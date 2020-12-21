@@ -202,18 +202,18 @@ public class Calibrate3dPipeTest {
         var cal = calibration3dPipeline.tryCalibration();
         calibration3dPipeline.finishCalibration();
 
-        for (var file : directoryListing) {
-            if (file.isFile()) {
-                Mat raw = Imgcodecs.imread(file.getAbsolutePath());
-                Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
-                Imgproc.undistort(
-                        raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.cameraExtrinsics.getAsMat());
-
-                TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1);
-                raw.release();
-                undistorted.release();
-            }
-        }
+        //for (var file : directoryListing) {
+        //    if (file.isFile()) {
+        //        Mat raw = Imgcodecs.imread(file.getAbsolutePath());
+        //        Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
+        //        Imgproc.undistort(
+        //                raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.cameraExtrinsics.getAsMat());
+        //                
+        //        TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1); //apparently flakey in CI?
+        //        raw.release();
+        //        undistorted.release();
+        //    }
+        //}
 
         // Confirm we have indeed gotten valid calibration objects
         assertNotNull(cal);
