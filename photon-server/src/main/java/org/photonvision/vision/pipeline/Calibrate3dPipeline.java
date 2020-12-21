@@ -122,9 +122,10 @@ public class Calibrate3dPipeline
         long sumPipeNanosElapsed = 0L;
 
         // Check if the frame has chessboard corners
-        var outputColorMat = new Mat();
-        inputColorMat.copyTo(outputColorMat);
-        var findBoardResult = findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorMat)).output;
+        var outputColorCVMat = new CVMat();
+        inputColorMat.copyTo(outputColorCVMat.getMat());
+        var findBoardResult =
+                findBoardCornersPipe.run(Pair.of(inputColorMat, outputColorCVMat.getMat())).output;
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
@@ -151,7 +152,7 @@ public class Calibrate3dPipeline
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
                 fps, // Unused but here in case
                 Collections.emptyList(),
-                new Frame(new CVMat(outputColorMat), frame.frameStaticProperties));
+                new Frame(outputColorCVMat, frame.frameStaticProperties));
     }
 
     public void deleteSavedImages() {

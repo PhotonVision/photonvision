@@ -22,6 +22,9 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 
 public class PipelineProfiler {
+
+    private static boolean shouldLog;
+
     private static final Logger reflectiveLogger =
             new Logger(ReflectivePipeline.class, LogGroup.VisionModule);
     private static final Logger coloredShapeLogger =
@@ -85,6 +88,12 @@ public class PipelineProfiler {
     }
 
     public static void printReflectiveProfile(long[] nanos) {
-        reflectiveLogger.trace(() -> getReflectiveProfileString(nanos));
+        if (shouldLog) {
+            reflectiveLogger.trace(() -> getReflectiveProfileString(nanos));
+        }
+    }
+
+    public static void enablePrint(boolean enable) {
+        shouldLog = enable;
     }
 }

@@ -34,8 +34,10 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.vision.pipeline.PipelineProfiler;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
@@ -138,7 +140,10 @@ public class Main {
             logger.error("Failed to parse command-line options!", e);
         }
 
-        var logLevel = LogLevel.DEBUG;
+        CVMat.enablePrint(true);
+        PipelineProfiler.enablePrint(false);
+
+        var logLevel = printDebugLogs ? LogLevel.TRACE : LogLevel.DEBUG;
         Logger.setLevel(LogGroup.Camera, logLevel);
         Logger.setLevel(LogGroup.WebServer, logLevel);
         Logger.setLevel(LogGroup.VisionModule, logLevel);

@@ -65,7 +65,7 @@ public class DriverModePipeline
         if (inputMat.channels() == 1 && PicamJNI.isSupported()) {
             long colorMatPtr = PicamJNI.grabFrame(true);
             if (colorMatPtr == 0) throw new RuntimeException("Got null Mat from GPU Picam driver");
-            inputMat.release();
+            frame.image.release();
             inputMat = new Mat(colorMatPtr);
         }
 
