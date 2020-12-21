@@ -142,13 +142,6 @@ public class Calibrate3dPipeline
 
                 // update the UI
                 broadcastState();
-
-                outputColorCVMat.release();
-                return new CVPipelineResult(
-                        MathUtils.nanosToMillis(sumPipeNanosElapsed),
-                        fps,
-                        Collections.emptyList(),
-                        new Frame(new CVMat(inputColorMat), frame.frameStaticProperties));
             }
         }
 
@@ -158,7 +151,7 @@ public class Calibrate3dPipeline
         return new CVPipelineResult(
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
                 fps, // Unused but here in case
-                null,
+                Collections.emptyList(),
                 new Frame(outputColorCVMat, frame.frameStaticProperties));
     }
 

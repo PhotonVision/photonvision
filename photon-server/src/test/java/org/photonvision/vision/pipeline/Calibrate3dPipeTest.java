@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -81,6 +81,8 @@ public class Calibrate3dPipeTest {
     @Test
     public void calibrationPipelineTest() {
 
+        int startMatCount = CVMat.getMatCount();
+
         File dir = new File(TestUtils.getDotBoardImagesPath().toAbsolutePath().toString());
         File[] directoryListing = dir.listFiles();
 
@@ -99,6 +101,7 @@ public class Calibrate3dPipeTest {
                                     new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
                                     new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)));
             // TestUtils.showImage(output.outputFrame.image.getMat());
+            output.release();
         }
 
         assertTrue(
@@ -107,10 +110,12 @@ public class Calibrate3dPipeTest {
                         .allMatch(it -> it.width() > 0 && it.height() > 0));
 
         calibration3dPipeline.removeSnapshot(0);
-        calibration3dPipeline.run(
-                new Frame(
-                        new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
-                        new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)));
+        calibration3dPipeline
+                .run(
+                        new Frame(
+                                new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
+                                new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)))
+                .release();
 
         assertTrue(
                 calibration3dPipeline.foundCornersList.stream()
@@ -128,17 +133,54 @@ public class Calibrate3dPipeTest {
         System.out.println("Standard Deviation: " + cal.standardDeviation);
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
+
+        // Confirm we didn't get leaky on our mat usage
+        assertTrue(CVMat.getMatCount() == startMatCount);
     }
 
     @Test
-    public void calibrateSquaresTest() {
+    public void calibrateSquares320x240() {
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "piCam", "320_240_1").toFile();
+        Size sz = new Size(320, 240);
+        calibrateSquaresCommon(sz, dir);
+    }
 
-        File dir = new File(TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString());
-        File[] directoryListing = dir.listFiles();
+    @Test
+    public void calibrateSquares640x480() {
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "piCam", "640_480_1").toFile();
+        Size sz = new Size(640, 480);
+        calibrateSquaresCommon(sz, dir);
+    }
+
+    @Test
+    public void calibrateSquares960x720() {
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "piCam", "960_720_1").toFile();
+        Size sz = new Size(960, 720);
+        calibrateSquaresCommon(sz, dir);
+    }
+
+    @Test
+    public void calibrateSquares1920x1080() {
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "piCam", "1920_1080_1").toFile();
+        Size sz = new Size(1920, 1080);
+        calibrateSquaresCommon(sz, dir);
+    }
+
+    public void calibrateSquaresCommon(Size imgRes, File rootFolder) {
+
+        int startMatCount = CVMat.getMatCount();
+
+        File[] directoryListing = rootFolder.listFiles();
+
+        assertTrue(directoryListing.length >= 25);
 
         Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
         calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
-        calibration3dPipeline.getSettings().resolution = new Size(320, 240);
+        calibration3dPipeline.getSettings().resolution = imgRes;
 
         for (var file : directoryListing) {
             if (file.isFile()) {
@@ -147,9 +189,11 @@ public class Calibrate3dPipeTest {
                         calibration3dPipeline.run(
                                 new Frame(
                                         new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                        new FrameStaticProperties(320, 240, 67, new Rotation2d(), null)));
+                                        new FrameStaticProperties(
+                                                (int) imgRes.width, (int) imgRes.height, 67, new Rotation2d(), null)));
 
-                // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName());
+                // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
+                output.outputFrame.release();
             }
         }
 
@@ -161,24 +205,43 @@ public class Calibrate3dPipeTest {
         var cal = calibration3dPipeline.tryCalibration();
         calibration3dPipeline.finishCalibration();
 
-        for (var file : directoryListing) {
-            if (file.isFile()) {
-                Mat raw = Imgcodecs.imread(file.getAbsolutePath());
-                Mat undistorted = new Mat(new Size(600, 600), raw.type());
-                Imgproc.undistort(
-                        raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.cameraExtrinsics.getAsMat());
+        // for (var file : directoryListing) {
+        //    if (file.isFile()) {
+        //        Mat raw = Imgcodecs.imread(file.getAbsolutePath());
+        //        Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
+        //        Imgproc.undistort(
+        //                raw, undistorted, cal.cameraIntrinsics.getAsMat(),
+        // cal.cameraExtrinsics.getAsMat());
+        //
+        //        TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1); //apparently
+        // flakey in CI?
+        //        raw.release();
+        //        undistorted.release();
+        //    }
+        // }
 
-                TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1);
-            }
-        }
-
+        // Confirm we have indeed gotten valid calibration objects
         assertNotNull(cal);
         assertNotNull(cal.perViewErrors);
+
+        // Confirm the calibrated center pixel is fairly close to of the "expected" location at the
+        // center of the sensor.
+        // For all our data samples so far, this should be true.
+        double centerXErrPct =
+                Math.abs(cal.cameraIntrinsics.data[2] - imgRes.width / 2) / (imgRes.width / 2) * 100.0;
+        double centerYErrPct =
+                Math.abs(cal.cameraIntrinsics.data[5] - imgRes.height / 2) / (imgRes.height / 2) * 100.0;
+        assertTrue(centerXErrPct < 10.0);
+        assertTrue(centerYErrPct < 10.0);
+
         System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
         System.out.println("Camera Intrinsics : " + cal.cameraIntrinsics.toString());
         System.out.println("Camera Extrinsics : " + cal.cameraExtrinsics.toString());
         System.out.println("Standard Deviation: " + cal.standardDeviation);
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
+
+        // Confirm we didn't get leaky on our mat usage
+        assertTrue(CVMat.getMatCount() == startMatCount);
     }
 }
