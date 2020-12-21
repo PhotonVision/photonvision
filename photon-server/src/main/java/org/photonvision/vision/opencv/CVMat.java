@@ -70,8 +70,10 @@ public class CVMat implements Releasable {
         int matNo = allMats.get(mat);
         allMats.remove(mat);
         mat.release();
-        logger.trace(() -> "CVMat" + matNo + " de-alloc - new count: " + allMats.size());
-        logStackTrace();
+        if (shouldPrint) {
+            logger.trace(() -> "CVMat" + matNo + " de-alloc - new count: " + allMats.size());
+            logStackTrace();
+        }
     }
 
     public Mat getMat() {
