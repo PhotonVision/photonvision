@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -81,6 +80,8 @@ public class Calibrate3dPipeTest {
 
     @Test
     public void calibrationPipelineTest() {
+
+        int startMatCount = CVMat.getMatCount();
 
         File dir = new File(TestUtils.getDotBoardImagesPath().toAbsolutePath().toString());
         File[] directoryListing = dir.listFiles();
@@ -134,7 +135,7 @@ public class Calibrate3dPipeTest {
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
         // Confirm we didn't get leaky on our mat usage
-        assertTrue(CVMat.getMatCount() == 0);
+        assertTrue(CVMat.getMatCount() == startMatCount);
     }
 
     @Test
@@ -171,6 +172,8 @@ public class Calibrate3dPipeTest {
 
     public void calibrateSquaresCommon(Size imgRes, File rootFolder) {
 
+        int startMatCount = CVMat.getMatCount();
+
         File[] directoryListing = rootFolder.listFiles();
 
         assertTrue(directoryListing.length >= 25);
@@ -202,18 +205,20 @@ public class Calibrate3dPipeTest {
         var cal = calibration3dPipeline.tryCalibration();
         calibration3dPipeline.finishCalibration();
 
-        //for (var file : directoryListing) {
+        // for (var file : directoryListing) {
         //    if (file.isFile()) {
         //        Mat raw = Imgcodecs.imread(file.getAbsolutePath());
         //        Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
         //        Imgproc.undistort(
-        //                raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.cameraExtrinsics.getAsMat());
-        //                
-        //        TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1); //apparently flakey in CI?
+        //                raw, undistorted, cal.cameraIntrinsics.getAsMat(),
+        // cal.cameraExtrinsics.getAsMat());
+        //
+        //        TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1); //apparently
+        // flakey in CI?
         //        raw.release();
         //        undistorted.release();
         //    }
-        //}
+        // }
 
         // Confirm we have indeed gotten valid calibration objects
         assertNotNull(cal);
@@ -237,6 +242,6 @@ public class Calibrate3dPipeTest {
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
         // Confirm we didn't get leaky on our mat usage
-        assertTrue(CVMat.getMatCount() == 0);
+        assertTrue(CVMat.getMatCount() == startMatCount);
     }
 }
