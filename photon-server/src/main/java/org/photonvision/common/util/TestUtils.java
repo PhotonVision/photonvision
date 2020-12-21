@@ -182,6 +182,10 @@ public class TestUtils {
         return getResourcesFolderPath(false).resolve("calibrationBoardImages");
     }
 
+    public static Path getSquaresBoardImagesPath() {
+        return getResourcesFolderPath(false).resolve("calibrationSquaresImg");
+    }
+
     public static File getHardwareConfigJson() {
         return getResourcesFolderPath(false)
                 .resolve("hardware")
