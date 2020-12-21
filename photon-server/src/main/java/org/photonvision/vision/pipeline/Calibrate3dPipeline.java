@@ -155,7 +155,7 @@ public class Calibrate3dPipeline
                 MathUtils.nanosToMillis(sumPipeNanosElapsed),
                 fps, // Unused but here in case
                 null,
-                new Frame(new CVMat(outputColorMat), frame.frameStaticProperties));
+                new Frame(new CVMat(inputColorMat), frame.frameStaticProperties));
     }
 
     public void deleteSavedImages() {
