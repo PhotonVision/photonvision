@@ -21,6 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.util.Units;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -181,6 +182,10 @@ public class Calibrate3dPipeTest {
         Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
         calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
         calibration3dPipeline.getSettings().resolution = imgRes;
+
+        calibration3dPipeline.getSettings().boardWidth = 8;
+        calibration3dPipeline.getSettings().boardHeight = 8;
+        calibration3dPipeline.getSettings().gridSize = Units.inchesToMeters(1);
 
         for (var file : directoryListing) {
             if (file.isFile()) {
