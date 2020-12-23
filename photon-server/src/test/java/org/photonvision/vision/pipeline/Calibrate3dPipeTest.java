@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import edu.wpi.first.wpilibj.util.Units;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.BeforeEach;
@@ -181,6 +183,10 @@ public class Calibrate3dPipeTest {
         Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
         calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
         calibration3dPipeline.getSettings().resolution = imgRes;
+
+        calibration3dPipeline.getSettings().boardWidth = 8;
+        calibration3dPipeline.getSettings().boardHeight = 8;
+        calibration3dPipeline.getSettings().gridSize = Units.inchesToMeters(1);
 
         for (var file : directoryListing) {
             if (file.isFile()) {
