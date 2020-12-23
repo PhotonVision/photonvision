@@ -150,11 +150,11 @@ public class Calibrate3dPipeTest {
 
     @Test
     public void calibrateSquares320x240_9x7_board() {
-        // Gloworm Beta 
+        // Gloworm Beta
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "piCam", "320_240_2").toFile();
         Size sz = new Size(320, 240);
-        Size boardDim = new Size(9,7);
+        Size boardDim = new Size(9, 7);
         calibrateSquaresCommon(sz, dir, boardDim);
     }
 
@@ -186,14 +186,15 @@ public class Calibrate3dPipeTest {
     }
 
     public void calibrateSquaresCommon(Size imgRes, File rootFolder) {
-        calibrateSquaresCommon(imgRes, rootFolder, new Size(8,8), Units.inchesToMeters(1));
+        calibrateSquaresCommon(imgRes, rootFolder, new Size(8, 8), Units.inchesToMeters(1));
     }
 
-    public void calibrateSquaresCommon(Size imgRes,  File rootFolder, Size boardDim) {
+    public void calibrateSquaresCommon(Size imgRes, File rootFolder, Size boardDim) {
         calibrateSquaresCommon(imgRes, rootFolder, boardDim, Units.inchesToMeters(1));
     }
 
-    public void calibrateSquaresCommon(Size imgRes, File rootFolder, Size boardDim, double boardGridSize_m) {
+    public void calibrateSquaresCommon(
+            Size imgRes, File rootFolder, Size boardDim, double boardGridSize_m) {
 
         int startMatCount = CVMat.getMatCount();
 
@@ -205,7 +206,7 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
         calibration3dPipeline.getSettings().resolution = imgRes;
         calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
-        calibration3dPipeline.getSettings().boardWidth  = (int) Math.round(boardDim.width);
+        calibration3dPipeline.getSettings().boardWidth = (int) Math.round(boardDim.width);
         calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
 
         for (var file : directoryListing) {
@@ -218,7 +219,7 @@ public class Calibrate3dPipeTest {
                                         new FrameStaticProperties(
                                                 (int) imgRes.width, (int) imgRes.height, 67, new Rotation2d(), null)));
 
-                TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
+                // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
                 output.outputFrame.release();
             }
         }
