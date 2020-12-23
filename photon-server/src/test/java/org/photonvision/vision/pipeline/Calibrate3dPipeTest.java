@@ -200,11 +200,12 @@ public class Calibrate3dPipeTest {
     @Test
     public void calibrateSquares_1280_720_gloworm() {
         // Gloworm Beta
+        // This image set will return a fairly offset Y-pixel for the optical center point
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "gloworm", "1280_720_1").toFile();
         Size sz = new Size(1280, 720);
         Size boardDim = new Size(9, 7);
-        calibrateSquaresCommon(sz, dir, boardDim);
+        calibrateSquaresCommon(sz, dir, boardDim, 640, 192);
     }
 
     @Test
@@ -216,25 +217,31 @@ public class Calibrate3dPipeTest {
         File dir = Path.of(base, "gloworm", "1920_1080_1").toFile();
         Size sz = new Size(1920, 1080);
         Size boardDim = new Size(9, 7);
-        calibrateSquaresCommon(sz, dir, boardDim, 1311);
+        calibrateSquaresCommon(sz, dir, boardDim, 1311, 540);
     }
 
     public void calibrateSquaresCommon(Size imgRes, File rootFolder) {
-        calibrateSquaresCommon(
-                imgRes, rootFolder, new Size(8, 8), Units.inchesToMeters(1), imgRes.width / 2);
+        calibrateSquaresCommon(imgRes, rootFolder, new Size(8, 8));
     }
 
     public void calibrateSquaresCommon(Size imgRes, File rootFolder, Size boardDim) {
-        calibrateSquaresCommon(imgRes, rootFolder, boardDim, Units.inchesToMeters(1), imgRes.width / 2);
+        calibrateSquaresCommon(
+                imgRes, rootFolder, boardDim, Units.inchesToMeters(1), imgRes.width / 2, imgRes.height / 2);
     }
 
     public void calibrateSquaresCommon(
-            Size imgRes, File rootFolder, Size boardDim, double expectedXCenter) {
-        calibrateSquaresCommon(imgRes, rootFolder, boardDim, Units.inchesToMeters(1), expectedXCenter);
+            Size imgRes, File rootFolder, Size boardDim, double expectedXCenter, double expectedYCenter) {
+        calibrateSquaresCommon(
+                imgRes, rootFolder, boardDim, Units.inchesToMeters(1), expectedXCenter, expectedYCenter);
     }
 
     public void calibrateSquaresCommon(
-            Size imgRes, File rootFolder, Size boardDim, double boardGridSize_m, double expectedXCenter) {
+            Size imgRes,
+            File rootFolder,
+            Size boardDim,
+            double boardGridSize_m,
+            double expectedXCenter,
+            double expectedYCenter) {
 
         int startMatCount = CVMat.getMatCount();
 
@@ -284,7 +291,7 @@ public class Calibrate3dPipeTest {
         double centerXErrPct =
                 Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter) / (expectedXCenter) * 100.0;
         double centerYErrPct =
-                Math.abs(cal.cameraIntrinsics.data[5] - imgRes.height / 2) / (imgRes.height / 2) * 100.0;
+                Math.abs(cal.cameraIntrinsics.data[5] - expectedYCenter) / (expectedYCenter) * 100.0;
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
