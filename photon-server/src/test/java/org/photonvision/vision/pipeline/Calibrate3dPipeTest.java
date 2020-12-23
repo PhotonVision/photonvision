@@ -141,6 +141,7 @@ public class Calibrate3dPipeTest {
 
     @Test
     public void calibrateSquares320x240() {
+        // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "piCam", "320_240_1").toFile();
         Size sz = new Size(320, 240);
@@ -148,7 +149,18 @@ public class Calibrate3dPipeTest {
     }
 
     @Test
+    public void calibrateSquares320x240_9x7_board() {
+        // Gloworm Beta
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "piCam", "320_240_2").toFile();
+        Size sz = new Size(320, 240);
+        Size boardDim = new Size(9, 7);
+        calibrateSquaresCommon(sz, dir, boardDim);
+    }
+
+    @Test
     public void calibrateSquares640x480() {
+        // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "piCam", "640_480_1").toFile();
         Size sz = new Size(640, 480);
@@ -157,6 +169,7 @@ public class Calibrate3dPipeTest {
 
     @Test
     public void calibrateSquares960x720() {
+        // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "piCam", "960_720_1").toFile();
         Size sz = new Size(960, 720);
@@ -165,6 +178,7 @@ public class Calibrate3dPipeTest {
 
     @Test
     public void calibrateSquares1920x1080() {
+        // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "piCam", "1920_1080_1").toFile();
         Size sz = new Size(1920, 1080);
@@ -172,6 +186,15 @@ public class Calibrate3dPipeTest {
     }
 
     public void calibrateSquaresCommon(Size imgRes, File rootFolder) {
+        calibrateSquaresCommon(imgRes, rootFolder, new Size(8, 8), Units.inchesToMeters(1));
+    }
+
+    public void calibrateSquaresCommon(Size imgRes, File rootFolder, Size boardDim) {
+        calibrateSquaresCommon(imgRes, rootFolder, boardDim, Units.inchesToMeters(1));
+    }
+
+    public void calibrateSquaresCommon(
+            Size imgRes, File rootFolder, Size boardDim, double boardGridSize_m) {
 
         int startMatCount = CVMat.getMatCount();
 
@@ -182,10 +205,9 @@ public class Calibrate3dPipeTest {
         Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
         calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
         calibration3dPipeline.getSettings().resolution = imgRes;
-
-        calibration3dPipeline.getSettings().boardWidth = 8;
-        calibration3dPipeline.getSettings().boardHeight = 8;
-        calibration3dPipeline.getSettings().gridSize = Units.inchesToMeters(1);
+        calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
+        calibration3dPipeline.getSettings().boardWidth = (int) Math.round(boardDim.width);
+        calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
 
         for (var file : directoryListing) {
             if (file.isFile()) {
