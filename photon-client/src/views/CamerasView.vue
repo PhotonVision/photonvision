@@ -25,8 +25,8 @@
             />
             <CVnumberinput
               v-model="cameraSettings.fov"
-              :tooltip="cameraSettings.isFovConfigurable ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame' : 'This setting is managed by a vendor'"
-              name="Diagonal FOV"
+              :tooltip="cameraSettings.isFovConfigurable ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
+              name="Maximum diagonal FOV"
               :disabled="!cameraSettings.isFovConfigurable"
             />
             <br>

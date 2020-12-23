@@ -61,18 +61,25 @@ public class ZeroCopyPicamSource implements VisionSource {
     */
     private static class FPSRatedVideoMode extends VideoMode {
         public final int fpsActual;
+        public final double fovMultiplier;
 
         public FPSRatedVideoMode(
-                PixelFormat pixelFormat, int width, int height, int ratedFPS, int actualFPS) {
+                PixelFormat pixelFormat,
+                int width,
+                int height,
+                int ratedFPS,
+                int actualFPS,
+                double fovMultiplier) {
             super(pixelFormat, width, height, ratedFPS);
 
             this.fpsActual = actualFPS;
+            this.fovMultiplier = fovMultiplier;
         }
     }
 
     public static class PicamSettables extends VisionSourceSettables {
 
-        private VideoMode currentVideoMode;
+        private FPSRatedVideoMode currentVideoMode;
         private double lastExposure;
         private int lastBrightness;
         private int lastGain;
@@ -81,28 +88,40 @@ public class ZeroCopyPicamSource implements VisionSource {
             super(configuration);
 
             videoModes = new HashMap<>();
-            videoModes.put(
-                    0,
-                    new FPSRatedVideoMode(
-                            VideoMode.PixelFormat.kUnknown, 320, 240, 90, 90)); // Was 120 on IMX219
-            videoModes.put(
-                    1,
-                    new FPSRatedVideoMode(
-                            VideoMode.PixelFormat.kUnknown, 640, 480, 85, 90)); // Was 65-70 on IMX219
-            videoModes.put(
-                    2,
-                    new FPSRatedVideoMode(
-                            VideoMode.PixelFormat.kUnknown, 960, 720, 45, 60)); // Was 45 on IMX219
-            videoModes.put(
-                    3,
-                    new FPSRatedVideoMode(
-                            VideoMode.PixelFormat.kUnknown, 1280, 720, 30, 45)); // Was 40 on IMX219
-            videoModes.put(
-                    4,
-                    new FPSRatedVideoMode(
-                            VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20)); // Was 15 on IMX219
 
-            currentVideoMode = videoModes.get(0);
+            // TODO add IMX219 detection to the picam driver
+            //            if(PicamJNI.isIMX219()) {
+            if (false) {
+                // Settings for the Picam V2
+                // TODO determine multipliers
+                videoModes.put(
+                        0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 120, 120, .39));
+                videoModes.put(
+                        1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65, 90, .39));
+                videoModes.put(
+                        2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 40, 90, .72));
+                videoModes.put(
+                        3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, .53));
+            } else {
+                // "High Quality" picam falls back on settings for OV sensor
+                videoModes.put(
+                        0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 90, 90, 1));
+                videoModes.put(
+                        1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 85, 90, 1));
+                videoModes.put(
+                        2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 45, 60, 1));
+                videoModes.put(
+                        3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 30, 45, 0.92));
+                videoModes.put(
+                        4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, 0.72));
+            }
+
+            currentVideoMode = (FPSRatedVideoMode) videoModes.get(0);
+        }
+
+        @Override
+        public double getFOV() {
+            return getCurrentVideoMode().fovMultiplier * getConfiguration().FOV;
         }
 
         @Override
@@ -124,15 +143,15 @@ public class ZeroCopyPicamSource implements VisionSource {
         }
 
         @Override
-        public VideoMode getCurrentVideoMode() {
+        public FPSRatedVideoMode getCurrentVideoMode() {
             return currentVideoMode;
         }
 
         @Override
         protected void setVideoModeInternal(VideoMode videoMode) {
+            var mode = (FPSRatedVideoMode) videoMode;
             PicamJNI.destroyCamera();
-            PicamJNI.createCamera(
-                    videoMode.width, videoMode.height, ((FPSRatedVideoMode) videoMode).fpsActual);
+            PicamJNI.createCamera(mode.width, mode.height, mode.fpsActual);
 
             // We don't store last settings on the native side, and when you change video mode these get
             // reset on MMAL's end
@@ -140,7 +159,7 @@ public class ZeroCopyPicamSource implements VisionSource {
             setBrightness(lastBrightness);
             setGain(lastGain);
 
-            currentVideoMode = videoMode;
+            currentVideoMode = mode;
         }
 
         @Override
