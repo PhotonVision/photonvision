@@ -147,6 +147,15 @@ public class Calibrate3dPipeTest {
     }
 
     @Test
+    public void calibrateSquares320x240_9x7_board() {
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "piCam", "320_240_2").toFile();
+        Size sz = new Size(320, 240);
+        Size boardDim = new Size(9,7);
+        calibrateSquaresCommon(sz, dir, boardDim);
+    }
+
+    @Test
     public void calibrateSquares640x480() {
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "piCam", "640_480_1").toFile();
@@ -171,6 +180,11 @@ public class Calibrate3dPipeTest {
     }
 
     public void calibrateSquaresCommon(Size imgRes, File rootFolder) {
+        calibrateSquaresCommon(imgRes, rootFolder, new Size(8,8));
+    }
+
+
+    public void calibrateSquaresCommon(Size imgRes, File rootFolder, Size boardDim) {
 
         int startMatCount = CVMat.getMatCount();
 
@@ -181,6 +195,8 @@ public class Calibrate3dPipeTest {
         Calibrate3dPipeline calibration3dPipeline = new Calibrate3dPipeline(20);
         calibration3dPipeline.getSettings().boardType = UICalibrationData.BoardType.CHESSBOARD;
         calibration3dPipeline.getSettings().resolution = imgRes;
+        calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
+        calibration3dPipeline.getSettings().boardWidth  = (int) Math.round(boardDim.width);
 
         for (var file : directoryListing) {
             if (file.isFile()) {
@@ -192,7 +208,7 @@ public class Calibrate3dPipeTest {
                                         new FrameStaticProperties(
                                                 (int) imgRes.width, (int) imgRes.height, 67, new Rotation2d(), null)));
 
-                // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
+                TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
                 output.outputFrame.release();
             }
         }
