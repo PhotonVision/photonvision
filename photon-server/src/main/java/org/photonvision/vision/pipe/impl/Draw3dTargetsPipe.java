@@ -25,11 +25,13 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
@@ -47,7 +49,7 @@ public class Draw3dTargetsPipe
 
             // draw convex hull
             var pointMat = new MatOfPoint();
-            target.m_mainContour.getConvexHull().convertTo(pointMat, CvType.CV_32S);
+            divideMat2f(target.m_mainContour.getConvexHull(), pointMat);
             if (pointMat.size().empty()) {
                 logger.error("Convex hull is empty?");
                 logger.debug(
@@ -60,7 +62,7 @@ public class Draw3dTargetsPipe
             // draw approximate polygon
             var poly = target.getApproximateBoundingPolygon();
             if (poly != null) {
-                poly.convertTo(pointMat, CvType.CV_32S);
+                divideMat2f(poly, pointMat);
                 Imgproc.drawContours(
                         in.getLeft(), List.of(pointMat), -1, ColorHelper.colorToScalar(Color.blue), 2);
             }
@@ -89,6 +91,10 @@ public class Draw3dTargetsPipe
                         tempMat,
                         jac);
                 var topPoints = tempMat.toList();
+
+                dividePointList(bottomPoints);
+                dividePointList(topPoints);
+
                 // floor, then pillers, then top
                 for (int i = 0; i < bottomPoints.size(); i++) {
                     Imgproc.line(
@@ -114,7 +120,7 @@ public class Draw3dTargetsPipe
                             ColorHelper.colorToScalar(Color.orange),
                             3);
                 }
-
+                tempMat.release();
                 jac.release();
             }
             pointMat.release();
@@ -123,9 +129,12 @@ public class Draw3dTargetsPipe
             var corners = target.getTargetCorners();
             if (corners != null && !corners.isEmpty()) {
                 for (var corner : corners) {
+                    var x = corner.x / (double) params.divisor.value;
+                    var y = corner.y / (double) params.divisor.value;
+
                     Imgproc.circle(
                             in.getLeft(),
-                            corner,
+                            new Point(x, y),
                             params.radius,
                             ColorHelper.colorToScalar(params.color),
                             params.radius);
@@ -136,6 +145,27 @@ public class Draw3dTargetsPipe
         return null;
     }
 
+    private void divideMat2f(MatOfPoint2f src, MatOfPoint dst) {
+        var hull = src.toArray();
+        var pointArray = new Point[hull.length];
+        for(int i = 0; i < hull.length; i++) {
+            var hullAtI= hull[i];
+            pointArray[i] = new Point(hullAtI.x / (double) params.divisor.value,
+                hullAtI.y / (double) params.divisor.value);
+        }
+        dst.fromArray(pointArray);
+    }
+
+    /**
+     * Scale a given point list by the current frame divisor. the point list is mutated!
+     */
+    private void dividePointList(List<Point> points) {
+        for(var p: points) {
+            p.x = p.x / (double) params.divisor.value;
+            p.y = p.y / (double) params.divisor.value;
+        }
+    }
+
     public static class Draw3dContoursParams {
         public int radius = 2;
         public Color color = Color.RED;
@@ -143,14 +173,16 @@ public class Draw3dTargetsPipe
         public final boolean shouldDraw;
         public final TargetModel targetModel;
         public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
+        public final FrameDivisor divisor;
 
         public Draw3dContoursParams(
-                boolean shouldDraw,
-                CameraCalibrationCoefficients cameraCalibrationCoefficients,
-                TargetModel targetModel) {
+            boolean shouldDraw,
+            CameraCalibrationCoefficients cameraCalibrationCoefficients,
+            TargetModel targetModel, FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
             this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
             this.targetModel = targetModel;
+            this.divisor = divisor;
         }
     }
 }

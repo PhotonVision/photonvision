@@ -36,7 +36,6 @@ public class MJPGFrameConsumer {
 
     private CvSource cvSource;
     private MjpegServer mjpegServer;
-    private FrameDivisor divisor = FrameDivisor.NONE;
 
     @SuppressWarnings("FieldCanBeLocal")
     private VideoListener listener;
@@ -97,21 +96,9 @@ public class MJPGFrameConsumer {
         this(name, 320, 240, port);
     }
 
-    public void setFrameDivisor(FrameDivisor divisor) {
-        this.divisor = divisor;
-    }
-
     public void accept(Frame frame) {
         if (frame != null && !frame.image.getMat().empty()) {
-            if (divisor != FrameDivisor.NONE) {
-                var tempMat = new Mat();
-                Imgproc.resize(
-                        frame.image.getMat(), tempMat, getScaledSize(frame.image.getMat().size(), divisor));
-                cvSource.putFrame(tempMat);
-                tempMat.release();
-            } else {
-                cvSource.putFrame(frame.image.getMat());
-            }
+            cvSource.putFrame(frame.image.getMat());
         }
     }
 

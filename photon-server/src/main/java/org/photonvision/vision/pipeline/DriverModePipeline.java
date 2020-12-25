@@ -49,7 +49,7 @@ public class DriverModePipeline
         rotateImagePipe.setParams(rotateImageParams);
 
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
-                new Draw2dCrosshairPipe.Draw2dCrosshairParams(frameStaticProperties);
+                new Draw2dCrosshairPipe.Draw2dCrosshairParams(frameStaticProperties, settings.streamingFrameDivisor);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         if (PicamJNI.isSupported()) {

@@ -198,15 +198,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         propField.set(newPropValue, newPropValue);
                     }
                     logger.trace("Set prop " + propName + " to value " + newPropValue);
-
-                    // special case for extra tasks to perform after setting PipelineSettings
-                    if (propName.equals("streamingFrameDivisor")) {
-                        parentModule.dashboardInputStreamer.setFrameDivisor(
-                                parentModule.pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
-                        parentModule.dashboardOutputStreamer.setFrameDivisor(
-                                parentModule.pipelineManager.getCurrentPipelineSettings().streamingFrameDivisor);
-                    }
-
                 } catch (NoSuchFieldException | IllegalAccessException e) {
                     logger.error(
                             "Could not set prop "

@@ -34,7 +34,6 @@ import org.photonvision.vision.target.TrackedTarget;
 public class Draw2dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
 
-    private List<MatOfPoint> m_drawnContours = new ArrayList<>();
     MatOfPoint tempMat = new MatOfPoint();
     private static final Logger logger = new Logger(Draw2dTargetsPipe.class, LogGroup.General);
 
@@ -70,18 +69,14 @@ public class Draw2dTargetsPipe
 
                 if (r == null) continue;
 
-                m_drawnContours.forEach(Mat::release);
-                m_drawnContours.clear();
-                m_drawnContours = new ArrayList<>();
-
                 r.points(vertices);
+                dividePointArray(vertices);
                 contour.fromArray(vertices);
-                m_drawnContours.add(contour);
 
                 if (params.showRotatedBox) {
                     Imgproc.drawContours(
                             in.getLeft(),
-                            m_drawnContours,
+                            List.of(contour),
                             0,
                             rotatedBoxColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
@@ -98,9 +93,10 @@ public class Draw2dTargetsPipe
                 }
 
                 if (params.showShape) {
+                    divideMat(target.m_mainContour.mat, tempMat);
                     Imgproc.drawContours(
                             in.getLeft(),
-                            List.of(target.m_mainContour.mat),
+                            List.of(tempMat),
                             -1,
                             shapeColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
@@ -112,6 +108,7 @@ public class Draw2dTargetsPipe
                             new Point(
                                     center.x + params.kPixelsToOffset * imageSize,
                                     center.y - params.kPixelsToOffset * imageSize);
+                    dividePoint(textPos);
 
                     Imgproc.putText(
                             in.getLeft(),
@@ -125,7 +122,8 @@ public class Draw2dTargetsPipe
 
                 if (params.showCentroid) {
 
-                    Point centroid = target.getTargetOffsetPoint();
+                    Point centroid = target.getTargetOffsetPoint().clone();
+                    dividePoint(centroid);
                     var crosshairRadius = (int) (imageSize * params.kPixelsToCentroidRadius);
                     var x = centroid.x;
                     var y = centroid.y;
@@ -187,7 +185,7 @@ public class Draw2dTargetsPipe
     public static class Draw2dTargetsParams {
         public double kPixelsToText = 0.0025;
         public double kPixelsToThickness = 0.008;
-        public double kPixelsToOffset = 0.02;
+        public double kPixelsToOffset = 0.04;
         public double kPixelsToBoxThickness = 0.007;
         public double kPixelsToCentroidRadius = 0.03;
         public boolean showCentroid = true;

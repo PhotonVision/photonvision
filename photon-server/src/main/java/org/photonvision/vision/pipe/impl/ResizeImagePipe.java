@@ -26,10 +26,6 @@ import org.photonvision.vision.pipe.MutatingPipe;
 /** Pipe that resizes an image to a given resolution */
 public class ResizeImagePipe extends MutatingPipe<Mat, ResizeImagePipe.ResizeImageParams> {
 
-    public ResizeImagePipe() {
-        setParams(ResizeImageParams.DEFAULT);
-    }
-
     /**
     * Process this pipe
     *
@@ -37,34 +33,18 @@ public class ResizeImagePipe extends MutatingPipe<Mat, ResizeImagePipe.ResizeIma
     */
     @Override
     protected Void process(Mat in) {
+        int width = in.cols() / params.getDivisor().value;
+        int height = in.rows() / params.getDivisor().value;
+        Imgproc.resize(in, in, new Size(width, height));
 
-        // if a divisor is set, use that instead of a size.
-        if (params.getDivisor() != null) {
-            int width = in.cols() / params.getDivisor().value;
-            int height = in.rows() / params.getDivisor().value;
-            setParams(new ResizeImageParams(width, height));
-        }
-
-        Imgproc.resize(in, in, params.getSize());
         return null;
     }
 
     public static class ResizeImageParams {
-        public static ResizeImageParams DEFAULT = new ResizeImageParams(320, 240);
-
-        private Size size;
-        private FrameDivisor divisor;
-
-        public ResizeImageParams(int width, int height) {
-            size = new Size(new double[] {width, height});
-        }
+        private final FrameDivisor divisor;
 
         public ResizeImageParams(FrameDivisor divisor) {
             this.divisor = divisor;
-        }
-
-        public Size getSize() {
-            return size;
         }
 
         public FrameDivisor getDivisor() {
