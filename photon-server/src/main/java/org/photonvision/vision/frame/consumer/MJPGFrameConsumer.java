@@ -26,9 +26,7 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.ArrayList;
-import org.opencv.core.Mat;
 import org.opencv.core.Size;
-import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameDivisor;
 

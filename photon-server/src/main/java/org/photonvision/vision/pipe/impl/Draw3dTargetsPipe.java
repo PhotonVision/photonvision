@@ -21,7 +21,6 @@ import java.awt.*;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
@@ -148,19 +147,18 @@ public class Draw3dTargetsPipe
     private void divideMat2f(MatOfPoint2f src, MatOfPoint dst) {
         var hull = src.toArray();
         var pointArray = new Point[hull.length];
-        for(int i = 0; i < hull.length; i++) {
-            var hullAtI= hull[i];
-            pointArray[i] = new Point(hullAtI.x / (double) params.divisor.value,
-                hullAtI.y / (double) params.divisor.value);
+        for (int i = 0; i < hull.length; i++) {
+            var hullAtI = hull[i];
+            pointArray[i] =
+                    new Point(
+                            hullAtI.x / (double) params.divisor.value, hullAtI.y / (double) params.divisor.value);
         }
         dst.fromArray(pointArray);
     }
 
-    /**
-     * Scale a given point list by the current frame divisor. the point list is mutated!
-     */
+    /** Scale a given point list by the current frame divisor. the point list is mutated! */
     private void dividePointList(List<Point> points) {
-        for(var p: points) {
+        for (var p : points) {
             p.x = p.x / (double) params.divisor.value;
             p.y = p.y / (double) params.divisor.value;
         }
@@ -176,9 +174,10 @@ public class Draw3dTargetsPipe
         public final FrameDivisor divisor;
 
         public Draw3dContoursParams(
-            boolean shouldDraw,
-            CameraCalibrationCoefficients cameraCalibrationCoefficients,
-            TargetModel targetModel, FrameDivisor divisor) {
+                boolean shouldDraw,
+                CameraCalibrationCoefficients cameraCalibrationCoefficients,
+                TargetModel targetModel,
+                FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
             this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
             this.targetModel = targetModel;

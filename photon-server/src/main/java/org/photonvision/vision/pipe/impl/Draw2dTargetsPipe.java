@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
@@ -159,20 +158,16 @@ public class Draw2dTargetsPipe
         dst.fromArray(hull);
     }
 
-    /**
-     * Scale a given point list by the current frame divisor. the point list is mutated!
-     */
+    /** Scale a given point list by the current frame divisor. the point list is mutated! */
     private void dividePointList(List<Point> points) {
-        for(var p: points) {
+        for (var p : points) {
             dividePoint(p);
         }
     }
 
-    /**
-     * Scale a given point array by the current frame divisor. the point list is mutated!
-     */
+    /** Scale a given point array by the current frame divisor. the point list is mutated! */
     private void dividePointArray(Point[] points) {
-        for(var p: points) {
+        for (var p : points) {
             dividePoint(p);
         }
     }
@@ -204,7 +199,8 @@ public class Draw2dTargetsPipe
 
         public final FrameDivisor divisor;
 
-        public Draw2dTargetsParams(boolean shouldDraw, boolean showMultipleTargets, FrameDivisor divisor) {
+        public Draw2dTargetsParams(
+                boolean shouldDraw, boolean showMultipleTargets, FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
             this.showMultipleTargets = showMultipleTargets;
             this.divisor = divisor;

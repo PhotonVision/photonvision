@@ -165,7 +165,9 @@ public class ColoredShapePipeline
 
         Draw2dTargetsPipe.Draw2dTargetsParams draw2DTargetsParams =
                 new Draw2dTargetsPipe.Draw2dTargetsParams(
-                        settings.outputShouldDraw, settings.outputShowMultipleTargets, settings.streamingFrameDivisor);
+                        settings.outputShouldDraw,
+                        settings.outputShowMultipleTargets,
+                        settings.streamingFrameDivisor);
         draw2DTargetsParams.showShape = true;
         draw2DTargetsParams.showMaximumBox = false;
         draw2DTargetsParams.showRotatedBox = false;
@@ -178,14 +180,15 @@ public class ColoredShapePipeline
                         settings.offsetSinglePoint,
                         dualOffsetValues,
                         frameStaticProperties,
-                    settings.streamingFrameDivisor);
+                        settings.streamingFrameDivisor);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dTargetsParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
-                        settings.targetModel, settings.streamingFrameDivisor);
+                        settings.targetModel,
+                        settings.streamingFrameDivisor);
         draw3dTargetsPipe.setParams(draw3dTargetsParams);
     }
 

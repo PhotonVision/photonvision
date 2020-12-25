@@ -45,7 +45,7 @@ public class Draw2dCrosshairPipe
         if (params.showCrosshair) {
             double x = params.frameStaticProperties.centerX;
             double y = params.frameStaticProperties.centerY;
-            double scale = params.frameStaticProperties.imageWidth / (double)params.divisor.value / 32.0;
+            double scale = params.frameStaticProperties.imageWidth / (double) params.divisor.value / 32.0;
 
             switch (params.robotOffsetPointMode) {
                 case Single:
@@ -90,7 +90,8 @@ public class Draw2dCrosshairPipe
         public final DualOffsetValues dualOffsetValues;
         private final FrameDivisor divisor;
 
-        public Draw2dCrosshairParams(FrameStaticProperties frameStaticProperties, FrameDivisor divisor) {
+        public Draw2dCrosshairParams(
+                FrameStaticProperties frameStaticProperties, FrameDivisor divisor) {
             shouldDraw = true;
             this.frameStaticProperties = frameStaticProperties;
             robotOffsetPointMode = RobotOffsetPointMode.None;

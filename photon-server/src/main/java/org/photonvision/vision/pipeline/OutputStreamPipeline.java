@@ -55,7 +55,9 @@ public class OutputStreamPipeline {
 
         var draw2DTargetsParams =
                 new Draw2dTargetsPipe.Draw2dTargetsParams(
-                        settings.outputShouldDraw, settings.outputShowMultipleTargets, settings.streamingFrameDivisor);
+                        settings.outputShouldDraw,
+                        settings.outputShowMultipleTargets,
+                        settings.streamingFrameDivisor);
         draw2dTargetsPipe.setParams(draw2DTargetsParams);
 
         var draw2dCrosshairParams =
@@ -65,17 +67,19 @@ public class OutputStreamPipeline {
                         settings.offsetSinglePoint,
                         dualOffsetValues,
                         frameStaticProperties,
-                    settings.streamingFrameDivisor);
+                        settings.streamingFrameDivisor);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dTargetsParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
-                        settings.targetModel, settings.streamingFrameDivisor);
+                        settings.targetModel,
+                        settings.streamingFrameDivisor);
         draw3dTargetsPipe.setParams(draw3dTargetsParams);
 
-        resizeImagePipe.setParams(new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
+        resizeImagePipe.setParams(
+                new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
     }
 
     public CVPipelineResult process(
