@@ -32,6 +32,30 @@ public class PicamJNI {
     private static boolean libraryLoaded = false;
     private static Logger logger = new Logger(PicamJNI.class, LogGroup.Camera);
 
+    public enum SensorModel {
+        Disconnected,
+        OV5647, // Picam v1
+        IMX219, // Picam v2
+        IMX477, // Picam HQ
+        Unknown;
+
+        public String getFriendlyName() {
+            switch (this) {
+                case Disconnected:
+                    return "Disconnected Camera";
+                case OV5647:
+                    return "Camera Module v1";
+                case IMX219:
+                    return "Camera Module v2";
+                case IMX477:
+                    return "HQ Camera";
+                case Unknown:
+                default:
+                    return "Unknown Camera";
+            }
+        }
+    }
+
     public static synchronized void forceLoad() throws IOException {
         if (libraryLoaded || !Platform.isRaspberryPi()) return;
 
@@ -61,8 +85,25 @@ public class PicamJNI {
     }
 
     public static boolean isSupported() {
-        return libraryLoaded;
+        return libraryLoaded && getSensorModel() != SensorModel.Disconnected;
     }
+
+    public static SensorModel getSensorModel() {
+        switch (getSensorModelRaw().toLowerCase()) {
+            case "":
+                return SensorModel.Disconnected;
+            case "ov5647":
+                return SensorModel.OV5647;
+            case "imx219":
+                return SensorModel.IMX219;
+            case "imx477":
+                return SensorModel.IMX477;
+            default:
+                return SensorModel.Unknown;
+        }
+    }
+
+    private static native String getSensorModelRaw();
 
     // Everything here is static because multiple picams are unsupported at the hardware level
 

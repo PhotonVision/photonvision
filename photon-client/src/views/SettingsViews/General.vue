@@ -205,7 +205,7 @@ export default {
           return `${this.settings.hardwarePlatform}`;
         },
         gpuAccel() {
-          return  `${this.settings.gpuAcceleration ? "Enabled" : "Unsupported"}${this.settings.gpuAcceleration ? " (" + this.settings.gpuAcceleration + " mode)" : ""}`
+          return  `${this.settings.gpuAcceleration ? "Enabled" : "Unsupported"} ${this.settings.gpuAcceleration ? "(" + this.settings.gpuAcceleration + ")" : ""}`
         },
         metrics() {
           console.log(this.$store.state.metrics);
