@@ -21,6 +21,8 @@ import edu.wpi.cscore.VideoMode;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.AcceleratedPicamFrameProvider;
@@ -28,6 +30,7 @@ import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class ZeroCopyPicamSource implements VisionSource {
+    private static final Logger logger = new Logger(ZeroCopyPicamSource.class, LogGroup.Camera);
 
     private final VisionSourceSettables settables;
     private final AcceleratedPicamFrameProvider frameProvider;
@@ -88,12 +91,10 @@ public class ZeroCopyPicamSource implements VisionSource {
             super(configuration);
 
             videoModes = new HashMap<>();
+            PicamJNI.SensorModel sensorModel = PicamJNI.getSensorModel();
 
-            // TODO add IMX219 detection to the picam driver
-            //            if(PicamJNI.isIMX219()) {
-            if (false) {
-                // Settings for the Picam V2
-                // TODO determine multipliers
+            if (sensorModel == PicamJNI.SensorModel.IMX219) {
+                // Settings for the IMX219 sensor, which is used on the Pi Camera Module v2
                 videoModes.put(
                         0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 120, 120, .39));
                 videoModes.put(
@@ -103,7 +104,15 @@ public class ZeroCopyPicamSource implements VisionSource {
                 videoModes.put(
                         3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, .53));
             } else {
-                // "High Quality" picam falls back on settings for OV sensor
+                if (sensorModel == PicamJNI.SensorModel.IMX477) {
+                    logger.warn(
+                            "It appears you are using a Pi HQ Camera. This camera is not officially supported. You will have to set your camera FOV differently based on resolution.");
+                } else if (sensorModel == PicamJNI.SensorModel.Unknown) {
+                    logger.warn(
+                            "You have an unknown sensor connected to your Pi over CSI! This is likely a bug. If it is not, then you will have to set your camera FOV differently based on resolution.");
+                }
+
+                // Settings for the OV5647 sensor, which is used by the Pi Camera Module v1
                 videoModes.put(
                         0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 90, 90, 1));
                 videoModes.put(

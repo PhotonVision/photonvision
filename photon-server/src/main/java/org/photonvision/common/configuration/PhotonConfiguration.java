@@ -111,7 +111,7 @@ public class PhotonConfiguration {
         generalSubmap.put(
                 "gpuAcceleration",
                 PicamJNI.isSupported()
-                        ? "Zerocopy MMAL"
+                        ? "Zerocopy MMAL on " + PicamJNI.getSensorModel().getFriendlyName()
                         : ""); // TODO add support for other types of GPU accel
         generalSubmap.put("hardwareModel", hardwareConfig.deviceName);
         generalSubmap.put("hardwarePlatform", Platform.getCurrentPlatform().toString());
