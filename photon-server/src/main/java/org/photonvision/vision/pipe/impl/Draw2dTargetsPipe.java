@@ -18,20 +18,23 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.*;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
+import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
 
-    private List<MatOfPoint> m_drawnContours = new ArrayList<>();
+    MatOfPoint tempMat = new MatOfPoint();
+    private static final Logger logger = new Logger(Draw2dTargetsPipe.class, LogGroup.General);
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
@@ -65,18 +68,14 @@ public class Draw2dTargetsPipe
 
                 if (r == null) continue;
 
-                m_drawnContours.forEach(Mat::release);
-                m_drawnContours.clear();
-                m_drawnContours = new ArrayList<>();
-
                 r.points(vertices);
+                dividePointArray(vertices);
                 contour.fromArray(vertices);
-                m_drawnContours.add(contour);
 
                 if (params.showRotatedBox) {
                     Imgproc.drawContours(
                             in.getLeft(),
-                            m_drawnContours,
+                            List.of(contour),
                             0,
                             rotatedBoxColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
@@ -93,9 +92,10 @@ public class Draw2dTargetsPipe
                 }
 
                 if (params.showShape) {
+                    divideMat(target.m_mainContour.mat, tempMat);
                     Imgproc.drawContours(
                             in.getLeft(),
-                            List.of(target.m_mainContour.mat),
+                            List.of(tempMat),
                             -1,
                             shapeColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
@@ -107,6 +107,7 @@ public class Draw2dTargetsPipe
                             new Point(
                                     center.x + params.kPixelsToOffset * imageSize,
                                     center.y - params.kPixelsToOffset * imageSize);
+                    dividePoint(textPos);
 
                     Imgproc.putText(
                             in.getLeft(),
@@ -120,7 +121,8 @@ public class Draw2dTargetsPipe
 
                 if (params.showCentroid) {
 
-                    Point centroid = target.getTargetOffsetPoint();
+                    Point centroid = target.getTargetOffsetPoint().clone();
+                    dividePoint(centroid);
                     var crosshairRadius = (int) (imageSize * params.kPixelsToCentroidRadius);
                     var x = centroid.x;
                     var y = centroid.y;
@@ -148,10 +150,37 @@ public class Draw2dTargetsPipe
         return null;
     }
 
+    private void divideMat(MatOfPoint src, MatOfPoint dst) {
+        var hull = src.toArray();
+        for (Point point : hull) {
+            dividePoint(point);
+        }
+        dst.fromArray(hull);
+    }
+
+    /** Scale a given point list by the current frame divisor. the point list is mutated! */
+    private void dividePointList(List<Point> points) {
+        for (var p : points) {
+            dividePoint(p);
+        }
+    }
+
+    /** Scale a given point array by the current frame divisor. the point list is mutated! */
+    private void dividePointArray(Point[] points) {
+        for (var p : points) {
+            dividePoint(p);
+        }
+    }
+
+    private void dividePoint(Point p) {
+        p.x = p.x / (double) params.divisor.value;
+        p.y = p.y / (double) params.divisor.value;
+    }
+
     public static class Draw2dTargetsParams {
         public double kPixelsToText = 0.0025;
         public double kPixelsToThickness = 0.008;
-        public double kPixelsToOffset = 0.02;
+        public double kPixelsToOffset = 0.04;
         public double kPixelsToBoxThickness = 0.007;
         public double kPixelsToCentroidRadius = 0.03;
         public boolean showCentroid = true;
@@ -168,10 +197,13 @@ public class Draw2dTargetsPipe
         public final boolean showMultipleTargets;
         public final boolean shouldDraw;
 
-        // TODO: set other params from UI/settings file?
-        public Draw2dTargetsParams(boolean shouldDraw, boolean showMultipleTargets) {
+        public final FrameDivisor divisor;
+
+        public Draw2dTargetsParams(
+                boolean shouldDraw, boolean showMultipleTargets, FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
             this.showMultipleTargets = showMultipleTargets;
+            this.divisor = divisor;
         }
     }
 }

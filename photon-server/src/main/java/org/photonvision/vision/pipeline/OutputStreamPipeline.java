@@ -39,8 +39,9 @@ public class OutputStreamPipeline {
     private final Draw2dTargetsPipe draw2dTargetsPipe = new Draw2dTargetsPipe();
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+    private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
-    private final long[] pipeProfileNanos = new long[10];
+    private final long[] pipeProfileNanos = new long[12];
 
     protected void setPipeParams(
             FrameStaticProperties frameStaticProperties, AdvancedPipelineSettings settings) {
@@ -54,7 +55,9 @@ public class OutputStreamPipeline {
 
         var draw2DTargetsParams =
                 new Draw2dTargetsPipe.Draw2dTargetsParams(
-                        settings.outputShouldDraw, settings.outputShowMultipleTargets);
+                        settings.outputShouldDraw,
+                        settings.outputShowMultipleTargets,
+                        settings.streamingFrameDivisor);
         draw2dTargetsPipe.setParams(draw2DTargetsParams);
 
         var draw2dCrosshairParams =
@@ -63,15 +66,20 @@ public class OutputStreamPipeline {
                         settings.offsetRobotOffsetMode,
                         settings.offsetSinglePoint,
                         dualOffsetValues,
-                        frameStaticProperties);
+                        frameStaticProperties,
+                        settings.streamingFrameDivisor);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dTargetsParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
-                        settings.targetModel);
+                        settings.targetModel,
+                        settings.streamingFrameDivisor);
         draw3dTargetsPipe.setParams(draw3dTargetsParams);
+
+        resizeImagePipe.setParams(
+                new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
     }
 
     public CVPipelineResult process(
@@ -85,34 +93,38 @@ public class OutputStreamPipeline {
 
         long sumPipeNanosElapsed = 0L;
 
+        // Resize both in place before doing any conversion
+        sumPipeNanosElapsed += pipeProfileNanos[0] = resizeImagePipe.run(inMat).nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
+
         // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
         var outputMatPipeResult = outputMatPipe.run(outMat);
-        sumPipeNanosElapsed += pipeProfileNanos[0] = outputMatPipeResult.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[2] = outputMatPipeResult.nanosElapsed;
 
         // Draw 2D Crosshair on input and output
         var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
-        sumPipeNanosElapsed += pipeProfileNanos[1] = draw2dCrosshairResultOnInput.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
-        var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
-        sumPipeNanosElapsed += pipeProfileNanos[2] = draw2dCrosshairResultOnOutput.nanosElapsed;
+        var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
+        sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
         // Draw 2D contours on input and output
         var draw2dTargetsOnInput = draw2dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
-        sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dTargetsOnInput.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
 
         var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
-        sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dTargetsOnOutput.nanosElapsed;
+        sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
 
         // Draw 3D Targets on input and output if necessary
         if (settings.solvePNPEnabled) {
             var drawOnInputResult = draw3dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
-            sumPipeNanosElapsed += pipeProfileNanos[5] = drawOnInputResult.nanosElapsed;
+            sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
 
             var drawOnOutputResult = draw3dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
-            sumPipeNanosElapsed += pipeProfileNanos[6] = drawOnOutputResult.nanosElapsed;
+            sumPipeNanosElapsed += pipeProfileNanos[8] = drawOnOutputResult.nanosElapsed;
         } else {
-            pipeProfileNanos[5] = 0;
-            pipeProfileNanos[6] = 0;
+            pipeProfileNanos[7] = 0;
+            pipeProfileNanos[8] = 0;
         }
 
         var fpsResult = calculateFPSPipe.run(null);

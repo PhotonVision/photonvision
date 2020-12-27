@@ -24,6 +24,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
+import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.MutatingPipe;
@@ -39,13 +40,12 @@ public class Draw2dCrosshairPipe
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         if (!params.shouldDraw) return null;
 
-        var camCenterPoint = params.frameStaticProperties.centerPoint;
         var image = in.getLeft();
 
         if (params.showCrosshair) {
             double x = params.frameStaticProperties.centerX;
             double y = params.frameStaticProperties.centerY;
-            double scale = params.frameStaticProperties.imageWidth / 32.0;
+            double scale = params.frameStaticProperties.imageWidth / (double) params.divisor.value / 32.0;
 
             switch (params.robotOffsetPointMode) {
                 case Single:
@@ -68,6 +68,9 @@ public class Draw2dCrosshairPipe
                     break;
             }
 
+            x /= (double) params.divisor.value;
+            y /= (double) params.divisor.value;
+
             Point xMax = new Point(x + scale, y);
             Point xMin = new Point(x - scale, y);
             Point yMax = new Point(x, y + scale);
@@ -88,13 +91,16 @@ public class Draw2dCrosshairPipe
         public final RobotOffsetPointMode robotOffsetPointMode;
         public final Point singleOffsetPoint;
         public final DualOffsetValues dualOffsetValues;
+        private final FrameDivisor divisor;
 
-        public Draw2dCrosshairParams(FrameStaticProperties frameStaticProperties) {
+        public Draw2dCrosshairParams(
+                FrameStaticProperties frameStaticProperties, FrameDivisor divisor) {
             shouldDraw = true;
             this.frameStaticProperties = frameStaticProperties;
             robotOffsetPointMode = RobotOffsetPointMode.None;
             singleOffsetPoint = new Point();
             dualOffsetValues = new DualOffsetValues();
+            this.divisor = divisor;
         }
 
         public Draw2dCrosshairParams(
@@ -102,12 +108,14 @@ public class Draw2dCrosshairPipe
                 RobotOffsetPointMode robotOffsetPointMode,
                 Point singleOffsetPoint,
                 DualOffsetValues dualOffsetValues,
-                FrameStaticProperties frameStaticProperties) {
+                FrameStaticProperties frameStaticProperties,
+                FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
             this.frameStaticProperties = frameStaticProperties;
             this.robotOffsetPointMode = robotOffsetPointMode;
             this.singleOffsetPoint = singleOffsetPoint;
             this.dualOffsetValues = dualOffsetValues;
+            this.divisor = divisor;
         }
     }
 }
