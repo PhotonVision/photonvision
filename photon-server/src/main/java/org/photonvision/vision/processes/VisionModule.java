@@ -124,6 +124,8 @@ public class VisionModule {
         addResultConsumer(
                 (result) ->
                         lastPipelineResultBestTarget = result.hasTargets() ? result.targets.get(0) : null);
+        addResultConsumer(result -> inputFrameSaver.accept(result.inputFrame));
+        addResultConsumer(result -> outputFrameSaver.accept(result.outputFrame));
 
         setPipeline(visionSource.getSettables().getConfiguration().currentPipelineIndex);
 
@@ -176,11 +178,6 @@ public class VisionModule {
     }
 
     private void recreateFpsLimitedResultConsumers() {
-        // Important! These must come before the stream result consumers because the stream result
-        // consumers release the frame
-        fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
-        fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
-
         fpsLimitedResultConsumers.add(
                 result -> {
                     if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
