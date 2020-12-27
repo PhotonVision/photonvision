@@ -105,7 +105,7 @@ public class OutputStreamPipeline {
         var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
         sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
-        var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
+        var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
         sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
         // Draw 2D contours on input and output

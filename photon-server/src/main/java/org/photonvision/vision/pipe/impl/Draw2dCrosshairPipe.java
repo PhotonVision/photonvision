@@ -68,6 +68,9 @@ public class Draw2dCrosshairPipe
                     break;
             }
 
+            x /= (double) params.divisor.value;
+            y /= (double) params.divisor.value;
+
             Point xMax = new Point(x + scale, y);
             Point xMin = new Point(x - scale, y);
             Point yMax = new Point(x, y + scale);
