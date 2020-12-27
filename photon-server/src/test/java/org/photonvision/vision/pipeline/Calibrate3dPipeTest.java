@@ -34,7 +34,9 @@ import org.junit.jupiter.api.Test;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
@@ -140,7 +142,7 @@ public class Calibrate3dPipeTest {
     }
 
     @Test
-    public void calibrateSquares320x240() {
+    public void calibrateSquares320x240_pi() {
         // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "piCam", "320_240_1").toFile();
@@ -149,17 +151,7 @@ public class Calibrate3dPipeTest {
     }
 
     @Test
-    public void calibrateSquares320x240_9x7_board() {
-        // Gloworm Beta
-        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
-        File dir = Path.of(base, "piCam", "320_240_2").toFile();
-        Size sz = new Size(320, 240);
-        Size boardDim = new Size(9, 7);
-        calibrateSquaresCommon(sz, dir, boardDim);
-    }
-
-    @Test
-    public void calibrateSquares640x480() {
+    public void calibrateSquares640x480_pi() {
         // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "piCam", "640_480_1").toFile();
@@ -168,7 +160,7 @@ public class Calibrate3dPipeTest {
     }
 
     @Test
-    public void calibrateSquares960x720() {
+    public void calibrateSquares960x720_pi() {
         // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "piCam", "960_720_1").toFile();
@@ -177,7 +169,7 @@ public class Calibrate3dPipeTest {
     }
 
     @Test
-    public void calibrateSquares1920x1080() {
+    public void calibrateSquares1920x1080_pi() {
         // Pi3 and V1.3 camera
         String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
         File dir = Path.of(base, "piCam", "1920_1080_1").toFile();
@@ -185,16 +177,71 @@ public class Calibrate3dPipeTest {
         calibrateSquaresCommon(sz, dir);
     }
 
+    @Test
+    public void calibrateSquares320x240_gloworm() {
+        // Gloworm Beta
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "gloworm", "320_240_1").toFile();
+        Size sz = new Size(320, 240);
+        Size boardDim = new Size(9, 7);
+        calibrateSquaresCommon(sz, dir, boardDim);
+    }
+
+    @Test
+    public void calibrateSquares_960_720_gloworm() {
+        // Gloworm Beta
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "gloworm", "960_720_1").toFile();
+        Size sz = new Size(960, 720);
+        Size boardDim = new Size(9, 7);
+        calibrateSquaresCommon(sz, dir, boardDim);
+    }
+
+    @Test
+    public void calibrateSquares_1280_720_gloworm() {
+        // Gloworm Beta
+        // This image set will return a fairly offset Y-pixel for the optical center point
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "gloworm", "1280_720_1").toFile();
+        Size sz = new Size(1280, 720);
+        Size boardDim = new Size(9, 7);
+        calibrateSquaresCommon(sz, dir, boardDim, 640, 192);
+    }
+
+    @Test
+    public void calibrateSquares_1920_1080_gloworm() {
+        // Gloworm Beta
+        // This image set has most samples on the right, and is expected to return a slightly
+        // wonky calibration.
+        String base = TestUtils.getSquaresBoardImagesPath().toAbsolutePath().toString();
+        File dir = Path.of(base, "gloworm", "1920_1080_1").toFile();
+        Size sz = new Size(1920, 1080);
+        Size boardDim = new Size(9, 7);
+        calibrateSquaresCommon(sz, dir, boardDim, 1311, 540);
+    }
+
     public void calibrateSquaresCommon(Size imgRes, File rootFolder) {
-        calibrateSquaresCommon(imgRes, rootFolder, new Size(8, 8), Units.inchesToMeters(1));
+        calibrateSquaresCommon(imgRes, rootFolder, new Size(8, 8));
     }
 
     public void calibrateSquaresCommon(Size imgRes, File rootFolder, Size boardDim) {
-        calibrateSquaresCommon(imgRes, rootFolder, boardDim, Units.inchesToMeters(1));
+        calibrateSquaresCommon(
+                imgRes, rootFolder, boardDim, Units.inchesToMeters(1), imgRes.width / 2, imgRes.height / 2);
     }
 
     public void calibrateSquaresCommon(
-            Size imgRes, File rootFolder, Size boardDim, double boardGridSize_m) {
+            Size imgRes, File rootFolder, Size boardDim, double expectedXCenter, double expectedYCenter) {
+        calibrateSquaresCommon(
+                imgRes, rootFolder, boardDim, Units.inchesToMeters(1), expectedXCenter, expectedYCenter);
+    }
+
+    public void calibrateSquaresCommon(
+            Size imgRes,
+            File rootFolder,
+            Size boardDim,
+            double boardGridSize_m,
+            double expectedXCenter,
+            double expectedYCenter) {
 
         int startMatCount = CVMat.getMatCount();
 
@@ -232,20 +279,7 @@ public class Calibrate3dPipeTest {
         var cal = calibration3dPipeline.tryCalibration();
         calibration3dPipeline.finishCalibration();
 
-        // for (var file : directoryListing) {
-        //    if (file.isFile()) {
-        //        Mat raw = Imgcodecs.imread(file.getAbsolutePath());
-        //        Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
-        //        Imgproc.undistort(
-        //                raw, undistorted, cal.cameraIntrinsics.getAsMat(),
-        // cal.cameraExtrinsics.getAsMat());
-        //
-        //        TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1); //apparently
-        // flakey in CI?
-        //        raw.release();
-        //        undistorted.release();
-        //    }
-        // }
+        // visuallyDebugDistortion(directoryListing, imgRes, cal );
 
         // Confirm we have indeed gotten valid calibration objects
         assertNotNull(cal);
@@ -255,9 +289,9 @@ public class Calibrate3dPipeTest {
         // center of the sensor.
         // For all our data samples so far, this should be true.
         double centerXErrPct =
-                Math.abs(cal.cameraIntrinsics.data[2] - imgRes.width / 2) / (imgRes.width / 2) * 100.0;
+                Math.abs(cal.cameraIntrinsics.data[2] - expectedXCenter) / (expectedXCenter) * 100.0;
         double centerYErrPct =
-                Math.abs(cal.cameraIntrinsics.data[5] - imgRes.height / 2) / (imgRes.height / 2) * 100.0;
+                Math.abs(cal.cameraIntrinsics.data[5] - expectedYCenter) / (expectedYCenter) * 100.0;
         assertTrue(centerXErrPct < 10.0);
         assertTrue(centerYErrPct < 10.0);
 
@@ -270,5 +304,31 @@ public class Calibrate3dPipeTest {
 
         // Confirm we didn't get leaky on our mat usage
         assertTrue(CVMat.getMatCount() == startMatCount);
+    }
+
+    /**
+    * Uses a given camera coefficents matrix set to "undistort" every image file found in a given
+    * directory and display them. Provides an easy way to visually debug the results of the
+    * calibration routine. Seems to play havoc with CI and takes a chunk of time, so shouldn't
+    * usually be left active in tests.
+    *
+    * @param directoryListing
+    * @param imgRes
+    * @param cal
+    */
+    @SuppressWarnings("unused")
+    private void visuallyDebugDistortion(
+            File[] directoryListing, Size imgRes, CameraCalibrationCoefficients cal) {
+        for (var file : directoryListing) {
+            if (file.isFile()) {
+                Mat raw = Imgcodecs.imread(file.getAbsolutePath());
+                Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
+                Imgproc.undistort(
+                        raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.cameraExtrinsics.getAsMat());
+                TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1);
+                raw.release();
+                undistorted.release();
+            }
+        }
     }
 }
