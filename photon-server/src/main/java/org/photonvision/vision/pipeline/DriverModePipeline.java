@@ -55,7 +55,8 @@ public class DriverModePipeline
                         frameStaticProperties, settings.streamingFrameDivisor);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
-        resizeImagePipe.setParams(new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
+        resizeImagePipe.setParams(
+                new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
 
         if (PicamJNI.isSupported()) {
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
@@ -79,7 +80,7 @@ public class DriverModePipeline
 
         totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
 
-        if(!accelerated) {
+        if (!accelerated) {
             var rotateImageResult = rotateImagePipe.run(inputMat);
             totalNanos += rotateImageResult.nanosElapsed;
         }
