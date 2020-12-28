@@ -74,7 +74,7 @@ public class Calibrate3dPipeline
     private final Path imageDir = ConfigManager.getInstance().getCalibDir();
 
     public Calibrate3dPipeline() {
-        this(25);
+        this(12);
     }
 
     public Calibrate3dPipeline(int minSnapshots) {

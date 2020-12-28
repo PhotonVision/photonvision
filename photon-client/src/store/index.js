@@ -119,7 +119,7 @@ export default new Vuex.Store({
         calibrationData: {
             count: 0,
             videoModeIndex: 0,
-            minCount: 25,
+            minCount: 12, // Gets set by backend anyways, but we need a sane default
             hasEnough: false,
             squareSizeIn: 1.0,
             patternWidth: 8,
