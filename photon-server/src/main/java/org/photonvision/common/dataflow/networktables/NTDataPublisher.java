@@ -49,6 +49,10 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private NetworkTableEntry targetPoseEntry;
     private NetworkTableEntry targetSkewEntry;
 
+    // The raw position of the best target, in pixels.
+    private NetworkTableEntry bestTargetPosX;
+    private NetworkTableEntry bestTargetPosY;
+
     private final Supplier<Integer> pipelineIndexSupplier;
     private final BooleanSupplier driverModeSupplier;
 
@@ -104,6 +108,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         // TODO: Log
     }
 
+    @SuppressWarnings("DuplicatedCode")
     private void removeEntries() {
         if (rawBytesEntry != null) rawBytesEntry.delete();
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
@@ -117,6 +122,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (targetYawEntry != null) targetYawEntry.delete();
         if (targetPoseEntry != null) targetPoseEntry.delete();
         if (targetSkewEntry != null) targetSkewEntry.delete();
+        if (bestTargetPosX != null) bestTargetPosX.delete();
+        if (bestTargetPosY != null) bestTargetPosY.delete();
     }
 
     private void updateEntries() {
@@ -143,6 +150,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         targetYawEntry = subTable.getEntry("targetYaw");
         targetPoseEntry = subTable.getEntry("targetPose");
         targetSkewEntry = subTable.getEntry("targetSkew");
+
+        bestTargetPosX = subTable.getEntry("targetPixelsX");
+        bestTargetPosY = subTable.getEntry("targetPixelsY");
     }
 
     public void updateCameraNickname(String newCameraNickname) {
@@ -176,12 +186,18 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             var poseY = bestTarget.getCameraToTarget().getTranslation().getY();
             var poseRot = bestTarget.getCameraToTarget().getRotation().getDegrees();
             targetPoseEntry.forceSetDoubleArray(new double[] {poseX, poseY, poseRot});
+
+            var targetOffsetPoint = bestTarget.getTargetOffsetPoint();
+            bestTargetPosX.forceSetDouble(targetOffsetPoint.x);
+            bestTargetPosY.forceSetDouble(targetOffsetPoint.y);
         } else {
             targetPitchEntry.forceSetDouble(0);
             targetYawEntry.forceSetDouble(0);
             targetAreaEntry.forceSetDouble(0);
             targetSkewEntry.forceSetDouble(0);
             targetPoseEntry.forceSetDoubleArray(new double[] {0, 0, 0});
+            bestTargetPosX.forceSetDouble(0);
+            bestTargetPosY.forceSetDouble(0);
         }
         rootTable.getInstance().flush();
     }
