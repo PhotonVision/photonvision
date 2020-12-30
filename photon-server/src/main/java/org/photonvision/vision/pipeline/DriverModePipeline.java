@@ -27,6 +27,7 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
+import org.photonvision.vision.pipe.impl.ResizeImagePipe;
 import org.photonvision.vision.pipe.impl.RotateImagePipe;
 import org.photonvision.vision.pipeline.result.DriverModePipelineResult;
 
@@ -36,6 +37,7 @@ public class DriverModePipeline
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
+    private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
     public DriverModePipeline() {
         settings = new DriverModePipelineSettings();
@@ -53,6 +55,9 @@ public class DriverModePipeline
                         frameStaticProperties, settings.streamingFrameDivisor);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
+        resizeImagePipe.setParams(
+                new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
+
         if (PicamJNI.isSupported()) {
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
             PicamJNI.setShouldCopyColor(true);
@@ -61,20 +66,29 @@ public class DriverModePipeline
 
     @Override
     public DriverModePipelineResult process(Frame frame, DriverModePipelineSettings settings) {
+        long totalNanos = 0;
+        boolean accelerated = PicamJNI.isSupported();
+
         // apply pipes
         var inputMat = frame.image.getMat();
-        if (inputMat.channels() == 1 && PicamJNI.isSupported()) {
+        if (inputMat.channels() == 1 && accelerated) {
             long colorMatPtr = PicamJNI.grabFrame(true);
             if (colorMatPtr == 0) throw new RuntimeException("Got null Mat from GPU Picam driver");
             frame.image.release();
             inputMat = new Mat(colorMatPtr);
         }
 
-        var rotateImageResult = rotateImagePipe.run(inputMat);
+        totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
+
+        if (!accelerated) {
+            var rotateImageResult = rotateImagePipe.run(inputMat);
+            totalNanos += rotateImageResult.nanosElapsed;
+        }
+
         var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
 
         // calculate elapsed nanoseconds
-        long totalNanos = rotateImageResult.nanosElapsed + draw2dCrosshairResult.nanosElapsed;
+        totalNanos += draw2dCrosshairResult.nanosElapsed;
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
