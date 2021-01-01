@@ -70,11 +70,11 @@ public class CVMat implements Releasable {
     @Override
     public void release() {
         // If this mat is empty, all we can do is return
-        if(mat.empty()) return;
+        if (mat.empty()) return;
 
         // If the mat isn't in the hashmap, we can't remove it
         Integer matNo = allMats.get(mat);
-        if(matNo != null) allMats.remove(mat);
+        if (matNo != null) allMats.remove(mat);
         mat.release();
 
         if (shouldPrint) {
