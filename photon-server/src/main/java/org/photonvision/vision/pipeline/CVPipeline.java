@@ -29,7 +29,8 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
     protected FrameStaticProperties frameStaticProperties;
     protected QuirkyCamera cameraQuirks;
 
-    protected void setPipeParams(FrameStaticProperties frameStaticProperties, S settings, QuirkyCamera cameraQuirks) {
+    protected void setPipeParams(
+            FrameStaticProperties frameStaticProperties, S settings, QuirkyCamera cameraQuirks) {
         this.settings = settings;
         this.frameStaticProperties = frameStaticProperties;
         this.cameraQuirks = cameraQuirks;
