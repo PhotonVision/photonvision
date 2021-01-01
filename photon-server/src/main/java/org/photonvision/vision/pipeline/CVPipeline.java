@@ -40,7 +40,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
 
     protected abstract void setPipeParamsImpl();
 
-    protected abstract R process(Frame frame, S settings, QuirkyCamera cameraQuirks);
+    protected abstract R process(Frame frame, S settings);
 
     public S getSettings() {
         return settings;
@@ -59,7 +59,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         if (frame.image.getMat().empty()) {
             return (R) new CVPipelineResult(0, 0, List.of(), frame);
         }
-        R result = process(frame, settings, cameraQuirks);
+        R result = process(frame, settings);
 
         // Important! This assumes that the frame timestamp has the same epoch as System.nanoTime (which
         // itself has an arbitrary epoch)

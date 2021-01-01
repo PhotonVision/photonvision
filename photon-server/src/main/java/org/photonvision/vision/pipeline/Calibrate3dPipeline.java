@@ -38,7 +38,6 @@ import org.photonvision.raspi.PicamJNI;
 import org.photonvision.server.SocketHandler;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
-import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -103,8 +102,7 @@ public class Calibrate3dPipeline
     }
 
     @Override
-    protected CVPipelineResult process(
-            Frame frame, Calibration3dPipelineSettings settings, QuirkyCamera cameraQuirks) {
+    protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
         Mat inputColorMat = frame.image.getMat();
         if (inputColorMat.channels() == 1
                 && cameraQuirks.hasQuirk(CameraQuirk.PiCam)
