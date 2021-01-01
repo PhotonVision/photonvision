@@ -270,7 +270,7 @@ public class VisionModule {
 
     void setDriverMode(boolean isDriverMode) {
         pipelineManager.setDriverMode(isDriverMode);
-        setVisionLEDs(!isDriverMode);
+        if (isVendorCamera()) setVisionLEDs(!isDriverMode);
         saveAndBroadcastAll();
     }
 
@@ -368,7 +368,7 @@ public class VisionModule {
             visionSource.getSettables().setGain(Math.max(0, config.cameraGain));
         }
 
-        setVisionLEDs(config.ledMode);
+        if (isVendorCamera()) setVisionLEDs(config.ledMode);
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
                 pipelineManager.getCurrentPipelineIndex();
