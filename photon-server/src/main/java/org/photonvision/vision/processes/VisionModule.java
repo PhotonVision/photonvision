@@ -26,6 +26,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.Triconsumer;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
@@ -66,6 +67,8 @@ public class VisionModule {
     private final StreamRunnable streamRunnable;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     private final LinkedList<CVPipelineResultConsumer> fpsLimitedResultConsumers = new LinkedList<>();
+    // Raw result consumers run before any drawing has been done by the OutputStreamPipeline
+    private final LinkedList<Triconsumer<Frame, Frame, List<TrackedTarget>>> rawResultConsumers = new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
     protected final int moduleIndex;
@@ -175,7 +178,7 @@ public class VisionModule {
     private void recreateFpsLimitedResultConsumers() {
         // Important! These must come before the stream result consumers because the stream result
         // consumers release the frame
-        fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
+        rawResultConsumers.add((in, out, tgts) -> inputFrameSaver.accept(in));
         fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
 
         fpsLimitedResultConsumers.add(
@@ -249,6 +252,7 @@ public class VisionModule {
                     this.shouldRun = false;
                 }
                 if (shouldRun) {
+                    consumeRawResults(inputFrame, outputFrame, targets);
                     try {
                         var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
                         consumeFpsLimitedResult(osr);
@@ -519,6 +523,15 @@ public class VisionModule {
                 c.accept(result);
             }
             lastFrameConsumeMillis = System.currentTimeMillis();
+        }
+    }
+
+    /**
+     * Consume results prior to drawing on them.
+     */
+    private void consumeRawResults(Frame inputFrame, Frame outputFrame, List<TrackedTarget> targets) {
+        for(var c: rawResultConsumers) {
+            c.accept(inputFrame, outputFrame, targets);
         }
     }
 
