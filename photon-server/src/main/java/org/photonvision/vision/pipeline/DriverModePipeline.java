@@ -23,7 +23,6 @@ import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
@@ -44,8 +43,7 @@ public class DriverModePipeline
     }
 
     @Override
-    protected void setPipeParams(
-            FrameStaticProperties frameStaticProperties, DriverModePipelineSettings settings) {
+    protected void setPipeParamsImpl() {
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);

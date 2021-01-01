@@ -25,7 +25,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.*;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
@@ -68,8 +67,7 @@ public class ColoredShapePipeline
     }
 
     @Override
-    protected void setPipeParams(
-            FrameStaticProperties frameStaticProperties, ColoredShapePipelineSettings settings) {
+    protected void setPipeParamsImpl() {
 
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(

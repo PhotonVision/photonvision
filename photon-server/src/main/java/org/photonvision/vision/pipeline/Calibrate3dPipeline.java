@@ -38,7 +38,6 @@ import org.photonvision.raspi.PicamJNI;
 import org.photonvision.server.SocketHandler;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
@@ -89,8 +88,7 @@ public class Calibrate3dPipeline
     }
 
     @Override
-    protected void setPipeParams(
-            FrameStaticProperties frameStaticProperties, Calibration3dPipelineSettings settings) {
+    protected void setPipeParamsImpl() {
         FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
                 new FindBoardCornersPipe.FindCornersPipeParams(
                         settings.boardHeight, settings.boardWidth, settings.boardType, settings.gridSize);

@@ -25,8 +25,16 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
     protected S settings;
+    protected FrameStaticProperties frameStaticProperties;
 
-    protected abstract void setPipeParams(FrameStaticProperties frameStaticProperties, S settings);
+    protected void setPipeParams(FrameStaticProperties frameStaticProperties, S settings) {
+        this.settings = settings;
+        this.frameStaticProperties = frameStaticProperties;
+
+        setPipeParamsImpl();
+    }
+
+    protected abstract void setPipeParamsImpl();
 
     protected abstract R process(Frame frame, S settings);
 

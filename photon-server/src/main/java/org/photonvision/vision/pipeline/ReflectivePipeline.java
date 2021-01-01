@@ -22,7 +22,6 @@ import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.opencv.DualOffsetValues;
@@ -59,8 +58,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     }
 
     @Override
-    protected void setPipeParams(
-            FrameStaticProperties frameStaticProperties, ReflectivePipelineSettings settings) {
+    protected void setPipeParamsImpl() {
 
         var dualOffsetValues =
                 new DualOffsetValues(
