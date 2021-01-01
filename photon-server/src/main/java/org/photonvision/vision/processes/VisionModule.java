@@ -86,15 +86,6 @@ public class VisionModule {
                         VisionModule.class,
                         visionSource.getSettables().getConfiguration().nickname,
                         LogGroup.VisionModule);
-        this.pipelineManager = pipelineManager;
-        this.visionSource = visionSource;
-        this.visionRunner =
-                new VisionRunner(
-                        this.visionSource.getFrameProvider(),
-                        this.pipelineManager::getCurrentUserPipeline,
-                        this::consumeResult);
-        this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
-        this.moduleIndex = index;
 
         // do this
         if (visionSource instanceof USBCameraSource) {
@@ -104,6 +95,17 @@ public class VisionModule {
         } else {
             cameraQuirks = QuirkyCamera.DefaultCamera;
         }
+
+        this.pipelineManager = pipelineManager;
+        this.visionSource = visionSource;
+        this.visionRunner =
+                new VisionRunner(
+                        this.visionSource.getFrameProvider(),
+                        this.pipelineManager::getCurrentUserPipeline,
+                        this::consumeResult,
+                        this.cameraQuirks);
+        this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
+        this.moduleIndex = index;
 
         DataChangeService.getInstance().addSubscriber(new VisionModuleChangeSubscriber(this));
 
@@ -488,7 +490,8 @@ public class VisionModule {
         consumePipelineResult(result);
 
         // Pipelines like DriverMode and Calibrate3dPipeline have null output frames
-        if (result.inputFrame != null) {
+        if (result.inputFrame != null
+                && (pipelineManager.getCurrentPipelineSettings() instanceof AdvancedPipelineSettings)) {
             streamRunnable.updateData(
                     result.inputFrame,
                     result.outputFrame,

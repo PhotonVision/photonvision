@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -26,10 +27,13 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
     protected S settings;
     protected FrameStaticProperties frameStaticProperties;
+    protected QuirkyCamera cameraQuirks;
 
-    protected void setPipeParams(FrameStaticProperties frameStaticProperties, S settings) {
+    protected void setPipeParams(
+            FrameStaticProperties frameStaticProperties, S settings, QuirkyCamera cameraQuirks) {
         this.settings = settings;
         this.frameStaticProperties = frameStaticProperties;
+        this.cameraQuirks = cameraQuirks;
 
         setPipeParamsImpl();
     }
@@ -46,11 +50,11 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         this.settings = s;
     }
 
-    public R run(Frame frame) {
+    public R run(Frame frame, QuirkyCamera cameraQuirks) {
         if (settings == null) {
             throw new RuntimeException("No settings provided for pipeline!");
         }
-        setPipeParams(frame.frameStaticProperties, settings);
+        setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
 
         if (frame.image.getMat().empty()) {
             return (R) new CVPipelineResult(0, 0, List.of(), frame);

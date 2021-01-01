@@ -192,8 +192,6 @@ public class ColoredShapePipeline
 
     @Override
     protected CVPipelineResult process(Frame frame, ColoredShapePipelineSettings settings) {
-        setPipeParams(frame.frameStaticProperties, settings);
-
         long sumPipeNanosElapsed = 0L;
 
         var rotateImageResult = rotateImagePipe.run(frame.image.getMat());

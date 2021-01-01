@@ -20,6 +20,7 @@ package org.photonvision.vision.pipeline;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
@@ -50,7 +51,7 @@ public class ReflectivePipelineTest {
 
         CVPipelineResult pipelineResult;
 
-        pipelineResult = pipeline.run(frameProvider.get());
+        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
         Assertions.assertTrue(pipelineResult.hasTargets());
@@ -74,7 +75,7 @@ public class ReflectivePipelineTest {
                         TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false),
                         TestUtils.WPI2020Image.FOV);
 
-        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
+        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output");
@@ -84,7 +85,7 @@ public class ReflectivePipelineTest {
         var pipeline = new ReflectivePipeline();
 
         while (true) {
-            CVPipelineResult pipelineResult = pipeline.run(frame);
+            CVPipelineResult pipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
             printTestResults(pipelineResult);
             int preRelease = CVMat.getMatCount();
             pipelineResult.release();

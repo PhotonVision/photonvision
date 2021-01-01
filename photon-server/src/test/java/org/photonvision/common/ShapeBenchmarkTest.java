@@ -40,6 +40,7 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.util.numbers.NumberListUtils;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
@@ -150,7 +151,7 @@ public class ShapeBenchmarkTest {
         // warmup for 5 loops.
         System.out.println("Warming up for 5 loops...");
         for (int i = 0; i < 5; i++) {
-            pipeline.run(frameProvider.get());
+            pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         }
 
         final List<Double> processingTimes = new ArrayList<>();
@@ -168,7 +169,8 @@ public class ShapeBenchmarkTest {
                         + frameProps.imageHeight);
         var benchmarkStartMillis = System.currentTimeMillis();
         do {
-            CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
+            CVPipelineResult pipelineResult =
+                    pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
             pipelineResult.release();
             processingTimes.add(pipelineResult.processingMillis);
             latencyTimes.add(pipelineResult.getLatencyMillis());

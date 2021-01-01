@@ -21,6 +21,7 @@ import java.util.List;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Contour;
@@ -70,11 +71,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         var rotateImageParams = new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
 
-        if (!PicamJNI.isSupported()) {
-            var hsvParams =
-                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
-            hsvPipe.setParams(hsvParams);
-        } else {
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
             PicamJNI.setThresholds(
                     settings.hsvHue.getFirst() / 180d,
                     settings.hsvSaturation.getFirst() / 255d,
@@ -85,6 +82,10 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
             PicamJNI.setShouldCopyColor(settings.inputShouldShow);
+        } else {
+            var hsvParams =
+                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
+            hsvPipe.setParams(hsvParams);
         }
 
         var findContoursParams = new FindContoursPipe.FindContoursParams();
