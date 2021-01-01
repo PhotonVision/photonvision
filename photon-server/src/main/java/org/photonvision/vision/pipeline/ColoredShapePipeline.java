@@ -68,8 +68,7 @@ public class ColoredShapePipeline
     }
 
     @Override
-    protected void setPipeParams(
-            FrameStaticProperties frameStaticProperties, ColoredShapePipelineSettings settings) {
+    protected void setPipeParamsImpl() {
 
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(

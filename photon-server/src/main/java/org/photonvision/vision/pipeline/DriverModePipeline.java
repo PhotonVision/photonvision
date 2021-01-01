@@ -44,8 +44,7 @@ public class DriverModePipeline
     }
 
     @Override
-    protected void setPipeParams(
-            FrameStaticProperties frameStaticProperties, DriverModePipelineSettings settings) {
+    protected void setPipeParamsImpl() {
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);

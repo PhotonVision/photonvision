@@ -59,8 +59,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     }
 
     @Override
-    protected void setPipeParams(
-            FrameStaticProperties frameStaticProperties, ReflectivePipelineSettings settings) {
+    protected void setPipeParamsImpl() {
 
         var dualOffsetValues =
                 new DualOffsetValues(

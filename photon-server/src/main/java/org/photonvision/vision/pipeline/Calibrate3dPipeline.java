@@ -89,8 +89,7 @@ public class Calibrate3dPipeline
     }
 
     @Override
-    protected void setPipeParams(
-            FrameStaticProperties frameStaticProperties, Calibration3dPipelineSettings settings) {
+    protected void setPipeParamsImpl() {
         FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
                 new FindBoardCornersPipe.FindCornersPipeParams(
                         settings.boardHeight, settings.boardWidth, settings.boardType, settings.gridSize);
