@@ -31,6 +31,7 @@
                       "margin-left": "auto",
                       "margin-right": "auto",
                       "max-height": this.maxHeight,
+                      "min-height": '200px',
                       height: `${this.scale}%`,
                       cursor: (this.colorPicking ? `url(${require("../../assets/eyedropper.svg")}),` : "") + "default",
                     };
