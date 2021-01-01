@@ -88,7 +88,8 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
 
                     logger.info("Saved new image at " + savefile);
                 } else if (!curCommand) {
-                    // If the entry is currently false, set it again. This will make sure it shows up on the dashboard.
+                    // If the entry is currently false, set it again. This will make sure it shows up on the
+                    // dashboard.
                     entry.forceSetBoolean(false);
                 }
 
