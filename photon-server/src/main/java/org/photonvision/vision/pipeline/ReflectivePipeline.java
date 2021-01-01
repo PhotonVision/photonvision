@@ -72,7 +72,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         var rotateImageParams = new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
 
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
             PicamJNI.setThresholds(
                     settings.hsvHue.getFirst() / 180d,
                     settings.hsvSaturation.getFirst() / 255d,

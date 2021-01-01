@@ -96,7 +96,7 @@ public class Calibrate3dPipeline
                         new Size(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight));
         calibrate3dPipe.setParams(calibratePipeParams);
 
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
             PicamJNI.setShouldCopyColor(true);
         }
