@@ -24,6 +24,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.*;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -191,9 +192,8 @@ public class ColoredShapePipeline
     }
 
     @Override
-    protected CVPipelineResult process(Frame frame, ColoredShapePipelineSettings settings) {
-        setPipeParams(frame.frameStaticProperties, settings);
-
+    protected CVPipelineResult process(
+            Frame frame, ColoredShapePipelineSettings settings, QuirkyCamera cameraQuirks) {
         long sumPipeNanosElapsed = 0L;
 
         var rotateImageResult = rotateImagePipe.run(frame.image.getMat());

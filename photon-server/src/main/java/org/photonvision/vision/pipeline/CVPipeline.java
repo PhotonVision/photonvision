@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -36,7 +37,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
 
     protected abstract void setPipeParamsImpl();
 
-    protected abstract R process(Frame frame, S settings);
+    protected abstract R process(Frame frame, S settings, QuirkyCamera cameraQuirks);
 
     public S getSettings() {
         return settings;
@@ -46,16 +47,16 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         this.settings = s;
     }
 
-    public R run(Frame frame) {
+    public R run(Frame frame, QuirkyCamera cameraQuirks) {
         if (settings == null) {
             throw new RuntimeException("No settings provided for pipeline!");
         }
-        setPipeParams(frame.frameStaticProperties, settings);
+        setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
 
         if (frame.image.getMat().empty()) {
             return (R) new CVPipelineResult(0, 0, List.of(), frame);
         }
-        R result = process(frame, settings);
+        R result = process(frame, settings, cameraQuirks);
 
         // Important! This assumes that the frame timestamp has the same epoch as System.nanoTime (which
         // itself has an arbitrary epoch)

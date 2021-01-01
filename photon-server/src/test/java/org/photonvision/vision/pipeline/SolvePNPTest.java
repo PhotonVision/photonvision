@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
@@ -109,7 +110,7 @@ public class SolvePNPTest {
 
         CVPipelineResult pipelineResult;
 
-        pipelineResult = pipeline.run(frameProvider.get());
+        pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
@@ -142,7 +143,7 @@ public class SolvePNPTest {
                         new Rotation2d(),
                         TestUtils.get2020LifeCamCoeffs(true));
 
-        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
+        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
@@ -159,7 +160,7 @@ public class SolvePNPTest {
         pipeline.settings = settings;
 
         while (true) {
-            CVPipelineResult pipelineResult = pipeline.run(frame);
+            CVPipelineResult pipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
             printTestResults(pipelineResult);
             int preRelease = CVMat.getMatCount();
             pipelineResult.release();

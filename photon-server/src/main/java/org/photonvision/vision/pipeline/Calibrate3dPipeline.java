@@ -37,6 +37,8 @@ import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.server.SocketHandler;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -80,11 +82,6 @@ public class Calibrate3dPipeline
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
-
-        if (PicamJNI.isSupported()) {
-            PicamJNI.setRotation(settings.inputImageRotationMode.value);
-            PicamJNI.setShouldCopyColor(true);
-        }
     }
 
     @Override
@@ -98,19 +95,24 @@ public class Calibrate3dPipeline
                 new Calibrate3dPipe.CalibratePipeParams(
                         new Size(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight));
         calibrate3dPipe.setParams(calibratePipeParams);
+
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+            PicamJNI.setRotation(settings.inputImageRotationMode.value);
+            PicamJNI.setShouldCopyColor(true);
+        }
     }
 
     @Override
-    protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
+    protected CVPipelineResult process(
+            Frame frame, Calibration3dPipelineSettings settings, QuirkyCamera cameraQuirks) {
         Mat inputColorMat = frame.image.getMat();
-        if (inputColorMat.channels() == 1 && PicamJNI.isSupported()) {
+        if (inputColorMat.channels() == 1
+                && cameraQuirks.hasQuirk(CameraQuirk.PiCam)
+                && PicamJNI.isSupported()) {
             long colorMatPtr = PicamJNI.grabFrame(true);
             if (colorMatPtr == 0) throw new RuntimeException("Got null Mat from GPU Picam driver");
             inputColorMat = new Mat(colorMatPtr);
         }
-
-        // Set the pipe parameters
-        setPipeParams(frame.frameStaticProperties, settings);
 
         if (this.calibrating) {
             return new CVPipelineResult(

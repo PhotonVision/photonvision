@@ -25,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
@@ -114,7 +115,7 @@ public class CirclePNPTest {
                         new Rotation2d(),
                         TestUtils.get2020LifeCamCoeffs(true));
 
-        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get());
+        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
@@ -125,7 +126,7 @@ public class CirclePNPTest {
         pipeline.settings = settings;
 
         while (true) {
-            CVPipelineResult pipelineResult = pipeline.run(frame);
+            CVPipelineResult pipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
             printTestResults(pipelineResult);
             int preRelease = CVMat.getMatCount();
             pipelineResult.release();

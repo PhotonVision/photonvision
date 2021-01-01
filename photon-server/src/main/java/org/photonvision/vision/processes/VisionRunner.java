@@ -21,6 +21,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.pipeline.CVPipeline;
@@ -35,6 +36,7 @@ public class VisionRunner {
     private final Supplier<Frame> frameSupplier;
     private final Supplier<CVPipeline> pipelineSupplier;
     private final Consumer<CVPipelineResult> pipelineResultConsumer;
+    private final QuirkyCamera cameraQuirks;
 
     private long loopCount;
 
@@ -49,10 +51,12 @@ public class VisionRunner {
     public VisionRunner(
             FrameProvider frameSupplier,
             Supplier<CVPipeline> pipelineSupplier,
-            Consumer<CVPipelineResult> pipelineResultConsumer) {
+            Consumer<CVPipelineResult> pipelineResultConsumer,
+            QuirkyCamera cameraQuirks) {
         this.frameSupplier = frameSupplier;
         this.pipelineSupplier = pipelineSupplier;
         this.pipelineResultConsumer = pipelineResultConsumer;
+        this.cameraQuirks = cameraQuirks;
 
         visionProcessThread = new Thread(this::update);
         visionProcessThread.setName("VisionRunner - " + frameSupplier.getName());
@@ -69,7 +73,7 @@ public class VisionRunner {
             var frame = frameSupplier.get();
 
             try {
-                var pipelineResult = pipeline.run(frame);
+                var pipelineResult = pipeline.run(frame, cameraQuirks);
                 pipelineResultConsumer.accept(pipelineResult);
             } catch (Exception ex) {
                 logger.error("Exception on loop " + loopCount);

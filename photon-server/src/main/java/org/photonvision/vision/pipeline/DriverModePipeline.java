@@ -22,6 +22,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
+import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
@@ -56,16 +58,17 @@ public class DriverModePipeline
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
 
-        if (PicamJNI.isSupported()) {
+        if (PicamJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
             PicamJNI.setShouldCopyColor(true);
         }
     }
 
     @Override
-    public DriverModePipelineResult process(Frame frame, DriverModePipelineSettings settings) {
+    public DriverModePipelineResult process(
+            Frame frame, DriverModePipelineSettings settings, QuirkyCamera cameraQuirks) {
         long totalNanos = 0;
-        boolean accelerated = PicamJNI.isSupported();
+        boolean accelerated = PicamJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
 
         // apply pipes
         var inputMat = frame.image.getMat();

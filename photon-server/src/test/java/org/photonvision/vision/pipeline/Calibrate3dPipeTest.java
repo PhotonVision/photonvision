@@ -37,6 +37,7 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
@@ -102,7 +103,8 @@ public class Calibrate3dPipeTest {
                     calibration3dPipeline.run(
                             new Frame(
                                     new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                    new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)));
+                                    new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)),
+                            QuirkyCamera.DefaultCamera);
             // TestUtils.showImage(output.outputFrame.image.getMat());
             output.release();
         }
@@ -117,7 +119,8 @@ public class Calibrate3dPipeTest {
                 .run(
                         new Frame(
                                 new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
-                                new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)))
+                                new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)),
+                        QuirkyCamera.DefaultCamera)
                 .release();
 
         assertTrue(
@@ -264,7 +267,8 @@ public class Calibrate3dPipeTest {
                                 new Frame(
                                         new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
                                         new FrameStaticProperties(
-                                                (int) imgRes.width, (int) imgRes.height, 67, new Rotation2d(), null)));
+                                                (int) imgRes.width, (int) imgRes.height, 67, new Rotation2d(), null)),
+                                QuirkyCamera.DefaultCamera);
 
                 // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
                 output.outputFrame.release();
