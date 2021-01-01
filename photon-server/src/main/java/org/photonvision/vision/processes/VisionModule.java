@@ -26,7 +26,6 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.Triconsumer;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.dataflow.networktables.NTDataPublisher;
 import org.photonvision.common.dataflow.websocket.UIDataPublisher;
@@ -34,6 +33,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.common.util.java.TriConsumer;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -68,7 +68,7 @@ public class VisionModule {
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     private final LinkedList<CVPipelineResultConsumer> fpsLimitedResultConsumers = new LinkedList<>();
     // Raw result consumers run before any drawing has been done by the OutputStreamPipeline
-    private final LinkedList<Triconsumer<Frame, Frame, List<TrackedTarget>>> rawResultConsumers =
+    private final LinkedList<TriConsumer<Frame, Frame, List<TrackedTarget>>> rawResultConsumers =
             new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;

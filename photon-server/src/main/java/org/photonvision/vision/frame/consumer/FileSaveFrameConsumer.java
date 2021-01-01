@@ -67,8 +67,8 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
     public void accept(Frame frame) {
         if (frame != null && !frame.image.getMat().empty()) {
 
-            boolean curCommand = entry.getBoolean(false);
             if (lock.tryLock()) {
+                boolean curCommand = entry.getBoolean(false);
                 if (curCommand && !prevCommand) {
                     Date now = new Date();
                     String savefile =
@@ -87,6 +87,9 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
                     TimedTaskManager.getInstance().addOneShotTask(this::resetCommand, CMD_RESET_TIME_MS);
 
                     logger.info("Saved new image at " + savefile);
+                } else if (!curCommand) {
+                    // If the entry is currently false, set it again. This will make sure it shows up on the dashboard.
+                    entry.forceSetBoolean(false);
                 }
 
                 prevCommand = curCommand;

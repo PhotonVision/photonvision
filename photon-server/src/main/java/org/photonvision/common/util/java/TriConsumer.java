@@ -15,8 +15,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.dataflow;
+package org.photonvision.common.util.java;
 
-public interface Triconsumer<T, U, V> {
-    public void accept(T t, U u, V v);
+public interface TriConsumer<T, U, V> {
+    void accept(T t, U u, V v);
 }
