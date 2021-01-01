@@ -69,9 +69,14 @@ public class CVMat implements Releasable {
 
     @Override
     public void release() {
-        int matNo = allMats.get(mat);
-        allMats.remove(mat);
+        // If this mat is empty, all we can do is return
+        if (mat.empty()) return;
+
+        // If the mat isn't in the hashmap, we can't remove it
+        Integer matNo = allMats.get(mat);
+        if (matNo != null) allMats.remove(mat);
         mat.release();
+
         if (shouldPrint) {
             logger.trace(() -> "CVMat" + matNo + " de-alloc - new count: " + allMats.size());
             logger.trace(getStackTraceBuilder()::toString);
@@ -80,6 +85,11 @@ public class CVMat implements Releasable {
 
     public Mat getMat() {
         return mat;
+    }
+
+    @Override
+    public String toString() {
+        return "CVMat{" + mat.toString() + '}';
     }
 
     public static int getMatCount() {

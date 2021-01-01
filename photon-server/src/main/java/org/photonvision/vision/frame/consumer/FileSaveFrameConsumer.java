@@ -24,6 +24,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -32,7 +33,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.vision.frame.Frame;
 
-public class FileSaveFrameConsumer {
+public class FileSaveFrameConsumer implements Consumer<Frame> {
 
     // Formatters to generate unique, timestamped file names
     private static String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
@@ -59,7 +60,7 @@ public class FileSaveFrameConsumer {
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
         updateCameraNickname(camNickname);
         entry = subTable.getEntry(ntEntryName);
-        entry.setBoolean(false);
+        entry.forceSetBoolean(false);
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
     }
 
@@ -68,8 +69,7 @@ public class FileSaveFrameConsumer {
 
             if (lock.tryLock()) {
                 boolean curCommand = entry.getBoolean(false);
-
-                if (curCommand == true && prevCommand == false) {
+                if (curCommand && !prevCommand) {
                     Date now = new Date();
                     String savefile =
                             FILE_PATH
@@ -81,12 +81,16 @@ public class FileSaveFrameConsumer {
                                     + tf.format(now)
                                     + FILE_EXTENSION;
 
-                    Imgcodecs.imwrite(savefile.toString(), frame.image.getMat());
+                    Imgcodecs.imwrite(savefile, frame.image.getMat());
 
                     // Help the user a bit - set the NT entry back to false after 500ms
-                    TimedTaskManager.getInstance().addOneShotTask(() -> resetCommand(), CMD_RESET_TIME_MS);
+                    TimedTaskManager.getInstance().addOneShotTask(this::resetCommand, CMD_RESET_TIME_MS);
 
                     logger.info("Saved new image at " + savefile);
+                } else if (!curCommand) {
+                    // If the entry is currently false, set it again. This will make sure it shows up on the
+                    // dashboard.
+                    entry.forceSetBoolean(false);
                 }
 
                 prevCommand = curCommand;
