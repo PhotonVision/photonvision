@@ -27,10 +27,12 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelineSettings> {
     protected S settings;
     protected FrameStaticProperties frameStaticProperties;
+    protected QuirkyCamera cameraQuirks;
 
-    protected void setPipeParams(FrameStaticProperties frameStaticProperties, S settings) {
+    protected void setPipeParams(FrameStaticProperties frameStaticProperties, S settings, QuirkyCamera cameraQuirks) {
         this.settings = settings;
         this.frameStaticProperties = frameStaticProperties;
+        this.cameraQuirks = cameraQuirks;
 
         setPipeParamsImpl();
     }
