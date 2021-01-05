@@ -340,7 +340,7 @@ export default {
             snack: false,
             calibrationInProgress: false,
             calibrationFailed: false,
-            filteredVideomodeIndex: undefined,
+            filteredVideomodeIndex: 0,
         }
     },
     computed: {
