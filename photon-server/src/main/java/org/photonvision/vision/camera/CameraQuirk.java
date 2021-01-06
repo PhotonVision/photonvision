@@ -21,5 +21,7 @@ public enum CameraQuirk {
     /** Camera settable for controllable image gain */
     Gain,
     /** For the Raspberry Pi Camera */
-    PiCam
+    PiCam,
+    /** Cap at 100FPS for high-bandwidth cameras */
+    FPSCap100
 }

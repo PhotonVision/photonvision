@@ -194,6 +194,12 @@ public class USBCameraSource implements VisionSource {
                             }
                         }
 
+                        if (cameraQuirks.hasQuirk(CameraQuirk.FPSCap100)) {
+                            if (videoMode.fps > 100) {
+                                continue;
+                            }
+                        }
+
                         videoModesList.add(videoMode);
 
                         // We look for modes with the same height/width/pixelformat as this mode
