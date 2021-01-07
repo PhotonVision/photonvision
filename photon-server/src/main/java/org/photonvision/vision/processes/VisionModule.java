@@ -381,9 +381,9 @@ public class VisionModule {
                 pipelineManager.getCurrentPipelineIndex();
     }
 
-    private boolean camShouldControlLEDs(){
-        //Heuristic - if the camera has a known FOV or is a piCam, assume it's in use for
-        // vision processing, and should command stuff to the LED's. 
+    private boolean camShouldControlLEDs() {
+        // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use for
+        // vision processing, and should command stuff to the LED's.
         // TODO: Make LED control a property of the camera itself and controllable in the UI.
         return isVendorCamera() || cameraQuirks.hasQuirk(CameraQuirk.PiCam);
     }
