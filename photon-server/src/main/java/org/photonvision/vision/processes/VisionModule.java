@@ -141,7 +141,7 @@ public class VisionModule {
         }
 
         // Configure LED's if supported by the underlying hardware
-        if (HardwareManager.getInstance().visionLED != null) {
+        if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
             HardwareManager.getInstance()
                     .visionLED
                     .setPipelineModeSupplier(() -> pipelineManager.getCurrentPipelineSettings().ledMode);
@@ -277,7 +277,7 @@ public class VisionModule {
 
     void setDriverMode(boolean isDriverMode) {
         pipelineManager.setDriverMode(isDriverMode);
-        if (isVendorCamera()) setVisionLEDs(!isDriverMode);
+        setVisionLEDs(!isDriverMode);
         saveAndBroadcastAll();
     }
 
@@ -375,14 +375,21 @@ public class VisionModule {
             visionSource.getSettables().setGain(Math.max(0, config.cameraGain));
         }
 
-        if (isVendorCamera()) setVisionLEDs(config.ledMode);
+        setVisionLEDs(config.ledMode);
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
                 pipelineManager.getCurrentPipelineIndex();
     }
 
+    private boolean camShouldControlLEDs() {
+        // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use for
+        // vision processing, and should command stuff to the LED's.
+        // TODO: Make LED control a property of the camera itself and controllable in the UI.
+        return isVendorCamera() || cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+    }
+
     private void setVisionLEDs(boolean on) {
-        if (HardwareManager.getInstance().visionLED != null)
+        if (camShouldControlLEDs() && HardwareManager.getInstance().visionLED != null)
             HardwareManager.getInstance().visionLED.setState(on);
     }
 
