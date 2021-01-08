@@ -174,7 +174,7 @@ public class CornerDetectionPipe
         // and maximize their distance from the center of the min area rectangle
         var leftList = new ArrayList<Point>();
         var rightList = new ArrayList<Point>();
-        var averageXCoordinate = 0;
+        double averageXCoordinate = 0.0;
         for (var p : pointList) {
             averageXCoordinate += p.x;
         }
