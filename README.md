@@ -1,16 +1,12 @@
 # Photon Vision
 
-[![CI](https://github.com/PhotonVision/photonvision/workflows/CI/badge.svg)](https://github.com/PhotonVision/photonvision/actions?query=workflow%3ACI) [![codecov](https://codecov.io/gh/PhotonVision/photonvision/branch/master/graph/badge.svg)](https://codecov.io/gh/PhotonVision/photonvision)
+[![CI](https://github.com/PhotonVision/photonvision/workflows/CI/badge.svg)](https://github.com/PhotonVision/photonvision/actions?query=workflow%3ACI) [![codecov](https://codecov.io/gh/PhotonVision/photonvision/branch/master/graph/badge.svg)](https://codecov.io/gh/PhotonVision/photonvision) [![Discord](https://img.shields.io/discord/725836368059826228?color=%23738ADB&label=Join%20our%20Discord&logo=discord&logoColor=white)](https://discord.gg/wYxTwym)
 
-A copy of the latest development release is available [here](https://github.com/PhotonVision/photonvision/releases/tag/Dev).
+PhotonVision is the free, fast, and easy-to-use computer vision solution for the *FIRST* Robotics Competition. You can read an overview of our features [on our website](https://photonvision.org). You can find our comprehensive documentation [here](https://docs.photonvision.org).
 
-PhotonVision is a fork of [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/), a free open-source software for FRC teams to use for vision processing on their robots. Thank you to everyone who worked on the original project.
+A copy of the latest Raspberry Pi image is available [here](https://github.com/PhotonVision/photon-pi-gen/releases). A copy of the latest standalone JAR is available [here](https://github.com/PhotonVision/photonvision/releases). If you are a Gloworm user you can find the latest Gloworm image [here](https://github.com/gloworm-vision/pi-gen/releases).
 
-For information on contributing or running PhotonVision, please read our documentation on ReadTheDocs.
-
-# Roadmap
-
-Our roadmap is publicly available on [Trello](https://trello.com/photonvision).
+If you are interested in contributing code or documentation to the project, please [read our getting started page for contributors](https://docs.photonvision.org/en/latest/docs/other/contributing/index.html) and **[join the Discord](https://discord.gg/wYxTwym) to introduce yourself!** We hope to provide a welcoming community to anyone who is interested in helping.
 
 ## Authors
 
@@ -18,6 +14,8 @@ A list of contributors is available in our documentation on ReadTheDocs.
 
 
 ## Acknowledgments
+PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/). Thank you to everyone who worked on the original project.
+
 
 * [WPILib](https://github.com/wpilibsuite) - Specifically [cscore](https://github.com/wpilibsuite/allwpilib/tree/master/cscore), [CameraServer](https://github.com/wpilibsuite/allwpilib/tree/master/cameraserver), [NTCore](https://github.com/wpilibsuite/allwpilib/tree/master/ntcore), and [OpenCV](https://github.com/wpilibsuite/thirdparty-opencv). 
 
@@ -30,4 +28,4 @@ A list of contributors is available in our documentation on ReadTheDocs.
 * [FasterXML](https://github.com/FasterXML) - Specifically [jackson](https://github.com/FasterXML/jackson)
 
 ## License  
-Usage of PhotonVision must fall under all terms of [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html)
+PhotonVision is licensed under the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html)
