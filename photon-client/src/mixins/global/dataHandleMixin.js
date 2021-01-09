@@ -4,10 +4,10 @@ export const dataHandleMixin = {
             let msg = this.$msgPack.encode({[key]: value});
             this.$socket.send(msg);
         },
-        handleInputWithIndex(key, value) {
+        handleInputWithIndex(key, value, cameraIndex = this.$store.getters.currentCameraIndex) {
             let msg = this.$msgPack.encode({
                 [key]: value,
-                ["cameraIndex"]: this.$store.getters.currentCameraIndex
+                ["cameraIndex"]: cameraIndex,
             });
             this.$socket.send(msg);
         },

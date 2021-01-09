@@ -145,7 +145,7 @@ import Logs from "./views/LogsView"
         },
         data: () => ({
             // Used so that we can switch back to the previously selected pipeline after camera calibration
-            previouslySelectedIndex: undefined,
+            previouslySelectedIndices: [],
             timer: undefined,
         }),
         computed: {
@@ -240,15 +240,23 @@ import Logs from "./views/LogsView"
                 })
             },
             switchToDriverMode() {
-                this.previouslySelectedIndex = this.$store.getters.currentPipelineIndex;
-                this.handleInputWithIndex('currentPipeline', -1)
-            },
-            rollbackPipelineIndex() {
-                if (this.previouslySelectedIndex !== null) {
-                    this.handleInputWithIndex('currentPipeline', this.previouslySelectedIndex || 0);
+                if (!this.previouslySelectedIndices) this.previouslySelectedIndices = [];
+
+                for (const [i, cameraSettings] of this.$store.state.cameraSettings.entries()) {
+                  this.previouslySelectedIndices[i] = cameraSettings.currentPipelineIndex;
+                  this.handleInputWithIndex('currentPipeline', -1, i);
                 }
-                this.previouslySelectedIndex = null;
             },
+            rollbackPipelineIndex()
+            {
+              if (this.previouslySelectedIndices !== null) {
+                for (const [i] of this.$store.state.cameraSettings.entries()) {
+                  this.handleInputWithIndex('currentPipeline', this.previouslySelectedIndices[i] || 0, i);
+                }
+              }
+              this.previouslySelectedIndices = null;
+            }
+,
             switchToSettingsTab() {
                 this.axios.post('http://' + this.$address + '/api/sendMetrics', {})
             }
