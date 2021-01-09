@@ -260,7 +260,7 @@
           <v-dialog
             v-model="snack"
             width="500px"
-            persistent="true"
+            :persistent="true"
           >
             <v-card
               color="primary"
