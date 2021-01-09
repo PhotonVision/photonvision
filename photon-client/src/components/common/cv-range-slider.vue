@@ -86,7 +86,7 @@ export default {
   computed: {
     localValue: {
       get() {
-        return Object.values(this.value);
+        return Object.values(this.value || [0, 0]);
       },
       set(value) {
         this.$emit("input", value);
