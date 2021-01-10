@@ -106,11 +106,6 @@ jobs:
           pip install sphinx sphinx_rtd_theme sphinx-tabs sphinxext-opengraph doc8
           pip install -r requirements.txt
           
-      - name: Install LaTeX and other system dependencies
-        run: |
-          sudo apt update
-          sudo apt install -y texlive-latex-recommended texlive-fonts-recommended texlive-latex-extra latexmk texlive-lang-greek texlive-luatex texlive-xetex texlive-fonts-extra dvipng graphviz
-          
       - name: Check the docs
         run: |
           make linkcheck
