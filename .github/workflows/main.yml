@@ -7,8 +7,6 @@ name: CI
 on:
   push:
     branches: [ master ]
-    tags: 
-      - '*'
   pull_request:
     branches: [ master ]
 
@@ -208,7 +206,7 @@ jobs:
           ./gradlew spotlessCheck
 
   release:
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: [build-package]
     runs-on: ubuntu-latest
     steps:
