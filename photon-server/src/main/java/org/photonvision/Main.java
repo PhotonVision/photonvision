@@ -140,7 +140,7 @@ public class Main {
             logger.error("Failed to parse command-line options!", e);
         }
 
-        CVMat.enablePrint(true);
+        CVMat.enablePrint(false);
         PipelineProfiler.enablePrint(false);
 
         var logLevel = printDebugLogs ? LogLevel.TRACE : LogLevel.DEBUG;

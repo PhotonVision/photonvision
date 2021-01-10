@@ -53,7 +53,9 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
         if (event instanceof IncomingWebSocketEvent) {
             var wsEvent = (IncomingWebSocketEvent<?>) event;
 
-            if (wsEvent.cameraIndex != null && wsEvent.cameraIndex == parentModule.moduleIndex) {
+            // Camera index -1 means a "multicast event" (i.e. the event is received by all cameras)
+            if (wsEvent.cameraIndex != null
+                    && (wsEvent.cameraIndex == parentModule.moduleIndex || wsEvent.cameraIndex == -1)) {
                 logger.trace("Got PSC event - propName: " + wsEvent.propertyName);
 
                 var propName = wsEvent.propertyName;

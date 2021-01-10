@@ -86,9 +86,16 @@ public class SocketHandler {
         users.remove(context);
 
         if (users.size() == 0) {
+            logger.info("All websocket connections are closed. Setting inputShouldShow to false.");
+
+            // cameraIndex -1 means the event is received by all cameras
             dcService.publishEvent(
                     new IncomingWebSocketEvent<>(
-                            DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS, "inputShouldShow", false));
+                            DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS,
+                            "inputShouldShow",
+                            false,
+                            -1,
+                            null));
         }
     }
 
