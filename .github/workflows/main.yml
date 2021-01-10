@@ -7,6 +7,8 @@ name: CI
 on:
   push:
     branches: [ master ]
+    tags: 
+      - '*'
   pull_request:
     branches: [ master ]
 
@@ -123,7 +125,6 @@ jobs:
         with:
           name: built-docs
           path: build/html
-      
 
   build-package:
     needs: [build-client, build-server, build-offline-docs]
@@ -210,4 +211,17 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew spotlessCheck
-            
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: [build-package]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: jar
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: '**/*'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
