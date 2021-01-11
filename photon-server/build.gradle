@@ -91,6 +91,8 @@ dependencies {
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:osxx86-64"
     compile "edu.wpi.first.thirdparty.frc2020.opencv:opencv-jni:$openCVVersion:windowsx86-64"
 
+    compile "edu.wpi.first.wpimath:wpimath-java:2021.1.2-7-g64e72f7"
+
     compile "org.slf4j:slf4j-simple:1.8.0-beta4"
 
     // Zip
