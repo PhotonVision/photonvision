@@ -434,8 +434,7 @@ public class ConfigManager {
     }
 
     public List<String> getSnapshots(String cameraUniqueName) {
-        var snapshotDir = Path.of(camerasFolder.toString(), cameraUniqueName, "snapshots").toFile();
-        if(!snapshotDir.exists()) snapshotDir.mkdirs();
+        var snapshotDir = getSnapshotDirectory(cameraUniqueName).toFile();
         try {
             return Files.list(snapshotDir.toPath())
                 .filter(it -> it.toFile().isFile())
@@ -445,6 +444,12 @@ public class ConfigManager {
             e.printStackTrace();
             return List.of();
         }
+    }
+
+    public Path getSnapshotDirectory(String cameraUniqueName) {
+        var ret = Path.of(camerasFolder.toString(), cameraUniqueName, "snapshots");
+        if(!ret.toFile().exists()) ret.toFile().mkdirs();
+        return ret;
     }
 
     public File getSnapshotFile(String relativePath) {
