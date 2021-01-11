@@ -53,6 +53,7 @@ public class ConfigManager {
     private final File hardwareSettingsFile;
     private final File networkConfigFile;
     private final File camerasFolder;
+    private final File imgSavesFolder;
 
     final File configDirectoryFile;
 
@@ -96,6 +97,7 @@ public class ConfigManager {
         this.networkConfigFile =
                 new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
         this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
+        this.imgSavesFolder = new File(Path.of(configDirectoryFile.toString(), "imgSaves").toUri());
 
         TimedTaskManager.getInstance().addTask("ConfigManager", this::checkSaveAndWrite, 1000);
     }
@@ -444,7 +446,7 @@ public class ConfigManager {
                     var isInput = name.startsWith("input");
                     return isInput && isFile;
                 })
-                .map(it -> camerasFolder.toPath().relativize(it).toString())
+                .map(it -> imgSavesFolder.toPath().relativize(it).toString())
                 .collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
@@ -453,17 +455,12 @@ public class ConfigManager {
     }
 
     public Path getSnapshotDirectory(String cameraUniqueName) {
-        var ret = Path.of(camerasFolder.toString(), cameraUniqueName, "snapshots");
+        var ret = Path.of(imgSavesFolder.toString(), cameraUniqueName);
         if(!ret.toFile().exists()) ret.toFile().mkdirs();
         return ret;
     }
 
     public File getSnapshotFile(String relativePath) {
-        return Path.of(camerasFolder.toString(), relativePath).toFile();
-    }
-
-    public static void main(String[] args) {
-        System.out.println(ConfigManager.getInstance().getSnapshots("HP_Wide_Vision_HD_Camera"));
-        System.exit(0);
+        return Path.of(imgSavesFolder.toString(), relativePath).toFile();
     }
 }
