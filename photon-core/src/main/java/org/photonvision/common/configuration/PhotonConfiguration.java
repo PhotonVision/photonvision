@@ -129,6 +129,7 @@ public class PhotonConfiguration {
         @SuppressWarnings("unused")
         public double fov, tiltDegrees;
         public String nickname;
+        public String uniqueName;
         public HashMap<String, Object> currentPipelineSettings;
         public int currentPipelineIndex;
         public List<String> pipelineNicknames;

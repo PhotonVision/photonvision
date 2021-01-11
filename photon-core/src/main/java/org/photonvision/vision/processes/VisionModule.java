@@ -445,6 +445,7 @@ public class VisionModule {
         ret.fov = visionSource.getSettables().getFOV();
         ret.tiltDegrees = this.visionSource.getSettables().getCameraPitch().getDegrees();
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
+        ret.uniqueName = visionSource.getSettables().getConfiguration().uniqueName;
         ret.currentPipelineSettings =
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
         ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
