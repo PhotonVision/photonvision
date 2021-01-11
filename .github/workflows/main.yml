@@ -62,6 +62,10 @@ jobs:
       # Checkout code.
       - name: Checkout code
         uses: actions/checkout@v1
+
+      # Fetch tags.
+      - name: Fetch tags
+        run: git fetch --tags --force
         
       # Install Java 11.
       - name: Install Java 11
