@@ -51,6 +51,22 @@
                 style="margin-left: auto;"
                 color="accent"
               />
+              <v-row
+                justify="end"
+                align-content="center"
+              >
+                <v-btn
+                  color="accent"
+                  @click="toggleReplay()"
+                >
+                  Replay Snapshots
+                </v-btn>
+                <v-switch
+                  v-model="driverMode"
+                  label="Driver Mode"
+                  color="accent"
+                />
+              </v-row>
             </v-card-title>
             <v-row
               align="center"
@@ -80,6 +96,9 @@
                 </div>
               </v-col>
             </v-row>
+            <SnapshotReplay
+              ref="snapshotReplayDialog"
+            />
           </v-card>
         </v-col>
         <v-col
@@ -270,10 +289,12 @@ import ContoursTab from './PipelineViews/ContoursTab';
 import OutputTab from './PipelineViews/OutputTab';
 import TargetsTab from "./PipelineViews/TargetsTab";
 import PnPTab from './PipelineViews/PnPTab';
+import SnapshotReplay from "@/views/PipelineViews/SnapshotReplay";
 
 export default {
     name: 'Pipeline',
     components: {
+        SnapshotReplay,
         CameraAndPipelineSelect,
         cvImage,
         InputTab,
@@ -289,7 +310,7 @@ export default {
             snackbar: false,
             counterData: 0,
             dialog: false,
-            processingModeOverride: false
+            processingModeOverride: false,
         }
     },
     computed: {
@@ -440,6 +461,9 @@ export default {
         this.$store.state.connectedCallbacks.push(this.reloadStreams)
     },
     methods: {
+        toggleReplay() {
+            this.$refs.snapshotReplayDialog.show();
+        },
         reloadStreams() {
             // Reload the streams as we technically close and reopen them
             this.$refs.streams.forEach(it => it.reload())
