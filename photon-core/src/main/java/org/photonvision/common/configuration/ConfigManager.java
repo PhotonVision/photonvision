@@ -437,7 +437,12 @@ public class ConfigManager {
         var snapshotDir = getSnapshotDirectory(cameraUniqueName).toFile();
         try {
             return Files.list(snapshotDir.toPath())
-                .filter(it -> it.toFile().isFile())
+                .filter(it -> {
+                    var name = it.getFileName().toString();
+                    boolean isFile = it.toFile().isFile();
+                    var isInput = name.startsWith("input");
+                    return isInput && isFile;
+                })
                 .map(it -> camerasFolder.toPath().relativize(it).toString())
                 .collect(Collectors.toList());
         } catch (IOException e) {
