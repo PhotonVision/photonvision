@@ -168,10 +168,12 @@ public class VisionModule {
                         visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
 
         inputFrameSaver =
-                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
+                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input",
+                  visionSource.getSettables().getConfiguration().uniqueName);
         outputFrameSaver =
                 new FileSaveFrameConsumer(
-                        visionSource.getSettables().getConfiguration().nickname, "output");
+                        visionSource.getSettables().getConfiguration().nickname, "output",
+                  visionSource.getSettables().getConfiguration().uniqueName);
     }
 
     private void recreateFpsLimitedResultConsumers() {

@@ -34,7 +34,6 @@ import org.photonvision.vision.frame.Frame;
 
 public class FileSaveFrameConsumer implements Consumer<Frame> {
     // Formatters to generate unique, timestamped file names
-    private static String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
     private static String FILE_EXTENSION = ".jpg";
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
     DateFormat tf = new SimpleDateFormat("hhmmssSS");
@@ -51,15 +50,20 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
     // Helps prevent race conditions between user set & auto-reset logic
     private ReentrantLock lock;
 
-    public FileSaveFrameConsumer(String camNickname, String streamPrefix) {
+    // The folder we put snapshots into
+    private final String snapshotFolder;
+
+    public FileSaveFrameConsumer(String camNickname, String streamPrefix, String uniqueName) {
         this.lock = new ReentrantLock();
-        this.fnamePrefix = camNickname + "_" + streamPrefix;
+        this.fnamePrefix = streamPrefix;
         this.ntEntryName = streamPrefix + NT_SUFFIX;
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
         updateCameraNickname(camNickname);
         entry = subTable.getEntry(ntEntryName);
         entry.forceSetBoolean(false);
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
+
+        this.snapshotFolder = ConfigManager.getInstance().getSnapshotDirectory(uniqueName).toString();
     }
 
     public void accept(Frame frame) {
@@ -69,7 +73,7 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
                 if (curCommand && !prevCommand) {
                     Date now = new Date();
                     String savefile =
-                            FILE_PATH
+                            snapshotFolder
                                     + File.separator
                                     + fnamePrefix
                                     + "_"
