@@ -170,10 +170,12 @@ public class VisionModule {
                         visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
 
         inputFrameSaver =
-                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
+                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input",
+                  visionSource.getSettables().getConfiguration().uniqueName);
         outputFrameSaver =
                 new FileSaveFrameConsumer(
-                        visionSource.getSettables().getConfiguration().nickname, "output");
+                        visionSource.getSettables().getConfiguration().nickname, "output",
+                  visionSource.getSettables().getConfiguration().uniqueName);
     }
 
     private void recreateFpsLimitedResultConsumers() {
@@ -441,6 +443,7 @@ public class VisionModule {
         ret.fov = visionSource.getSettables().getFOV();
         ret.tiltDegrees = this.visionSource.getSettables().getCameraPitch().getDegrees();
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
+        ret.uniqueName = visionSource.getSettables().getConfiguration().uniqueName;
         ret.currentPipelineSettings =
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
         ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();
