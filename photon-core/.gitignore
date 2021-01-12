@@ -1,0 +1,13 @@
+bin/*
+.settings/*
+.project
+.classpath
+*.prefs
+.gradle
+.gradle/*
+build
+build/*
+photonvision/*
+photonvision_config/*
+
+src/main/java/org/photonvision/PhotonVersion.java

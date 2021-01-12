@@ -50,11 +50,6 @@ jobs:
         path: photon-client/dist/
 
   build-server:
-    # Let all steps run within the photon-server dir.
-    defaults:
-      run:
-        working-directory: photon-server
-
     # The type of runner that the job will run on.
     runs-on: ubuntu-latest
 
@@ -84,10 +79,15 @@ jobs:
         run: ./gradlew jacocoTestReport
       
       # Publish Coverage Report.
-      - name: Publish Coverage Report
+      - name: Publish Server Coverage Report
         uses: codecov/codecov-action@v1
         with:
           file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
+
+      - name: Publish Core Coverage Report
+        uses: codecov/codecov-action@v1
+        with:
+          file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
 
   build-offline-docs:
     runs-on: ubuntu-latest
@@ -128,11 +128,6 @@ jobs:
   build-package:
     needs: [build-client, build-server, build-offline-docs]
 
-    # Let all steps run within the photon-server dir.
-    defaults:
-      run:
-        working-directory: photon-server
-
     # The type of runner that the job will run on.
     runs-on: ubuntu-latest
 
@@ -147,8 +142,8 @@ jobs:
 
       # Clear any existing web resources.
       - run: |
-          rm -rf src/main/resources/web/*
-          mkdir -p src/main/resources/web/docs
+          rm -rf photon-server/src/main/resources/web/*
+          mkdir -p photon-server/src/main/resources/web/docs
 
       # Download client artifact to resources folder.
       - uses: actions/download-artifact@v2
@@ -162,16 +157,10 @@ jobs:
           name: built-docs
           path: photon-server/src/main/resources/web/docs     
 
-
-      # Print folder contents.
-      - run: ls
-        working-directory: photon-server/src/main/resources/web/
-
       # Build fat jar.
       - run: |
           chmod +x gradlew
-          ./gradlew shadowJar
-        working-directory: photon-server
+          ./gradlew photon-server:shadowJar
 
       # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@master
@@ -189,11 +178,6 @@ jobs:
         if: github.event_name == 'push'
 
   check-lint:
-    # Let all steps run within the photon-server dir.
-    defaults:
-      run:
-        working-directory: photon-server
-
     # The type of runner that the job will run on.
     runs-on: ubuntu-latest
     
