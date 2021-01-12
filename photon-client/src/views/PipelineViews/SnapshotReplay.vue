@@ -5,17 +5,14 @@
     <v-card max-height="60%">
       <v-card-title>Replay Snapshots</v-card-title>
       <v-row>
-        <CvImage
-          :address="$store.getters.streamAddress[0]"
-          :disconnected="!$store.state.backendConnected"
-        />
         <div
           v-for="img in snapshots"
           :key="img"
         >
           <img
             :src="'http://localhost:5800/api/getSnapshot?path=' + img"
-            alt=""
+            :alt="img"
+            @click="click"
           >
         </div>
       </v-row>
@@ -24,10 +21,8 @@
 </template>
 
 <script>
-import CvImage from "@/components/common/cv-image";
 export default {
     name: "SnapshotReplay",
-    components: {CvImage},
     data() {
         return {
             shown: false,
@@ -38,6 +33,9 @@ export default {
         this.show();
     },
     methods: {
+        click(e) {
+            console.log(e.target.alt)
+        },
         show() {
             this.shown = true;
 
