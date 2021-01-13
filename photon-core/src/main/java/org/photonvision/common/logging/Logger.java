@@ -33,6 +33,7 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.server.SocketHandler;
 
 @SuppressWarnings("unused")
 public class Logger {
@@ -55,7 +56,7 @@ public class Logger {
     private static final List<Pair<String, LogLevel>> uiBacklog = new ArrayList<>();
     private static boolean connected = false;
 
-    private static final UILogAppender uiLogAppender = new UILogAppender();
+    private static UILogAppender uiLogAppender = new UILogAppender();
 
     private final String className;
     private final LogGroup group;
@@ -128,45 +129,42 @@ public class Logger {
 
     public static void cleanLogs(Path folderToClean) {
 
-        var toClean = folderToClean.toFile().listFiles();
+        LinkedList<File> logFileList =
+                new LinkedList<>(Arrays.asList(folderToClean.toFile().listFiles()));
+        HashMap<File, Date> logFileStartDateMap = new HashMap<>();
 
-        if (toClean != null) {
-            LinkedList<File> logFileList = new LinkedList<>(Arrays.asList(toClean));
-            HashMap<File, Date> logFileStartDateMap = new HashMap<>();
+        // Remove any files from the list for which we can't parse a start date from their name.
+        // Simultaneously populate our HashMap with Date objects repeseting the file-name
+        // indicated log start time.
+        logFileList.removeIf(
+                (File arg0) -> {
+                    try {
+                        logFileStartDateMap.put(
+                                arg0, ConfigManager.getInstance().logFnameToDate(arg0.getName()));
+                        return false;
+                    } catch (ParseException e) {
+                        return true;
+                    }
+                });
 
-            // Remove any files from the list for which we can't parse a start date from their name.
-            // Simultaneously populate our HashMap with Date objects representing the file-name
-            // indicated log start time.
-            logFileList.removeIf(
-                    (File arg0) -> {
-                        try {
-                            logFileStartDateMap.put(
-                                    arg0, ConfigManager.getInstance().logFnameToDate(arg0.getName()));
-                            return false;
-                        } catch (ParseException e) {
-                            return true;
-                        }
-                    });
+        // Execute a sort on the log file list by date in the filename.
+        logFileList.sort(
+                (File arg0, File arg1) -> {
+                    Date date0 = logFileStartDateMap.get(arg0);
+                    Date date1 = logFileStartDateMap.get(arg1);
+                    return date1.compareTo(date0);
+                });
 
-            // Execute a sort on the log file list by date in the filename.
-            logFileList.sort(
-                    (File arg0, File arg1) -> {
-                        Date date0 = logFileStartDateMap.get(arg0);
-                        Date date1 = logFileStartDateMap.get(arg1);
-                        return date1.compareTo(date0);
-                    });
-
-            int logCounter = 0;
-            for (File file : logFileList) {
-                // Due to filtering above, everything in logFileList should be a log file
-                if (logCounter < MAX_LOGS_TO_KEEP) {
-                    // Skip over the first MAX_LOGS_TO_KEEP files
-                    logCounter++;
-                } else {
-                    // Delete this file.
-                    //noinspection ResultOfMethodCallIgnored
-                    file.delete();
-                }
+        int logCounter = 0;
+        for (File file : logFileList) {
+            // Due to filtering above, everything in logFileList should be a log file
+            if (logCounter < MAX_LOGS_TO_KEEP) {
+                // Skip over the first MAX_LOGS_TO_KEEP files
+                logCounter++;
+                continue;
+            } else {
+                // Delete this file.
+                file.delete();
             }
         }
     }
@@ -209,7 +207,6 @@ public class Logger {
         }
     }
 
-    @SuppressWarnings("SameParameterValue")
     private void log(String message, LogLevel messageLevel, LogLevel conditionalLevel) {
         if (shouldLog(conditionalLevel)) {
             log(message, messageLevel, group, className);
@@ -241,8 +238,8 @@ public class Logger {
     * Logs an error message with the stack trace of a Throwable. The stacktrace will only be printed
     * if the current LogLevel is TRACE
     *
-    * @param message error message to print
-    * @param t throwable to print stacktrace of
+    * @param message
+    * @param t
     */
     public void error(String message, Throwable t) {
         log(message, LogLevel.ERROR);
@@ -305,11 +302,10 @@ public class Logger {
     private static class UILogAppender implements LogAppender {
         @Override
         public void log(String message, LogLevel level) {
-            // TODO: fix
-            var messageMap = new HashMap<String, Object>();
+            var messageMap = new SocketHandler.UIMap();
             messageMap.put("logMessage", message);
             messageMap.put("logLevel", level.code);
-            var superMap = new HashMap<String, Object>();
+            var superMap = new SocketHandler.UIMap();
             superMap.put("logMessage", messageMap);
             DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>("log", superMap));
         }

@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.target;
 
+import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import org.apache.commons.math3.util.FastMath;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
@@ -120,9 +121,11 @@ public class TargetCalculations {
 
         var areaFraction = MathUtils.map(currentArea, lowerArea, upperArea, 0, 1);
         var xLerp =
-                MathUtils.lerp(dualOffsetValues.firstPoint.x, dualOffsetValues.secondPoint.x, areaFraction);
+                Trajectory.State.lerp(
+                        dualOffsetValues.firstPoint.x, dualOffsetValues.secondPoint.x, areaFraction);
         var yLerp =
-                MathUtils.lerp(dualOffsetValues.firstPoint.y, dualOffsetValues.secondPoint.y, areaFraction);
+                Trajectory.State.lerp(
+                        dualOffsetValues.firstPoint.y, dualOffsetValues.secondPoint.y, areaFraction);
 
         return new Point(xLerp, yLerp);
     }

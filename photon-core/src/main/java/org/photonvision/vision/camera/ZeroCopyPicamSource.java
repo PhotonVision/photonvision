@@ -99,8 +99,7 @@ public class ZeroCopyPicamSource implements VisionSource {
                         0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 120, 120, .39));
                 videoModes.put(
                         1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65, 90, .39));
-                videoModes.put(
-                        2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 40, 90, .72));
+                // TODO: fix 1280x720 in the native code and re-add it
                 videoModes.put(
                         3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, .53));
             } else {

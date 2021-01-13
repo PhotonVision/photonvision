@@ -33,6 +33,7 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
+import org.photonvision.common.util.java.TriConsumer;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -66,6 +67,9 @@ public class VisionModule {
     private final StreamRunnable streamRunnable;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     private final LinkedList<CVPipelineResultConsumer> fpsLimitedResultConsumers = new LinkedList<>();
+    // Raw result consumers run before any drawing has been done by the OutputStreamPipeline
+    private final LinkedList<TriConsumer<Frame, Frame, List<TrackedTarget>>> rawResultConsumers =
+            new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
     protected final int moduleIndex;
@@ -137,7 +141,7 @@ public class VisionModule {
         }
 
         // Configure LED's if supported by the underlying hardware
-        if (HardwareManager.getInstance().visionLED != null) {
+        if (HardwareManager.getInstance().visionLED != null && this.camShouldControlLEDs()) {
             HardwareManager.getInstance()
                     .visionLED
                     .setPipelineModeSupplier(() -> pipelineManager.getCurrentPipelineSettings().ledMode);
@@ -175,7 +179,7 @@ public class VisionModule {
     private void recreateFpsLimitedResultConsumers() {
         // Important! These must come before the stream result consumers because the stream result
         // consumers release the frame
-        fpsLimitedResultConsumers.add(result -> inputFrameSaver.accept(result.inputFrame));
+        rawResultConsumers.add((in, out, tgts) -> inputFrameSaver.accept(in));
         fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
 
         fpsLimitedResultConsumers.add(
@@ -249,6 +253,7 @@ public class VisionModule {
                     this.shouldRun = false;
                 }
                 if (shouldRun) {
+                    consumeRawResults(inputFrame, outputFrame, targets);
                     try {
                         var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
                         consumeFpsLimitedResult(osr);
@@ -272,7 +277,7 @@ public class VisionModule {
 
     void setDriverMode(boolean isDriverMode) {
         pipelineManager.setDriverMode(isDriverMode);
-        if (isVendorCamera()) setVisionLEDs(!isDriverMode);
+        setVisionLEDs(!isDriverMode);
         saveAndBroadcastAll();
     }
 
@@ -370,14 +375,21 @@ public class VisionModule {
             visionSource.getSettables().setGain(Math.max(0, config.cameraGain));
         }
 
-        if (isVendorCamera()) setVisionLEDs(config.ledMode);
+        setVisionLEDs(config.ledMode);
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
                 pipelineManager.getCurrentPipelineIndex();
     }
 
+    private boolean camShouldControlLEDs() {
+        // Heuristic - if the camera has a known FOV or is a piCam, assume it's in use for
+        // vision processing, and should command stuff to the LED's.
+        // TODO: Make LED control a property of the camera itself and controllable in the UI.
+        return isVendorCamera() || cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+    }
+
     private void setVisionLEDs(boolean on) {
-        if (HardwareManager.getInstance().visionLED != null)
+        if (camShouldControlLEDs() && HardwareManager.getInstance().visionLED != null)
             HardwareManager.getInstance().visionLED.setState(on);
     }
 
@@ -519,6 +531,13 @@ public class VisionModule {
                 c.accept(result);
             }
             lastFrameConsumeMillis = System.currentTimeMillis();
+        }
+    }
+
+    /** Consume results prior to drawing on them. */
+    private void consumeRawResults(Frame inputFrame, Frame outputFrame, List<TrackedTarget> targets) {
+        for (var c : rawResultConsumers) {
+            c.accept(inputFrame, outputFrame, targets);
         }
     }
 

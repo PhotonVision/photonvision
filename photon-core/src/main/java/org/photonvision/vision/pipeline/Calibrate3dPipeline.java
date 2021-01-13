@@ -17,11 +17,11 @@
 
 package org.photonvision.vision.pipeline;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.wpilibj.util.Units;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -35,6 +35,7 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
+import org.photonvision.server.SocketHandler;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
@@ -48,7 +49,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 public class Calibrate3dPipeline
         extends CVPipeline<CVPipelineResult, Calibration3dPipelineSettings> {
 
-    // For logging
+    // For loggging
     private static final Logger logger = new Logger(Calibrate3dPipeline.class, LogGroup.General);
 
     // Only 2 pipes needed, one for finding the board corners and one for actually calibrating
@@ -215,17 +216,13 @@ public class Calibrate3dPipeline
                                 settings.boardWidth,
                                 settings.boardHeight,
                                 settings.boardType));
-
-        var map = new HashMap<String, Object>();
+        var map = new SocketHandler.UIMap();
         map.put("calibrationData", state);
-
-        // TODO: MONOREPO - use pub/sub here
-
-        //        try {
-        //            SocketHandler.getInstance().broadcastMessage(map, null);
-        //        } catch (JsonProcessingException e) {
-        //            logger.error("Unable to send cal data!", e);
-        //        }
+        try {
+            SocketHandler.getInstance().broadcastMessage(map, null);
+        } catch (JsonProcessingException e) {
+            logger.error("Unable to send cal data!", e);
+        }
     }
 
     public boolean removeSnapshot(int index) {

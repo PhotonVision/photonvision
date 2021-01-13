@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.photonvision.PhotonVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.raspi.PicamJNI;
@@ -106,8 +107,7 @@ public class PhotonConfiguration {
         settingsSubmap.put("lighting", SerializationUtils.objectToHashMap(lightingConfig));
 
         var generalSubmap = new HashMap<String, Object>();
-        // TODO: MONOREPO - global repo versioning!!!!
-        generalSubmap.put("version", /*PhotonVersion.versionString*/ "");
+        generalSubmap.put("version", PhotonVersion.versionString);
         generalSubmap.put(
                 "gpuAcceleration",
                 PicamJNI.isSupported()

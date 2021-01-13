@@ -158,9 +158,15 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
             pipeProfileNanos[1] = pipeProfileNanos[1] = hsvPipeResult.nanosElapsed;
         } else {
+            // Try to copy the color frame.
             long inputMatPtr = PicamJNI.grabFrame(true);
-            if (inputMatPtr != 0) rawInputMat = new Mat(inputMatPtr);
-            else rawInputMat = frame.image.getMat();
+            if (inputMatPtr != 0) {
+                // If we grabbed it (in color copy mode), make a new Mat of it
+                rawInputMat = new Mat(inputMatPtr);
+            } else {
+                // Otherwise, the input mat is frame we got from the camera
+                rawInputMat = frame.image.getMat();
+            }
 
             // We can skip a few steps if the image is single channel because we've already done them on
             // the GPU

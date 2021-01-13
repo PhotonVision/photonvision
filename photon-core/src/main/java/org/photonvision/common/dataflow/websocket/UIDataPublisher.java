@@ -17,11 +17,14 @@
 
 package org.photonvision.common.dataflow.websocket;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.server.SocketHandler;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class UIDataPublisher implements CVPipelineResultConsumer {
@@ -59,14 +62,12 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
         var retMap = new HashMap<String, Object>();
         retMap.put("updatePipelineResult", uiMap);
 
-        // TODO: MONOREPO - use pub/sub here
-
-        //        try {
-        //            SocketHandler.getInstance().broadcastMessage(retMap, null);
-        //        } catch (JsonProcessingException e) {
-        //            logger.error(e.getMessage());
-        //            logger.error(Arrays.toString(e.getStackTrace()));
-        //        }
+        try {
+            SocketHandler.getInstance().broadcastMessage(retMap, null);
+        } catch (JsonProcessingException e) {
+            logger.error(e.getMessage());
+            logger.error(Arrays.toString(e.getStackTrace()));
+        }
 
         lastUIResultUpdateTime = now;
     }

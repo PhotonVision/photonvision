@@ -17,11 +17,13 @@
 
 package org.photonvision.common.hardware.metrics;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
+import org.photonvision.server.SocketHandler;
 
 public class MetricsPublisher {
     private static final Logger logger = new Logger(MetricsPublisher.class, LogGroup.General);
@@ -66,12 +68,11 @@ public class MetricsPublisher {
         var retMap = new HashMap<String, Object>();
         retMap.put("metrics", metrics);
 
-        // TODO: MONOREPO - use pub/sub here
-        //        try {
-        //            SocketHandler.getInstance().broadcastMessage(retMap, null);
-        //        } catch (JsonProcessingException e) {
-        //            logger.error("Exception while sending metrics!", e);
-        //        }
+        try {
+            SocketHandler.getInstance().broadcastMessage(retMap, null);
+        } catch (JsonProcessingException e) {
+            logger.error("Exception while sending metrics!", e);
+        }
     }
 
     private static class Singleton {
