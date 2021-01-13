@@ -57,6 +57,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         setPipeParams(frame.frameStaticProperties, settings, cameraQuirks);
 
         if (frame.image.getMat().empty()) {
+            //noinspection unchecked
             return (R) new CVPipelineResult(0, 0, List.of(), frame);
         }
         R result = process(frame, settings);

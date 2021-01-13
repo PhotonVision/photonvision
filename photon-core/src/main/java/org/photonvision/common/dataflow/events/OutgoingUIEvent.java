@@ -35,6 +35,13 @@ public class OutgoingUIEvent<T> extends DataChangeEvent<T> {
     }
 
     public static OutgoingUIEvent<HashMap<String, Object>> wrappedOf(
+            String commandName, Object value) {
+        HashMap<String, Object> data = new HashMap<>();
+        data.put(commandName, value);
+        return new OutgoingUIEvent<>(commandName, data);
+    }
+
+    public static OutgoingUIEvent<HashMap<String, Object>> wrappedOf(
             String commandName, String propertyName, Object value, WsContext originContext) {
         HashMap<String, Object> data = new HashMap<>();
         data.put(propertyName, value);

@@ -33,7 +33,6 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.util.TimedTaskManager;
-import org.photonvision.server.SocketHandler;
 
 @SuppressWarnings("unused")
 public class Logger {
@@ -302,12 +301,12 @@ public class Logger {
     private static class UILogAppender implements LogAppender {
         @Override
         public void log(String message, LogLevel level) {
-            var messageMap = new SocketHandler.UIMap();
+            var messageMap = new HashMap<String, Object>();
             messageMap.put("logMessage", message);
             messageMap.put("logLevel", level.code);
-            var superMap = new SocketHandler.UIMap();
+            var superMap = new HashMap<String, Object>();
             superMap.put("logMessage", messageMap);
-            DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>("log", superMap));
+            DataChangeService.getInstance().publishEvent(OutgoingUIEvent.wrappedOf("log", superMap));
         }
     }
 

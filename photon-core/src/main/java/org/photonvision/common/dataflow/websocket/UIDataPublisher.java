@@ -17,14 +17,13 @@
 
 package org.photonvision.common.dataflow.websocket;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.server.SocketHandler;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class UIDataPublisher implements CVPipelineResultConsumer {
@@ -57,18 +56,10 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
             uiTargets.add(t.toHashMap());
         }
         dataMap.put("targets", uiTargets);
-
         uiMap.put(index, dataMap);
-        var retMap = new HashMap<String, Object>();
-        retMap.put("updatePipelineResult", uiMap);
 
-        try {
-            SocketHandler.getInstance().broadcastMessage(retMap, null);
-        } catch (JsonProcessingException e) {
-            logger.error(e.getMessage());
-            logger.error(Arrays.toString(e.getStackTrace()));
-        }
-
+        DataChangeService.getInstance()
+                .publishEvent(OutgoingUIEvent.wrappedOf("updatePipelineResult", uiMap));
         lastUIResultUpdateTime = now;
     }
 }

@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import edu.wpi.first.wpilibj.util.Units;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,13 +28,14 @@ import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
-import org.photonvision.server.SocketHandler;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
@@ -216,13 +216,9 @@ public class Calibrate3dPipeline
                                 settings.boardWidth,
                                 settings.boardHeight,
                                 settings.boardType));
-        var map = new SocketHandler.UIMap();
-        map.put("calibrationData", state);
-        try {
-            SocketHandler.getInstance().broadcastMessage(map, null);
-        } catch (JsonProcessingException e) {
-            logger.error("Unable to send cal data!", e);
-        }
+
+        DataChangeService.getInstance()
+                .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));
     }
 
     public boolean removeSnapshot(int index) {
