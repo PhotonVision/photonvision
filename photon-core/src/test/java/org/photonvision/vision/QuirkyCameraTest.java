@@ -28,6 +28,7 @@ public class QuirkyCameraTest {
     public void ps3EyeTest() {
         HashMap<CameraQuirk, Boolean> ps3EyeQuirks = new HashMap<>();
         ps3EyeQuirks.put(CameraQuirk.Gain, true);
+        ps3EyeQuirks.put(CameraQuirk.FPSCap100, true);
         for (var q : CameraQuirk.values()) {
             ps3EyeQuirks.putIfAbsent(q, false);
         }

@@ -59,4 +59,17 @@ public class MathUtils {
     public static int map(int value, int inMin, int inMax, int outMin, int outMax) {
         return (int) Math.floor(map((double) value, inMin, inMax, outMin, outMax) + 0.5);
     }
+
+    /**
+    * Linearly interpolates between two values.
+    *
+    * @param startValue The start value.
+    * @param endValue The end value.
+    * @param t The fraction for interpolation.
+    * @return The interpolated value.
+    */
+    @SuppressWarnings("ParameterName")
+    public static double lerp(double startValue, double endValue, double t) {
+        return startValue + (endValue - startValue) * t;
+    }
 }

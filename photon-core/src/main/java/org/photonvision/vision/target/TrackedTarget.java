@@ -183,8 +183,16 @@ public class TrackedTarget implements Releasable {
         ret.put("skew", getSkew());
         ret.put("area", getArea());
         if (getCameraToTarget() != null) {
-            ret.put("pose", getCameraToTarget().toHashMap());
+            ret.put("pose", transformToMap(getCameraToTarget()));
         }
+        return ret;
+    }
+
+    private static HashMap<String, Object> transformToMap(Transform2d transform) {
+        var ret = new HashMap<String, Object>();
+        ret.put("x", transform.getTranslation().getX());
+        ret.put("y", transform.getTranslation().getY());
+        ret.put("rot", transform.getRotation().getDegrees());
         return ret;
     }
 
