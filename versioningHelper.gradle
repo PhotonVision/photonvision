@@ -1,0 +1,27 @@
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.nio.file.Path
+
+gradle.allprojects {
+    ext.getCurrentVersion = { ->
+        def stdout = new ByteArrayOutputStream()
+        String tagIsh
+        try {
+            exec {
+                commandLine 'git', 'describe', '--tags', '--exclude="Dev"'
+                standardOutput = stdout
+            }
+            tagIsh = stdout.toString().trim().toLowerCase()
+        } catch(Exception e) {
+            tagIsh = "dev-Unknown"
+        }
+        boolean isDev = tagIsh.matches(".*-[0-9]*-g[0-9a-f]*")
+        if(isDev) tagIsh = "dev-" + tagIsh
+        println("Picked up version: " + tagIsh)
+        return tagIsh
+    }
+
+    if(!ext.has("versionString")) {
+        ext.versionString = getCurrentVersion()
+    }
+}

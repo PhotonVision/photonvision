@@ -1,0 +1,38 @@
+[
+  {
+    "name": "AimAtTarget",
+    "description": "Aim at a target",
+    "tags": [],
+    "gradlebase": "java",
+    "language": "java",
+    "commandversion": 1,
+    "mainclass": "Main",
+    "packagetoreplace": null,
+    "dependencies": [],
+    "foldername": "aimattarget"
+  },
+  {
+    "name": "GetInRange",
+    "description": "Get in range of a target",
+    "tags": [],
+    "gradlebase": "java",
+    "language": "java",
+    "commandversion": 1,
+    "mainclass": "Main",
+    "packagetoreplace": null,
+    "dependencies": [],
+    "foldername": "getinrange"
+  },
+  {
+    "name": "AimAndRange",
+    "description": "Aim at a target while at a desired range",
+    "tags": [],
+    "gradlebase": "java",
+    "language": "java",
+    "commandversion": 1,
+    "mainclass": "Main",
+    "packagetoreplace": null,
+    "dependencies": [],
+    "foldername": "aimandrange"
+  }
+]

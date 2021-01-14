@@ -1,0 +1,35 @@
+apply plugin: 'java'
+
+String wpilibVersion = "2021.1.2"
+String opencvVersion = "3.4.7-5"
+String ejmlVersion = "0.38"
+String jacksonVersion = "2.10.0"
+
+repositories {
+    maven {
+        url = 'https://frcmaven.wpi.edu:443/artifactory/release'
+    }
+}
+
+dependencies {
+    implementation project(':photon-lib')
+    implementation project(':photon-targeting')
+
+    implementation "edu.wpi.first.wpilibj:wpilibj-java:${wpilibVersion}"
+    implementation "edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}"
+    implementation "edu.wpi.first.ntcore:ntcore-java:${wpilibVersion}"
+    implementation "edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}"
+    implementation "edu.wpi.first.thirdparty.frc2021.opencv:opencv-java:${opencvVersion}"
+    implementation "edu.wpi.first.cscore:cscore-java:${wpilibVersion}"
+    implementation "edu.wpi.first.cameraserver:cameraserver-java:${wpilibVersion}"
+    implementation "edu.wpi.first.hal:hal-java:${wpilibVersion}"
+    implementation "org.ejml:ejml-simple:${ejmlVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
+    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+}
+
+ext {
+    exampleDirectory = new File("$projectDir/src/main/java/edu/wpi/first/wpilibj/examples/")
+    exampleFile = new File("$projectDir/src/main/java/edu/wpi/first/wpilibj/examples/examples.json")
+}

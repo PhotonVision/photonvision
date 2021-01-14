@@ -14,7 +14,7 @@ on:
 
 jobs:
   # This job builds the client (web view).
-  build-client:
+  photonclient-build:
 
     # Let all steps run within the photon-client dir.
     defaults:
@@ -49,7 +49,7 @@ jobs:
         name: built-client
         path: photon-client/dist/
 
-  build-server:
+  photon-build-all:
     # The type of runner that the job will run on.
     runs-on: ubuntu-latest
 
@@ -89,7 +89,7 @@ jobs:
         with:
           file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
 
-  build-offline-docs:
+  photonserver-build-offline-docs:
     runs-on: ubuntu-latest
 
     steps:
@@ -125,8 +125,8 @@ jobs:
           name: built-docs
           path: build/html
 
-  build-package:
-    needs: [build-client, build-server, build-offline-docs]
+  photon-build-package:
+    needs: [photonclient-build, photon-build-all, photonserver-build-offline-docs]
 
     # The type of runner that the job will run on.
     runs-on: ubuntu-latest
@@ -177,7 +177,7 @@ jobs:
             photon-server/build/libs/*.jar
         if: github.event_name == 'push'
 
-  check-lint:
+  photonserver-check-lint:
     # The type of runner that the job will run on.
     runs-on: ubuntu-latest
     
@@ -195,9 +195,9 @@ jobs:
           chmod +x gradlew
           ./gradlew spotlessCheck
 
-  release:
+  photon-release:
     if: startsWith(github.ref, 'refs/tags/v')
-    needs: [build-package]
+    needs: [photon-build-package]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -208,3 +208,87 @@ jobs:
           files: '**/*'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  #  Building photonlib
+  photonlib-build-host:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact-name: Win64
+          - os: macos-latest
+            artifact-name: macOS
+          - os: ubuntu-latest
+            artifact-name: Linux
+
+    runs-on: ${{ matrix.os }}
+    name: "Photonlib - Build - ${{ matrix.artifact-name }}"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:build
+      - run: ./gradlew photonlib:publish
+        name: Publish
+        env:
+          ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+        if: github.event_name == 'push'
+
+  photonlib-build-docker:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - container: wpilib/roborio-cross-ubuntu:2020-18.04
+            artifact-name: Athena
+          - container: wpilib/raspbian-cross-ubuntu:10-18.04
+            artifact-name: Raspbian
+          - container: wpilib/aarch64-cross-ubuntu:bionic-18.04
+            artifact-name: Aarch64
+
+    runs-on: ubuntu-latest
+    container: ${{ matrix.container }}
+    name: "Photonlib - Build - ${{ matrix.artifact-name }}"
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v1
+        with:
+          java-version: 11
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:build
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:publish
+        env:
+          ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
+        if: github.event_name == 'push'
+
+  photonlib-wpiformat:
+    name: "wpiformat"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fetch all history and metadata
+        run: |
+          git fetch --prune --unshallow
+          git checkout -b pr
+          git branch -f master origin/master
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Install clang-format
+        run: sudo apt-get update -q && sudo apt-get install clang-format-10
+      - name: Install wpiformat
+        run: pip3 install wpiformat
+      - name: Run
+        run: |
+            ls -la
+            wpiformat -clang 10 -f photon-lib
+      - name: Check Output
+        run: git --no-pager diff --exit-code HEAD

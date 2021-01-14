@@ -1,0 +1,77 @@
+plugins {
+    id 'cpp'
+    id 'java'
+    id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
+    id 'google-test-test-suite'
+    id 'edu.wpi.first.NativeUtils' version '2020.10.1'
+    id 'edu.wpi.first.GradleJni' version '0.10.1'
+    id 'edu.wpi.first.GradleVsCode' version '0.12.0'
+}
+
+repositories {
+    maven {
+        url = 'https://frcmaven.wpi.edu:443/artifactory/release'
+        maven { url "https://frcmaven.wpi.edu/artifactory/development" }
+        mavenCentral()
+    }
+}
+
+apply from: '../photon-lib/config.gradle'
+
+ext.examplesMap = [:]
+
+File examplesTree = file("$projectDir/src/main/cpp/examples")
+examplesTree.list(new FilenameFilter() {
+    @Override
+    public boolean accept(File current, String name) {
+        return new File(current, name).isDirectory();
+    }
+}).each {
+    examplesMap.put(it, [])
+}
+
+nativeUtils.platformConfigs.named(nativeUtils.wpi.platforms.roborio).configure {
+    cppCompiler.args.remove('-Wno-error=deprecated-declarations')
+    cppCompiler.args.add('-Werror=deprecated-declarations')
+}
+
+ext {
+    sharedCvConfigs = examplesMap
+    staticCvConfigs = [:]
+    useJava = false
+    useCpp = true
+}
+
+model {
+    components {
+        examplesMap.each { key, value ->
+            "${key}"(NativeExecutableSpec) {
+                targetBuildTypes 'debug'
+                binaries.all { binary ->
+                    lib project: ':photon-lib', library: 'Photon', linkage: 'shared'
+                    if (binary.targetPlatform.name == nativeUtils.wpi.platforms.roborio) {
+                        nativeUtils.useRequiredLibrary(binary, 'netcomm_shared', 'chipobject_shared', 'visa_shared', 'ni_runtime_shared')
+                    }
+                }
+                sources {
+                    cpp {
+                        source {
+                            srcDirs 'src/main/cpp/examples/' + "${key}" + "/cpp"
+                            include '**/*.cpp'
+                        }
+                        exportedHeaders {
+                            srcDirs 'src/main/cpp/examples/' + "${key}" + "/include"
+                            include '**/*.h'
+                        }
+                    }
+                }
+                nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
+            }
+        }
+    }
+}
+
+ext {
+    exampleDirectory = new File("$projectDir/src/main/java/edu/wpi/first/wpilibj/examples/")
+    exampleFile = new File("$projectDir/src/main/java/edu/wpi/first/wpilibj/examples/examples.json")
+}

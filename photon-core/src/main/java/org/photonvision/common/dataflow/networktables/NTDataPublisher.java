@@ -20,13 +20,17 @@ package org.photonvision.common.dataflow.networktables;
 import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.pipeline.result.SimplePipelineResult;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
 
@@ -163,7 +167,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     @Override
     public void accept(CVPipelineResult result) {
-        var simplified = new SimplePipelineResult(result);
+        var simplified =
+                new PhotonPipelineResult(
+                        result.getLatencyMillis(), simpleFromTrackedTargets(result.targets));
         Packet packet = new Packet(simplified.getPacketSize());
         simplified.populatePacket(packet);
 
@@ -200,5 +206,15 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             bestTargetPosY.forceSetDouble(0);
         }
         rootTable.getInstance().flush();
+    }
+
+    public static List<PhotonTrackedTarget> simpleFromTrackedTargets(List<TrackedTarget> targets) {
+        var ret = new ArrayList<PhotonTrackedTarget>();
+        for (var t : targets) {
+            ret.add(
+                    new PhotonTrackedTarget(
+                            t.getYaw(), t.getPitch(), t.getArea(), t.getSkew(), t.getCameraToTarget()));
+        }
+        return ret;
     }
 }

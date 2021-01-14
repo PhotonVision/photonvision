@@ -1,2 +1,6 @@
+include 'photon-targeting'
 include 'photon-core'
 include 'photon-server'
+include 'photon-lib'
+include 'photonlib-java-examples'
+include 'photonlib-cpp-examples'
