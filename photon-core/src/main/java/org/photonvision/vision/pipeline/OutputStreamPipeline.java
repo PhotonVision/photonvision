@@ -19,7 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
@@ -131,7 +130,7 @@ public class OutputStreamPipeline {
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                sumPipeNanosElapsed,
                 fps, // Unused but here just in case
                 targetsToDraw,
                 new Frame(new CVMat(outMat), outputFrame.frameStaticProperties),

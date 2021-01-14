@@ -17,6 +17,7 @@
 
 package org.photonvision.common.util.math;
 
+import edu.wpi.first.wpiutil.WPIUtilJNI;
 import org.apache.commons.math3.util.FastMath;
 
 public class MathUtils {
@@ -71,5 +72,9 @@ public class MathUtils {
     @SuppressWarnings("ParameterName")
     public static double lerp(double startValue, double endValue, double t) {
         return startValue + (endValue - startValue) * t;
+    }
+
+    public static long wpiNanoTime() {
+        return microsToNanos(WPIUtilJNI.now());
     }
 }

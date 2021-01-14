@@ -172,7 +172,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             // the GPU
             hsvPipeResult = new CVPipeResult<>();
             hsvPipeResult.output = frame.image.getMat();
-            hsvPipeResult.nanosElapsed = System.nanoTime() - frame.timestampNanos;
+            hsvPipeResult.nanosElapsed = MathUtils.wpiNanoTime() - frame.timestampNanos;
 
             sumPipeNanosElapsed = pipeProfileNanos[1] = hsvPipeResult.nanosElapsed;
         }
@@ -223,7 +223,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
         return new CVPipelineResult(
-                MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                sumPipeNanosElapsed,
                 fps,
                 targetList,
                 new Frame(new CVMat(hsvPipeResult.output), frame.frameStaticProperties),

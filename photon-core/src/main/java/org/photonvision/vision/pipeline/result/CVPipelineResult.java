@@ -19,12 +19,13 @@ package org.photonvision.vision.pipeline.result;
 
 import java.util.Collections;
 import java.util.List;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class CVPipelineResult implements Releasable {
-    private double latencyMillis;
+    private long imageCaptureTimestampNanos;
     public final double processingMillis;
     public final double fps;
     public final List<TrackedTarget> targets;
@@ -46,8 +47,8 @@ public class CVPipelineResult implements Releasable {
     }
 
     public CVPipelineResult(
-            double processingMillis, double fps, List<TrackedTarget> targets, Frame outputFrame) {
-        this(processingMillis, fps, targets, outputFrame, null);
+            double processingNanos, double fps, List<TrackedTarget> targets, Frame outputFrame) {
+        this(processingNanos, fps, targets, outputFrame, null);
     }
 
     public boolean hasTargets() {
@@ -62,11 +63,21 @@ public class CVPipelineResult implements Releasable {
         if (inputFrame != null) inputFrame.release();
     }
 
+    /**
+    * Get the latency between now (wpi::Now) and the time at which the image was captured. FOOTGUN:
+    * the latency is relative to the time at which this method is called. Waiting to call this method
+    * will change the latency this method returns.
+    */
     public double getLatencyMillis() {
-        return latencyMillis;
+        var now = MathUtils.wpiNanoTime();
+        return MathUtils.nanosToMillis(now - imageCaptureTimestampNanos);
     }
 
-    public void setLatencyMillis(double latencyMillis) {
-        this.latencyMillis = latencyMillis;
+    public long getImageCaptureTimestampNanos() {
+        return imageCaptureTimestampNanos;
+    }
+
+    public void setImageCaptureTimestampNanos(long imageCaptureTimestampNanos) {
+        this.imageCaptureTimestampNanos = imageCaptureTimestampNanos;
     }
 }

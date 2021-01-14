@@ -18,6 +18,7 @@
 package org.photonvision.vision.frame.provider;
 
 import org.opencv.core.Mat;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
@@ -47,6 +48,8 @@ public class AcceleratedPicamFrameProvider implements FrameProvider {
         long matHandle = PicamJNI.grabFrame(false);
         mat = new CVMat(new Mat(matHandle));
         return new Frame(
-                mat, System.nanoTime() - PicamJNI.getFrameLatency(), settables.getFrameStaticProperties());
+                mat,
+                MathUtils.wpiNanoTime() - PicamJNI.getFrameLatency(),
+                settables.getFrameStaticProperties());
     }
 }

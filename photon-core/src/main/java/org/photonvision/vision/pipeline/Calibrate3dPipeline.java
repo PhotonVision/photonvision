@@ -34,7 +34,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
@@ -147,7 +146,7 @@ public class Calibrate3dPipeline
 
         // Return the drawn chessboard if corners are found, if not, then return the input image.
         return new CVPipelineResult(
-                MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                sumPipeNanosElapsed,
                 fps, // Unused but here in case
                 Collections.emptyList(),
                 new Frame(outputColorCVMat, frame.frameStaticProperties));

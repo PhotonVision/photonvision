@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.*;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -298,7 +297,7 @@ public class ColoredShapePipeline
         var fps = fpsResult.output;
 
         return new CVPipelineResult(
-                MathUtils.nanosToMillis(sumPipeNanosElapsed),
+                sumPipeNanosElapsed,
                 fps,
                 targetList,
                 new Frame(new CVMat(hsvPipeResult.output), frame.frameStaticProperties),

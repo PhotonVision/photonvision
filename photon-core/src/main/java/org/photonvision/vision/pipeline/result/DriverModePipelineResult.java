@@ -21,7 +21,7 @@ import java.util.List;
 import org.photonvision.vision.frame.Frame;
 
 public class DriverModePipelineResult extends CVPipelineResult {
-    public DriverModePipelineResult(double latencyMillis, double fps, Frame outputFrame) {
-        super(latencyMillis, fps, List.of(), outputFrame);
+    public DriverModePipelineResult(double latencyNanos, double fps, Frame outputFrame) {
+        super(latencyNanos, fps, List.of(), outputFrame);
     }
 }

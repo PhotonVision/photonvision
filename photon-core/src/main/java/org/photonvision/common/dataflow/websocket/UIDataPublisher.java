@@ -38,16 +38,17 @@ public class UIDataPublisher implements CVPipelineResultConsumer {
 
     @Override
     public void accept(CVPipelineResult result) {
-        var now = System.currentTimeMillis();
+        long now = System.currentTimeMillis();
+
+        var dataMap = new HashMap<String, Object>();
+        dataMap.put("latency", result.getLatencyMillis());
 
         // only update the UI at 15hz
         if (lastUIResultUpdateTime + 1000.0 / 10.0 > now) return;
 
         var uiMap = new HashMap<Integer, HashMap<String, Object>>();
-        var dataMap = new HashMap<String, Object>();
 
         dataMap.put("fps", result.fps);
-        dataMap.put("latency", result.getLatencyMillis());
 
         var targets = result.targets;
 

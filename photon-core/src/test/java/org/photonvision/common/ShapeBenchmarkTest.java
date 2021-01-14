@@ -174,7 +174,7 @@ public class ShapeBenchmarkTest {
             pipelineResult.release();
             processingTimes.add(pipelineResult.processingMillis);
             latencyTimes.add(pipelineResult.getLatencyMillis());
-        } while (System.currentTimeMillis() - benchmarkStartMillis < secondsToRun * 1000);
+        } while (System.currentTimeMillis() - benchmarkStartMillis < secondsToRun * 1000L);
         System.out.println("Benchmark complete.");
 
         var processingMin = Collections.min(processingTimes);
