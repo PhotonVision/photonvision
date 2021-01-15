@@ -1,0 +1,32 @@
+plugins {
+    id "com.diffplug.gradle.spotless" version "3.28.0"
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            url = "https://maven.photonvision.org/repository/internal/"
+        }
+        maven {
+            url = 'https://frcmaven.wpi.edu:443/artifactory/development'
+        }
+    }
+}
+
+spotless {
+    java {
+        googleJavaFormat()
+        paddedCell()
+        indentWithTabs(2)
+        indentWithSpaces(4)
+        removeUnusedImports()
+    }
+    java {
+        target '**/*.java'
+        licenseHeaderFile "$rootDir/LicenseHeader.txt"
+
+        targetExclude('photon-core/src/main/java/org/photonvision/PhotonVersion.java')
+    }
+}
