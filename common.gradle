@@ -6,7 +6,7 @@ sourceCompatibility = 11
 
 // Common version config
 ext {
-    wpilibVersion = '2020.3.2-99-g9f4de91'
+    wpilibVersion = '2021.1.2'
     joglVersion = '2.4.0-rc-20200307'
     openCVVersion = '3.4.7-2'
 }
