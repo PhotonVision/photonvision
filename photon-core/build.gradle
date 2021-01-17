@@ -16,7 +16,6 @@ dependencies {
     compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxaarch64bionic"
     compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxraspbian"
     compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxx86-64"
-    compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:osxx86-64"
     compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:windowsx86-64"
 
     // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
