@@ -12,6 +12,9 @@ allprojects {
         maven {
             url = 'https://frcmaven.wpi.edu:443/artifactory/development'
         }
+        maven {
+            url = 'https://frcmaven.wpi.edu:443/artifactory/release'
+        }
     }
 }
 

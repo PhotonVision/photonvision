@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -62,9 +61,7 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         }
         R result = process(frame, settings);
 
-        // Important! This assumes that the frame timestamp has the same epoch as System.nanoTime (which
-        // itself has an arbitrary epoch)
-        result.setLatencyMillis(MathUtils.nanosToMillis(System.nanoTime() - frame.timestampNanos));
+        result.setImageCaptureTimestampNanos(frame.timestampNanos);
 
         return result;
     }
