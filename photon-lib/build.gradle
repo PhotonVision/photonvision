@@ -1,0 +1,129 @@
+plugins {
+  id 'cpp'
+  id 'java'
+  id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
+  id 'google-test-test-suite'
+  id 'edu.wpi.first.NativeUtils' version  '2020.10.1'
+  id 'edu.wpi.first.GradleJni' version '0.10.1'
+  id 'edu.wpi.first.GradleVsCode' version '0.12.0'
+}
+
+repositories {
+  mavenCentral()
+  maven { url "https://frcmaven.wpi.edu/artifactory/development" }
+}
+
+if (project.hasProperty('releaseMode')) {
+  wpilibRepositories.addAllReleaseRepositories(project)
+} else {
+  wpilibRepositories.addAllDevelopmentRepositories(project)
+}
+
+apply from: '../versioningHelper.gradle'
+
+ext {
+    pubVersion = versionString
+    wpilibVersion = '2020.3.2-99-g9f4de91'
+}
+
+// Apply C++ configuration
+apply from: 'config.gradle'
+
+test {
+    useJUnitPlatform()
+}
+
+// Apply Java configuration
+dependencies {
+
+    // TODO C++
+    compile project(':photon-core')
+    compile project(':photon-targeting')
+
+    implementation 'edu.wpi.first.cscore:cscore-java:2020.+'
+    implementation 'edu.wpi.first.cameraserver:cameraserver-java:2020.+'
+    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2020.+'
+    implementation 'edu.wpi.first.wpiutil:wpiutil-java:2020.+'
+    implementation 'edu.wpi.first.wpimath:wpimath-java:2020.+'
+    implementation 'edu.wpi.first.hal:hal-java:2020.+'
+    implementation 'edu.wpi.first.thirdparty.frc2020.opencv:opencv-java:3.4.7-2'
+
+    implementation "edu.wpi.first.ntcore:ntcore-java:$wpilibVersion"
+    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxaarch64bionic"
+    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxraspbian"
+    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxx86-64"
+    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:osxx86-64"
+    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:windowsx86-64"
+
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")
+}
+
+// Set up exports properly
+nativeUtils {
+  exportsConfigs {
+    // Main library is just default empty. This will export everything
+    Photon {
+    }
+  }
+}
+
+model {
+  components {
+    Photon(NativeLibrarySpec) {
+      sources {
+        cpp {
+          source {
+            srcDirs 'src/main/native/cpp'
+            include '**/*.cpp'
+          }
+          exportedHeaders {
+            srcDirs 'src/main/native/include'
+          }
+        }
+      }
+      nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
+    }
+  }
+  testSuites {
+    cppTest(GoogleTestTestSuiteSpec) {
+      testing $.components.Photon
+
+      sources.cpp {
+        source {
+          srcDir 'src/test/native/cpp'
+          include '**/*.cpp'
+        }
+      }
+
+      nativeUtils.useRequiredLibrary(it, 'wpilib_executable_shared')
+      nativeUtils.useRequiredLibrary(it, 'googletest_static')
+    }
+  }
+}
+
+def photonlibFileInput = file("src/generate/photonlib.json.in")
+ext.photonlibFileOutput = file("$buildDir/generated/vendordeps/photonlib.json")
+
+task generateVendorJson() {
+  description = 'Generates the vendor JSON file'
+  group = 'PhotonVision'
+
+  outputs.file photonlibFileOutput
+  inputs.file photonlibFileInput
+
+  doLast {
+    println "Writing version ${pubVersion} to $photonlibFileOutput"
+
+    if (photonlibFileOutput.exists()) {
+      photonlibFileOutput.delete()
+    }
+    def read = photonlibFileInput.text.replace('${photon_version}', pubVersion)
+    photonlibFileOutput.write(read)
+  }
+}
+
+build.dependsOn generateVendorJson
+
+apply from: 'publish.gradle'

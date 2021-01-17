@@ -131,3 +131,6 @@ photon-server/src/main/generated/native/include/org_photonvision_raspi_PicamJNI.
 .gradle/*
 photonvision_config
 build/spotlessJava
+build/*
+build
+photon-lib/src/main/java/org/photonvision/PhotonVersion.java

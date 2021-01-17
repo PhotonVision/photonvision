@@ -40,7 +40,7 @@ public class VisionLED {
     private final int brightnessMax;
     private final PigpioSocket pigpioSocket;
 
-    private VisionLEDMode currentLedMode = VisionLEDMode.VLM_DEFAULT;
+    private VisionLEDMode currentLedMode = VisionLEDMode.kDefault;
     private BooleanSupplier pipelineModeSupplier;
 
     private int mappedBrightnessPercentage;
@@ -111,7 +111,7 @@ public class VisionLED {
     }
 
     public void setState(boolean on) {
-        setInternal(on ? VisionLEDMode.VLM_ON : VisionLEDMode.VLM_OFF, false);
+        setInternal(on ? VisionLEDMode.kOn : VisionLEDMode.kOff, false);
     }
 
     void onLedModeChange(EntryNotification entryNotification) {
@@ -120,20 +120,20 @@ public class VisionLED {
             VisionLEDMode newLedMode;
             switch (newLedModeRaw) {
                 case -1:
-                    newLedMode = VisionLEDMode.VLM_DEFAULT;
+                    newLedMode = VisionLEDMode.kDefault;
                     break;
                 case 0:
-                    newLedMode = VisionLEDMode.VLM_OFF;
+                    newLedMode = VisionLEDMode.kOff;
                     break;
                 case 1:
-                    newLedMode = VisionLEDMode.VLM_ON;
+                    newLedMode = VisionLEDMode.kOn;
                     break;
                 case 2:
-                    newLedMode = VisionLEDMode.VLM_BLINK;
+                    newLedMode = VisionLEDMode.kBlink;
                     break;
                 default:
                     logger.warn("User supplied invalid LED mode, falling back to Default");
-                    newLedMode = VisionLEDMode.VLM_DEFAULT;
+                    newLedMode = VisionLEDMode.kDefault;
                     break;
             }
             setInternal(newLedMode, true);
@@ -145,16 +145,16 @@ public class VisionLED {
 
         if (fromNT) {
             switch (newLedMode) {
-                case VLM_DEFAULT:
+                case kDefault:
                     setStateImpl(pipelineModeSupplier.getAsBoolean());
                     break;
-                case VLM_OFF:
+                case kOff:
                     setStateImpl(false);
                     break;
-                case VLM_ON:
+                case kOn:
                     setStateImpl(true);
                     break;
-                case VLM_BLINK:
+                case kBlink:
                     blinkImpl(85, -1);
                     break;
             }
@@ -166,48 +166,20 @@ public class VisionLED {
                             + newLedMode.toString()
                             + "\"");
         } else {
-            if (currentLedMode == VisionLEDMode.VLM_DEFAULT) {
+            if (currentLedMode == VisionLEDMode.kDefault) {
                 switch (newLedMode) {
-                    case VLM_DEFAULT:
+                    case kDefault:
                         setStateImpl(pipelineModeSupplier.getAsBoolean());
                         break;
-                    case VLM_OFF:
+                    case kOff:
                         setStateImpl(false);
                         break;
-                    case VLM_ON:
+                    case kOn:
                         setStateImpl(true);
                         break;
                 }
             }
             logger.info("Changing LED internal state to " + newLedMode.toString());
-        }
-    }
-
-    public enum VisionLEDMode {
-        VLM_DEFAULT(-1),
-        VLM_OFF(0),
-        VLM_ON(1),
-        VLM_BLINK(2);
-
-        public final int value;
-
-        VisionLEDMode(int value) {
-            this.value = value;
-        }
-
-        @Override
-        public String toString() {
-            switch (this) {
-                case VLM_DEFAULT:
-                    return "Default";
-                case VLM_OFF:
-                    return "Off";
-                case VLM_ON:
-                    return "On";
-                case VLM_BLINK:
-                    return "Blink";
-            }
-            return "";
         }
     }
 }

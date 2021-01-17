@@ -27,7 +27,6 @@ import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
-import org.photonvision.common.hardware.VisionLED.VisionLEDMode;
 import org.photonvision.common.hardware.metrics.MetricsBase;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -91,7 +90,7 @@ public class HardwareManager {
                                 pigpioSocket);
 
         ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
-        ledModeEntry.setNumber(VisionLEDMode.VLM_DEFAULT.value);
+        ledModeEntry.setNumber(VisionLEDMode.kDefault.value);
         ledModeListener =
                 visionLED == null
                         ? null
