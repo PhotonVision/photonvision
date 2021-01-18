@@ -144,9 +144,9 @@ public class BenchmarkTest {
             CVPipelineResult pipelineResult =
                     pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
             pipelineResult.release();
-            processingTimes.add(pipelineResult.processingMillis);
+            processingTimes.add(pipelineResult.getProcessingMillis());
             latencyTimes.add(pipelineResult.getLatencyMillis());
-        } while (System.currentTimeMillis() - benchmarkStartMillis < secondsToRun * 1000);
+        } while (System.currentTimeMillis() - benchmarkStartMillis < secondsToRun * 1000.0);
         System.out.println("Benchmark complete.");
 
         var processingMin = Collections.min(processingTimes);
