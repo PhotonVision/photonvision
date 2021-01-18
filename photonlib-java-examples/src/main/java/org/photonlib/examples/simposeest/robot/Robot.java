@@ -17,11 +17,10 @@
 
 package org.photonlib.examples.simposeest.robot;
 
-import org.photonlib.examples.simposeest.sim.DrivetrainSim;
-
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
+import org.photonlib.examples.simposeest.sim.DrivetrainSim;
 
 public class Robot extends TimedRobot {
 

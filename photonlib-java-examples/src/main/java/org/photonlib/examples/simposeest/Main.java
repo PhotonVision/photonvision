@@ -15,9 +15,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonlib.examples.simposeest.robot;
+package org.photonlib.examples.simposeest;
 
 import edu.wpi.first.wpilibj.RobotBase;
+import org.photonlib.examples.simposeest.robot.Robot;
 
 /**
 * Do NOT add any static variables to this class, or any initialization at all. Unless you know what

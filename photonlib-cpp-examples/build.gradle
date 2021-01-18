@@ -5,7 +5,6 @@ plugins {
     id 'google-test-test-suite'
     id 'edu.wpi.first.NativeUtils' version '2020.10.1'
     id 'edu.wpi.first.GradleJni' version '0.10.1'
-    id 'edu.wpi.first.GradleVsCode' version '0.12.0'
 }
 
 repositories {

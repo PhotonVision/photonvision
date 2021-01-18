@@ -31,7 +31,6 @@ import edu.wpi.first.wpilibj.system.LinearSystem;
 import edu.wpi.first.wpilibj.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.system.plant.LinearSystemId;
 import edu.wpi.first.wpiutil.math.numbers.N2;
-
 import org.photonlib.examples.simposeest.robot.Constants;
 import org.photonvision.SimVisionSystem;
 

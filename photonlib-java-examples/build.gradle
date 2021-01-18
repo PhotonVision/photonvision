@@ -1,13 +1,42 @@
+import edu.wpi.first.toolchain.NativePlatforms
+
 plugins {
-  id "edu.wpi.first.NativeUtils" version "2021.1.1"
+    id 'edu.wpi.first.NativeUtils' version '2021.1.1'
 }
 
 apply plugin: 'java'
+apply plugin: 'cpp'
+apply plugin: 'edu.wpi.first.NativeUtils'
 
-String wpilibVersion = "2021.1.2"
-String opencvVersion = "3.4.7-5"
-String ejmlVersion = "0.38"
-String jacksonVersion = "2.10.0"
+// This adds all of the WPILib dependencies.
+nativeUtils.addWpiNativeUtils()
+nativeUtils {
+    wpi {
+        configureDependencies {
+            wpiVersion = "2021.1.2"
+            opencvVersion = "3.4.7-5"
+            wpimathVersion = "2021.1.2"
+        }
+    }
+    dependencyConfigs {
+        gui {
+            groupId = "edu.wpi.first.halsim"
+            artifactId = "halsim_gui"
+            headerClassifier = "headers"
+            sourceClassifier = "sources"
+            ext = "zip"
+            version = "2021.1.2"
+            sharedPlatforms << "osxx86-64" << "linuxx86-64" << "windowsx86-64"
+        }
+    }
+    combinedDependencyConfigs {
+        halsim_gui {
+            libraryName = "halsim_gui"
+            targetPlatforms << "osxx86-64" << "linuxx86-64" << "windowsx86-64"
+            dependencies << "gui_shared"
+        }
+    }
+}
 
 repositories {
     maven {
@@ -15,38 +44,34 @@ repositories {
     }
 }
 
+ext {
+    exampleFile = new File("$projectDir/src/main/java/org/photonlib/examples/examples.json")
+}
+
 dependencies {
     implementation project(':photon-lib')
     implementation project(':photon-targeting')
 
-    implementation "edu.wpi.first.wpilibj:wpilibj-java:${wpilibVersion}"
-    implementation "edu.wpi.first.wpimath:wpimath-java:${wpilibVersion}"
-    implementation "edu.wpi.first.ntcore:ntcore-java:${wpilibVersion}"
-    implementation "edu.wpi.first.wpiutil:wpiutil-java:${wpilibVersion}"
-    implementation "edu.wpi.first.thirdparty.frc2021.opencv:opencv-java:${opencvVersion}"
-    implementation "edu.wpi.first.cscore:cscore-java:${wpilibVersion}"
-    implementation "edu.wpi.first.cameraserver:cameraserver-java:${wpilibVersion}"
-    implementation "edu.wpi.first.hal:hal-java:${wpilibVersion}"
-    implementation "org.ejml:ejml-simple:${ejmlVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-core:${jacksonVersion}"
-    implementation "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
-}
- 
-//apply plugin: 'java'
-apply plugin: 'cpp'
-apply plugin: 'edu.wpi.first.NativeUtils'
-
-apply from: '../shared/config.gradle'
-
-//Copied from wpi repos... not 100% sure what it does
-ext.getCurrentArch = {
-    return NativePlatforms.desktop
+    implementation 'edu.wpi.first.cscore:cscore-java:2021.+'
+    implementation 'edu.wpi.first.cameraserver:cameraserver-java:2021.+'
+    implementation 'edu.wpi.first.ntcore:ntcore-java:2021.+'
+    implementation 'edu.wpi.first.wpilibj:wpilibj-java:2021.+'
+    implementation 'edu.wpi.first.wpiutil:wpiutil-java:2021.+'
+    implementation 'edu.wpi.first.wpimath:wpimath-java:2021.+'
+    implementation 'edu.wpi.first.hal:hal-java:2021.+'
+    implementation "org.ejml:ejml-simple:0.38"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.10.0"
+    implementation "com.fasterxml.jackson.core:jackson-core:2.10.0"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.10.0"
+    implementation 'edu.wpi.first.thirdparty.frc2020.opencv:opencv-java:3.4.7-3'
 }
 
 model {
     components {
-        wpilibjExamplesDev(NativeExecutableSpec) {
+        all {
+            nativeUtils.useAllPlatforms(it)
+        }
+        dev(NativeExecutableSpec) {
             targetBuildTypes 'debug'
             sources {
                 cpp {
@@ -60,96 +85,61 @@ model {
                 }
             }
             binaries.all { binary ->
-                lib project: ':wpilibOldCommands', library: 'wpilibOldCommands', linkage: 'shared'
-                lib project: ':wpilibNewCommands', library: 'wpilibNewCommands', linkage: 'shared'
-                lib project: ':wpilibc', library: 'wpilibc', linkage: 'shared'
-                lib project: ':wpimath', library: 'wpimath', linkage: 'shared'
-                lib project: ':ntcore', library: 'ntcore', linkage: 'shared'
-                lib project: ':cscore', library: 'cscore', linkage: 'shared'
-                lib project: ':ntcore', library: 'ntcoreJNIShared', linkage: 'shared'
-                lib project: ':cscore', library: 'cscoreJNIShared', linkage: 'shared'
-                // project(':hal').addHalDependency(binary, 'shared') I think this is actualy needed, but gradle's complaining it can't find it or doesn't know what it is?
-                // project(':hal').addHalJniDependency(binary)
-                lib project: ':wpiutil', library: 'wpiutil', linkage: 'shared'
-                lib project: ':cameraserver', library: 'cameraserver', linkage: 'shared'
-                if (binary.targetPlatform.name == nativeUtils.wpi.platforms.roborio) {
-                    nativeUtils.useRequiredLibrary(binary, 'netcomm_shared', 'chipobject_shared', 'visa_shared', 'ni_runtime_shared')
-                } else {
-                    def systemArch = getCurrentArch()
-                    if (binary.targetPlatform.name == systemArch) {
-                        lib project: ":simulation:halsim_gui", library: 'halsim_gui', linkage: 'shared'
-                    }
-                }
+                nativeUtils.useRequiredLibrary(binary, 'wpilib_executable_shared')
                 nativeUtils.useRequiredLibrary(binary, 'opencv_shared')
+                nativeUtils.useRequiredLibrary(binary, 'halsim_gui')
             }
         }
     }
     tasks {
-        def c = $.components
         def found = false
-        c.each {
-            if (it in NativeExecutableSpec && it.name == "wpilibjExamplesDev") {
+        $.components.each {
+            if (it in NativeExecutableSpec && it.name == "dev") {
                 it.binaries.each {
-                    if (!found) {
-                        def arch = it.targetPlatform.name
-                        if (arch == NativePlatforms.desktop) {
-                            found = true
-                            def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
+                    if (found)
+                        return
 
-                            def doFirstTask = { task ->
-                                def extensions = ''
-                                it.tasks.install.installDirectory.get().getAsFile().eachFileRecurse {
-                                    def name = it.name
-                                    if (!(name.endsWith('.dll') || name.endsWith('.so') || name.endsWith('.dylib'))) {
-                                        return
-                                    }
-                                    def file = it
-                                    if (name.startsWith("halsim_gui") || name.startsWith("libhalsim_gui".toString())) {
-                                        extensions += file.absolutePath + File.pathSeparator
-                                    }
+                    def arch = it.targetPlatform.name
+                    if (arch == NativePlatforms.desktop) {
+                        found = true
+                        def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + 'lib'
+
+                        def doFirstTask = { task ->
+                            def extensions = ''
+                            it.tasks.install.installDirectory.get().getAsFile().eachFileRecurse {
+                                def name = it.name
+                                if (!(name.endsWith('.dll') || name.endsWith('.so') || name.endsWith('.dylib'))) {
+                                    return
                                 }
-                                if (extensions != '') {
-                                    task.environment 'HALSIM_EXTENSIONS', extensions
+                                def file = it
+                                if (name.startsWith("halsim_gui") || name.startsWith("libhalsim_gui".toString())) {
+                                    extensions += file.absolutePath + File.pathSeparator
                                 }
                             }
-
-                            project.tasks.create("runCpp", Exec) { task ->
-                                dependsOn it.tasks.install
-                                commandLine it.tasks.install.runScriptFile.get().asFile.toString()
-                                test.dependsOn it.tasks.install
-                                test.systemProperty 'java.library.path', filePath
-                                test.environment 'LD_LIBRARY_PATH', filePath
-                                test.workingDir filePath
+                            if (extensions != '') {
+                                task.environment 'HALSIM_EXTENSIONS', extensions
                             }
-
-                            new groovy.json.JsonSlurper().parseText(exampleFile.text).each { entry ->
-                                project.tasks.create("run${entry.foldername}", JavaExec) { run ->
-                                    main = "edu.wpi.first.wpilibj.examples." + entry.foldername + ".Main"
-                                    classpath = sourceSets.main.runtimeClasspath
-                                    run.dependsOn it.tasks.install
-                                    run.systemProperty 'java.library.path', filePath
-                                    run.environment 'LD_LIBRARY_PATH', filePath
-                                    run.workingDir filePath
-                                    doFirst { doFirstTask(run) }
-
-                                    if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
-                                        run.jvmArgs = ['-XstartOnFirstThread']
-                                    }
-                                }
-                            }
-
-                            found = true
                         }
+
+                        new groovy.json.JsonSlurper().parseText(exampleFile.text).each { entry ->
+                            project.tasks.create("run${entry.foldername}", JavaExec) { run ->
+                                main = "org.photonlib.examples." + entry.foldername + ".Main"
+                                classpath = sourceSets.main.runtimeClasspath
+                                run.dependsOn it.tasks.install
+                                run.systemProperty 'java.library.path', filePath
+                                run.environment 'LD_LIBRARY_PATH', filePath
+                                run.workingDir filePath
+                                doFirst { doFirstTask(run) }
+
+                                if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
+                                    run.jvmArgs = ['-XstartOnFirstThread']
+                                }
+                            }
+                        }
+
                     }
                 }
             }
         }
     }
-}
-
-
-
-ext {
-    exampleDirectory = new File("$projectDir/src/main/java/edu/wpi/first/wpilibj/examples/")
-    exampleFile = new File("$projectDir/src/main/java/edu/wpi/first/wpilibj/examples/examples.json")
 }
