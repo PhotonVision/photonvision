@@ -34,5 +34,17 @@
     "packagetoreplace": null,
     "dependencies": [],
     "foldername": "aimandrange"
+  },
+  {
+    "name": "SimPoseEstimation",
+    "description": "Integrate 3D vision processing mode results into estimation of robot pose on the field. Includes simulation support.",
+    "tags": [],
+    "gradlebase": "java",
+    "language": "java",
+    "commandversion": 1,
+    "mainclass": "Main",
+    "packagetoreplace": null,
+    "dependencies": [],
+    "foldername": "simposeest"
   }
 ]
