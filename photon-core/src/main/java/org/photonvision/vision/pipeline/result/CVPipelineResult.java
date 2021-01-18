@@ -26,19 +26,19 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class CVPipelineResult implements Releasable {
     private long imageCaptureTimestampNanos;
-    public final double processingMillis;
+    public final double processingNanos;
     public final double fps;
     public final List<TrackedTarget> targets;
     public final Frame outputFrame;
     public final Frame inputFrame;
 
     public CVPipelineResult(
-            double processingMillis,
+            double processingNanos,
             double fps,
             List<TrackedTarget> targets,
             Frame outputFrame,
             Frame inputFrame) {
-        this.processingMillis = processingMillis;
+        this.processingNanos = processingNanos;
         this.fps = fps;
         this.targets = targets != null ? targets : Collections.emptyList();
 
@@ -71,6 +71,10 @@ public class CVPipelineResult implements Releasable {
     public double getLatencyMillis() {
         var now = MathUtils.wpiNanoTime();
         return MathUtils.nanosToMillis(now - imageCaptureTimestampNanos);
+    }
+
+    public double getProcessingMillis() {
+        return MathUtils.nanosToMillis(processingNanos);
     }
 
     public long getImageCaptureTimestampNanos() {

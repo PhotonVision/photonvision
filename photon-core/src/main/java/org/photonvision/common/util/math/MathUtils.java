@@ -44,6 +44,10 @@ public class MathUtils {
         return nanos / 1000000.0;
     }
 
+    public static double nanosToMillis(double nanos) {
+        return nanos / 1000000.0;
+    }
+
     public static long millisToNanos(long millis) {
         return millis * 1000000;
     }
