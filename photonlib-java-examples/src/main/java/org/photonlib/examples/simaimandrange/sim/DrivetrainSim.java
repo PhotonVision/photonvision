@@ -1,8 +1,21 @@
-package org.photonlib.examples.simaimandrange.sim;
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 
-import org.photonlib.examples.simaimandrange.Robot;
-import org.photonvision.SimVisionSystem;
-import org.photonvision.SimVisionTarget;
+package org.photonlib.examples.simaimandrange.sim;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
@@ -13,20 +26,23 @@ import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.PWMSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.system.LinearSystem;
 import edu.wpi.first.wpilibj.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpiutil.math.numbers.N2;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.photonlib.examples.simaimandrange.Robot;
+import org.photonvision.SimVisionSystem;
+import org.photonvision.SimVisionTarget;
 
 /**
- * Implementation of a simulation of robot physics, sensors, motor controllers
- * Includes a Simulated PhotonVision system and one vision target.
- * 
- * This class and its methods are only relevant during simulation. While on the
- * real robot, the real motors/sensors/physics are used instead.
- */
+* Implementation of a simulation of robot physics, sensors, motor controllers Includes a Simulated
+* PhotonVision system and one vision target.
+*
+* <p>This class and its methods are only relevant during simulation. While on the real robot, the
+* real motors/sensors/physics are used instead.
+*/
 public class DrivetrainSim {
 
     // Simulated Motor Controllers
@@ -36,9 +52,16 @@ public class DrivetrainSim {
     // Simulation Physics
     // Configure these to match your drivetrain's physical dimensions
     // and characterization results.
-    LinearSystem<N2, N2, N2> drivetrainSystem = LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3);
-    DifferentialDrivetrainSim drivetrainSimulator = new DifferentialDrivetrainSim(drivetrainSystem, DCMotor.getCIM(2),
-            8, Units.feetToMeters(2.0), Units.inchesToMeters(6.0/2.0), null);
+    LinearSystem<N2, N2, N2> drivetrainSystem =
+            LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3);
+    DifferentialDrivetrainSim drivetrainSimulator =
+            new DifferentialDrivetrainSim(
+                    drivetrainSystem,
+                    DCMotor.getCIM(2),
+                    8,
+                    Units.feetToMeters(2.0),
+                    Units.inchesToMeters(6.0 / 2.0),
+                    null);
 
     // Simulated Vision System.
     // Configure these to match your PhotonVision Camera,
@@ -51,30 +74,45 @@ public class DrivetrainSim {
     int camResolutionHeight = 480; // pixels
     double minTargetArea = 10; // square pixels
 
-    SimVisionSystem simVision = new SimVisionSystem("photonvision", camDiagFOV, camPitch, new Transform2d(),
-            camHeightOffGround, maxLEDRange, camResolutionWidth, camResolutionHeight, minTargetArea);
+    SimVisionSystem simVision =
+            new SimVisionSystem(
+                    "photonvision",
+                    camDiagFOV,
+                    camPitch,
+                    new Transform2d(),
+                    camHeightOffGround,
+                    maxLEDRange,
+                    camResolutionWidth,
+                    camResolutionHeight,
+                    minTargetArea);
 
-    // See https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020FieldDrawing-SeasonSpecific.pdf page 208
+    // See
+    // https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020FieldDrawing-SeasonSpecific.pdf
+    // page 208
     double targetWidth = Units.inchesToMeters(41.30) - Units.inchesToMeters(6.70); // meters
-    // See https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020FieldDrawing-SeasonSpecific.pdf page 197
+    // See
+    // https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020FieldDrawing-SeasonSpecific.pdf
+    // page 197
     double targetHeight = Units.inchesToMeters(98.19) - Units.inchesToMeters(81.19); // meters
-    // See https://firstfrc.blob.core.windows.net/frc2020/PlayingField/LayoutandMarkingDiagram.pdf pages 4 and 5
+    // See https://firstfrc.blob.core.windows.net/frc2020/PlayingField/LayoutandMarkingDiagram.pdf
+    // pages 4 and 5
     double tgtXPos = Units.feetToMeters(54);
-    double tgtYPos = Units.feetToMeters(27/2) - Units.inchesToMeters(43.75) - Units.inchesToMeters(48.0/2.0) ;
+    double tgtYPos =
+            Units.feetToMeters(27 / 2) - Units.inchesToMeters(43.75) - Units.inchesToMeters(48.0 / 2.0);
     Pose2d farTargetPose = new Pose2d(new Translation2d(tgtXPos, tgtYPos), new Rotation2d(0.0));
-
 
     Field2d field = new Field2d();
 
     public DrivetrainSim() {
-        simVision.addSimVisionTarget(new SimVisionTarget(farTargetPose, Robot.TARGET_HEIGHT_METERS, targetWidth, targetHeight));
+        simVision.addSimVisionTarget(
+                new SimVisionTarget(farTargetPose, Robot.TARGET_HEIGHT_METERS, targetWidth, targetHeight));
         SmartDashboard.putData("Field", field);
     }
 
     /**
-     * Perform all periodic drivetrain simulation related tasks to advance our
-     * simulation of robot physics forward by a single 20ms step.
-     */
+    * Perform all periodic drivetrain simulation related tasks to advance our simulation of robot
+    * physics forward by a single 20ms step.
+    */
     public void update() {
 
         double leftMotorCmd = 0;
@@ -85,7 +123,8 @@ public class DrivetrainSim {
             rightMotorCmd = rightLeader.getSpeed();
         }
 
-        drivetrainSimulator.setInputs(leftMotorCmd * RobotController.getInputVoltage(),
+        drivetrainSimulator.setInputs(
+                leftMotorCmd * RobotController.getInputVoltage(),
                 -rightMotorCmd * RobotController.getInputVoltage());
         drivetrainSimulator.update(0.02);
 
@@ -96,14 +135,12 @@ public class DrivetrainSim {
     }
 
     /**
-     * Resets the simulation back to a pre-defined pose Useful to simulate the
-     * action of placing the robot onto a specific spot in the field (IE, at the
-     * start of each match).
-     * 
-     * @param pose
-     */
+    * Resets the simulation back to a pre-defined pose Useful to simulate the action of placing the
+    * robot onto a specific spot in the field (IE, at the start of each match).
+    *
+    * @param pose
+    */
     public void resetPose(Pose2d pose) {
         drivetrainSimulator.setPose(pose);
     }
-
 }

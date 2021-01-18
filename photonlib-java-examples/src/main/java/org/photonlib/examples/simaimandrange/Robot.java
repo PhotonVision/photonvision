@@ -24,7 +24,6 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.util.Units;
-
 import org.photonlib.examples.simaimandrange.sim.DrivetrainSim;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
@@ -36,13 +35,14 @@ import org.photonvision.PhotonUtils;
 * project.
 */
 public class Robot extends TimedRobot {
-   // 2020 High goal target height above ground
-   static public final double TARGET_HEIGHT_METERS = Units.inchesToMeters(81.19);
+    // 2020 High goal target height above ground
+    public static final double TARGET_HEIGHT_METERS = Units.inchesToMeters(81.19);
 
-   // Constants about how your camera is mounted to the robot
-   static public final double CAMERA_PITCH_RADIANS = Units.degreesToRadians(15); // Angle "up" from horizontal
-   static public final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(24);   // Height above floor
- 
+    // Constants about how your camera is mounted to the robot
+    public static final double CAMERA_PITCH_RADIANS =
+            Units.degreesToRadians(15); // Angle "up" from horizontal
+    public static final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(24); // Height above floor
+
     // How far from the target we want to be
     final double GOAL_RANGE_METERS = Units.feetToMeters(10);
 
@@ -98,7 +98,7 @@ public class Robot extends TimedRobot {
             }
         } else {
             // Manual Driver Mode
-            forwardSpeed  = -1.0* xboxController.getY(GenericHID.Hand.kLeft);
+            forwardSpeed = -1.0 * xboxController.getY(GenericHID.Hand.kLeft);
             rotationSpeed = xboxController.getX(GenericHID.Hand.kRight);
         }
 
@@ -106,20 +106,18 @@ public class Robot extends TimedRobot {
         drive.arcadeDrive(forwardSpeed, rotationSpeed);
     }
 
+    ////////////////////////////////////////////////////
+    // Simulation support
 
-   ////////////////////////////////////////////////////
-   // Simulation support
+    DrivetrainSim dtSim;
 
-   DrivetrainSim dtSim;
+    @Override
+    public void simulationInit() {
+        dtSim = new DrivetrainSim();
+    }
 
-   @Override
-   public void simulationInit(){
-      dtSim = new DrivetrainSim();
-   }
-
-   @Override
-   public void simulationPeriodic(){
-      dtSim.update();
-   }
-   
+    @Override
+    public void simulationPeriodic() {
+        dtSim.update();
+    }
 }
