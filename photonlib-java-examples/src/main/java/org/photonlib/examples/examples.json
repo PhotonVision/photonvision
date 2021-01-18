@@ -36,6 +36,18 @@
     "foldername": "aimandrange"
   },
   {
+    "name": "SimAimAndRange",
+    "description": "Adding Simulation Support to the Aim And Range example",
+    "tags": [],
+    "gradlebase": "java",
+    "language": "java",
+    "commandversion": 1,
+    "mainclass": "Main",
+    "packagetoreplace": null,
+    "dependencies": [],
+    "foldername": "simaimandrange"
+  },
+  {
     "name": "SimPoseEstimation",
     "description": "Integrate 3D vision processing mode results into estimation of robot pose on the field. Includes simulation support.",
     "tags": [],
