@@ -1,8 +1,6 @@
-plugins {
-    id 'application'
-    id 'com.github.johnrengelman.shadow' version '5.2.0'
-    id 'org.hidetake.ssh' version '2.10.1'
-}
+apply plugin: "application"
+apply plugin: "com.github.johnrengelman.shadow"
+apply plugin: "org.hidetake.ssh"
 
 evaluationDependsOn(':photon-core')
 
@@ -11,10 +9,9 @@ mainClassName = 'org.photonvision.Main'
 group 'org.photonvision'
 version versionString
 
-apply from: '../common.gradle'
+apply from: "${rootDir}/shared/common.gradle"
 
 dependencies {
-    // photon core
     implementation project(':photon-core')
 
     implementation "io.javalin:javalin:3.7.0"
@@ -23,12 +20,10 @@ dependencies {
     implementation "org.msgpack:jackson-dataformat-msgpack:0.8.20"
 
     compile "org.slf4j:slf4j-simple:1.8.0-beta4"
-
 }
 
 shadowJar {
     configurations = [project.configurations.runtimeClasspath]
-
     archiveFileName.set("photonvision-${project.version}.jar")
 }
 

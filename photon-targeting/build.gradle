@@ -1,28 +1,10 @@
-apply plugin: 'java'
-
-repositories {
-    maven {
-        url = 'https://frcmaven.wpi.edu:443/artifactory/development'
-    }
-    maven {
-        url = 'https://frcmaven.wpi.edu:443/artifactory/release'
-    }
-}
-
-apply from: '../versioningHelper.gradle'
-
-ext {
-    pubVersion = versionString
-}
-
-def openCVVersion = '3.4.7-2'
+apply plugin: "java"
 
 dependencies {
-    implementation 'edu.wpi.first.wpimath:wpimath-java:2021.1.2'
-    implementation "edu.wpi.first.thirdparty.frc2020.opencv:opencv-java:$openCVVersion"
+    implementation "edu.wpi.first.wpimath:wpimath-java:$wpilibVersion"
     implementation "com.fasterxml.jackson.core:jackson-core:2.10.0"
     implementation "com.fasterxml.jackson.core:jackson-annotations:2.10.0"
-    implementation 'org.apache.commons:commons-math3:3.6.1'
+    implementation "org.apache.commons:commons-math3:3.6.1"
 }
 
 java {
@@ -30,4 +12,4 @@ java {
     withSourcesJar()
 }
 
-apply from: 'publish.gradle'
+apply from: "publish.gradle"
