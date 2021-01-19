@@ -232,7 +232,7 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew photon-lib:build
-      - run: ./gradlew photonlib:publish
+      - run: ./gradlew photon-lib:publish
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}

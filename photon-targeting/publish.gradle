@@ -3,8 +3,6 @@ apply plugin: 'maven-publish'
 def artifactGroupId = 'org.photonvision'
 def baseArtifactId = 'PhotonTargeting'
 
-def outputsFolder = file("$buildDir/outputs")
-
 publishing {
     repositories {
         maven {

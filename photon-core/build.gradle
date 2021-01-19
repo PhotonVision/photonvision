@@ -1,8 +1,7 @@
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-apply from: '../common.gradle'
-apply from: '../versioningHelper.gradle'
+apply from: "${rootDir}/shared/common.gradle"
 
 dependencies {
     implementation project(':photon-targeting')
@@ -12,10 +11,11 @@ dependencies {
     implementation 'org.msgpack:msgpack-core:0.8.20'
     implementation 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
 
-    // Wpiutil
+    // wpiutil
     compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxaarch64bionic"
     compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxraspbian"
     compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxx86-64"
+    compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:osxx86-64"
     compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:windowsx86-64"
 
     // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)

@@ -1,37 +1,25 @@
-import org.gradle.internal.os.OperatingSystem
-
+// Configure Native-Utils WPI Plugin
 nativeUtils.addWpiNativeUtils()
 nativeUtils.withRoboRIO()
 nativeUtils.withRaspbian()
 nativeUtils.withBionic()
 
-nativeUtils {
-  wpi {
-    configureDependencies {
-        wpiVersion = "2020.+"
-        niLibVersion = "2020.10.1"
-        wpimathVersion = "2020.+"
-        opencvVersion = "3.4.7-2"
-        niLibVersion = "2020.10.1"
-        googleTestVersion = "1.9.0-3-437e100"
-        opencvVersion = "3.4.7-2"
-        googleTestVersion = "1.9.0-3-437e100"
-    }
-  }
+// Configure WPI dependencies.
+nativeUtils.wpi.configureDependencies {
+    wpiVersion = wpilibVersion
+    wpimathVersion = wpilibVersion
+    niLibVersion = "2020.10.1"
+    opencvVersion = "3.4.7-5"
+    googleTestVersion = "1.9.0-5-437e100-1"
+    imguiVersion = "1.79-1"
 }
 
+// Configure warnings and errors
 nativeUtils.wpi.addWarnings()
 nativeUtils.wpi.addWarningsAsErrors()
 
-nativeUtils.setSinglePrintPerPlatform()
-
+// Enable builds for all platforms.
 model {
-    // components {
-    //     all {
-    //         targetPlatform nativeUtils.wpi.platforms.roborio
-    //     }
-    // }
-    // Uncomment this, and remove above lines to enable builds for all platforms
     components {
         all {
             nativeUtils.useAllPlatforms(it)
@@ -44,7 +32,8 @@ model {
     }
 }
 
-ext.appendDebugPathToBinaries = { binaries->
+// Add debug path to binaries.
+ext.appendDebugPathToBinaries = { binaries ->
     binaries.withType(StaticLibraryBinarySpec) {
         if (it.buildType.name.contains('debug')) {
             def staticFileDir = it.staticLibraryFile.parentFile
@@ -78,8 +67,9 @@ ext.appendDebugPathToBinaries = { binaries->
     }
 }
 
+// Create ZIP tasks for each component.
 ext.createComponentZipTasks = { components, names, base, type, project, func ->
-    def stringNames = names.collect {it.toString()}
+    def stringNames = names.collect { it.toString() }
     def configMap = [:]
     components.each {
         if (it in NativeLibrarySpec && stringNames.contains(it.name)) {
@@ -150,6 +140,7 @@ ext.createAllCombined = { list, name, base, type, project ->
 
 }
 
+// Create the standard ZIP format for the dependencies.
 ext.includeStandardZipFormat = { task, value ->
     value.each { binary ->
         if (binary.buildable) {
@@ -170,7 +161,7 @@ ext.includeStandardZipFormat = { task, value ->
                 task.from(binary.sharedLibraryLinkFile) {
                     into nativeUtils.getPlatformPath(binary) + '/shared'
                 }
-            } else  if (binary instanceof StaticLibraryBinarySpec) {
+            } else if (binary instanceof StaticLibraryBinarySpec) {
                 task.dependsOn binary.tasks.createStaticLib
                 task.from(binary.staticLibraryFile) {
                     into nativeUtils.getPlatformPath(binary) + '/static'

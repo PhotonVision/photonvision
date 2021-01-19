@@ -1,21 +1,31 @@
 plugins {
     id "com.diffplug.gradle.spotless" version "3.28.0"
+    id "com.github.johnrengelman.shadow" version "5.2.0"
+    id "com.github.node-gradle.node" version "2.2.4" apply false
+    id "edu.wpi.first.GradleJni" version "0.10.1"
+    id "edu.wpi.first.GradleVsCode" version "0.12.0"
+    id "edu.wpi.first.NativeUtils" version "2021.1.1" apply false
+    id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
+    id "org.hidetake.ssh" version "2.10.1"
 }
 
 allprojects {
     repositories {
         jcenter()
-        mavenCentral()
-        maven {
-            url = "https://maven.photonvision.org/repository/internal/"
-        }
-        maven {
-            url = 'https://frcmaven.wpi.edu:443/artifactory/development'
-        }
-        maven {
-            url = 'https://frcmaven.wpi.edu:443/artifactory/release'
-        }
+        maven { url = "https://maven.photonvision.org/repository/internal/" }
     }
+    wpilibRepositories.addAllReleaseRepositories(it)
+    wpilibRepositories.addAllDevelopmentRepositories(it)
+}
+
+// Configure the version number.
+apply from: "versioningHelper.gradle"
+
+ext {
+    wpilibVersion = "2021.2.1"
+    opencvVersion = "3.4.7-5"
+    joglVersion = "2.4.0-rc-20200307"
+    pubVersion = versionString
 }
 
 spotless {
@@ -27,9 +37,8 @@ spotless {
         removeUnusedImports()
     }
     java {
-        target '**/*.java'
+        target "**/*.java"
         licenseHeaderFile "$rootDir/LicenseHeader.txt"
-
-        targetExclude('photon-core/src/main/java/org/photonvision/PhotonVersion.java')
+        targetExclude("photon-core/src/main/java/org/photonvision/PhotonVersion.java")
     }
 }

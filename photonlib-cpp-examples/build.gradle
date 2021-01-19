@@ -1,21 +1,10 @@
-plugins {
-    id 'cpp'
-    id 'java'
-    id 'edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin' version '2020.2'
-    id 'google-test-test-suite'
-    id 'edu.wpi.first.NativeUtils' version '2020.10.1'
-    id 'edu.wpi.first.GradleJni' version '0.10.1'
-}
+apply plugin: "cpp"
+apply plugin: "java"
+apply plugin: "google-test-test-suite"
+apply plugin: "edu.wpi.first.GradleVsCode"
+apply plugin: "edu.wpi.first.NativeUtils"
 
-repositories {
-    maven {
-        url = 'https://frcmaven.wpi.edu:443/artifactory/release'
-        maven { url "https://frcmaven.wpi.edu/artifactory/development" }
-        mavenCentral()
-    }
-}
-
-apply from: '../photon-lib/config.gradle'
+apply from: "${rootDir}/shared/config.gradle"
 
 ext.examplesMap = [:]
 
@@ -64,7 +53,7 @@ model {
                         }
                     }
                 }
-                nativeUtils.useRequiredLibrary(it, 'wpilib_shared')
+                nativeUtils.useRequiredLibrary(it, 'wpilib_executable_shared')
             }
         }
     }
