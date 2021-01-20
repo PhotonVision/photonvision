@@ -26,6 +26,7 @@ ext {
     opencvVersion = "3.4.7-5"
     joglVersion = "2.4.0-rc-20200307"
     pubVersion = versionString
+    isDev = pubVersion.startsWith("dev")
 }
 
 spotless {

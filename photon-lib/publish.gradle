@@ -136,7 +136,7 @@ publishing {
             url = releasesRepoUrl
         }
         maven {
-            url 'https://maven.photonvision.org/repository/internal'
+            url ('https://maven.photonvision.org/repository/' + (isDev ? 'snapshots' : 'internal'))
             credentials {
                 username 'ghactions'
                 password System.getenv("ARTIFACTORY_API_KEY")
