@@ -17,9 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.util.Units;
 import java.io.File;
@@ -44,9 +41,11 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 public class Calibrate3dPipeTest {
     @BeforeEach
-    public void Init() {
+    public void init() {
         TestUtils.loadLibraries();
     }
 
@@ -307,7 +306,9 @@ public class Calibrate3dPipeTest {
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
 
         // Confirm we didn't get leaky on our mat usage
-        assertTrue(CVMat.getMatCount() == startMatCount);
+        assertEquals(startMatCount, CVMat.getMatCount()); // TODO Figure out why this doesn't
+        // work in CI
+        System.out.println("CVMats left: " + CVMat.getMatCount() + " Start: " + startMatCount);
     }
 
     /**

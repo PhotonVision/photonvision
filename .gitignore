@@ -134,3 +134,4 @@ build/spotlessJava
 build/*
 build
 photon-lib/src/main/java/org/photonvision/PhotonVersion.java
+/photonlib-java-examples/bin/
