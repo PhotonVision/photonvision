@@ -98,8 +98,8 @@ public class Robot extends TimedRobot {
             }
         } else {
             // Manual Driver Mode
-            forwardSpeed = -1.0 * xboxController.getY(GenericHID.Hand.kLeft);
-            rotationSpeed = xboxController.getX(GenericHID.Hand.kRight);
+            forwardSpeed = -1.0 * xboxController.getY(GenericHID.Hand.kRight);
+            rotationSpeed = xboxController.getX(GenericHID.Hand.kLeft);
         }
 
         // Use our forward/turn speeds to control the drivetrain

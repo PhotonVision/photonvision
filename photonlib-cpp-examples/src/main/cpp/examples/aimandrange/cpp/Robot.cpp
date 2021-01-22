@@ -36,12 +36,14 @@ void Robot::TeleopPeriodic() {
               units::degree_t{result.GetBestTarget().GetPitch()});
 
       // Use this range as the measurement we give to the PID controller.
-      forwardSpeed = forwardController.Calculate(
+      // -1.0 required to ensure positive PID controller effort _increases_ range
+      forwardSpeed = -1.0* forwardController.Calculate(
           range.to<double>(), GOAL_RANGE_METERS.to<double>());
 
       // Also calculate angular power
-      rotationSpeed =
-          turnController.Calculate(result.GetBestTarget().GetYaw(), 0);
+      // -1.0 required to ensure positive PID controller effort _increases_ yaw
+      rotationSpeed = -1.0 * turnController.Calculate(
+          result.GetBestTarget().GetYaw(), 0);
     } else {
       // If we have no targets, stay still.
       forwardSpeed = 0;
@@ -50,7 +52,7 @@ void Robot::TeleopPeriodic() {
   } else {
     // Manual Driver Mode
     forwardSpeed =
-        xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
+        -1.0 * xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
     rotationSpeed =
         xboxController.GetX(frc::GenericHID::JoystickHand::kLeftHand);
   }

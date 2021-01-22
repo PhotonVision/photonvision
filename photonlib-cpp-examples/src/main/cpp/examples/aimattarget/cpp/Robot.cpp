@@ -21,7 +21,7 @@
 
 void Robot::TeleopPeriodic() {
   double forwardSpeed =
-      xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
+      -1.0 * xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
   double rotationSpeed;
 
   if (xboxController.GetAButton()) {
@@ -31,7 +31,7 @@ void Robot::TeleopPeriodic() {
 
     if (result.HasTargets()) {
       // Rotation speed is the output of the PID controller
-      rotationSpeed = controller.Calculate(result.GetBestTarget().GetYaw(), 0);
+      rotationSpeed = -1.0 * controller.Calculate(result.GetBestTarget().GetYaw(), 0);
     } else {
       // If we have no targets, stay still.
       rotationSpeed = 0;

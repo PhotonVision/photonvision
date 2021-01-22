@@ -52,9 +52,9 @@ void Robot::TeleopPeriodic() {
   } else {
     // Manual Driver Mode
     forwardSpeed =
-        -1.0 * xboxController.GetY(frc::GenericHID::JoystickHand::kLeftHand);
+        -1.0 * xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
     rotationSpeed =
-        xboxController.GetX(frc::GenericHID::JoystickHand::kRightHand);
+        xboxController.GetX(frc::GenericHID::JoystickHand::kLeftHand);
   }
 
   // Use our forward/turn speeds to control the drivetrain
