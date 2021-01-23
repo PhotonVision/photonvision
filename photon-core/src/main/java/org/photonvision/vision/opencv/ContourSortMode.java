@@ -18,7 +18,6 @@
 package org.photonvision.vision.opencv;
 
 import java.util.Comparator;
-
 import org.photonvision.vision.target.PotentialTarget;
 
 public enum ContourSortMode {

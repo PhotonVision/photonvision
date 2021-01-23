@@ -19,7 +19,6 @@ package org.photonvision.common.util.math;
 
 import edu.wpi.first.wpiutil.WPIUtilJNI;
 
-
 public class MathUtils {
     MathUtils() {}
 
