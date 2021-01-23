@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.target;
 
-import org.apache.commons.math3.util.FastMath;
+
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.photonvision.common.util.math.MathUtils;
@@ -27,14 +27,14 @@ import org.photonvision.vision.opencv.DualOffsetValues;
 public class TargetCalculations {
     public static double calculateYaw(
             double offsetCenterX, double targetCenterX, double horizontalFocalLength) {
-        return FastMath.toDegrees(
-                FastMath.atan((offsetCenterX - targetCenterX) / horizontalFocalLength));
+        return Math.toDegrees(
+                Math.atan((offsetCenterX - targetCenterX) / horizontalFocalLength));
     }
 
     public static double calculatePitch(
             double offsetCenterY, double targetCenterY, double verticalFocalLength) {
-        return -FastMath.toDegrees(
-                FastMath.atan((offsetCenterY - targetCenterY) / verticalFocalLength));
+        return -Math.toDegrees(
+                Math.atan((offsetCenterY - targetCenterY) / verticalFocalLength));
     }
 
     @SuppressWarnings("DuplicatedCode")

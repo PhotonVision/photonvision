@@ -20,7 +20,7 @@ package org.photonvision.vision.pipe.impl;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import org.apache.commons.math3.util.FastMath;
+
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.ContourSortMode;
 import org.photonvision.vision.pipe.CVPipe;
@@ -53,9 +53,9 @@ public class SortContoursPipe
     }
 
     private double calcSquareCenterDistance(PotentialTarget rect) {
-        return FastMath.sqrt(
-                FastMath.pow(params.getCamProperties().centerX - rect.getMinAreaRect().center.x, 2)
-                        + FastMath.pow(params.getCamProperties().centerY - rect.getMinAreaRect().center.y, 2));
+        return Math.sqrt(
+                Math.pow(params.getCamProperties().centerX - rect.getMinAreaRect().center.x, 2)
+                        + Math.pow(params.getCamProperties().centerY - rect.getMinAreaRect().center.y, 2));
     }
 
     public static class SortContoursParams {

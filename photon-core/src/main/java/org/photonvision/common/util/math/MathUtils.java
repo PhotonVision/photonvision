@@ -18,13 +18,13 @@
 package org.photonvision.common.util.math;
 
 import edu.wpi.first.wpiutil.WPIUtilJNI;
-import org.apache.commons.math3.util.FastMath;
+
 
 public class MathUtils {
     MathUtils() {}
 
     public static double toSlope(Number angle) {
-        return FastMath.atan(FastMath.toRadians(angle.doubleValue() - 90));
+        return Math.atan(Math.toRadians(angle.doubleValue() - 90));
     }
 
     public static int safeDivide(int quotient, int divisor) {

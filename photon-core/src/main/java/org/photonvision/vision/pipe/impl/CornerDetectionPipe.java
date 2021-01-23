@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import org.apache.commons.math3.util.FastMath;
+
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
@@ -96,7 +96,7 @@ public class CornerDetectionPipe
     * @return The straight line distance between them.
     */
     private static double distanceBetween(Point a, Point b) {
-        return FastMath.sqrt(FastMath.pow(a.x - b.x, 2) + FastMath.pow(a.y - b.y, 2));
+        return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
     /**
@@ -105,8 +105,8 @@ public class CornerDetectionPipe
     * @return The straight line distance between them.
     */
     private static double distanceBetween(Translation2d a, Translation2d b) {
-        return FastMath.sqrt(
-                FastMath.pow(a.getX() - b.getX(), 2) + FastMath.pow(a.getY() - b.getY(), 2));
+        return Math.sqrt(
+                Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2));
     }
 
     /**
@@ -121,8 +121,8 @@ public class CornerDetectionPipe
         Comparator<Point> distanceProvider =
                 Comparator.comparingDouble(
                         (Point point) ->
-                                FastMath.sqrt(
-                                        FastMath.pow(centroid.x - point.x, 2) + FastMath.pow(centroid.y - point.y, 2)));
+                                Math.sqrt(
+                                        Math.pow(centroid.x - point.x, 2) + Math.pow(centroid.y - point.y, 2)));
 
         MatOfPoint2f targetContour;
         if (convexHull) {

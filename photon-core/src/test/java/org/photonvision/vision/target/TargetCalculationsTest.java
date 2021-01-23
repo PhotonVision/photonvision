@@ -20,7 +20,7 @@ package org.photonvision.vision.target;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import org.apache.commons.math3.util.FastMath;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -70,7 +70,7 @@ public class TargetCalculationsTest {
                 TargetCalculations.calculateYaw(
                         imageCenterPoint.x, targetCenterPoint.x, params.horizontalFocalLength);
 
-        assertEquals(FastMath.toDegrees(trueYaw), yaw, 0.025, "Yaw not as expected");
+        assertEquals(Math.toDegrees(trueYaw), yaw, 0.025, "Yaw not as expected");
     }
 
     @Test
@@ -85,7 +85,7 @@ public class TargetCalculationsTest {
                 TargetCalculations.calculatePitch(
                         imageCenterPoint.y, targetCenterPoint.y, params.verticalFocalLength);
 
-        assertEquals(FastMath.toDegrees(truePitch) * -1, pitch, 0.025, "Pitch not as expected");
+        assertEquals(Math.toDegrees(truePitch) * -1, pitch, 0.025, "Pitch not as expected");
     }
 
     @Test
@@ -181,8 +181,8 @@ public class TargetCalculationsTest {
     public void testCameraFOVCalculation() {
         final DoubleCouple glowormHorizVert =
                 FrameStaticProperties.calculateHorizontalVerticalFoV(74.8, 640, 480);
-        var gwHorizDeg = FastMath.toDegrees(glowormHorizVert.getFirst());
-        var gwVertDeg = FastMath.toDegrees(glowormHorizVert.getSecond());
+        var gwHorizDeg = Math.toDegrees(glowormHorizVert.getFirst());
+        var gwVertDeg = Math.toDegrees(glowormHorizVert.getSecond());
         assertEquals(62.7, gwHorizDeg, .3);
         assertEquals(49, gwVertDeg, .3);
     }

@@ -12,7 +12,6 @@ dependencies {
 
     // Apache commons
     implementation group: "org.apache.commons", name: "commons-lang3", version: "3.9"
-    implementation "org.apache.commons:commons-math3:3.6.1"
     implementation group: "commons-io", name: "commons-io", version: "2.6"
     implementation group: "commons-cli", name: "commons-cli", version: "1.4"
     implementation "org.apache.commons:commons-collections4:4.4"
