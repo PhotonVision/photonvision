@@ -11,9 +11,9 @@ test {
 
 // Apply Java configuration
 dependencies {
-    compile project(":photon-core")
     compile project(":photon-targeting")
 
+    // WPILib non-JNI dependencies
     implementation "edu.wpi.first.cscore:cscore-java:$wpilibVersion"
     implementation "edu.wpi.first.cameraserver:cameraserver-java:$wpilibVersion"
     implementation "edu.wpi.first.wpilibj:wpilibj-java:$wpilibVersion"
@@ -21,8 +21,16 @@ dependencies {
     implementation "edu.wpi.first.wpimath:wpimath-java:$wpilibVersion"
     implementation "edu.wpi.first.hal:hal-java:$wpilibVersion"
     implementation "edu.wpi.first.thirdparty.frc2020.opencv:opencv-java:3.4.7-2"
-    implementation "edu.wpi.first.ntcore:ntcore-java:$wpilibVersion"
 
+    // NTCore
+    implementation "edu.wpi.first.ntcore:ntcore-java:$wpilibVersion"
+    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxaarch64bionic"
+    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxraspbian"
+    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxx86-64"
+    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:osxx86-64"
+    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:windowsx86-64"
+
+    // Junit
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.6.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.2")

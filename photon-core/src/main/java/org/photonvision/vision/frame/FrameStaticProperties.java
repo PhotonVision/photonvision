@@ -19,8 +19,6 @@ package org.photonvision.vision.frame;
 
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import org.apache.commons.math3.fraction.Fraction;
-import org.apache.commons.math3.util.FastMath;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -79,23 +77,20 @@ public class FrameStaticProperties {
         DoubleCouple horizVertViews =
                 calculateHorizontalVerticalFoV(this.fov, this.imageWidth, this.imageHeight);
 
-        horizontalFocalLength = this.imageWidth / (2 * FastMath.tan(horizVertViews.getFirst() / 2));
-        verticalFocalLength = this.imageHeight / (2 * FastMath.tan(horizVertViews.getSecond() / 2));
+        horizontalFocalLength = this.imageWidth / (2 * Math.tan(horizVertViews.getFirst() / 2));
+        verticalFocalLength = this.imageHeight / (2 * Math.tan(horizVertViews.getSecond() / 2));
     }
 
     public static DoubleCouple calculateHorizontalVerticalFoV(
             double diagonalFoV, int imageWidth, int imageHeight) {
-        double diagonalView = FastMath.toRadians(diagonalFoV);
-        Fraction aspectFraction = new Fraction(imageWidth, imageHeight);
 
-        int horizontalRatio = aspectFraction.getNumerator();
-        int verticalRatio = aspectFraction.getDenominator();
+        double diagonalView = Math.toRadians(diagonalFoV);
+        double diagonalAspect = Math.hypot(imageWidth, imageHeight);
 
-        double diagonalAspect = FastMath.hypot(horizontalRatio, verticalRatio);
         double horizontalView =
-                FastMath.atan(FastMath.tan(diagonalView / 2) * (horizontalRatio / diagonalAspect)) * 2;
+                Math.atan(Math.tan(diagonalView / 2) * (imageWidth / diagonalAspect)) * 2;
         double verticalView =
-                FastMath.atan(FastMath.tan(diagonalView / 2) * (verticalRatio / diagonalAspect)) * 2;
+                Math.atan(Math.tan(diagonalView / 2) * (imageHeight / diagonalAspect)) * 2;
 
         return new DoubleCouple(horizontalView, verticalView);
     }

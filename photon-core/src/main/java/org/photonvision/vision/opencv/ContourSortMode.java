@@ -18,7 +18,6 @@
 package org.photonvision.vision.opencv;
 
 import java.util.Comparator;
-import org.apache.commons.math3.util.FastMath;
 import org.photonvision.vision.target.PotentialTarget;
 
 public enum ContourSortMode {
@@ -33,8 +32,8 @@ public enum ContourSortMode {
     Centermost(
             Comparator.comparingDouble(
                     rect ->
-                            (FastMath.pow(rect.getMinAreaRect().center.y, 2)
-                                    + FastMath.pow(rect.getMinAreaRect().center.x, 2))));
+                            (Math.pow(rect.getMinAreaRect().center.y, 2)
+                                    + Math.pow(rect.getMinAreaRect().center.x, 2))));
 
     private Comparator<PotentialTarget> m_comparator;
 

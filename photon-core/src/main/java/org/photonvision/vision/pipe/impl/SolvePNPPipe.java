@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import java.util.List;
-import org.apache.commons.math3.util.FastMath;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -117,8 +116,7 @@ public class SolvePNPPipe
         // Z distance in the flat plane is given by
         // Z_field = z cos theta + y sin theta.
         // Z is the distance "out" of the camera (straight forward).
-        var zField =
-                tVec.get(2, 0)[0] * FastMath.cos(tiltAngle) + tVec.get(1, 0)[0] * FastMath.sin(tiltAngle);
+        var zField = tVec.get(2, 0)[0] * Math.cos(tiltAngle) + tVec.get(1, 0)[0] * Math.sin(tiltAngle);
 
         Calib3d.Rodrigues(rVec, rotationMatrix);
         Core.transpose(rotationMatrix, inverseRotationMatrix);
@@ -128,7 +126,7 @@ public class SolvePNPPipe
         Core.gemm(inverseRotationMatrix, scaledTvec, 1, kMat, 0, pzeroWorld);
         scaledTvec.release();
 
-        var angle2 = FastMath.atan2(pzeroWorld.get(0, 0)[0], pzeroWorld.get(2, 0)[0]);
+        var angle2 = Math.atan2(pzeroWorld.get(0, 0)[0], pzeroWorld.get(2, 0)[0]);
 
         // target rotation is the rotation of the target relative to straight ahead. this number
         // should be unchanged if the robot purely translated left/right.
