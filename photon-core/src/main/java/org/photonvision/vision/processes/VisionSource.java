@@ -17,12 +17,24 @@
 
 package org.photonvision.vision.processes;
 
+import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
 
-public interface VisionSource {
-    FrameProvider getFrameProvider();
+public abstract class VisionSource {
 
-    VisionSourceSettables getSettables();
+    protected final CameraConfiguration cameraConfiguration;
 
-    boolean isVendorCamera();
+    protected VisionSource(CameraConfiguration cameraConfiguration) {
+        this.cameraConfiguration = cameraConfiguration;
+    }
+
+    public CameraConfiguration getCameraConfiguration() {
+        return cameraConfiguration;
+    }
+
+    public abstract FrameProvider getFrameProvider();
+
+    public abstract VisionSourceSettables getSettables();
+
+    public abstract boolean isVendorCamera();
 }

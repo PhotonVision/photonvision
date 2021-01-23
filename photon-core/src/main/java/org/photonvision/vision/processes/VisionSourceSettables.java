@@ -23,6 +23,7 @@ import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameStaticProperties;
 
 public abstract class VisionSourceSettables {
@@ -86,7 +87,12 @@ public abstract class VisionSourceSettables {
         calculateFrameStaticProps();
     }
 
-    public void calculateFrameStaticProps() {
+    public void addCalibration(CameraCalibrationCoefficients calibrationCoefficients) {
+        configuration.addCalibration(calibrationCoefficients);
+        calculateFrameStaticProps();
+    }
+
+    private void calculateFrameStaticProps() {
         var videoMode = getCurrentVideoMode();
         this.frameStaticProperties =
                 new FrameStaticProperties(

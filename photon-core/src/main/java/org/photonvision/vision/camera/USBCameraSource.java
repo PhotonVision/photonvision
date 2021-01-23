@@ -33,19 +33,18 @@ import org.photonvision.vision.frame.provider.USBFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
-public class USBCameraSource implements VisionSource {
+public class USBCameraSource extends VisionSource {
     private final Logger logger;
     private final UsbCamera camera;
     private final USBCameraSettables usbCameraSettables;
     private final USBFrameProvider usbFrameProvider;
-    public final CameraConfiguration configuration;
     private final CvSink cvSink;
 
     public final QuirkyCamera cameraQuirks;
 
     public USBCameraSource(CameraConfiguration config) {
+        super(config);
         logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
-        configuration = config;
         camera = new UsbCamera(config.nickname, config.path);
         cvSink = CameraServer.getInstance().getVideo(this.camera);
 
@@ -88,7 +87,6 @@ public class USBCameraSource implements VisionSource {
             super(configuration);
             getAllVideoModes();
             setVideoMode(videoModes.get(0));
-            calculateFrameStaticProps();
         }
 
         private int timeToPiCamV2RawExposure(double time_us) {
@@ -281,6 +279,6 @@ public class USBCameraSource implements VisionSource {
     @Override
     public int hashCode() {
         return Objects.hash(
-                camera, usbCameraSettables, usbFrameProvider, configuration, cvSink, cameraQuirks);
+                camera, usbCameraSettables, usbFrameProvider, cameraConfiguration, cvSink, cameraQuirks);
     }
 }

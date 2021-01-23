@@ -28,14 +28,13 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
-public class FileVisionSource implements VisionSource {
+public class FileVisionSource extends VisionSource {
 
-    private final CameraConfiguration cameraConfiguration;
     private final FileFrameProvider frameProvider;
     private final FileSourceSettables settables;
 
     public FileVisionSource(CameraConfiguration cameraConfiguration) {
-        this.cameraConfiguration = cameraConfiguration;
+        super(cameraConfiguration);
         frameProvider =
                 new FileFrameProvider(
                         Path.of(cameraConfiguration.path),
@@ -48,7 +47,7 @@ public class FileVisionSource implements VisionSource {
     }
 
     public FileVisionSource(String name, String imagePath, double fov) {
-        cameraConfiguration = new CameraConfiguration(name, imagePath);
+        super(new CameraConfiguration(name, imagePath));
         frameProvider = new FileFrameProvider(imagePath, fov);
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);

@@ -347,7 +347,6 @@ public class VisionModule {
         if (ret != null) {
             logger.debug("Saving calibration...");
             visionSource.getSettables().getConfiguration().addCalibration(ret);
-            visionSource.getSettables().calculateFrameStaticProps();
         } else {
             logger.error("Calibration failed...");
         }

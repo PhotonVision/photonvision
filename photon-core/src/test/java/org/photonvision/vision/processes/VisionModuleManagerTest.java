@@ -37,12 +37,12 @@ public class VisionModuleManagerTest {
         TestUtils.loadLibraries();
     }
 
-    private static class TestSource implements VisionSource {
+    private static class TestSource extends VisionSource {
 
         private final FrameProvider provider;
 
         public TestSource(FrameProvider provider) {
-
+            super(new CameraConfiguration("", "", "", ""));
             this.provider = provider;
         }
 
@@ -53,7 +53,7 @@ public class VisionModuleManagerTest {
 
         @Override
         public VisionSourceSettables getSettables() {
-            return new TestSettables(new CameraConfiguration("", "", "", ""));
+            return new TestSettables(getCameraConfiguration());
         }
 
         @Override
