@@ -21,7 +21,6 @@ import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.HashMap;
 import java.util.List;
-
 import org.junit.jupiter.api.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -112,12 +111,10 @@ public class VisionModuleManagerTest {
         ConfigManager.getInstance().load();
 
         var conf = new CameraConfiguration("Foo", "Bar");
-        var ffp = new FileFrameProvider(
-                TestUtils.getWPIImagePath(
-                        TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false
-                ),
-                TestUtils.WPI2019Image.FOV
-        );
+        var ffp =
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.WPI2019Image.FOV);
 
         var testSource = new TestSource(ffp, conf);
 
