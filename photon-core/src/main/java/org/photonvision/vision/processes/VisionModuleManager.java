@@ -63,10 +63,11 @@ public class VisionModuleManager {
             addedModules.put(visionSource.getCameraConfiguration().streamIndex, module);
         }
 
-        var sortedModulesList = addedModules.entrySet().stream()
-                .sorted(Comparator.comparingInt(Map.Entry::getKey)) // sort by stream index
-                .map(Map.Entry::getValue) // map to Stream of VisionModule
-                .collect(Collectors.toList()); // collect in a List
+        var sortedModulesList =
+                addedModules.entrySet().stream()
+                        .sorted(Comparator.comparingInt(Map.Entry::getKey)) // sort by stream index
+                        .map(Map.Entry::getValue) // map to Stream of VisionModule
+                        .collect(Collectors.toList()); // collect in a List
 
         return sortedModulesList;
     }
