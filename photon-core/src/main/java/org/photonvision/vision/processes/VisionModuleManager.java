@@ -17,9 +17,8 @@
 
 package org.photonvision.vision.processes;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 
 /** VisionModuleManager has many VisionModules, and provides camera configuration data to them. */
@@ -52,25 +51,30 @@ public class VisionModuleManager {
         return visionModules.get(i);
     }
 
-    public List<VisionModule> addSources(HashMap<VisionSource, CameraConfiguration> visionSources) {
-        var addedModules = new ArrayList<VisionModule>();
-        for (var entry : visionSources.entrySet()) {
-            var visionSource = entry.getKey();
-            var pipelineManager = new PipelineManager(entry.getValue());
+    public List<VisionModule> addSources(List<VisionSource> visionSources) {
+        var addedModules = new HashMap<Integer, VisionModule>();
 
-            assignCameraIndex(visionSource.getSettables().getConfiguration());
+        for (var visionSource : visionSources) {
+            var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
+            assignCameraIndex(visionSource.getCameraConfiguration());
 
             var module = new VisionModule(pipelineManager, visionSource, visionModules.size());
             visionModules.add(module);
-            addedModules.add(module);
+            addedModules.put(visionSource.getCameraConfiguration().streamIndex, module);
         }
-        return addedModules;
+
+        var sortedModulesList = addedModules.entrySet().stream()
+                .sorted(Comparator.comparingInt(Map.Entry::getKey)) // sort by stream index
+                .map(Map.Entry::getValue) // map to Stream of VisionModule
+                .collect(Collectors.toList()); // collect in a List
+
+        return sortedModulesList;
     }
 
     private void assignCameraIndex(CameraConfiguration config) {
         var max =
                 visionModules.stream()
-                        .mapToInt(it -> it.visionSource.getSettables().getConfiguration().streamIndex)
+                        .mapToInt(it -> it.visionSource.getCameraConfiguration().streamIndex)
                         .max()
                         .orElse(-1);
 

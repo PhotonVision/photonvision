@@ -75,12 +75,12 @@ public class VisionSourceManager {
             () -> List.of(UsbCamera.enumerateUsbCameras());
 
     protected void tryMatchUSBCams() {
-        var visionSourceMap = tryMatchUSBCamImpl();
-        if (visionSourceMap == null) return;
+        var visionSourceList = tryMatchUSBCamImpl();
+        if (visionSourceList == null) return;
 
-        logger.info("Adding " + visionSourceMap.size() + " configs to VMM.");
-        ConfigManager.getInstance().addCameraConfigurations(visionSourceMap);
-        var addedSources = VisionModuleManager.getInstance().addSources(visionSourceMap);
+        logger.info("Adding " + visionSourceList.size() + " configs to VMM.");
+        ConfigManager.getInstance().addCameraConfigurations(visionSourceList);
+        var addedSources = VisionModuleManager.getInstance().addSources(visionSourceList);
         addedSources.forEach(VisionModule::start);
         DataChangeService.getInstance()
                 .publishEvent(
@@ -88,7 +88,7 @@ public class VisionSourceManager {
                                 "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
-    protected HashMap<VisionSource, CameraConfiguration> tryMatchUSBCamImpl() {
+    protected List<VisionSource> tryMatchUSBCamImpl() {
         // Detect cameras using CSCore
         List<UsbCameraInfo> connectedCameras =
                 new ArrayList<>(filterAllowedDevices(cameraInfoSupplier.get()));
@@ -154,20 +154,18 @@ public class VisionSourceManager {
         // Turn these camera configs into vision sources
         var sources = loadVisionSourcesFromCamConfigs(matchedCameras);
 
-        // We want to return a map between vision sources and camera configurations
-        var visionSourceMap = new HashMap<VisionSource, CameraConfiguration>();
+        // Print info about each vision source
         for (var src : sources) {
-            var usbSrc = src;
-            visionSourceMap.put(usbSrc, usbSrc.getSettables().getConfiguration());
             logger.debug(
                     () ->
                             "Matched config for camera \""
                                     + src.getFrameProvider().getName()
                                     + "\" and loaded "
-                                    + usbSrc.getSettables().getConfiguration().pipelineSettings.size()
+                                    + src.getCameraConfiguration().pipelineSettings.size()
                                     + " pipelines");
         }
-        return visionSourceMap;
+
+        return sources;
     }
 
     /**
@@ -292,12 +290,12 @@ public class VisionSourceManager {
 
     private static List<VisionSource> loadVisionSourcesFromCamConfigs(
             List<CameraConfiguration> camConfigs) {
-        List<VisionSource> cameraSources = new ArrayList<>();
+        var cameraSources = new ArrayList<VisionSource>();
         for (var configuration : camConfigs) {
             if (configuration.baseName.startsWith("mmal service") && PicamJNI.isSupported()) {
                 configuration.cameraType = CameraType.ZeroCopyPicam;
-                VisionSource picamSrc = new ZeroCopyPicamSource(configuration);
-                cameraSources.add(picamSrc);
+                var piCamSrc = new ZeroCopyPicamSource(configuration);
+                cameraSources.add(piCamSrc);
                 continue;
             }
             cameraSources.add(new USBCameraSource(configuration));

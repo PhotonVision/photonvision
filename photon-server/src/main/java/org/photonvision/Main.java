@@ -19,7 +19,6 @@ package org.photonvision;
 
 import edu.wpi.cscore.CameraServerCvJNI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -88,7 +87,7 @@ public class Main {
     }
 
     private static void addTestModeSources() {
-        var collectedSources = new HashMap<VisionSource, CameraConfiguration>();
+        var collectedSources = new ArrayList<VisionSource>();
 
         var camConf2019 =
                 new CameraConfiguration("WPI2019", TestUtils.getTestMode2019ImagePath().toString());
@@ -121,12 +120,10 @@ public class Main {
 
         var fvs2020 = new FileVisionSource(camConf2020);
 
-        var cfg2019 = new CameraConfiguration("2019", "2019");
-        cfg2019.pipelineSettings = psList2019;
-        var cfg2020 = new CameraConfiguration("2019", "2019");
-        cfg2020.pipelineSettings = psList2020;
-        collectedSources.put(fvs2019, cfg2019);
-        collectedSources.put(fvs2020, cfg2020);
+        fvs2019.getCameraConfiguration().pipelineSettings = psList2019;
+        fvs2020.getCameraConfiguration().pipelineSettings = psList2020;
+        collectedSources.add(fvs2019);
+        collectedSources.add(fvs2020);
 
         //                logger.info("Adding " + allSources.size() + " configs to VMM.");
         VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
