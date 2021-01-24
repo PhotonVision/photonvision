@@ -57,13 +57,11 @@ public class Main {
         final var options = new Options();
         options.addOption("d", "debug", false, "Enable debug logging prints");
         options.addOption("h", "help", false, "Show this help text and exit");
-        if (!isRelease) {
-            options.addOption(
-                    "t",
-                    "test-mode",
-                    false,
-                    "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
-        }
+        options.addOption(
+                "t",
+                "test-mode",
+                false,
+                "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
