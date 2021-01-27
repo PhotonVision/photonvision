@@ -79,6 +79,7 @@ public class NetworkTablesManager {
         ntInstance.stopServer();
 
         ntInstance.startClientTeam(teamNumber);
+        ntInstance.startDSClient();
         if (ntInstance.isConnected()) {
             logger.info("[NetworkTablesManager] Connected to the robot!");
         } else {
