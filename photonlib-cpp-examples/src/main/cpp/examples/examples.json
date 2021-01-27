@@ -35,4 +35,16 @@
     "dependencies": [],
     "foldername": "aimandrange"
   }
+  {
+    "name": "SimAimAndRange",
+    "description": "Adding Simulation Support to the Aim And Range example",
+    "tags": [],
+    "gradlebase": "cpp",
+    "language": "cpp",
+    "commandversion": 1,
+    "mainclass": "Main",
+    "packagetoreplace": null,
+    "dependencies": [],
+    "foldername": "simaimandrange"
+  }
 ]

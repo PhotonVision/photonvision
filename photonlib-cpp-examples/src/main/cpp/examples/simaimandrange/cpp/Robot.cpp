@@ -20,24 +20,39 @@
 #include <photonlib/PhotonUtils.h>
 
 void Robot::TeleopPeriodic() {
-  double forwardSpeed =
-      -1.0 * xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
+  double forwardSpeed;
   double rotationSpeed;
 
   if (xboxController.GetAButton()) {
     // Vision-alignment mode
     // Query the latest result from PhotonVision
-    photonlib::PhotonPipelineResult result = camera.GetLatestResult();
+    const auto &result = camera.GetLatestResult();
 
     if (result.HasTargets()) {
-      // Rotation speed is the output of the PID controller
-      rotationSpeed = -1.0 * controller.Calculate(result.GetBestTarget().GetYaw(), 0);
+      // First calculate range
+      units::meter_t range =
+          photonlib::PhotonUtils::CalculateDistanceToTarget(
+              CAMERA_HEIGHT, TARGET_HEIGHT, CAMERA_PITCH,
+              units::degree_t{result.GetBestTarget().GetPitch()});
+
+      // Use this range as the measurement we give to the PID controller.
+      // -1.0 required to ensure positive PID controller effort _increases_ range
+      forwardSpeed = -1.0* forwardController.Calculate(
+          range.to<double>(), GOAL_RANGE_METERS.to<double>());
+
+      // Also calculate angular power
+      // -1.0 required to ensure positive PID controller effort _increases_ yaw
+      rotationSpeed = -1.0 * turnController.Calculate(
+          result.GetBestTarget().GetYaw(), 0);
     } else {
       // If we have no targets, stay still.
+      forwardSpeed = 0;
       rotationSpeed = 0;
     }
   } else {
     // Manual Driver Mode
+    forwardSpeed =
+        -1.0 * xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
     rotationSpeed =
         xboxController.GetX(frc::GenericHID::JoystickHand::kLeftHand);
   }
@@ -46,6 +61,12 @@ void Robot::TeleopPeriodic() {
   drive.ArcadeDrive(forwardSpeed, rotationSpeed);
 }
 
+void Robot::SimulationPeriodic() {
+    dtSim.update();
+}
+
 #ifndef RUNNING_FRC_TESTS
 int main() { return frc::StartRobot<Robot>(); }
 #endif
+
+

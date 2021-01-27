@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.util.Units;
 import org.photonvision.PhotonCamera;
-import org.photonvision.PhotonUtils;
 
 /**
 * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -67,33 +66,23 @@ public class Robot extends TimedRobot {
         double forwardSpeed;
         double rotationSpeed;
 
+        forwardSpeed = -1.0 * xboxController.getY(GenericHID.Hand.kRight);
+
         if (xboxController.getAButton()) {
             // Vision-alignment mode
             // Query the latest result from PhotonVision
             var result = camera.getLatestResult();
 
             if (result.hasTargets()) {
-                // First calculate range
-                double range =
-                        PhotonUtils.calculateDistanceToTargetMeters(
-                                CAMERA_HEIGHT_METERS,
-                                TARGET_HEIGHT_METERS,
-                                CAMERA_PITCH_RADIANS,
-                                result.getBestTarget().getPitch());
-
-                // Use this range as the measurement we give to the PID controller.
-                forwardSpeed = forwardController.calculate(range, GOAL_RANGE_METERS);
-
-                // Also calculate angular power
-                rotationSpeed = turnController.calculate(result.getBestTarget().getYaw(), 0);
+                // Calculate angular turn power
+                // -1.0 required to ensure positive PID controller effort _increases_ yaw
+                rotationSpeed = -1.0 * turnController.calculate(result.getBestTarget().getYaw(), 0);
             } else {
                 // If we have no targets, stay still.
-                forwardSpeed = 0;
                 rotationSpeed = 0;
             }
         } else {
             // Manual Driver Mode
-            forwardSpeed = xboxController.getY(GenericHID.Hand.kRight);
             rotationSpeed = xboxController.getX(GenericHID.Hand.kLeft);
         }
 

@@ -36,7 +36,7 @@ void Robot::TeleopPeriodic() {
           units::degree_t{result.GetBestTarget().GetPitch()});
 
       // Use this range as the measurement we give to the PID controller.
-      forwardSpeed = controller.Calculate(range.to<double>(),
+      forwardSpeed = -1.0 * controller.Calculate(range.to<double>(),
                                           GOAL_RANGE_METERS.to<double>());
     } else {
       // If we have no targets, stay still.
@@ -45,7 +45,7 @@ void Robot::TeleopPeriodic() {
   } else {
     // Manual Driver Mode
     forwardSpeed =
-        xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
+        -1.0 * xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
   }
 
   // Use our forward/turn speeds to control the drivetrain

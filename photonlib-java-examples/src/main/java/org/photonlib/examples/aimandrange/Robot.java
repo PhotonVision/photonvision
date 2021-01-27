@@ -82,10 +82,12 @@ public class Robot extends TimedRobot {
                                 result.getBestTarget().getPitch());
 
                 // Use this range as the measurement we give to the PID controller.
-                forwardSpeed = forwardController.calculate(range, GOAL_RANGE_METERS);
+                // -1.0 required to ensure positive PID controller effort _increases_ range
+                forwardSpeed = -1.0 * forwardController.calculate(range, GOAL_RANGE_METERS);
 
                 // Also calculate angular power
-                rotationSpeed = turnController.calculate(result.getBestTarget().getYaw(), 0);
+                // -1.0 required to ensure positive PID controller effort _increases_ yaw
+                rotationSpeed = -1.0 * turnController.calculate(result.getBestTarget().getYaw(), 0);
             } else {
                 // If we have no targets, stay still.
                 forwardSpeed = 0;
@@ -93,7 +95,7 @@ public class Robot extends TimedRobot {
             }
         } else {
             // Manual Driver Mode
-            forwardSpeed = xboxController.getY(GenericHID.Hand.kRight);
+            forwardSpeed = -1.0 * xboxController.getY(GenericHID.Hand.kRight);
             rotationSpeed = xboxController.getX(GenericHID.Hand.kLeft);
         }
 
