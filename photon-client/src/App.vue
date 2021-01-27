@@ -213,6 +213,8 @@ import Logs from "./views/LogsView"
             handleMessage(key, value) {
                 if (key === "logMessage") {
                     this.logMessage(value["logMessage"], value["logLevel"]);
+                } else if(key === "log"){
+                    this.logMessage(value["logMessage"]["logMessage"], value["logMessage"]["logLevel"]); 
                 } else if (key === "updatePipelineResult") {
                     this.$store.commit('mutatePipelineResults', value)
                 } else if (this.$store.state.hasOwnProperty(key)) {
