@@ -332,8 +332,8 @@ public class ConfigManager {
         return loadedConfigurations;
     }
 
-    public void addCameraConfigurations(HashMap<VisionSource, CameraConfiguration> sources) {
-        getConfig().addCameraConfigs(sources.values());
+    public void addCameraConfigurations(List<VisionSource> sources) {
+        getConfig().addCameraConfigs(sources);
         requestSave();
     }
 

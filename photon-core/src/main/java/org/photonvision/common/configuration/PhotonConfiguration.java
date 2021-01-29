@@ -28,6 +28,7 @@ import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
+import org.photonvision.vision.processes.VisionSource;
 
 // TODO rename this class
 public class PhotonConfiguration {
@@ -75,9 +76,9 @@ public class PhotonConfiguration {
         return cameraConfigurations;
     }
 
-    public void addCameraConfigs(Collection<CameraConfiguration> config) {
-        for (var c : config) {
-            addCameraConfig(c);
+    public void addCameraConfigs(Collection<VisionSource> sources) {
+        for (var s : sources) {
+            addCameraConfig(s.getCameraConfiguration());
         }
     }
 

@@ -20,6 +20,7 @@ package org.photonvision.vision.processes;
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.HashMap;
+import java.util.List;
 import org.junit.jupiter.api.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -41,8 +42,8 @@ public class VisionModuleManagerTest {
 
         private final FrameProvider provider;
 
-        public TestSource(FrameProvider provider) {
-            super(new CameraConfiguration("", "", "", ""));
+        public TestSource(FrameProvider provider, CameraConfiguration cameraConfiguration) {
+            super(cameraConfiguration);
             this.provider = provider;
         }
 
@@ -108,16 +109,16 @@ public class VisionModuleManagerTest {
     @Test
     public void setupManager() {
         ConfigManager.getInstance().load();
-        var sources = new HashMap<VisionSource, CameraConfiguration>();
-        sources.put(
-                new TestSource(
-                        new FileFrameProvider(
-                                TestUtils.getWPIImagePath(
-                                        TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
-                                TestUtils.WPI2019Image.FOV)),
-                new CameraConfiguration("Foo", "Barr"));
 
-        var modules = VisionModuleManager.getInstance().addSources(sources);
+        var conf = new CameraConfiguration("Foo", "Bar");
+        var ffp =
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.WPI2019Image.FOV);
+
+        var testSource = new TestSource(ffp, conf);
+
+        var modules = VisionModuleManager.getInstance().addSources(List.of(testSource));
         var module0DataConsumer = new TestDataConsumer();
 
         VisionModuleManager.getInstance().visionModules.get(0).addResultConsumer(module0DataConsumer);
