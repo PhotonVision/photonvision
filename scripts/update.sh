@@ -12,15 +12,15 @@ if [ $? -eq 0 ]; then
     echo "Internet connection OK"
 else
     echo "This script requires an Internet connection! Exiting"
-	exit 1
+    exit 1
 fi
 
 echo "Stopping PhotonVision service"
 systemctl stop photonvision
 
 echo "Downloading and installing latest stable release of PhotonVision..."
-mkdir -p /opt/photonvision
 cd /opt/photonvision
+rm photonvision.jar
 curl -sk https://api.github.com/repos/photonvision/photonvision/releases/latest |
     grep "browser_download_url.*jar" |
     cut -d : -f 2,3 |
