@@ -15,7 +15,10 @@ else
 	exit 1
 fi
 
-echo "Downloading latest stable release of PhotonVision..."
+echo "Stopping PhotonVision service"
+systemctl stop photonvision
+
+echo "Downloading and installing latest stable release of PhotonVision..."
 mkdir -p /opt/photonvision
 cd /opt/photonvision
 curl -sk https://api.github.com/repos/photonvision/photonvision/releases/latest |
@@ -23,12 +26,6 @@ curl -sk https://api.github.com/repos/photonvision/photonvision/releases/latest 
     cut -d : -f 2,3 |
     tr -d '"' |
     wget -qi - -O photonvision.jar
-
-echo "Stopping PhotonVision service"
-systemctl stop photonvision
-
-echo "Installing new PhotonVision release"
-mv photonvision.jar /opt/photonvision/photonvision.jar
 
 echo "Starting PhotonVision service"
 systemctl start photonvision
