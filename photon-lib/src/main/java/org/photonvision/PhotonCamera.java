@@ -190,6 +190,9 @@ public class PhotonCamera {
     /**
     * Returns whether the latest target result has targets.
     *
+    * <p>This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should be used instead.
+    *
+    * @deprecated This method should be replaced with {@link PhotonPipelineResult#hasTargets()}
     * @return Whether the latest target result has targets.
     */
     public boolean hasTargets() {

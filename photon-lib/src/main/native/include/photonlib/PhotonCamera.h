@@ -115,6 +115,10 @@ class PhotonCamera {
 
   /**
    * Returns whether the latest target result has targets.
+   * This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should
+   * be used instead.
+   * @deprecated This method should be replaced with {@link
+   * PhotonPipelineResult#hasTargets()}
    * @return Whether the latest target result has targets.
    */
   bool HasTargets() const { return GetLatestResult().HasTargets(); }
