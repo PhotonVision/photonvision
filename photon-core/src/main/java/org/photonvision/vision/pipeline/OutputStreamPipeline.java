@@ -107,13 +107,6 @@ public class OutputStreamPipeline {
         var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
         sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
-        // Draw 2D contours on input and output
-        var draw2dTargetsOnInput = draw2dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
-        sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
-
-        var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
-        sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
-
         // Draw 3D Targets on input and output if necessary
         if (settings.solvePNPEnabled) {
             var drawOnInputResult = draw3dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
@@ -125,6 +118,13 @@ public class OutputStreamPipeline {
             pipeProfileNanos[7] = 0;
             pipeProfileNanos[8] = 0;
         }
+
+        // Draw 2D contours on input and output
+        var draw2dTargetsOnInput = draw2dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
+        sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
+
+        var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
+        sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
