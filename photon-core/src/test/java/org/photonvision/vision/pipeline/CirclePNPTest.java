@@ -105,7 +105,7 @@ public class CirclePNPTest {
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
         pipeline.getSettings().desiredShape = ContourShape.Circle;
         pipeline.getSettings().allowableThreshold = 10;
-        pipeline.getSettings().minRadius = 30;
+        pipeline.getSettings().radius.setFirst(30);
         pipeline.getSettings().accuracyPercentage = 30.0;
 
         var frameProvider =

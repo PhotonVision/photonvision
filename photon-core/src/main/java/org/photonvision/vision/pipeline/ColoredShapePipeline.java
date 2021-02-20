@@ -106,9 +106,9 @@ public class ColoredShapePipeline
         FindCirclesPipe.FindCirclePipeParams findCirclePipeParams =
                 new FindCirclesPipe.FindCirclePipeParams(
                         settings.allowableThreshold,
-                        settings.minRadius,
+                        settings.radius.getFirst(),
                         settings.minDist,
-                        settings.maxRadius,
+                        settings.radius.getSecond(),
                         settings.maxCannyThresh,
                         settings.accuracy);
         findCirclesPipe.setParams(findCirclePipeParams);
@@ -116,10 +116,10 @@ public class ColoredShapePipeline
         FilterShapesPipe.FilterShapesPipeParams filterShapesPipeParams =
                 new FilterShapesPipe.FilterShapesPipeParams(
                         settings.desiredShape,
-                        settings.minArea,
-                        settings.maxArea,
-                        settings.minPeri,
-                        settings.maxPeri);
+                        settings.area.getFirst(),
+                        settings.area.getSecond(),
+                        settings.perimeter.getFirst(),
+                        settings.perimeter.getSecond());
         filterShapesPipe.setParams(filterShapesPipeParams);
 
         GroupContoursPipe.GroupContoursParams groupContoursParams =
@@ -262,36 +262,40 @@ public class ColoredShapePipeline
             targetList = collect2dTargetsResult.output;
         }
 
-        // Draw 2D Crosshair on input and output
-        var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(rawInputMat, targetList));
-        sumPipeNanosElapsed += draw2dCrosshairResultOnInput.nanosElapsed;
+        //        // Draw 2D Crosshair on input and output
+        //        var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(rawInputMat,
+        // targetList));
+        //        sumPipeNanosElapsed += draw2dCrosshairResultOnInput.nanosElapsed;
+        //
+        //        var draw2dCrosshairResultOnOutput =
+        //                draw2dCrosshairPipe.run(Pair.of(hsvPipeResult.output, targetList));
+        //        sumPipeNanosElapsed += draw2dCrosshairResultOnOutput.nanosElapsed;
+        //
+        //        // Draw 2D contours on input and output
+        //        var draw2dContoursResultOnInput =
+        //                draw2DTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
+        //        sumPipeNanosElapsed += draw2dContoursResultOnInput.nanosElapsed;
+        //
+        //        var draw2dContoursResultOnOutput =
+        //                draw2DTargetsPipe.run(Pair.of(hsvPipeResult.output,
+        // collect2dTargetsResult.output));
+        //        sumPipeNanosElapsed += draw2dContoursResultOnOutput.nanosElapsed;
 
-        var draw2dCrosshairResultOnOutput =
-                draw2dCrosshairPipe.run(Pair.of(hsvPipeResult.output, targetList));
-        sumPipeNanosElapsed += draw2dCrosshairResultOnOutput.nanosElapsed;
+        //        if (settings.solvePNPEnabled && settings.desiredShape == ContourShape.Circle) {
+        //            var drawOnInputResult =
+        //                    draw3dTargetsPipe.run(Pair.of(rawInputMat,
+        // collect2dTargetsResult.output));
+        //            sumPipeNanosElapsed += drawOnInputResult.nanosElapsed;
+        //
+        //            var drawOnOutputResult =
+        //                    draw3dTargetsPipe.run(Pair.of(hsvPipeResult.output,
+        // collect2dTargetsResult.output));
+        //            sumPipeNanosElapsed += drawOnOutputResult.nanosElapsed;
+        //        }
 
-        // Draw 2D contours on input and output
-        var draw2dContoursResultOnInput =
-                draw2DTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
-        sumPipeNanosElapsed += draw2dContoursResultOnInput.nanosElapsed;
-
-        var draw2dContoursResultOnOutput =
-                draw2DTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
-        sumPipeNanosElapsed += draw2dContoursResultOnOutput.nanosElapsed;
-
-        if (settings.solvePNPEnabled && settings.desiredShape == ContourShape.Circle) {
-            var drawOnInputResult =
-                    draw3dTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
-            sumPipeNanosElapsed += drawOnInputResult.nanosElapsed;
-
-            var drawOnOutputResult =
-                    draw3dTargetsPipe.run(Pair.of(hsvPipeResult.output, collect2dTargetsResult.output));
-            sumPipeNanosElapsed += drawOnOutputResult.nanosElapsed;
-        }
-
-        // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
-        var outputMatPipeResult = outputMatPipe.run(hsvPipeResult.output);
-        sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
+        //        // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
+        //        var outputMatPipeResult = outputMatPipe.run(hsvPipeResult.output);
+        //        sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
