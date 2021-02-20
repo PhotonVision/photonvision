@@ -57,12 +57,13 @@ public class PipelineManager {
     */
     public PipelineManager(
             DriverModePipelineSettings driverSettings, List<CVPipelineSettings> userPipelines) {
-        this.userPipelineSettings = new ArrayList<>(userPipelines);
+        this.userPipelineSettings = new ArrayList<>(/*userPipelines*/ );
         // This is to respect the default res idx for vendor cameras
 
         this.driverModePipeline.setSettings(driverSettings);
 
-        if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
+        //        if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
+        addPipeline(PipelineType.ColoredShape);
     }
 
     public PipelineManager(CameraConfiguration config) {
@@ -243,23 +244,23 @@ public class PipelineManager {
     }
 
     public CVPipelineSettings addPipeline(PipelineType type, String nickname) {
+        CVPipelineSettings settings;
         switch (type) {
             case Reflective:
-                {
-                    var added = new ReflectivePipelineSettings();
-                    added.pipelineNickname = nickname;
-                    addPipelineInternal(added);
-                    return added;
-                }
+                settings = new ReflectivePipelineSettings();
+                break;
             case ColoredShape:
-                {
-                    var added = new ColoredShapePipelineSettings();
-                    addPipelineInternal(added);
-                    return added;
-                }
+                settings = new ColoredShapePipelineSettings();
+                break;
+            default:
+                settings = null;
+                break;
         }
-        reassignIndexes();
-        return null;
+        if (settings != null) {
+            settings.pipelineNickname = nickname;
+            addPipelineInternal(settings);
+        }
+        return settings;
     }
 
     private void addPipelineInternal(CVPipelineSettings settings) {

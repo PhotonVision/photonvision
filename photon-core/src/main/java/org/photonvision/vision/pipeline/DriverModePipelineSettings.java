@@ -24,7 +24,6 @@ import org.photonvision.vision.target.RobotOffsetPointMode;
 
 @JsonTypeName("DriverModePipelineSettings")
 public class DriverModePipelineSettings extends CVPipelineSettings {
-    public RobotOffsetPointMode offsetPointMode = RobotOffsetPointMode.None;
     public DoubleCouple offsetPoint = new DoubleCouple();
 
     public DriverModePipelineSettings() {
