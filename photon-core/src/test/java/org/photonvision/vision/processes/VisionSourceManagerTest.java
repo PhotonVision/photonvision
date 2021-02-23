@@ -47,8 +47,7 @@ public class VisionSourceManagerTest {
         infoList.add(info1);
 
         inst.registerLoadedConfigs(config);
-        inst.tryMatchUSBCamImpl();
-        inst.tryMatchUSBCamImpl();
+        var sources = inst.tryMatchUSBCamImpl(false);
 
         assertTrue(inst.knownUsbCameras.contains(info1));
         assertEquals(1, inst.unmatchedLoadedConfigs.size());
@@ -56,8 +55,7 @@ public class VisionSourceManagerTest {
         UsbCameraInfo info2 =
                 new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
         infoList.add(info2);
-
-        inst.tryMatchUSBCamImpl();
+        inst.tryMatchUSBCamImpl(false);
 
         assertTrue(inst.knownUsbCameras.contains(info2));
         assertEquals(2, inst.knownUsbCameras.size());
