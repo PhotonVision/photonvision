@@ -89,6 +89,10 @@ public class VisionSourceManager {
     }
 
     protected List<VisionSource> tryMatchUSBCamImpl() {
+        return tryMatchUSBCamImpl(true);
+    }
+
+    protected List<VisionSource> tryMatchUSBCamImpl(boolean createSources) {
         // Detect cameras using CSCore
         List<UsbCameraInfo> connectedCameras =
                 new ArrayList<>(filterAllowedDevices(cameraInfoSupplier.get()));
@@ -150,6 +154,11 @@ public class VisionSourceManager {
             }
         }
         if (matchedCameras.isEmpty()) return null;
+
+        // for unit tests only!
+        if (!createSources) {
+            return List.of();
+        }
 
         // Turn these camera configs into vision sources
         var sources = loadVisionSourcesFromCamConfigs(matchedCameras);
