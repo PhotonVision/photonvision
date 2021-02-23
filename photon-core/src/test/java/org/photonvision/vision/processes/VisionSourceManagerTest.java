@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
-import org.photonvision.vision.camera.USBCameraSource;
 
 public class VisionSourceManagerTest {
     @BeforeEach
@@ -57,7 +56,6 @@ public class VisionSourceManagerTest {
                 new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
         infoList.add(info2);
         inst.tryMatchUSBCamImpl(false);
-
 
         assertTrue(inst.knownUsbCameras.contains(info2));
         assertEquals(2, inst.knownUsbCameras.size());
