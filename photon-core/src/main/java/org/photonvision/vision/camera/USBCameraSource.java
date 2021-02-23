@@ -268,6 +268,10 @@ public class USBCameraSource extends VisionSource {
                 && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
     }
 
+    public void close() {
+        camera.close();
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

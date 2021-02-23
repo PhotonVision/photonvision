@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.vision.camera.USBCameraSource;
 
 public class VisionSourceManagerTest {
     @BeforeEach
@@ -47,8 +48,7 @@ public class VisionSourceManagerTest {
         infoList.add(info1);
 
         inst.registerLoadedConfigs(config);
-        inst.tryMatchUSBCamImpl();
-        inst.tryMatchUSBCamImpl();
+        var sources = inst.tryMatchUSBCamImpl();
 
         assertTrue(inst.knownUsbCameras.contains(info1));
         assertEquals(1, inst.unmatchedLoadedConfigs.size());
@@ -62,5 +62,9 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownUsbCameras.contains(info2));
         assertEquals(2, inst.knownUsbCameras.size());
         assertEquals(0, inst.unmatchedLoadedConfigs.size());
+
+        for(var src : sources) {
+            ((USBCameraSource)src).close();
+        }
     }
 }
