@@ -136,19 +136,22 @@ public class ZeroCopyPicamSource extends VisionSource {
         @Override
         public void setExposure(double exposure) {
             lastExposure = exposure;
-            PicamJNI.setExposure((int) Math.round(exposure));
+            var success = PicamJNI.setExposure((int) Math.round(exposure));
+            if (!success) logger.warn("Couldn't set Pi camera exposure");
         }
 
         @Override
         public void setBrightness(int brightness) {
             lastBrightness = brightness;
-            PicamJNI.setBrightness(brightness);
+            var success = PicamJNI.setBrightness(brightness);
+            if (!success) logger.warn("Couldn't set Pi camera brightness");
         }
 
         @Override
         public void setGain(int gain) {
             lastGain = gain;
-            PicamJNI.setGain(gain);
+            var success = PicamJNI.setGain(gain);
+            if (!success) logger.warn("Couldn't set Pi camera gain");
         }
 
         @Override
@@ -159,8 +162,14 @@ public class ZeroCopyPicamSource extends VisionSource {
         @Override
         protected void setVideoModeInternal(VideoMode videoMode) {
             var mode = (FPSRatedVideoMode) videoMode;
-            PicamJNI.destroyCamera();
-            PicamJNI.createCamera(mode.width, mode.height, mode.fpsActual);
+            var success = PicamJNI.destroyCamera();
+            if (!success)
+                throw new RuntimeException(
+                        "Couldn't destroy a zero copy Pi camera while switching video modes");
+            success = PicamJNI.createCamera(mode.width, mode.height, mode.fpsActual);
+            if (!success)
+                throw new RuntimeException(
+                        "Couldn't create a zero copy Pi camera while switching video modes");
 
             // We don't store last settings on the native side, and when you change video mode these get
             // reset on MMAL's end

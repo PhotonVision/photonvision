@@ -85,7 +85,7 @@ public class PicamJNI {
     }
 
     public static boolean isSupported() {
-        return libraryLoaded && getSensorModel() != SensorModel.Disconnected;
+        return libraryLoaded && isVCSMSupported() && getSensorModel() != SensorModel.Disconnected;
     }
 
     public static SensorModel getSensorModel() {
@@ -104,6 +104,9 @@ public class PicamJNI {
     }
 
     private static native String getSensorModelRaw();
+
+    // This is the main thing we need that isn't supported on Pi 4s, which makes it a good check
+    private static native boolean isVCSMSupported();
 
     // Everything here is static because multiple picams are unsupported at the hardware level
 
