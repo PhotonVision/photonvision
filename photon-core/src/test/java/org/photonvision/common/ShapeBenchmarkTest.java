@@ -68,8 +68,8 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
-        pipeline.getSettings().desiredShape = ContourShape.Custom;
-        pipeline.getSettings().allowableThreshold = 10;
+        pipeline.getSettings().contourShape = ContourShape.Custom;
+        pipeline.getSettings().circleDetectThreshold = 10;
         pipeline.getSettings().accuracyPercentage = 30.0;
         var frameProvider =
                 new FileFrameProvider(
@@ -89,8 +89,8 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
-        pipeline.getSettings().desiredShape = ContourShape.Custom;
-        pipeline.getSettings().allowableThreshold = 10;
+        pipeline.getSettings().contourShape = ContourShape.Custom;
+        pipeline.getSettings().circleDetectThreshold = 10;
         pipeline.getSettings().accuracyPercentage = 30.0;
 
         var frameProvider =
@@ -111,8 +111,8 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
-        pipeline.getSettings().desiredShape = ContourShape.Custom;
-        pipeline.getSettings().allowableThreshold = 10;
+        pipeline.getSettings().contourShape = ContourShape.Custom;
+        pipeline.getSettings().circleDetectThreshold = 10;
         pipeline.getSettings().accuracyPercentage = 30.0;
 
         var frameProvider =
@@ -133,8 +133,8 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
-        pipeline.getSettings().desiredShape = ContourShape.Custom;
-        pipeline.getSettings().allowableThreshold = 10;
+        pipeline.getSettings().contourShape = ContourShape.Custom;
+        pipeline.getSettings().circleDetectThreshold = 10;
         pipeline.getSettings().accuracyPercentage = 30.0;
 
         var frameProvider =

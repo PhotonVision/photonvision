@@ -105,21 +105,22 @@ public class ColoredShapePipeline
 
         FindCirclesPipe.FindCirclePipeParams findCirclePipeParams =
                 new FindCirclesPipe.FindCirclePipeParams(
-                        settings.allowableThreshold,
-                        settings.radius.getFirst(),
+                        settings.circleDetectThreshold,
+                        settings.contourRadius.getFirst(),
                         settings.minDist,
-                        settings.radius.getSecond(),
+                        settings.contourRadius.getSecond(),
                         settings.maxCannyThresh,
-                        settings.accuracy);
+                        settings.circleAccuracy, Math.hypot(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight));
         findCirclesPipe.setParams(findCirclePipeParams);
 
         FilterShapesPipe.FilterShapesPipeParams filterShapesPipeParams =
                 new FilterShapesPipe.FilterShapesPipeParams(
-                        settings.desiredShape,
-                        settings.area.getFirst(),
-                        settings.area.getSecond(),
-                        settings.perimeter.getFirst(),
-                        settings.perimeter.getSecond());
+                        settings.contourShape,
+                        settings.contourArea.getFirst(),
+                        settings.contourArea.getSecond(),
+                        settings.contourPerimeter.getFirst(),
+                        settings.contourPerimeter.getSecond(),
+                        frameStaticProperties);
         filterShapesPipe.setParams(filterShapesPipeParams);
 
         GroupContoursPipe.GroupContoursParams groupContoursParams =
@@ -213,7 +214,7 @@ public class ColoredShapePipeline
         sumPipeNanosElapsed += speckleRejectResult.nanosElapsed;
 
         List<CVShape> shapes;
-        if (settings.desiredShape == ContourShape.Circle) {
+        if (settings.contourShape == ContourShape.Circle) {
             CVPipeResult<List<CVShape>> findCirclesResult =
                     findCirclesPipe.run(Pair.of(hsvPipeResult.output, speckleRejectResult.output));
             sumPipeNanosElapsed += findCirclesResult.nanosElapsed;
@@ -245,7 +246,7 @@ public class ColoredShapePipeline
 
         List<TrackedTarget> targetList;
 
-        if (settings.solvePNPEnabled && settings.desiredShape == ContourShape.Circle) {
+        if (settings.solvePNPEnabled && settings.contourShape == ContourShape.Circle) {
             var cornerDetectionResult = cornerDetectionPipe.run(collect2dTargetsResult.output);
             collect2dTargetsResult.output.forEach(
                     shape -> {

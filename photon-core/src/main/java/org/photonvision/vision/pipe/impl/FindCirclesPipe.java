@@ -49,6 +49,10 @@ public class FindCirclesPipe
         circles.release();
         List<CVShape> output = new ArrayList<>();
 
+        var diag = params.diagonalLengthPx;
+        var minRadius = (int) (params.minRadius * diag / 100.0);
+        var maxRadius = (int) (params.maxRadius * diag / 100.0);
+
         Imgproc.HoughCircles(
                 in.getLeft(),
                 circles,
@@ -64,8 +68,8 @@ public class FindCirclesPipe
                 params.minDist,
                 params.maxCannyThresh,
                 params.accuracy,
-                params.minRadius,
-                params.maxRadius);
+                minRadius,
+                maxRadius);
         // Great, we now found the center point of the circle and it's radius, but we have no idea what
         // contour it corresponds to
         for (int x = 0; x < circles.cols(); x++) {
@@ -96,6 +100,7 @@ public class FindCirclesPipe
         private final int minDist;
         private final int maxCannyThresh;
         private final int accuracy;
+        private final double diagonalLengthPx;
 
         /*
         * @params minDist - Minimum distance between the centers of the detected circles.
@@ -114,13 +119,14 @@ public class FindCirclesPipe
                 int minDist,
                 int maxRadius,
                 int maxCannyThresh,
-                int accuracy) {
+                int accuracy, double diagonalLengthPx) {
             this.allowableThreshold = allowableThreshold;
             this.minRadius = minRadius;
             this.maxRadius = maxRadius;
             this.minDist = minDist;
             this.maxCannyThresh = maxCannyThresh;
             this.accuracy = accuracy;
+            this.diagonalLengthPx = diagonalLengthPx;
         }
     }
 }

@@ -183,8 +183,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         var actual = new DoubleCouple(orig.get(0), orig.get(1));
                         propField.set(currentSettings, actual);
                     } else if (propType.isAssignableFrom(IntegerCouple.class)) {
-                        var orig = (ArrayList<Integer>) newPropValue;
-                        var actual = new IntegerCouple(orig.get(0), orig.get(1));
+                        var orig = (ArrayList<Number>) newPropValue;
+                        var actual = new IntegerCouple(orig.get(0).intValue(), orig.get(1).intValue());
                         propField.set(currentSettings, actual);
                     } else if (propType.equals(Double.TYPE)) {
                         propField.setDouble(currentSettings, ((Number) newPropValue).doubleValue());

@@ -40,7 +40,7 @@ public class ColoredShapePipelineTest {
 
     public static void testQuadrilateralDetection(
             ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
-        settings.desiredShape = ContourShape.Quadrilateral;
+        settings.contourShape = ContourShape.Quadrilateral;
         pipeline.settings = settings;
         CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
         TestUtils.showImage(
@@ -50,7 +50,7 @@ public class ColoredShapePipelineTest {
 
     public static void testCustomShapeDetection(
             ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
-        settings.desiredShape = ContourShape.Custom;
+        settings.contourShape = ContourShape.Custom;
         pipeline.settings = settings;
         CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
         TestUtils.showImage(
@@ -61,7 +61,7 @@ public class ColoredShapePipelineTest {
     @Test
     public static void testCircleShapeDetection(
             ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
-        settings.desiredShape = ContourShape.Circle;
+        settings.contourShape = ContourShape.Circle;
         pipeline.settings = settings;
         CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
         TestUtils.showImage(
@@ -77,8 +77,8 @@ public class ColoredShapePipelineTest {
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(100, 255);
         settings.maxCannyThresh = 50;
-        settings.accuracy = 15;
-        settings.allowableThreshold = 5;
+        settings.circleAccuracy = 15;
+        settings.circleDetectThreshold = 5;
         var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
@@ -102,8 +102,8 @@ public class ColoredShapePipelineTest {
         settings.outputShowMultipleTargets = true;
         settings.contourGroupingMode = ContourGroupingMode.Single;
         settings.contourIntersection = ContourIntersectionDirection.Up;
-        settings.desiredShape = ContourShape.Triangle;
-        settings.allowableThreshold = 10;
+        settings.contourShape = ContourShape.Triangle;
+        settings.circleDetectThreshold = 10;
         settings.accuracyPercentage = 30.0;
 
         ColoredShapePipeline pipeline = new ColoredShapePipeline();
