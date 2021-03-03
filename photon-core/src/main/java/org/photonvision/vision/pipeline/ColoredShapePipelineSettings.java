@@ -29,16 +29,15 @@ import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
 
 @JsonTypeName("ColoredShapePipelineSettings")
 public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
-    public ContourShape desiredShape = ContourShape.Triangle;
-    public DoubleCouple area = new DoubleCouple(0, Double.MAX_VALUE);
-    public DoubleCouple perimeter = new DoubleCouple(0, Double.MAX_VALUE);
+    public ContourShape contourShape = ContourShape.Triangle;
+    public DoubleCouple contourPerimeter = new DoubleCouple(0, Double.MAX_VALUE);
     public double accuracyPercentage = 10.0;
     // Circle detection
-    public int allowableThreshold = 5;
-    public IntegerCouple radius = new IntegerCouple(0, Integer.MAX_VALUE);
+    public int circleDetectThreshold = 5;
+    public IntegerCouple contourRadius = new IntegerCouple(0, 100);
     public int minDist = 10;
     public int maxCannyThresh = 90;
-    public int accuracy = 20;
+    public int circleAccuracy = 20;
     // how many contours to attempt to group (Single, Dual)
     public ContourGroupingMode contourGroupingMode = ContourGroupingMode.Single;
 
@@ -71,10 +70,10 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
         if (!super.equals(o)) return false;
         ColoredShapePipelineSettings that = (ColoredShapePipelineSettings) o;
         return Double.compare(that.accuracyPercentage, accuracyPercentage) == 0
-                && allowableThreshold == that.allowableThreshold
+                && circleDetectThreshold == that.circleDetectThreshold
                 && minDist == that.minDist
                 && maxCannyThresh == that.maxCannyThresh
-                && accuracy == that.accuracy
+                && circleAccuracy == that.circleAccuracy
                 && cornerDetectionUseConvexHulls == that.cornerDetectionUseConvexHulls
                 && cornerDetectionExactSideCount == that.cornerDetectionExactSideCount
                 && cornerDetectionSideCount == that.cornerDetectionSideCount
@@ -82,10 +81,10 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                         == 0
                 && erode == that.erode
                 && dilate == that.dilate
-                && desiredShape == that.desiredShape
-                && Objects.equals(area, that.area)
-                && Objects.equals(perimeter, that.perimeter)
-                && Objects.equals(radius, that.radius)
+                && contourShape == that.contourShape
+                && Objects.equals(contourArea, that.contourArea)
+                && Objects.equals(contourPerimeter, that.contourPerimeter)
+                && Objects.equals(contourRadius, that.contourRadius)
                 && contourGroupingMode == that.contourGroupingMode
                 && contourIntersection == that.contourIntersection
                 && Objects.equals(cameraCalibration, that.cameraCalibration)
@@ -96,15 +95,15 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     public int hashCode() {
         return Objects.hash(
                 super.hashCode(),
-                desiredShape,
-                area,
-                perimeter,
+                contourShape,
+                contourArea,
+                contourPerimeter,
                 accuracyPercentage,
-                allowableThreshold,
-                radius,
+                circleDetectThreshold,
+                contourRadius,
                 minDist,
                 maxCannyThresh,
-                accuracy,
+                circleAccuracy,
                 contourGroupingMode,
                 contourIntersection,
                 cameraCalibration,

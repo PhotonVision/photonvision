@@ -112,7 +112,7 @@ public class OutputStreamPipeline {
         if (settings.solvePNPEnabled
                 || (settings.solvePNPEnabled
                         && settings instanceof ColoredShapePipelineSettings
-                        && ((ColoredShapePipelineSettings) settings).desiredShape == ContourShape.Circle)) {
+                        && ((ColoredShapePipelineSettings) settings).contourShape == ContourShape.Circle)) {
             var drawOnInputResult = draw3dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
             sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
 

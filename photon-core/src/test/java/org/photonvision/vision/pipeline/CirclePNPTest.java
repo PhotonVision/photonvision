@@ -89,8 +89,8 @@ public class CirclePNPTest {
         pipeline.getSettings().hsvValue.set(100, 255);
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().maxCannyThresh = 50;
-        pipeline.getSettings().accuracy = 15;
-        pipeline.getSettings().allowableThreshold = 5;
+        pipeline.getSettings().circleAccuracy = 15;
+        pipeline.getSettings().circleDetectThreshold = 5;
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
@@ -100,9 +100,9 @@ public class CirclePNPTest {
         pipeline.getSettings().outputShowMultipleTargets = false;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
         pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
-        pipeline.getSettings().desiredShape = ContourShape.Circle;
-        pipeline.getSettings().allowableThreshold = 10;
-        pipeline.getSettings().radius.setFirst(30);
+        pipeline.getSettings().contourShape = ContourShape.Circle;
+        pipeline.getSettings().circleDetectThreshold = 10;
+        pipeline.getSettings().contourRadius.setFirst(30);
         pipeline.getSettings().accuracyPercentage = 30.0;
 
         var frameProvider =

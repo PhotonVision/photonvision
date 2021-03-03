@@ -49,7 +49,6 @@ public class FindPolygonPipe
     private CVShape getShape(Contour in) {
 
         int corners = getCorners(in);
-        corners = getCorners(in);
 
         /*The contourShape enum has predefined shapes for Circles, Triangles, and Quads
         meaning any shape not fitting in those predefined shapes must be a custom shape.
