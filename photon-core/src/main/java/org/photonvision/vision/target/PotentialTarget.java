@@ -20,22 +20,33 @@ package org.photonvision.vision.target;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.RotatedRect;
+import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
+import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.opencv.Releasable;
 
 public class PotentialTarget implements Releasable {
 
     public final Contour m_mainContour;
     public final List<Contour> m_subContours;
+    public final ContourShape shape;
 
     public PotentialTarget(Contour inputContour) {
-        m_mainContour = inputContour;
-        m_subContours = new ArrayList<>(); // empty
+        this(inputContour, List.of());
     }
 
     public PotentialTarget(Contour inputContour, List<Contour> subContours) {
+        this(inputContour, subContours, ContourShape.Quadrilateral);
+    }
+
+    public PotentialTarget(Contour inputContour, List<Contour> subContours, ContourShape shape) {
         m_mainContour = inputContour;
         m_subContours = new ArrayList<>(subContours);
+        this.shape = shape;
+    }
+
+    public PotentialTarget(Contour inputContour, ContourShape shape) {
+        this(inputContour, List.of(),shape);
     }
 
     public RotatedRect getMinAreaRect() {

@@ -25,9 +25,7 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.photonvision.vision.frame.FrameStaticProperties;
-import org.photonvision.vision.opencv.Contour;
-import org.photonvision.vision.opencv.DualOffsetValues;
-import org.photonvision.vision.opencv.Releasable;
+import org.photonvision.vision.opencv.*;
 
 public class TrackedTarget implements Releasable {
     public final Contour m_mainContour;
@@ -47,11 +45,18 @@ public class TrackedTarget implements Releasable {
 
     private Transform2d m_cameraToTarget = new Transform2d();
 
+    private CVShape m_shape;
+
     private Mat m_cameraRelativeTvec, m_cameraRelativeRvec;
 
     public TrackedTarget(PotentialTarget origTarget, TargetCalculationParameters params) {
+        this(origTarget, params, null);
+    }
+
+    public TrackedTarget(PotentialTarget origTarget, TargetCalculationParameters params, CVShape shape) {
         this.m_mainContour = origTarget.m_mainContour;
         this.m_subContours = origTarget.m_subContours;
+        this.m_shape = shape;
         calculateValues(params);
     }
 
@@ -170,13 +175,15 @@ public class TrackedTarget implements Releasable {
         cameraRelativeRvec.copyTo(this.m_cameraRelativeRvec);
     }
 
+    public CVShape getShape() {
+        return m_shape;
+    }
+
+    public void setShape(CVShape shape) {
+        this.m_shape = shape;
+    }
+
     public HashMap<String, Object> toHashMap() {
-        //                pitch: 0,
-        //                    yaw: 0,
-        //                    skew: 0,
-        //                    area: 0,
-        //                    // 3D only
-        //                    pose: {x: 0, y: 0, rot: 0},
         var ret = new HashMap<String, Object>();
         ret.put("pitch", getPitch());
         ret.put("yaw", getYaw());

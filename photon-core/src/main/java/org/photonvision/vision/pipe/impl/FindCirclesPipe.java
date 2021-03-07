@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 import org.photonvision.vision.opencv.CVShape;
@@ -86,7 +87,7 @@ public class FindCirclesPipe
                 if (Math.abs(x_center - (mu.m10 / mu.m00)) <= params.allowableThreshold
                         && Math.abs(y_center - (mu.m01 / mu.m00)) <= params.allowableThreshold) {
                     // If it is, then add it to the output array
-                    output.add(new CVShape(contour, ContourShape.Circle));
+                    output.add(new CVShape(contour, new Point(c[0], c[1]), c[2]));
                 }
             }
         }

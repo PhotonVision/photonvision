@@ -45,6 +45,7 @@ public class TrackedTargetTest {
                         new Point(426.22, 302),
                         new Point(400, 302))); // gives contour with center of 426, 300
         Contour contour = new Contour(mat);
+
         var pTarget = new PotentialTarget(contour);
 
         var imageSize = new Size(800, 600);

@@ -27,6 +27,8 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.FrameDivisor;
+import org.photonvision.vision.opencv.CVShape;
+import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
@@ -53,6 +55,7 @@ public class Draw2dTargetsPipe
             var centroidColour = ColorHelper.colorToScalar(params.centroidColor);
             var maximumBoxColour = ColorHelper.colorToScalar(params.maximumBoxColor);
             var rotatedBoxColour = ColorHelper.colorToScalar(params.rotatedBoxColor);
+            var circleColor = ColorHelper.colorToScalar(params.circleColor);
             var shapeColour = ColorHelper.colorToScalar(params.shapeOutlineColour);
 
             for (int i = 0; i < (params.showMultipleTargets ? in.getRight().size() : 1); i++) {
@@ -72,13 +75,18 @@ public class Draw2dTargetsPipe
                 dividePointArray(vertices);
                 contour.fromArray(vertices);
 
-                if (params.showRotatedBox) {
+                if (params.shouldShowRotatedBox(target.getShape())) {
                     Imgproc.drawContours(
                             in.getLeft(),
                             List.of(contour),
                             0,
                             rotatedBoxColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
+                } else if (params.shouldShowCircle(target.getShape())) {
+                    Imgproc.circle(in.getLeft(),
+                            target.getShape().center,
+                            (int) target.getShape().radius,
+                            circleColor);
                 }
 
                 if (params.showMaximumBox) {
@@ -193,11 +201,20 @@ public class Draw2dTargetsPipe
         public Color maximumBoxColor = Color.RED;
         public Color shapeOutlineColour = Color.MAGENTA;
         public Color textColor = Color.GREEN;
+        public Color circleColor = Color.BLUE;
 
         public final boolean showMultipleTargets;
         public final boolean shouldDraw;
 
         public final FrameDivisor divisor;
+
+        public boolean shouldShowRotatedBox(CVShape shape) {
+            return showRotatedBox && shape != null && shape.shape.equals(ContourShape.Quadrilateral);
+        }
+
+        public boolean shouldShowCircle(CVShape shape) {
+            return shape != null && shape.shape.equals(ContourShape.Circle);
+        }
 
         public Draw2dTargetsParams(
                 boolean shouldDraw, boolean showMultipleTargets, FrameDivisor divisor) {
