@@ -29,23 +29,23 @@ public class PotentialTarget implements Releasable {
 
     public final Contour m_mainContour;
     public final List<Contour> m_subContours;
-    public final ContourShape shape;
+    public final CVShape shape;
 
     public PotentialTarget(Contour inputContour) {
         this(inputContour, List.of());
     }
 
     public PotentialTarget(Contour inputContour, List<Contour> subContours) {
-        this(inputContour, subContours, ContourShape.Quadrilateral);
+        this(inputContour, subContours, null);
     }
 
-    public PotentialTarget(Contour inputContour, List<Contour> subContours, ContourShape shape) {
+    public PotentialTarget(Contour inputContour, List<Contour> subContours, CVShape shape) {
         m_mainContour = inputContour;
         m_subContours = new ArrayList<>(subContours);
         this.shape = shape;
     }
 
-    public PotentialTarget(Contour inputContour, ContourShape shape) {
+    public PotentialTarget(Contour inputContour, CVShape shape) {
         this(inputContour, List.of(),shape);
     }
 

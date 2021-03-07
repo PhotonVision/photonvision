@@ -86,7 +86,19 @@ public class Draw2dTargetsPipe
                     Imgproc.circle(in.getLeft(),
                             target.getShape().center,
                             (int) target.getShape().radius,
-                            circleColor);
+                            circleColor,
+                            (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
+                } else {
+                    // draw approximate polygon
+                    var poly = target.getApproximateBoundingPolygon();
+                    if (poly != null) {
+//                        divideMat2f(poly, pointMat);
+                        var mat = new MatOfPoint();
+                        mat.fromArray(poly.toArray());
+                        Imgproc.drawContours(
+                                in.getLeft(), List.of(mat), -1, ColorHelper.colorToScalar(Color.blue), 2);
+                        mat.release();
+                    }
                 }
 
                 if (params.showMaximumBox) {
@@ -201,7 +213,7 @@ public class Draw2dTargetsPipe
         public Color maximumBoxColor = Color.RED;
         public Color shapeOutlineColour = Color.MAGENTA;
         public Color textColor = Color.GREEN;
-        public Color circleColor = Color.BLUE;
+        public Color circleColor = Color.RED;
 
         public final boolean showMultipleTargets;
         public final boolean shouldDraw;
@@ -209,7 +221,7 @@ public class Draw2dTargetsPipe
         public final FrameDivisor divisor;
 
         public boolean shouldShowRotatedBox(CVShape shape) {
-            return showRotatedBox && shape != null && shape.shape.equals(ContourShape.Quadrilateral);
+            return showRotatedBox && (shape == null || shape.shape.equals(ContourShape.Quadrilateral));
         }
 
         public boolean shouldShowCircle(CVShape shape) {

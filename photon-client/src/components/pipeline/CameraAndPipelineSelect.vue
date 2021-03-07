@@ -88,7 +88,7 @@
               menu
             </v-icon>
           </template>
-          <v-list dense>
+          <v-list dark dense color="primary">
             <v-list-item @click="toPipelineNameChange">
               <v-list-item-title>
                 <CVicon
@@ -137,11 +137,12 @@
           md="5"
           lg="10"
           class="pt-0 pb-0 pl-6 ml-16"
+          v-if="currentPipelineType >= 0"
       >
         <CVselect
             name="Type"
             v-model="currentPipelineType"
-            :list="['Calibration', 'Driver Mode', 'Reflective', 'Shape']"
+            :list="['Reflective', 'Shape']"
             @input="handleInput('pipelineType',currentCameraIndex)"
         />
       </v-col>
@@ -153,7 +154,7 @@
         width="500"
         height="357"
     >
-      <v-card dark>
+      <v-card>
         <v-card-title
             class="headline"
             primary-title
@@ -189,22 +190,31 @@
     <v-dialog
         v-model="namingDialog"
         dark
+        persistent
         width="500"
         height="357"
     >
-      <v-card dark>
+      <v-card
+          dark
+          color="primary"
+      >
         <v-card-title
             class="headline"
             primary-title
         >
-          Pipeline Name
+          {{ isPipelineNameEdit ? "Edit Pipeline Name" : "Create Pipeline" }}
         </v-card-title>
         <v-card-text>
           <CVinput
               v-model="newPipelineName"
               name="Pipeline"
               :error-message="checkPipelineName"
-              @Enter="savePipelineNameChange"
+          />
+          <CVselect
+              v-model="newPipelineType"
+              name="Pipeline Type"
+              :list="['Reflective', 'Shape']"
+              :disabled="isPipelineNameEdit"
           />
         </v-card-text>
         <v-divider/>
@@ -250,6 +260,7 @@ export default {
       isPipelineNameEdit: false,
       namingDialog: false,
       newPipelineName: "",
+      newPipelineType: "",
       duplicateDialog: false,
       pipeIndexToDuplicate: undefined
     }
@@ -305,7 +316,7 @@ export default {
     },
     currentPipelineType: {
       get() {
-        return this.$store.getters.currentPipelineSettings.pipelineType;
+        return this.$store.getters.currentPipelineSettings.pipelineType - 2;
       }
     }
   },
@@ -360,7 +371,7 @@ export default {
         if (this.isPipelineNameEdit) {
           this.handleInputWithIndex("changePipelineName", this.newPipelineName);
         } else {
-          this.handleInputWithIndex("addNewPipeline", this.newPipelineName);
+          this.handleInputWithIndex("addNewPipeline", [this.newPipelineName, this.newPipelineType]); // 0 for reflective, 1 for colored shpae
         }
         this.discardPipelineNameChange();
       }

@@ -63,8 +63,6 @@ public class PipelineManager {
         this.driverModePipeline.setSettings(driverSettings);
 
         if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
-
-        addPipeline(PipelineType.ColoredShape);
     }
 
     public PipelineManager(CameraConfiguration config) {

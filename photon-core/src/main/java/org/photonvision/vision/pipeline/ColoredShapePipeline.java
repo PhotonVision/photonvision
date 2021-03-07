@@ -38,7 +38,6 @@ public class ColoredShapePipeline
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final ErodeDilatePipe erodeDilatePipe = new ErodeDilatePipe();
     private final HSVPipe hsvPipe = new HSVPipe();
-    private final OutputMatPipe outputMatPipe = new OutputMatPipe();
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
     private final FindPolygonPipe findPolygonPipe = new FindPolygonPipe();
@@ -86,9 +85,6 @@ public class ColoredShapePipeline
         HSVPipe.HSVParams hsvParams =
                 new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
         hsvPipe.setParams(hsvParams);
-
-        OutputMatPipe.OutputMatParams outputMatParams = new OutputMatPipe.OutputMatParams();
-        outputMatPipe.setParams(outputMatParams);
 
         SpeckleRejectPipe.SpeckleRejectParams speckleRejectParams =
                 new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage);
@@ -232,7 +228,7 @@ public class ColoredShapePipeline
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
                 sortContoursPipe.run(filterShapeResult.output.stream()
-                        .map(shape -> new PotentialTarget(shape.getContour(), shape.shape))
+                        .map(shape -> new PotentialTarget(shape.getContour(), shape))
                         .collect(Collectors.toList()));
         sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
 
