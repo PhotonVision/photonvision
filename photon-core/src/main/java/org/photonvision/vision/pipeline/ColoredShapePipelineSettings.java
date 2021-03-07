@@ -35,7 +35,7 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     // Circle detection
     public int circleDetectThreshold = 5;
     public IntegerCouple contourRadius = new IntegerCouple(0, 100);
-    public int minDist = 10;
+    public int minDist = 20;
     public int maxCannyThresh = 90;
     public int circleAccuracy = 20;
     // how many contours to attempt to group (Single, Dual)

@@ -18,6 +18,8 @@
 package org.photonvision;
 
 import edu.wpi.cscore.CameraServerCvJNI;
+
+import java.nio.file.Path;
 import java.util.ArrayList;
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -36,6 +38,7 @@ import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
+import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.PipelineProfiler;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.processes.VisionModule;
@@ -122,6 +125,13 @@ public class Main {
         fvs2020.getCameraConfiguration().pipelineSettings = psList2020;
         collectedSources.add(fvs2019);
         collectedSources.add(fvs2020);
+
+        // Colored shape testing
+        var camConfShape =
+                new CameraConfiguration("Shape", Path.of("shape.png").toString());
+        camConfShape.addPipelineSetting(new ColoredShapePipelineSettings());
+        var fvsShape = new FileVisionSource(camConfShape);
+        collectedSources.add(fvsShape);
 
         //                logger.info("Adding " + allSources.size() + " configs to VMM.");
         VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);

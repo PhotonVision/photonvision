@@ -75,7 +75,7 @@ public class FindPolygonPipe
                 contour.getMat2f(),
                 approx,
                 // Converts an accuracy percentage between 1-100 to an epsilon
-                params.accuracyPercentage / 600.0 * Imgproc.arcLength(contour.getMat2f(), true),
+                (100 - params.accuracyPercentage) / 600.0 * Imgproc.arcLength(contour.getMat2f(), true),
                 true);
         // The height of the resultant approximation is the number of vertices
         return (int) approx.size().height;

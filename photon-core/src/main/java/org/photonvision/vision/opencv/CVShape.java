@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.opencv;
 
+import org.jetbrains.annotations.Nullable;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
@@ -24,6 +25,8 @@ import org.opencv.imgproc.Imgproc;
 
 public class CVShape {
     public final Contour contour;
+
+    @Nullable
     public final ContourShape shape;
 
     public double radius = 0;
