@@ -19,11 +19,15 @@ package org.photonvision.vision.opencv;
 
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfPoint3f;
+import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 
 public class CVShape {
     public final Contour contour;
     public final ContourShape shape;
+
+    public double radius = 0;
+    public Point center = null;
 
     private MatOfPoint3f customTarget = null;
 
@@ -32,6 +36,12 @@ public class CVShape {
     public CVShape(Contour contour, ContourShape shape) {
         this.contour = contour;
         this.shape = shape;
+    }
+
+    public CVShape(Contour contour, Point center, double radius) {
+        this(contour, ContourShape.Circle);
+        this.radius = radius;
+        this.center = center;
     }
 
     public CVShape(Contour contour, MatOfPoint3f targetPoints) {

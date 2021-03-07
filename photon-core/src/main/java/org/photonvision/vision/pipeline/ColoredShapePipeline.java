@@ -44,7 +44,6 @@ public class ColoredShapePipeline
     private final FindPolygonPipe findPolygonPipe = new FindPolygonPipe();
     private final FindCirclesPipe findCirclesPipe = new FindCirclesPipe();
     private final FilterShapesPipe filterShapesPipe = new FilterShapesPipe();
-    private final GroupContoursPipe groupContoursPipe = new GroupContoursPipe();
     private final SortContoursPipe sortContoursPipe = new SortContoursPipe();
     private final Collect2dTargetsPipe collect2dTargetsPipe = new Collect2dTargetsPipe();
     private final CornerDetectionPipe cornerDetectionPipe = new CornerDetectionPipe();
@@ -122,11 +121,6 @@ public class ColoredShapePipeline
                         settings.contourPerimeter.getSecond(),
                         frameStaticProperties);
         filterShapesPipe.setParams(filterShapesPipeParams);
-
-        GroupContoursPipe.GroupContoursParams groupContoursParams =
-                new GroupContoursPipe.GroupContoursParams(
-                        settings.contourGroupingMode, settings.contourIntersection);
-        groupContoursPipe.setParams(groupContoursParams);
 
         SortContoursPipe.SortContoursParams sortContoursParams =
                 new SortContoursPipe.SortContoursParams(
@@ -229,15 +223,17 @@ public class ColoredShapePipeline
         CVPipeResult<List<CVShape>> filterShapeResult = filterShapesPipe.run(shapes);
         sumPipeNanosElapsed += filterShapeResult.nanosElapsed;
 
-        CVPipeResult<List<PotentialTarget>> groupContoursResult =
-                groupContoursPipe.run(
-                        filterShapeResult.output.stream()
-                                .map(CVShape::getContour)
-                                .collect(Collectors.toList()));
-        sumPipeNanosElapsed += groupContoursResult.nanosElapsed;
+//        CVPipeResult<List<PotentialTarget>> groupContoursResult =
+//                groupContoursPipe.run(
+//                        filterShapeResult.output.stream()
+//                                .map(CVShape::getContour)
+//                                .collect(Collectors.toList()));
+//        sumPipeNanosElapsed += groupContoursResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
-                sortContoursPipe.run(groupContoursResult.output);
+                sortContoursPipe.run(filterShapeResult.output.stream()
+                        .map(shape -> new PotentialTarget(shape.getContour(), shape.shape))
+                        .collect(Collectors.toList()));
         sumPipeNanosElapsed += sortContoursResult.nanosElapsed;
 
         CVPipeResult<List<TrackedTarget>> collect2dTargetsResult =
