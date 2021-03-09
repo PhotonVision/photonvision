@@ -128,7 +128,7 @@ public class Main {
 
         // Colored shape testing
         var camConfShape =
-                new CameraConfiguration("Shape", Path.of("shape.png").toString());
+                new CameraConfiguration("Shape", TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_1, true).toString());
         camConfShape.addPipelineSetting(new ColoredShapePipelineSettings());
         var fvsShape = new FileVisionSource(camConfShape);
         collectedSources.add(fvsShape);
