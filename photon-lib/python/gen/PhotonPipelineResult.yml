@@ -1,0 +1,16 @@
+---
+
+classes:
+  PhotonPipelineResult:
+    shared_ptr: true
+    methods:
+      PhotonPipelineResult:
+        overloads:
+          "":
+          units::second_t, wpi::ArrayRef<PhotonTrackedTarget>:
+      GetBestTarget:
+      GetLatency:
+      HasTargets:
+      GetTargets:
+      operator==:
+      operator!=:

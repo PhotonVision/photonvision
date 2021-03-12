@@ -1,0 +1,14 @@
+---
+
+classes:
+  SimVisionTarget:
+    shared_ptr: true
+    attributes:
+      targetPos:
+      targetHeightAboveGround:
+      targetWidth:
+      targetHeight:
+      targetInfill_pct:
+      tgtArea:
+    methods:
+      SimVisionTarget:

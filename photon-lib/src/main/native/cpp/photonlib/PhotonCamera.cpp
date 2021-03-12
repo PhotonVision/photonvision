@@ -19,6 +19,8 @@
 
 #include "photonlib/Packet.h"
 
+#include <stdio.h>
+
 namespace photonlib {
 PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTable> rootTable)
     : rawBytesEntry(rootTable->GetEntry("rawBytes")),
@@ -41,16 +43,27 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() const {
   // Clear the current packet.
   packet.Clear();
 
+  std::cout << "1" << std::endl;
+
   // Create the new result;
   PhotonPipelineResult result;
+  std::cout << "2" << std::endl;
 
   // Fill the packet with latest data and populate result.
-  std::string value = rawBytesEntry.GetValue()->GetRaw();
+  std::shared_ptr<nt::Value> ntvalue = rawBytesEntry.GetValue();
+  if (ntvalue == NULL) return result;
+  
+  std::string value = ntvalue->GetRaw();
+  std::cout << "3" << std::endl;
   std::vector<char> bytes{value.begin(), value.end()};
+  std::cout << "4" << std::endl;
 
   photonlib::Packet packet{bytes};
+  std::cout << "5" << std::endl;
 
   packet >> result;
+  std::cout << "LL" << std::endl;
+
   return result;
 }
 
