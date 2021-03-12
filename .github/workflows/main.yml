@@ -238,6 +238,38 @@ jobs:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
 
+  photonlib-build-host-python:
+    defaults:
+      working-directory: ./photon-lib/python
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-18.04]
+        python_version: [3.6, 3.7, 3.8, 3.9]
+        architecture: [x86, x64]
+        exclude:
+        - os: macos-latest
+          architecture: x86
+        - os: ubuntu-18.04
+          architecture: x86
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python_version }}
+        architecture: ${{ matrix.architecture }}
+
+    - uses: robotpy/build-actions/install-robotpy-build@v2021
+    - uses: robotpy/build-actions/install-build-deps@v2021
+    - uses: robotpy/build-actions/build-wheel@v2021
+    - uses: robotpy/build-actions/test-native-wheel@v2021
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: "photonlib-python-${{ matrix.os }}"
+        path: photon-lib/python/dist
+
+
   photonlib-build-docker:
     strategy:
       fail-fast: false
@@ -267,6 +299,40 @@ jobs:
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
         if: github.event_name == 'push'
+
+  photonlib-build-docker-python:
+    defaults:
+      working-directory: ./photon-lib/python
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os:
+        - container: robotpy/roborio-cross-ubuntu:2021.3
+          name:  roborio
+        - container: robotpy/raspbian-cross-ubuntu:2021.3
+          name:  raspbian
+
+    container:
+      image: "${{ matrix.os.container }}"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: robotpy/build-actions/install-robotpy-build@v2021
+      with:
+        python: /build/venv/bin/cross-python
+    - uses: robotpy/build-actions/install-build-deps@v2021
+      with:
+        python: /build/venv/bin/cross-python
+        wheeldir: ${{ matrix.os.name }}
+    - uses: robotpy/build-actions/build-wheel@v2021
+      with:
+        python: /build/venv/bin/cross-python
+
+    - uses: actions/upload-artifact@v2
+      with:
+        name: photonlib-python-${{ matrix.os.name }}
+        path: dist
 
   photonlib-wpiformat:
     name: "wpiformat"

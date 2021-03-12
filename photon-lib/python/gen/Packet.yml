@@ -1,0 +1,15 @@
+---
+
+classes:
+  Packet:
+    shared_ptr: true
+    methods:
+      Packet:
+        overloads:
+          "":
+          std::vector<char>:
+      Clear:
+      GetData:
+      GetDataSize:
+      operator==:
+      operator!=:

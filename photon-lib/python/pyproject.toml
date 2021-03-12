@@ -1,0 +1,52 @@
+[build-system]
+requires = [
+    "robotpy-build>=2020.4.0,<2021.0.0",
+    "wpilib>=2021.1.2.0,<2022.0.0",
+]
+
+[tool.robotpy-build]
+base_package = "photonlib"
+
+[tool.robotpy-build.wrappers."photonlib"]
+name = "photonlib"
+
+depends = ["wpilibc", "wpimath_geometry", "wpimath_cpp", "ntcore", "wpiHal", "wpiutil"]
+
+sources = [
+    "photonlib/module.cpp",
+
+    "../src/main/native/cpp/photonlib/PhotonCamera.cpp",
+    "../src/main/native/cpp/photonlib/PhotonPipelineResult.cpp",
+    "../src/main/native/cpp/photonlib/PhotonTrackedTarget.cpp",
+    "../src/main/native/cpp/photonlib/SimPhotonCamera.cpp",
+    "../src/main/native/cpp/photonlib/SimVisionSystem.cpp",
+    "../src/main/native/cpp/photonlib/SimVisionTarget.cpp",
+]
+
+extra_includes = [
+    "../src/main/native/include/"
+]
+
+generate = [
+    { Packet =               "photonlib/Packet.h" },
+    { PhotonCamera =         "photonlib/PhotonCamera.h" },
+    { PhotonPipelineResult = "photonlib/PhotonPipelineResult.h" },
+    { PhotonTrackedTarget =  "photonlib/PhotonTrackedTarget.h" },
+    { PhotonUtils =          "photonlib/PhotonUtils.h" },
+    { SimPhotonCamera =      "photonlib/SimPhotonCamera.h" },
+    { SimVisionSystem =      "photonlib/SimVisionSystem.h" },
+    { SimVisionTarget =      "photonlib/SimVisionTarget.h" },
+]
+
+generation_data = "gen"
+
+[tool.robotpy-build.metadata]
+name = "photonlib"
+description = "RobotPy wrappers for photonlib"
+author = "TODO"
+author_email = "TODO"
+url = "https://github.com/PhotonVision/photonvision"
+license = "GPLv3"
+install_requires = [
+    "wpilib>=2021.1.2.0,<2022.0.0",
+]

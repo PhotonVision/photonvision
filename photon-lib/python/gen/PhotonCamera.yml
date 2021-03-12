@@ -1,0 +1,22 @@
+---
+
+enums:
+  LEDMode:
+classes:
+  PhotonCamera:
+    shared_ptr: true
+    methods:
+      PhotonCamera:
+        overloads:
+          std::shared_ptr<nt::NetworkTable>:
+          std::string&:
+      GetLatestResult:
+      SetDriverMode:
+      GetDriverMode:
+      TakeInputSnapshot:
+      TakeOutputSnapshot:
+      SetPipelineIndex:
+      GetPipelineIndex:
+      GetLEDMode:
+      SetLEDMode:
+      HasTargets:

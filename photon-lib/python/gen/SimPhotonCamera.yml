@@ -1,0 +1,12 @@
+---
+
+classes:
+  SimPhotonCamera:
+    force_no_trampoline: true
+    shared_ptr: true
+    methods:
+      SimPhotonCamera:
+        overloads:
+          std::shared_ptr<nt::NetworkTable>:
+          std::string&:
+      SubmitProcessedFrame:

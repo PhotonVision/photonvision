@@ -1,0 +1,12 @@
+---
+
+classes:
+  SimVisionSystem:
+    shared_ptr: true
+    attributes:
+      cam:
+    methods:
+      SimVisionSystem:
+      AddSimVisionTarget:
+      MoveCamera:
+      ProcessFrame:

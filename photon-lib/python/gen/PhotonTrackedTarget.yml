@@ -1,0 +1,17 @@
+---
+
+classes:
+  PhotonTrackedTarget:
+    shared_ptr: true
+    methods:
+      PhotonTrackedTarget:
+        overloads:
+          "":
+          double, double, double, double, frc::Transform2d&:
+      GetYaw:
+      GetPitch:
+      GetArea:
+      GetSkew:
+      GetCameraRelativePose:
+      operator==:
+      operator!=:
