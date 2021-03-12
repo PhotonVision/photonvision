@@ -239,8 +239,6 @@ jobs:
         if: github.event_name == 'push'
 
   photonlib-build-host-python:
-    defaults:
-      working-directory: ./photon-lib/python
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -260,9 +258,13 @@ jobs:
         architecture: ${{ matrix.architecture }}
 
     - uses: robotpy/build-actions/install-robotpy-build@v2021
+      working-directory: ./photon-lib/python
     - uses: robotpy/build-actions/install-build-deps@v2021
+      working-directory: ./photon-lib/python
     - uses: robotpy/build-actions/build-wheel@v2021
+      working-directory: ./photon-lib/python
     - uses: robotpy/build-actions/test-native-wheel@v2021
+      working-directory: ./photon-lib/python
 
     - uses: actions/upload-artifact@v2
       with:
@@ -301,8 +303,6 @@ jobs:
         if: github.event_name == 'push'
 
   photonlib-build-docker-python:
-    defaults:
-      working-directory: ./photon-lib/python
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -319,20 +319,23 @@ jobs:
     - uses: actions/checkout@v2
 
     - uses: robotpy/build-actions/install-robotpy-build@v2021
+      working-directory: ./photon-lib/python
       with:
         python: /build/venv/bin/cross-python
     - uses: robotpy/build-actions/install-build-deps@v2021
+      working-directory: ./photon-lib/python
       with:
         python: /build/venv/bin/cross-python
         wheeldir: ${{ matrix.os.name }}
     - uses: robotpy/build-actions/build-wheel@v2021
+      working-directory: ./photon-lib/python
       with:
         python: /build/venv/bin/cross-python
 
     - uses: actions/upload-artifact@v2
       with:
         name: photonlib-python-${{ matrix.os.name }}
-        path: dist
+        path: photon-lib/python/dist
 
   photonlib-wpiformat:
     name: "wpiformat"
