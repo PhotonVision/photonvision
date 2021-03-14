@@ -24,6 +24,7 @@ import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+@SuppressWarnings("unused")
 public class SimPhotonCamera extends PhotonCamera {
     /**
     * Constructs a Simulated PhotonCamera from a root table.
@@ -46,7 +47,7 @@ public class SimPhotonCamera extends PhotonCamera {
     /**
     * Simulate one processed frame of vision data, putting one result to NT.
     *
-    * @param latencyMillis
+    * @param latencyMillis Latency of the provided frame
     * @param targets Each target detected
     */
     public void submitProcessedFrame(double latencyMillis, PhotonTrackedTarget... targets) {
@@ -54,14 +55,42 @@ public class SimPhotonCamera extends PhotonCamera {
     }
 
     /**
+     * Simulate one processed frame of vision data, putting one result to NT.
+     *
+     * @param latencyMillis Latency of the provided frame
+     * @param sortMode Order in which to sort targets
+     * @param targets Each target detected
+     */
+    public void submitProcessedFrame(double latencyMillis, PhotonTargetSortMode sortMode, PhotonTrackedTarget... targets) {
+        submitProcessedFrame(latencyMillis, sortMode, Arrays.asList(targets));
+    }
+
+    /**
     * Simulate one processed frame of vision data, putting one result to NT.
     *
-    * @param latencyMillis
-    * @param tgtList List of targets detected
+    * @param latencyMillis Latency of the provided frame
+    * @param targetList List of targets detected
     */
-    public void submitProcessedFrame(double latencyMillis, List<PhotonTrackedTarget> tgtList) {
+    public void submitProcessedFrame(double latencyMillis, List<PhotonTrackedTarget> targetList) {
         if (!getDriverMode()) {
-            PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, tgtList);
+            PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
+            var newPacket = new Packet(newResult.getPacketSize());
+            newResult.populatePacket(newPacket);
+            rawBytesEntry.setRaw(newPacket.getData());
+        }
+    }
+
+    /**
+     * Simulate one processed frame of vision data, putting one result to NT.
+     *
+     * @param latencyMillis Latency of the provided frame
+     * @param sortMode Order in which to sort targets
+     * @param targetList List of targets detected
+     */
+    public void submitProcessedFrame(double latencyMillis, PhotonTargetSortMode sortMode, List<PhotonTrackedTarget> targetList) {
+        if (!getDriverMode()) {
+            targetList.sort(sortMode.getComparator());
+            PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
             var newPacket = new Packet(newResult.getPacketSize());
             newResult.populatePacket(newPacket);
             rawBytesEntry.setRaw(newPacket.getData());

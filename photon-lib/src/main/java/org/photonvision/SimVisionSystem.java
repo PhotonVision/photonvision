@@ -41,10 +41,10 @@ public class SimVisionSystem {
 
     /**
     * Create a simulated vision system involving a camera and coprocessor mounted on a mobile robot
-    * running Photonvision, detecting one or more targets scattered around the field. This assumes a
-    * fairly simple and distortionless pinhole camera model.
+    * running PhotonVision, detecting one or more targets scattered around the field. This assumes a
+    * fairly simple and distortion-less pinhole camera model.
     *
-    * @param camName Name of the photonvision camera to create. Align it with the settings you use in
+    * @param camName Name of the PhotonVision camera to create. Align it with the settings you use in
     *     the PhotonVision GUI.
     * @param camDiagFOVDegrees Diagonal Field of View of the camera used. Align it with the
     *     manufacturer specifications, and/or whatever is configured in the PhotonVision Setting
@@ -87,25 +87,25 @@ public class SimVisionSystem {
         this.camVertFOVDegrees = camDiagFOVDegrees * cameraResHeight / hypotPixels;
 
         cam = new SimPhotonCamera(camName);
-        tgtList = new ArrayList<SimVisionTarget>();
+        tgtList = new ArrayList<>();
     }
 
     /**
-    * Add a target on the field which your vision system is designed to detect. The photoncamera from
-    * this system will report the location of the robot relative to the subste of these targets which
+    * Add a target on the field which your vision system is designed to detect. The PhotonCamera from
+    * this system will report the location of the robot relative to the subset of these targets which
     * are visible from the given robot position.
     *
-    * @param tgt
+    * @param target Target to add to the simulated field
     */
-    public void addSimVisionTarget(SimVisionTarget tgt) {
-        tgtList.add(tgt);
+    public void addSimVisionTarget(SimVisionTarget target) {
+        tgtList.add(target);
     }
 
     /**
     * Adjust the camera position relative to the robot. Use this if your camera is on a gimbal or
     * turret or some other mobile platform.
     *
-    * @param newCameraToRobot New Tranform from the robot to the camera
+    * @param newCameraToRobot New Transform from the robot to the camera
     * @param newCamHeightMeters New height of the camera off the floor
     * @param newCamPitchDegrees New pitch of the camera axis back from horizontal
     */
@@ -120,7 +120,7 @@ public class SimVisionSystem {
     * Periodic update. Call this once per frame of image data you wish to process and send to
     * NetworkTables
     *
-    * @param robotPoseMeters current pose of the robot on the field. Will be used to calcualte which
+    * @param robotPoseMeters current pose of the robot on the field. Will be used to calculate which
     *     targets are actually in view, where they are at relative to the robot, and relevant
     *     PhotonVision parameters.
     */

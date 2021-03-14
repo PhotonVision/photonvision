@@ -34,8 +34,8 @@ public class SimVisionTarget {
     *     the middle of the field facing the target, the Y axis points to your left, and the X axis
     *     points away from you.
     * @param targetHeightAboveGroundMeters Height of the target above the field plane, in meters.
-    * @param targetWidthMeters Width of the outter bounding box of the target in meters.
-    * @param targetHeightMeters Pair Height of the outter bounding box of the target in meters.
+    * @param targetWidthMeters Width of the outer bounding box of the target in meters.
+    * @param targetHeightMeters Pair Height of the outer bounding box of the target in meters.
     */
     public SimVisionTarget(
             Pose2d targetPos,
