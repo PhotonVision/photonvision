@@ -20,12 +20,24 @@ package org.photonvision;
 import edu.wpi.first.networktables.NetworkTable;
 import java.util.Arrays;
 import java.util.List;
+
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 @SuppressWarnings("unused")
 public class SimPhotonCamera extends PhotonCamera {
+
+    private NetworkTableEntry latencyMillisEntry;
+    private NetworkTableEntry hasTargetEntry;
+    private NetworkTableEntry targetPitchEntry;
+    private NetworkTableEntry targetYawEntry;
+    private NetworkTableEntry targetAreaEntry;
+    private NetworkTableEntry targetSkewEntry;
+    private NetworkTableEntry targetPoseEntry;
+
     /**
     * Constructs a Simulated PhotonCamera from a root table.
     *
@@ -33,6 +45,14 @@ public class SimPhotonCamera extends PhotonCamera {
     */
     public SimPhotonCamera(NetworkTable rootTable) {
         super(rootTable);
+
+        latencyMillisEntry = rootTable.getEntry("latencyMillis");
+        hasTargetEntry = rootTable.getEntry("hasTargetEntry");
+        targetPitchEntry = rootTable.getEntry("targetPitchEntry");
+        targetYawEntry = rootTable.getEntry("targetYawEntry");
+        targetAreaEntry = rootTable.getEntry("targetAreaEntry");
+        targetSkewEntry = rootTable.getEntry("targetSkewEntry");
+        targetPoseEntry = rootTable.getEntry("targetPoseEntry");
     }
 
     /**
@@ -41,7 +61,7 @@ public class SimPhotonCamera extends PhotonCamera {
     * @param cameraName The nickname of the camera (found in the PhotonVision UI).
     */
     public SimPhotonCamera(String cameraName) {
-        super(cameraName);
+        this(NetworkTableInstance.getDefault().getTable("photonvision").getSubTable(cameraName));
     }
 
     /**
@@ -72,12 +92,7 @@ public class SimPhotonCamera extends PhotonCamera {
     * @param targetList List of targets detected
     */
     public void submitProcessedFrame(double latencyMillis, List<PhotonTrackedTarget> targetList) {
-        if (!getDriverMode()) {
-            PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
-            var newPacket = new Packet(newResult.getPacketSize());
-            newResult.populatePacket(newPacket);
-            rawBytesEntry.setRaw(newPacket.getData());
-        }
+        submitProcessedFrame(latencyMillis, null, targetList);
     }
 
     /**
@@ -89,11 +104,44 @@ public class SimPhotonCamera extends PhotonCamera {
      */
     public void submitProcessedFrame(double latencyMillis, PhotonTargetSortMode sortMode, List<PhotonTrackedTarget> targetList) {
         if (!getDriverMode()) {
-            targetList.sort(sortMode.getComparator());
+            if (targetList.size() == 0) {
+                return;
+            }
+
+            if (sortMode != null) {
+                targetList.sort(sortMode.getComparator());
+            }
+
             PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
             var newPacket = new Packet(newResult.getPacketSize());
             newResult.populatePacket(newPacket);
             rawBytesEntry.setRaw(newPacket.getData());
+
+            boolean hasTargets = newResult.hasTargets();
+
+            hasTargetEntry.setBoolean(hasTargets);
+            latencyMillisEntry.setDouble(latencyMillis);
+
+            // send data for "best target"
+            if (hasTargets) {
+                var bestTarget = newResult.getBestTarget();
+
+                targetPitchEntry.setDouble(bestTarget.getPitch());
+                targetYawEntry.setDouble(bestTarget.getYaw());
+                targetAreaEntry.setDouble(bestTarget.getArea());
+                targetSkewEntry.setDouble(bestTarget.getSkew());
+
+                var transform = bestTarget.getCameraToTarget();
+                double[] poseData = {transform.getX(), transform.getY(), transform.getRotation().getDegrees()};
+                targetPoseEntry.setDoubleArray(poseData);
+            } else {
+                targetPitchEntry.setDouble(0.0);
+                targetYawEntry.setDouble(0.0);
+                targetAreaEntry.setDouble(0.0);
+                targetPoseEntry.setDoubleArray(new double[]{0.0, 0.0, 0.0});
+                targetSkewEntry.setDouble(0.0);
+            }
+
         }
     }
 }
