@@ -91,6 +91,9 @@ public class Draw2dTargetsPipe
                 } else {
                     // draw approximate polygon
                     var poly = target.getApproximateBoundingPolygon();
+
+                    // fall back on the shape's approx poly dp
+                    if(poly == null && target.getShape() != null) poly = target.getShape().getContour().getApproxPolyDp();
                     if (poly != null) {
 //                        divideMat2f(poly, pointMat);
                         var mat = new MatOfPoint();

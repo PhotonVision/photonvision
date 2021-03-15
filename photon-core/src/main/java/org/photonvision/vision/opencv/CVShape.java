@@ -57,39 +57,6 @@ public class CVShape implements Releasable {
         return contour;
     }
 
-    public MatOfPoint2f getApproxPolyDp(double epsilon, boolean closed) {
-        approxCurve.release();
-        approxCurve = new MatOfPoint2f();
-
-        Imgproc.approxPolyDP(contour.getMat2f(), approxCurve, epsilon, closed);
-        return approxCurve;
-    }
-
-    public MatOfPoint2f getApproxPolyDpConvex(double epsilon, boolean closed) {
-        approxCurve.release();
-        approxCurve = new MatOfPoint2f();
-
-        Imgproc.approxPolyDP(contour.getConvexHull(), approxCurve, epsilon, closed);
-        return approxCurve;
-    }
-
-    boolean approxPolyMatchesShape() {
-        var pointList = approxCurve.toList();
-
-        // TODO: @Matt
-        switch (shape) {
-            case Custom:
-                break;
-            case Circle:
-                break;
-            case Triangle:
-                break;
-            case Quadrilateral:
-                break;
-        }
-        return true;
-    }
-
     @Override
     public void release() {
         if(customTarget != null) customTarget.release();
