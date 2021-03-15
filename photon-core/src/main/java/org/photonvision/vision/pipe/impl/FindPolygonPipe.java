@@ -30,6 +30,8 @@ public class FindPolygonPipe
         extends CVPipe<List<Contour>, List<CVShape>, FindPolygonPipe.FindPolygonPipeParams> {
     private final MatOfPoint2f approx = new MatOfPoint2f();
 
+    List<CVShape> shapeList = new ArrayList<>();
+
     /*
     * Runs the process for the pipe.
     *
@@ -38,12 +40,15 @@ public class FindPolygonPipe
     */
     @Override
     protected List<CVShape> process(List<Contour> in) {
-        // List containing all the output shapes
-        List<CVShape> output = new ArrayList<>();
+        shapeList.forEach(CVShape::release);
+        shapeList.clear();
+        shapeList = new ArrayList<>();
 
-        for (Contour contour : in) output.add(getShape(contour));
+        for (Contour contour : in) {
+            shapeList.add(getShape(contour));
+        }
 
-        return output;
+        return shapeList;
     }
 
     private CVShape getShape(Contour in) {

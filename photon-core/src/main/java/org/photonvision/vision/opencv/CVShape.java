@@ -23,7 +23,7 @@ import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 
-public class CVShape {
+public class CVShape implements Releasable {
     public final Contour contour;
 
     @Nullable
@@ -88,5 +88,12 @@ public class CVShape {
                 break;
         }
         return true;
+    }
+
+    @Override
+    public void release() {
+        if(customTarget != null) customTarget.release();
+        approxCurve.release();
+        contour.release();
     }
 }

@@ -257,11 +257,15 @@ public class VisionModule {
                     try {
                         var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
                         consumeFpsLimitedResult(osr);
+                    } catch (Exception e) {
+                        // Never die
+                        logger.error("Exception while running stream runnable!", e);
+                    }
+                    try {
                         inputFrame.release();
                         outputFrame.release();
                     } catch (Exception e) {
-                        // Never die
-                        logger.error("Exception in stream runnable!", e);
+                        logger.error("Exception freeing frames", e);
                     }
                 } else {
                     // busy wait! hurray!

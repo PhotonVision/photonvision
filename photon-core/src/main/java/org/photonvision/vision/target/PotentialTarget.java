@@ -64,5 +64,6 @@ public class PotentialTarget implements Releasable {
             sc.release();
         }
         m_subContours.clear();
+        if(shape != null) shape.release();
     }
 }

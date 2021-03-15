@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -26,6 +27,9 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class FilterShapesPipe
         extends CVPipe<List<CVShape>, List<CVShape>, FilterShapesPipe.FilterShapesPipeParams> {
+
+    List<CVShape> outputList = new ArrayList<>();
+
     /**
     * Runs the process for the pipe.
     *
@@ -34,14 +38,23 @@ public class FilterShapesPipe
     */
     @Override
     protected List<CVShape> process(List<CVShape> in) {
-        in.removeIf(
-                shape ->
-                        shape.shape != params.desiredShape
-                                || shape.contour.getArea() / params.getFrameStaticProperties().imageArea > params.maxArea
-                                || shape.contour.getArea() / params.getFrameStaticProperties().imageArea < params.minArea
-                                || shape.contour.getPerimeter() > params.maxPeri
-                                || shape.contour.getPerimeter() < params.minPeri);
-        return in;
+        outputList.forEach(CVShape::release);
+        outputList.clear();
+        outputList = new ArrayList<>();
+
+        for(var shape: in) {
+            if (!shouldRemove(shape)) outputList.add(shape);
+        }
+
+        return outputList;
+    }
+
+    private boolean shouldRemove(CVShape shape) {
+        return shape.shape != params.desiredShape
+                || shape.contour.getArea() / params.getFrameStaticProperties().imageArea > params.maxArea
+                || shape.contour.getArea() / params.getFrameStaticProperties().imageArea < params.minArea
+                || shape.contour.getPerimeter() > params.maxPeri
+                || shape.contour.getPerimeter() < params.minPeri;
     }
 
     public static class FilterShapesPipeParams {
