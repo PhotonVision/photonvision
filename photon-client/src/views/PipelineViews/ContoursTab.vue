@@ -80,7 +80,7 @@
       <CVslider
           v-model="accuracyPercentage"
           :disabled="currentPipelineSettings().contourShape < 1"
-          name="Shape Accuracy"
+          name="Shape Simplification"
           tooltip="How much we should simply the input contour before checking how many sides it has"
           min="0"
           max="100"
