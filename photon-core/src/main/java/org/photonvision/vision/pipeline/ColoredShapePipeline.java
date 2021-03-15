@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.*;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -52,7 +54,6 @@ public class ColoredShapePipeline
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
-    private final Mat rawInputMat = new Mat();
     private final Point[] rectPoints = new Point[4];
 
     public ColoredShapePipeline() {
@@ -184,17 +185,41 @@ public class ColoredShapePipeline
     protected CVPipelineResult process(Frame frame, ColoredShapePipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
 
-        var rotateImageResult = rotateImagePipe.run(frame.image.getMat());
-        sumPipeNanosElapsed += rotateImageResult.nanosElapsed;
+        CVPipeResult<Mat> hsvPipeResult;
+        Mat rawInputMat;
+        if (frame.image.getMat().channels() != 1) {
+            var rotateImageResult = rotateImagePipe.run(frame.image.getMat());
+            sumPipeNanosElapsed = rotateImageResult.nanosElapsed;
 
-        rawInputMat.release();
-        frame.image.getMat().copyTo(rawInputMat);
+            rawInputMat = frame.image.getMat();
 
-        var erodeDilateResult = erodeDilatePipe.run(rawInputMat);
-        sumPipeNanosElapsed += erodeDilateResult.nanosElapsed;
+            hsvPipeResult = hsvPipe.run(rawInputMat);
+            sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
+        } else {
+            // Try to copy the color frame.
+            long inputMatPtr = PicamJNI.grabFrame(true);
+            if (inputMatPtr != 0) {
+                // If we grabbed it (in color copy mode), make a new Mat of it
+                rawInputMat = new Mat(inputMatPtr);
+            } else {
+                // Otherwise, the input mat is frame we got from the camera
+                rawInputMat = frame.image.getMat();
+            }
 
-        CVPipeResult<Mat> hsvPipeResult = hsvPipe.run(rawInputMat);
-        sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
+            // We can skip a few steps if the image is single channel because we've already done them on
+            // the GPU
+            hsvPipeResult = new CVPipeResult<>();
+            hsvPipeResult.output = frame.image.getMat();
+            hsvPipeResult.nanosElapsed = MathUtils.wpiNanoTime() - frame.timestampNanos;
+
+            sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
+        }
+
+//        var erodeDilateResult = erodeDilatePipe.run(rawInputMat);
+//        sumPipeNanosElapsed += erodeDilateResult.nanosElapsed;
+//
+//        CVPipeResult<Mat> hsvPipeResult = hsvPipe.run(rawInputMat);
+//        sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
 
         CVPipeResult<List<Contour>> findContoursResult = findContoursPipe.run(hsvPipeResult.output);
         sumPipeNanosElapsed += findContoursResult.nanosElapsed;
@@ -203,7 +228,7 @@ public class ColoredShapePipeline
                 speckleRejectPipe.run(findContoursResult.output);
         sumPipeNanosElapsed += speckleRejectResult.nanosElapsed;
 
-        List<CVShape> shapes;
+        List<CVShape> shapes = null;
         if (settings.contourShape == ContourShape.Circle) {
             CVPipeResult<List<CVShape>> findCirclesResult =
                     findCirclesPipe.run(Pair.of(hsvPipeResult.output, speckleRejectResult.output));
@@ -218,13 +243,6 @@ public class ColoredShapePipeline
 
         CVPipeResult<List<CVShape>> filterShapeResult = filterShapesPipe.run(shapes);
         sumPipeNanosElapsed += filterShapeResult.nanosElapsed;
-
-//        CVPipeResult<List<PotentialTarget>> groupContoursResult =
-//                groupContoursPipe.run(
-//                        filterShapeResult.output.stream()
-//                                .map(CVShape::getContour)
-//                                .collect(Collectors.toList()));
-//        sumPipeNanosElapsed += groupContoursResult.nanosElapsed;
 
         CVPipeResult<List<PotentialTarget>> sortContoursResult =
                 sortContoursPipe.run(filterShapeResult.output.stream()
@@ -254,41 +272,6 @@ public class ColoredShapePipeline
         } else {
             targetList = collect2dTargetsResult.output;
         }
-
-        //        // Draw 2D Crosshair on input and output
-        //        var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(rawInputMat,
-        // targetList));
-        //        sumPipeNanosElapsed += draw2dCrosshairResultOnInput.nanosElapsed;
-        //
-        //        var draw2dCrosshairResultOnOutput =
-        //                draw2dCrosshairPipe.run(Pair.of(hsvPipeResult.output, targetList));
-        //        sumPipeNanosElapsed += draw2dCrosshairResultOnOutput.nanosElapsed;
-        //
-        //        // Draw 2D contours on input and output
-        //        var draw2dContoursResultOnInput =
-        //                draw2DTargetsPipe.run(Pair.of(rawInputMat, collect2dTargetsResult.output));
-        //        sumPipeNanosElapsed += draw2dContoursResultOnInput.nanosElapsed;
-        //
-        //        var draw2dContoursResultOnOutput =
-        //                draw2DTargetsPipe.run(Pair.of(hsvPipeResult.output,
-        // collect2dTargetsResult.output));
-        //        sumPipeNanosElapsed += draw2dContoursResultOnOutput.nanosElapsed;
-
-        //        if (settings.solvePNPEnabled && settings.desiredShape == ContourShape.Circle) {
-        //            var drawOnInputResult =
-        //                    draw3dTargetsPipe.run(Pair.of(rawInputMat,
-        // collect2dTargetsResult.output));
-        //            sumPipeNanosElapsed += drawOnInputResult.nanosElapsed;
-        //
-        //            var drawOnOutputResult =
-        //                    draw3dTargetsPipe.run(Pair.of(hsvPipeResult.output,
-        // collect2dTargetsResult.output));
-        //            sumPipeNanosElapsed += drawOnOutputResult.nanosElapsed;
-        //        }
-
-        //        // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
-        //        var outputMatPipeResult = outputMatPipe.run(hsvPipeResult.output);
-        //        sumPipeNanosElapsed += outputMatPipeResult.nanosElapsed;
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
