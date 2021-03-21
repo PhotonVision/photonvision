@@ -20,27 +20,29 @@ package org.photonvision;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+
 import java.util.Arrays;
 import java.util.List;
+
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 @SuppressWarnings("unused")
 public class SimPhotonCamera extends PhotonCamera {
-    private NetworkTableEntry latencyMillisEntry;
-    private NetworkTableEntry hasTargetEntry;
-    private NetworkTableEntry targetPitchEntry;
-    private NetworkTableEntry targetYawEntry;
-    private NetworkTableEntry targetAreaEntry;
-    private NetworkTableEntry targetSkewEntry;
-    private NetworkTableEntry targetPoseEntry;
+    private final NetworkTableEntry latencyMillisEntry;
+    private final NetworkTableEntry hasTargetEntry;
+    private final NetworkTableEntry targetPitchEntry;
+    private final NetworkTableEntry targetYawEntry;
+    private final NetworkTableEntry targetAreaEntry;
+    private final NetworkTableEntry targetSkewEntry;
+    private final NetworkTableEntry targetPoseEntry;
 
     /**
-    * Constructs a Simulated PhotonCamera from a root table.
-    *
-    * @param rootTable The root table that the camera is broadcasting information over.
-    */
+     * Constructs a Simulated PhotonCamera from a root table.
+     *
+     * @param rootTable The root table that the camera is broadcasting information over.
+     */
     public SimPhotonCamera(NetworkTable rootTable) {
         super(rootTable);
 
@@ -54,95 +56,87 @@ public class SimPhotonCamera extends PhotonCamera {
     }
 
     /**
-    * Constructs a Simulated PhotonCamera from the name of the camera.
-    *
-    * @param cameraName The nickname of the camera (found in the PhotonVision UI).
-    */
+     * Constructs a Simulated PhotonCamera from the name of the camera.
+     *
+     * @param cameraName The nickname of the camera (found in the PhotonVision UI).
+     */
     public SimPhotonCamera(String cameraName) {
         this(NetworkTableInstance.getDefault().getTable("photonvision").getSubTable(cameraName));
     }
 
     /**
-    * Simulate one processed frame of vision data, putting one result to NT.
-    *
-    * @param latencyMillis Latency of the provided frame
-    * @param targets Each target detected
-    */
+     * Simulate one processed frame of vision data, putting one result to NT.
+     *
+     * @param latencyMillis Latency of the provided frame
+     * @param targets       Each target detected
+     */
     public void submitProcessedFrame(double latencyMillis, PhotonTrackedTarget... targets) {
         submitProcessedFrame(latencyMillis, Arrays.asList(targets));
     }
 
     /**
-    * Simulate one processed frame of vision data, putting one result to NT.
-    *
-    * @param latencyMillis Latency of the provided frame
-    * @param sortMode Order in which to sort targets
-    * @param targets Each target detected
-    */
+     * Simulate one processed frame of vision data, putting one result to NT.
+     *
+     * @param latencyMillis Latency of the provided frame
+     * @param sortMode      Order in which to sort targets
+     * @param targets       Each target detected
+     */
     public void submitProcessedFrame(
             double latencyMillis, PhotonTargetSortMode sortMode, PhotonTrackedTarget... targets) {
         submitProcessedFrame(latencyMillis, sortMode, Arrays.asList(targets));
     }
 
     /**
-    * Simulate one processed frame of vision data, putting one result to NT.
-    *
-    * @param latencyMillis Latency of the provided frame
-    * @param targetList List of targets detected
-    */
+     * Simulate one processed frame of vision data, putting one result to NT.
+     *
+     * @param latencyMillis Latency of the provided frame
+     * @param targetList    List of targets detected
+     */
     public void submitProcessedFrame(double latencyMillis, List<PhotonTrackedTarget> targetList) {
         submitProcessedFrame(latencyMillis, null, targetList);
     }
 
     /**
-    * Simulate one processed frame of vision data, putting one result to NT.
-    *
-    * @param latencyMillis Latency of the provided frame
-    * @param sortMode Order in which to sort targets
-    * @param targetList List of targets detected
-    */
+     * Simulate one processed frame of vision data, putting one result to NT.
+     *
+     * @param latencyMillis Latency of the provided frame
+     * @param sortMode      Order in which to sort targets
+     * @param targetList    List of targets detected
+     */
     public void submitProcessedFrame(
             double latencyMillis, PhotonTargetSortMode sortMode, List<PhotonTrackedTarget> targetList) {
-        if (!getDriverMode()) {
-            if (targetList.size() == 0) {
-                return;
-            }
+        latencyMillisEntry.setDouble(latencyMillis);
 
-            if (sortMode != null) {
-                targetList.sort(sortMode.getComparator());
-            }
+        if (sortMode != null) {
+            targetList.sort(sortMode.getComparator());
+        }
 
-            PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
-            var newPacket = new Packet(newResult.getPacketSize());
-            newResult.populatePacket(newPacket);
-            rawBytesEntry.setRaw(newPacket.getData());
+        PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
+        var newPacket = new Packet(newResult.getPacketSize());
+        newResult.populatePacket(newPacket);
+        rawBytesEntry.setRaw(newPacket.getData());
 
-            boolean hasTargets = newResult.hasTargets();
+        boolean hasTargets = newResult.hasTargets();
+        hasTargetEntry.setBoolean(hasTargets);
+        if (!hasTargets) {
+            targetPitchEntry.setDouble(0.0);
+            targetYawEntry.setDouble(0.0);
+            targetAreaEntry.setDouble(0.0);
+            targetPoseEntry.setDoubleArray(new double[]{0.0, 0.0, 0.0});
+            targetSkewEntry.setDouble(0.0);
+        } else {
+            var bestTarget = newResult.getBestTarget();
 
-            hasTargetEntry.setBoolean(hasTargets);
-            latencyMillisEntry.setDouble(latencyMillis);
+            targetPitchEntry.setDouble(bestTarget.getPitch());
+            targetYawEntry.setDouble(bestTarget.getYaw());
+            targetAreaEntry.setDouble(bestTarget.getArea());
+            targetSkewEntry.setDouble(bestTarget.getSkew());
 
-            // send data for "best target"
-            if (hasTargets) {
-                var bestTarget = newResult.getBestTarget();
-
-                targetPitchEntry.setDouble(bestTarget.getPitch());
-                targetYawEntry.setDouble(bestTarget.getYaw());
-                targetAreaEntry.setDouble(bestTarget.getArea());
-                targetSkewEntry.setDouble(bestTarget.getSkew());
-
-                var transform = bestTarget.getCameraToTarget();
-                double[] poseData = {
+            var transform = bestTarget.getCameraToTarget();
+            double[] poseData = {
                     transform.getX(), transform.getY(), transform.getRotation().getDegrees()
-                };
-                targetPoseEntry.setDoubleArray(poseData);
-            } else {
-                targetPitchEntry.setDouble(0.0);
-                targetYawEntry.setDouble(0.0);
-                targetAreaEntry.setDouble(0.0);
-                targetPoseEntry.setDoubleArray(new double[] {0.0, 0.0, 0.0});
-                targetSkewEntry.setDouble(0.0);
-            }
+            };
+            targetPoseEntry.setDoubleArray(poseData);
         }
     }
 }
