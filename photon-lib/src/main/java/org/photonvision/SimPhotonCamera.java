@@ -28,7 +28,6 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 @SuppressWarnings("unused")
 public class SimPhotonCamera extends PhotonCamera {
-
     private NetworkTableEntry latencyMillisEntry;
     private NetworkTableEntry hasTargetEntry;
     private NetworkTableEntry targetPitchEntry;
