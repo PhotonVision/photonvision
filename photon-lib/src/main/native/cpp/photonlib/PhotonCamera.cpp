@@ -45,7 +45,10 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() const {
   PhotonPipelineResult result;
 
   // Fill the packet with latest data and populate result.
-  std::string value = rawBytesEntry.GetValue()->GetRaw();
+  std::shared_ptr<nt::Value> ntvalue = rawBytesEntry.GetValue();
+  if (!ntvalue) return result;
+
+  std::string value = ntvalue->GetRaw();
   std::vector<char> bytes{value.begin(), value.end()};
 
   photonlib::Packet packet{bytes};
