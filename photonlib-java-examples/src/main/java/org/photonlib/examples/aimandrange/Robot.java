@@ -79,7 +79,7 @@ public class Robot extends TimedRobot {
                                 CAMERA_HEIGHT_METERS,
                                 TARGET_HEIGHT_METERS,
                                 CAMERA_PITCH_RADIANS,
-                                result.getBestTarget().getPitch());
+                                Units.degreesToRadians(result.getBestTarget().getPitch()));
 
                 // Use this range as the measurement we give to the PID controller.
                 // -1.0 required to ensure positive PID controller effort _increases_ range
