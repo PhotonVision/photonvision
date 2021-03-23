@@ -54,6 +54,10 @@ public class PhotonTrackedTarget {
         return area;
     }
 
+    public double getSkew() {
+        return skew;
+    }
+
     public Transform2d getCameraToTarget() {
         return cameraToTarget;
     }
