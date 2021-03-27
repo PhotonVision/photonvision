@@ -11,7 +11,7 @@
   "jniDependencies": [],
   "cppDependencies": [
     {
-      "groupId": "org.photonvision.lib",
+      "groupId": "org.photonvision",
       "artifactId": "PhotonLib-cpp",
       "version": "${photon_version}",
       "libName": "Photon",
