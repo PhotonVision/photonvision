@@ -263,6 +263,7 @@ jobs:
           git fetch --tags --force
           git fetch --all
           git log
+          git tag
           git describe --tags --exclude="Dev"
       - run: |
           chmod +x gradlew
