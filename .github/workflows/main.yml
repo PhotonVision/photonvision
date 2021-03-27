@@ -233,6 +233,7 @@ jobs:
           java-version: 11
       - run: git fetch --tags --force
       - run: |
+          git reset --hard ${GITHUB_SHA}
           chmod +x gradlew
           ./gradlew photon-lib:build
       - run: ./gradlew photon-lib:publish
@@ -264,10 +265,7 @@ jobs:
         with:
           java-version: 11
       - run: |
-          git fetch --tags --force
-          git fetch --all
-          git log
-          git tag
+          git reset --hard ${GITHUB_SHA}
           git describe --tags --exclude="Dev"
       - run: |
           chmod +x gradlew

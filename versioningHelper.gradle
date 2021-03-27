@@ -15,8 +15,8 @@ gradle.allprojects {
         } catch(Exception e) {
             tagIsh = "dev-Unknown"
         }
-        boolean isDev = tagIsh.matches(".*-[0-9]*-g[0-9a-f]*")
-        if(isDev) tagIsh = "dev-" + tagIsh
+//        boolean isDev = tagIsh.matches(".*-[0-9]*-g[0-9a-f]*")
+//        if(isDev) tagIsh = "dev-" + tagIsh
         println("Picked up version: " + tagIsh)
         return tagIsh
     }
