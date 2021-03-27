@@ -259,12 +259,16 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: 11
-      - run: git fetch --tags --force
+      - run: |
+          git fetch --tags --force
+          git describe --tags --exclude="Dev"
       - run: |
           chmod +x gradlew
+          git fetch --tags --force
           ./gradlew photon-lib:build
       - run: |
           chmod +x gradlew
+          git fetch --tags --force
           ./gradlew photon-lib:publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
