@@ -261,6 +261,8 @@ jobs:
           java-version: 11
       - run: |
           git fetch --tags --force
+          git fetch --all
+          git log
           git describe --tags --exclude="Dev"
       - run: |
           chmod +x gradlew
