@@ -225,7 +225,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: "Photonlib - Build - ${{ matrix.artifact-name }}"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
         with:
           fetch-depth: 0
       - uses: actions/setup-java@v1
@@ -233,9 +233,8 @@ jobs:
           java-version: 11
       - run: git fetch --tags --force
       - run: |
-          git reset --hard ${GITHUB_SHA}
-          echo ${GITHUB_SHA}
           chmod +x gradlew
+          git log
           ./gradlew photon-lib:build
       - run: ./gradlew photon-lib:publish
         name: Publish
@@ -259,15 +258,14 @@ jobs:
     container: ${{ matrix.container }}
     name: "Photonlib - Build - ${{ matrix.artifact-name }}"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v1
         with:
           fetch-depth: 0
       - uses: actions/setup-java@v1
         with:
           java-version: 11
       - run: |
-          git reset --hard ${GITHUB_SHA}
-          echo ${GITHUB_SHA}
+          git log
           git describe --tags --exclude="Dev"
       - run: |
           chmod +x gradlew
