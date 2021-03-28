@@ -234,7 +234,6 @@ jobs:
       - run: git fetch --tags --force
       - run: |
           chmod +x gradlew
-          git log
           ./gradlew photon-lib:build
       - run: ./gradlew photon-lib:publish
         name: Publish
@@ -268,11 +267,9 @@ jobs:
           git describe --tags --exclude="Dev"
       - run: |
           chmod +x gradlew
-          git log
           ./gradlew photon-lib:build
       - run: |
           chmod +x gradlew
-          git fetch --tags --force
           ./gradlew photon-lib:publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
