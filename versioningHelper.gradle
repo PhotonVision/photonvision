@@ -8,7 +8,7 @@ gradle.allprojects {
         String tagIsh
         try {
             exec {
-                commandLine 'git', 'describe', '--tags', '--exclude="Dev"'
+                commandLine 'git', 'describe', '--tags', '--exclude="Dev"', '--exclude="dev"'
                 standardOutput = stdout
             }
             tagIsh = stdout.toString().trim().toLowerCase()
