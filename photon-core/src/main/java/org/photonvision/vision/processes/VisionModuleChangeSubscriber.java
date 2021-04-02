@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -153,6 +154,11 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                 }
                             }
                         }
+                        return;
+                    case "changePipelineType":
+                        parentModule.pipelineManager.changePipelineType((Integer) newPropValue);
+                        parentModule.saveAndBroadcastAll();
+                        ConfigManager.getInstance().requestSave();
                         return;
                 }
 

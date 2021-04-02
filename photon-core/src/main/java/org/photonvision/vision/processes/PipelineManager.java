@@ -18,6 +18,7 @@
 package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -243,23 +244,37 @@ public class PipelineManager {
     }
 
     public CVPipelineSettings addPipeline(PipelineType type, String nickname) {
+        var added = createSettingsForType(type, nickname);
+        if(added == null) {
+            logger.error("Cannot add null pipeline!");
+            return null;
+        }
+        addPipelineInternal(added);
+        reassignIndexes();
+        return added;
+    }
+
+    private CVPipelineSettings createSettingsForType(PipelineType type, String nickname) {
+        CVPipelineSettings newSettings;
         switch (type) {
             case Reflective:
-                {
-                    var added = new ReflectivePipelineSettings();
-                    added.pipelineNickname = nickname;
-                    addPipelineInternal(added);
-                    return added;
-                }
+            {
+                var added = new ReflectivePipelineSettings();
+                added.pipelineNickname = nickname;
+                return added;
+            }
             case ColoredShape:
-                {
-                    var added = new ColoredShapePipelineSettings();
-                    addPipelineInternal(added);
-                    return added;
-                }
+            {
+                var added = new ColoredShapePipelineSettings();
+                added.pipelineNickname = nickname;
+                return added;
+            }
+            default:
+            {
+                logger.error("Got invalid pipeline type: " + type.toString());
+                return null;
+            }
         }
-        reassignIndexes();
-        return null;
     }
 
     private void addPipelineInternal(CVPipelineSettings settings) {
@@ -319,5 +334,26 @@ public class PipelineManager {
                             .noneMatch(it -> it.pipelineNickname.equals(nickname + "( dQw4w9WgXcQ )")))
                 return nickname + "( dQw4w9WgXcQ )";
         }
+    }
+
+    public void changePipelineType(int newType) {
+        PipelineType type = Arrays.stream(PipelineType.values()).filter(it->it.baseIndex == newType).findAny().orElse(null);
+        if(type == null) {
+            logger.error("Could not match type " + newType + " to a PipelineType!");
+            return;
+        }
+
+        var name = getCurrentPipelineSettings().pipelineNickname;
+        var newSettings = createSettingsForType(type, name);
+
+        var idx = currentPipelineIndex;
+        if(idx < 0) {
+            logger.error("Cannot replace non-user pipeline!");
+            return;
+        }
+
+        logger.info("Adding new pipe of type " + type.toString() + " at idx " + idx);
+        userPipelineSettings.set(idx, newSettings);
+        setPipelineInternal(idx);
     }
 }
