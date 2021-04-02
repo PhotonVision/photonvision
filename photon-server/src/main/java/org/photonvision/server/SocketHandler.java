@@ -311,6 +311,18 @@ public class SocketHandler {
                                 }
                                 break;
                             }
+                        case SMT_CHANGEPIPELINETYPE:
+                            {
+                                var changePipelineEvent =
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "changePipelineType",
+                                                (Integer) entryValue,
+                                                cameraIndex,
+                                                context);
+                                dcService.publishEvent(changePipelineEvent);
+                                break;
+                            }
                     }
                 } catch (Exception e) {
                     logger.error("Failed to parse message!", e);

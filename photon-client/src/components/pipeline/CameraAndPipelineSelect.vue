@@ -143,7 +143,7 @@
             name="Type"
             v-model="currentPipelineType"
             :list="['Reflective', 'Shape']"
-            @input="handleInput('pipelineType',currentCameraIndex)"
+            @input="e => showTypeDialog(e)"
         />
       </v-col>
     </v-row>
@@ -236,6 +236,33 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+      v-model="typeDialog"
+      width="600">
+      <v-card
+      color="primary"
+      dark>
+        <v-card-title>Change Pipeline Type</v-card-title>
+        <v-card-text>
+          Changing the type of this pipeline will erase the current pipeline's settings. You will lose all settings for the pipeline
+          "{{ ($store.getters.isDriverMode ? ['Driver Mode'] : []).concat($store.getters.pipelineList)[currentPipelineIndex] }}." Are you sure you want to do this?
+          <v-row class="mt-6" style="display: flex; align-items: center; justify-content: center" align="center">
+            <v-btn
+                class="mr-10"
+                color="secondary"
+                width="250"
+                @click="e => this.typeDialog = false">
+              No, take me back</v-btn>
+            <v-btn
+                class="ml-3"
+                color="secondary"
+                width="250"
+                @click="e => changePipeType()">
+              Yes, replace this pipeline</v-btn>
+          </v-row>
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -262,6 +289,8 @@ export default {
       newPipelineName: "",
       newPipelineType: "",
       duplicateDialog: false,
+      typeDialog: false,
+      tempType : 0,
       pipeIndexToDuplicate: undefined
     }
   },
@@ -321,6 +350,15 @@ export default {
     }
   },
   methods: {
+    showTypeDialog(idx) {
+      // Only show the dialog if it's a new type
+      this.typeDialog = idx !== this.currentPipelineType;
+      this.tempType = idx;
+    },
+    changePipeType() {
+      this.handleInputWithIndex('pipelineType', this.tempType);
+      this.typeDialog = false;
+    },
     changeCameraName() {
       this.newCameraName = this.$store.getters.cameraList[this.currentCameraIndex];
       this.isCameraNameEdit = true;
