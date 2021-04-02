@@ -18,8 +18,6 @@
 package org.photonvision;
 
 import edu.wpi.cscore.CameraServerCvJNI;
-
-import java.nio.file.Path;
 import java.util.ArrayList;
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -128,7 +126,10 @@ public class Main {
 
         // Colored shape testing
         var camConfShape =
-                new CameraConfiguration("Shape", TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_1, true).toString());
+                new CameraConfiguration(
+                        "Shape",
+                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_1, true)
+                                .toString());
         camConfShape.addPipelineSetting(new ColoredShapePipelineSettings());
         var fvsShape = new FileVisionSource(camConfShape);
         collectedSources.add(fvsShape);

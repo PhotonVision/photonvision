@@ -26,7 +26,6 @@ import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
-import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class FindCirclesPipe
@@ -73,8 +72,10 @@ public class FindCirclesPipe
                 maxRadius);
         // Great, we now found the center point of the circle and it's radius, but we have no idea what
         // contour it corresponds to
-        // Each contour can only match to one circle, so we keep a list of unmatched contours around and only match against them
-        // This does mean that contours closer than allowableThreshold aren't matched to anything if there's a 'better' option
+        // Each contour can only match to one circle, so we keep a list of unmatched contours around and
+        // only match against them
+        // This does mean that contours closer than allowableThreshold aren't matched to anything if
+        // there's a 'better' option
         var unmatchedContours = in.getRight();
         for (int x = 0; x < circles.cols(); x++) {
             // Grab the current circle we are looking at
@@ -98,7 +99,7 @@ public class FindCirclesPipe
         }
 
         // Release everything we don't use
-        for(var c: unmatchedContours) c.release();
+        for (var c : unmatchedContours) c.release();
 
         return output;
     }
@@ -129,7 +130,8 @@ public class FindCirclesPipe
                 int minDist,
                 int maxRadius,
                 int maxCannyThresh,
-                int accuracy, double diagonalLengthPx) {
+                int accuracy,
+                double diagonalLengthPx) {
             this.allowableThreshold = allowableThreshold;
             this.minRadius = minRadius;
             this.maxRadius = maxRadius;

@@ -185,7 +185,8 @@ public class SocketHandler {
                                 // data.get("pipelineType");
                                 //                                var name = (String) data.get("pipelineName");
                                 var arr = (ArrayList<Object>) entryValue;
-                                var name = (String) arr.get(0); var type = PipelineType.values()[(Integer) arr.get(1) + 2];
+                                var name = (String) arr.get(0);
+                                var type = PipelineType.values()[(Integer) arr.get(1) + 2];
 
                                 var newPipelineEvent =
                                         new IncomingWebSocketEvent<>(

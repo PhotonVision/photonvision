@@ -245,7 +245,7 @@ public class PipelineManager {
 
     public CVPipelineSettings addPipeline(PipelineType type, String nickname) {
         var added = createSettingsForType(type, nickname);
-        if(added == null) {
+        if (added == null) {
             logger.error("Cannot add null pipeline!");
             return null;
         }
@@ -258,22 +258,22 @@ public class PipelineManager {
         CVPipelineSettings newSettings;
         switch (type) {
             case Reflective:
-            {
-                var added = new ReflectivePipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
+                {
+                    var added = new ReflectivePipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
             case ColoredShape:
-            {
-                var added = new ColoredShapePipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-            }
+                {
+                    var added = new ColoredShapePipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
             default:
-            {
-                logger.error("Got invalid pipeline type: " + type.toString());
-                return null;
-            }
+                {
+                    logger.error("Got invalid pipeline type: " + type.toString());
+                    return null;
+                }
         }
     }
 
@@ -337,8 +337,12 @@ public class PipelineManager {
     }
 
     public void changePipelineType(int newType) {
-        PipelineType type = Arrays.stream(PipelineType.values()).filter(it->it.baseIndex == newType).findAny().orElse(null);
-        if(type == null) {
+        PipelineType type =
+                Arrays.stream(PipelineType.values())
+                        .filter(it -> it.baseIndex == newType)
+                        .findAny()
+                        .orElse(null);
+        if (type == null) {
             logger.error("Could not match type " + newType + " to a PipelineType!");
             return;
         }
@@ -347,7 +351,7 @@ public class PipelineManager {
         var newSettings = createSettingsForType(type, name);
 
         var idx = currentPipelineIndex;
-        if(idx < 0) {
+        if (idx < 0) {
             logger.error("Cannot replace non-user pipeline!");
             return;
         }
