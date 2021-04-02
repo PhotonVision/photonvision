@@ -22,7 +22,6 @@ import java.util.List;
 import org.opencv.core.RotatedRect;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
-import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.opencv.Releasable;
 
 public class PotentialTarget implements Releasable {
@@ -46,7 +45,7 @@ public class PotentialTarget implements Releasable {
     }
 
     public PotentialTarget(Contour inputContour, CVShape shape) {
-        this(inputContour, List.of(),shape);
+        this(inputContour, List.of(), shape);
     }
 
     public RotatedRect getMinAreaRect() {
@@ -64,6 +63,6 @@ public class PotentialTarget implements Releasable {
             sc.release();
         }
         m_subContours.clear();
-        if(shape != null) shape.release();
+        if (shape != null) shape.release();
     }
 }

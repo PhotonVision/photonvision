@@ -21,13 +21,11 @@ import org.jetbrains.annotations.Nullable;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
-import org.opencv.imgproc.Imgproc;
 
 public class CVShape implements Releasable {
     public final Contour contour;
 
-    @Nullable
-    public final ContourShape shape;
+    @Nullable public final ContourShape shape;
 
     public double radius = 0;
     public Point center = null;
@@ -59,7 +57,7 @@ public class CVShape implements Releasable {
 
     @Override
     public void release() {
-        if(customTarget != null) customTarget.release();
+        if (customTarget != null) customTarget.release();
         approxCurve.release();
         contour.release();
     }

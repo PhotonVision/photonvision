@@ -72,9 +72,10 @@ public class FindPolygonPipe
     }
 
     private int getCorners(Contour contour) {
-        var approx = contour.getApproxPolyDp(
-                (100 - params.accuracyPercentage) / 100.0 * Imgproc.arcLength(contour.getMat2f(), true),
-                true);
+        var approx =
+                contour.getApproxPolyDp(
+                        (100 - params.accuracyPercentage) / 100.0 * Imgproc.arcLength(contour.getMat2f(), true),
+                        true);
 
         // The height of the resultant approximation is the number of vertices
         return (int) approx.size().height;

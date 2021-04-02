@@ -83,7 +83,8 @@ public class Draw2dTargetsPipe
                             rotatedBoxColour,
                             (int) Math.ceil(imageSize * params.kPixelsToBoxThickness));
                 } else if (params.shouldShowCircle(target.getShape())) {
-                    Imgproc.circle(in.getLeft(),
+                    Imgproc.circle(
+                            in.getLeft(),
                             target.getShape().center,
                             (int) target.getShape().radius,
                             circleColor,
@@ -93,9 +94,10 @@ public class Draw2dTargetsPipe
                     var poly = target.getApproximateBoundingPolygon();
 
                     // fall back on the shape's approx poly dp
-                    if(poly == null && target.getShape() != null) poly = target.getShape().getContour().getApproxPolyDp();
+                    if (poly == null && target.getShape() != null)
+                        poly = target.getShape().getContour().getApproxPolyDp();
                     if (poly != null) {
-//                        divideMat2f(poly, pointMat);
+                        //                        divideMat2f(poly, pointMat);
                         var mat = new MatOfPoint();
                         mat.fromArray(poly.toArray());
                         Imgproc.drawContours(

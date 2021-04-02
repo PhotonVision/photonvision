@@ -49,7 +49,8 @@ public class TrackedTarget implements Releasable {
 
     private Mat m_cameraRelativeTvec, m_cameraRelativeRvec;
 
-    public TrackedTarget(PotentialTarget origTarget, TargetCalculationParameters params, CVShape shape) {
+    public TrackedTarget(
+            PotentialTarget origTarget, TargetCalculationParameters params, CVShape shape) {
         this.m_mainContour = origTarget.m_mainContour;
         this.m_subContours = origTarget.m_subContours;
         this.m_shape = shape;

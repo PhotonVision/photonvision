@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.ContourShape;
@@ -42,7 +41,7 @@ public class FilterShapesPipe
         outputList.clear();
         outputList = new ArrayList<>();
 
-        for(var shape: in) {
+        for (var shape : in) {
             if (!shouldRemove(shape)) outputList.add(shape);
         }
 
@@ -66,7 +65,11 @@ public class FilterShapesPipe
         private final double maxPeri;
 
         public FilterShapesPipeParams(
-                ContourShape desiredShape, double minArea, double maxArea, double minPeri, double maxPeri,
+                ContourShape desiredShape,
+                double minArea,
+                double maxArea,
+                double minPeri,
+                double maxPeri,
                 FrameStaticProperties frameStaticProperties) {
             this.desiredShape = desiredShape;
             this.minArea = minArea;

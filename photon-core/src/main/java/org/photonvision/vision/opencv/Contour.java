@@ -18,7 +18,6 @@
 package org.photonvision.vision.opencv;
 
 import java.util.Comparator;
-
 import org.jetbrains.annotations.Nullable;
 import org.opencv.core.CvType;
 import org.opencv.core.MatOfInt;
