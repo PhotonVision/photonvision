@@ -255,7 +255,7 @@
               No, take me back</v-btn>
             <v-btn
                 class="ml-3"
-                color="secondary"
+                color="red"
                 width="250"
                 @click="e => changePipeType()">
               Yes, replace this pipeline</v-btn>
