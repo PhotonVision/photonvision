@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -154,6 +155,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                             }
                         }
                         return;
+                    case "changePipelineType":
+                        parentModule.pipelineManager.changePipelineType((Integer) newPropValue);
+                        parentModule.saveAndBroadcastAll();
+                        return;
                 }
 
                 // special case for camera settables
@@ -183,8 +188,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         var actual = new DoubleCouple(orig.get(0), orig.get(1));
                         propField.set(currentSettings, actual);
                     } else if (propType.isAssignableFrom(IntegerCouple.class)) {
-                        var orig = (ArrayList<Integer>) newPropValue;
-                        var actual = new IntegerCouple(orig.get(0), orig.get(1));
+                        var orig = (ArrayList<Number>) newPropValue;
+                        var actual = new IntegerCouple(orig.get(0).intValue(), orig.get(1).intValue());
                         propField.set(currentSettings, actual);
                     } else if (propType.equals(Double.TYPE)) {
                         propField.setDouble(currentSettings, ((Number) newPropValue).doubleValue());

@@ -35,13 +35,17 @@ public class FileVisionSource extends VisionSource {
 
     public FileVisionSource(CameraConfiguration cameraConfiguration) {
         super(cameraConfiguration);
+        var calibration =
+                cameraConfiguration.calibrations.size() > 0
+                        ? cameraConfiguration.calibrations.get(0)
+                        : null;
         frameProvider =
                 new FileFrameProvider(
                         Path.of(cameraConfiguration.path),
                         cameraConfiguration.FOV,
                         FileFrameProvider.MAX_FPS,
                         cameraConfiguration.camPitch,
-                        cameraConfiguration.calibrations.get(0));
+                        calibration);
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
     }

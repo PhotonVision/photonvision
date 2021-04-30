@@ -50,7 +50,7 @@ public class Collect2dTargetsPipe
                         params.frameStaticProperties);
 
         for (PotentialTarget target : in) {
-            targets.add(new TrackedTarget(target, calculationParams));
+            targets.add(new TrackedTarget(target, calculationParams, target.shape));
         }
 
         return targets;

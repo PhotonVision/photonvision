@@ -42,7 +42,7 @@ export default new Vuex.Store({
                 isFovConfigurable: true,
                 calibrated: false,
                 currentPipelineSettings: {
-                    pipelineType: 2, // One of "driver", "reflective", "shape"
+                    pipelineType: 2, // One of "calib", "driver", "reflective", "shape"
                     // 2 is reflective
 
                     // Settings that apply to all pipeline types
@@ -245,5 +245,6 @@ export default new Vuex.Store({
         },
         pipelineList: state => state.cameraSettings[state.currentCameraIndex].pipelineNicknames,
         calibrationList: state => state.cameraSettings[state.currentCameraIndex].calibrations,
+        pipelineType: state => state.cameraSettings[state.currentCameraIndex].currentPipelineSettings.pipelineType
     }
 })

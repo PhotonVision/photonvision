@@ -15,6 +15,7 @@
           :value="localValue"
           :max="max"
           :min="min"
+          :disabled="disabled"
           hide-details
           class="align-center"
           dark
@@ -34,7 +35,7 @@
               hide-details
               single-line
               type="number"
-              style="width: 50px"
+              style="width: 60px"
               :step="step"
               @input="handleChange"
               @focus="prependFocused = true"
@@ -53,7 +54,7 @@
               hide-details
               single-line
               type="number"
-              style="width: 50px"
+              style="width: 60px"
               :step="step"
               @input="handleChange"
               @focus="appendFocused = true"
@@ -75,7 +76,7 @@ export default {
     TooltippedLabel,
   },
   // eslint-disable-next-line vue/require-prop-types
-  props: ["name", "min", "max", "value", "step", "tooltip"],
+  props: ["name", "min", "max", "value", "step", "tooltip", "disabled"],
   data() {
     return {
       prependFocused: false,

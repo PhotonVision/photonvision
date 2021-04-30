@@ -21,8 +21,8 @@ import java.util.EnumSet;
 import java.util.HashMap;
 
 public enum ContourShape {
-    Custom(-1),
     Circle(0),
+    Custom(-1),
     Triangle(3),
     Quadrilateral(4);
 

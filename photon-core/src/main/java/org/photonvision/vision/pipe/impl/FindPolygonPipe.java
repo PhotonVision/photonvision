@@ -28,7 +28,7 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class FindPolygonPipe
         extends CVPipe<List<Contour>, List<CVShape>, FindPolygonPipe.FindPolygonPipeParams> {
-    private final MatOfPoint2f approx = new MatOfPoint2f();
+    List<CVShape> shapeList = new ArrayList<>();
 
     /*
     * Runs the process for the pipe.
@@ -38,18 +38,20 @@ public class FindPolygonPipe
     */
     @Override
     protected List<CVShape> process(List<Contour> in) {
-        // List containing all the output shapes
-        List<CVShape> output = new ArrayList<>();
+        shapeList.forEach(CVShape::release);
+        shapeList.clear();
+        shapeList = new ArrayList<>();
 
-        for (Contour contour : in) output.add(getShape(contour));
+        for (Contour contour : in) {
+            shapeList.add(getShape(contour));
+        }
 
-        return output;
+        return shapeList;
     }
 
     private CVShape getShape(Contour in) {
 
         int corners = getCorners(in);
-        corners = getCorners(in);
 
         /*The contourShape enum has predefined shapes for Circles, Triangles, and Quads
         meaning any shape not fitting in those predefined shapes must be a custom shape.
@@ -70,14 +72,11 @@ public class FindPolygonPipe
     }
 
     private int getCorners(Contour contour) {
-        // Release previous approx
-        approx.release();
-        Imgproc.approxPolyDP(
-                contour.getMat2f(),
-                approx,
-                // Converts an accuracy percentage between 1-100 to an epsilon
-                params.accuracyPercentage / 600.0 * Imgproc.arcLength(contour.getMat2f(), true),
-                true);
+        var approx =
+                contour.getApproxPolyDp(
+                        (100 - params.accuracyPercentage) / 100.0 * Imgproc.arcLength(contour.getMat2f(), true),
+                        true);
+
         // The height of the resultant approximation is the number of vertices
         return (int) approx.size().height;
     }
