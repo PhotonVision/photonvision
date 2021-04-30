@@ -248,17 +248,17 @@
           "{{ ($store.getters.isDriverMode ? ['Driver Mode'] : []).concat($store.getters.pipelineList)[currentPipelineIndex] }}." Are you sure you want to do this?
           <v-row class="mt-6" style="display: flex; align-items: center; justify-content: center" align="center">
             <v-btn
-                class="mr-10"
-                color="secondary"
-                width="250"
-                @click="e => this.typeDialog = false">
-              No, take me back</v-btn>
-            <v-btn
-                class="ml-3"
+                class="mr-3"
                 color="red"
                 width="250"
                 @click="e => changePipeType()">
               Yes, replace this pipeline</v-btn>
+            <v-btn
+                class="ml-10"
+                color="secondary"
+                width="250"
+                @click="e => this.typeDialog = false">
+              No, take me back</v-btn>
           </v-row>
         </v-card-text>
       </v-card>

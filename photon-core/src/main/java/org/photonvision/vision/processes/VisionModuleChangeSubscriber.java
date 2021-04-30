@@ -158,7 +158,6 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case "changePipelineType":
                         parentModule.pipelineManager.changePipelineType((Integer) newPropValue);
                         parentModule.saveAndBroadcastAll();
-                        ConfigManager.getInstance().requestSave();
                         return;
                 }
 
