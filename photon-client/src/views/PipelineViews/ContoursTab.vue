@@ -91,8 +91,8 @@
       <CVslider
           v-model="circleDetectThreshold"
           :disabled="currentPipelineSettings().contourShape !== 0"
-          name="Cirularity Threshold"
-          tooltip="How circular contour must be to be a 'Circle'"
+          name="Circle match distance"
+          tooltip="How close the centroid of a contour must be to the center of a circle in order for them to be matched"
           min="1"
           max="100"
           :slider-cols="largeBox"
