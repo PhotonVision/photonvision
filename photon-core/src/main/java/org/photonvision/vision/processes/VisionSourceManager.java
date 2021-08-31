@@ -302,6 +302,7 @@ public class VisionSourceManager {
         var cameraSources = new ArrayList<VisionSource>();
         for (var configuration : camConfigs) {
             if (configuration.baseName.startsWith("mmal service") && PicamJNI.isSupported()) {
+                configuration.cameraType = CameraType.ZeroCopyPicam;
                 var piCamSrc = new ZeroCopyPicamSource(configuration);
 
                 configuration.cameraType = CameraType.ZeroCopyPicam;

@@ -35,10 +35,10 @@ public class AcceleratedPicamFrameProvider implements FrameProvider {
         this.settables = visionSettables;
 
         var vidMode = settables.getCurrentVideoMode();
-        var success = PicamJNI.createCamera(vidMode.width, vidMode.height, vidMode.fps);
-        if (!success) {
-            success = PicamJNI.destroyCamera();
-            if (!success) throw new RuntimeException("Couldn't destroy Pi camera after init failure!");
+        var failure = PicamJNI.createCamera(vidMode.width, vidMode.height, vidMode.fps);
+        if (failure) {
+            failure = PicamJNI.destroyCamera();
+            if (failure) throw new RuntimeException("Couldn't destroy Pi camera after init failure!");
             throw new RuntimeException(
                     "Couldn't initialize zero copy Pi camera; check stdout for native code logs");
         }

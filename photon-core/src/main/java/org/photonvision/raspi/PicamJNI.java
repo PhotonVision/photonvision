@@ -85,7 +85,7 @@ public class PicamJNI {
     }
 
     public static boolean isSupported() {
-        return libraryLoaded && isVCSMSupported() && getSensorModel() != SensorModel.Disconnected;
+        return libraryLoaded && !isVCSMSupported() && getSensorModel() != SensorModel.Disconnected;
     }
 
     public static SensorModel getSensorModel() {
