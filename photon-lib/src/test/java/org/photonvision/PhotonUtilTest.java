@@ -49,7 +49,6 @@ class PhotonUtilTest {
 
     @Test
     public void testTransform() {
-
         var camHeight = 1;
         var tgtHeight = 3;
         var camPitch = 0;
