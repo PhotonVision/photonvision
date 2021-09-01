@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Point;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeSubscriber;
 import org.photonvision.common.dataflow.events.DataChangeEvent;
 import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
@@ -90,7 +89,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case "deleteCurrPipeline":
                         var indexToDelete = parentModule.pipelineManager.getCurrentPipelineIndex();
                         logger.info("Deleting current pipe at index " + indexToDelete);
-                        parentModule.pipelineManager.removePipeline(indexToDelete);
+                        int newIndex = parentModule.pipelineManager.removePipeline(indexToDelete);
+                        parentModule.setPipeline(newIndex);
                         parentModule.saveAndBroadcastAll();
                         return;
                     case "changePipeline": // change active pipeline
@@ -111,7 +111,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.takeCalibrationSnapshot();
                         return;
                     case "duplicatePipeline":
-                        parentModule.pipelineManager.duplicatePipeline((Integer) newPropValue);
+                        int idx = parentModule.pipelineManager.duplicatePipeline((Integer) newPropValue);
+                        parentModule.setPipeline(idx);
                         parentModule.saveAndBroadcastAll();
                         return;
                     case "robotOffsetPoint":

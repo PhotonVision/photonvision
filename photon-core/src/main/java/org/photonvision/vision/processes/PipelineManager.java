@@ -283,30 +283,41 @@ public class PipelineManager {
         reassignIndexes();
     }
 
-    private void removePipelineInternal(int index) {
+    /**
+    * Remove a pipeline settings at the given index and return the new current index
+    *
+    * @param index The idx to remove
+    */
+    private int removePipelineInternal(int index) {
         userPipelineSettings.remove(index);
         currentPipelineIndex = Math.min(index, userPipelineSettings.size() - 1);
         reassignIndexes();
+        return currentPipelineIndex;
     }
 
     public void setIndex(int index) {
         this.setPipelineInternal(index);
     }
 
-    public void removePipeline(int index) {
+    public int removePipeline(int index) {
         if (index < 0) {
-            return;
+            return currentPipelineIndex;
         }
         // TODO should we block/lock on a mutex?
-        removePipelineInternal(index);
-        setIndex(currentPipelineIndex);
+        return removePipelineInternal(index);
     }
 
     public void renameCurrentPipeline(String newName) {
         getCurrentPipelineSettings().pipelineNickname = newName;
     }
 
-    public void duplicatePipeline(int index) {
+    /**
+    * Duplicate a pipeline at a given index
+    *
+    * @param index the index of the target pipeline
+    * @return The new index
+    */
+    public int duplicatePipeline(int index) {
         var settings = userPipelineSettings.get(index);
         var newSettings = settings.clone();
         newSettings.pipelineNickname =
@@ -315,28 +326,47 @@ public class PipelineManager {
         logger.debug("Duplicating pipe " + index + " to " + newSettings.pipelineNickname);
         userPipelineSettings.add(newSettings);
         reassignIndexes();
+
+        // Now we look for the index of the new pipeline and return it
+        return userPipelineSettings.indexOf(newSettings);
     }
 
     private static String createUniqueName(
             String nickname, List<CVPipelineSettings> existingSettings) {
-        int index = 0;
         String uniqueName = nickname;
         while (true) {
-            String finalUniqueName = uniqueName;
+            String finalUniqueName = uniqueName; // To get around lambda capture
             var conflictingName =
                     existingSettings.stream().anyMatch(it -> it.pipelineNickname.equals(finalUniqueName));
-            if (!conflictingName) return uniqueName;
-            index++;
-            uniqueName = nickname + " (" + index + ")";
 
-            if (index == 6
-                    && existingSettings.stream()
-                            .noneMatch(it -> it.pipelineNickname.equals(nickname + "( dQw4w9WgXcQ )")))
-                return nickname + "( dQw4w9WgXcQ )";
+            if (!conflictingName) {
+                // If no conflict, we're done
+                return uniqueName;
+            } else {
+                // Otherwise, we need to add a suffix to the name
+                // If the string doesn't already end in "([0-9]*)", we'll add it
+                // If it does, we'll increment the number in the suffix
+
+                if (uniqueName.matches(".*\\([0-9]*\\)")) {
+                    // Because java strings are immutable, we have to do this curstedness
+                    // This is like doing "New pipeline (" + 2 + ")"
+
+                    var parenStart = uniqueName.lastIndexOf('(');
+                    var parenEnd = uniqueName.length() - 1;
+                    var number = Integer.parseInt(uniqueName.substring(parenStart + 1, parenEnd)) + 1;
+
+                    uniqueName = uniqueName.substring(0, parenStart + 1) + number + ")";
+                } else {
+                    uniqueName += " (1)";
+                }
+            }
         }
     }
 
     public void changePipelineType(int newType) {
+        // Find the PipelineType proposed
+        // To do this we look at all the PipelineType entries and look for one with matching
+        // base indexes
         PipelineType type =
                 Arrays.stream(PipelineType.values())
                         .filter(it -> it.baseIndex == newType)
@@ -347,6 +377,19 @@ public class PipelineManager {
             return;
         }
 
+        if (type.baseIndex == getCurrentPipelineSettings().pipelineType.baseIndex) {
+            logger.debug(
+                    "Not changing settings as "
+                            + type
+                            + " and "
+                            + getCurrentPipelineSettings().pipelineType
+                            + " are identical!");
+            return;
+        }
+
+        // Our new settings will be totally nuked, but that's ok
+        // We *could* set things in common between the two, if we want
+        // But they're different enough it shouldn't be an issue
         var name = getCurrentPipelineSettings().pipelineNickname;
         var newSettings = createSettingsForType(type, name);
 
