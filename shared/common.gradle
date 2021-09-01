@@ -60,6 +60,7 @@ task testHeadless(type: Test) {
     group = "verification"
     systemProperty("java.awt.headless", "true")
     useJUnitPlatform()
+    exclude '**/*BenchmarkTest*'
 }
 
 task generateJavaDocs(type: Javadoc) {

@@ -79,6 +79,10 @@ public class Calibrate3dPipeTest {
         assertTrue(calibrate3dPipeOutput.output.perViewErrors.length > 0);
         System.out.println(
                 "Per View Errors: " + Arrays.toString(calibrate3dPipeOutput.output.perViewErrors));
+
+        for (var f : frames) {
+            f.release();
+        }
     }
 
     @Test
@@ -98,14 +102,14 @@ public class Calibrate3dPipeTest {
 
         for (var file : directoryListing) {
             calibration3dPipeline.takeSnapshot();
-            var output =
-                    calibration3dPipeline.run(
-                            new Frame(
-                                    new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                    new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)),
-                            QuirkyCamera.DefaultCamera);
+            var frame =
+                    new Frame(
+                            new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                            new FrameStaticProperties(640, 480, 60, new Rotation2d(), null));
+            var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
             // TestUtils.showImage(output.outputFrame.image.getMat());
             output.release();
+            frame.release();
         }
 
         assertTrue(
@@ -114,13 +118,12 @@ public class Calibrate3dPipeTest {
                         .allMatch(it -> it.width() > 0 && it.height() > 0));
 
         calibration3dPipeline.removeSnapshot(0);
-        calibration3dPipeline
-                .run(
-                        new Frame(
-                                new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
-                                new FrameStaticProperties(640, 480, 60, new Rotation2d(), null)),
-                        QuirkyCamera.DefaultCamera)
-                .release();
+        var frame =
+                new Frame(
+                        new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
+                        new FrameStaticProperties(640, 480, 60, new Rotation2d(), null));
+        calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera).release();
+        frame.release();
 
         assertTrue(
                 calibration3dPipeline.foundCornersList.stream()
@@ -263,16 +266,16 @@ public class Calibrate3dPipeTest {
         for (var file : directoryListing) {
             if (file.isFile()) {
                 calibration3dPipeline.takeSnapshot();
-                var output =
-                        calibration3dPipeline.run(
-                                new Frame(
-                                        new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                        new FrameStaticProperties(
-                                                (int) imgRes.width, (int) imgRes.height, 67, new Rotation2d(), null)),
-                                QuirkyCamera.DefaultCamera);
+                var frame =
+                        new Frame(
+                                new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                                new FrameStaticProperties(
+                                        (int) imgRes.width, (int) imgRes.height, 67, new Rotation2d(), null));
+                var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
 
                 // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
-                output.outputFrame.release();
+                output.release();
+                frame.release();
             }
         }
 
