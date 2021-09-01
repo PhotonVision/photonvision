@@ -76,9 +76,9 @@ jobs:
 
       # Run Gradle Tests.
       - name: Gradle Coverage
-        run: ./gradlew testHeadless
+        run: ./gradlew testHeadless -i
 
-      # Run Tests Generate Coverage Report.
+      # Generate Coverage Report.
       - name: Gradle Coverage
         run: ./gradlew jacocoTestReport
       
