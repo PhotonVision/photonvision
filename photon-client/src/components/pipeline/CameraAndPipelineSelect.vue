@@ -2,130 +2,134 @@
   <div>
     <v-row align="center">
       <v-col
-          cols="10"
-          md="5"
-          lg="10"
-          class="pt-0 pb-0 pl-6"
+        cols="10"
+        md="5"
+        lg="10"
+        class="pt-0 pb-0 pl-6"
       >
         <CVselect
-            v-if="isCameraNameEdit === false"
-            v-model="currentCameraIndex"
-            name="Camera"
-            :list="$store.getters.cameraList"
-            @input="handleInput('currentCamera',currentCameraIndex)"
+          v-if="isCameraNameEdit === false"
+          v-model="currentCameraIndex"
+          name="Camera"
+          :list="$store.getters.cameraList"
+          @input="handleInput('currentCamera',currentCameraIndex)"
         />
         <CVinput
-            v-else
-            v-model="newCameraName"
-            name="Camera"
-            input-cols="9"
-            :error-message="checkCameraName"
-            @Enter="saveCameraNameChange"
+          v-else
+          v-model="newCameraName"
+          name="Camera"
+          input-cols="9"
+          :error-message="checkCameraName"
+          @Enter="saveCameraNameChange"
         />
       </v-col>
       <v-col
-          cols="2"
-          md="1"
-          lg="2"
+        cols="2"
+        md="1"
+        lg="2"
       >
         <CVicon
-            v-if="isCameraNameEdit === false"
-            color="#c5c5c5"
-            :hover="true"
-            text="edit"
-            tooltip="Edit camera name"
-            @click="changeCameraName"
+          v-if="isCameraNameEdit === false"
+          color="#c5c5c5"
+          :hover="true"
+          text="edit"
+          tooltip="Edit camera name"
+          @click="changeCameraName"
         />
         <div v-else>
           <CVicon
-              color="#c5c5c5"
-              style="display: inline-block;"
-              :hover="true"
-              text="save"
-              tooltip="Save Camera Name"
-              @click="saveCameraNameChange"
+            color="#c5c5c5"
+            style="display: inline-block;"
+            :hover="true"
+            text="save"
+            tooltip="Save Camera Name"
+            @click="saveCameraNameChange"
           />
           <CVicon
-              color="error"
-              style="display: inline-block;"
-              :hover="true"
-              text="close"
-              tooltip="Discard Changes"
-              @click="discardCameraNameChange"
+            color="error"
+            style="display: inline-block;"
+            :hover="true"
+            text="close"
+            tooltip="Discard Changes"
+            @click="discardCameraNameChange"
           />
         </div>
       </v-col>
       <v-col
-          cols="10"
-          md="5"
-          lg="10"
-          class="pt-0 pb-0 pl-6"
+        cols="10"
+        md="5"
+        lg="10"
+        class="pt-0 pb-0 pl-6"
       >
         <CVselect
-            v-model="currentPipelineIndex"
-            name="Pipeline"
-            tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
-            :disabled="$store.getters.isDriverMode"
-            :list="($store.getters.isDriverMode ? ['Driver Mode'] : []).concat($store.getters.pipelineList)"
-            @input="handleInputWithIndex('currentPipeline', currentPipelineIndex)"
+          v-model="currentPipelineIndex"
+          name="Pipeline"
+          tooltip="Each pipeline runs on a camera output and stores a unique set of processing settings"
+          :disabled="$store.getters.isDriverMode"
+          :list="($store.getters.isDriverMode ? ['Driver Mode'] : []).concat($store.getters.pipelineList)"
+          @input="handleInputWithIndex('currentPipeline', currentPipelineIndex)"
         />
       </v-col>
       <v-col
-          cols="2"
-          md="1"
-          lg="2"
+        cols="2"
+        md="1"
+        lg="2"
       >
         <v-menu
-            v-if="!$store.getters.isDriverMode"
-            offset-y
-            auto
+          v-if="!$store.getters.isDriverMode"
+          offset-y
+          auto
         >
           <template v-slot:activator="{ on }">
             <v-icon
-                color="#c5c5c5"
-                v-on="on"
+              color="#c5c5c5"
+              v-on="on"
             >
               menu
             </v-icon>
           </template>
-          <v-list dark dense color="primary">
+          <v-list
+            dark
+            dense
+            color="primary"
+          >
             <v-list-item @click="toPipelineNameChange">
               <v-list-item-title>
                 <CVicon
-                    color="#c5c5c5"
-                    :right="true"
-                    text="edit"
-                    tooltip="Edit pipeline name"
+                  color="#c5c5c5"
+                  :right="true"
+                  text="edit"
+                  tooltip="Edit pipeline name"
                 />
               </v-list-item-title>
             </v-list-item>
             <v-list-item @click="toCreatePipeline">
               <v-list-item-title>
                 <CVicon
-                    color="#c5c5c5"
-                    :right="true"
-                    text="add"
-                    tooltip="Add new pipeline"
+                  color="#c5c5c5"
+                  :right="true"
+                  text="add"
+                  tooltip="Add new pipeline"
                 />
               </v-list-item-title>
             </v-list-item>
             <v-list-item @click="deleteCurrentPipeline">
               <v-list-item-title>
                 <CVicon
-                    color="red darken-2"
-                    :right="true"
-                    text="delete"
-                    tooltip="Delete pipeline"
+                  color="red darken-2"
+                  :right="true"
+                  text="delete"
+                  tooltip="Delete pipeline"
                 />
               </v-list-item-title>
             </v-list-item>
-            <v-list-item @click="openDuplicateDialog">
+            <v-list-item @click="duplicatePipeline">
               <v-list-item-title>
                 <CVicon
-                    color="#c5c5c5"
-                    :right="true"
-                    text="mdi-content-copy"
-                    tooltip="Duplicate pipeline"
+                  color="#c5c5c5"
+                  :right="true"
+                  text="mdi-content-copy"
+                  tooltip="Duplicate pipeline"
                 />
               </v-list-item-title>
             </v-list-item>
@@ -133,103 +137,65 @@
         </v-menu>
       </v-col>
       <v-col
-          cols="10"
-          md="5"
-          lg="10"
-          class="pt-0 pb-0 pl-6 ml-16"
-          v-if="currentPipelineType >= 0"
+        v-if="currentPipelineType >= 0"
+        cols="10"
+        md="5"
+        lg="10"
+        class="pt-0 pb-0 pl-6 ml-16"
       >
         <CVselect
-            name="Type"
-            v-model="currentPipelineType"
-            :list="['Reflective', 'Shape']"
-            @input="e => showTypeDialog(e)"
+          v-model="currentPipelineType"
+          name="Type"
+          :list="['Reflective', 'Shape']"
+          @input="e => showTypeDialog(e)"
         />
       </v-col>
     </v-row>
-    <!--pipeline duplicate dialog-->
-    <v-dialog
-        v-model="duplicateDialog"
-        dark
-        width="500"
-        height="357"
-    >
-      <v-card>
-        <v-card-title
-            class="headline"
-            primary-title
-        >
-          Duplicate Pipeline
-        </v-card-title>
-        <v-card-text>
-          <CVselect
-              v-model="pipeIndexToDuplicate"
-              name="Pipeline"
-              :list="$store.getters.pipelineList"
-          />
-        </v-card-text>
-        <v-divider/>
-        <v-card-actions>
-          <v-spacer/>
-          <v-btn
-              color="#ffd843"
-              @click="duplicatePipeline"
-          >
-            Duplicate
-          </v-btn>
-          <v-btn
-              color="error"
-              @click="closeDuplicateDialog"
-          >
-            Cancel
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+
     <!--pipeline naming dialog-->
     <v-dialog
-        v-model="namingDialog"
-        dark
-        persistent
-        width="500"
-        height="357"
+      v-model="namingDialog"
+      dark
+      persistent
+      width="500"
+      height="357"
     >
       <v-card
-          dark
-          color="primary"
+        dark
+        color="primary"
       >
         <v-card-title
-            class="headline"
-            primary-title
+          class="headline"
+          primary-title
         >
           {{ isPipelineNameEdit ? "Edit Pipeline Name" : "Create Pipeline" }}
         </v-card-title>
         <v-card-text>
           <CVinput
-              v-model="newPipelineName"
-              name="Pipeline"
-              :error-message="checkPipelineName"
+            v-model="newPipelineName"
+            name="Pipeline"
+            :error-message="checkPipelineName"
           />
           <CVselect
-              v-model="newPipelineType"
-              name="Pipeline Type"
-              :list="['Reflective', 'Shape']"
-              :disabled="isPipelineNameEdit"
+            v-model="newPipelineType"
+            name="Pipeline Type"
+            :list="['Reflective', 'Shape']"
+            :disabled="isPipelineNameEdit"
           />
         </v-card-text>
-        <v-divider/>
+        <v-divider />
         <v-card-actions>
-          <v-spacer/>
+          <v-spacer />
           <v-btn
-              color="#ffd843"
-              :disabled="checkPipelineName !==''"
-              @click="savePipelineNameChange"
+            color="#ffd843"
+            :disabled="checkPipelineName !==''"
+            @click="savePipelineNameChange"
           >
             Save
           </v-btn>
           <v-btn
-              color="error"
-              @click="discardPipelineNameChange"
+            color="error"
+            @click="discardPipelineNameChange"
           >
             Cancel
           </v-btn>
@@ -237,28 +203,38 @@
       </v-card>
     </v-dialog>
     <v-dialog
-      v-model="typeDialog"
-      width="600">
+      v-model="showPipeTypeDialog"
+      width="600"
+    >
       <v-card
-      color="primary"
-      dark>
+        color="primary"
+        dark
+      >
         <v-card-title>Change Pipeline Type</v-card-title>
         <v-card-text>
-          Changing the type of this pipeline will erase the current pipeline's settings. You will lose all settings for the pipeline
-          "{{ ($store.getters.isDriverMode ? ['Driver Mode'] : []).concat($store.getters.pipelineList)[currentPipelineIndex] }}." Are you sure you want to do this?
-          <v-row class="mt-6" style="display: flex; align-items: center; justify-content: center" align="center">
+          Changing the type of this pipeline will erase the current pipeline's settings and replace it with a new {{ ['Reflective', 'Shape'][proposedPipelineType] }} pipeline. <b class="red--text format_bold">You will lose all settings for the pipeline
+            "{{ ($store.getters.isDriverMode ? ['Driver Mode'] : []).concat($store.getters.pipelineList)[currentPipelineIndex] }}."</b> Are you sure you want to do this?
+          <v-row
+            class="mt-6"
+            style="display: flex; align-items: center; justify-content: center"
+            align="center"
+          >
             <v-btn
-                class="mr-3"
-                color="red"
-                width="250"
-                @click="e => changePipeType()">
-              Yes, replace this pipeline</v-btn>
+              class="mr-3"
+              color="red"
+              width="250"
+              @click="e => changePipeType(true)"
+            >
+              Yes, replace this pipeline
+            </v-btn>
             <v-btn
-                class="ml-10"
-                color="secondary"
-                width="250"
-                @click="e => this.typeDialog = false">
-              No, take me back</v-btn>
+              class="ml-10"
+              color="secondary"
+              width="250"
+              @click="e => changePipeType(false)"
+            >
+              No, take me back
+            </v-btn>
           </v-row>
         </v-card-text>
       </v-card>
@@ -287,10 +263,10 @@ export default {
       isPipelineNameEdit: false,
       namingDialog: false,
       newPipelineName: "",
-      newPipelineType: "",
+      newPipelineType: 0,
       duplicateDialog: false,
-      typeDialog: false,
-      tempType : 0,
+      showPipeTypeDialog: false,
+      proposedPipelineType : 0,
       pipeIndexToDuplicate: undefined
     }
   },
@@ -346,18 +322,22 @@ export default {
     currentPipelineType: {
       get() {
         return this.$store.getters.currentPipelineSettings.pipelineType - 2;
+      },
+      set(value) {
+        value; // nop, since we have the dialog for this
       }
     }
   },
   methods: {
     showTypeDialog(idx) {
       // Only show the dialog if it's a new type
-      this.typeDialog = idx !== this.currentPipelineType;
-      this.tempType = idx;
+      this.showPipeTypeDialog = idx !== this.currentPipelineType;
+      this.proposedPipelineType = idx;
     },
-    changePipeType() {
-      this.handleInputWithIndex('pipelineType', this.tempType);
-      this.typeDialog = false;
+    changePipeType(actuallyChange) {
+      const newIdx = actuallyChange ? this.proposedPipelineType : this.currentPipelineType
+      this.handleInputWithIndex('pipelineType', newIdx);
+      this.showPipeTypeDialog = false;
     },
     changeCameraName() {
       this.newCameraName = this.$store.getters.cameraList[this.currentCameraIndex];
@@ -393,10 +373,6 @@ export default {
       this.isPipelineNameEdit = false;
       this.namingDialog = true;
     },
-    openDuplicateDialog() {
-      this.pipeIndexToDuplicate = this.currentPipelineIndex - 1;
-      this.duplicateDialog = true;
-    },
     deleteCurrentPipeline() {
       if (this.$store.getters.pipelineList.length > 1) {
         this.handleInputWithIndex('deleteCurrentPipeline', {});
@@ -415,17 +391,7 @@ export default {
       }
     },
     duplicatePipeline() {
-      // if (!this.anotherCamera) {
-      //     this.pipelineDuplicate.camera = -1
-      // }
-      this.handleInputWithIndex("duplicatePipeline", this.pipeIndexToDuplicate);
-      // this.axios.post("http://" + this.$address + "/api/vision/duplicate", this.pipeIndexToDuplicate);
-
-      this.closeDuplicateDialog();
-    },
-    closeDuplicateDialog() {
-      this.duplicateDialog = false;
-      this.pipeIndexToDuplicate = undefined;
+      this.handleInputWithIndex("duplicatePipeline", this.currentPipelineIndex);
     },
     discardPipelineNameChange() {
       this.namingDialog = false;
