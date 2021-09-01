@@ -74,8 +74,12 @@ jobs:
           chmod +x gradlew
           ./gradlew build -x check
 
+      # Run Gradle Tests.
+      - name: Gradle Coverage
+        run: ./gradlew testHeadless
+
       # Run Tests Generate Coverage Report.
-      - name: Gradle Test and Coverage
+      - name: Gradle Coverage
         run: ./gradlew jacocoTestReport
       
       # Publish Coverage Report.

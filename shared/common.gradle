@@ -69,7 +69,7 @@ task generateJavaDocs(type: Javadoc) {
 }
 
 jacocoTestReport {
-    dependsOn test // Tests are required to run before generating the report
+//    dependsOn testHeadless // Tests are required to run before generating the report
 
     reports {
         xml.enabled true
