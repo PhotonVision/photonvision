@@ -68,6 +68,9 @@ jobs:
         with:
           java-version: 11
 
+      # DEBUGGING
+      - run: sudo apt install -y tree && tree
+
       # Run Gradle build.
       - name: Gradle Build
         run: |
