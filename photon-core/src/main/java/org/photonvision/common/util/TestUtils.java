@@ -135,7 +135,7 @@ public class TestUtils {
     }
 
     private static Path getResourcesFolderPath(boolean testMode) {
-        return Path.of((testMode ? "photon-server/src/main" : "src/test"), "resources")
+        return Path.of((testMode ? "src/main" : "src/test"), "resources")
                 .toAbsolutePath();
     }
 

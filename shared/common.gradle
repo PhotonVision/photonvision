@@ -53,6 +53,7 @@ test {
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }
+    workingDir = new File("${rootDir}")
 }
 
 task testHeadless(type: Test) {
