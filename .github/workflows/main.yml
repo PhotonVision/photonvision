@@ -75,7 +75,7 @@ jobs:
           ./gradlew build -x check
 
       # Run Gradle Tests.
-      - name: Gradle Coverage
+      - name: Gradle Tests
         run: ./gradlew testHeadless -i
 
       # Generate Coverage Report.

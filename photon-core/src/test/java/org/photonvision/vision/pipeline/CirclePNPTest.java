@@ -113,7 +113,7 @@ public class CirclePNPTest {
                         TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
                         TestUtils.WPI2020Image.FOV,
                         new Rotation2d(),
-                        TestUtils.get2020LifeCamCoeffs(true));
+                        TestUtils.get2020LifeCamCoeffs(false));
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
