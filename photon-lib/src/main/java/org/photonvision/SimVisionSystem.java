@@ -125,7 +125,6 @@ public class SimVisionSystem {
     *     PhotonVision parameters.
     */
     public void processFrame(Pose2d robotPoseMeters) {
-
         Pose2d cameraPos = robotPoseMeters.transformBy(cameraToRobot.inverse());
 
         ArrayList<PhotonTrackedTarget> visibleTgtList = new ArrayList<>(tgtList.size());

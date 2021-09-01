@@ -53,12 +53,14 @@ test {
     testLogging {
         events "passed", "skipped", "failed", "standardOut", "standardError"
     }
+    workingDir = new File("${rootDir}")
 }
 
 task testHeadless(type: Test) {
     group = "verification"
     systemProperty("java.awt.headless", "true")
     useJUnitPlatform()
+    exclude '**/*BenchmarkTest*'
 }
 
 task generateJavaDocs(type: Javadoc) {
@@ -68,7 +70,7 @@ task generateJavaDocs(type: Javadoc) {
 }
 
 jacocoTestReport {
-    dependsOn test // Tests are required to run before generating the report
+//    dependsOn testHeadless // Tests are required to run before generating the report
 
     reports {
         xml.enabled true

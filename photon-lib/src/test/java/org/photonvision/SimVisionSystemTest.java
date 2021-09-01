@@ -53,7 +53,6 @@ class SimVisionSystemTest {
     @ParameterizedTest
     @ValueSource(doubles = {5, 10, 15, 20, 25, 30})
     public void testDistanceAligned(double dist) {
-
         final var targetPose = new Pose2d(new Translation2d(35, 0), new Rotation2d());
         var sysUnderTest =
                 new SimVisionSystem("Test", 80.0, 0.0, new Transform2d(), 1, 99999, 320, 240, 0);

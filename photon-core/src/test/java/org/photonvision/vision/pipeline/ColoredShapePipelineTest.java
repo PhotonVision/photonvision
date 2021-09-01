@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipeline;
 
-import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
@@ -58,33 +57,36 @@ public class ColoredShapePipelineTest {
         printTestResults(colouredShapePipelineResult);
     }
 
-    @Test
-    public static void testCircleShapeDetection(
-            ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
-        settings.desiredShape = ContourShape.Circle;
-        pipeline.settings = settings;
-        CVPipelineResult colouredShapePipelineResult = pipeline.run(frame, QuirkyCamera.DefaultCamera);
-        TestUtils.showImage(
-                colouredShapePipelineResult.outputFrame.image.getMat(), "Pipeline output: Circle.");
-        printTestResults(colouredShapePipelineResult);
-    }
-
-    @Test
-    public static void testPowercellDetection(
-            ColoredShapePipelineSettings settings, ColoredShapePipeline pipeline) {
-
-        settings.hsvHue.set(10, 40);
-        settings.hsvSaturation.set(100, 255);
-        settings.hsvValue.set(100, 255);
-        settings.maxCannyThresh = 50;
-        settings.accuracy = 15;
-        settings.allowableThreshold = 5;
-        var frameProvider =
-                new FileFrameProvider(
-                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
-                        TestUtils.WPI2019Image.FOV);
-        testCircleShapeDetection(pipeline, settings, frameProvider.get());
-    }
+    //    @Test
+    //    public static void testCircleShapeDetection(
+    //            ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
+    //        settings.desiredShape = ContourShape.Circle;
+    //        pipeline.settings = settings;
+    //        CVPipelineResult colouredShapePipelineResult = pipeline.run(frame,
+    // QuirkyCamera.DefaultCamera);
+    //        TestUtils.showImage(
+    //                colouredShapePipelineResult.outputFrame.image.getMat(), "Pipeline output:
+    // Circle.");
+    //        printTestResults(colouredShapePipelineResult);
+    //    }
+    //
+    //    @Test
+    //    public static void testPowercellDetection(
+    //            ColoredShapePipelineSettings settings, ColoredShapePipeline pipeline) {
+    //
+    //        settings.hsvHue.set(10, 40);
+    //        settings.hsvSaturation.set(100, 255);
+    //        settings.hsvValue.set(100, 255);
+    //        settings.maxCannyThresh = 50;
+    //        settings.accuracy = 15;
+    //        settings.allowableThreshold = 5;
+    //        var frameProvider =
+    //                new FileFrameProvider(
+    //
+    // TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
+    //                        TestUtils.WPI2019Image.FOV);
+    //        testCircleShapeDetection(pipeline, settings, frameProvider.get());
+    //    }
 
     public static void main(String[] args) {
         TestUtils.loadLibraries();
@@ -110,8 +112,8 @@ public class ColoredShapePipelineTest {
         testTriangleDetection(pipeline, settings, frameProvider.get());
         testQuadrilateralDetection(pipeline, settings, frameProvider.get());
         testCustomShapeDetection(pipeline, settings, frameProvider.get());
-        testCircleShapeDetection(pipeline, settings, frameProvider.get());
-        testPowercellDetection(settings, pipeline);
+        //        testCircleShapeDetection(pipeline, settings, frameProvider.get());
+        //        testPowercellDetection(settings, pipeline);
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {
