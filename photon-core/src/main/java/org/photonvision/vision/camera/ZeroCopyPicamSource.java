@@ -136,22 +136,22 @@ public class ZeroCopyPicamSource extends VisionSource {
         @Override
         public void setExposure(double exposure) {
             lastExposure = exposure;
-            var success = PicamJNI.setExposure((int) Math.round(exposure));
-            if (!success) logger.warn("Couldn't set Pi camera exposure");
+            var failure = PicamJNI.setExposure((int) Math.round(exposure));
+            if (failure) logger.warn("Couldn't set Pi camera exposure");
         }
 
         @Override
         public void setBrightness(int brightness) {
             lastBrightness = brightness;
-            var success = PicamJNI.setBrightness(brightness);
-            if (!success) logger.warn("Couldn't set Pi camera brightness");
+            var failure = PicamJNI.setBrightness(brightness);
+            if (failure) logger.warn("Couldn't set Pi camera brightness");
         }
 
         @Override
         public void setGain(int gain) {
             lastGain = gain;
-            var success = PicamJNI.setGain(gain);
-            if (!success) logger.warn("Couldn't set Pi camera gain");
+            var failure = PicamJNI.setGain(gain);
+            if (failure) logger.warn("Couldn't set Pi camera gain");
         }
 
         @Override
@@ -162,12 +162,12 @@ public class ZeroCopyPicamSource extends VisionSource {
         @Override
         protected void setVideoModeInternal(VideoMode videoMode) {
             var mode = (FPSRatedVideoMode) videoMode;
-            var success = PicamJNI.destroyCamera();
-            if (!success)
+            var failure = PicamJNI.destroyCamera();
+            if (failure)
                 throw new RuntimeException(
                         "Couldn't destroy a zero copy Pi camera while switching video modes");
-            success = PicamJNI.createCamera(mode.width, mode.height, mode.fpsActual);
-            if (!success)
+            failure = PicamJNI.createCamera(mode.width, mode.height, mode.fpsActual);
+            if (failure)
                 throw new RuntimeException(
                         "Couldn't create a zero copy Pi camera while switching video modes");
 
