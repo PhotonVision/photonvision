@@ -246,11 +246,17 @@ jobs:
       - name: Install wpiformat
         run: pip3 install wpiformat
       - name: Run
-        run: |
-            ls -la
-            wpiformat -clang 10 -f photon-lib
+        run: wpiformat -clang 10 -f photon-lib
       - name: Check Output
         run: git --no-pager diff --exit-code HEAD
+      - name: Generate diff
+        run: git diff HEAD > wpiformat-fixes.patch
+        if: ${{ failure() }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: wpiformat fixes
+          path: wpiformat-fixes.patch
+        if: ${{ failure() }}
 
   photon-build-package:
     needs: [photonclient-build, photon-build-all, photonserver-build-offline-docs, photonlib-build-host, photonlib-build-docker]
