@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,9 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
+import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class CirclePNPTest {

@@ -88,7 +88,8 @@ public class FindCirclesPipe
                 // Grab the moments of the current contour
                 Moments mu = contour.getMoments();
                 // Determine if the contour is within the threshold of the detected circle
-                // NOTE: This means that the centroid of the contour must be within the "allowable threshold"
+                // NOTE: This means that the centroid of the contour must be within the "allowable
+                // threshold"
                 // of the center of the circle
                 if (Math.abs(x_center - (mu.m10 / mu.m00)) <= params.allowableThreshold
                         && Math.abs(y_center - (mu.m01 / mu.m00)) <= params.allowableThreshold) {

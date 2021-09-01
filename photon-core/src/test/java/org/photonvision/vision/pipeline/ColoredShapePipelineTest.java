@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
