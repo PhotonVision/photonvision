@@ -135,8 +135,7 @@ public class TestUtils {
     }
 
     private static Path getResourcesFolderPath(boolean testMode) {
-        return Path.of((testMode ? "src/main" : "src/test"), "resources")
-                .toAbsolutePath();
+        return Path.of((testMode ? "src/main" : "src/test"), "resources").toAbsolutePath();
     }
 
     public static Path getTestMode2019ImagePath() {
