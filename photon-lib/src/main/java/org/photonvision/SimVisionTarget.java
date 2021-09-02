@@ -24,7 +24,6 @@ public class SimVisionTarget {
     double targetWidthMeters;
     double targetHeightMeters;
     double targetHeightAboveGroundMeters;
-    double targetInfill_pct;
     double tgtAreaMeters2;
 
     /**

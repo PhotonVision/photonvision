@@ -22,7 +22,7 @@ allprojects {
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2021.2.1"
+    wpilibVersion = "2021.3.1"
     opencvVersion = "3.4.7-5"
     joglVersion = "2.4.0-rc-20200307"
     pubVersion = versionString
