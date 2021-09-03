@@ -92,8 +92,8 @@ class PhotonPipelineResult {
   friend Packet& operator>>(Packet& packet, PhotonPipelineResult& result);
 
  private:
-  units::second_t latency;
-  bool hasTargets;
+  units::second_t latency = 0_s;
+  bool hasTargets = false;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
   inline static bool HAS_WARNED = false;
 };

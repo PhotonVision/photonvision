@@ -42,7 +42,7 @@ dependencies {
     compile "edu.wpi.first.thirdparty.frc2021.opencv:opencv-jni:$opencvVersion:osxx86-64"
     compile "edu.wpi.first.thirdparty.frc2021.opencv:opencv-jni:$opencvVersion:windowsx86-64"
 
-    implementation "edu.wpi.first.wpimath:wpimath-java:2021.1.2-9-g26584ff"
+    implementation "edu.wpi.first.wpimath:wpimath-java:2021.3.1"
 
     // test stuff
     testImplementation("org.junit.jupiter:junit-jupiter:5.6.0")

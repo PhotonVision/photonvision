@@ -38,7 +38,6 @@ class SimVisionTarget {
   units::meter_t targetHeightAboveGround;
   units::meter_t targetWidth;
   units::meter_t targetHeight;
-  double targetInfill_pct;
   units::square_meter_t tgtArea;
 };
 
