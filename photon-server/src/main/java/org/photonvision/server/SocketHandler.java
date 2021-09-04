@@ -26,6 +26,7 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -183,8 +184,9 @@ public class SocketHandler {
                                 //                                var type = (PipelineType)
                                 // data.get("pipelineType");
                                 //                                var name = (String) data.get("pipelineName");
-                                var type = PipelineType.Reflective;
-                                var name = (String) entryValue;
+                                var arr = (ArrayList<Object>) entryValue;
+                                var name = (String) arr.get(0);
+                                var type = PipelineType.values()[(Integer) arr.get(1) + 2];
 
                                 var newPipelineEvent =
                                         new IncomingWebSocketEvent<>(
@@ -308,6 +310,18 @@ public class SocketHandler {
                                 } else {
                                     logger.warn("Unknown message for PSC: " + data.keySet().iterator().next());
                                 }
+                                break;
+                            }
+                        case SMT_CHANGEPIPELINETYPE:
+                            {
+                                var changePipelineEvent =
+                                        new IncomingWebSocketEvent<>(
+                                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                                "changePipelineType",
+                                                (Integer) entryValue,
+                                                cameraIndex,
+                                                context);
+                                dcService.publishEvent(changePipelineEvent);
                                 break;
                             }
                     }

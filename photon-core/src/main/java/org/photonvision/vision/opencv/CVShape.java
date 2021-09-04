@@ -17,13 +17,18 @@
 
 package org.photonvision.vision.opencv;
 
+import org.jetbrains.annotations.Nullable;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.MatOfPoint3f;
-import org.opencv.imgproc.Imgproc;
+import org.opencv.core.Point;
 
-public class CVShape {
+public class CVShape implements Releasable {
     public final Contour contour;
-    public final ContourShape shape;
+
+    @Nullable public final ContourShape shape;
+
+    public double radius = 0;
+    public Point center = null;
 
     private MatOfPoint3f customTarget = null;
 
@@ -32,6 +37,12 @@ public class CVShape {
     public CVShape(Contour contour, ContourShape shape) {
         this.contour = contour;
         this.shape = shape;
+    }
+
+    public CVShape(Contour contour, Point center, double radius) {
+        this(contour, ContourShape.Circle);
+        this.radius = radius;
+        this.center = center;
     }
 
     public CVShape(Contour contour, MatOfPoint3f targetPoints) {
@@ -44,36 +55,10 @@ public class CVShape {
         return contour;
     }
 
-    public MatOfPoint2f getApproxPolyDp(double epsilon, boolean closed) {
+    @Override
+    public void release() {
+        if (customTarget != null) customTarget.release();
         approxCurve.release();
-        approxCurve = new MatOfPoint2f();
-
-        Imgproc.approxPolyDP(contour.getMat2f(), approxCurve, epsilon, closed);
-        return approxCurve;
-    }
-
-    public MatOfPoint2f getApproxPolyDpConvex(double epsilon, boolean closed) {
-        approxCurve.release();
-        approxCurve = new MatOfPoint2f();
-
-        Imgproc.approxPolyDP(contour.getConvexHull(), approxCurve, epsilon, closed);
-        return approxCurve;
-    }
-
-    boolean approxPolyMatchesShape() {
-        var pointList = approxCurve.toList();
-
-        // TODO: @Matt
-        switch (shape) {
-            case Custom:
-                break;
-            case Circle:
-                break;
-            case Triangle:
-                break;
-            case Quadrilateral:
-                break;
-        }
-        return true;
+        contour.release();
     }
 }

@@ -45,6 +45,8 @@ public class SpeckleRejectPipe
             for (Contour c : in) {
                 if (c.getArea() >= minAllowedArea) {
                     m_despeckledContours.add(c);
+                } else {
+                    c.release();
                 }
             }
         }

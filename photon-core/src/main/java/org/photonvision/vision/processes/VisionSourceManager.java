@@ -22,6 +22,7 @@ import edu.wpi.cscore.UsbCameraInfo;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -144,6 +145,11 @@ public class VisionSourceManager {
                             "After matching, "
                                     + unmatchedLoadedConfigs.size()
                                     + " configs remained unmatched. Is your camera disconnected?");
+            logger.warn(
+                    "Unloaded configs: "
+                            + unmatchedLoadedConfigs.stream()
+                                    .map(it -> it.nickname)
+                                    .collect(Collectors.joining()));
             hasWarned = true;
         }
 

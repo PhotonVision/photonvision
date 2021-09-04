@@ -47,7 +47,7 @@ public class CVMat implements Releasable {
     private StringBuilder getStackTraceBuilder() {
         var trace = Thread.currentThread().getStackTrace();
 
-        final int STACK_FRAMES_TO_SKIP = 4;
+        final int STACK_FRAMES_TO_SKIP = 3;
         final var traceStr = new StringBuilder();
         for (int idx = STACK_FRAMES_TO_SKIP; idx < trace.length; idx++) {
             traceStr.append("\t\n").append(trace[idx]);

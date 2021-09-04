@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,7 +31,9 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
+import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class CirclePNPTest {
@@ -80,46 +83,43 @@ public class CirclePNPTest {
         assertEquals(5, cameraCalibration.getCameraExtrinsicsMat().cols());
     }
 
-    //    @Test
-    //    public void testCircle() {
-    //        var pipeline = new ColoredShapePipeline();
-    //
-    //        pipeline.getSettings().hsvHue.set(0, 100);
-    //        pipeline.getSettings().hsvSaturation.set(100, 255);
-    //        pipeline.getSettings().hsvValue.set(100, 255);
-    //        pipeline.getSettings().outputShouldDraw = true;
-    //        pipeline.getSettings().maxCannyThresh = 50;
-    //        pipeline.getSettings().accuracy = 15;
-    //        pipeline.getSettings().allowableThreshold = 5;
-    //        pipeline.getSettings().solvePNPEnabled = true;
-    //        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
-    //        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
-    //        pipeline.getSettings().cameraCalibration = getCoeffs(LIFECAM_480P_CAL_FILE);
-    //        pipeline.getSettings().targetModel = TargetModel.kCircularPowerCell7in;
-    //        pipeline.getSettings().outputShouldDraw = true;
-    //        pipeline.getSettings().outputShowMultipleTargets = false;
-    //        pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
-    //        pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
-    //        pipeline.getSettings().desiredShape = ContourShape.Circle;
-    //        pipeline.getSettings().allowableThreshold = 10;
-    //        pipeline.getSettings().minRadius = 30;
-    //        pipeline.getSettings().accuracyPercentage = 30.0;
-    //
-    //        var frameProvider =
-    //                new FileFrameProvider(
-    //
-    // TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
-    //                        TestUtils.WPI2020Image.FOV,
-    //                        new Rotation2d(),
-    //                        TestUtils.get2020LifeCamCoeffs(false));
-    //
-    //        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(),
-    // QuirkyCamera.DefaultCamera);
-    //        printTestResults(pipelineResult);
-    //
-    //        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output",
-    // 999999);
-    //    }
+    @Test
+    public void testCircle() {
+        var pipeline = new ColoredShapePipeline();
+
+        pipeline.getSettings().hsvHue.set(0, 100);
+        pipeline.getSettings().hsvSaturation.set(100, 255);
+        pipeline.getSettings().hsvValue.set(100, 255);
+        pipeline.getSettings().outputShouldDraw = true;
+        pipeline.getSettings().maxCannyThresh = 50;
+        pipeline.getSettings().circleAccuracy = 15;
+        pipeline.getSettings().circleDetectThreshold = 5;
+        pipeline.getSettings().solvePNPEnabled = true;
+        pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
+        pipeline.getSettings().cornerDetectionUseConvexHulls = true;
+        pipeline.getSettings().cameraCalibration = getCoeffs(LIFECAM_480P_CAL_FILE);
+        pipeline.getSettings().targetModel = TargetModel.kCircularPowerCell7in;
+        pipeline.getSettings().outputShouldDraw = true;
+        pipeline.getSettings().outputShowMultipleTargets = false;
+        pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
+        pipeline.getSettings().contourIntersection = ContourIntersectionDirection.Up;
+        pipeline.getSettings().contourShape = ContourShape.Circle;
+        pipeline.getSettings().circleDetectThreshold = 10;
+        pipeline.getSettings().contourRadius.setFirst(30);
+        pipeline.getSettings().accuracyPercentage = 30.0;
+
+        var frameProvider =
+                new FileFrameProvider(
+                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
+                        TestUtils.WPI2020Image.FOV,
+                        new Rotation2d(),
+                        TestUtils.get2020LifeCamCoeffs(true));
+
+        CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
+        printTestResults(pipelineResult);
+
+        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
+    }
 
     private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {
         var pipeline = new ReflectivePipeline();

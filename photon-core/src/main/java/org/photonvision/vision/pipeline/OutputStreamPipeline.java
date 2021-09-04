@@ -22,6 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -108,7 +109,10 @@ public class OutputStreamPipeline {
         sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
         // Draw 3D Targets on input and output if necessary
-        if (settings.solvePNPEnabled) {
+        if (settings.solvePNPEnabled
+                || (settings.solvePNPEnabled
+                        && settings instanceof ColoredShapePipelineSettings
+                        && ((ColoredShapePipelineSettings) settings).contourShape == ContourShape.Circle)) {
             var drawOnInputResult = draw3dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
             sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
 

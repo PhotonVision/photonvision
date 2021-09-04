@@ -29,8 +29,10 @@ Vue.use(VueAxios, axios);
 Vue.prototype.$msgPack = msgPack(true);
 
 import {dataHandleMixin} from './mixins/global/dataHandleMixin'
-
 Vue.mixin(dataHandleMixin);
+
+import {stateMixin} from './mixins/global/stateMixin'
+Vue.mixin(stateMixin);
 
 new Vue({
     router,

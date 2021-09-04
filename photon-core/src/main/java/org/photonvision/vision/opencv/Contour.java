@@ -18,6 +18,7 @@
 package org.photonvision.vision.opencv;
 
 import java.util.Comparator;
+import org.jetbrains.annotations.Nullable;
 import org.opencv.core.CvType;
 import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
@@ -45,6 +46,7 @@ public class Contour implements Releasable {
     private Moments moments = null;
 
     private MatOfPoint2f convexHull = null;
+    private MatOfPoint2f approxPolyDp = null;
 
     public Contour(MatOfPoint mat) {
         this.mat = mat;
@@ -66,6 +68,19 @@ public class Contour implements Releasable {
             ints.release();
         }
         return convexHull;
+    }
+
+    public MatOfPoint2f getApproxPolyDp(double epsilon, boolean closed) {
+        if (this.approxPolyDp == null) {
+            approxPolyDp = new MatOfPoint2f();
+            Imgproc.approxPolyDP(getConvexHull(), approxPolyDp, epsilon, closed);
+        }
+        return approxPolyDp;
+    }
+
+    @Nullable
+    public MatOfPoint2f getApproxPolyDp() {
+        return this.approxPolyDp;
     }
 
     public double getArea() {
@@ -197,6 +212,7 @@ public class Contour implements Releasable {
         if (mat != null) mat.release();
         if (mat2f != null) mat2f.release();
         if (convexHull != null) convexHull.release();
+        if (approxPolyDp != null) approxPolyDp.release();
     }
 
     public static MatOfPoint2f convertIndexesToPoints(MatOfPoint contour, MatOfInt indexes) {

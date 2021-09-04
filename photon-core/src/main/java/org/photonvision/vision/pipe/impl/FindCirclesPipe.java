@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 import org.photonvision.vision.opencv.CVShape;
 import org.photonvision.vision.opencv.Contour;
-import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class FindCirclesPipe
@@ -49,6 +49,10 @@ public class FindCirclesPipe
         circles.release();
         List<CVShape> output = new ArrayList<>();
 
+        var diag = params.diagonalLengthPx;
+        var minRadius = (int) (params.minRadius * diag / 100.0);
+        var maxRadius = (int) (params.maxRadius * diag / 100.0);
+
         Imgproc.HoughCircles(
                 in.getLeft(),
                 circles,
@@ -64,10 +68,15 @@ public class FindCirclesPipe
                 params.minDist,
                 params.maxCannyThresh,
                 params.accuracy,
-                params.minRadius,
-                params.maxRadius);
+                minRadius,
+                maxRadius);
         // Great, we now found the center point of the circle and it's radius, but we have no idea what
         // contour it corresponds to
+        // Each contour can only match to one circle, so we keep a list of unmatched contours around and
+        // only match against them
+        // This does mean that contours closer than allowableThreshold aren't matched to anything if
+        // there's a 'better' option
+        var unmatchedContours = in.getRight();
         for (int x = 0; x < circles.cols(); x++) {
             // Grab the current circle we are looking at
             double[] c = circles.get(0, x);
@@ -75,17 +84,26 @@ public class FindCirclesPipe
             double x_center = c[0];
             double y_center = c[1];
 
-            for (Contour contour : in.getRight()) {
+            for (Contour contour : unmatchedContours) {
                 // Grab the moments of the current contour
                 Moments mu = contour.getMoments();
                 // Determine if the contour is within the threshold of the detected circle
+                // NOTE: This means that the centroid of the contour must be within the "allowable
+                // threshold"
+                // of the center of the circle
                 if (Math.abs(x_center - (mu.m10 / mu.m00)) <= params.allowableThreshold
                         && Math.abs(y_center - (mu.m01 / mu.m00)) <= params.allowableThreshold) {
                     // If it is, then add it to the output array
-                    output.add(new CVShape(contour, ContourShape.Circle));
+                    output.add(new CVShape(contour, new Point(c[0], c[1]), c[2]));
+                    unmatchedContours.remove(contour);
+                    break;
                 }
             }
         }
+
+        // Release everything we don't use
+        for (var c : unmatchedContours) c.release();
+
         return output;
     }
 
@@ -96,6 +114,7 @@ public class FindCirclesPipe
         private final int minDist;
         private final int maxCannyThresh;
         private final int accuracy;
+        private final double diagonalLengthPx;
 
         /*
         * @params minDist - Minimum distance between the centers of the detected circles.
@@ -114,13 +133,15 @@ public class FindCirclesPipe
                 int minDist,
                 int maxRadius,
                 int maxCannyThresh,
-                int accuracy) {
+                int accuracy,
+                double diagonalLengthPx) {
             this.allowableThreshold = allowableThreshold;
             this.minRadius = minRadius;
             this.maxRadius = maxRadius;
             this.minDist = minDist;
             this.maxCannyThresh = maxCannyThresh;
             this.accuracy = accuracy;
+            this.diagonalLengthPx = diagonalLengthPx;
         }
     }
 }

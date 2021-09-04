@@ -89,7 +89,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                     case "deleteCurrPipeline":
                         var indexToDelete = parentModule.pipelineManager.getCurrentPipelineIndex();
                         logger.info("Deleting current pipe at index " + indexToDelete);
-                        parentModule.pipelineManager.removePipeline(indexToDelete);
+                        int newIndex = parentModule.pipelineManager.removePipeline(indexToDelete);
+                        parentModule.setPipeline(newIndex);
                         parentModule.saveAndBroadcastAll();
                         return;
                     case "changePipeline": // change active pipeline
@@ -110,7 +111,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         parentModule.takeCalibrationSnapshot();
                         return;
                     case "duplicatePipeline":
-                        parentModule.pipelineManager.duplicatePipeline((Integer) newPropValue);
+                        int idx = parentModule.pipelineManager.duplicatePipeline((Integer) newPropValue);
+                        parentModule.setPipeline(idx);
                         parentModule.saveAndBroadcastAll();
                         return;
                     case "robotOffsetPoint":
@@ -154,6 +156,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                             }
                         }
                         return;
+                    case "changePipelineType":
+                        parentModule.pipelineManager.changePipelineType((Integer) newPropValue);
+                        parentModule.saveAndBroadcastAll();
+                        return;
                 }
 
                 // special case for camera settables
@@ -183,8 +189,8 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         var actual = new DoubleCouple(orig.get(0), orig.get(1));
                         propField.set(currentSettings, actual);
                     } else if (propType.isAssignableFrom(IntegerCouple.class)) {
-                        var orig = (ArrayList<Integer>) newPropValue;
-                        var actual = new IntegerCouple(orig.get(0), orig.get(1));
+                        var orig = (ArrayList<Number>) newPropValue;
+                        var actual = new IntegerCouple(orig.get(0).intValue(), orig.get(1).intValue());
                         propField.set(currentSettings, actual);
                     } else if (propType.equals(Double.TYPE)) {
                         propField.setDouble(currentSettings, ((Number) newPropValue).doubleValue());
