@@ -15,6 +15,7 @@ includeProject {
 
 includeOtherLibs {
   ^frc/
+  ^networktables/
   ^units/
   ^wpi/
 }

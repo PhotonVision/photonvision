@@ -18,7 +18,6 @@
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableEntry.h>
 #include <networktables/NetworkTableInstance.h>
-
 #include <units/angle.h>
 #include <units/length.h>
 

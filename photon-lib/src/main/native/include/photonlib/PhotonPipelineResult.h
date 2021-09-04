@@ -57,12 +57,12 @@ class PhotonPipelineResult {
     if (!HasTargets() && !HAS_WARNED) {
       ::frc::DriverStation::ReportError(
           "This PhotonPipelineResult object has no targets associated with it! "
-          "Please check hasTargets() before calling this method. For more "
+          "Please check HasTargets() before calling this method. For more "
           "information, please review the PhotonLib documentation at "
           "http://docs.photonvision.org");
       HAS_WARNED = true;
     }
-    return hasTargets ? targets[0] : PhotonTrackedTarget();
+    return HasTargets() ? targets[0] : PhotonTrackedTarget();
   }
 
   /**
@@ -75,7 +75,7 @@ class PhotonPipelineResult {
    * Returns whether the pipeline has targets.
    * @return Whether the pipeline has targets.
    */
-  bool HasTargets() const { return hasTargets; }
+  bool HasTargets() const { return targets.size() > 0; }
 
   /**
    * Returns a reference to the vector of targets.
@@ -93,7 +93,6 @@ class PhotonPipelineResult {
 
  private:
   units::second_t latency = 0_s;
-  bool hasTargets = false;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
   inline static bool HAS_WARNED = false;
 };

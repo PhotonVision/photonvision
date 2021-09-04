@@ -17,12 +17,13 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
+
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableEntry.h>
 #include <networktables/NetworkTableInstance.h>
-
-#include <memory>
-#include <string>
+#include <wpi/deprecated.h>
 
 #include "photonlib/PhotonPipelineResult.h"
 
@@ -118,9 +119,11 @@ class PhotonCamera {
    * This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should
    * be used instead.
    * @deprecated This method should be replaced with {@link
-   * PhotonPipelineResult#hasTargets()}
+   * PhotonPipelineResult#HasTargets()}
    * @return Whether the latest target result has targets.
    */
+  WPI_DEPRECATED(
+      "This method should be replaced with PhotonPipelineResult::HasTargets()")
   bool HasTargets() const { return GetLatestResult().HasTargets(); }
 
  private:

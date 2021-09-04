@@ -33,9 +33,6 @@ public class PhotonPipelineResult {
     // Latency in milliseconds.
     private double latencyMillis;
 
-    // Whether targets exist.
-    private boolean hasTargets;
-
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {}
 
@@ -47,7 +44,6 @@ public class PhotonPipelineResult {
     */
     public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets) {
         this.latencyMillis = latencyMillis;
-        this.hasTargets = targets.size() != 0;
         this.targets.addAll(targets);
     }
 
@@ -67,7 +63,7 @@ public class PhotonPipelineResult {
     * @return The best target of the pipeline result.
     */
     public PhotonTrackedTarget getBestTarget() {
-        if (!hasTargets && !HAS_WARNED) {
+        if (!hasTargets() && !HAS_WARNED) {
             String errStr =
                     "This PhotonPipelineResult object has no targets associated with it! Please check hasTargets() "
                             + "before calling this method. For more information, please review the PhotonLib "
@@ -76,7 +72,7 @@ public class PhotonPipelineResult {
             new Exception().printStackTrace();
             HAS_WARNED = true;
         }
-        return hasTargets ? targets.get(0) : null;
+        return hasTargets() ? targets.get(0) : null;
     }
 
     /**
@@ -94,7 +90,7 @@ public class PhotonPipelineResult {
     * @return Whether the pipeline has targets.
     */
     public boolean hasTargets() {
-        return hasTargets;
+        return targets.size() > 0;
     }
 
     /**
@@ -112,14 +108,13 @@ public class PhotonPipelineResult {
         if (o == null || getClass() != o.getClass()) return false;
         PhotonPipelineResult that = (PhotonPipelineResult) o;
         boolean latencyMatch = Double.compare(that.latencyMillis, latencyMillis) == 0;
-        boolean hasTargetsMatch = that.hasTargets == hasTargets;
         boolean targetsMatch = that.targets.equals(targets);
-        return latencyMatch && hasTargetsMatch && targetsMatch;
+        return latencyMatch && targetsMatch;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(latencyMillis, hasTargets, targets);
+        return Objects.hash(latencyMillis, targets);
     }
 
     /**
@@ -131,7 +126,6 @@ public class PhotonPipelineResult {
     public Packet createFromPacket(Packet packet) {
         // Decode latency, existence of targets, and number of targets.
         latencyMillis = packet.decodeDouble();
-        hasTargets = packet.decodeBoolean();
         byte targetCount = packet.decodeByte();
 
         targets.clear();
@@ -155,7 +149,6 @@ public class PhotonPipelineResult {
     public Packet populatePacket(Packet packet) {
         // Encode latency, existence of targets, and number of targets.
         packet.encode(latencyMillis);
-        packet.encode(hasTargets);
         packet.encode((byte) targets.size());
 
         // Encode the information of each target.

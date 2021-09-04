@@ -26,7 +26,11 @@ public class Packet {
     // Read and write positions.
     int readPos, writePos;
 
-    /** Constructs an empty packet. */
+    /**
+    * Constructs an empty packet.
+    *
+    * @param size The size of the packet buffer.
+    */
     public Packet(int size) {
         this.size = size;
         packetData = new byte[size];
