@@ -21,13 +21,10 @@ namespace photonlib {
 PhotonPipelineResult::PhotonPipelineResult(
     units::second_t latency, wpi::ArrayRef<PhotonTrackedTarget> targets)
     : latency(latency),
-      targets(targets.data(), targets.data() + targets.size()) {
-  hasTargets = targets.size() != 0;
-}
+      targets(targets.data(), targets.data() + targets.size()) {}
 
 bool PhotonPipelineResult::operator==(const PhotonPipelineResult& other) const {
-  return latency == other.latency && hasTargets == other.hasTargets &&
-         targets == other.targets;
+  return latency == other.latency && targets == other.targets;
 }
 
 bool PhotonPipelineResult::operator!=(const PhotonPipelineResult& other) const {
@@ -35,8 +32,8 @@ bool PhotonPipelineResult::operator!=(const PhotonPipelineResult& other) const {
 }
 
 Packet& operator<<(Packet& packet, const PhotonPipelineResult& result) {
-  // Encode latency, existence of targets, and number of targets.
-  packet << result.latency.to<double>() * 1000 << result.hasTargets
+  // Encode latency and number of targets.
+  packet << result.latency.to<double>() * 1000
          << static_cast<int8_t>(result.targets.size());
 
   // Encode the information of each target.
@@ -50,7 +47,7 @@ Packet& operator>>(Packet& packet, PhotonPipelineResult& result) {
   // Decode latency, existence of targets, and number of targets.
   int8_t targetCount = 0;
   double latencyMillis = 0;
-  packet >> latencyMillis >> result.hasTargets >> targetCount;
+  packet >> latencyMillis >> targetCount;
   result.latency = units::second_t(latencyMillis / 1000.0);
 
   result.targets.clear();
