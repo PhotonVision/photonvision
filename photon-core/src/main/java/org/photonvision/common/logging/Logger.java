@@ -344,6 +344,8 @@ public class Logger {
                 wantsFlush = true;
             } catch (IOException e) {
                 e.printStackTrace();
+            } catch (NullPointerException e){
+                // Nothing to do - no stream available for writing
             }
         }
     }
