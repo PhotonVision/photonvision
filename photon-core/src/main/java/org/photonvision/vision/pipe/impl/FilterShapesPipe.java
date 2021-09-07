@@ -50,8 +50,8 @@ public class FilterShapesPipe
 
     private boolean shouldRemove(CVShape shape) {
         return shape.shape != params.desiredShape
-                || shape.contour.getArea() / params.getFrameStaticProperties().imageArea > params.maxArea
-                || shape.contour.getArea() / params.getFrameStaticProperties().imageArea < params.minArea
+                || shape.contour.getArea() / params.getFrameStaticProperties().imageArea * 100.0 > params.maxArea
+                || shape.contour.getArea() / params.getFrameStaticProperties().imageArea * 100.0 < params.minArea
                 || shape.contour.getPerimeter() > params.maxPeri
                 || shape.contour.getPerimeter() < params.minPeri;
     }
