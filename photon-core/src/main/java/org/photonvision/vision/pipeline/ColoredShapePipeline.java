@@ -78,6 +78,23 @@ public class ColoredShapePipeline
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
 
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
+            PicamJNI.setThresholds(
+                    settings.hsvHue.getFirst() / 180d,
+                    settings.hsvSaturation.getFirst() / 255d,
+                    settings.hsvValue.getFirst() / 255d,
+                    settings.hsvHue.getSecond() / 180d,
+                    settings.hsvSaturation.getSecond() / 255d,
+                    settings.hsvValue.getSecond() / 255d);
+
+            PicamJNI.setRotation(settings.inputImageRotationMode.value);
+            PicamJNI.setShouldCopyColor(settings.inputShouldShow);
+        } else {
+            var hsvParams =
+                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
+            hsvPipe.setParams(hsvParams);
+        }
+
         ErodeDilatePipe.ErodeDilateParams erodeDilateParams =
                 new ErodeDilatePipe.ErodeDilateParams(settings.erode, settings.dilate, 5);
         // TODO: add kernel size to pipeline settings
