@@ -72,15 +72,15 @@ jobs:
       - name: Gradle Build
         run: |
           chmod +x gradlew
-          ./gradlew build -x check
+          ./gradlew build -x check --max-workers 1
 
       # Run Gradle Tests.
       - name: Gradle Tests
-        run: ./gradlew testHeadless -i
+        run: ./gradlew testHeadless -i --max-workers 1
 
       # Generate Coverage Report.
       - name: Gradle Coverage
-        run: ./gradlew jacocoTestReport
+        run: ./gradlew jacocoTestReport --max-workers 1
       
       # Publish Coverage Report.
       - name: Publish Server Coverage Report
@@ -147,6 +147,7 @@ jobs:
           chmod +x gradlew
           ./gradlew spotlessCheck
 
+
   photon-release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: [photon-build-package]
@@ -186,7 +187,7 @@ jobs:
       - run: git fetch --tags --force
       - run: |
           chmod +x gradlew
-          ./gradlew photon-lib:build
+          ./gradlew photon-lib:build --max-workers 1
       - run: ./gradlew photon-lib:publish
         name: Publish
         env:
@@ -219,7 +220,7 @@ jobs:
           git describe --tags --exclude="Dev"
       - run: |
           chmod +x gradlew
-          ./gradlew photon-lib:build
+          ./gradlew photon-lib:build --max-workers 1
       - run: |
           chmod +x gradlew
           ./gradlew photon-lib:publish
@@ -293,7 +294,7 @@ jobs:
       # Build fat jar.
       - run: |
           chmod +x gradlew
-          ./gradlew photon-server:shadowJar
+          ./gradlew photon-server:shadowJar --max-workers 1
 
       # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@master
