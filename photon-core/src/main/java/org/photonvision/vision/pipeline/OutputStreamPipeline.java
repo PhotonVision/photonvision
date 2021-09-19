@@ -93,9 +93,24 @@ public class OutputStreamPipeline {
 
         long sumPipeNanosElapsed = 0L;
 
+        var inCols = inMat.cols();
+        var inRows = inMat.rows();
+        var outCols = outMat.cols();
+        var outRows = outMat.rows();
+
+        System.out.printf("Before: %d %d | %d %d\n", inCols, inRows, outCols, outRows);
+
         // Resize both in place before doing any conversion
         sumPipeNanosElapsed += pipeProfileNanos[0] = resizeImagePipe.run(inMat).nanosElapsed;
         sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
+
+        inCols = inMat.cols();
+        inRows = inMat.rows();
+        outCols = outMat.cols();
+        outRows = outMat.rows();
+
+        System.out.printf("After:  %d %d | %d %d\n", inCols, inRows, outCols, outRows);
+        System.out.printf("Divisor: %d\n", settings.streamingFrameDivisor.value);
 
         // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
         var outputMatPipeResult = outputMatPipe.run(outMat);

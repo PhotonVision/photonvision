@@ -40,7 +40,9 @@ public class Draw2dTargetsPipe
 
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
-        var imageSize = Math.sqrt(in.getLeft().rows() * in.getLeft().cols());
+        var imRows = in.getLeft().rows();
+        var imCols = in.getLeft().cols();
+        var imageSize = Math.sqrt(imRows * imCols);
         var textSize = params.kPixelsToText * imageSize;
         var thickness = params.kPixelsToThickness * imageSize;
 
