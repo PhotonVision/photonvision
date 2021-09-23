@@ -245,7 +245,7 @@ jobs:
       - name: Install clang-format
         run: sudo apt-get update -q && sudo apt-get install clang-format-10
       - name: Install wpiformat
-        run: pip3 install wpiformat
+        run: pip3 install wpiformat==2021.42
       - name: Run
         run: wpiformat -clang 10 -f photon-lib
       - name: Check Output
