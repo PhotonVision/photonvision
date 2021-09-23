@@ -30,11 +30,13 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
+import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.PipelineProfiler;
@@ -130,7 +132,14 @@ public class Main {
                         "Shape",
                         TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_1, true)
                                 .toString());
-        camConfShape.addPipelineSetting(new ColoredShapePipelineSettings());
+        var settings = new ColoredShapePipelineSettings();
+        settings.hsvHue = new IntegerCouple(0, 35);
+        settings.hsvSaturation = new IntegerCouple(82, 255);
+        settings.hsvValue = new IntegerCouple(62, 255);
+        settings.contourShape = ContourShape.Triangle;
+        settings.outputShowMultipleTargets = true;
+        settings.circleAccuracy = 15;
+        camConfShape.addPipelineSetting(settings);
         var fvsShape = new FileVisionSource(camConfShape);
         collectedSources.add(fvsShape);
 

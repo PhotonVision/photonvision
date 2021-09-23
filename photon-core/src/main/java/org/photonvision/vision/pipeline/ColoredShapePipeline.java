@@ -25,6 +25,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.*;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -77,6 +78,23 @@ public class ColoredShapePipeline
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
+
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
+            PicamJNI.setThresholds(
+                    settings.hsvHue.getFirst() / 180d,
+                    settings.hsvSaturation.getFirst() / 255d,
+                    settings.hsvValue.getFirst() / 255d,
+                    settings.hsvHue.getSecond() / 180d,
+                    settings.hsvSaturation.getSecond() / 255d,
+                    settings.hsvValue.getSecond() / 255d);
+
+            PicamJNI.setRotation(settings.inputImageRotationMode.value);
+            PicamJNI.setShouldCopyColor(settings.inputShouldShow);
+        } else {
+            var hsvParams =
+                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
+            hsvPipe.setParams(hsvParams);
+        }
 
         ErodeDilatePipe.ErodeDilateParams erodeDilateParams =
                 new ErodeDilatePipe.ErodeDilateParams(settings.erode, settings.dilate, 5);
@@ -203,8 +221,8 @@ public class ColoredShapePipeline
                 // If we grabbed it (in color copy mode), make a new Mat of it
                 rawInputMat = new Mat(inputMatPtr);
             } else {
-                // Otherwise, the input mat is frame we got from the camera
-                rawInputMat = frame.image.getMat();
+                // Otherwise, use a blank/empty mat as placeholder
+                rawInputMat = new Mat();
             }
 
             // We can skip a few steps if the image is single channel because we've already done them on
