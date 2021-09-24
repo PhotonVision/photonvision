@@ -188,7 +188,7 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew photon-lib:build --max-workers 1
-      - run: ./gradlew photon-lib:publish
+      - run: ./gradlew photon-lib:publish photon-targeting:publish
         name: Publish
         env:
           ARTIFACTORY_API_KEY: ${{ secrets.ARTIFACTORY_API_KEY }}
