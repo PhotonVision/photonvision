@@ -217,7 +217,7 @@ jobs:
         with:
           java-version: 11
       - run: |
-          git describe --tags --exclude="dev"
+          git describe --tags --exclude="dev" --exclude="Dev"
       - run: |
           chmod +x gradlew
           ./gradlew photon-lib:build --max-workers 1
