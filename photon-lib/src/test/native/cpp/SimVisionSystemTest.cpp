@@ -26,7 +26,7 @@
 #include "photonlib/PhotonUtils.h"
 #include "photonlib/SimVisionSystem.h"
 
-TEST(SimVisionSystemTest, testEmpty) {
+TEST(SimVisionSystemTest, Empty) {
   photonlib::SimVisionSystem sysUnderTest("Test", 80.0_deg, 0.0_deg,
                                           frc::Transform2d(), 1.0_m, 99999.0_m,
                                           320, 240, 0.0);
@@ -36,12 +36,12 @@ TEST(SimVisionSystemTest, testEmpty) {
   }
 }
 
-class SimVisionSystemTestDistParam : public testing::TestWithParam<double> {};
-INSTANTIATE_TEST_SUITE_P(SimVisionSystemTestDistParamInst,
-                         SimVisionSystemTestDistParam,
+class SimVisionSystemDistParamTest : public testing::TestWithParam<double> {};
+INSTANTIATE_TEST_SUITE_P(SimVisionSystemDistParamTests,
+                         SimVisionSystemDistParamTest,
                          testing::Values(5, 10, 15, 20, 25, 30));
 
-TEST_P(SimVisionSystemTestDistParam, testDistanceAligned) {
+TEST_P(SimVisionSystemDistParamTest, DistanceAligned) {
   double dist = GetParam();
 
   auto targetPose =
@@ -68,7 +68,7 @@ TEST_P(SimVisionSystemTestDistParam, testDistanceAligned) {
             dist);
 }
 
-TEST(SimVisionSystemTest, testVisibilityCupidShuffle) {
+TEST(SimVisionSystemTest, VisibilityCupidShuffle) {
   auto targetPose =
       frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
 
@@ -137,7 +137,7 @@ TEST(SimVisionSystemTest, testVisibilityCupidShuffle) {
   EXPECT_TRUE(result.HasTargets());
 }
 
-TEST(SimVisionSystemTest, testNotVisibleVert1) {
+TEST(SimVisionSystemTest, NotVisibleVert1) {
   auto targetPose =
       frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
 
@@ -163,7 +163,7 @@ TEST(SimVisionSystemTest, testNotVisibleVert1) {
   EXPECT_FALSE(result.HasTargets());
 }
 
-TEST(SimVisionSystemTest, testNotVisibleVert2) {
+TEST(SimVisionSystemTest, NotVisibleVert2) {
   auto targetPose =
       frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
 
@@ -188,7 +188,7 @@ TEST(SimVisionSystemTest, testNotVisibleVert2) {
   EXPECT_FALSE(result.HasTargets());
 }
 
-TEST(SimVisionSystemTest, testNotVisibleTgtSize) {
+TEST(SimVisionSystemTest, NotVisibleTgtSize) {
   auto targetPose =
       frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
 
@@ -212,7 +212,7 @@ TEST(SimVisionSystemTest, testNotVisibleTgtSize) {
   EXPECT_FALSE(result.HasTargets());
 }
 
-TEST(SimVisionSystemTest, testNotVisibleTooFarForLEDs) {
+TEST(SimVisionSystemTest, NotVisibleTooFarForLEDs) {
   auto targetPose =
       frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
 
@@ -236,11 +236,11 @@ TEST(SimVisionSystemTest, testNotVisibleTooFarForLEDs) {
   EXPECT_FALSE(result.HasTargets());
 }
 
-class SimVisionSystemTestYawParam : public testing::TestWithParam<double> {};
-INSTANTIATE_TEST_SUITE_P(SimVisionSystemTestYawParamInst,
-                         SimVisionSystemTestYawParam,
+class SimVisionSystemYawParamTest : public testing::TestWithParam<double> {};
+INSTANTIATE_TEST_SUITE_P(SimVisionSystemYawParamTests,
+                         SimVisionSystemYawParamTest,
                          testing::Values(-10, -5, -0, -1, -2, 5, 7, 10.23));
-TEST_P(SimVisionSystemTestYawParam, testYawAngles) {
+TEST_P(SimVisionSystemYawParamTest, YawAngles) {
   double testYaw = GetParam();  // Nope, Chuck testYaw
   auto targetPose =
       frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d(45_deg));
@@ -262,13 +262,13 @@ TEST_P(SimVisionSystemTestYawParam, testYawAngles) {
   EXPECT_DOUBLE_EQ(tgt.GetYaw(), testYaw);
 }
 
-class SimVisionSystemTestCameraPitchParam
+class SimVisionSystemCameraPitchParamTest
     : public testing::TestWithParam<double> {};
-INSTANTIATE_TEST_SUITE_P(SimVisionSystemTestCameraPitchParamInst,
-                         SimVisionSystemTestCameraPitchParam,
+INSTANTIATE_TEST_SUITE_P(SimVisionSystemCameraPitchParamTests,
+                         SimVisionSystemCameraPitchParamTest,
                          testing::Values(-10, -5, -0, -1, -2, 5, 7, 10.23,
                                          20.21, -19.999));
-TEST_P(SimVisionSystemTestCameraPitchParam, testCameraPitch) {
+TEST_P(SimVisionSystemCameraPitchParamTest, CameraPitch) {
   double testPitch = GetParam();
   auto targetPose =
       frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d(45_deg));
@@ -297,10 +297,10 @@ TEST_P(SimVisionSystemTestCameraPitchParam, testCameraPitch) {
   EXPECT_DOUBLE_EQ(tgt.GetPitch(), -1.0 * testPitch);
 }
 
-class SimVisionSystemTestDistCalcParam
+class SimVisionSystemDistCalcParamTest
     : public testing::TestWithParam<std::tuple<double, double, double>> {};
 INSTANTIATE_TEST_SUITE_P(
-    SimVisionSystemTestDistCalcParamInst, SimVisionSystemTestDistCalcParam,
+    SimVisionSystemDistCalcParamTests, SimVisionSystemDistCalcParamTest,
     testing::Values(std::tuple<double, double, double>(5, 35, 0),
                     std::tuple<double, double, double>(6, 35, 1),
                     std::tuple<double, double, double>(10, 35, 0),
@@ -320,7 +320,7 @@ INSTANTIATE_TEST_SUITE_P(
                     std::tuple<double, double, double>(19.52, 35, 1.1),
                     std::tuple<double, double, double>(20, 51, 2.87),
                     std::tuple<double, double, double>(20, 55, 3)));
-TEST_P(SimVisionSystemTestDistCalcParam, testDistanceCalc) {
+TEST_P(SimVisionSystemDistCalcParamTest, DistanceCalc) {
   std::tuple<double, double, double> testArgs = GetParam();
   double testDist = std::get<0>(testArgs);
   double testPitch = std::get<1>(testArgs);
@@ -353,7 +353,7 @@ TEST_P(SimVisionSystemTestDistCalcParam, testDistanceCalc) {
   EXPECT_DOUBLE_EQ(distMeas.to<double>(), testDist);
 }
 
-TEST(SimVisionSystemTest, testMultipleTargets) {
+TEST(SimVisionSystemTest, MultipleTargets) {
   auto targetPoseL =
       frc::Pose2d(frc::Translation2d(35_m, 2_m), frc::Rotation2d());
   auto targetPoseC =
