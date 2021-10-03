@@ -19,7 +19,6 @@ package org.photonvision.vision.processes;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import org.photonvision.common.configuration.CameraConfiguration;
 
 /** VisionModuleManager has many VisionModules, and provides camera configuration data to them. */
 public class VisionModuleManager {
@@ -54,9 +53,9 @@ public class VisionModuleManager {
     public List<VisionModule> addSources(List<VisionSource> visionSources) {
         var addedModules = new HashMap<Integer, VisionModule>();
 
+        assignCameraIndex(visionSources);
         for (var visionSource : visionSources) {
             var pipelineManager = new PipelineManager(visionSource.getCameraConfiguration());
-            assignCameraIndex(visionSource.getCameraConfiguration());
 
             var module = new VisionModule(pipelineManager, visionSource, visionModules.size());
             visionModules.add(module);
@@ -72,16 +71,30 @@ public class VisionModuleManager {
         return sortedModulesList;
     }
 
-    private void assignCameraIndex(CameraConfiguration config) {
-        var max =
-                visionModules.stream()
-                        .mapToInt(it -> it.visionSource.getCameraConfiguration().streamIndex)
-                        .max()
-                        .orElse(-1);
+    private void assignCameraIndex(List<VisionSource> config) {
+        // We won't necessarily have already added all of the cameras we need to at this point
+        // But by operating on the list, we have a fairly good idea of which we need to change
+        // but it's not guaranteed that we change the correct one
+        // The best we can do is try to avoid a case where the stream index runs away to infinity
+        // since we can only stream 5 cameras at once
 
-        // If the current stream index is reserved, increase by 1
-        if (config.streamIndex <= max) {
-            config.streamIndex = max + 1;
+        for (var v : config) {
+            var listNoV = new ArrayList<>(config);
+            listNoV.remove(v);
+            if (listNoV.stream()
+                    .anyMatch(
+                            it ->
+                                    it.getCameraConfiguration().streamIndex
+                                            == v.getCameraConfiguration().streamIndex)) {
+                int idx = 0;
+                while (listNoV.stream()
+                        .map(it -> it.getCameraConfiguration().streamIndex)
+                        .collect(Collectors.toList())
+                        .contains(idx)) {
+                    idx++;
+                }
+                v.getCameraConfiguration().streamIndex = idx;
+            }
         }
     }
 }
