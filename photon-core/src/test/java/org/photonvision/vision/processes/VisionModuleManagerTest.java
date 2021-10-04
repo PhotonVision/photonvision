@@ -17,10 +17,14 @@
 
 package org.photonvision.vision.processes;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import edu.wpi.cscore.VideoMode;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -129,6 +133,52 @@ public class VisionModuleManagerTest {
 
         Assertions.assertNotNull(module0DataConsumer.result);
         printTestResults(module0DataConsumer.result);
+    }
+
+    @Test
+    public void testMultipleStreamIndex() {
+        ConfigManager.getInstance().load();
+
+        var conf = new CameraConfiguration("Foo", "Bar");
+        conf.streamIndex = 1;
+        var ffp =
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.WPI2019Image.FOV);
+        var testSource = new TestSource(ffp, conf);
+
+        var conf2 = new CameraConfiguration("Foo2", "Bar");
+        conf2.streamIndex = 0;
+        var ffp2 =
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.WPI2019Image.FOV);
+        var testSource2 = new TestSource(ffp2, conf2);
+
+        var conf3 = new CameraConfiguration("Foo3", "Bar");
+        conf3.streamIndex = 0;
+        var ffp3 =
+                new FileFrameProvider(
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.WPI2019Image.FOV);
+        var testSource3 = new TestSource(ffp3, conf3);
+
+        var modules =
+                VisionModuleManager.getInstance().addSources(List.of(testSource, testSource2, testSource3));
+
+        System.out.println(
+                Arrays.toString(
+                        modules.stream()
+                                .map(it -> it.visionSource.getCameraConfiguration().streamIndex)
+                                .collect(Collectors.toList())
+                                .toArray()));
+        var idxs =
+                modules.stream()
+                        .map(it -> it.visionSource.getCameraConfiguration().streamIndex)
+                        .collect(Collectors.toList());
+        assertTrue(idxs.contains(0));
+        assertTrue(idxs.contains(1));
+        assertTrue(idxs.contains(2));
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {
