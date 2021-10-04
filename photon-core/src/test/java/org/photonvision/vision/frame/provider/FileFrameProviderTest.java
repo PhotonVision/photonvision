@@ -42,7 +42,7 @@ public class FileFrameProviderTest {
 
     @Test
     public void TestFilesExist() {
-        assertTrue(Files.exists(TestUtils.getTestImagesPath(false)));
+        assertTrue(Files.exists(TestUtils.getTestImagesPath()));
     }
 
     @Test

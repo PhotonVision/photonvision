@@ -134,44 +134,45 @@ public class TestUtils {
         }
     }
 
-    private static Path getResourcesFolderPath(boolean testMode) {
-        return Path.of(testMode ? "src/main/resources" : "../test-resources").toAbsolutePath();
+    private static Path getResourcesFolderPath() {
+        //        return Path.of(testMode ? "src/main/resources" : "test-resources").toAbsolutePath();
+        return Path.of("test-resources").toAbsolutePath();
     }
 
     public static Path getTestMode2019ImagePath() {
-        return getResourcesFolderPath(true)
+        return getResourcesFolderPath()
                 .resolve("testimages")
                 .resolve(WPI2019Image.kRocketPanelAngleDark60in.path);
     }
 
     public static Path getTestMode2020ImagePath() {
-        return getResourcesFolderPath(true)
+        return getResourcesFolderPath()
                 .resolve("testimages")
                 .resolve(WPI2020Image.kBlueGoal_108in_Center.path);
     }
 
-    public static Path getTestImagesPath(boolean testMode) {
-        return getResourcesFolderPath(testMode).resolve("testimages");
+    public static Path getTestImagesPath() {
+        return getResourcesFolderPath().resolve("testimages");
     }
 
-    public static Path getCalibrationPath(boolean testMode) {
-        return getResourcesFolderPath(testMode).resolve("calibration");
+    public static Path getCalibrationPath() {
+        return getResourcesFolderPath().resolve("calibration");
     }
 
     public static Path getPowercellPath(boolean testMode) {
-        return getTestImagesPath(testMode).resolve("polygons").resolve("powercells");
+        return getTestImagesPath().resolve("polygons").resolve("powercells");
     }
 
     public static Path getWPIImagePath(WPI2020Image image, boolean testMode) {
-        return getTestImagesPath(testMode).resolve(image.path);
+        return getTestImagesPath().resolve(image.path);
     }
 
     public static Path getWPIImagePath(WPI2019Image image, boolean testMode) {
-        return getTestImagesPath(testMode).resolve(image.path);
+        return getTestImagesPath().resolve(image.path);
     }
 
     public static Path getPolygonImagePath(PolygonTestImages image, boolean testMode) {
-        return getTestImagesPath(testMode).resolve(image.path);
+        return getTestImagesPath().resolve(image.path);
     }
 
     public static Path getPowercellImagePath(PowercellTestImages image, boolean testMode) {
@@ -179,18 +180,15 @@ public class TestUtils {
     }
 
     public static Path getDotBoardImagesPath() {
-        return getResourcesFolderPath(false).resolve("calibrationBoardImages");
+        return getResourcesFolderPath().resolve("calibrationBoardImages");
     }
 
     public static Path getSquaresBoardImagesPath() {
-        return getResourcesFolderPath(false).resolve("calibrationSquaresImg");
+        return getResourcesFolderPath().resolve("calibrationSquaresImg");
     }
 
     public static File getHardwareConfigJson() {
-        return getResourcesFolderPath(false)
-                .resolve("hardware")
-                .resolve("HardwareConfig.json")
-                .toFile();
+        return getResourcesFolderPath().resolve("hardware").resolve("HardwareConfig.json").toFile();
     }
 
     private static final String LIFECAM_240P_CAL_FILE = "lifecam240p.json";
@@ -200,7 +198,7 @@ public class TestUtils {
         try {
             return new ObjectMapper()
                     .readValue(
-                            (Path.of(getCalibrationPath(testMode).toString(), filename).toFile()),
+                            (Path.of(getCalibrationPath().toString(), filename).toFile()),
                             CameraCalibrationCoefficients.class);
         } catch (IOException e) {
             e.printStackTrace();

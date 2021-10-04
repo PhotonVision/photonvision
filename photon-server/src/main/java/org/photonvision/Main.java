@@ -93,7 +93,7 @@ public class Main {
         var camConf2019 =
                 new CameraConfiguration("WPI2019", TestUtils.getTestMode2019ImagePath().toString());
         camConf2019.FOV = TestUtils.WPI2019Image.FOV;
-        camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+        camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(false));
 
         var pipeline2019 = new ReflectivePipelineSettings();
         pipeline2019.pipelineNickname = "CargoShip";
