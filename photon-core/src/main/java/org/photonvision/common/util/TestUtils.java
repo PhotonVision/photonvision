@@ -159,24 +159,24 @@ public class TestUtils {
         return getResourcesFolderPath().resolve("calibration");
     }
 
-    public static Path getPowercellPath(boolean testMode) {
+    public static Path getPowercellPath() {
         return getTestImagesPath().resolve("polygons").resolve("powercells");
     }
 
-    public static Path getWPIImagePath(WPI2020Image image, boolean testMode) {
+    public static Path getWPIImagePath(WPI2020Image image) {
         return getTestImagesPath().resolve(image.path);
     }
 
-    public static Path getWPIImagePath(WPI2019Image image, boolean testMode) {
+    public static Path getWPIImagePath(WPI2019Image image) {
         return getTestImagesPath().resolve(image.path);
     }
 
-    public static Path getPolygonImagePath(PolygonTestImages image, boolean testMode) {
+    public static Path getPolygonImagePath(PolygonTestImages image) {
         return getTestImagesPath().resolve(image.path);
     }
 
-    public static Path getPowercellImagePath(PowercellTestImages image, boolean testMode) {
-        return getPowercellPath(testMode).resolve(image.path);
+    public static Path getPowercellImagePath(PowercellTestImages image) {
+        return getPowercellPath().resolve(image.path);
     }
 
     public static Path getDotBoardImagesPath() {
@@ -194,7 +194,7 @@ public class TestUtils {
     private static final String LIFECAM_240P_CAL_FILE = "lifecam240p.json";
     private static final String LIFECAM_480P_CAL_FILE = "lifecam480p.json";
 
-    public static CameraCalibrationCoefficients getCoeffs(String filename, boolean testMode) {
+    public static CameraCalibrationCoefficients getCoeffs(String filename) {
         try {
             return new ObjectMapper()
                     .readValue(
@@ -206,12 +206,12 @@ public class TestUtils {
         }
     }
 
-    public static CameraCalibrationCoefficients get2019LifeCamCoeffs(boolean testMode) {
-        return getCoeffs(LIFECAM_240P_CAL_FILE, testMode);
+    public static CameraCalibrationCoefficients get2019LifeCamCoeffs() {
+        return getCoeffs(LIFECAM_240P_CAL_FILE);
     }
 
-    public static CameraCalibrationCoefficients get2020LifeCamCoeffs(boolean testMode) {
-        return getCoeffs(LIFECAM_480P_CAL_FILE, testMode);
+    public static CameraCalibrationCoefficients get2020LifeCamCoeffs() {
+        return getCoeffs(LIFECAM_480P_CAL_FILE);
     }
 
     public static void loadLibraries() {

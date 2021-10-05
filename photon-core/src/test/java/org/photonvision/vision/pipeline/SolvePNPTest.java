@@ -61,7 +61,7 @@ public class SolvePNPTest {
     }
 
     private CameraCalibrationCoefficients getCoeffs(String filename) {
-        var cameraCalibration = TestUtils.getCoeffs(filename, false);
+        var cameraCalibration = TestUtils.getCoeffs(filename);
         checkCameraCoefficients(cameraCalibration);
         return cameraCalibration;
     }
@@ -103,10 +103,10 @@ public class SolvePNPTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in),
                         TestUtils.WPI2019Image.FOV,
                         new Rotation2d(),
-                        TestUtils.get2019LifeCamCoeffs(false));
+                        TestUtils.get2019LifeCamCoeffs());
 
         CVPipelineResult pipelineResult;
 
@@ -138,10 +138,10 @@ public class SolvePNPTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left),
                         TestUtils.WPI2020Image.FOV,
                         new Rotation2d(),
-                        TestUtils.get2020LifeCamCoeffs(false));
+                        TestUtils.get2020LifeCamCoeffs());
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
@@ -175,7 +175,7 @@ public class SolvePNPTest {
         TestUtils.loadLibraries();
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
                         TestUtils.WPI2019Image.FOV);
 
         var settings = new ReflectivePipelineSettings();
