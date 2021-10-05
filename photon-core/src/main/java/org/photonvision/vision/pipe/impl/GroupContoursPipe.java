@@ -46,7 +46,7 @@ public class GroupContoursPipe
         } else {
             int groupingCount = params.getGroup().count;
 
-            if (input.size() > groupingCount) {
+            if (input.size() >= groupingCount) {
                 input.sort(Contour.SortByMomentsX);
                 // also why reverse? shouldn't the sort comparator just get reversed?
                 // TODO: Matt, see this
