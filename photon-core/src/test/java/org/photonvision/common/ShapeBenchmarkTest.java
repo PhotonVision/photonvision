@@ -73,7 +73,7 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().accuracyPercentage = 30.0;
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoSideStraightDark72in, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoSideStraightDark72in),
                         TestUtils.WPI2019Image.FOV);
 
         benchmarkPipeline(frameProvider, pipeline, 5);
@@ -95,7 +95,7 @@ public class ShapeBenchmarkTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center),
                         TestUtils.WPI2020Image.FOV);
 
         benchmarkPipeline(frameProvider, pipeline, 5);
@@ -117,7 +117,7 @@ public class ShapeBenchmarkTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center_720p, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_084in_Center_720p),
                         TestUtils.WPI2020Image.FOV);
 
         benchmarkPipeline(frameProvider, pipeline, 5);
@@ -139,7 +139,7 @@ public class ShapeBenchmarkTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
                         TestUtils.WPI2019Image.FOV);
 
         benchmarkPipeline(frameProvider, pipeline, 5);

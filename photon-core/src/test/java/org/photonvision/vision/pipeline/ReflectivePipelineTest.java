@@ -44,7 +44,7 @@ public class ReflectivePipelineTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
                         TestUtils.WPI2019Image.FOV);
 
         TestUtils.showImage(frameProvider.get().image.getMat(), "Pipeline input", 1);
@@ -72,7 +72,7 @@ public class ReflectivePipelineTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center),
                         TestUtils.WPI2020Image.FOV);
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
@@ -100,7 +100,7 @@ public class ReflectivePipelineTest {
         TestUtils.loadLibraries();
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
                         TestUtils.WPI2019Image.FOV);
 
         var settings = new ReflectivePipelineSettings();
