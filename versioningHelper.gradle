@@ -15,8 +15,10 @@ gradle.allprojects {
         } catch(Exception e) {
             tagIsh = "dev-Unknown"
         }
-//        boolean isDev = tagIsh.matches(".*-[0-9]*-g[0-9a-f]*")
-//        if(isDev) tagIsh = "dev-" + tagIsh
+        // Dev tags: v2021.1.6-3-gf922466d
+        // We're specifically looking to capture the middle -3-
+        boolean isDev = tagIsh.matches(".*-[0-9]*-g[0-9a-f]*")
+        if(isDev && !tagIsh.startsWith("dev-")) tagIsh = "dev-" + tagIsh
         println("Picked up version: " + tagIsh)
         return tagIsh
     }
