@@ -1,9 +1,12 @@
+import java.nio.file.Path
+
 apply plugin: "cpp"
 apply plugin: "java"
 apply plugin: "google-test-test-suite"
 apply plugin: "edu.wpi.first.NativeUtils"
 
 apply from: "${rootDir}/shared/config.gradle"
+apply from: "${rootDir}/versioningHelper.gradle"
 
 test {
     useJUnitPlatform()
@@ -101,5 +104,13 @@ task generateVendorJson() {
 }
 
 build.dependsOn generateVendorJson
+
+
+task writeCurrentVersionJava {
+    writePhotonVersionFile(Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
+            versionString)
+}
+
+build.dependsOn writeCurrentVersionJava
 
 apply from: "publish.gradle"
