@@ -17,17 +17,10 @@
 
 package org.photonvision;
 
-import edu.wpi.cscore.CameraServerJNI;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
-
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -106,8 +99,17 @@ class PacketTest {
     @Test
     void testPacketv2021_1_6() {
         // From v2021.1.6
-        var simplified = new PhotonPipelineResult(12.34, List.of(new PhotonTrackedTarget(-23, -10, 6, 1, new Transform2d(new Translation2d(1, 2), new Rotation2d(3)))));
-        byte[] bytes = { 64, 40, -82, 20, 122, -31, 71, -82, 1, -64, 55, 0, 0, 0, 0, 0, 0, -64, 36, 0, 0, 0, 0, 0, 0, 64, 24, 0, 0, 0, 0, 0, 0, 63, -16, 0, 0, 0, 0, 0, 0, 63, -16, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 64, 101, 124, 101, 19, -54, -47, 122, 0 };
+        var simplified =
+                new PhotonPipelineResult(
+                        12.34,
+                        List.of(
+                                new PhotonTrackedTarget(
+                                        -23, -10, 6, 1, new Transform2d(new Translation2d(1, 2), new Rotation2d(3)))));
+        byte[] bytes = {
+            64, 40, -82, 20, 122, -31, 71, -82, 1, -64, 55, 0, 0, 0, 0, 0, 0, -64, 36, 0, 0, 0, 0, 0, 0,
+            64, 24, 0, 0, 0, 0, 0, 0, 63, -16, 0, 0, 0, 0, 0, 0, 63, -16, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0,
+            0, 0, 0, 0, 64, 101, 124, 101, 19, -54, -47, 122, 0
+        };
 
         // Let's check that those bytes still mean the same thing
         Packet packet = new Packet(1);
