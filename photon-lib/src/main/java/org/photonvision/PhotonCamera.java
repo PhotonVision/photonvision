@@ -20,6 +20,7 @@ package org.photonvision;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -32,8 +33,10 @@ public class PhotonCamera {
     final NetworkTableEntry outputSaveImgEntry;
     final NetworkTableEntry pipelineIndexEntry;
     final NetworkTableEntry ledModeEntry;
+    final NetworkTableEntry versionEntry;
 
     final NetworkTable mainTable = NetworkTableInstance.getDefault().getTable("photonvision");
+    private final String path;
 
     boolean driverMode;
     int pipelineIndex;
@@ -47,12 +50,14 @@ public class PhotonCamera {
     * @param rootTable The root table that the camera is broadcasting information over.
     */
     public PhotonCamera(NetworkTable rootTable) {
+        path = rootTable.getPath();
         rawBytesEntry = rootTable.getEntry("rawBytes");
         driverModeEntry = rootTable.getEntry("driverMode");
         inputSaveImgEntry = rootTable.getEntry("inputSaveImgCmd");
         outputSaveImgEntry = rootTable.getEntry("outputSaveImgCmd");
         pipelineIndexEntry = rootTable.getEntry("pipelineIndex");
         ledModeEntry = mainTable.getEntry("ledMode");
+        versionEntry = mainTable.getEntry("version");
 
         driverMode = driverModeEntry.getBoolean(false);
         pipelineIndex = pipelineIndexEntry.getNumber(0).intValue();
@@ -74,6 +79,8 @@ public class PhotonCamera {
     * @return The latest pipeline result.
     */
     public PhotonPipelineResult getLatestResult() {
+        verifyVersion();
+
         // Clear the packet.
         packet.clear();
 
@@ -198,5 +205,21 @@ public class PhotonCamera {
     @Deprecated
     public boolean hasTargets() {
         return getLatestResult().hasTargets();
+    }
+
+    private void verifyVersion() {
+        String versionString = versionEntry.getString("");
+        if (versionString.equals("")) {
+            DriverStation.reportError(
+                    "PhotonVision coprocessor at path " + path + " not found on NetworkTables!", true);
+        } else if (!PhotonVersion.versionMatches(versionString)) {
+            DriverStation.reportError(
+                    "Photon version "
+                            + PhotonVersion.versionString
+                            + " does not match coprocessor version "
+                            + versionString
+                            + "!",
+                    true);
+        }
     }
 }

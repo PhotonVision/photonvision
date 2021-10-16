@@ -12,18 +12,18 @@ gradle.allprojects {
                 standardOutput = stdout
             }
             tagIsh = stdout.toString().trim().toLowerCase()
-        } catch(Exception e) {
+        } catch (Exception e) {
             tagIsh = "dev-Unknown"
         }
         // Dev tags: v2021.1.6-3-gf922466d
         // We're specifically looking to capture the middle -3-
         boolean isDev = tagIsh.matches(".*-[0-9]*-g[0-9a-f]*")
-        if(isDev && !tagIsh.startsWith("dev-")) tagIsh = "dev-" + tagIsh
+        if (isDev && !tagIsh.startsWith("dev-")) tagIsh = "dev-" + tagIsh
         println("Picked up version: " + tagIsh)
         return tagIsh
     }
 
-    if(!ext.has("versionString")) {
+    if (!ext.has("versionString")) {
         ext.versionString = getCurrentVersion()
     }
 
@@ -39,11 +39,31 @@ gradle.allprojects {
                 " * any time the publish task is run, or when this file is deleted.\n" +
                 " */\n" +
                 "\n" +
+                "import java.util.regex.Matcher;\n" +
+                "import java.util.regex.Pattern;\n\n" +
                 "@SuppressWarnings(\"ALL\")\n" +
                 "public final class PhotonVersion {\n" +
                 "    public static final String versionString = \"${version}\";\n" +
                 "    public static final String buildDate = \"${date}\";\n" +
                 "    public static final boolean isRelease = !versionString.startsWith(\"dev\");\n" +
+                "" +
+                "    public static final boolean versionMatches(String other) {\n" +
+                "        String c = versionString;\n" +
+                "        Pattern p = Pattern.compile(\"v[0-9]+.[0-9]+.[0-9]+\");\n" +
+                "        Matcher m = p.matcher(c);\n" +
+                "        if (m.find()) {\n" +
+                "            c = m.group(0);\n" +
+                "        } else {\n" +
+                "            return false;\n" +
+                "        }\n" +
+                "        m = p.matcher(other);\n" +
+                "        if (m.find()) {\n" +
+                "            other = m.group(0);\n" +
+                "        } else {\n" +
+                "            return false;\n" +
+                "        }\n" +
+                "        return c.equals(other);\n" +
+                "    }\n" +
                 "}"
     }
 }

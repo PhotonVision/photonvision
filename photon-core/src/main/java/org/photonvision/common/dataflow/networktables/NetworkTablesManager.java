@@ -21,6 +21,7 @@ import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.function.Consumer;
+import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -72,6 +73,9 @@ public class NetworkTablesManager {
         } else {
             setClientMode(config.teamNumber);
         }
+
+        kRootTable.getEntry("version").setString(PhotonVersion.versionString);
+        kRootTable.getEntry("buildDate").setString(PhotonVersion.buildDate);
     }
 
     private void setClientMode(int teamNumber) {
