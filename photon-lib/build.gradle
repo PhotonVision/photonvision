@@ -12,6 +12,8 @@ test {
     useJUnitPlatform()
 }
 
+def jniPlatforms = ['linuxaarch64bionic', 'linuxraspbian', 'linuxx86-64', 'osxx86-64', 'windowsx86-64']
+
 // Apply Java configuration
 dependencies {
     compile project(":photon-targeting")
@@ -22,16 +24,15 @@ dependencies {
     implementation "edu.wpi.first.wpilibj:wpilibj-java:$wpilibVersion"
     implementation "edu.wpi.first.wpiutil:wpiutil-java:$wpilibVersion"
     implementation "edu.wpi.first.wpimath:wpimath-java:$wpilibVersion"
-    implementation "edu.wpi.first.hal:hal-java:$wpilibVersion"
     implementation "edu.wpi.first.thirdparty.frc2020.opencv:opencv-java:3.4.7-2"
 
     // NTCore
     implementation "edu.wpi.first.ntcore:ntcore-java:$wpilibVersion"
-    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxaarch64bionic"
-    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxraspbian"
-    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxx86-64"
-    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:osxx86-64"
-    compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:windowsx86-64"
+    jniPlatforms.each {  compile "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:$it" }
+
+    // HAL
+    implementation "edu.wpi.first.hal:hal-java:$wpilibVersion"
+    jniPlatforms.each {compile "edu.wpi.first.hal:hal-jni:$wpilibVersion:$it"}
 
     // Junit
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.2")
