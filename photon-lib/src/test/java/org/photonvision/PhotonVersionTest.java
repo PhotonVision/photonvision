@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PhotonVersionTest {
-
     public static final boolean versionMatches(String versionString, String other) {
         String c = versionString;
         Pattern p = Pattern.compile("v[0-9]+.[0-9]+.[0-9]+");
