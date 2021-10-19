@@ -1,6 +1,6 @@
+import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.nio.file.Path
 
 gradle.allprojects {
     ext.getCurrentVersion = { ->
@@ -12,18 +12,28 @@ gradle.allprojects {
                 standardOutput = stdout
             }
             tagIsh = stdout.toString().trim().toLowerCase()
-        } catch(Exception e) {
+        } catch (Exception e) {
             tagIsh = "dev-Unknown"
         }
         // Dev tags: v2021.1.6-3-gf922466d
         // We're specifically looking to capture the middle -3-
         boolean isDev = tagIsh.matches(".*-[0-9]*-g[0-9a-f]*")
-        if(isDev && !tagIsh.startsWith("dev-")) tagIsh = "dev-" + tagIsh
+        if (isDev && !tagIsh.startsWith("dev-")) tagIsh = "dev-" + tagIsh
         println("Picked up version: " + tagIsh)
         return tagIsh
     }
 
-    if(!ext.has("versionString")) {
+    if (!ext.has("versionString")) {
         ext.versionString = getCurrentVersion()
+    }
+
+    ext.writePhotonVersionFile = { Path path, String version ->
+        println("Writing " + version + " to " + path.toAbsolutePath().toString())
+        String date = DateTimeFormatter.ofPattern("yyyy-M-d hh:mm:ss").format(LocalDateTime.now())
+        File versionFileOut = new File(path.toAbsolutePath().toString())
+        versionFileOut.delete()
+        def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
+        def read = versionFileIn.text.replace('${version}', version).replace('${date}', date)
+        versionFileOut.write(read)
     }
 }

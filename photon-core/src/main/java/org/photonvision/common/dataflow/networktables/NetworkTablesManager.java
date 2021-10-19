@@ -21,6 +21,7 @@ import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.function.Consumer;
+import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -62,8 +63,14 @@ public class NetworkTablesManager {
                 hasReportedConnectionFailure = false;
                 lastConnectMessageMillis = System.currentTimeMillis();
                 ScriptManager.queueEvent(ScriptEventType.kNTConnected);
+                getInstance().broadcastVersion();
             }
         }
+    }
+
+    private void broadcastVersion() {
+        kRootTable.getEntry("version").setString(PhotonVersion.versionString);
+        kRootTable.getEntry("buildDate").setString(PhotonVersion.buildDate);
     }
 
     public void setConfig(NetworkConfig config) {
@@ -72,6 +79,7 @@ public class NetworkTablesManager {
         } else {
             setClientMode(config.teamNumber);
         }
+        broadcastVersion();
     }
 
     private void setClientMode(int teamNumber) {
@@ -86,11 +94,13 @@ public class NetworkTablesManager {
             logger.error(
                     "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
         }
+        broadcastVersion();
     }
 
     private void setServerMode() {
         logger.info("Starting NT Server");
         ntInstance.stopClient();
         ntInstance.startServer();
+        broadcastVersion();
     }
 }
