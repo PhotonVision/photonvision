@@ -166,8 +166,8 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             } else {
                 // Otherwise, the input mat is frame we got from the camera
                 rawInputMat = frame.image.getMat();
-//                // Otherwise, use a blank/empty mat as placeholder
-//                rawInputMat = new Mat();
+                //                // Otherwise, use a blank/empty mat as placeholder
+                //                rawInputMat = new Mat();
             }
 
             // We can skip a few steps if the image is single channel because we've already done them on

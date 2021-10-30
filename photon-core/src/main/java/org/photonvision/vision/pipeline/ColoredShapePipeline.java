@@ -221,8 +221,8 @@ public class ColoredShapePipeline
                 // If we grabbed it (in color copy mode), make a new Mat of it
                 rawInputMat = new Mat(inputMatPtr);
             } else {
-//                // Otherwise, use a blank/empty mat as placeholder
-//                rawInputMat = new Mat();
+                //                // Otherwise, use a blank/empty mat as placeholder
+                //                rawInputMat = new Mat();
                 // Otherwise, the input mat is frame we got from the camera
                 rawInputMat = frame.image.getMat();
             }
