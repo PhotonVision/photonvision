@@ -234,12 +234,6 @@
                   </v-icon>
                   Download Chessboard
                 </v-btn>
-                <a
-                  ref="calibrationFile"
-                  style="color: black; text-decoration: none; display: none"
-                  :href="require('../assets/chessboard.png')"
-                  download="chessboard.png"
-                />
               </v-col>
             </v-row>
           </div>
@@ -325,6 +319,7 @@ import CVnumberinput from '../components/common/cv-number-input';
 import CVslider from '../components/common/cv-slider';
 import CVimage from "../components/common/cv-image";
 import TooltippedLabel from "../components/common/cv-tooltipped-label";
+import jsPDF from "jspdf";
 
 export default {
     name: 'Cameras',
@@ -486,9 +481,50 @@ export default {
             return ret;
         },
         downloadBoard() {
-            this.axios.get("http://" + this.$address + require('../assets/chessboard.png'), {responseType: 'blob'}).then((response) => {
-                require('downloadjs')(response.data, "Calibration Board", "image/png");
-            });
+            //Murica paper.
+            var doc = new jsPDF({unit: 'in', format:'letter'}); 
+            var paper_x = 8.5;
+            var paper_y = 11.0;
+
+            // Checkerboard
+            var num_x = this.boardWidth;
+            var num_y = this.boardHeight;
+            var square_side = this.squareSizeIn;
+
+            var start_x = paper_x/2.0 - (num_x * square_side)/2.0;
+            var start_y = paper_y/2.0 - (num_y * square_side)/2.0;
+
+            if(start_x <= 0){
+                console.log("Error, pattern does not fit on page!");
+            }
+
+            if(start_y <= 0){
+                console.log("Error, pattern does not fit on page!");
+            }
+
+            var drawBlack = true;
+            var isEvenWidth = ((num_x % 2) == 0);
+
+
+            for(var y_idx = 0; y_idx < num_y; y_idx++){
+
+              for(var x_idx = 0; x_idx < num_x; x_idx++){
+                var x_coord = start_x + x_idx * square_side;
+                var y_coord = start_y + y_idx * square_side;
+                if(drawBlack){
+                  doc.rect(x_coord, y_coord, square_side, square_side, "F");
+                }
+                drawBlack = !drawBlack;
+              }
+
+              if(isEvenWidth){
+                drawBlack = !drawBlack;
+              }
+
+            }
+
+            doc.save("calibrationTarget.pdf");
+
         },
         sendCameraSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
