@@ -232,7 +232,7 @@
                   <v-icon left>
                     mdi-download
                   </v-icon>
-                  Download Chessboard
+                  Download Target
                 </v-btn>
               </v-col>
             </v-row>
@@ -489,38 +489,50 @@ export default {
             // Checkerboard
             var num_x = this.boardWidth;
             var num_y = this.boardHeight;
-            var square_side = this.squareSizeIn;
+            var patternSize = this.squareSizeIn;
+            var isCheckerboard = (this.boardType==0);
 
-            var start_x = paper_x/2.0 - (num_x * square_side)/2.0;
-            var start_y = paper_y/2.0 - (num_y * square_side)/2.0;
+            var start_x = paper_x/2.0 - (num_x * patternSize)/2.0;
+            var start_y = paper_y/2.0 - (num_y * patternSize)/2.0;
 
-            if(start_x <= 0){
-                console.log("Error, pattern does not fit on page!");
-            }
+            var x_coord = 0.0;
+            var y_coord = 0.0;
+            var x_idx = 0;
+            var y_idx = 0;
 
-            if(start_y <= 0){
-                console.log("Error, pattern does not fit on page!");
-            }
+            if(isCheckerboard){
+              // Checkerboard Pattern
+              var drawBlack = true;
+              var isEvenWidth = ((num_x % 2) == 0);
 
-            var drawBlack = true;
-            var isEvenWidth = ((num_x % 2) == 0);
+              for(y_idx = 0; y_idx < num_y; y_idx++){
+                for(x_idx = 0; x_idx < num_x; x_idx++){
 
-
-            for(var y_idx = 0; y_idx < num_y; y_idx++){
-
-              for(var x_idx = 0; x_idx < num_x; x_idx++){
-                var x_coord = start_x + x_idx * square_side;
-                var y_coord = start_y + y_idx * square_side;
-                if(drawBlack){
-                  doc.rect(x_coord, y_coord, square_side, square_side, "F");
+                  x_coord = start_x + x_idx * patternSize;
+                  y_coord = start_y + y_idx * patternSize;
+                  if(drawBlack){
+                    doc.rect(x_coord, y_coord, patternSize, patternSize, "F");
+                  }
+                  drawBlack = !drawBlack;
                 }
-                drawBlack = !drawBlack;
+
+                if(isEvenWidth){
+                  drawBlack = !drawBlack;
+                }
               }
 
-              if(isEvenWidth){
-                drawBlack = !drawBlack;
-              }
+            } else {
+              // Dot Grid Pattern
+              var isOffset = false;
+              for(y_idx = 0; y_idx < num_y; y_idx++){
+                for(x_idx = 0; x_idx < num_x; x_idx++){
 
+                  x_coord = start_x + x_idx * patternSize  + (isOffset?patternSize/2.0:0.0);
+                  y_coord = start_y + y_idx * patternSize;
+                  doc.circle(x_coord, y_coord, patternSize/3.0, "F");
+                }
+                isOffset = !isOffset;
+              }
             }
 
             doc.save("calibrationTarget.pdf");
