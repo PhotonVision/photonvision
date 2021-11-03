@@ -4,11 +4,6 @@
       ref="form"
       v-model="valid"
     >
-      <CVSwitch
-        v-model="runNTServer"
-        name="Run NetworkTables Server"
-        tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
-      />
       <CVnumberinput
         v-model="teamNumber"
         :disabled="settings.runNTServer"
@@ -16,6 +11,7 @@
         :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
         class="mb-4"
       />
+      <span v-if="parseInt(teamNumber) < 1 && !runNTServer" class="red font-weight-bold">Team number not set! NetworkTables cannot connect.</span>
       <CVradio
         v-model="connectionType"
         :list="['DHCP','Static']"
@@ -35,9 +31,18 @@
         :rules="[v => isHostname(v) || 'Invalid hostname']"
         name="Hostname"
       />
+      Advanced
+      <v-divider/>
+      <CVSwitch
+          v-model="runNTServer"
+          name="Run NetworkTables Server (Debugging Only!)"
+          tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
+      />
+      <span v-if="runNTServer" class="red font-weight-bold">Disable this switch if you're on a robot! Photonlib will NOT work.</span>
     </v-form>
     <v-btn
       color="accent"
+      :class="runNTServer ? 'mt-3' : ''"
       style="color: black; width: 100%;"
       :disabled="!valid && !runNTServer"
       @click="sendGeneralSettings()"
