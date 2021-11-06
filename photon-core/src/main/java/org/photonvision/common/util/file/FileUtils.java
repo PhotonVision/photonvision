@@ -18,6 +18,7 @@
 package org.photonvision.common.util.file;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -35,7 +36,7 @@ public class FileUtils {
 
     private FileUtils() {}
 
-    private static Logger logger = new Logger(FileUtils.class, LogGroup.General);
+    private static final Logger logger = new Logger(FileUtils.class, LogGroup.General);
     private static final Set<PosixFilePermission> allReadWriteExecutePerms =
             new HashSet<>(Arrays.asList(PosixFilePermission.values()));
 
@@ -49,7 +50,7 @@ public class FileUtils {
                     .sorted(Comparator.reverseOrder())
                     .map(Path::toFile)
                     .filter(File::isFile)
-                    .forEach(File::delete);
+                    .forEach((var file) -> deleteFile(file.toPath()));
 
             // close the stream
             files.close();
@@ -61,8 +62,10 @@ public class FileUtils {
     public static void deleteFile(Path path) {
         try {
             Files.delete(path);
+        } catch (FileNotFoundException fe) {
+            logger.warn("Tried to delete file \"" + path + "\" but it did not exist");
         } catch (IOException e) {
-            logger.error("Exception deleting file " + path + "!", e);
+            logger.error("Exception deleting file \"" + path + "\"!", e);
         }
     }
 
@@ -80,10 +83,11 @@ public class FileUtils {
             Set<PosixFilePermission> perms =
                     Files.readAttributes(path, PosixFileAttributes.class).permissions();
             if (!perms.equals(allReadWriteExecutePerms)) {
-                logger.info("Setting perms on" + path.toString());
+                logger.info("Setting perms on" + path);
                 Files.setPosixFilePermissions(path, perms);
-                if (thisFile.isDirectory()) {
-                    for (File subfile : thisFile.listFiles()) {
+                var theseFiles = thisFile.listFiles();
+                if (thisFile.isDirectory() && theseFiles != null) {
+                    for (File subfile : theseFiles) {
                         setFilePerms(subfile.toPath());
                     }
                 }
