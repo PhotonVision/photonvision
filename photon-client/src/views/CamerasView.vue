@@ -329,7 +329,6 @@ import CVslider from '../components/common/cv-slider';
 import CVimage from "../components/common/cv-image";
 import TooltippedLabel from "../components/common/cv-tooltipped-label";
 import jsPDF from "jspdf";
-import "../jsPDFFonts/MuseoModerno-normal.js";
 import "../jsPDFFonts/Prompt-Regular-normal.js";
 
 export default {
@@ -576,8 +575,9 @@ export default {
 
             ///////////////////////////////////////////
             // Annotate what was drawn + branding
-            doc.setFont('MuseoModerno');
-            doc.text("PhotonVision", 1.0, 1.0, {maxWidth:(paper_x - 2.0)/2, align:"left"});
+            var img = new Image();
+            img.src = require('@/assets/logoMono.png');
+            doc.addImage(img, 'PNG', 1.0, 0.75, 1.4, 0.5 );
             doc.setFont('Prompt-Regular');
             doc.text(annotation, paper_x-1.0, 1.0, {maxWidth:(paper_x - 2.0)/2, align:"right"});
 
