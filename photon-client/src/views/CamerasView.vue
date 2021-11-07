@@ -542,6 +542,7 @@ export default {
               ///////////////////////////////////////////
               // Assymetric Dot-Grid Pattern
               // see https://github.com/opencv/opencv/blob/b450dd7a87bc69997a8417d94bdfb87427a9fe62/modules/calib3d/src/circlesgrid.cpp#L437
+              // as well as FindBoardCornersPipe.java's Dotboard implementation
 
               start_x = paper_x/2.0 - ((2*(num_x-1) + (num_y-1) % 2) * patternSize)/2.0;
               start_y = paper_y/2.0 - (num_y-1 * patternSize)/2.0;
