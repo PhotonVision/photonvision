@@ -38,6 +38,11 @@
                 <span v-else-if="!$store.getters.currentPipelineSettings.inputShouldShow">HSV thresholds are too broad; narrow them for better performance</span>
                 <span v-else>stop viewing the color stream for better performance</span>
               </v-chip>
+              <v-chip small label color="red" text-color="white" v-if="!$store.state.ntConnectionInfo.connected && $store.state.backendConnected">
+                <span>
+                NetworkTables not connected!
+                </span>
+              </v-chip>
               <v-switch
                 v-model="driverMode"
                 label="Driver Mode"
