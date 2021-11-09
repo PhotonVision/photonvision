@@ -15,6 +15,10 @@ export default new Vuex.Store({
     },
     state: {
         backendConnected: false,
+        ntConnectionInfo: {
+            connected: false,
+            address: ""
+        },
         connectedCallbacks: [],
         colorPicking: false,
         logsOverlay: false,
@@ -143,6 +147,7 @@ export default new Vuex.Store({
         settings: set('settings'),
         calibrationData: set('calibrationData'),
         metrics: set('metrics'),
+        ntConnectionInfo: set('ntConnectionInfo'),
         logString: (state, newStr) => {
             const str = state.logMessages;
             str.push(newStr);

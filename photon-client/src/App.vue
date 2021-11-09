@@ -91,25 +91,48 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item style="position: absolute; bottom: 0; left: 0;">
-          <v-list-item-icon>
-            <v-icon v-if="$store.state.backendConnected">
-              mdi-wifi
-            </v-icon>
-            <v-icon
-              v-else
-              class="pulse"
-              style="border-radius: 100%;"
-            >
-              mdi-wifi-off
-            </v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>
-              {{ $store.state.backendConnected ? "Connected" : "Trying to connect..." }}
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+        <div style="position: absolute; bottom: 0; left: 0;">
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon v-if="$store.state.ntConnectionInfo.connected">
+                mdi-wifi
+              </v-icon>
+              <v-icon
+                  v-else
+                  class="pulse"
+                  style="border-radius: 100%;"
+              >
+                mdi-wifi-off
+              </v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title class="text-wrap">
+                {{ $store.state.ntConnectionInfo.connected ? "NT connected to " + $store.state.ntConnectionInfo.address : "NT trying to connect..." }}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon v-if="$store.state.backendConnected">
+                mdi-wifi
+              </v-icon>
+              <v-icon
+                  v-else
+                  class="pulse"
+                  style="border-radius: 100%;"
+              >
+                mdi-wifi-off
+              </v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title>
+                {{ $store.state.backendConnected ? "Connected" : "Trying to connect..." }}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </div>
+
       </v-list>
     </v-navigation-drawer>
     <v-main>

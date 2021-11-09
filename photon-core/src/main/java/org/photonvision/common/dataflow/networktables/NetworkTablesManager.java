@@ -19,9 +19,13 @@ package org.photonvision.common.dataflow.networktables;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+
+import java.util.HashMap;
 import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.NetworkConfig;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
@@ -62,7 +66,22 @@ public class NetworkTablesManager {
                 ScriptManager.queueEvent(ScriptEventType.kNTConnected);
                 getInstance().broadcastVersion();
             }
+            getInstance().broadcastConnectedStatus();
         }
+    }
+
+    public void broadcastConnectedStatus() {
+        HashMap<String, Object> map = new HashMap<>();
+        var subMap = new HashMap<String, Object>();
+        subMap.put("connected", ntInstance.isConnected());
+        if (ntInstance.isConnected()) {
+            var connections = getInstance().ntInstance.getConnections();
+            if(connections.length > 0) {
+                subMap.put("address", connections[0].remote_ip + ":" + connections[0].remote_port);
+            }
+        }
+        map.put("ntConnectionInfo", subMap);
+        DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>("networkTablesConnected", map));
     }
 
     private void broadcastVersion() {
@@ -83,7 +102,8 @@ public class NetworkTablesManager {
         logger.info("Starting NT Client");
         ntInstance.stopServer();
 
-        ntInstance.startClientTeam(teamNumber);
+//        ntInstance.startClientTeam(teamNumber);
+        ntInstance.startClient("localhost");
         ntInstance.startDSClient();
         if (ntInstance.isConnected()) {
             logger.info("[NetworkTablesManager] Connected to the robot!");
