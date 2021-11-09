@@ -19,6 +19,8 @@ package org.photonvision.common.dataflow.networktables;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import java.util.HashMap;
+import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -27,9 +29,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
-
-import java.util.HashMap;
-import java.util.function.Consumer;
 
 public class NetworkTablesManager {
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
