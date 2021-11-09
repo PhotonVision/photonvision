@@ -19,9 +19,6 @@ package org.photonvision.common.dataflow.networktables;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-
-import java.util.HashMap;
-import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -30,6 +27,9 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
+
+import java.util.HashMap;
+import java.util.function.Consumer;
 
 public class NetworkTablesManager {
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
@@ -76,12 +76,13 @@ public class NetworkTablesManager {
         subMap.put("connected", ntInstance.isConnected());
         if (ntInstance.isConnected()) {
             var connections = getInstance().ntInstance.getConnections();
-            if(connections.length > 0) {
+            if (connections.length > 0) {
                 subMap.put("address", connections[0].remote_ip + ":" + connections[0].remote_port);
             }
         }
         map.put("ntConnectionInfo", subMap);
-        DataChangeService.getInstance().publishEvent(new OutgoingUIEvent<>("networkTablesConnected", map));
+        DataChangeService.getInstance()
+                .publishEvent(new OutgoingUIEvent<>("networkTablesConnected", map));
     }
 
     private void broadcastVersion() {
@@ -102,8 +103,7 @@ public class NetworkTablesManager {
         logger.info("Starting NT Client");
         ntInstance.stopServer();
 
-//        ntInstance.startClientTeam(teamNumber);
-        ntInstance.startClient("localhost");
+        ntInstance.startClientTeam(teamNumber);
         ntInstance.startDSClient();
         if (ntInstance.isConnected()) {
             logger.info("[NetworkTablesManager] Connected to the robot!");

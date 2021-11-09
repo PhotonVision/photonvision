@@ -37,6 +37,7 @@
           v-model="runNTServer"
           name="Run NetworkTables Server (Debugging Only!)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
+          class="mt-3 mb-3"
       />
       <span v-if="runNTServer" class="red font-weight-bold">Disable this switch if you're on a robot! Photonlib will NOT work.</span>
     </v-form>

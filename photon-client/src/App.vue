@@ -107,8 +107,14 @@
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title class="text-wrap">
-                {{ $store.state.ntConnectionInfo.connected ? "NT connected to " + $store.state.ntConnectionInfo.address : "NT trying to connect..." }}
+                {{ ($store.state.ntConnectionInfo.connected && $store.state.backendConnected
+                  ? "Robot connected! " + $store.state.ntConnectionInfo.address
+                  : "Not connected to robot!") }}
               </v-list-item-title>
+              <a
+                  href="/#/settings"
+                  style="color:#FFD843"
+              >{{"Team: " + $store.state.settings.networkSettings.teamNumber}}</a>
             </v-list-item-content>
           </v-list-item>
 
@@ -126,8 +132,8 @@
               </v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-              <v-list-item-title>
-                {{ $store.state.backendConnected ? "Connected" : "Trying to connect..." }}
+              <v-list-item-title class="text-wrap">
+                {{ $store.state.backendConnected ? "Backend Connected" : "Trying to connect..." }}
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
@@ -155,6 +161,27 @@
     >
       <logs />
     </v-dialog>
+    <v-dialog
+        v-model="needsTeamNumberSet"
+        width="500"
+        dark
+        persistent
+    >
+      <v-card
+          dark
+          color="primary"
+          flat
+      >
+        <v-card-title>No team number set!</v-card-title>
+        <v-card-text>
+          PhotonVision cannot connect to your robot! Please
+          <a
+              href="/#/settings"
+              style="color:#FFD843"
+          >head to the settings page</a> and set your team number.
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
@@ -170,8 +197,16 @@ import Logs from "./views/LogsView"
             // Used so that we can switch back to the previously selected pipeline after camera calibration
             previouslySelectedIndices: [],
             timer: undefined,
+            teamNumberDialog: true
         }),
         computed: {
+            needsTeamNumberSet: {
+              get() {
+                return this.$store.state.settings.networkSettings.teamNumber < 1
+                    && this.teamNumberDialog && this.$store.state.backendConnected
+                    && !this.$route.name.toLowerCase().includes("settings");
+              }
+            },
             compact: {
                 get() {
                     if (this.$store.state.compactMode === undefined) {
