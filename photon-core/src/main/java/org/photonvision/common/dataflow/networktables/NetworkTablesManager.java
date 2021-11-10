@@ -78,6 +78,7 @@ public class NetworkTablesManager {
             if (connections.length > 0) {
                 subMap.put("address", connections[0].remote_ip + ":" + connections[0].remote_port);
             }
+            subMap.put("clients", connections.length);
         }
         map.put("ntConnectionInfo", subMap);
         DataChangeService.getInstance()

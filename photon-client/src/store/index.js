@@ -17,7 +17,8 @@ export default new Vuex.Store({
         backendConnected: false,
         ntConnectionInfo: {
             connected: false,
-            address: ""
+            address: "",
+            clients: 0,
         },
         connectedCallbacks: [],
         colorPicking: false,
