@@ -94,16 +94,8 @@
         <div style="position: absolute; bottom: 0; left: 0;">
           <v-list-item>
             <v-list-item-icon>
-              <v-icon v-if="$store.state.ntConnectionInfo.connected">
-                mdi-wifi
-              </v-icon>
-              <v-icon
-                  v-else
-                  class="pulse"
-                  style="border-radius: 100%;"
-              >
-                mdi-wifi-off
-              </v-icon>
+              <img v-if="$store.state.ntConnectionInfo.connected" src="@/assets/robot.svg" alt="">
+              <img v-else class="pulse" style="border-radius: 100%" src="@/assets/robot-off.svg" alt="">
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title class="text-wrap">
@@ -188,7 +180,7 @@
 <script>
 import Logs from "./views/LogsView"
 
-    export default {
+export default {
         name: 'App',
         components: {
             Logs

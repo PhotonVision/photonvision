@@ -88,6 +88,7 @@
         >
           <v-card
             color="primary"
+            class="mt-3"
           >
             <!--            <v-btn @click="onCamNameChange">-->
             <!--              Reload-->
@@ -96,7 +97,7 @@
           </v-card>
           <v-card
             :disabled="$store.getters.isDriverMode || $store.state.colorPicking"
-            class="mt-3"
+            class="mt-6 mb-3"
             color="primary"
           >
             <v-row
@@ -255,6 +256,9 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-snackbar color="primary" v-model="isRobotConnected" timeout="0" top>
+      <span class="white--text">Not connected to the robot! Check your team number?</span>
+    </v-snackbar>
   </div>
 </template>
 
@@ -426,6 +430,12 @@ export default {
                     .some(e => e.width === resolution.width && e.height === resolution.height)
           }
         },
+        isRobotConnected: {
+          get() {
+            // return this.$store.state.ntConnectionInfo.connected && this.$store.state.backendConnected;
+            return true;
+          }
+        }
     },
     created() {
         this.$store.state.connectedCallbacks.push(this.reloadStreams)
