@@ -38,9 +38,11 @@
                 <span v-else-if="!$store.getters.currentPipelineSettings.inputShouldShow">HSV thresholds are too broad; narrow them for better performance</span>
                 <span v-else>stop viewing the color stream for better performance</span>
               </v-chip>
-              <v-chip small label color="red" text-color="white" v-if="!$store.state.ntConnectionInfo.connected && $store.state.backendConnected">
+              <v-chip small label color="red" text-color="white" v-if="!$store.state.ntConnectionInfo.connected || $store.state.settings.networkSettings.runNTServer">
                 <span>
-                NetworkTables not connected!
+                {{ $store.state.settings.networkSettings.runNTServer ?
+                    "NetworkTables Server Enabled! Photonlib may not work" :
+                    "NetworkTables not connected!" }}
                 </span>
               </v-chip>
               <v-switch
