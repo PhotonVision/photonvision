@@ -11,9 +11,13 @@
         :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
         class="mb-4"
       />
-      <span v-if="parseInt(teamNumber) < 1 && !runNTServer" class="red font-weight-bold">Team number not set! NetworkTables cannot connect.</span>
+      <v-chip label color="red" text-color="white" v-if="parseInt(teamNumber) < 1 && !runNTServer">
+        <span>
+          Team number not set! NetworkTables cannot connect.
+        </span>
+      </v-chip>
       <CVradio
-        v-model="connectionType"
+          v-model="connectionType"
         :list="['DHCP','Static']"
         :disabled="!$store.state.settings.networkSettings.supported"
       />
@@ -39,7 +43,11 @@
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
           class="mt-3 mb-3"
       />
-      <span v-if="runNTServer" class="red font-weight-bold">Disable this switch if you're on a robot! Photonlib will NOT work.</span>
+      <v-chip label color="red" text-color="white" v-if="runNTServer">
+        <span>
+          Disable this switch if you're on a robot! Photonlib will NOT work.
+        </span>
+      </v-chip>
     </v-form>
     <v-btn
       color="accent"

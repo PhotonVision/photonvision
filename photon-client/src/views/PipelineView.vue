@@ -256,9 +256,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-snackbar color="primary" v-model="isRobotConnected" timeout="0" top>
-      <span class="white--text">Not connected to the robot! Check your team number?</span>
-    </v-snackbar>
   </div>
 </template>
 
