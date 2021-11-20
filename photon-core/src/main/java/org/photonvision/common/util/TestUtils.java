@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.cscore.CameraServerCvJNI;
+import edu.wpi.first.cscore.CameraServerCvJNI;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -28,7 +27,6 @@ import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class TestUtils {
-
     @SuppressWarnings("unused")
     public enum WPI2019Image {
         kCargoAngledDark48in(1.2192),
@@ -135,7 +133,7 @@ public class TestUtils {
     }
 
     private static Path getResourcesFolderPath(boolean testMode) {
-        return Path.of(testMode ? "src/main/resources" : "../test-resources").toAbsolutePath();
+        return Path.of("../test-resources").toAbsolutePath();
     }
 
     public static Path getTestMode2019ImagePath() {
@@ -232,7 +230,6 @@ public class TestUtils {
             HighGui.waitKey(timeoutMs);
             HighGui.destroyAllWindows();
         } catch (HeadlessException ignored) {
-
         }
     }
 

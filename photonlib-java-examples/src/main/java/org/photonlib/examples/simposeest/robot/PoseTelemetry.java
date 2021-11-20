@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.simposeest.robot;
 
-import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /** Reports our expected, desired, and actual poses to dashboards */
 public class PoseTelemetry {
-
     Field2d field = new Field2d();
 
     Pose2d actPose = new Pose2d();

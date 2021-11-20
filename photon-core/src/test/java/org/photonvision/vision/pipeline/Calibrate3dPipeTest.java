@@ -14,13 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -30,10 +29,10 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -87,7 +86,6 @@ public class Calibrate3dPipeTest {
 
     @Test
     public void calibrationPipelineTest() {
-
         int startMatCount = CVMat.getMatCount();
 
         File dir = new File(TestUtils.getDotBoardImagesPath().toAbsolutePath().toString());
@@ -249,7 +247,6 @@ public class Calibrate3dPipeTest {
             double boardGridSize_m,
             double expectedXCenter,
             double expectedYCenter) {
-
         int startMatCount = CVMat.getMatCount();
 
         File[] directoryListing = rootFolder.listFiles();
@@ -333,7 +330,7 @@ public class Calibrate3dPipeTest {
             if (file.isFile()) {
                 Mat raw = Imgcodecs.imread(file.getAbsolutePath());
                 Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
-                Imgproc.undistort(
+                Calib3d.undistort(
                         raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.cameraExtrinsics.getAsMat());
                 TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1);
                 raw.release();

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.processes;
 
 import java.util.*;
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 
 /** VisionModuleManager has many VisionModules, and provides camera configuration data to them. */
 public class VisionModuleManager {
-
     private static class ThreadSafeSingleton {
         private static final VisionModuleManager INSTANCE = new VisionModuleManager();
     }

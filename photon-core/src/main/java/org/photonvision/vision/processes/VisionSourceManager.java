@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.processes;
 
-import edu.wpi.cscore.UsbCamera;
-import edu.wpi.cscore.UsbCameraInfo;
+import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
@@ -36,7 +35,6 @@ import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.camera.ZeroCopyPicamSource;
 
 public class VisionSourceManager {
-
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
     private static final List<String> deviceBlacklist = List.of("bcm2835-isp");
 

@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2018-2020 Photon Vision.
+/*
+ * Copyright (C) Photon Vision.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,24 +17,24 @@
 
 #pragma once
 
-#include "DrivetrainSim.h"
-
 #include <photonlib/PhotonCamera.h>
 
-#include <frc/PWMVictorSPX.h>
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
 #include <frc/controller/PIDController.h>
 #include <frc/drive/DifferentialDrive.h>
+#include <frc/motorcontrol/PWMVictorSPX.h>
 #include <units/angle.h>
 #include <units/length.h>
 
+#include "DrivetrainSim.h"
+
 class Robot : public frc::TimedRobot {
-public:
+ public:
   void TeleopPeriodic() override;
   void SimulationPeriodic() override;
 
-private:
+ private:
   // Constants such as camera and target height stored. Change per robot and
   // goal!
   const units::meter_t CAMERA_HEIGHT = 24_in;

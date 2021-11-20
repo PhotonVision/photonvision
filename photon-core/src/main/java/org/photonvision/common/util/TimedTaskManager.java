@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.util;
 
 import java.util.concurrent.*;
@@ -23,7 +22,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class TimedTaskManager {
-
     private static final Logger logger = new Logger(TimedTaskManager.class, LogGroup.General);
 
     private static class Singleton {

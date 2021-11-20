@@ -21,6 +21,7 @@
 
 #include <units/angle.h>
 #include <units/length.h>
+#include <wpi/span.h>
 
 namespace photonlib {
 
@@ -73,36 +74,34 @@ void SimVisionSystem::ProcessFrame(frc::Pose2d robotPose) {
     units::meter_t distHypot =
         units::math::hypot(distAlongGround, distVertical);
 
-    double area = tgt.tgtArea.to<double>() / GetM2PerPx(distAlongGround);
+    double area = tgt.tgtArea.value() / GetM2PerPx(distAlongGround);
 
     // 2D yaw mode considers the target as a point, and should ignore target
     // rotation.
     // Photon reports it in the correct robot reference frame.
     // IE: targets to the left of the image should report negative yaw.
-    units::degree_t yawAngle =
-        -1.0 * units::math::atan2(camToTargetTrans.Translation().Y(),
-                                  camToTargetTrans.Translation().X());
+    units::degree_t yawAngle = -units::math::atan2(
+        camToTargetTrans.Translation().Y(), camToTargetTrans.Translation().X());
     units::degree_t pitchAngle =
         units::math::atan2(distVertical, distAlongGround) - camPitch;
 
     if (CamCanSeeTarget(distHypot, yawAngle, pitchAngle, area)) {
-      PhotonTrackedTarget newTgt =
-          PhotonTrackedTarget(yawAngle.to<double>(), pitchAngle.to<double>(),
-                              area, 0.0, camToTargetTrans);
+      PhotonTrackedTarget newTgt = PhotonTrackedTarget(
+          yawAngle.value(), pitchAngle.value(), area, 0.0, camToTargetTrans);
       visibleTgtList.push_back(newTgt);
     }
   }
 
   units::second_t procDelay(0.0);  // Future - tie this to something meaningful
-  cam.SubmitProcessedFrame(
-      procDelay, wpi::MutableArrayRef<PhotonTrackedTarget>(visibleTgtList));
+  cam.SubmitProcessedFrame(procDelay,
+                           wpi::span<PhotonTrackedTarget>(visibleTgtList));
 }
 
 double SimVisionSystem::GetM2PerPx(units::meter_t dist) {
-  double heightMPerPx = 2 * dist.to<double>() *
-                        units::math::tan(camVertFOV / 2) / cameraResHeight;
-  double widthMPerPx = 2 * dist.to<double>() *
-                       units::math::tan(camHorizFOV / 2) / cameraResWidth;
+  double heightMPerPx =
+      2 * dist.value() * units::math::tan(camVertFOV / 2) / cameraResHeight;
+  double widthMPerPx =
+      2 * dist.value() * units::math::tan(camHorizFOV / 2) / cameraResWidth;
   return widthMPerPx * heightMPerPx;
 }
 

@@ -19,7 +19,7 @@ dependencies {
     implementation "org.msgpack:msgpack-core:0.8.20"
     implementation "org.msgpack:jackson-dataformat-msgpack:0.8.20"
 
-    compile "org.slf4j:slf4j-simple:1.8.0-beta4"
+    implementation "org.slf4j:slf4j-simple:1.8.0-beta4"
 }
 
 shadowJar {
@@ -75,8 +75,8 @@ remotes {
     }
 }
 
-import java.io.*; 
-import java.net.*; 
+import java.io.*;
+import java.net.*;
 
 task findDeployTarget {
     doLast {
@@ -138,4 +138,3 @@ task deploy {
         }
     }
 }
-

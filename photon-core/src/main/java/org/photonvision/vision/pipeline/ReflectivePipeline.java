@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
@@ -35,7 +34,6 @@ import org.photonvision.vision.target.TrackedTarget;
 /** Represents a pipeline for tracking retro-reflective targets. */
 @SuppressWarnings({"DuplicatedCode"})
 public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectivePipelineSettings> {
-
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final HSVPipe hsvPipe = new HSVPipe();
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
@@ -60,7 +58,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
     @Override
     protected void setPipeParamsImpl() {
-
         var dualOffsetValues =
                 new DualOffsetValues(
                         settings.offsetDualPointA,

@@ -234,7 +234,7 @@ export default {
                   this.snackbar = {
                       color: "error",
                       text: "Error while uploading settings file! Could not process provided file.",
-                  };               
+                  };
                 } else if (err.request) {
                   this.snackbar = {
                       color: "error",

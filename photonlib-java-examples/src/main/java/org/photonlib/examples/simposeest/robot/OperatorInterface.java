@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.simposeest.robot;
 
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.SlewRateLimiter;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.XboxController;
 
 public class OperatorInterface {
@@ -34,7 +32,7 @@ public class OperatorInterface {
     public double getFwdRevSpdCmd() {
         // Get the x speed. We are inverting this because Xbox controllers return
         // negative values when we push forward.
-        return -speedLimiter.calculate(opCtrl.getY(GenericHID.Hand.kLeft)) * Constants.kMaxSpeed;
+        return -speedLimiter.calculate(opCtrl.getLeftY()) * Constants.kMaxSpeed;
     }
 
     public double getRotateSpdCmd() {
@@ -42,7 +40,7 @@ public class OperatorInterface {
         // positive value when we pull to the left (remember, CCW is positive in
         // mathematics). Xbox controllers return positive values when you pull to
         // the right by default.
-        return -rotLimiter.calculate(opCtrl.getX(GenericHID.Hand.kRight)) * Constants.kMaxAngularSpeed;
+        return -rotLimiter.calculate(opCtrl.getRightX()) * Constants.kMaxAngularSpeed;
     }
 
     public boolean getSimKickCmd() {

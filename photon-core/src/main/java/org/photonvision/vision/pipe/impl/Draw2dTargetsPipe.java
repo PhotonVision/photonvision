@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import java.awt.*;
@@ -34,7 +33,6 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dTargetsPipe.Draw2dTargetsParams> {
-
     MatOfPoint tempMat = new MatOfPoint();
     private static final Logger logger = new Logger(Draw2dTargetsPipe.class, LogGroup.General);
 
@@ -53,7 +51,6 @@ public class Draw2dTargetsPipe
                         || params.showMaximumBox
                         || params.showRotatedBox
                         || params.showShape)) {
-
             var centroidColour = ColorHelper.colorToScalar(params.centroidColor);
             var maximumBoxColour = ColorHelper.colorToScalar(params.maximumBoxColor);
             var rotatedBoxColour = ColorHelper.colorToScalar(params.rotatedBoxColor);
@@ -147,7 +144,6 @@ public class Draw2dTargetsPipe
                 }
 
                 if (params.showCentroid) {
-
                     Point centroid = target.getTargetOffsetPoint().clone();
                     dividePoint(centroid);
                     var crosshairRadius = (int) (imageSize * params.kPixelsToCentroidRadius);

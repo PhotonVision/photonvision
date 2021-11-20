@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import java.awt.*;
@@ -37,7 +36,6 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw3dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw3dTargetsPipe.Draw3dContoursParams> {
-
     Logger logger = new Logger(Draw3dTargetsPipe.class, LogGroup.VisionModule);
 
     @Override
@@ -45,7 +43,6 @@ public class Draw3dTargetsPipe
         if (!params.shouldDraw) return null;
 
         for (var target : in.getRight()) {
-
             // draw convex hull
             var pointMat = new MatOfPoint();
             divideMat2f(target.m_mainContour.getConvexHull(), pointMat);

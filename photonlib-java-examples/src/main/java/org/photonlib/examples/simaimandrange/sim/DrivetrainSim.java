@@ -14,24 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.simaimandrange.sim;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Transform2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.PWMSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj.system.LinearSystem;
-import edu.wpi.first.wpilibj.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.util.Units;
-import edu.wpi.first.wpiutil.math.numbers.N2;
 import org.photonlib.examples.simaimandrange.Robot;
 import org.photonvision.SimVisionSystem;
 import org.photonvision.SimVisionTarget;
@@ -44,7 +43,6 @@ import org.photonvision.SimVisionTarget;
 * real motors/sensors/physics are used instead.
 */
 public class DrivetrainSim {
-
     // Simulated Motor Controllers
     PWMSim leftLeader = new PWMSim(0);
     PWMSim rightLeader = new PWMSim(1);
@@ -53,7 +51,7 @@ public class DrivetrainSim {
     // Configure these to match your drivetrain's physical dimensions
     // and characterization results.
     LinearSystem<N2, N2, N2> drivetrainSystem =
-            LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3);
+            LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3, 1.0);
     DifferentialDrivetrainSim drivetrainSimulator =
             new DifferentialDrivetrainSim(
                     drivetrainSystem,
@@ -114,11 +112,10 @@ public class DrivetrainSim {
     * physics forward by a single 20ms step.
     */
     public void update() {
-
         double leftMotorCmd = 0;
         double rightMotorCmd = 0;
 
-        if (DriverStation.getInstance().isEnabled() && !RobotController.isBrownedOut()) {
+        if (DriverStation.isEnabled() && !RobotController.isBrownedOut()) {
             leftMotorCmd = leftLeader.getSpeed();
             rightMotorCmd = rightLeader.getSpeed();
         }

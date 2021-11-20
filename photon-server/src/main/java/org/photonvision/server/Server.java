@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.server;
 
 import io.javalin.Javalin;
@@ -25,7 +24,6 @@ public class Server {
     private static final Logger logger = new Logger(Server.class, LogGroup.WebServer);
 
     public static void main(int port) {
-
         Javalin app =
                 Javalin.create(
                         config -> {

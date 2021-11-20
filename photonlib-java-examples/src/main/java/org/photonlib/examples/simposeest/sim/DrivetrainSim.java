@@ -14,23 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.simposeest.sim;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.system.LinearSystem;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Transform2d;
-import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.simulation.AnalogGyroSim;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.simulation.PWMSim;
-import edu.wpi.first.wpilibj.system.LinearSystem;
-import edu.wpi.first.wpilibj.system.plant.DCMotor;
-import edu.wpi.first.wpilibj.system.plant.LinearSystemId;
-import edu.wpi.first.wpiutil.math.numbers.N2;
 import org.photonlib.examples.simposeest.robot.Constants;
 import org.photonvision.SimVisionSystem;
 
@@ -42,7 +41,6 @@ import org.photonvision.SimVisionSystem;
 * real motors/sensors/physics are used instead.
 */
 public class DrivetrainSim {
-
     // Simulated Sensors
     AnalogGyroSim gyroSim = new AnalogGyroSim(Constants.kGyroPin);
     EncoderSim leftEncoderSim = EncoderSim.createForChannel(Constants.kDtLeftEncoderPinA);
@@ -100,11 +98,10 @@ public class DrivetrainSim {
     * physics forward by a single 20ms step.
     */
     public void update() {
-
         double leftMotorCmd = 0;
         double rightMotorCmd = 0;
 
-        if (DriverStation.getInstance().isEnabled() && !RobotController.isBrownedOut()) {
+        if (DriverStation.isEnabled() && !RobotController.isBrownedOut()) {
             // If the motor controllers are enabled...
             // Roughly model the effect of leader and follower motor pushing on the same
             // gearbox.

@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2018-2020 Photon Vision.
+/*
+ * Copyright (C) Photon Vision.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,26 +18,26 @@
 #include "DrivetrainSim.h"
 
 /**
-* Perform all periodic drivetrain simulation related tasks to advance our simulation of robot
-* physics forward by a single 20ms step.
-*/
-void DrivetrainSim::update(){
+ * Perform all periodic drivetrain simulation related tasks to advance our
+ * simulation of robot physics forward by a single 20ms step.
+ */
+void DrivetrainSim::update() {
+  double leftMotorCmd = 0;
+  double rightMotorCmd = 0;
 
-    double leftMotorCmd = 0;
-    double rightMotorCmd = 0;
+  if (frc::DriverStation::IsEnabled() &&
+      !frc::RobotController::IsBrownedOut()) {
+    leftMotorCmd = leftLeader.GetSpeed();
+    rightMotorCmd = rightLeader.GetSpeed();
+  }
 
-    if (frc::DriverStation::GetInstance().IsEnabled() && !frc::RobotController::IsBrownedOut()) {
-        leftMotorCmd = leftLeader.GetSpeed();
-        rightMotorCmd = rightLeader.GetSpeed();
-    } 
-    
-    m_drivetrainSimulator.SetInputs(
-            units::volt_t(leftMotorCmd * frc::RobotController::GetInputVoltage()),
-            units::volt_t(-rightMotorCmd * frc::RobotController::GetInputVoltage()) );
-    m_drivetrainSimulator.Update(20_ms);
+  m_drivetrainSimulator.SetInputs(
+      units::volt_t(leftMotorCmd * frc::RobotController::GetInputVoltage()),
+      units::volt_t(-rightMotorCmd * frc::RobotController::GetInputVoltage()));
+  m_drivetrainSimulator.Update(20_ms);
 
-    // Update PhotonVision based on our new robot position.
-    simVision.ProcessFrame(m_drivetrainSimulator.GetPose());
+  // Update PhotonVision based on our new robot position.
+  simVision.ProcessFrame(m_drivetrainSimulator.GetPose());
 
-    field.SetRobotPose(m_drivetrainSimulator.GetPose());
+  field.SetRobotPose(m_drivetrainSimulator.GetPose());
 }

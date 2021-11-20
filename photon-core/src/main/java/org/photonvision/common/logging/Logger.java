@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.logging;
 
 import java.io.*;
@@ -36,7 +35,6 @@ import org.photonvision.common.util.TimedTaskManager;
 
 @SuppressWarnings("unused")
 public class Logger {
-
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BLACK = "\u001B[30m";
     public static final String ANSI_RED = "\u001B[31m";
@@ -127,7 +125,6 @@ public class Logger {
     }
 
     public static void cleanLogs(Path folderToClean) {
-
         LinkedList<File> logFileList =
                 new LinkedList<>(Arrays.asList(folderToClean.toFile().listFiles()));
         HashMap<File, Date> logFileStartDateMap = new HashMap<>();

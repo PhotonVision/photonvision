@@ -11,11 +11,11 @@ dependencies {
     implementation 'org.msgpack:jackson-dataformat-msgpack:0.8.20'
 
     // wpiutil
-    compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxaarch64bionic"
-    compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxraspbian"
-    compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxx86-64"
-    compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:osxx86-64"
-    compile "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:windowsx86-64"
+    implementation "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxaarch64bionic"
+    implementation "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxraspbian"
+    implementation "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:linuxx86-64"
+    implementation "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:osxx86-64"
+    implementation "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:windowsx86-64"
 
     // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
     implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion"
@@ -25,7 +25,7 @@ dependencies {
     implementation "org.jogamp.jogl:jogl-all:$joglVersion:natives-linux-aarch64"
 
     // Zip
-    compile 'org.zeroturnaround:zt-zip:1.14'
+    implementation 'org.zeroturnaround:zt-zip:1.14'
 }
 
 task writeCurrentVersionJava {

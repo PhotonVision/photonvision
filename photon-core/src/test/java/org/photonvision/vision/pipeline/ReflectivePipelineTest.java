@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipeline;
 
 import org.junit.jupiter.api.Assertions;
@@ -29,7 +28,6 @@ import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class ReflectivePipelineTest {
-
     @Test
     public void test2019() {
         TestUtils.loadLibraries();

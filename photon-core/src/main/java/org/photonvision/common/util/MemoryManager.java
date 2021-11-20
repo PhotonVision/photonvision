@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.util;
 
 public class MemoryManager {
-
     private static final long MEGABYTE_FACTOR = 1024L * 1024L;
 
     private int collectionThreshold;

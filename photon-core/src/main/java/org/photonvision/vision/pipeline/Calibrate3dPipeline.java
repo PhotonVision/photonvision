@@ -14,10 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.math.util.Units;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,7 +46,6 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class Calibrate3dPipeline
         extends CVPipeline<CVPipelineResult, Calibration3dPipelineSettings> {
-
     // For loggging
     private static final Logger logger = new Logger(Calibrate3dPipeline.class, LogGroup.General);
 

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
@@ -29,7 +28,6 @@ import org.photonvision.vision.target.*;
 public class Collect2dTargetsPipe
         extends CVPipe<
                 List<PotentialTarget>, List<TrackedTarget>, Collect2dTargetsPipe.Collect2dTargetsParams> {
-
     /**
     * Processes this pipeline.
     *

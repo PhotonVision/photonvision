@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.processes;
 
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.*;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -57,7 +56,6 @@ import org.photonvision.vision.target.TrackedTarget;
 * provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
 */
 public class VisionModule {
-
     private static final int streamFPSCap = 30;
 
     private final Logger logger;

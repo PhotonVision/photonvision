@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.util;
 
 import java.io.File;
@@ -32,10 +31,8 @@ import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.logging.Logger;
 
 public class LogFileManagementTest {
-
     @Test
     public void fileCleanupTest() throws IOException {
-
         // Ensure we instantiate the new log correctly
         ConfigManager.getInstance();
 

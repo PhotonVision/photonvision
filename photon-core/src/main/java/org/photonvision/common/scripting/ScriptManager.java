@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.scripting;
 
 import java.io.IOException;
@@ -31,7 +30,6 @@ import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class ScriptManager {
-
     private static final Logger logger = new Logger(ScriptManager.class, LogGroup.General);
 
     private ScriptManager() {}
@@ -83,7 +81,6 @@ public class ScriptManager {
     }
 
     protected static class ScriptConfigManager {
-
         //        protected static final Path scriptConfigPath =
         // Paths.get(ConfigManager.SettingsPath.toString(), "scripts.json");
         static final Path scriptConfigPath = Paths.get(""); // TODO: Waiting on config

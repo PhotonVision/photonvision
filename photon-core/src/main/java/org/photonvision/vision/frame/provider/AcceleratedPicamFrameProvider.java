@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.frame.provider;
 
 import org.opencv.core.Mat;
@@ -26,7 +25,6 @@ import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class AcceleratedPicamFrameProvider implements FrameProvider {
-
     private final VisionSourceSettables settables;
 
     private CVMat mat;

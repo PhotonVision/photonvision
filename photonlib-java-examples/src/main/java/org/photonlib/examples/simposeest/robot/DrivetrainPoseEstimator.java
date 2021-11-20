@@ -14,21 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.simposeest.robot;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N5;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.estimator.DifferentialDrivePoseEstimator;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Transform2d;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
-import edu.wpi.first.wpilibj.util.Units;
-import edu.wpi.first.wpiutil.math.Matrix;
-import edu.wpi.first.wpiutil.math.VecBuilder;
-import edu.wpi.first.wpiutil.math.numbers.N1;
-import edu.wpi.first.wpiutil.math.numbers.N3;
-import edu.wpi.first.wpiutil.math.numbers.N5;
 import org.photonvision.PhotonCamera;
 
 /**
@@ -37,7 +36,6 @@ import org.photonvision.PhotonCamera;
 * filter. This in turn creates a best-guess at a Pose2d of where our drivetrain is currently at.
 */
 public class DrivetrainPoseEstimator {
-
     // Sensors used as part of the Pose Estimation
     private final AnalogGyro gyro = new AnalogGyro(Constants.kGyroPin);
     private PhotonCamera cam = new PhotonCamera(Constants.kCamName);
@@ -75,7 +73,6 @@ public class DrivetrainPoseEstimator {
     */
     public void update(
             DifferentialDriveWheelSpeeds actWheelSpeeds, double leftDist, double rightDist) {
-
         m_poseEstimator.update(gyro.getRotation2d(), actWheelSpeeds, leftDist, rightDist);
 
         var res = cam.getLatestResult();

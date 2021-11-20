@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.processes;
 
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ import org.photonvision.vision.target.RobotOffsetPointOperation;
 
 @SuppressWarnings("unchecked")
 public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
-
     private final VisionModule parentModule;
     private final Logger logger;
 

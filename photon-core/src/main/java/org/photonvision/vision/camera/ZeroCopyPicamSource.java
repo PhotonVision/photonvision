@@ -14,10 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.camera;
 
-import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.cscore.VideoMode;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -82,7 +81,6 @@ public class ZeroCopyPicamSource extends VisionSource {
     }
 
     public static class PicamSettables extends VisionSourceSettables {
-
         private FPSRatedVideoMode currentVideoMode;
         private double lastExposure;
         private int lastBrightness;

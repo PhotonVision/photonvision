@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.networktables.EntryNotification;
@@ -33,7 +32,6 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
-
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
     private NetworkTable subTable;
     private NetworkTableEntry rawBytesEntry;

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class FindCirclesPipe
         extends CVPipe<Pair<Mat, List<Contour>>, List<CVShape>, FindCirclesPipe.FindCirclePipeParams> {
-
     // Output vector of found circles. Each vector is encoded as 3 or 4 element floating-point vector
     // (x,y,radius) or (x,y,radius,votes) .
     private final Mat circles = new Mat();

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.networktables.LogMessage;
@@ -29,7 +28,6 @@ import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 
 public class NetworkTablesManager {
-
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
     private final String kRootTableName = "/photonvision";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
@@ -48,7 +46,6 @@ public class NetworkTablesManager {
     private static final Logger logger = new Logger(NetworkTablesManager.class, LogGroup.General);
 
     private static class NTLogger implements Consumer<LogMessage> {
-
         private boolean hasReportedConnectionFailure = false;
         private long lastConnectMessageMillis = 0;
 

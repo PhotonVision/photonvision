@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import java.awt.Color;
@@ -35,7 +34,6 @@ import org.photonvision.vision.target.TrackedTarget;
 public class Draw2dCrosshairPipe
         extends MutatingPipe<
                 Pair<Mat, List<TrackedTarget>>, Draw2dCrosshairPipe.Draw2dCrosshairParams> {
-
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         if (!params.shouldDraw) return null;

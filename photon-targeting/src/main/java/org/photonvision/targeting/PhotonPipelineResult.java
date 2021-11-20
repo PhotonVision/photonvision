@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.targeting;
 
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ import org.photonvision.common.dataflow.structures.Packet;
 
 /** Represents a pipeline result from a PhotonCamera. */
 public class PhotonPipelineResult {
-
     private static boolean HAS_WARNED = false;
 
     // Targets to store.

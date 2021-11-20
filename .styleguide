@@ -9,6 +9,12 @@ cppSrcFileInclude {
   \.cpp$
 }
 
+modifiableFileExclude {
+  \.jpg$
+  \.png$
+  \.so$
+}
+
 includeProject {
   ^photonLib/
 }
@@ -18,4 +24,8 @@ includeOtherLibs {
   ^networktables/
   ^units/
   ^wpi/
+}
+
+licenseUpdateExclude {
+  \.java$
 }

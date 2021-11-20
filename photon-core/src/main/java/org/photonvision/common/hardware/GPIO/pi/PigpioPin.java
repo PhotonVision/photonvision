@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.hardware.GPIO.pi;
 
 import static org.photonvision.common.hardware.GPIO.pi.PigpioException.*;
@@ -24,7 +23,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class PigpioPin extends GPIOBase {
-
     public static final Logger logger = new Logger(PigpioPin.class, LogGroup.General);
     private static final PigpioSocket piSocket = new PigpioSocket();
 

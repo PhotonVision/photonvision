@@ -21,8 +21,8 @@
 #include <string>
 
 #include <units/time.h>
-#include <wpi/ArrayRef.h>
 #include <wpi/SmallVector.h>
+#include <wpi/span.h>
 
 #include "photonlib/Packet.h"
 #include "photonlib/PhotonCamera.h"
@@ -56,7 +56,7 @@ class SimPhotonCamera : public PhotonCamera {
    * @param tgtList Set of targets detected
    */
   void SubmitProcessedFrame(units::second_t latency,
-                            wpi::ArrayRef<PhotonTrackedTarget> tgtList);
+                            wpi::span<const PhotonTrackedTarget> tgtList);
 
  private:
   mutable Packet simPacket;

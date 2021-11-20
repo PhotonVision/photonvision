@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
@@ -26,7 +25,6 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class FilterShapesPipe
         extends CVPipe<List<CVShape>, List<CVShape>, FilterShapesPipe.FilterShapesPipeParams> {
-
     List<CVShape> outputList = new ArrayList<>();
 
     /**

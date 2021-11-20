@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.opencv;
 
 import java.util.Comparator;
@@ -31,7 +30,6 @@ import org.opencv.imgproc.Moments;
 import org.photonvision.common.util.math.MathUtils;
 
 public class Contour implements Releasable {
-
     public static final Comparator<Contour> SortByMomentsX =
             Comparator.comparingDouble(
                     (contour) -> contour.getMoments().get_m10() / contour.getMoments().get_m00());

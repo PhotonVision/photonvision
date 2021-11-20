@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -24,7 +23,6 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HardwareConfig {
-
     public final String deviceName;
     public final String deviceLogoPath;
     public final String supportURL;

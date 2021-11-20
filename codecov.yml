@@ -2,4 +2,4 @@ coverage:
   # Turning off commit status to prevent failed checks if coverage decreases
   status:
     project: no
-    patch: no 
+    patch: no

@@ -14,13 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.util.numbers;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public abstract class NumberCouple<T extends Number> {
-
     protected T first;
     protected T second;
 

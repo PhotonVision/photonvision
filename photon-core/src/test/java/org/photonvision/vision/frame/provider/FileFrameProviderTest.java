@@ -14,12 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.frame.provider;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.cscore.CameraServerCvJNI;
+import edu.wpi.first.cscore.CameraServerCvJNI;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -29,10 +28,8 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.frame.Frame;
 
 public class FileFrameProviderTest {
-
     @BeforeAll
     public static void initPath() {
-
         try {
             CameraServerCvJNI.forceLoad();
         } catch (IOException e) {

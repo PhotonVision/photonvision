@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.wpilibj.LinearFilter;
+import edu.wpi.first.math.filter.LinearFilter;
 import org.apache.commons.lang3.time.StopWatch;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class CalculateFPSPipe
         extends CVPipe<Void, Integer, CalculateFPSPipe.CalculateFPSPipeParams> {
-
     private LinearFilter fpsFilter = LinearFilter.movingAverage(20);
     StopWatch clock = new StopWatch();
 

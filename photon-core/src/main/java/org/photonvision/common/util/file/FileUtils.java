@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.util.file;
 
 import java.io.File;
@@ -33,7 +32,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class FileUtils {
-
     private FileUtils() {}
 
     private static final Logger logger = new Logger(FileUtils.class, LogGroup.General);
