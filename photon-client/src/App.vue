@@ -92,23 +92,28 @@
         </v-list-item>
 
         <div style="position: absolute; bottom: 0; left: 0;">
-          <v-list-item>
-            <v-list-item-icon>
-              <img v-if="$store.state.ntConnectionInfo.connected" src="@/assets/robot.svg" alt="">
-              <img v-else class="pulse" style="border-radius: 100%" src="@/assets/robot-off.svg" alt="">
-            </v-list-item-icon>
-            <v-list-item-content>
-              <v-list-item-title class="text-wrap">
-                {{ ($store.state.ntConnectionInfo.connected && $store.state.backendConnected
-                  ? "Robot connected! " + $store.state.ntConnectionInfo.address
-                  : "Not connected to robot!") }}
-              </v-list-item-title>
-              <a
-                  href="/#/settings"
-                  style="color:#FFD843"
-              >{{"Team: " + $store.state.settings.networkSettings.teamNumber}}</a>
-            </v-list-item-content>
-          </v-list-item>
+<!--          <v-list-item>-->
+<!--            <v-list-item-icon>-->
+<!--&lt;!&ndash;              <v-icon v-if="$store.state.settings.networkSettings.runNTServer">mdi-server</v-icon>&ndash;&gt;-->
+<!--&lt;!&ndash;              <img v-else-if="$store.state.ntConnectionInfo.connected" src="@/assets/robot.svg" alt="">&ndash;&gt;-->
+<!--&lt;!&ndash;              <img v-else class="pulse" style="border-radius: 100%" src="@/assets/robot-off.svg" alt="">&ndash;&gt;-->
+<!--            </v-list-item-icon>-->
+<!--            <v-list-item-content>-->
+<!--&lt;!&ndash;              <v-list-item-title class="text-wrap" v-if="$store.state.settings.networkSettings.runNTServer">&ndash;&gt;-->
+<!--&lt;!&ndash;                NetworkTables server running for {{$store.state.ntConnectionInfo.clients ? $store.state.ntConnectionInfo.clients : 'zero'}} clients!&ndash;&gt;-->
+<!--&lt;!&ndash;              </v-list-item-title>&ndash;&gt;-->
+<!--&lt;!&ndash;              <v-list-item-title class="text-wrap" v-else-if="$store.state.ntConnectionInfo.connected && $store.state.backendConnected">&ndash;&gt;-->
+<!--&lt;!&ndash;                Robot connected! {{$store.state.ntConnectionInfo.address}}&ndash;&gt;-->
+<!--&lt;!&ndash;              </v-list-item-title>&ndash;&gt;-->
+<!--&lt;!&ndash;              <v-list-item-title class="text-wrap" v-else>&ndash;&gt;-->
+<!--&lt;!&ndash;                Not connected to robot!&ndash;&gt;-->
+<!--&lt;!&ndash;              </v-list-item-title>&ndash;&gt;-->
+<!--              <a-->
+<!--                  href="/#/settings"-->
+<!--                  style="color:#FFD843"-->
+<!--              >{{"Team: " + $store.state.settings.networkSettings.teamNumber}}</a>-->
+<!--            </v-list-item-content>-->
+<!--          </v-list-item>-->
 
           <v-list-item>
             <v-list-item-icon>
@@ -179,6 +184,8 @@
 
 <script>
 import Logs from "./views/LogsView"
+// import {mapState} from "vuex";
+import Vue from 'vue'
 
 export default {
         name: 'App',
@@ -213,6 +220,12 @@ export default {
                     localStorage.setItem("compactMode", value);
                 },
             },
+            // ...mapState({
+              // ntServerMode: state => state.settings.networkSettings.runNTServer,
+              // ntClients: state => state.ntConnectionInfo.clients,
+              // ntConnected: state => state.ntConnectionInfo.connected,
+              // backendConnected: state => state.backendConnected
+            // })
         },
         created() {
             document.addEventListener("keydown", e => {
@@ -247,12 +260,12 @@ export default {
                 }
             };
             this.$options.sockets.onopen = () => {
-                this.$store.state.backendConnected = true;
+                Vue.set(this.$store.state, 'backendConnected', true)
                 this.$store.state.connectedCallbacks.forEach(it => it())
             };
 
             let closed = () => {
-                this.$store.state.backendConnected = false;
+                Vue.set(this.$store.state, 'backendConnected', false)
             };
             this.$options.sockets.onclose = closed;
             this.$options.sockets.onerror = closed;
