@@ -115,6 +115,14 @@ fabric.properties
 **/dependency-reduced-pom.xml
 # photon-server/photon-vision.iml
 
+# compile_commands
+compile_commands.json
+
+# clang configuration and clangd cache
+.clang
+.clangd/
+.cache/
+
 New client/photon-client/*
 
 *.prefs
