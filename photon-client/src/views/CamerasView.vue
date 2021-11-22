@@ -495,7 +495,7 @@ export default {
             // Generates a .pdf of a board for calibration and downloads it
 
             //Murica paper.
-            var doc = new jsPDF({unit: 'in', format:'letter'}); 
+            var doc = new jsPDF({unit: 'in', format:'letter'});
             var paper_x = 8.5;
             var paper_y = 11.0;
 
@@ -557,7 +557,7 @@ export default {
             }
 
             ///////////////////////////////////////////
-            // Draw a fixed size inch ruler pattern to 
+            // Draw a fixed size inch ruler pattern to
             // help users debug their printers
             var lineStartX = 1.0;
             var lineEndX = paper_x - lineStartX;
