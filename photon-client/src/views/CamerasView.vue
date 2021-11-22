@@ -66,43 +66,51 @@
                 cols="12"
                 md="6"
               >
-                <CVselect
-                  v-model="selectedFilteredResIndex"
-                  name="Resolution"
-                  select-cols="7"
-                  :list="stringResolutionList"
-                  :disabled="isCalibrating"
-                  tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
-                />
-                <CVselect
-                  v-model="boardType"
-                  name="Board Type"
-                  select-cols="7"
-                  :list="['Chessboard', 'Dot Grid']"
-                  :disabled="isCalibrating"
-                  tooltip="Calibration board pattern to use"
-                />
-                <CVnumberinput
-                  v-model="squareSizeIn"
-                  name="Pattern Spacing (in)"
-                  label-cols="5"
-                  tooltip="Spacing between pattern features in inches"
-                  :disabled="isCalibrating"
-                />
-                <CVnumberinput
-                  v-model="boardWidth"
-                  name="Board width"
-                  label-cols="5"
-                  tooltip="Width of the board in dots or chessboard squares; with the standard chessboard, this is usually 8"
-                  :disabled="isCalibrating"
-                />
-                <CVnumberinput
-                  v-model="boardHeight"
-                  name="Board height"
-                  label-cols="5"
-                  tooltip="Height of the board in dots or chessboard squares; with the standard chessboard, this is usually 8"
-                  :disabled="isCalibrating"
-                />
+                <v-form
+                  ref="form"
+                  v-model="settingsValid"
+                >
+                  <CVselect
+                    v-model="selectedFilteredResIndex"
+                    name="Resolution"
+                    select-cols="7"
+                    :list="stringResolutionList"
+                    :disabled="isCalibrating"
+                    tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
+                  />
+                  <CVselect
+                    v-model="boardType"
+                    name="Board Type"
+                    select-cols="7"
+                    :list="['Chessboard', 'Dot Grid']"
+                    :disabled="isCalibrating"
+                    tooltip="Calibration board pattern to use"
+                  />
+                  <CVnumberinput
+                    v-model="squareSizeIn"
+                    name="Pattern Spacing (in)"
+                    label-cols="5"
+                    tooltip="Spacing between pattern features in inches"
+                    :disabled="isCalibrating"
+                    :rules="[v => (v > 0) || 'Size must be positive']"
+                  />
+                  <CVnumberinput
+                    v-model="boardWidth"
+                    name="Board width"
+                    label-cols="5"
+                    tooltip="Width of the board in dots or chessboard squares"
+                    :disabled="isCalibrating"
+                    :rules="[v => (v >= 4) || 'Width must be at least 4']"
+                  />
+                  <CVnumberinput
+                    v-model="boardHeight"
+                    name="Board height"
+                    label-cols="5"
+                    tooltip="Height of the board in dots or chessboard squares"
+                    :disabled="isCalibrating"
+                    :rules="[v => (v >= 4) || 'Height must be at least 4']"
+                  />
+                </v-form>
               </v-col>
 
               <!-- Calibrated table -->
@@ -227,19 +235,14 @@
                   small
                   outlined
                   style="width: 100%;"
+                  :disabled="!settingsValid"
                   @click="downloadBoard"
                 >
                   <v-icon left>
                     mdi-download
                   </v-icon>
-                  Download Chessboard
+                  Download Target
                 </v-btn>
-                <a
-                  ref="calibrationFile"
-                  style="color: black; text-decoration: none; display: none"
-                  :href="require('../assets/chessboard.png')"
-                  download="chessboard.png"
-                />
               </v-col>
             </v-row>
           </div>
@@ -325,6 +328,8 @@ import CVnumberinput from '../components/common/cv-number-input';
 import CVslider from '../components/common/cv-slider';
 import CVimage from "../components/common/cv-image";
 import TooltippedLabel from "../components/common/cv-tooltipped-label";
+import jsPDF from "jspdf";
+import "../jsPDFFonts/Prompt-Regular-normal.js";
 
 export default {
     name: 'Cameras',
@@ -341,11 +346,12 @@ export default {
             calibrationInProgress: false,
             calibrationFailed: false,
             filteredVideomodeIndex: 0,
+            settingsValid: true,
         }
     },
     computed: {
         disallowCalibration() {
-            return !(this.calibrationData.boardType === 0 || this.calibrationData.boardType === 1);
+            return !(this.calibrationData.boardType === 0 || this.calibrationData.boardType === 1) || !this.settingsValid;
         },
         checkCancellation() {
             if (this.isCalibrating) {
@@ -486,9 +492,97 @@ export default {
             return ret;
         },
         downloadBoard() {
-            this.axios.get("http://" + this.$address + require('../assets/chessboard.png'), {responseType: 'blob'}).then((response) => {
-                require('downloadjs')(response.data, "Calibration Board", "image/png");
-            });
+            // Generates a .pdf of a board for calibration and downloads it
+
+            //Murica paper.
+            var doc = new jsPDF({unit: 'in', format:'letter'}); 
+            var paper_x = 8.5;
+            var paper_y = 11.0;
+
+            //Load in custom fonts
+            console.log(doc.getFontList());
+            doc.setFont('Prompt-Regular');
+            doc.setFontSize(12);
+
+            // Common Parameters
+            var num_x = this.boardWidth;
+            var num_y = this.boardHeight;
+            var patternSize = this.squareSizeIn;
+            var isCheckerboard = (this.boardType==0);
+
+            var x_coord = 0.0;
+            var y_coord = 0.0;
+            var x_idx = 0;
+            var y_idx = 0;
+            var start_x = 0;
+            var start_y = 0;
+
+            var annotation = num_x + " x " + num_y + " | " + patternSize + "in "
+
+            if(isCheckerboard){
+              ///////////////////////////////////////////
+              // Checkerboard Pattern
+
+              start_x = paper_x/2.0 - (num_x * patternSize)/2.0;
+              start_y = paper_y/2.0 - (num_y * patternSize)/2.0;
+
+              for(y_idx = 0; y_idx < num_y; y_idx++){
+                for(x_idx = 0; x_idx < num_x; x_idx++){
+
+                  x_coord = start_x + x_idx * patternSize;
+                  y_coord = start_y + y_idx * patternSize;
+                  if((x_idx + y_idx) % 2 == 0){
+                    doc.rect(x_coord, y_coord, patternSize, patternSize, "F");
+                  }
+                }
+              }
+
+            } else {
+              ///////////////////////////////////////////
+              // Assymetric Dot-Grid Pattern
+              // see https://github.com/opencv/opencv/blob/b450dd7a87bc69997a8417d94bdfb87427a9fe62/modules/calib3d/src/circlesgrid.cpp#L437
+              // as well as FindBoardCornersPipe.java's Dotboard implementation
+
+              start_x = paper_x/2.0 - ((2*(num_x-1) + (num_y-1) % 2) * patternSize)/2.0;
+              start_y = paper_y/2.0 - (num_y-1 * patternSize)/2.0;
+
+              // Dot Grid Pattern
+              for(y_idx = 0; y_idx < num_y; y_idx++){
+                for(x_idx = 0; x_idx < num_x; x_idx++){
+                  x_coord = start_x + (2*x_idx + y_idx % 2) * patternSize;
+                  y_coord = start_y + y_idx * patternSize;
+                  doc.circle(x_coord, y_coord, patternSize/4.0, "F");
+                }
+              }
+            }
+
+            ///////////////////////////////////////////
+            // Draw a fixed size inch ruler pattern to 
+            // help users debug their printers
+            var lineStartX = 1.0;
+            var lineEndX = paper_x - lineStartX;
+            var lineY = paper_y - 1.0;
+            doc.setFont('Prompt-Regular');
+            doc.setLineWidth(0.01);
+            doc.line(lineStartX, lineY, lineEndX, lineY);
+            var segIdx = 0;
+            for(var tickX = lineStartX; tickX <= lineEndX; tickX += 1.0){
+              doc.line(tickX, lineY, tickX, lineY + 0.25);
+              doc.text(String(segIdx) + (segIdx == 0 ? " in" : ""), tickX + 0.1, lineY + 0.25);
+              segIdx++;
+            }
+
+
+            ///////////////////////////////////////////
+            // Annotate what was drawn + branding
+            var img = new Image();
+            img.src = require('@/assets/logoMono.png');
+            doc.addImage(img, 'PNG', 1.0, 0.75, 1.4, 0.5 );
+            doc.setFont('Prompt-Regular');
+            doc.text(annotation, paper_x-1.0, 1.0, {maxWidth:(paper_x - 2.0)/2, align:"right"});
+
+            doc.save("calibrationTarget.pdf");
+
         },
         sendCameraSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
