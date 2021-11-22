@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2018-2020 Photon Vision.
+/*
+ * Copyright (C) Photon Vision.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,19 +19,19 @@
 
 #include <photonlib/PhotonCamera.h>
 
-#include <frc/PWMVictorSPX.h>
 #include <frc/TimedRobot.h>
 #include <frc/XboxController.h>
 #include <frc/controller/PIDController.h>
 #include <frc/drive/DifferentialDrive.h>
+#include <frc/motorcontrol/PWMVictorSPX.h>
 #include <units/angle.h>
 #include <units/length.h>
 
 class Robot : public frc::TimedRobot {
-public:
+ public:
   void TeleopPeriodic() override;
 
-private:
+ private:
   // Change this to match the name of your camera
   photonlib::PhotonCamera camera{"photonvision"};
   // PID constants should be tuned per robot

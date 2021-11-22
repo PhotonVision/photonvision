@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.configuration;
 
 import java.util.Collection;
@@ -32,7 +31,6 @@ import org.photonvision.vision.processes.VisionSource;
 
 // TODO rename this class
 public class PhotonConfiguration {
-
     private HardwareConfig hardwareConfig;
     private HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;

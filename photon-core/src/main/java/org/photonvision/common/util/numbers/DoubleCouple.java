@@ -14,13 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.util.numbers;
 
 import org.opencv.core.Point;
 
 public class DoubleCouple extends NumberCouple<Double> {
-
     public DoubleCouple() {
         super(0.0, 0.0);
     }

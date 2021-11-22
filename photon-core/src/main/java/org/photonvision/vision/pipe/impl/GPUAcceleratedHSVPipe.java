@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import static com.jogamp.opengl.GL.*;
@@ -35,7 +34,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
-
     private static final String k_vertexShader =
             String.join(
                     "\n",
@@ -252,7 +250,6 @@ public class GPUAcceleratedHSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         IntBuffer status = GLBuffers.newDirectIntBuffer(1);
         gl.glGetProgramiv(programId, GL_LINK_STATUS, status);
         if (status.get(0) == GL_FALSE) {
-
             IntBuffer infoLogLength = GLBuffers.newDirectIntBuffer(1);
             gl.glGetProgramiv(programId, GL_INFO_LOG_LENGTH, infoLogLength);
 

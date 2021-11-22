@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.dataflow;
 
 import java.util.concurrent.BlockingQueue;
@@ -27,7 +26,6 @@ import org.photonvision.common.logging.Logger;
 
 @SuppressWarnings("rawtypes")
 public class DataChangeService {
-
     private static final Logger logger = new Logger(DataChangeService.class, LogGroup.WebServer);
 
     private static class ThreadSafeSingleton {

@@ -64,7 +64,7 @@ TEST_P(SimVisionSystemDistParamTest, DistanceAligned) {
                 .GetCameraRelativePose()
                 .Translation()
                 .Norm()
-                .to<double>(),
+                .value(),
             dist);
 }
 
@@ -294,7 +294,7 @@ TEST_P(SimVisionSystemCameraPitchParamTest, CameraPitch) {
   // If the camera is pitched down by 10 degrees, the target should appear
   // in the upper part of the image (ie, pitch positive). Therefor,
   // pass/fail involves -1.0.
-  EXPECT_DOUBLE_EQ(tgt.GetPitch(), -1.0 * testPitch);
+  EXPECT_DOUBLE_EQ(tgt.GetPitch(), -testPitch);
 }
 
 class SimVisionSystemDistCalcParamTest
@@ -350,7 +350,7 @@ TEST_P(SimVisionSystemDistCalcParamTest, DistanceCalc) {
   units::meter_t distMeas = photonlib::PhotonUtils::CalculateDistanceToTarget(
       units::meter_t(testHeight), units::meter_t(testDist),
       units::degree_t(testPitch), units::degree_t(tgt.GetPitch()));
-  EXPECT_DOUBLE_EQ(distMeas.to<double>(), testDist);
+  EXPECT_DOUBLE_EQ(distMeas.value(), testDist);
 }
 
 TEST(SimVisionSystemTest, MultipleTargets) {

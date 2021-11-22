@@ -14,17 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.simposeest.robot;
 
+import edu.wpi.first.math.controller.RamseteController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.controller.RamseteController;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.trajectory.Trajectory;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
-import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import java.util.List;
 
 /**
@@ -34,7 +33,6 @@ import java.util.List;
 * thinks it ought to be.
 */
 public class AutoController {
-
     private Trajectory trajectory;
 
     private RamseteController ramsete = new RamseteController();
@@ -46,7 +44,6 @@ public class AutoController {
     Trajectory.State desiredDtState;
 
     public AutoController() {
-
         // Change this trajectory if you need the robot to follow different paths.
         trajectory =
                 TrajectoryGenerator.generateTrajectory(
@@ -83,7 +80,6 @@ public class AutoController {
     * @return The commanded drivetrain motion
     */
     public ChassisSpeeds getCurMotorCmds(Pose2d curEstPose) {
-
         if (isRunning) {
             double elapsed = timer.get();
             desiredDtState = trajectory.sample(elapsed);

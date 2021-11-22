@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import org.opencv.core.Core;
@@ -24,7 +23,6 @@ import org.photonvision.vision.pipe.MutatingPipe;
 
 /** Pipe that rotates an image to a given orientation */
 public class RotateImagePipe extends MutatingPipe<Mat, RotateImagePipe.RotateImageParams> {
-
     public RotateImagePipe() {
         setParams(RotateImageParams.DEFAULT);
     }

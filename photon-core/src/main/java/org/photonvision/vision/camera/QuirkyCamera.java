@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.camera;
 
 import java.util.HashMap;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 
 public class QuirkyCamera {
-
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
                     new QuirkyCamera(0x2000, 0x1415, CameraQuirk.Gain, CameraQuirk.FPSCap100), // PS3Eye

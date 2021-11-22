@@ -14,11 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.hardware.metrics;
 
 public class CPUMetrics extends MetricsBase {
-
     private String cpuMemSplit = null;
 
     public String getMemory() {

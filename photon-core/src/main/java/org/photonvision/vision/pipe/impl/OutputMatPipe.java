@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import org.opencv.core.Mat;
@@ -22,7 +21,6 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.vision.pipe.MutatingPipe;
 
 public class OutputMatPipe extends MutatingPipe<Mat, OutputMatPipe.OutputMatParams> {
-
     @Override
     protected Void process(Mat in) {
         // convert input mat

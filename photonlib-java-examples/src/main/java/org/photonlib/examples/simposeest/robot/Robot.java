@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.simposeest.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import org.photonlib.examples.simposeest.sim.DrivetrainSim;
 
 public class Robot extends TimedRobot {
-
     AutoController autoCtrl = new AutoController();
     Drivetrain dt = new Drivetrain();
     OperatorInterface opInf = new OperatorInterface();

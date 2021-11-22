@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.getinrange;
 
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.PWMVictorSPX;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
 
@@ -67,7 +65,7 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopPeriodic() {
         double forwardSpeed;
-        double rotationSpeed = xboxController.getX(GenericHID.Hand.kLeft);
+        double rotationSpeed = xboxController.getLeftX();
 
         if (xboxController.getAButton()) {
             // Vision-alignment mode
@@ -85,14 +83,14 @@ public class Robot extends TimedRobot {
 
                 // Use this range as the measurement we give to the PID controller.
                 // -1.0 required to ensure positive PID controller effort _increases_ range
-                forwardSpeed = -1.0 * controller.calculate(range, GOAL_RANGE_METERS);
+                forwardSpeed = -controller.calculate(range, GOAL_RANGE_METERS);
             } else {
                 // If we have no targets, stay still.
                 forwardSpeed = 0;
             }
         } else {
             // Manual Driver Mode
-            forwardSpeed = -1.0 * xboxController.getY(GenericHID.Hand.kRight);
+            forwardSpeed = -xboxController.getRightY();
         }
 
         // Use our forward/turn speeds to control the drivetrain

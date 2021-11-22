@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.hardware;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,7 +28,6 @@ import org.photonvision.common.hardware.metrics.GPUMetrics;
 import org.photonvision.common.hardware.metrics.RAMMetrics;
 
 public class HardwareTest {
-
     @Test
     public void testHardware() {
         CPUMetrics cpuMetrics = new CPUMetrics();

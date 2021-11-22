@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.dataflow.networktables;
 
 import edu.wpi.first.networktables.EntryListenerFlags;
@@ -23,7 +22,6 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import java.util.function.Consumer;
 
 public class NTDataChangeListener {
-
     private final NetworkTableEntry watchedEntry;
     private final int listenerID;
 

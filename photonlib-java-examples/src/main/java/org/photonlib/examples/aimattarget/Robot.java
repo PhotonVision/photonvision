@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.aimattarget;
 
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.PWMVictorSPX;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import org.photonvision.PhotonCamera;
 
 /**
@@ -66,7 +64,7 @@ public class Robot extends TimedRobot {
         double forwardSpeed;
         double rotationSpeed;
 
-        forwardSpeed = -1.0 * xboxController.getY(GenericHID.Hand.kRight);
+        forwardSpeed = -xboxController.getRightY();
 
         if (xboxController.getAButton()) {
             // Vision-alignment mode
@@ -76,14 +74,14 @@ public class Robot extends TimedRobot {
             if (result.hasTargets()) {
                 // Calculate angular turn power
                 // -1.0 required to ensure positive PID controller effort _increases_ yaw
-                rotationSpeed = -1.0 * turnController.calculate(result.getBestTarget().getYaw(), 0);
+                rotationSpeed = -turnController.calculate(result.getBestTarget().getYaw(), 0);
             } else {
                 // If we have no targets, stay still.
                 rotationSpeed = 0;
             }
         } else {
             // Manual Driver Mode
-            rotationSpeed = xboxController.getX(GenericHID.Hand.kLeft);
+            rotationSpeed = xboxController.getLeftX();
         }
 
         // Use our forward/turn speeds to control the drivetrain

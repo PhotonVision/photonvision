@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
@@ -33,7 +32,6 @@ import org.photonvision.vision.target.TrackedTarget;
 * shall not get its settings saved, nor shall it be managed by PipelineManager
 */
 public class OutputStreamPipeline {
-
     private final OutputMatPipe outputMatPipe = new OutputMatPipe();
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();
     private final Draw2dTargetsPipe draw2dTargetsPipe = new Draw2dTargetsPipe();
@@ -45,7 +43,6 @@ public class OutputStreamPipeline {
 
     protected void setPipeParams(
             FrameStaticProperties frameStaticProperties, AdvancedPipelineSettings settings) {
-
         var dualOffsetValues =
                 new DualOffsetValues(
                         settings.offsetDualPointA,

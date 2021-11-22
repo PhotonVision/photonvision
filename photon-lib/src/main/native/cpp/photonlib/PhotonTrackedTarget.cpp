@@ -39,9 +39,9 @@ bool PhotonTrackedTarget::operator!=(const PhotonTrackedTarget& other) const {
 
 Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
   return packet << target.yaw << target.pitch << target.area << target.skew
-                << target.cameraToTarget.Translation().X().to<double>()
-                << target.cameraToTarget.Translation().Y().to<double>()
-                << target.cameraToTarget.Rotation().Degrees().to<double>();
+                << target.cameraToTarget.Translation().X().value()
+                << target.cameraToTarget.Translation().Y().value()
+                << target.cameraToTarget.Rotation().Degrees().value();
 }
 
 Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {

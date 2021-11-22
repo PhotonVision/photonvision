@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import org.opencv.core.Mat;
@@ -25,7 +24,6 @@ import org.photonvision.vision.pipe.MutatingPipe;
 
 /** Pipe that resizes an image to a given resolution */
 public class ResizeImagePipe extends MutatingPipe<Mat, ResizeImagePipe.ResizeImageParams> {
-
     /**
     * Process this pipe
     *

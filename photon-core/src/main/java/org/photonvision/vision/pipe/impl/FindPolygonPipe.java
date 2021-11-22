@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
@@ -50,7 +49,6 @@ public class FindPolygonPipe
     }
 
     private CVShape getShape(Contour in) {
-
         int corners = getCorners(in);
 
         /*The contourShape enum has predefined shapes for Circles, Triangles, and Quads

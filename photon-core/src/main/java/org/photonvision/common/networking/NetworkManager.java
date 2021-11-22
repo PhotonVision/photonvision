@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.networking;
 
 import org.photonvision.common.configuration.ConfigManager;
@@ -24,7 +23,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public class NetworkManager {
-
     private static final Logger logger = new Logger(NetworkManager.class, LogGroup.General);
 
     private NetworkManager() {}

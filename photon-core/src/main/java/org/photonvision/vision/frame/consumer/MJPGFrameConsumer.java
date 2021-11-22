@@ -14,15 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.frame.consumer;
 
-import edu.wpi.cscore.CameraServerJNI;
-import edu.wpi.cscore.CvSource;
-import edu.wpi.cscore.MjpegServer;
-import edu.wpi.cscore.VideoEvent;
-import edu.wpi.cscore.VideoListener;
-import edu.wpi.cscore.VideoMode;
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.MjpegServer;
+import edu.wpi.first.cscore.VideoEvent;
+import edu.wpi.first.cscore.VideoListener;
+import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.ArrayList;
@@ -31,7 +30,6 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameDivisor;
 
 public class MJPGFrameConsumer {
-
     private CvSource cvSource;
     private MjpegServer mjpegServer;
 

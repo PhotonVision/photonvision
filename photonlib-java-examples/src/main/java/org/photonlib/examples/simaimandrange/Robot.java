@@ -14,16 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.simaimandrange;
 
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.PWMVictorSPX;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.controller.PIDController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.util.Units;
+import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import org.photonlib.examples.simaimandrange.sim.DrivetrainSim;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonUtils;
@@ -86,11 +84,11 @@ public class Robot extends TimedRobot {
 
                 // Use this range as the measurement we give to the PID controller.
                 // -1.0 required to ensure positive PID controller effort _increases_ range
-                forwardSpeed = -1.0 * forwardController.calculate(range, GOAL_RANGE_METERS);
+                forwardSpeed = -forwardController.calculate(range, GOAL_RANGE_METERS);
 
                 // Also calculate angular power
                 // -1.0 required to ensure positive PID controller effort _increases_ yaw
-                rotationSpeed = -1.0 * turnController.calculate(result.getBestTarget().getYaw(), 0);
+                rotationSpeed = -turnController.calculate(result.getBestTarget().getYaw(), 0);
             } else {
                 // If we have no targets, stay still.
                 forwardSpeed = 0;
@@ -98,8 +96,8 @@ public class Robot extends TimedRobot {
             }
         } else {
             // Manual Driver Mode
-            forwardSpeed = -1.0 * xboxController.getY(GenericHID.Hand.kRight);
-            rotationSpeed = xboxController.getX(GenericHID.Hand.kLeft);
+            forwardSpeed = -xboxController.getRightY();
+            rotationSpeed = xboxController.getLeftX();
         }
 
         // Use our forward/turn speeds to control the drivetrain

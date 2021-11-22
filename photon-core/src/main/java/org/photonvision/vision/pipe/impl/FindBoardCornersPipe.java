@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import java.util.Objects;
@@ -117,7 +116,6 @@ public class FindBoardCornersPipe
     */
     @Override
     protected Triple<Size, Mat, Mat> process(Pair<Mat, Mat> in) {
-
         // Create the object points
         createObjectPoints();
 
@@ -158,7 +156,6 @@ public class FindBoardCornersPipe
     private double getApproxMinSpacing(MatOfPoint2f inPoints) {
         double minSpacing = Double.MAX_VALUE;
         for (int pointIdx = 0; pointIdx < inPoints.height() - 1; pointIdx += 2) {
-
             // +1 idx Neighbor distance
             double[] startPoint = inPoints.get(pointIdx, 0);
             double[] endPoint = inPoints.get(pointIdx + 1, 0);
@@ -293,7 +290,6 @@ public class FindBoardCornersPipe
     }
 
     public static class FindCornersPipeParams {
-
         private final int boardHeight;
         private final int boardWidth;
         private final UICalibrationData.BoardType type;

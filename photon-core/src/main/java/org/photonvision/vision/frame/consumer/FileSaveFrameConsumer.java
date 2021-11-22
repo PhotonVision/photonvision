@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.frame.consumer;
 
 import edu.wpi.first.networktables.NetworkTable;
@@ -34,7 +33,6 @@ import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.vision.frame.Frame;
 
 public class FileSaveFrameConsumer implements Consumer<Frame> {
-
     // Formatters to generate unique, timestamped file names
     private static String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
     private static String FILE_EXTENSION = ".jpg";
@@ -66,7 +64,6 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
 
     public void accept(Frame frame) {
         if (frame != null && !frame.image.getMat().empty()) {
-
             if (lock.tryLock()) {
                 boolean curCommand = entry.getBoolean(false);
                 if (curCommand && !prevCommand) {

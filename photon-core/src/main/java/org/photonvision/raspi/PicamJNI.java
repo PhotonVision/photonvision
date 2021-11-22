@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.raspi;
 
 import java.io.File;
@@ -28,7 +27,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class PicamJNI {
-
     private static boolean libraryLoaded = false;
     private static Logger logger = new Logger(PicamJNI.class, LogGroup.Camera);
 

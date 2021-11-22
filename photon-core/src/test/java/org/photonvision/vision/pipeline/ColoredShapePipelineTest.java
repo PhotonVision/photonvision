@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipeline;
 
 import org.junit.jupiter.api.Test;
@@ -28,7 +27,6 @@ import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class ColoredShapePipelineTest {
-
     public static void testTriangleDetection(
             ColoredShapePipeline pipeline, ColoredShapePipelineSettings settings, Frame frame) {
         pipeline.settings = settings;
@@ -72,7 +70,6 @@ public class ColoredShapePipelineTest {
     @Test
     public static void testPowercellDetection(
             ColoredShapePipelineSettings settings, ColoredShapePipeline pipeline) {
-
         settings.hsvHue.set(10, 40);
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(100, 255);

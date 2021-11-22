@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2018-2020 Photon Vision.
+/*
+ * Copyright (C) Photon Vision.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,7 @@
 
 void Robot::TeleopPeriodic() {
   double forwardSpeed;
-  double rotationSpeed =
-      xboxController.GetX(frc::GenericHID::JoystickHand::kLeftHand);
+  double rotationSpeed = xboxController.GetLeftX();
 
   if (xboxController.GetAButton()) {
     // Vision-alignment mode
@@ -36,16 +35,15 @@ void Robot::TeleopPeriodic() {
           units::degree_t{result.GetBestTarget().GetPitch()});
 
       // Use this range as the measurement we give to the PID controller.
-      forwardSpeed = -1.0 * controller.Calculate(range.to<double>(),
-                                          GOAL_RANGE_METERS.to<double>());
+      forwardSpeed =
+          -controller.Calculate(range.value(), GOAL_RANGE_METERS.value());
     } else {
       // If we have no targets, stay still.
       forwardSpeed = 0;
     }
   } else {
     // Manual Driver Mode
-    forwardSpeed =
-        -1.0 * xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
+    forwardSpeed = -xboxController.GetRightY();
   }
 
   // Use our forward/turn speeds to control the drivetrain

@@ -14,14 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.processes;
 
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.vision.frame.FrameProvider;
 
 public abstract class VisionSource {
-
     protected final CameraConfiguration cameraConfiguration;
 
     protected VisionSource(CameraConfiguration cameraConfiguration) {

@@ -25,7 +25,6 @@
 #include <units/area.h>
 #include <units/length.h>
 #include <units/time.h>
-#include <wpi/ArrayRef.h>
 #include <wpi/SmallVector.h>
 
 #include "photonlib/SimPhotonCamera.h"

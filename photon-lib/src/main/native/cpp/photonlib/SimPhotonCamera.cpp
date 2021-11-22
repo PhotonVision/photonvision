@@ -26,7 +26,7 @@ SimPhotonCamera::SimPhotonCamera(const std::string& cameraName)
     : PhotonCamera(cameraName) {}
 
 void SimPhotonCamera::SubmitProcessedFrame(
-    units::second_t latency, wpi::ArrayRef<PhotonTrackedTarget> tgtList) {
+    units::second_t latency, wpi::span<const PhotonTrackedTarget> tgtList) {
   if (!GetDriverMode()) {
     // Clear the current packet.
     simPacket.Clear();
@@ -34,8 +34,8 @@ void SimPhotonCamera::SubmitProcessedFrame(
     // Create the new result and pump it into the packet
     simPacket << PhotonPipelineResult(latency, tgtList);
 
-    rawBytesEntry.SetRaw(
-        wpi::StringRef(simPacket.GetData().data(), simPacket.GetData().size()));
+    rawBytesEntry.SetRaw(std::string_view{simPacket.GetData().data(),
+                                          simPacket.GetData().size()});
   }
 }
 

@@ -14,12 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import io.javalin.http.Context;
 import java.io.File;
 import java.io.FileInputStream;
@@ -49,7 +48,6 @@ public class RequestHandler {
     public static void onSettingUpload(Context ctx) {
         var file = ctx.uploadedFile("zipData");
         if (file != null) {
-
             // Copy the file from the client to a temporary location
             var tempFilePath =
                     new File(Path.of(System.getProperty("java.io.tmpdir"), file.getFilename()).toString());

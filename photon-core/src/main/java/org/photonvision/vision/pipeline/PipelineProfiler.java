@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipeline;
 
 import org.photonvision.common.logging.LogGroup;
@@ -22,7 +21,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 
 public class PipelineProfiler {
-
     private static boolean shouldLog;
 
     private static final Logger reflectiveLogger =

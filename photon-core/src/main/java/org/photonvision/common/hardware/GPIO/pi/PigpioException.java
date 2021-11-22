@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.hardware.GPIO.pi;
 
 import java.util.HashMap;
@@ -27,7 +26,6 @@ import java.util.HashMap;
 */
 @SuppressWarnings({"SpellCheckingInspection", "unused", "RedundantSuppression"})
 public class PigpioException extends Exception {
-
     private int rc = -99999999;
     private static final long serialVersionUID = 443595760654129068L;
 

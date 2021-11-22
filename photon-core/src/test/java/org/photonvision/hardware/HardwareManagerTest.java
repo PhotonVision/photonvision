@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.hardware;
 
 import org.junit.jupiter.api.Assumptions;
@@ -27,7 +26,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class HardwareManagerTest {
-
     public static final Logger logger = new Logger(HardwareManager.class, LogGroup.General);
 
     @Test

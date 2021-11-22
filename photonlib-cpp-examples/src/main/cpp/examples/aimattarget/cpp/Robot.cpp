@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2018-2020 Photon Vision.
+/*
+ * Copyright (C) Photon Vision.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,7 @@
 #include <photonlib/PhotonUtils.h>
 
 void Robot::TeleopPeriodic() {
-  double forwardSpeed =
-      -1.0 * xboxController.GetY(frc::GenericHID::JoystickHand::kRightHand);
+  double forwardSpeed = -xboxController.GetRightY();
   double rotationSpeed;
 
   if (xboxController.GetAButton()) {
@@ -31,15 +30,14 @@ void Robot::TeleopPeriodic() {
 
     if (result.HasTargets()) {
       // Rotation speed is the output of the PID controller
-      rotationSpeed = -1.0 * controller.Calculate(result.GetBestTarget().GetYaw(), 0);
+      rotationSpeed = -controller.Calculate(result.GetBestTarget().GetYaw(), 0);
     } else {
       // If we have no targets, stay still.
       rotationSpeed = 0;
     }
   } else {
     // Manual Driver Mode
-    rotationSpeed =
-        xboxController.GetX(frc::GenericHID::JoystickHand::kLeftHand);
+    rotationSpeed = xboxController.GetLeftX();
   }
 
   // Use our forward/turn speeds to control the drivetrain

@@ -14,13 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.processes;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import edu.wpi.cscore.VideoMode;
-import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -36,14 +35,12 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class VisionModuleManagerTest {
-
     @BeforeEach
     public void init() {
         TestUtils.loadLibraries();
     }
 
     private static class TestSource extends VisionSource {
-
         private final FrameProvider provider;
 
         public TestSource(FrameProvider provider, CameraConfiguration cameraConfiguration) {
@@ -68,7 +65,6 @@ public class VisionModuleManagerTest {
     }
 
     private static class TestSettables extends VisionSourceSettables {
-
         protected TestSettables(CameraConfiguration configuration) {
             super(configuration);
         }

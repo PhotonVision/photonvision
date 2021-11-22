@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -43,7 +42,6 @@ import org.photonvision.vision.pipeline.PipelineType;
 
 @SuppressWarnings("rawtypes")
 public class SocketHandler {
-
     private final Logger logger = new Logger(SocketHandler.class, LogGroup.WebServer);
     private final List<WsContext> users = new CopyOnWriteArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());

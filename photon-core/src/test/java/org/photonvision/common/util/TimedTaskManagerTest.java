@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.util;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,7 +21,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class TimedTaskManagerTest {
-
     @Test
     public void atomicIntegerIncrementTest() throws InterruptedException {
         AtomicInteger i = new AtomicInteger();

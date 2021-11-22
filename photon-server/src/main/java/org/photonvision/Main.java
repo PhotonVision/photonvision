@@ -14,10 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision;
 
-import edu.wpi.cscore.CameraServerCvJNI;
+import edu.wpi.first.cscore.CameraServerCvJNI;
 import java.util.ArrayList;
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;

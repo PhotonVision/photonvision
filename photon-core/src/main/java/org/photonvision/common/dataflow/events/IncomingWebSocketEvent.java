@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.dataflow.events;
 
 import io.javalin.websocket.WsContext;
@@ -23,7 +22,6 @@ import org.photonvision.common.dataflow.DataChangeDestination;
 import org.photonvision.common.dataflow.DataChangeSource;
 
 public class IncomingWebSocketEvent<T> extends DataChangeEvent<T> {
-
     public final Integer cameraIndex;
     public final WsContext originContext;
 

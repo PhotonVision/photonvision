@@ -19,16 +19,16 @@ echo "JDK installation complete."
 echo "Downloading latest stable release of PhotonVision..."
 mkdir -p /opt/photonvision
 cd /opt/photonvision
-curl -sk https://api.github.com/repos/photonvision/photonvision/releases/latest | 
-    grep "browser_download_url.*jar" | 
-    cut -d : -f 2,3 | 
-    tr -d '"' | 
+curl -sk https://api.github.com/repos/photonvision/photonvision/releases/latest |
+    grep "browser_download_url.*jar" |
+    cut -d : -f 2,3 |
+    tr -d '"' |
     wget -qi - -O photonvision.jar
 echo "Downloaded latest stable release of PhotonVision."
 
 echo "Creating the PhotonVision systemd service..."
 
-if service --status-all | grep -Fq 'photonvision'; then    
+if service --status-all | grep -Fq 'photonvision'; then
   systemctl stop photonvision
   systemctl disable photonvision
   rm /lib/systemd/system/photonvision.service
@@ -50,7 +50,7 @@ ExecStop=/bin/systemctl kill photonvision
 Type=simple
 Restart=on-failure
 RestartSec=1
-    
+
 [Install]
 WantedBy=multi-user.target" >> photonvision.service
 cp photonvision.service /etc/systemd/system/photonvision.service

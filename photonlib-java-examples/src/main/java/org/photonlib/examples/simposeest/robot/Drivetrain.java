@@ -14,18 +14,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonlib.examples.simposeest.robot;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.PWMVictorSPX;
-import edu.wpi.first.wpilibj.SpeedControllerGroup;
-import edu.wpi.first.wpilibj.controller.PIDController;
-import edu.wpi.first.wpilibj.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.geometry.Pose2d;
-import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
-import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 
 /**
 * Implements a controller for the drivetrain. Converts a set of chassis motion commands into motor
@@ -33,15 +32,14 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 * speed.
 */
 public class Drivetrain {
-
     // PWM motor controller output definitions
     PWMVictorSPX leftLeader = new PWMVictorSPX(Constants.kDtLeftLeaderPin);
     PWMVictorSPX leftFollower = new PWMVictorSPX(Constants.kDtLeftFollowerPin);
     PWMVictorSPX rightLeader = new PWMVictorSPX(Constants.kDtRightLeaderPin);
     PWMVictorSPX rightFollower = new PWMVictorSPX(Constants.kDtRightFollowerPin);
 
-    SpeedControllerGroup leftGroup = new SpeedControllerGroup(leftLeader, leftFollower);
-    SpeedControllerGroup rightGroup = new SpeedControllerGroup(rightLeader, rightFollower);
+    MotorControllerGroup leftGroup = new MotorControllerGroup(leftLeader, leftFollower);
+    MotorControllerGroup rightGroup = new MotorControllerGroup(rightLeader, rightFollower);
 
     // Drivetrain wheel speed sensors
     // Used both for speed control and pose estimation.

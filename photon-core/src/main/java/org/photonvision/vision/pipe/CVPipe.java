@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe;
 
 /**
@@ -26,7 +25,6 @@ package org.photonvision.vision.pipe;
 * @param <P> Parameters type for the pipe
 */
 public abstract class CVPipe<I, O, P> {
-
     protected CVPipeResult<O> result = new CVPipeResult<>();
     protected P params;
 

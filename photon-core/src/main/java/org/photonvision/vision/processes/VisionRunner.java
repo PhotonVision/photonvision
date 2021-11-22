@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.processes;
 
 import java.util.function.Consumer;
@@ -30,7 +29,6 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 /** VisionRunner has a frame supplier, a pipeline supplier, and a result consumer */
 @SuppressWarnings("rawtypes")
 public class VisionRunner {
-
     private final Logger logger;
     private final Thread visionProcessThread;
     private final Supplier<Frame> frameSupplier;

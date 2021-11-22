@@ -14,10 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.target;
 
-import edu.wpi.first.wpilibj.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform2d;
 import java.util.HashMap;
 import java.util.List;
 import org.opencv.core.Mat;

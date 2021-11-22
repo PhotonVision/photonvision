@@ -19,7 +19,7 @@
 
 namespace photonlib {
 PhotonPipelineResult::PhotonPipelineResult(
-    units::second_t latency, wpi::ArrayRef<PhotonTrackedTarget> targets)
+    units::second_t latency, wpi::span<const PhotonTrackedTarget> targets)
     : latency(latency),
       targets(targets.data(), targets.data() + targets.size()) {}
 
@@ -33,7 +33,7 @@ bool PhotonPipelineResult::operator!=(const PhotonPipelineResult& other) const {
 
 Packet& operator<<(Packet& packet, const PhotonPipelineResult& result) {
   // Encode latency and number of targets.
-  packet << result.latency.to<double>() * 1000
+  packet << result.latency.value() * 1000
          << static_cast<int8_t>(result.targets.size());
 
   // Encode the information of each target.

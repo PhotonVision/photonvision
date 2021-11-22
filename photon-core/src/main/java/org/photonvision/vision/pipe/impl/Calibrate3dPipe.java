@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -36,7 +35,6 @@ public class Calibrate3dPipe
                 List<Triple<Size, Mat, Mat>>,
                 CameraCalibrationCoefficients,
                 Calibrate3dPipe.CalibratePipeParams> {
-
     // Camera matrix stores the center of the image and focal length across the x and y-axis in a 3x3
     // matrix
     private Mat cameraMatrix = new Mat();

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.configuration;
 
 import java.io.File;
@@ -35,7 +34,6 @@ import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.target.TargetModel;
 
 public class ConfigTest {
-
     private static ConfigManager configMgr;
     private static final CameraConfiguration cameraConfig =
             new CameraConfiguration("TestCamera", "/dev/video420");
@@ -87,7 +85,6 @@ public class ConfigTest {
     @Test
     @Order(2)
     public void deserializeConfig() {
-
         var reflectivePipelineSettings =
                 configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(0);
         var coloredShapePipelineSettings =

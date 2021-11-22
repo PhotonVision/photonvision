@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.server;
 
 import java.util.Collections;
@@ -29,7 +28,6 @@ import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.Logger;
 
 public class UIInboundSubscriber extends DataChangeSubscriber {
-
     public UIInboundSubscriber() {
         super(
                 Collections.singletonList(DataChangeSource.DCS_WEBSOCKET),

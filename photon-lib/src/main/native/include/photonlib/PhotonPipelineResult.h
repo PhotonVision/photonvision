@@ -19,10 +19,10 @@
 
 #include <string>
 
-#include <frc/DriverStation.h>
+#include <frc/Errors.h>
 #include <units/time.h>
-#include <wpi/ArrayRef.h>
 #include <wpi/SmallVector.h>
+#include <wpi/span.h>
 
 #include "photonlib/Packet.h"
 #include "photonlib/PhotonTrackedTarget.h"
@@ -44,7 +44,7 @@ class PhotonPipelineResult {
    * @param targets The list of targets identified by the pipeline.
    */
   PhotonPipelineResult(units::second_t latency,
-                       wpi::ArrayRef<PhotonTrackedTarget> targets);
+                       wpi::span<const PhotonTrackedTarget> targets);
 
   /**
    * Returns the best target in this pipeline result. If there are no targets,
@@ -55,7 +55,8 @@ class PhotonPipelineResult {
    */
   PhotonTrackedTarget GetBestTarget() const {
     if (!HasTargets() && !HAS_WARNED) {
-      ::frc::DriverStation::ReportError(
+      FRC_ReportError(
+          frc::warn::Warning, "{}",
           "This PhotonPipelineResult object has no targets associated with it! "
           "Please check HasTargets() before calling this method. For more "
           "information, please review the PhotonLib documentation at "
@@ -81,7 +82,7 @@ class PhotonPipelineResult {
    * Returns a reference to the vector of targets.
    * @return A reference to the vector of targets.
    */
-  const wpi::ArrayRef<PhotonTrackedTarget> GetTargets() const {
+  const wpi::span<const PhotonTrackedTarget> GetTargets() const {
     return targets;
   }
 

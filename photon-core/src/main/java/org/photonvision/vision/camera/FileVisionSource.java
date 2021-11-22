@@ -14,11 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.camera;
 
-import edu.wpi.cscore.VideoMode;
-import edu.wpi.cscore.VideoMode.PixelFormat;
+import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.cscore.VideoMode.PixelFormat;
 import java.nio.file.Path;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -29,7 +28,6 @@ import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class FileVisionSource extends VisionSource {
-
     private final FileFrameProvider frameProvider;
     private final FileSourceSettables settables;
 
@@ -73,7 +71,6 @@ public class FileVisionSource extends VisionSource {
     }
 
     private static class FileSourceSettables extends VisionSourceSettables {
-
         private final VideoMode videoMode;
 
         private final HashMap<Integer, VideoMode> videoModes = new HashMap<>();

@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipe.impl;
 
 import java.util.List;
@@ -27,7 +26,6 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class DrawCornerDetectionPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, DrawCornerDetectionPipe.DrawCornerParams> {
-
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         Mat image = in.getLeft();

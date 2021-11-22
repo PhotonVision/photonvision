@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.vision.pipeline;
 
 import java.util.Objects;
@@ -31,7 +30,6 @@ import org.photonvision.vision.target.TargetOffsetPointEdge;
 import org.photonvision.vision.target.TargetOrientation;
 
 public class AdvancedPipelineSettings extends CVPipelineSettings {
-
     public AdvancedPipelineSettings() {
         ledMode = true;
     }

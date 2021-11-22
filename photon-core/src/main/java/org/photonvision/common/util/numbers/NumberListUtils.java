@@ -14,7 +14,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
 package org.photonvision.common.util.numbers;
 
 import java.math.BigDecimal;
@@ -25,7 +24,6 @@ import java.util.StringJoiner;
 
 @SuppressWarnings("unused")
 public class NumberListUtils {
-
     /**
     * @param collection an ArrayList of Comparable objects
     * @return the median of collection
