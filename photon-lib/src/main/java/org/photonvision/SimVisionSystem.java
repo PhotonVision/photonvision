@@ -25,7 +25,6 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class SimVisionSystem {
     SimPhotonCamera cam;
 
-    double camDiagFOVDegrees;
     double camHorizFOVDegrees;
     double camVertFOVDegrees;
     double cameraHeightOffGroundMeters;
@@ -71,7 +70,6 @@ public class SimVisionSystem {
             int cameraResWidth,
             int cameraResHeight,
             double minTargetArea) {
-        this.camDiagFOVDegrees = camDiagFOVDegrees;
         this.camPitchDegrees = camPitchDegrees;
         this.cameraToRobot = cameraToRobot;
         this.cameraHeightOffGroundMeters = cameraHeightOffGroundMeters;

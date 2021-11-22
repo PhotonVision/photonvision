@@ -50,7 +50,6 @@ class SimVisionSystem {
   void ProcessFrame(frc::Pose2d robotPose);
 
  private:
-  units::degree_t camDiagFOV;
   units::degree_t camPitch;
   frc::Transform2d cameraToRobot;
   units::meter_t cameraHeightOffGround;
