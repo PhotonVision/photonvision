@@ -103,7 +103,7 @@ public class TargetCalculationsTest {
     public void testSkewCalculation() {
         // Setup
         var isLandscape = true;
-        var rect = new RotatedRect(new Point(), new Size(10, 5), -10);
+        var rect = new RotatedRect(new Point(), new Size(10, 5), 170);
 
         // Compute min area rect
         var points = new Point[4];

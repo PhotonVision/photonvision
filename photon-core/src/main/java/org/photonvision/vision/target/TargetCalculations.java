@@ -42,6 +42,10 @@ public class TargetCalculations {
         if (isLandscape && minAreaRect.size.width < minAreaRect.size.height) angle += 90;
         else if (!isLandscape && minAreaRect.size.height < minAreaRect.size.width) angle += 90;
 
+        // Ensure skew is bounded on [-90, 90]
+        while (angle > 90) angle -= 180;
+        while (angle < -90) angle += 180;
+
         return angle;
     }
 
