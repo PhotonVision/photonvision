@@ -344,7 +344,6 @@ jobs:
           mv $IMAGE_FILE $NEW_IMAGE
           zip -r $(basename "${NEW_JAR/jar/zip}") $NEW_IMAGE
           rm $NEW_IMAGE
-        if: 
 
       # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@master
