@@ -8,6 +8,13 @@ gradle.allprojects {
         String tagIsh
         try {
             exec {
+                commandLine 'git', 'tag'
+            }
+        } catch (Exception e) {
+            tagIsh = "dev-Unknown"
+        }
+        try {
+            exec {
                 commandLine 'git', 'describe', '--tags', '--match', '"v*"'
                 standardOutput = stdout
             }
