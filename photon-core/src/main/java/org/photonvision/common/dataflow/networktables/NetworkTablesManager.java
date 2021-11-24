@@ -20,6 +20,14 @@ import edu.wpi.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
@@ -30,15 +38,6 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
-
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.function.Consumer;
 
 public class NetworkTablesManager {
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
@@ -102,27 +101,37 @@ public class NetworkTablesManager {
 
         // Seperate from the above so we don't hold stuff up
         System.setProperty("java.net.preferIPv4Stack", "true");
-        subMap.put("deviceips", Arrays.stream(CameraServerJNI.getNetworkInterfaces()).filter(it -> !it.equals("0.0.0.0")).toArray());
+        subMap.put(
+                "deviceips",
+                Arrays.stream(CameraServerJNI.getNetworkInterfaces())
+                        .filter(it -> !it.equals("0.0.0.0"))
+                        .toArray());
         logger.info("Searching for rios");
         List<String> possibleRioList = new ArrayList<>();
-        for(var ip : CameraServerJNI.getNetworkInterfaces()) {
+        for (var ip : CameraServerJNI.getNetworkInterfaces()) {
             logger.info("Trying " + ip);
             var possibleRioAddr = getPossibleRioAddress(ip);
-            if(possibleRioAddr != null) {
+            if (possibleRioAddr != null) {
                 logger.info("Maybe found " + ip);
                 searchForHost(possibleRioList, possibleRioAddr);
             } else {
                 logger.info("Didn't match RIO IP");
             }
         }
-        String name = "roboRIO-"
-                + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber + "-FRC.local";
+        String name =
+                "roboRIO-"
+                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
+                        + "-FRC.local";
         searchForHost(possibleRioList, name);
-        name = "roboRIO-"
-                + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber + "-FRC.lan";
+        name =
+                "roboRIO-"
+                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
+                        + "-FRC.lan";
         searchForHost(possibleRioList, name);
-        name = "roboRIO-"
-                + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber + "-FRC.frc-field.local";
+        name =
+                "roboRIO-"
+                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
+                        + "-FRC.frc-field.local";
         searchForHost(possibleRioList, name);
         subMap.put("possibleRios", possibleRioList.toArray());
         DataChangeService.getInstance()
@@ -133,7 +142,7 @@ public class NetworkTablesManager {
         try {
             InetAddress addr = InetAddress.getByName(ip);
             var address = addr.getAddress();
-            if(address[0] != (byte) (10 & 0xff)) return null;
+            if (address[0] != (byte) (10 & 0xff)) return null;
             address[3] = (byte) (2 & 0xff);
             return InetAddress.getByAddress(address).getHostAddress();
         } catch (UnknownHostException e) {
@@ -150,7 +159,7 @@ public class NetworkTablesManager {
             var canContact = testAddr.isReachable(500);
             if (canContact) {
                 logger.info("Was able to connect to " + hostname);
-                if(!list.contains(hostname)) list.add(hostname);
+                if (!list.contains(hostname)) list.add(hostname);
             } else {
                 logger.info("Unable to reach " + hostname);
             }
@@ -176,7 +185,7 @@ public class NetworkTablesManager {
         logger.info("Starting NT Client");
         ntInstance.stopServer();
 
-//        ntInstance.startClientTeam(teamNumber);
+        //        ntInstance.startClientTeam(teamNumber);
         ntInstance.startClient("localhost");
         ntInstance.startDSClient();
         if (ntInstance.isConnected()) {
