@@ -175,8 +175,10 @@ jobs:
           sudo umount ${TMP}
           sudo rmdir ${TMP}
           rm $FILE_NAME
-          zip -r $(basename "${NEW_JAR/jar/zip)") $IMAGE_FILE
-          rm $IMAGE_FILE
+          NEW_IMAGE=$(basename "${NEW_JAR/jar/img)")
+          mv $IMAGE_FILE $NEW_IMAGE
+          zip -r $(basename "${NEW_JAR/jar/zip}") $NEW_IMAGE
+          rm $NEW_IMAGE
 
       - uses: softprops/action-gh-release@v1
         with:
@@ -319,7 +321,8 @@ jobs:
           chmod +x gradlew
           ./gradlew photon-server:shadowJar --max-workers 1
 
-      - run: |
+      - name: Generate image
+        run: |
           NEW_JAR=$(realpath $(find . -name photonvision\*.jar))
           sudo apt install unzip zip
           curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/latest | grep "browser_download_url.*zip" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
@@ -337,8 +340,11 @@ jobs:
           sudo umount ${TMP}
           sudo rmdir ${TMP}
           rm $FILE_NAME
-          zip -r $(basename "${NEW_JAR/jar/zip)") $IMAGE_FILE
-          rm $IMAGE_FILE
+          NEW_IMAGE=$(basename "${NEW_JAR/jar/img)")
+          mv $IMAGE_FILE $NEW_IMAGE
+          zip -r $(basename "${NEW_JAR/jar/zip}") $NEW_IMAGE
+          rm $NEW_IMAGE
+        if: 
 
       # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@master
