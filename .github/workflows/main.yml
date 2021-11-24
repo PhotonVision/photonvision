@@ -156,13 +156,9 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: jar
-      - uses: softprops/action-gh-release@v1
-        with:
-          files: '**/*'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - run: |
-          NEW_JAR=$(realpath $(ls | grep *.jar))
+          NEW_JAR=$(realpath $(find . -name photonvision\*.jar))
           sudo apt install unzip zip
           curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/latest | grep "browser_download_url.*zip" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
           FILE_NAME=$(ls | grep image_*.zip)
@@ -171,9 +167,11 @@ jobs:
           TMP=$(mktemp -d)
           LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
           sudo mount ${LOOP}p2 $TMP
+          pushd .
           cd $TMP/opt/photonvision
-          sudo mv $NEW_JAR photonvision.jar
-          cd ~
+          ls
+          sudo cp $NEW_JAR photonvision.jar
+          popd
           sudo umount ${TMP}
           sudo rmdir ${TMP}
           rm $FILE_NAME
@@ -327,6 +325,27 @@ jobs:
           name: jar
           path: photon-server/build/libs
 
+      - run: |
+          NEW_JAR=$(realpath $(find . -name photonvision\*.jar))
+          sudo apt install unzip zip
+          curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/latest | grep "browser_download_url.*zip" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
+          FILE_NAME=$(ls | grep image_*.zip)
+          unzip $FILE_NAME
+          IMAGE_FILE=$(ls | grep *.img)
+          TMP=$(mktemp -d)
+          LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
+          sudo mount ${LOOP}p2 $TMP
+          pushd .
+          cd $TMP/opt/photonvision
+          ls
+          sudo cp $NEW_JAR photonvision.jar
+          popd
+          sudo umount ${TMP}
+          sudo rmdir ${TMP}
+          rm $FILE_NAME
+          zip -r $FILE_NAME $IMAGE_FILE
+          rm $IMAGE_FILE
+
       - uses: eine/tip@master
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -334,4 +353,5 @@ jobs:
           rm: true
           files: |
             photon-server/build/libs/*.jar
+            image*.zip
         if: github.event_name == 'push'
