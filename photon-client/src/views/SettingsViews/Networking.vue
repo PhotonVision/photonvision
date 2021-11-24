@@ -58,6 +58,60 @@
     >
       Save
     </v-btn>
+    <v-divider class="mt-4 mb-4"/>
+    <v-row>
+      <v-col cols="6">
+
+        <v-simple-table
+            fixed-header
+            height="100%"
+            dense
+        >
+          <template v-slot:default>
+            <thead style="font-size: 1.25rem;">
+            <tr>
+              <th>
+                Device IPs
+              </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="(value, index) in $store.state.ntConnectionInfo.deviceips"
+                :key="index"
+            >
+              <td>{{ value }}</td>
+            </tr>
+            </tbody>
+          </template>
+        </v-simple-table>
+      </v-col>
+      <v-col cols="6">
+        <v-simple-table
+            fixed-header
+            height="100%"
+            dense
+        >
+          <template v-slot:default>
+            <thead style="font-size: 1.25rem;">
+            <tr>
+              <th>
+                Possible RoboRIOs
+              </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="(value, index) in $store.state.ntConnectionInfo.possibleRios"
+                :key="index"
+            >
+              <td>{{ value }}</td>
+            </tr>
+            </tbody>
+          </template>
+        </v-simple-table>
+      </v-col>
+    </v-row>
   </div>
 </template>
 
@@ -193,6 +247,24 @@ export default {
 }
 </script>
 
-<style lang="" scoped>
+<style scoped>
+    .v-data-table {
+      /*text-align: center;*/
+      background-color: transparent !important;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+    }
 
+    .v-data-table th {
+      background-color: #006492 !important;
+    }
+
+    .v-data-table th, td {
+      font-size: 1rem !important;
+    }
+
+    .v-data-table td {
+      font-family: monospace !important;
+    }
 </style>
