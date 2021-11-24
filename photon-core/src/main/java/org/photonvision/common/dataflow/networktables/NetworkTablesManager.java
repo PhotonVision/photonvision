@@ -16,7 +16,7 @@
  */
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.cscore.CameraServerJNI;
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
