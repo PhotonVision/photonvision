@@ -164,7 +164,6 @@ jobs:
       - run: |
           NEW_JAR=$(realpath $(ls | grep *.jar))
           sudo apt install unzip zip
-
           curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/latest | grep "browser_download_url.*zip" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
           FILE_NAME=$(ls | grep image_*.zip)
           unzip $FILE_NAME
@@ -172,15 +171,11 @@ jobs:
           TMP=$(mktemp -d)
           LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
           sudo mount ${LOOP}p2 $TMP
-
           cd $TMP/opt/photonvision
           sudo mv $NEW_JAR photonvision.jar
           cd ~
-
-          sudo umount ${TMP}/boot/
           sudo umount ${TMP}
           sudo rmdir ${TMP}
-
           rm $FILE_NAME
           zip -r $FILE_NAME $IMAGE_FILE
           rm $IMAGE_FILE
