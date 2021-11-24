@@ -319,12 +319,6 @@ jobs:
           chmod +x gradlew
           ./gradlew photon-server:shadowJar --max-workers 1
 
-      # Upload final fat jar as artifact.
-      - uses: actions/upload-artifact@master
-        with:
-          name: jar
-          path: photon-server/build/libs
-
       - run: |
           NEW_JAR=$(realpath $(find . -name photonvision\*.jar))
           sudo apt install unzip zip
@@ -345,6 +339,16 @@ jobs:
           rm $FILE_NAME
           zip -r $FILE_NAME $IMAGE_FILE
           rm $IMAGE_FILE
+
+      # Upload final fat jar as artifact.
+      - uses: actions/upload-artifact@master
+        with:
+          name: jar
+          path: photon-server/build/libs
+      - uses: actions/upload-artifact@master
+        with:
+          name: image
+          path: image*.zip
 
       - uses: eine/tip@master
         with:
