@@ -175,7 +175,7 @@ jobs:
           sudo umount ${TMP}
           sudo rmdir ${TMP}
           rm $FILE_NAME
-          NEW_IMAGE=$(basename "${NEW_JAR/jar/img)")
+          NEW_IMAGE=$(basename "${NEW_JAR/jar/img}")
           mv $IMAGE_FILE $NEW_IMAGE
           zip -r $(basename "${NEW_JAR/jar/zip}") $NEW_IMAGE
           rm $NEW_IMAGE
@@ -340,7 +340,7 @@ jobs:
           sudo umount ${TMP}
           sudo rmdir ${TMP}
           rm $FILE_NAME
-          NEW_IMAGE=$(basename "${NEW_JAR/jar/img)")
+          NEW_IMAGE=$(basename "${NEW_JAR/jar/img}")
           mv $IMAGE_FILE $NEW_IMAGE
           zip -r $(basename "${NEW_JAR/jar/zip}") $NEW_IMAGE
           rm $NEW_IMAGE
