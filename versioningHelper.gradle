@@ -15,13 +15,15 @@ gradle.allprojects {
         }
         try {
             exec {
-                commandLine 'git', 'describe', '--tags', '--match', '"v*"'
+                commandLine 'git', 'describe', '--tags', "--match=v*"
                 standardOutput = stdout
             }
             tagIsh = stdout.toString().trim().toLowerCase()
         } catch (Exception e) {
             tagIsh = "dev-Unknown"
         }
+        // Runtime r = Runtime.getRuntime();
+        // String[] commands = {"bash", "-c", "git describe --tags --match \"v*\""};
         // Dev tags: v2021.1.6-3-gf922466d
         // We're specifically looking to capture the middle -3-
         boolean isDev = tagIsh.matches(".*-[0-9]*-g[0-9a-f]*")
