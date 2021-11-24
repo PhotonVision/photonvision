@@ -337,7 +337,7 @@ jobs:
           sudo umount ${TMP}
           sudo rmdir ${TMP}
           rm $FILE_NAME
-          zip -r $FILE_NAME $IMAGE_FILE
+          zip -r $(basename "${NEW_JAR/jar/zip)") $IMAGE_FILE
           rm $IMAGE_FILE
 
       # Upload final fat jar as artifact.
