@@ -156,6 +156,30 @@ jobs:
       - uses: actions/download-artifact@v2
         with:
           name: jar
+
+      - run: |
+          NEW_JAR=$(realpath $(find . -name photonvision\*.jar))
+          sudo apt install unzip zip
+          curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/latest | grep "browser_download_url.*zip" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
+          FILE_NAME=$(ls | grep image_*.zip)
+          unzip $FILE_NAME
+          IMAGE_FILE=$(ls | grep *.img)
+          TMP=$(mktemp -d)
+          LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
+          sudo mount ${LOOP}p2 $TMP
+          pushd .
+          cd $TMP/opt/photonvision
+          ls
+          sudo cp $NEW_JAR photonvision.jar
+          popd
+          sudo umount ${TMP}
+          sudo rmdir ${TMP}
+          rm $FILE_NAME
+          NEW_IMAGE=$(basename "${NEW_JAR/jar/img}")
+          mv $IMAGE_FILE $NEW_IMAGE
+          zip -r $(basename "${NEW_JAR/jar/zip}") $NEW_IMAGE
+          rm $NEW_IMAGE
+
       - uses: softprops/action-gh-release@v1
         with:
           files: '**/*'
@@ -297,11 +321,39 @@ jobs:
           chmod +x gradlew
           ./gradlew photon-server:shadowJar --max-workers 1
 
+      - name: Generate image
+        run: |
+          NEW_JAR=$(realpath $(find . -name photonvision\*.jar))
+          sudo apt install unzip zip
+          curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/latest | grep "browser_download_url.*zip" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
+          FILE_NAME=$(ls | grep image_*.zip)
+          unzip $FILE_NAME
+          IMAGE_FILE=$(ls | grep *.img)
+          TMP=$(mktemp -d)
+          LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
+          sudo mount ${LOOP}p2 $TMP
+          pushd .
+          cd $TMP/opt/photonvision
+          ls
+          sudo cp $NEW_JAR photonvision.jar
+          popd
+          sudo umount ${TMP}
+          sudo rmdir ${TMP}
+          rm $FILE_NAME
+          NEW_IMAGE=$(basename "${NEW_JAR/jar/img}")
+          mv $IMAGE_FILE $NEW_IMAGE
+          zip -r $(basename "${NEW_JAR/jar/zip}") $NEW_IMAGE
+          rm $NEW_IMAGE
+
       # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@master
         with:
           name: jar
           path: photon-server/build/libs
+      - uses: actions/upload-artifact@master
+        with:
+          name: image
+          path: image*.zip
 
       - uses: eine/tip@master
         with:
@@ -310,4 +362,5 @@ jobs:
           rm: true
           files: |
             photon-server/build/libs/*.jar
+            image*.zip
         if: github.event_name == 'push'
