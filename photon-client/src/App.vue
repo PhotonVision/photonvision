@@ -91,25 +91,51 @@
           </v-list-item-content>
         </v-list-item>
 
-        <v-list-item style="position: absolute; bottom: 0; left: 0;">
-          <v-list-item-icon>
-            <v-icon v-if="$store.state.backendConnected">
-              mdi-wifi
-            </v-icon>
-            <v-icon
-              v-else
-              class="pulse"
-              style="border-radius: 100%;"
-            >
-              mdi-wifi-off
-            </v-icon>
-          </v-list-item-icon>
-          <v-list-item-content>
-            <v-list-item-title>
-              {{ $store.state.backendConnected ? "Connected" : "Trying to connect..." }}
-            </v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
+        <div style="position: absolute; bottom: 0; left: 0;">
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon v-if="$store.state.settings.networkSettings.runNTServer">mdi-server</v-icon>
+              <img v-else-if="$store.state.ntConnectionInfo.connected" src="@/assets/robot.svg" alt="">
+              <img v-else class="pulse" style="border-radius: 100%" src="@/assets/robot-off.svg" alt="">
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title class="text-wrap" v-if="$store.state.settings.networkSettings.runNTServer">
+                NetworkTables server running for {{$store.state.ntConnectionInfo.clients ? $store.state.ntConnectionInfo.clients : 'zero'}} clients!
+              </v-list-item-title>
+              <v-list-item-title class="text-wrap" v-else-if="$store.state.ntConnectionInfo.connected && $store.state.backendConnected">
+                Robot connected! {{$store.state.ntConnectionInfo.address}}
+              </v-list-item-title>
+              <v-list-item-title class="text-wrap" v-else>
+                Not connected to robot!
+              </v-list-item-title>
+              <a
+                  href="/#/settings"
+                  style="color:#FFD843"
+              >{{"Team: " + $store.state.settings.networkSettings.teamNumber}}</a>
+            </v-list-item-content>
+          </v-list-item>
+
+          <v-list-item>
+            <v-list-item-icon>
+              <v-icon v-if="$store.state.backendConnected">
+                mdi-wifi
+              </v-icon>
+              <v-icon
+                  v-else
+                  class="pulse"
+                  style="border-radius: 100%;"
+              >
+                mdi-wifi-off
+              </v-icon>
+            </v-list-item-icon>
+            <v-list-item-content>
+              <v-list-item-title class="text-wrap">
+                {{ $store.state.backendConnected ? "Backend Connected" : "Trying to connect..." }}
+              </v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </div>
+
       </v-list>
     </v-navigation-drawer>
     <v-main>
@@ -132,13 +158,35 @@
     >
       <logs />
     </v-dialog>
+    <v-dialog
+        v-model="needsTeamNumberSet"
+        width="500"
+        dark
+        persistent
+    >
+      <v-card
+          dark
+          color="primary"
+          flat
+      >
+        <v-card-title>No team number set!</v-card-title>
+        <v-card-text>
+          PhotonVision cannot connect to your robot! Please
+          <a
+              href="/#/settings"
+              style="color:#FFD843"
+          >head to the settings page</a> and set your team number.
+        </v-card-text>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 
 <script>
 import Logs from "./views/LogsView"
+// import {mapState} from "vuex";
 
-    export default {
+export default {
         name: 'App',
         components: {
             Logs
@@ -147,8 +195,16 @@ import Logs from "./views/LogsView"
             // Used so that we can switch back to the previously selected pipeline after camera calibration
             previouslySelectedIndices: [],
             timer: undefined,
+            teamNumberDialog: true
         }),
         computed: {
+            needsTeamNumberSet: {
+              get() {
+                return this.$store.state.settings.networkSettings.teamNumber < 1
+                    && this.teamNumberDialog && this.$store.state.backendConnected
+                    && !this.$route.name.toLowerCase().includes("settings");
+              }
+            },
             compact: {
                 get() {
                     if (this.$store.state.compactMode === undefined) {
@@ -163,6 +219,12 @@ import Logs from "./views/LogsView"
                     localStorage.setItem("compactMode", value);
                 },
             },
+            // ...mapState({
+              // ntServerMode: state => state.settings.networkSettings.runNTServer,
+              // ntClients: state => state.ntConnectionInfo.clients,
+              // ntConnected: state => state.ntConnectionInfo.connected,
+              // backendConnected: state => state.backendConnected
+            // })
         },
         created() {
             document.addEventListener("keydown", e => {
@@ -197,12 +259,12 @@ import Logs from "./views/LogsView"
                 }
             };
             this.$options.sockets.onopen = () => {
-                this.$store.state.backendConnected = true;
+                this.$store.commit("backendConnected", true)
                 this.$store.state.connectedCallbacks.forEach(it => it())
             };
 
             let closed = () => {
-                this.$store.state.backendConnected = false;
+              this.$store.commit("backendConnected", false)
             };
             this.$options.sockets.onclose = closed;
             this.$options.sockets.onerror = closed;

@@ -11,9 +11,13 @@
         :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
         class="mb-4"
       />
-      <span v-if="parseInt(teamNumber) < 1 && !runNTServer" class="red font-weight-bold">Team number not set! NetworkTables cannot connect.</span>
+      <v-chip label color="red" text-color="white" v-if="parseInt(teamNumber) < 1 && !runNTServer">
+        <span>
+          Team number not set! NetworkTables cannot connect.
+        </span>
+      </v-chip>
       <CVradio
-        v-model="connectionType"
+          v-model="connectionType"
         :list="['DHCP','Static']"
         :disabled="!$store.state.settings.networkSettings.supported"
       />
@@ -37,8 +41,13 @@
           v-model="runNTServer"
           name="Run NetworkTables Server (Debugging Only!)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
+          class="mt-3 mb-3"
       />
-      <span v-if="runNTServer" class="red font-weight-bold">Disable this switch if you're on a robot! Photonlib will NOT work.</span>
+      <v-chip label color="red" text-color="white" v-if="runNTServer">
+        <span>
+          Disable this switch if you're on a robot! Photonlib will NOT work.
+        </span>
+      </v-chip>
     </v-form>
     <v-btn
       color="accent"
@@ -49,6 +58,60 @@
     >
       Save
     </v-btn>
+    <v-divider class="mt-4 mb-4"/>
+    <v-row>
+      <v-col cols="6">
+
+        <v-simple-table
+            fixed-header
+            height="100%"
+            dense
+        >
+          <template v-slot:default>
+            <thead style="font-size: 1.25rem;">
+            <tr>
+              <th>
+                Device IPs
+              </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="(value, index) in $store.state.ntConnectionInfo.deviceips"
+                :key="index"
+            >
+              <td>{{ value }}</td>
+            </tr>
+            </tbody>
+          </template>
+        </v-simple-table>
+      </v-col>
+      <v-col cols="6">
+        <v-simple-table
+            fixed-header
+            height="100%"
+            dense
+        >
+          <template v-slot:default>
+            <thead style="font-size: 1.25rem;">
+            <tr>
+              <th>
+                Possible RoboRIOs
+              </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+                v-for="(value, index) in $store.state.ntConnectionInfo.possibleRios"
+                :key="index"
+            >
+              <td>{{ value }}</td>
+            </tr>
+            </tbody>
+          </template>
+        </v-simple-table>
+      </v-col>
+    </v-row>
   </div>
 </template>
 
@@ -184,6 +247,24 @@ export default {
 }
 </script>
 
-<style lang="" scoped>
+<style scoped>
+    .v-data-table {
+      /*text-align: center;*/
+      background-color: transparent !important;
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+    }
 
+    .v-data-table th {
+      background-color: #006492 !important;
+    }
+
+    .v-data-table th, td {
+      font-size: 1rem !important;
+    }
+
+    .v-data-table td {
+      font-family: monospace !important;
+    }
 </style>
