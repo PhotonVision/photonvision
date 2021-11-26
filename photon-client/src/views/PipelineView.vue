@@ -45,28 +45,18 @@
                     "NetworkTables not connected!" }}
                 </span>
               </v-chip>
+              <v-btn
+                  color="accent"
+                  @click="toggleReplay()"
+              >
+                Replay Snapshots
+              </v-btn>
               <v-switch
                 v-model="driverMode"
                 label="Driver Mode"
                 style="margin-left: auto;"
                 color="accent"
               />
-              <v-row
-                justify="end"
-                align-content="center"
-              >
-                <v-btn
-                  color="accent"
-                  @click="toggleReplay()"
-                >
-                  Replay Snapshots
-                </v-btn>
-                <v-switch
-                  v-model="driverMode"
-                  label="Driver Mode"
-                  color="accent"
-                />
-              </v-row>
             </v-card-title>
             <v-row
               align="center"
