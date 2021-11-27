@@ -4,19 +4,23 @@
 <!--  >-->
 <!--    <v-card color="primary" dark height="1000px">-->
 <!--      <v-card-title>Replay Snapshots</v-card-title>-->
-      <v-row style="overflow-y: scroll; height: 100%;" class="ml-6">
-        <div
+      <v-row style="overflow-y: scroll; max-height: 300px;" class="ml-6 mr-6">
+        <v-col
           v-for="img in snapshots"
           :key="img"
-          class="mr-3"
+          cols="4"
         >
+          <v-btn x-small color="red" @click="deleteImage(img)">
+            <v-icon small>mdi-delete</v-icon>
+          </v-btn>
             <img
                 :src="'http://localhost:5800/api/getSnapshot?path=' + img"
                 :alt="img"
                 @click="click"
-                width="100%"
+                class="align-center justify-center"
+                style="width: 100%"
             >
-        </div>
+        </v-col>
       </v-row>
 <!--    </v-card>-->
 <!--  </v-dialog>-->
@@ -32,11 +36,14 @@ export default {
         }
     },
     created() {
-        // this.show();
+        this.show();
     },
     methods: {
         click(e) {
             console.log(e.target.alt)
+        },
+        deleteImage(image) {
+          console.log(image)
         },
         show() {
             this.shown = true;
