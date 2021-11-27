@@ -88,8 +88,9 @@
               />
               <v-btn
                   color="secondary"
-                @click="toggleReplay()"
+                  @click="toggleReplay()"
                   class="ml-3"
+                  :disabled="!replaySnapshots"
               >
                 Choose Snapshots
               </v-btn>
