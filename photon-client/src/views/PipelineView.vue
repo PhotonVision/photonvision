@@ -45,55 +45,68 @@
                     "NetworkTables not connected!" }}
                 </span>
               </v-chip>
-              <v-switch
-                v-model="driverMode"
-                label="Driver Mode"
-                style="margin-left: auto;"
-                color="accent"
-              />
             </v-card-title>
             <v-row
               align="center"
             >
-              <v-col
-                v-for="idx in (selectedOutputs instanceof Array ? selectedOutputs : [selectedOutputs])"
-                :key="idx"
-                cols="12"
-                :md="selectedOutputs.length === 1 ? 12 : Math.floor(12 / selectedOutputs.length)"
-                class="pb-0 pt-0"
-                style="height: 100%;"
-              >
-                <div style="position: relative; width: 100%; height: 100%;">
-                  <cv-image
-                    :id="idx === 0 ? 'normal-stream' : ''"
-                    ref="streams"
-                    :address="$store.getters.streamAddress[idx]"
-                    :disconnected="!$store.state.backendConnected"
-                    scale="100"
-                    :max-height="$store.getters.isDriverMode ? '40vh' : '300px'"
-                    :max-height-md="$store.getters.isDriverMode ? '50vh' : '320px'"
-                    :max-height-xl="$store.getters.isDriverMode ? '60vh' : '450px'"
-                    :alt="'Stream' + idx"
-                    :color-picking="$store.state.colorPicking && idx === 0"
-                    @click="onImageClick"
-                  />
-                </div>
-              </v-col>
+              <template v-if="replaySnapshots">
+                <SnapshotReplay
+                    ref="snapshotReplayDialog"
+                />
+              </template>
+              <template v-else>
+                <v-col
+                    v-for="idx in (selectedOutputs instanceof Array ? selectedOutputs : [selectedOutputs])"
+                    :key="idx"
+                    cols="12"
+                    :md="selectedOutputs.length === 1 ? 12 : Math.floor(12 / selectedOutputs.length)"
+                    class="pb-0 pt-0"
+                    style="height: 100%;"
+                >
+                  <div style="position: relative; width: 100%; height: 100%;">
+                    <cv-image
+                        :id="idx === 0 ? 'normal-stream' : ''"
+                        ref="streams"
+                        :address="$store.getters.streamAddress[idx]"
+                        :disconnected="!$store.state.backendConnected"
+                        scale="100"
+                        :max-height="$store.getters.isDriverMode ? '40vh' : '300px'"
+                        :max-height-md="$store.getters.isDriverMode ? '50vh' : '320px'"
+                        :max-height-xl="$store.getters.isDriverMode ? '60vh' : '450px'"
+                        :alt="'Stream' + idx"
+                        :color-picking="$store.state.colorPicking && idx === 0"
+                        @click="onImageClick"
+                    />
+                  </div>
+                </v-col>
+              </template>
             </v-row>
-            <v-row class="justify-end align-center mr-5">
-              <v-switch
-                  v-model="replaySnapshots"
-                  label="Replay Snapshots"
-                  color="accent"
-              />
-              <v-btn
-                  color="secondary"
-                  @click="toggleReplay()"
-                  class="ml-3"
-                  :disabled="!replaySnapshots"
-              >
-                Choose Snapshots
-              </v-btn>
+            <v-row class="align-end">
+              <v-col cols="3" class="justify-end align-center">
+                <v-switch
+                    v-model="driverMode"
+                    label="Driver Mode"
+                    color="accent"
+                    class="ml-3"
+                />
+              </v-col>
+              <v-col cols="9" class="align-center justify-end no-gutters">
+                <v-row class="align-center justify-end mr-3">
+                  <v-switch
+                      v-model="replaySnapshots"
+                      label="Replay Snapshots"
+                      color="accent"
+                  />
+                  <v-btn
+                      color="secondary"
+                      @click="toggleReplay()"
+                      class="ml-3"
+                      :disabled="!replaySnapshots"
+                  >
+                    Choose Snapshots
+                  </v-btn>
+                </v-row>
+              </v-col>
             </v-row>
           </v-card>
         </v-col>
@@ -105,7 +118,6 @@
         >
           <v-card
             color="primary"
-            class="mt-3"
           >
             <!--            <v-btn @click="onCamNameChange">-->
             <!--              Reload-->
@@ -273,10 +285,6 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-
-    <SnapshotReplay
-        ref="snapshotReplayDialog"
-    />
   </div>
 </template>
 

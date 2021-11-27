@@ -1,24 +1,25 @@
 <template>
-  <v-dialog
-    v-model="shown"
-  >
-    <v-card color="primary" dark height="1000px">
-      <v-card-title>Replay Snapshots</v-card-title>
-      <v-row class="justify-center">
+<!--  <v-dialog-->
+<!--    v-model="shown"-->
+<!--  >-->
+<!--    <v-card color="primary" dark height="1000px">-->
+<!--      <v-card-title>Replay Snapshots</v-card-title>-->
+      <v-row style="overflow-y: scroll; height: 100%;" class="ml-6">
         <div
           v-for="img in snapshots"
           :key="img"
-          class="box"
+          class="mr-3"
         >
             <img
                 :src="'http://localhost:5800/api/getSnapshot?path=' + img"
                 :alt="img"
                 @click="click"
+                width="100%"
             >
         </div>
       </v-row>
-    </v-card>
-  </v-dialog>
+<!--    </v-card>-->
+<!--  </v-dialog>-->
 </template>
 
 <script>
@@ -31,7 +32,7 @@ export default {
         }
     },
     created() {
-        this.show();
+        // this.show();
     },
     methods: {
         click(e) {
@@ -56,8 +57,8 @@ export default {
 .box {
   position: relative;
   display: inline-block;
-  width: 100px;
-  height: 100px;
+  width: 200px;
+  height: 100%;
   background-color: #fff;
   border-radius: 5px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
