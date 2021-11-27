@@ -45,12 +45,6 @@
                     "NetworkTables not connected!" }}
                 </span>
               </v-chip>
-              <v-btn
-                  color="accent"
-                  @click="toggleReplay()"
-              >
-                Replay Snapshots
-              </v-btn>
               <v-switch
                 v-model="driverMode"
                 label="Driver Mode"
@@ -86,9 +80,20 @@
                 </div>
               </v-col>
             </v-row>
-            <SnapshotReplay
-              ref="snapshotReplayDialog"
-            />
+            <v-row class="justify-end align-center mr-5">
+              <v-switch
+                  v-model="replaySnapshots"
+                  label="Replay Snapshots"
+                  color="accent"
+              />
+              <v-btn
+                  color="secondary"
+                @click="toggleReplay()"
+                  class="ml-3"
+              >
+                Choose Snapshots
+              </v-btn>
+            </v-row>
           </v-card>
         </v-col>
         <v-col
@@ -267,6 +272,10 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <SnapshotReplay
+        ref="snapshotReplayDialog"
+    />
   </div>
 </template>
 
@@ -301,6 +310,7 @@ export default {
             counterData: 0,
             dialog: false,
             processingModeOverride: false,
+            replaySnapshots: false,
         }
     },
     computed: {
@@ -453,6 +463,7 @@ export default {
     methods: {
         toggleReplay() {
             this.$refs.snapshotReplayDialog.show();
+          // this.replaySnapshots = true
         },
         reloadStreams() {
             // Reload the streams as we technically close and reopen them
