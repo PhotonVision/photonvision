@@ -52,6 +52,7 @@ public class ConfigManager {
     private final File hardwareSettingsFile;
     private final File networkConfigFile;
     private final File camerasFolder;
+    private final File imgSavesFolder;
 
     final File configDirectoryFile;
 
@@ -95,6 +96,7 @@ public class ConfigManager {
         this.networkConfigFile =
                 new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
         this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
+        this.imgSavesFolder = new File(Path.of(configDirectoryFile.toString(), "imgSaves").toUri());
 
         TimedTaskManager.getInstance().addTask("ConfigManager", this::checkSaveAndWrite, 1000);
     }
@@ -431,5 +433,33 @@ public class ConfigManager {
             logger.debug("Saving to disk...");
             saveToDisk();
         }
+    }
+
+    public List<String> getSnapshots(String cameraUniqueName) {
+        var snapshotDir = getSnapshotDirectory(cameraUniqueName).toFile();
+        try {
+            return Files.list(snapshotDir.toPath())
+                .filter(it -> {
+                    var name = it.getFileName().toString();
+                    boolean isFile = it.toFile().isFile();
+                    var isInput = name.startsWith("input");
+                    return isInput && isFile;
+                })
+                .map(it -> imgSavesFolder.toPath().relativize(it).toString())
+                .collect(Collectors.toList());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return List.of();
+        }
+    }
+
+    public Path getSnapshotDirectory(String cameraUniqueName) {
+        var ret = Path.of(imgSavesFolder.toString(), cameraUniqueName);
+        if(!ret.toFile().exists()) ret.toFile().mkdirs();
+        return ret;
+    }
+
+    public File getSnapshotFile(String relativePath) {
+        return Path.of(imgSavesFolder.toString(), relativePath).toFile();
     }
 }

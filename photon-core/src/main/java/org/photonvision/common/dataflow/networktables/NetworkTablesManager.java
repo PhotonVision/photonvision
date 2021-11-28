@@ -109,13 +109,10 @@ public class NetworkTablesManager {
         logger.info("Searching for rios");
         List<String> possibleRioList = new ArrayList<>();
         for (var ip : CameraServerJNI.getNetworkInterfaces()) {
-            logger.info("Trying " + ip);
             var possibleRioAddr = getPossibleRioAddress(ip);
             if (possibleRioAddr != null) {
                 logger.info("Maybe found " + ip);
                 searchForHost(possibleRioList, possibleRioAddr);
-            } else {
-                logger.info("Didn't match RIO IP");
             }
         }
         String name =
