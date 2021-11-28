@@ -1,62 +1,63 @@
 <template>
-<!--  <v-dialog-->
-<!--    v-model="shown"-->
-<!--  >-->
-<!--    <v-card color="primary" dark height="1000px">-->
-<!--      <v-card-title>Replay Snapshots</v-card-title>-->
-      <v-row style="overflow-y: scroll; max-height: 400px;" class="ml-6 mr-6">
-        <v-col
-          v-for="img in snapshots"
-          :key="img"
-          cols="3"
-        >
-          <v-btn x-small color="red" @click="deleteImage(img)">
-            <v-icon small>mdi-delete</v-icon>
-          </v-btn>
-            <img
-                :src="'http://localhost:5800/api/getSnapshot?path=' + img"
-                :alt="img"
-                @click="click"
-                class="align-center justify-center"
-                style="width: 100%"
-            >
-        </v-col>
-      </v-row>
-<!--    </v-card>-->
-<!--  </v-dialog>-->
+  <!--  <v-dialog-->
+  <!--    v-model="shown"-->
+  <!--  >-->
+  <!--    <v-card color="primary" dark height="1000px">-->
+  <!--      <v-card-title>Replay Snapshots</v-card-title>-->
+  <v-row style="overflow-y: scroll; max-height: 400px;" class="ml-6 mr-6">
+    <v-col
+        v-for="img in snapshots"
+        :key="img"
+        cols="3"
+    >
+      <v-btn x-small color="red" @click="deleteImage(img)">
+        <v-icon small>mdi-delete</v-icon>
+      </v-btn>
+      <img
+          :src="'http://localhost:5800/api/getSnapshot?path=' + img"
+          :alt="img"
+          @click="click"
+          class="align-center justify-center"
+          style="width: 100%"
+      >
+    </v-col>
+  </v-row>
+  <!--    </v-card>-->
+  <!--  </v-dialog>-->
 </template>
 
 <script>
 export default {
-    name: "SnapshotReplay",
-    data() {
-        return {
-            shown: false,
-            snapshots: []
-        }
-    },
-    created() {
-        this.show();
-    },
-    methods: {
-        click(e) {
-            console.log(e.target.alt)
-        },
-        deleteImage(image) {
-          console.log(image)
-        },
-        show() {
-            this.shown = true;
-
-            // Make an HTTP request to get the current snapshots
-            this.axios.get("http://" + this.$address + '/api/allSnapshots?cam=HP_Wide_Vision_HD_Camera')
-                .then((response) => {
-                    this.snapshots = response.data
-                })
-                .catch(err => console.log(err));
-
-        }
+  name: "SnapshotReplay",
+  data() {
+    return {
+      shown: false,
+      snapshots: []
     }
+  },
+  created() {
+    this.show();
+  },
+  methods: {
+    click(e) {
+      console.log(e.target.alt)
+    },
+    deleteImage(image) {
+      console.log(image)
+    },
+    show() {
+      this.shown = true;
+
+      // Make an HTTP request to get the current snapshots
+      const camUri = '/api/allSnapshots?cam=' + this.$store.getters.cameraList[this.$store.getters.currentCameraIndex];
+      this.axios.get("http://" + this.$address + camUri)
+          .then((response) => {
+            this.snapshots = response.data
+          })
+          .catch(err => console.log(err));
+
+    }
+  }
 }
 </script>
 
