@@ -353,7 +353,7 @@ jobs:
       - uses: actions/upload-artifact@master
         with:
           name: image
-          path: image*.zip
+          path: photonvision*.zip
 
       - uses: eine/tip@master
         with:
