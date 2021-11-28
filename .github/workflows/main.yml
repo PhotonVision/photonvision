@@ -362,5 +362,5 @@ jobs:
           rm: true
           files: |
             photon-server/build/libs/*.jar
-            image*.zip
+            photonvision*.zip
         if: github.event_name == 'push'
