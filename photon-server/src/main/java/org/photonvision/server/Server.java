@@ -81,6 +81,8 @@ public class Server {
         app.post("api/sendMetrics", RequestHandler::sendMetrics);
         app.post("api/setCameraNickname", RequestHandler::setCameraNickname);
 
+        app.get("api/deleteSnapshot", RequestHandler::deleteSnapshot);
+        app.get("api/selectSnapshot", RequestHandler::selectSnapshot);
         app.get("api/getSnapshot", RequestHandler::getSnapshot);
         app.get("api/allSnapshots", RequestHandler::getSnapshotList);
 

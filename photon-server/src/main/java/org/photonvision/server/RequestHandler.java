@@ -260,4 +260,24 @@ public class RequestHandler {
             ctx.status(501);
         }
     }
+
+    public static void deleteSnapshot(Context ctx) {
+        var path = ctx.queryParam("path");
+        if(path == null) return;
+        logger.debug("getting path at " + path);
+        var snapshot = ConfigManager.getInstance().getSnapshotFile(path);
+        if (snapshot.delete()) {
+            ctx.status(200);
+        } else {
+            logger.error("Failed to delete snapshot at " + path);
+            ctx.status(500);
+        }
+    }
+
+    public static void selectSnapshot(Context ctx) {
+        var path = ctx.queryParam("path");
+        if (path == null) return;
+        logger.debug("selecting snapshot at " + path);
+        // TODO: do the thing
+    }
 }
