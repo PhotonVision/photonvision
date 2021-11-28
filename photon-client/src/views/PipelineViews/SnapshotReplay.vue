@@ -4,11 +4,11 @@
 <!--  >-->
 <!--    <v-card color="primary" dark height="1000px">-->
 <!--      <v-card-title>Replay Snapshots</v-card-title>-->
-      <v-row style="overflow-y: scroll; max-height: 300px;" class="ml-6 mr-6">
+      <v-row style="overflow-y: scroll; max-height: 400px;" class="ml-6 mr-6">
         <v-col
           v-for="img in snapshots"
           :key="img"
-          cols="4"
+          cols="3"
         >
           <v-btn x-small color="red" @click="deleteImage(img)">
             <v-icon small>mdi-delete</v-icon>
