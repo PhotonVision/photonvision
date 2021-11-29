@@ -108,14 +108,12 @@ public class RequestHandler {
     }
 
     public static void onOfflineUpdate(Context ctx) {
-
         logger.info("Handling offline update .jar upload...");
         var file = ctx.uploadedFile("jarData");
         logger.info("New .jar uploaded successfully.");
 
         if (file != null) {
             if (Platform.isRaspberryPi()) {
-
                 try {
                     Path filePath =
                             Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
