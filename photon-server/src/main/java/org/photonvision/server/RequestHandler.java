@@ -22,8 +22,12 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import io.javalin.http.Context;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.commons.io.FileUtils;
@@ -37,6 +41,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
+import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.target.TargetModel;
 
@@ -99,6 +104,52 @@ public class RequestHandler {
 
         } else {
             logger.error("Couldn't read uploaded file! Ignoring.");
+            ctx.status(500);
+        }
+    }
+
+    public static void onUpdateJar(Context ctx) {
+
+        File targetFile = new File("./photonvision.jar");
+        File backupFile = new File("./photonvision_prev.jar");
+
+        logger.info("Handling .jar upload...");
+
+        var file = ctx.uploadedFile("jarData");
+        if (file != null) {
+            if(Platform.isRaspberryPi()){
+
+                try {
+                    Path filePath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), file.getFilename());
+                    File tmpFile = new File(filePath.toString());
+                    var stream = new FileOutputStream(tmpFile);
+                    file.getContent().transferTo(stream);
+                    stream.close();
+
+                    logger.info("Successfully saved " + tmpFile.toString());
+
+                    FileUtils.copyFile(targetFile, backupFile);
+                    FileUtils.copyFile(tmpFile, targetFile);
+
+                    ctx.status(200);
+                    logger.info("New .jar in place, going down for restart.");
+                    restartProgram(ctx);
+
+                } catch (FileNotFoundException e) {
+                    logger.error(".jar of this program could not be found. How the heck this program started in the first place is a mystery.");
+                    ctx.status(500);
+                } catch (IOException e) {
+                    logger.error("Could not overwrite the .jar for this instance of photonvision.");
+                    ctx.status(500);
+                }
+
+            } else {
+                logger.error("Hot .jar replace currently only supported on Raspberry pi. Ignoring.");
+                ctx.status(500);
+            }
+
+        } else {
+            logger.error("Couldn't read provided file for new .jar! Ignoring.");
             ctx.status(500);
         }
     }

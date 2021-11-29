@@ -90,8 +90,8 @@
     <v-row>
       <v-col
         cols="12"
-        sm="6"
-        lg="3"
+        sm="4"
+        lg="2"
       >
         <v-btn
           color="secondary"
@@ -105,8 +105,8 @@
       </v-col>
       <v-col
         cols="12"
-        sm="6"
-        lg="3"
+        sm="4"
+        lg="2"
       >
         <v-btn
           color="secondary"
@@ -116,6 +116,21 @@
             mdi-upload
           </v-icon>
           Import Settings
+        </v-btn>
+      </v-col>
+      <v-col
+        cols="12"
+        sm="4"
+        lg="2"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.updateJar.click()"
+        >
+          <v-icon left>
+            mdi-update
+          </v-icon>
+          Update Photon
         </v-btn>
       </v-col>
       <v-col
@@ -172,6 +187,16 @@
       :href="'http://' + this.$address + '/api/settings/photonvision_config.zip'"
       download="photonvision-settings.zip"
     />
+
+    <!-- Special hidden new jar upload input that gets 'clicked' when the user posts a new .jar -->
+    <input
+      ref="updateJar"
+      type="file"
+      accept=".jar"
+      style="display: none;"
+
+      @change="readUpdateJar"
+    >
   </div>
 </template>
 
@@ -244,6 +269,42 @@ export default {
                   this.snackbar = {
                       color: "error",
                       text: "Error while uploading settings file!",
+                  };
+                }
+                this.snack = true;
+            });
+        },
+        readUpdateJar(event) {
+          this.snackbar = {
+                color: "accent",
+                text: "New Software Upload in Process...",
+            };
+            this.snack = true;
+
+            let formData = new FormData();
+            formData.append("jarData", event.target.files[0]);
+            this.axios.post("http://" + this.$address + "/api/settings/updateJar", formData,
+                {headers: {"Content-Type": "multipart/form-data"}}).then(() => {
+                this.snackbar = {
+                    color: "success",
+                    text: "New .jar copied successfully! Program will now exit...",
+                };
+                this.snack = true;
+            }).catch(err => {
+                if (err.response) {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading new .jar file! Could not process provided file.",
+                  };
+                } else if (err.request) {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading new .jar file! No respond to upload attempt.",
+                  };
+                } else {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading new .jar file!",
                   };
                 }
                 this.snack = true;
