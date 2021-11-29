@@ -108,31 +108,27 @@ public class RequestHandler {
         }
     }
 
-    public static void onUpdateJar(Context ctx) {
+    public static void onOfflineUpdate(Context ctx) {
 
-        File targetFile = new File("./photonvision.jar");
-        File backupFile = new File("./photonvision_prev.jar");
-
-        logger.info("Handling .jar upload...");
-
+        logger.info("Handling offline update .jar upload...");
         var file = ctx.uploadedFile("jarData");
+        logger.info("New .jar uploaded successfully.");
+
         if (file != null) {
             if(Platform.isRaspberryPi()){
 
                 try {
-                    Path filePath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), file.getFilename());
-                    File tmpFile = new File(filePath.toString());
-                    var stream = new FileOutputStream(tmpFile);
+                    Path filePath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
+                    File targetFile = new File(filePath.toString());
+                    var stream = new FileOutputStream(targetFile);
+
+                    logger.info("Streaming user-provided " + file.getFilename() + " into " + targetFile.toString());
+
                     file.getContent().transferTo(stream);
                     stream.close();
 
-                    logger.info("Successfully saved " + tmpFile.toString());
-
-                    FileUtils.copyFile(targetFile, backupFile);
-                    FileUtils.copyFile(tmpFile, targetFile);
-
                     ctx.status(200);
-                    logger.info("New .jar in place, going down for restart.");
+                    logger.info("New .jar in place, going down for restart...");
                     restartProgram(ctx);
 
                 } catch (FileNotFoundException e) {

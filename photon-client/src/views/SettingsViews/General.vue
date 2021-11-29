@@ -125,12 +125,12 @@
       >
         <v-btn
           color="secondary"
-          @click="$refs.updateJar.click()"
+          @click="$refs.offlineUpdate.click()"
         >
           <v-icon left>
             mdi-update
           </v-icon>
-          Update Photon
+          Offline Update
         </v-btn>
       </v-col>
       <v-col
@@ -190,12 +190,11 @@
 
     <!-- Special hidden new jar upload input that gets 'clicked' when the user posts a new .jar -->
     <input
-      ref="updateJar"
+      ref="offlineUpdate"
       type="file"
       accept=".jar"
       style="display: none;"
-
-      @change="readUpdateJar"
+      @change="doOfflineUpdate"
     >
   </div>
 </template>
@@ -206,6 +205,7 @@ export default {
     data() {
         return {
             snack: false,
+            uploadPercentage: 0.0,
             snackbar: {
                 color: "success",
                 text: ""
@@ -274,17 +274,27 @@ export default {
                 this.snack = true;
             });
         },
-        readUpdateJar(event) {
+        doOfflineUpdate(event) {
           this.snackbar = {
-                color: "accent",
-                text: "New Software Upload in Process...",
+                color: "secondary",
+                text: "New Software Upload in Process..."
             };
             this.snack = true;
 
             let formData = new FormData();
             formData.append("jarData", event.target.files[0]);
-            this.axios.post("http://" + this.$address + "/api/settings/updateJar", formData,
-                {headers: {"Content-Type": "multipart/form-data"}}).then(() => {
+            this.axios.post("http://" + this.$address + "/api/settings/offlineUpdate", formData,
+                {headers: {"Content-Type": "multipart/form-data"},
+                 onUploadProgress: function( progressEvent ) {
+                    this.uploadPercentage = parseInt( Math.round( ( progressEvent.loaded / progressEvent.total ) * 100 ) );
+                    if(this.uploadPercentage < 99.5){
+                      this.snackbar.text = "New Software Upload in Process, " + this.uploadPercentage + "% complete";
+                    } else {
+                      this.snackbar.text = "Installing uploaded software...";
+                    }
+
+                 }.bind(this)
+                }).then(() => {
                 this.snackbar = {
                     color: "success",
                     text: "New .jar copied successfully! Program will now exit...",
