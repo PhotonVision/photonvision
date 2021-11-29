@@ -25,7 +25,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -115,14 +114,16 @@ public class RequestHandler {
         logger.info("New .jar uploaded successfully.");
 
         if (file != null) {
-            if(Platform.isRaspberryPi()){
+            if (Platform.isRaspberryPi()) {
 
                 try {
-                    Path filePath = Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
+                    Path filePath =
+                            Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
                     File targetFile = new File(filePath.toString());
                     var stream = new FileOutputStream(targetFile);
 
-                    logger.info("Streaming user-provided " + file.getFilename() + " into " + targetFile.toString());
+                    logger.info(
+                            "Streaming user-provided " + file.getFilename() + " into " + targetFile.toString());
 
                     file.getContent().transferTo(stream);
                     stream.close();
@@ -132,7 +133,8 @@ public class RequestHandler {
                     restartProgram(ctx);
 
                 } catch (FileNotFoundException e) {
-                    logger.error(".jar of this program could not be found. How the heck this program started in the first place is a mystery.");
+                    logger.error(
+                            ".jar of this program could not be found. How the heck this program started in the first place is a mystery.");
                     ctx.status(500);
                 } catch (IOException e) {
                     logger.error("Could not overwrite the .jar for this instance of photonvision.");
