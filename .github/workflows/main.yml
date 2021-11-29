@@ -177,7 +177,7 @@ jobs:
           rm $FILE_NAME
           NEW_IMAGE=$(basename "${NEW_JAR/jar/img}")
           mv $IMAGE_FILE $NEW_IMAGE
-          zip -r $(basename "${NEW_JAR/jar/zip}") $NEW_IMAGE
+          zip -r $(basename "${NEW_JAR/jar/-image.zip}") $NEW_IMAGE
           rm $NEW_IMAGE
 
       - uses: softprops/action-gh-release@v1
@@ -342,7 +342,7 @@ jobs:
           rm $FILE_NAME
           NEW_IMAGE=$(basename "${NEW_JAR/jar/img}")
           mv $IMAGE_FILE $NEW_IMAGE
-          zip -r $(basename "${NEW_JAR/jar/zip}") $NEW_IMAGE
+          zip -r $(basename "${NEW_JAR/jar/-image.zip}") $NEW_IMAGE
           rm $NEW_IMAGE
 
       # Upload final fat jar as artifact.
