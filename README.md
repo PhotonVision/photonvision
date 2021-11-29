@@ -10,7 +10,9 @@ If you are interested in contributing code or documentation to the project, plea
 
 ## Authors
 
-A list of contributors is available in our documentation on ReadTheDocs.
+<a href="https://github.com/PhotonVision/photonvision/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=PhotonVision/photonvision" />
+</a>
 
 
 ## Acknowledgments
@@ -29,3 +31,9 @@ PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vis
 
 ## License
 PhotonVision is licensed under the [GNU General Public License](https://www.gnu.org/licenses/gpl-3.0.html)
+
+## Meeting Notes
+Our meeting notes can be found in the wiki section of this repository.
+
+* [2020 Meeting Notes](https://github.com/PhotonVision/photonvision/wiki/2020-Meeting-Notes)
+* [2021 Meeting Notes](https://github.com/PhotonVision/photonvision/wiki/2021-Meeting-Notes)
