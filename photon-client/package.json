@@ -10,7 +10,7 @@
   "dependencies": {
     "@femessage/log-viewer": "^1.4.2",
     "@vue/eslint-config-prettier": "^6.0.0",
-    "axios": "^0.19.2",
+    "axios": "^0.21.2",
     "core-js": "^2.6.11",
     "downloadjs": "^1.4.7",
     "jspdf": "^2.4.0",
