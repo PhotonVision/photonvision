@@ -322,6 +322,7 @@ jobs:
           ./gradlew photon-server:shadowJar --max-workers 1
 
       - name: Generate image
+        if: github.event_name != 'pull_request'
         run: |
           NEW_JAR=$(realpath $(find . -name photonvision\*.jar))
           sudo apt install unzip zip
