@@ -12,7 +12,7 @@
         class="mb-4"
         :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
       />
-      <v-chip label color="red" style="height:auto" text-color="white" v-if="parseInt(teamNumber) < 1 && !runNTServer">
+      <v-chip label color="red" v-bind:style="$vuetify.breakpoint.xsOnly ? 'height: auto;' : ''" text-color="white" v-if="parseInt(teamNumber) < 1 && !runNTServer">
         <span class="text-wrap">
           Team number not set! NetworkTables cannot connect.
         </span>
