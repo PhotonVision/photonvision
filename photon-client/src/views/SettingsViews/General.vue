@@ -91,7 +91,7 @@
       <v-col
         cols="12"
         sm="6"
-        lg="3"
+        md="4"
       >
         <v-btn
           color="secondary"
@@ -106,7 +106,7 @@
       <v-col
         cols="12"
         sm="6"
-        lg="3"
+        md="4"
       >
         <v-btn
           color="secondary"
@@ -120,7 +120,21 @@
       </v-col>
       <v-col
         cols="12"
-        lg="3"
+        md="4"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.offlineUpdate.click()"
+        >
+          <v-icon left>
+            mdi-update
+          </v-icon>
+          Offline Update
+        </v-btn>
+      </v-col>
+      <v-col
+        cols="12"
+        lg="6"
       >
         <v-btn
           color="red"
@@ -134,7 +148,7 @@
       </v-col>
       <v-col
         cols="12"
-        lg="3"
+        lg="6"
       >
         <v-btn
           color="red"
@@ -172,6 +186,15 @@
       :href="'http://' + this.$address + '/api/settings/photonvision_config.zip'"
       download="photonvision-settings.zip"
     />
+
+    <!-- Special hidden new jar upload input that gets 'clicked' when the user posts a new .jar -->
+    <input
+      ref="offlineUpdate"
+      type="file"
+      accept=".jar"
+      style="display: none;"
+      @change="doOfflineUpdate"
+    >
   </div>
 </template>
 
@@ -181,6 +204,7 @@ export default {
     data() {
         return {
             snack: false,
+            uploadPercentage: 0.0,
             snackbar: {
                 color: "success",
                 text: ""
@@ -249,6 +273,52 @@ export default {
                 this.snack = true;
             });
         },
+        doOfflineUpdate(event) {
+          this.snackbar = {
+                color: "secondary",
+                text: "New Software Upload in Process..."
+            };
+            this.snack = true;
+
+            let formData = new FormData();
+            formData.append("jarData", event.target.files[0]);
+            this.axios.post("http://" + this.$address + "/api/settings/offlineUpdate", formData,
+                {headers: {"Content-Type": "multipart/form-data"},
+                 onUploadProgress: function( progressEvent ) {
+                    this.uploadPercentage = parseInt( Math.round( ( progressEvent.loaded / progressEvent.total ) * 100 ) );
+                    if(this.uploadPercentage < 99.5){
+                      this.snackbar.text = "New Software Upload in Process, " + this.uploadPercentage + "% complete";
+                    } else {
+                      this.snackbar.text = "Installing uploaded software...";
+                    }
+
+                 }.bind(this)
+                }).then(() => {
+                this.snackbar = {
+                    color: "success",
+                    text: "New .jar copied successfully! Program will now exit...",
+                };
+                this.snack = true;
+            }).catch(err => {
+                if (err.response) {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading new .jar file! Could not process provided file.",
+                  };
+                } else if (err.request) {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading new .jar file! No respond to upload attempt.",
+                  };
+                } else {
+                  this.snackbar = {
+                      color: "error",
+                      text: "Error while uploading new .jar file!",
+                  };
+                }
+                this.snack = true;
+            });
+        },
     }
 }
 </script>
@@ -266,6 +336,8 @@ export default {
   text-align: left;
   margin-bottom: 10px;
   width: 100%;
+  display: block;
+  overflow-x: auto;
 }
 
 .infoElem {
