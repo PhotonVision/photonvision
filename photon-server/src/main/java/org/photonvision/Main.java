@@ -29,6 +29,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
+import org.photonvision.common.networking.RoborioFinder;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.raspi.PicamJNI;
@@ -239,6 +240,9 @@ public class Main {
         } else {
             addTestModeSources();
         }
+
+        // Start the multicast resolver to look for roboRIOs
+        RoborioFinder.getInstance().start();
 
         Server.main(DEFAULT_WEBPORT);
     }

@@ -36,6 +36,7 @@ import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.networking.RoborioFinder;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
@@ -134,6 +135,11 @@ public class NetworkTablesManager {
                         + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
                         + "-FRC.frc-field.local";
         searchForHost(possibleRioList, name);
+        var rios = RoborioFinder.getInstance().findAll();
+        for (var rio : rios) {
+            possibleRioList.add(rio.getHostName());
+            possibleRioList.add(String.valueOf(rio.getIpv4Address()));
+        }
         subMap.put("possibleRios", possibleRioList.toArray());
         DataChangeService.getInstance()
                 .publishEvent(new OutgoingUIEvent<>("networkTablesConnected", map));
