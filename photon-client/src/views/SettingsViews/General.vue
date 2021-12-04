@@ -90,8 +90,8 @@
     <v-row>
       <v-col
         cols="12"
-        sm="4"
-        lg="2"
+        sm="6"
+        md="4"
       >
         <v-btn
           color="secondary"
@@ -105,8 +105,8 @@
       </v-col>
       <v-col
         cols="12"
-        sm="4"
-        lg="2"
+        sm="6"
+        md="4"
       >
         <v-btn
           color="secondary"
@@ -120,8 +120,7 @@
       </v-col>
       <v-col
         cols="12"
-        sm="4"
-        lg="2"
+        md="4"
       >
         <v-btn
           color="secondary"
@@ -135,7 +134,7 @@
       </v-col>
       <v-col
         cols="12"
-        lg="3"
+        lg="6"
       >
         <v-btn
           color="red"
@@ -149,7 +148,7 @@
       </v-col>
       <v-col
         cols="12"
-        lg="3"
+        lg="6"
       >
         <v-btn
           color="red"
@@ -337,6 +336,8 @@ export default {
   text-align: left;
   margin-bottom: 10px;
   width: 100%;
+  display: block;
+  overflow-x: auto;
 }
 
 .infoElem {

@@ -10,9 +10,10 @@
         name="Team Number"
         :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
         class="mb-4"
+        :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
       />
-      <v-chip label color="red" text-color="white" v-if="parseInt(teamNumber) < 1 && !runNTServer">
-        <span>
+      <v-chip label color="red" style="height:auto" text-color="white" v-if="parseInt(teamNumber) < 1 && !runNTServer">
+        <span class="text-wrap">
           Team number not set! NetworkTables cannot connect.
         </span>
       </v-chip>
@@ -42,6 +43,7 @@
           name="Run NetworkTables Server (Debugging Only!)"
           tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
           class="mt-3 mb-3"
+          :text-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
       />
       <v-chip label color="red" text-color="white" v-if="runNTServer">
         <span>
@@ -60,7 +62,7 @@
     </v-btn>
     <v-divider class="mt-4 mb-4"/>
     <v-row>
-      <v-col cols="6">
+      <v-col cols="12" sm="6">
 
         <v-simple-table
             fixed-header
@@ -86,7 +88,7 @@
           </template>
         </v-simple-table>
       </v-col>
-      <v-col cols="6">
+      <v-col cols="12" sm="6">
         <v-simple-table
             fixed-header
             height="100%"

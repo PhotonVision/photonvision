@@ -19,15 +19,16 @@
             <CVselect
               v-model="currentCameraIndex"
               name="Camera"
-              select-cols="10"
               :list="$store.getters.cameraList"
               @input="handleInput('currentCamera',currentCameraIndex)"
+              :select-cols="$vuetify.breakpoint.mdAndUp ? 10 : 7"
             />
             <CVnumberinput
               v-model="cameraSettings.fov"
               :tooltip="cameraSettings.isFovConfigurable ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
               name="Maximum diagonal FOV"
               :disabled="!cameraSettings.isFovConfigurable"
+              :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
             />
             <br>
             <CVnumberinput
@@ -35,6 +36,7 @@
               name="Camera pitch"
               tooltip="How many degrees above the horizontal the physical camera is tilted"
               :step="0.01"
+              :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
             />
             <br>
             <v-btn
@@ -89,26 +91,26 @@
                   <CVnumberinput
                     v-model="squareSizeIn"
                     name="Pattern Spacing (in)"
-                    label-cols="5"
                     tooltip="Spacing between pattern features in inches"
                     :disabled="isCalibrating"
                     :rules="[v => (v > 0) || 'Size must be positive']"
+                    :label-cols="$vuetify.breakpoint.mdAndUp ? 5 : 7"
                   />
                   <CVnumberinput
                     v-model="boardWidth"
                     name="Board width"
-                    label-cols="5"
                     tooltip="Width of the board in dots or chessboard squares"
                     :disabled="isCalibrating"
                     :rules="[v => (v >= 4) || 'Width must be at least 4']"
+                    :label-cols="$vuetify.breakpoint.mdAndUp ? 5 : 7"
                   />
                   <CVnumberinput
                     v-model="boardHeight"
                     name="Board height"
-                    label-cols="5"
                     tooltip="Height of the board in dots or chessboard squares"
                     :disabled="isCalibrating"
                     :rules="[v => (v >= 4) || 'Height must be at least 4']"
+                    :label-cols="$vuetify.breakpoint.mdAndUp ? 5 : 7"
                   />
                 </v-form>
               </v-col>
