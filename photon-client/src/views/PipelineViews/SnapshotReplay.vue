@@ -10,17 +10,22 @@
           @mouseover="registerHover(img)"
           @mouseleave="registerHover(null)"
           :alt="'Snapshot ' + img">
-        <v-overlay
-            absolute
-            :opacity="0.2"
-            :value="img === hovered">
-          <v-btn small color="secondary" @click="sendImage(img)">
+        <template v-if="img === hovered">
+          <v-btn style="position: absolute; top: 0; left: 0;"
+                 class="ma-2"
+                 small
+                 color="secondary"
+                 @click="sendImage(img)">
             <v-icon small>mdi-check</v-icon>
           </v-btn>
-          <v-btn small color="red" @click="deleteImage(img)">
+          <v-btn style="position: absolute; top: 0; right: 0;"
+                 class="ma-2"
+                 small
+                 color="red"
+                 @click="deleteImage(img)">
             <v-icon small>mdi-delete</v-icon>
           </v-btn>
-        </v-overlay>
+        </template>
       </v-img>
     </v-col>
   </v-row>
@@ -45,9 +50,19 @@ export default {
     },
     deleteImage(image) {
       console.log(image)
+      this.axios.get("http://" + this.$address + "/api/deleteSnapshot?path=" + image)
+          .then(() => {
+            // Re-get the snapshot list
+            this.show()
+          })
+          .catch(err => console.log(err));
     },
     sendImage(image) {
       console.log(image)
+      this.axios.get("http://" + this.$address + "/api/selectSnapshot?path=" + image)
+          .then(() => {
+          })
+          .catch(err => console.log(err));
     },
     show() {
       this.shown = true;
@@ -58,10 +73,8 @@ export default {
           .then((response) => {
             // Apparently we need this for v-images
             this.snapshots = response.data.map(it => it.replace("\\", "/"))
-            console.log(this.snapshots)
           })
           .catch(err => console.log(err));
-
     }
   }
 }
