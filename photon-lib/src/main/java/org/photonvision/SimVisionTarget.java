@@ -31,10 +31,30 @@ public class SimVisionTarget {
     * position from center of feild.
     */
     public enum VisionTarget {
-        InfinateRechargeRedAlliancePowerPort,
-        InfinateRechargeRedAllianceLoadingBay,
-        InfinateRechargeBlueAlliancePowerPort,
-        InfinateRechargeBlueAllianceLoadingBay
+        k2020REDPOWERPORT(7.9916, -1.7052, 0.0, 2.06375, 0.99695, 0.4318),
+        k2020REDLOADINGBAY(-7.9916, -1.5494, 0.0, 0.2794, 0.1778, 0.2794),
+        k2020BLUEPOWERPORT(-7.9916, 1.7052, 0.0, 2.06375, 0.99695, 0.4318),
+        k2020BLUELOADINGBAY(7.9916, 1.5494, 0.0, 0.2794, 0.1778, 0.2794);
+
+        Pose2d pose;
+        double targetGroundHeightMeters;
+        double targetWidthMeters;
+        double targetHeightMeters;
+        double targetAreaMeters2;
+
+        private VisionTarget(
+                double xMeters,
+                double yMeters,
+                double rotationRadians,
+                double targetGroundHeightMeters,
+                double targetWidthMeters,
+                double targetHeightMeters) {
+            pose = new Pose2d(xMeters, yMeters, new Rotation2d(rotationRadians));
+            this.targetGroundHeightMeters = targetGroundHeightMeters;
+            this.targetWidthMeters = targetWidthMeters;
+            this.targetHeightMeters = targetHeightMeters;
+            this.targetAreaMeters2 = targetWidthMeters * targetHeightMeters;
+        }
     }
 
     /**
@@ -68,37 +88,10 @@ public class SimVisionTarget {
     * @param visionTarget the type of target to create
     */
     public SimVisionTarget(VisionTarget visionTarget) {
-        switch (visionTarget) {
-            case InfinateRechargeRedAlliancePowerPort:
-                this.targetPos = new Pose2d(7.9916, -1.7052, new Rotation2d()); // x: 314.63" y: 67.134"
-                this.targetHeightAboveGroundMeters = 2.06375; // 6'9.25"
-                this.targetWidthMeters = 0.99695; // 3'3.25"
-                this.targetHeightMeters = 0.4318; // 1'5"
-                this.tgtAreaMeters2 = this.targetWidthMeters * this.targetHeightMeters;
-                break;
-            case InfinateRechargeRedAllianceLoadingBay:
-                this.targetPos = new Pose2d(-7.9916, -1.5494, new Rotation2d()); // x: 314.63" y: 61"
-                this.targetHeightAboveGroundMeters = 0.2794; // 11"
-                this.targetWidthMeters = 0.1778; // 7"
-                this.targetHeightMeters = 0.2794; // 11"
-                this.tgtAreaMeters2 = this.targetWidthMeters * this.targetHeightMeters;
-                break;
-            case InfinateRechargeBlueAlliancePowerPort:
-                this.targetPos = new Pose2d(-7.9916, 1.7052, new Rotation2d()); // x: 314.63" y: 67.134"
-                this.targetHeightAboveGroundMeters = 2.06375; // 6'9.25"
-                this.targetWidthMeters = 0.99695; // 3'3.25"
-                this.targetHeightMeters = 0.4318; // 1'5"
-                this.tgtAreaMeters2 = this.targetWidthMeters * this.targetHeightMeters;
-                break;
-            case InfinateRechargeBlueAllianceLoadingBay:
-                this.targetPos = new Pose2d(7.9916, 1.5494, new Rotation2d()); // x: 314.63" y: 61"
-                this.targetHeightAboveGroundMeters = 0.2794; // 11"
-                this.targetWidthMeters = 0.1778; // 7"
-                this.targetHeightMeters = 0.2794; // 11"
-                this.tgtAreaMeters2 = this.targetWidthMeters * this.targetHeightMeters;
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid VisionTarget");
-        }
+        this.targetPos = visionTarget.pose;
+        this.targetHeightAboveGroundMeters = visionTarget.targetGroundHeightMeters;
+        this.targetWidthMeters = visionTarget.targetWidthMeters;
+        this.targetHeightMeters = visionTarget.targetHeightMeters;
+        this.tgtAreaMeters2 = visionTarget.targetAreaMeters2;
     }
 }
