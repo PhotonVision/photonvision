@@ -18,6 +18,9 @@ package org.photonvision.common.networking;
 
 import edu.wpi.first.util.MulticastServiceResolver;
 import edu.wpi.first.util.ServiceData;
+import edu.wpi.first.util.WPIUtilJNI;
+import org.photonvision.common.util.TimedTaskManager;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,11 +38,21 @@ public class RoborioFinder {
         List<ServiceData> retList = new ArrayList<>();
 
         if (resolver.hasImplementation()) {
-            var allData = resolver.getData();
-            for (var data : allData) {
-                if (data.getTxt().containsKey("MAC")) {
-                    retList.add(data);
-                }
+            var event = resolver.getEventHandle();
+            try {
+                var timedOut = WPIUtilJNI.waitForObjectTimeout(event, 0);
+                if (timedOut) return retList;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return retList;
+            }
+        }
+
+        var allData = resolver.getData();
+        if(allData == null) return retList;
+        for (var data : allData) {
+            if (data.getTxt().containsKey("MAC") && !retList.contains(data)) {
+                retList.add(data);
             }
         }
 
@@ -48,6 +61,8 @@ public class RoborioFinder {
 
     public void start() {
         resolver.start();
+
+        TimedTaskManager.getInstance().addTask("RoborioFinder", );
     }
 
     public void stop() {
