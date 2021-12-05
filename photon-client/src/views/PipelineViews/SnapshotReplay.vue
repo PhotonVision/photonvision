@@ -1,29 +1,29 @@
 <template>
-  <!--  <v-dialog-->
-  <!--    v-model="shown"-->
-  <!--  >-->
-  <!--    <v-card color="primary" dark height="1000px">-->
-  <!--      <v-card-title>Replay Snapshots</v-card-title>-->
   <v-row style="overflow-y: scroll; max-height: 400px;" class="ml-6 mr-6">
     <v-col
         v-for="img in snapshots"
         :key="img"
         cols="3"
     >
-      <v-btn x-small color="red" @click="deleteImage(img)">
-        <v-icon small>mdi-delete</v-icon>
-      </v-btn>
-      <img
+      <v-img
           :src="'http://localhost:5800/api/getSnapshot?path=' + img"
-          :alt="img"
-          @click="click"
-          class="align-center justify-center"
-          style="width: 100%"
-      >
+          @mouseover="registerHover(img)"
+          @mouseleave="registerHover(null)"
+          :alt="'Snapshot ' + img">
+        <v-overlay
+            absolute
+            :opacity="0.2"
+            :value="img === hovered">
+          <v-btn small color="secondary" @click="sendImage(img)">
+            <v-icon small>mdi-check</v-icon>
+          </v-btn>
+          <v-btn small color="red" @click="deleteImage(img)">
+            <v-icon small>mdi-delete</v-icon>
+          </v-btn>
+        </v-overlay>
+      </v-img>
     </v-col>
   </v-row>
-  <!--    </v-card>-->
-  <!--  </v-dialog>-->
 </template>
 
 <script>
@@ -32,17 +32,21 @@ export default {
   data() {
     return {
       shown: false,
-      snapshots: []
+      snapshots: [],
+      hovered: null,
     }
   },
   created() {
     this.show();
   },
   methods: {
-    click(e) {
-      console.log(e.target.alt)
+    registerHover(image) {
+      this.hovered = image;
     },
     deleteImage(image) {
+      console.log(image)
+    },
+    sendImage(image) {
       console.log(image)
     },
     show() {
@@ -52,7 +56,9 @@ export default {
       const camUri = '/api/allSnapshots?cam=' + this.$store.getters.cameraList[this.$store.getters.currentCameraIndex];
       this.axios.get("http://" + this.$address + camUri)
           .then((response) => {
-            this.snapshots = response.data
+            // Apparently we need this for v-images
+            this.snapshots = response.data.map(it => it.replace("\\", "/"))
+            console.log(this.snapshots)
           })
           .catch(err => console.log(err));
 
@@ -62,40 +68,5 @@ export default {
 </script>
 
 <style scoped>
-.box {
-  position: relative;
-  display: inline-block;
-  width: 200px;
-  height: 100%;
-  background-color: #fff;
-  border-radius: 5px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  -webkit-transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
 
-.box::after {
-  content: "";
-  border-radius: 5px;
-  position: absolute;
-  z-index: -1;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  opacity: 0;
-  -webkit-transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-  transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
-}
-
-.box:hover {
-  -webkit-transform: scale(1.25, 1.25);
-  transform: scale(1.25, 1.25);
-}
-
-.box:hover::after {
-  opacity: 1;
-}
 </style>
