@@ -37,6 +37,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
+import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.target.TargetModel;
 
@@ -261,12 +262,37 @@ public class RequestHandler {
         }
     }
 
+    public static void selectSnapshot(Context ctx) {
+        var idxStr = ctx.queryParam("camIdx");
+        var imgName = ctx.queryParam("imgName");
+
+        if (idxStr == null || imgName == null) {
+            logger.debug("Missing parameter(s) for selectSnapshot!");
+            ctx.status(400);
+            return;
+        }
+
+        int camIdx = -1;
+        try {
+            camIdx = Integer.parseInt(idxStr);
+        } catch (Exception e) {
+            logger.error("Failed to parse parameter for camera index");
+            ctx.status(400);
+            return;
+        }
+
+        var module = VisionModuleManager.getInstance().getModule(camIdx);
+        // TODO: do the thing
+        ctx.status(501);
+    }
+
     public static void deleteSnapshot(Context ctx) {
         var path = ctx.queryParam("path");
         if(path == null) return;
-        logger.debug("getting path at " + path);
+        logger.debug("Deleting snapshot at " + path);
         var snapshot = ConfigManager.getInstance().getSnapshotFile(path);
         if (snapshot.delete()) {
+            logger.debug("Deleted snapshot at " + path);
             ctx.status(200);
         } else {
             logger.error("Failed to delete snapshot at " + path);
@@ -274,10 +300,29 @@ public class RequestHandler {
         }
     }
 
-    public static void selectSnapshot(Context ctx) {
-        var path = ctx.queryParam("path");
-        if (path == null) return;
-        logger.debug("selecting snapshot at " + path);
-        // TODO: do the thing
+    public static void takeSnapshot(Context ctx) {
+        var idxStr = ctx.queryParam("camIdx");
+
+        if (idxStr == null) {
+            logger.error("Missing parameter for takeSnapshot!");
+            ctx.status(400);
+            return;
+        }
+
+        int camIdx;
+        try {
+            camIdx = Integer.parseInt(idxStr);
+        } catch (Exception e) {
+            logger.error("Failed to parse parameter for camera index");
+            ctx.status(400);
+            return;
+        }
+
+        var module = VisionModuleManager.getInstance().getModule(camIdx);
+        module.takeReplaySnapshot();
+        ctx.status(200);
+
+        var camName = module.getStateAsCameraConfig().nickname;
+        logger.debug("Taking snapshot for camera " + camName);
     }
 }

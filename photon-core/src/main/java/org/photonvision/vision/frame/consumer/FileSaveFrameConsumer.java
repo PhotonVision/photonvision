@@ -43,6 +43,7 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
     private final NetworkTable rootTable;
     private final Logger logger;
     private boolean prevCommand = false;
+    private boolean internalCommand = false;
     private String camNickname;
     private String fnamePrefix;
     private final long CMD_RESET_TIME_MS = 500;
@@ -70,7 +71,7 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
         if (frame != null && !frame.image.getMat().empty()) {
             if (lock.tryLock()) {
                 boolean curCommand = entry.getBoolean(false);
-                if (curCommand && !prevCommand) {
+                if (curCommand && !prevCommand || internalCommand && !prevCommand) {
                     Date now = new Date();
                     String savefile =
                             snapshotFolder
@@ -100,9 +101,14 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
         }
     }
 
+    public void save() {
+        internalCommand = true;
+    }
+
     private void resetCommand() {
         lock.lock();
         this.subTable.getEntry(ntEntryName).setBoolean(false);
+        internalCommand = false;
         lock.unlock();
     }
 

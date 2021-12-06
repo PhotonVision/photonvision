@@ -358,6 +358,10 @@ public class VisionModule {
         return ret;
     }
 
+    public void takeReplaySnapshot() {
+        inputFrameSaver.save();
+    }
+
     void setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
         pipelineManager.setIndex(index);
