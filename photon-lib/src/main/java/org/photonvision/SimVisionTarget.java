@@ -32,8 +32,8 @@ public class SimVisionTarget {
     */
     public enum VisionTarget {
         k2020REDPOWERPORT(7.9916, -1.7052, 0.0, 2.06375, 0.99695, 0.4318),
-        k2020REDLOADINGBAY(-7.9916, -1.5494, 0.0, 0.2794, 0.1778, 0.2794),
-        k2020BLUEPOWERPORT(-7.9916, 1.7052, 0.0, 2.06375, 0.99695, 0.4318),
+        k2020REDLOADINGBAY(-7.9916, -1.5494, 180.0, 0.2794, 0.1778, 0.2794),
+        k2020BLUEPOWERPORT(-7.9916, 1.7052, 180.0, 2.06375, 0.99695, 0.4318),
         k2020BLUELOADINGBAY(7.9916, 1.5494, 0.0, 0.2794, 0.1778, 0.2794);
 
         Pose2d pose;
