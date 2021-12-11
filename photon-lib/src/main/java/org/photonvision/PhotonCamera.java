@@ -55,8 +55,6 @@ public class PhotonCamera {
         pipelineIndexEntry = rootTable.getEntry("pipelineIndex");
         ledModeEntry = mainTable.getEntry("ledMode");
         versionEntry = mainTable.getEntry("version");
-
-
     }
 
     /**
@@ -106,7 +104,7 @@ public class PhotonCamera {
     * @param driverMode Whether to set driver mode.
     */
     public void setDriverMode(boolean driverMode) {
-        if (getDriverMode() != driverMode){
+        if (getDriverMode() != driverMode) {
             driverModeEntry.setBoolean(driverMode);
         }
     }
