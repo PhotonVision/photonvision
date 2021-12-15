@@ -63,7 +63,7 @@ void PhotonCamera::TakeOutputSnapshot() { outputSaveImgEntry.SetBoolean(true); }
 
 bool PhotonCamera::GetDriverMode() const {
   return driverModeEntry.GetBoolean(false);
-  }
+}
 
 void PhotonCamera::SetPipelineIndex(int index) {
   pipelineIndexEntry.SetDouble(static_cast<double>(index));
