@@ -61,13 +61,13 @@ void PhotonCamera::TakeInputSnapshot() { inputSaveImgEntry.SetBoolean(true); }
 
 void PhotonCamera::TakeOutputSnapshot() { outputSaveImgEntry.SetBoolean(true); }
 
-bool PhotonCamera::GetDriverMode() const { return driverMode; }
+bool PhotonCamera::GetDriverMode() const { return driverModeEntry.GetBoolean(false); }
 
 void PhotonCamera::SetPipelineIndex(int index) {
   pipelineIndexEntry.SetDouble(static_cast<double>(index));
 }
 
-int PhotonCamera::GetPipelineIndex() const { return pipelineIndex; }
+int PhotonCamera::GetPipelineIndex() const { return (int) pipelineIndexEntry.GetDouble(0); }
 
 LEDMode PhotonCamera::GetLEDMode() const {
   return static_cast<LEDMode>(static_cast<int>(ledModeEntry.GetDouble(-1.0)));

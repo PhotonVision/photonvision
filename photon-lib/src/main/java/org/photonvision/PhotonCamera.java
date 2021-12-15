@@ -153,17 +153,13 @@ public class PhotonCamera {
         switch (value) {
             case 0:
                 return VisionLEDMode.kOff;
-                break;
             case 1:
                 return VisionLEDMode.kOn;
-                break;
             case 2:
                 return VisionLEDMode.kBlink;
-                break;
             case -1:
             default:
                 return VisionLEDMode.kDefault;
-                break;
         }
     }
 
