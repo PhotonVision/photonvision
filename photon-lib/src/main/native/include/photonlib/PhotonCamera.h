@@ -139,8 +139,6 @@ class PhotonCamera {
   nt::NetworkTableEntry ledModeEntry;
 
   mutable Packet packet;
-
-  mutable LEDMode mode;
 };
 
 }  // namespace photonlib
