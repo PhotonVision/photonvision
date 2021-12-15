@@ -140,8 +140,6 @@ class PhotonCamera {
 
   mutable Packet packet;
 
-  bool driverMode;
-  double pipelineIndex;
   mutable LEDMode mode;
 };
 
