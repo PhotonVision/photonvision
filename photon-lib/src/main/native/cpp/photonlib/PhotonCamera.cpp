@@ -26,8 +26,7 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTable> rootTable)
       inputSaveImgEntry(rootTable->GetEntry("inputSaveImgCmd")),
       outputSaveImgEntry(rootTable->GetEntry("outputSaveImgCmd")),
       pipelineIndexEntry(rootTable->GetEntry("pipelineIndex")),
-      ledModeEntry(mainTable->GetEntry("ledMode")) {
-}
+      ledModeEntry(mainTable->GetEntry("ledMode")) {}
 
 PhotonCamera::PhotonCamera(const std::string& cameraName)
     : PhotonCamera(nt::NetworkTableInstance::GetDefault()
