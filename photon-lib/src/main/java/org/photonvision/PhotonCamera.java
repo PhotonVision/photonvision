@@ -37,8 +37,6 @@ public class PhotonCamera {
     final NetworkTable mainTable = NetworkTableInstance.getDefault().getTable("photonvision");
     private final String path;
 
-    VisionLEDMode mode;
-
     Packet packet = new Packet(1);
 
     /**
@@ -104,9 +102,7 @@ public class PhotonCamera {
     * @param driverMode Whether to set driver mode.
     */
     public void setDriverMode(boolean driverMode) {
-        if (getDriverMode() != driverMode) {
-            driverModeEntry.setBoolean(driverMode);
-        }
+        driverModeEntry.setBoolean(driverMode);
     }
 
     /**
@@ -144,9 +140,7 @@ public class PhotonCamera {
     * @param index The active pipeline index.
     */
     public void setPipelineIndex(int index) {
-        if (getPipelineIndex() != index) {
-            pipelineIndexEntry.setNumber(index);
-        }
+        pipelineIndexEntry.setNumber(index);
     }
 
     /**
@@ -158,20 +152,19 @@ public class PhotonCamera {
         int value = ledModeEntry.getNumber(-1).intValue();
         switch (value) {
             case 0:
-                mode = VisionLEDMode.kOff;
+                return VisionLEDMode.kOff;
                 break;
             case 1:
-                mode = VisionLEDMode.kOn;
+                return VisionLEDMode.kOn;
                 break;
             case 2:
-                mode = VisionLEDMode.kBlink;
+                return VisionLEDMode.kBlink;
                 break;
             case -1:
             default:
-                mode = VisionLEDMode.kDefault;
+                return VisionLEDMode.kDefault;
                 break;
         }
-        return mode;
     }
 
     /**
@@ -180,9 +173,7 @@ public class PhotonCamera {
     * @param led The mode to set to.
     */
     public void setLED(VisionLEDMode led) {
-        if (led != getLEDMode()) {
-            ledModeEntry.setNumber(led.value);
-        }
+        ledModeEntry.setNumber(led.value);
     }
 
     /**
