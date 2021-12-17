@@ -12,8 +12,6 @@ test {
     useJUnitPlatform()
 }
 
-def jniPlatforms = ['linuxaarch64bionic', 'linuxraspbian', 'linuxx86-64', 'osxx86-64', 'windowsx86-64']
-
 // Apply Java configuration
 dependencies {
     implementation project(":photon-targeting")

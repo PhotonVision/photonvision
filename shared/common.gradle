@@ -26,25 +26,13 @@ dependencies {
     implementation "edu.wpi.first.cameraserver:cameraserver-java:$wpilibVersion"
 
     implementation "edu.wpi.first.cscore:cscore-java:$wpilibVersion"
-    implementation "edu.wpi.first.cscore:cscore-jni:$wpilibVersion:linuxaarch64bionic"
-    implementation "edu.wpi.first.cscore:cscore-jni:$wpilibVersion:linuxraspbian"
-    implementation "edu.wpi.first.cscore:cscore-jni:$wpilibVersion:linuxx86-64"
-    implementation "edu.wpi.first.cscore:cscore-jni:$wpilibVersion:osxx86-64"
-    implementation "edu.wpi.first.cscore:cscore-jni:$wpilibVersion:windowsx86-64"
+    jniPlatforms.each { implementation "edu.wpi.first.cscore:cscore-jni:$wpilibVersion:$it" }
 
     implementation "edu.wpi.first.ntcore:ntcore-java:$wpilibVersion"
-    implementation "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxaarch64bionic"
-    implementation "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxraspbian"
-    implementation "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:linuxx86-64"
-    implementation "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:osxx86-64"
-    implementation "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:windowsx86-64"
+    jniPlatforms.each { implementation "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:$it" }
 
     implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-java:$opencvVersion"
-    implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-jni:$opencvVersion:linuxaarch64bionic"
-    implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-jni:$opencvVersion:linuxraspbian"
-    implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-jni:$opencvVersion:linuxx86-64"
-    implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-jni:$opencvVersion:osxx86-64"
-    implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-jni:$opencvVersion:windowsx86-64"
+    jniPlatforms.each { implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-jni:$opencvVersion:$it" }
 
     implementation "edu.wpi.first.wpimath:wpimath-java:2022.1.1-beta-2"
     implementation "org.ejml:ejml-simple:0.41"

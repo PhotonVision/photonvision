@@ -14,6 +14,13 @@ If you are interested in contributing code or documentation to the project, plea
   <img src="https://contrib.rocks/image?repo=PhotonVision/photonvision" />
 </a>
 
+## Gradle Arguments
+
+Note that these are case sensitive!
+
+* `-Ppionly`: only builds for `linuxraspbian`, which reduces JAR size. The JAR name will have "-raspi" appended.
+- `-PtgtIp`: deploys (builds and copies the JAR) to the coprocessor at the specified IP
+- `-Pprofile`: enables JVM profiling
 
 ## Acknowledgments
 PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/). Thank you to everyone who worked on the original project.
