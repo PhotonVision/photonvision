@@ -46,7 +46,11 @@ public enum Platform {
 
     private static final String OS_NAME = System.getProperty("os.name");
     private static final String OS_ARCH = System.getProperty("os.arch");
-    public static final Platform CurrentPlatform = getCurrentPlatform();
+
+    // These are querried on init and should never change after
+    public static final Platform currentPlatform = getCurrentPlatform();
+    protected static final String currentPiVersionStr = getPiVersionString();
+    public static final PiVersion currentPiVersion = PiVersion.getPiVersion();
 
     private static String UnknownPlatformString =
             String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
@@ -62,7 +66,7 @@ public enum Platform {
     }
 
     public static boolean isRaspberryPi() {
-        return CurrentPlatform.equals(LINUX_RASPBIAN);
+        return currentPlatform.equals(LINUX_RASPBIAN);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -114,5 +118,23 @@ public enum Platform {
         } else {
             return this.value;
         }
+    }
+
+    // Querry /proc/device-tree/model. This should return the model of the pi
+    // Versions here:
+    // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/arch/arm/boot/dts/bcm2710-rpi-cm3.dts
+    private static String getPiVersionString() {
+        if (!isRaspberryPi()) return "";
+        try {
+            shell.executeBashCommand("cat /proc/device-tree/model");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (shell.getExitCode() == 0) {
+            // We expect it to be in the format "raspberry pi X model X"
+            return shell.getOutput();
+        }
+
+        return "";
     }
 }
