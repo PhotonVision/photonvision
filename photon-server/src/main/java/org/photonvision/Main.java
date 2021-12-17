@@ -169,7 +169,8 @@ public class Main {
                 "Starting PhotonVision version "
                         + PhotonVersion.versionString
                         + " on "
-                        + Platform.CurrentPlatform.toString());
+                        + Platform.currentPlatform.toString()
+                        + (Platform.isRaspberryPi() ? (" (Pi " + Platform.currentPiVersion.name() + ")") : ""));
 
         try {
             CameraServerCvJNI.forceLoad();
