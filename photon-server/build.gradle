@@ -24,7 +24,9 @@ dependencies {
 
 shadowJar {
     configurations = [project.configurations.runtimeClasspath]
-    archiveFileName.set("photonvision-${project.version}.jar")
+    String name = "photonvision-${project.version}"
+    if(project.hasProperty('pionly')) name += "-raspi"
+    archiveFileName.set("${name}.jar")
 }
 
 task runNpmOnClient(type: Exec) {
