@@ -264,15 +264,15 @@ public class RequestHandler {
 
     public static void selectSnapshot(Context ctx) {
         var idxStr = ctx.queryParam("camIdx");
-        var imgName = ctx.queryParam("imgName");
+        var imgPath = ctx.queryParam("imgName");
 
-        if (idxStr == null || imgName == null) {
+        if (idxStr == null || imgPath == null) {
             logger.debug("Missing parameter(s) for selectSnapshot!");
             ctx.status(400);
             return;
         }
 
-        int camIdx = -1;
+        int camIdx;
         try {
             camIdx = Integer.parseInt(idxStr);
         } catch (Exception e) {

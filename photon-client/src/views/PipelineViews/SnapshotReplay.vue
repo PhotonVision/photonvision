@@ -59,7 +59,7 @@ export default {
     },
     sendImage(image) {
       console.log(image)
-      this.axios.get("http://" + this.$address + "/api/selectSnapshot?path=" + image)
+      this.axios.post("http://" + this.$address + "/api/selectSnapshot?camIdx=" + this.$store.getters.currentCameraIndex + "&imgName=" + image)
           .then(() => {
           })
           .catch(err => console.log(err));
@@ -73,6 +73,7 @@ export default {
           .then((response) => {
             // Apparently we need this for v-images
             this.snapshots = response.data.map(it => it.replace("\\", "/"))
+            console.log(this.snapshots)
           })
           .catch(err => console.log(err));
     }

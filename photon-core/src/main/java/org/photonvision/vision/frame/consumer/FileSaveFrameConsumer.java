@@ -87,6 +87,7 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
 
                     // Help the user a bit - set the NT entry back to false after 500ms
                     TimedTaskManager.getInstance().addOneShotTask(this::resetCommand, CMD_RESET_TIME_MS);
+                    internalCommand = false;
 
                     logger.info("Saved new image at " + savefile);
                 } else if (!curCommand) {

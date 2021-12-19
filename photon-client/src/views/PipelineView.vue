@@ -99,11 +99,10 @@
                   />
                   <v-btn
                       color="secondary"
-                      @click="toggleReplay()"
+                      @click="takeSnapshot()"
                       class="ml-3"
-                      :disabled="!replaySnapshots"
                   >
-                    Choose Snapshots
+                    Take Snapshot
                   </v-btn>
                 </v-row>
               </v-col>
@@ -474,8 +473,22 @@ export default {
             this.$refs.snapshotReplayDialog.show();
           // this.replaySnapshots = true
         },
-        reloadStreams() {
-            // Reload the streams as we technically close and reopen them
+        takeSnapshot() {
+            // this.$refs.snapshotReplayDialog.show();
+            // this.replaySnapshots = true
+            const camIdx = this.$store.getters.currentCameraIndex
+            const url = "http://" + this.$address + "/api/takeSnapshot?camIdx=" + camIdx
+          console.log(url)
+            this.axios.post(url).then(
+                function (response) {
+                    console.log(response)
+                },
+                function (error) {
+                    console.log(error)
+                })
+        },
+      reloadStreams() {
+        // Reload the streams as we technically close and reopen them
             this.$refs.streams.forEach(it => it.reload())
         },
         onImageClick(event) {
