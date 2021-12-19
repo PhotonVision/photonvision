@@ -7,7 +7,7 @@ evaluationDependsOn(':photon-core')
 mainClassName = 'org.photonvision.Main'
 
 group 'org.photonvision'
-version versionString
+version versionString + (project.hasProperty('pionly') ? "-raspi" : "")
 
 apply from: "${rootDir}/shared/common.gradle"
 
@@ -25,7 +25,6 @@ dependencies {
 shadowJar {
     configurations = [project.configurations.runtimeClasspath]
     String name = "photonvision-${project.version}"
-    if(project.hasProperty('pionly')) name += "-raspi"
     archiveFileName.set("${name}.jar")
 }
 
@@ -94,7 +93,7 @@ task findDeployTarget {
                 boolean canContact = false;
                 try {
                     InetAddress testAddr = InetAddress.getByName(testRmt.host)
-                    canContact = testAddr.isReachable(5000)
+                    canContact = testAddr.isReachable(2000)
                 } catch(UnknownHostException e) {
                     canContact = false;
                 }

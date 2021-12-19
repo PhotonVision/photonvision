@@ -457,7 +457,11 @@ public class VisionModule {
             internalMap.put("width", videoModes.get(k).width);
             internalMap.put("height", videoModes.get(k).height);
             internalMap.put("fps", videoModes.get(k).fps);
-            internalMap.put("pixelFormat", videoModes.get(k).pixelFormat.toString());
+            internalMap.put(
+                    "pixelFormat",
+                    ((videoModes.get(k) instanceof ZeroCopyPicamSource.FPSRatedVideoMode)
+                            ? "kPicam"
+                            : videoModes.get(k).pixelFormat.toString()).substring(1)); // Remove the k prefix
 
             temp.put(k, internalMap);
         }
