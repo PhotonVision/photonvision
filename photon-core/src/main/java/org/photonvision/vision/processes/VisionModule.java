@@ -460,8 +460,9 @@ public class VisionModule {
             internalMap.put(
                     "pixelFormat",
                     ((videoModes.get(k) instanceof ZeroCopyPicamSource.FPSRatedVideoMode)
-                            ? "kPicam"
-                            : videoModes.get(k).pixelFormat.toString()).substring(1)); // Remove the k prefix
+                                    ? "kPicam"
+                                    : videoModes.get(k).pixelFormat.toString())
+                            .substring(1)); // Remove the k prefix
 
             temp.put(k, internalMap);
         }
