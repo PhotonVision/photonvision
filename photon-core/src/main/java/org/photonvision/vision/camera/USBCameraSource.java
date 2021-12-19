@@ -174,7 +174,18 @@ public class USBCameraSource extends VisionSource {
                 videoModes = new HashMap<>();
                 List<VideoMode> videoModesList = new ArrayList<>();
                 try {
-                    var modes = camera.enumerateVideoModes();
+                    VideoMode[] modes;
+                    if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                        modes =
+                                new VideoMode[] {
+                                    new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 90),
+                                    new VideoMode(VideoMode.PixelFormat.kBGR, 960, 720, 15),
+                                    new VideoMode(VideoMode.PixelFormat.kBGR, 1280, 720, 4),
+                                    new VideoMode(VideoMode.PixelFormat.kBGR, 1920, 1080, 1),
+                                };
+                    } else {
+                        modes = camera.enumerateVideoModes();
+                    }
                     for (int i = 0; i < modes.length; i++) {
                         var videoMode = modes[i];
 
@@ -232,24 +243,6 @@ public class USBCameraSource extends VisionSource {
                         ConfigManager.getInstance().getConfig().getHardwareConfig().blacklistedResIndices;
                 for (int badIdx : indexBlacklist) {
                     sortedList.remove(badIdx);
-                }
-
-                // Filter bogus modes on picam
-                if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                    sortedList.removeIf(
-                            it ->
-                                    (it.width == 1296
-                                                    && it.height == 730
-                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR)
-                                            || (it.width == 1296
-                                                    && it.height == 972
-                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR)
-                                            || (it.width == 2592
-                                                    && it.height == 1944
-                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR)
-                                            || (it.width == 160
-                                                    && it.height == 120
-                                                    && it.pixelFormat == VideoMode.PixelFormat.kBGR));
                 }
 
                 for (VideoMode videoMode : sortedList) {
