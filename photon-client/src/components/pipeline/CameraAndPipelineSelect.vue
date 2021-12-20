@@ -141,7 +141,7 @@
         cols="10"
         md="5"
         lg="10"
-        class="pt-0 pb-0 pl-6 ml-16"
+        class="pt-0 pb-0 pl-6"
       >
         <CVselect
           v-model="currentPipelineType"
