@@ -141,7 +141,7 @@
         cols="10"
         md="5"
         lg="10"
-        class="pt-0 pb-0 pl-6 ml-16"
+        class="pt-0 pb-0 pl-6"
       >
         <CVselect
           v-model="currentPipelineType"
@@ -173,15 +173,15 @@
         <v-card-text>
           <CVinput
             v-model="newPipelineName"
-            name="Pipeline"
+            name="Name"
             :error-message="checkPipelineName"
           />
-          <CVselect
-            v-model="newPipelineType"
-            name="Pipeline Type"
-            :list="['Reflective', 'Shape']"
-            :disabled="isPipelineNameEdit"
-          />
+<!--          <CVselect-->
+<!--            v-model="currentPipelineType"-->
+<!--            name="Pipeline Type"-->
+<!--            :list="['Reflective', 'Shape']"-->
+<!--            :disabled="true"-->
+<!--          />-->
         </v-card-text>
         <v-divider />
         <v-card-actions>
@@ -263,7 +263,6 @@ export default {
       isPipelineNameEdit: false,
       namingDialog: false,
       newPipelineName: "",
-      newPipelineType: 0,
       duplicateDialog: false,
       showPipeTypeDialog: false,
       proposedPipelineType : 0,
