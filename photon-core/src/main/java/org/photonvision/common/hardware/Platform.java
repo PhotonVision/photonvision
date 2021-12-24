@@ -46,7 +46,7 @@ public enum Platform {
     private static final String OS_NAME = System.getProperty("os.name");
     private static final String OS_ARCH = System.getProperty("os.arch");
 
-    // These are querried on init and should never change after
+    // These are queried on init and should never change after
     public static final Platform currentPlatform = getCurrentPlatform();
     protected static final String currentPiVersionStr = getPiVersionString();
     public static final PiVersion currentPiVersion = PiVersion.getPiVersion();
