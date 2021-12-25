@@ -179,9 +179,10 @@ public class USBCameraSource extends VisionSource {
                         modes =
                                 new VideoMode[] {
                                     new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 90),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 960, 720, 15),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 1280, 720, 4),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 1920, 1080, 1),
+                                    new VideoMode(VideoMode.PixelFormat.kBGR, 640, 480, 90),
+                                    new VideoMode(VideoMode.PixelFormat.kBGR, 960, 720, 60),
+                                    new VideoMode(VideoMode.PixelFormat.kBGR, 1280, 720, 45),
+                                    new VideoMode(VideoMode.PixelFormat.kBGR, 1920, 1080, 20),
                                 };
                     } else {
                         modes = camera.enumerateVideoModes();
