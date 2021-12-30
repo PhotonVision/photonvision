@@ -37,10 +37,6 @@ public class PhotonCamera {
     final NetworkTable mainTable = NetworkTableInstance.getDefault().getTable("photonvision");
     private final String path;
 
-    boolean driverMode;
-    int pipelineIndex;
-    VisionLEDMode mode;
-
     Packet packet = new Packet(1);
 
     /**
@@ -57,10 +53,6 @@ public class PhotonCamera {
         pipelineIndexEntry = rootTable.getEntry("pipelineIndex");
         ledModeEntry = mainTable.getEntry("ledMode");
         versionEntry = mainTable.getEntry("version");
-
-        driverMode = driverModeEntry.getBoolean(false);
-        pipelineIndex = pipelineIndexEntry.getNumber(0).intValue();
-        getLEDMode();
     }
 
     /**
@@ -101,7 +93,7 @@ public class PhotonCamera {
     * @return Whether the camera is in driver mode.
     */
     public boolean getDriverMode() {
-        return driverMode;
+        return driverModeEntry.getBoolean(false);
     }
 
     /**
@@ -110,10 +102,7 @@ public class PhotonCamera {
     * @param driverMode Whether to set driver mode.
     */
     public void setDriverMode(boolean driverMode) {
-        if (this.driverMode != driverMode) {
-            this.driverMode = driverMode;
-            driverModeEntry.setBoolean(this.driverMode);
-        }
+        driverModeEntry.setBoolean(driverMode);
     }
 
     /**
@@ -142,7 +131,7 @@ public class PhotonCamera {
     * @return The active pipeline index.
     */
     public int getPipelineIndex() {
-        return pipelineIndex;
+        return pipelineIndexEntry.getNumber(0).intValue();
     }
 
     /**
@@ -151,10 +140,7 @@ public class PhotonCamera {
     * @param index The active pipeline index.
     */
     public void setPipelineIndex(int index) {
-        if (pipelineIndex != index) {
-            pipelineIndex = index;
-            pipelineIndexEntry.setNumber(pipelineIndex);
-        }
+        pipelineIndexEntry.setNumber(index);
     }
 
     /**
@@ -166,20 +152,15 @@ public class PhotonCamera {
         int value = ledModeEntry.getNumber(-1).intValue();
         switch (value) {
             case 0:
-                mode = VisionLEDMode.kOff;
-                break;
+                return VisionLEDMode.kOff;
             case 1:
-                mode = VisionLEDMode.kOn;
-                break;
+                return VisionLEDMode.kOn;
             case 2:
-                mode = VisionLEDMode.kBlink;
-                break;
+                return VisionLEDMode.kBlink;
             case -1:
             default:
-                mode = VisionLEDMode.kDefault;
-                break;
+                return VisionLEDMode.kDefault;
         }
-        return mode;
     }
 
     /**
@@ -188,9 +169,7 @@ public class PhotonCamera {
     * @param led The mode to set to.
     */
     public void setLED(VisionLEDMode led) {
-        if (led != mode) {
-            ledModeEntry.setNumber(led.value);
-        }
+        ledModeEntry.setNumber(led.value);
     }
 
     /**

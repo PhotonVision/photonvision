@@ -27,6 +27,12 @@ ext {
     joglVersion = "2.4.0-rc-20200307"
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
+
+
+    jniPlatforms = project.hasProperty('pionly') ? ['linuxraspbian']
+        : ['linuxaarch64bionic', 'linuxraspbian', 'linuxx86-64', 'osxx86-64', 'windowsx86-64']
+
+    println("Building for archs " + jniPlatforms)
 }
 
 spotless {

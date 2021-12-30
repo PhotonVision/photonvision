@@ -22,6 +22,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -83,7 +84,12 @@ public class PicamJNI {
     }
 
     public static boolean isSupported() {
-        return libraryLoaded && !isVCSMSupported() && getSensorModel() != SensorModel.Disconnected;
+        return libraryLoaded
+                && !isVCSMSupported()
+                && getSensorModel() != SensorModel.Disconnected
+                && Platform.isRaspberryPi()
+                && (Platform.currentPiVersion == PiVersion.PI_3
+                        || Platform.currentPiVersion == PiVersion.COMPUTE_MODULE_3);
     }
 
     public static SensorModel getSensorModel() {

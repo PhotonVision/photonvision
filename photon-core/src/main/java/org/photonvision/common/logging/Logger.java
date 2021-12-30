@@ -125,8 +125,9 @@ public class Logger {
     }
 
     public static void cleanLogs(Path folderToClean) {
-        LinkedList<File> logFileList =
-                new LinkedList<>(Arrays.asList(folderToClean.toFile().listFiles()));
+        File[] logs = folderToClean.toFile().listFiles();
+        if (logs == null) return;
+        LinkedList<File> logFileList = new LinkedList<>(Arrays.asList(logs));
         HashMap<File, Date> logFileStartDateMap = new HashMap<>();
 
         // Remove any files from the list for which we can't parse a start date from their name.

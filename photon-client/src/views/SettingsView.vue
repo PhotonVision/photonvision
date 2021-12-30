@@ -49,6 +49,7 @@
             return {
                 selectedTab: 0,
                 snack: false,
+                calibrationInProgress: false,
                 snackbar: {
                   color: "accent",
                   text: ""

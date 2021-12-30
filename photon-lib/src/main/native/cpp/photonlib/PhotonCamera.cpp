@@ -26,11 +26,7 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTable> rootTable)
       inputSaveImgEntry(rootTable->GetEntry("inputSaveImgCmd")),
       outputSaveImgEntry(rootTable->GetEntry("outputSaveImgCmd")),
       pipelineIndexEntry(rootTable->GetEntry("pipelineIndex")),
-      ledModeEntry(mainTable->GetEntry("ledMode")) {
-  driverMode = driverModeEntry.GetBoolean(false);
-  pipelineIndex = static_cast<int>(pipelineIndexEntry.GetDouble(0.0));
-  mode = GetLEDMode();
-}
+      ledModeEntry(mainTable->GetEntry("ledMode")) {}
 
 PhotonCamera::PhotonCamera(const std::string& cameraName)
     : PhotonCamera(nt::NetworkTableInstance::GetDefault()
@@ -58,36 +54,30 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() const {
 }
 
 void PhotonCamera::SetDriverMode(bool driverMode) {
-  if (this->driverMode != driverMode) {
-    this->driverMode = driverMode;
-    driverModeEntry.SetBoolean(this->driverMode);
-  }
+  driverModeEntry.SetBoolean(driverMode);
 }
 
 void PhotonCamera::TakeInputSnapshot() { inputSaveImgEntry.SetBoolean(true); }
 
 void PhotonCamera::TakeOutputSnapshot() { outputSaveImgEntry.SetBoolean(true); }
 
-bool PhotonCamera::GetDriverMode() const { return driverMode; }
+bool PhotonCamera::GetDriverMode() const {
+  return driverModeEntry.GetBoolean(false);
+}
 
 void PhotonCamera::SetPipelineIndex(int index) {
-  if (index != pipelineIndex) {
-    pipelineIndex = index;
-    pipelineIndexEntry.SetDouble(static_cast<double>(pipelineIndex));
-  }
+  pipelineIndexEntry.SetDouble(static_cast<double>(index));
 }
 
-int PhotonCamera::GetPipelineIndex() const { return pipelineIndex; }
+int PhotonCamera::GetPipelineIndex() const {
+  return static_cast<int>(pipelineIndexEntry.GetDouble(0));
+}
 
 LEDMode PhotonCamera::GetLEDMode() const {
-  mode = static_cast<LEDMode>(static_cast<int>(ledModeEntry.GetDouble(-1.0)));
-  return mode;
+  return static_cast<LEDMode>(static_cast<int>(ledModeEntry.GetDouble(-1.0)));
 }
 
-void PhotonCamera::SetLEDMode(LEDMode led) {
-  if (led != mode) {
-    mode = led;
-    ledModeEntry.SetDouble(static_cast<double>(static_cast<int>(mode)));
-  }
+void PhotonCamera::SetLEDMode(LEDMode mode) {
+  ledModeEntry.SetDouble(static_cast<double>(static_cast<int>(mode)));
 }
 }  // namespace photonlib

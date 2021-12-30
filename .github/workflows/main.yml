@@ -148,43 +148,6 @@ jobs:
           ./gradlew spotlessCheck
 
 
-  photon-release:
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [photon-build-package]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: jar
-
-      - run: |
-          NEW_JAR=$(realpath $(find . -name photonvision\*.jar))
-          sudo apt install unzip zip
-          curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/latest | grep "browser_download_url.*zip" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
-          FILE_NAME=$(ls | grep image_*.zip)
-          unzip $FILE_NAME
-          IMAGE_FILE=$(ls | grep *.img)
-          TMP=$(mktemp -d)
-          LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
-          sudo mount ${LOOP}p2 $TMP
-          pushd .
-          cd $TMP/opt/photonvision
-          ls
-          sudo cp $NEW_JAR photonvision.jar
-          popd
-          sudo umount ${TMP}
-          sudo rmdir ${TMP}
-          rm $FILE_NAME
-          NEW_IMAGE=$(basename "${NEW_JAR/jar/img}")
-          mv $IMAGE_FILE $NEW_IMAGE
-          zip -r $(basename "${NEW_JAR/.jar/-image.zip}") $NEW_IMAGE
-          rm $NEW_IMAGE
-
-      - uses: softprops/action-gh-release@v1
-        with:
-          files: '**/*'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   #  Building photonlib
   photonlib-build-host:
@@ -316,34 +279,18 @@ jobs:
           name: built-docs
           path: photon-server/src/main/resources/web/docs
 
-      # Build fat jar.
+      # Build fat jar for both pi and everything
       - run: |
           chmod +x gradlew
           ./gradlew photon-server:shadowJar --max-workers 1
+          ./gradlew photon-server:shadowJar --max-workers 1 -Ppionly
 
+      # The image will only pull the Pi JAR in
       - name: Generate image
+        if: github.event_name != 'pull_request'
         run: |
-          NEW_JAR=$(realpath $(find . -name photonvision\*.jar))
-          sudo apt install unzip zip
-          curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/latest | grep "browser_download_url.*zip" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
-          FILE_NAME=$(ls | grep image_*.zip)
-          unzip $FILE_NAME
-          IMAGE_FILE=$(ls | grep *.img)
-          TMP=$(mktemp -d)
-          LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
-          sudo mount ${LOOP}p2 $TMP
-          pushd .
-          cd $TMP/opt/photonvision
-          ls
-          sudo cp $NEW_JAR photonvision.jar
-          popd
-          sudo umount ${TMP}
-          sudo rmdir ${TMP}
-          rm $FILE_NAME
-          NEW_IMAGE=$(basename "${NEW_JAR/jar/img}")
-          mv $IMAGE_FILE $NEW_IMAGE
-          zip -r $(basename "${NEW_JAR/.jar/-image.zip}") $NEW_IMAGE
-          rm $NEW_IMAGE
+          chmod +x scripts/generatePiImage.sh
+          ./scripts/generatePiImage.sh
 
       # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@master
@@ -364,3 +311,24 @@ jobs:
             photon-server/build/libs/*.jar
             photonvision*.zip
         if: github.event_name == 'push'
+
+  photon-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [photon-build-package]
+    runs-on: ubuntu-latest
+    steps:
+      # This *should* pull in fat and pi-only jars
+      - uses: actions/download-artifact@v2
+        with:
+          name: jar
+
+      - run: |
+          chmod +x scripts/generatePiImage.sh
+          ./scripts/generatePiImage.sh
+
+      # All we've downloaded (ideally) is the fat jar, pi jar, and image. So just upload it all
+      - uses: softprops/action-gh-release@v1
+        with:
+          files: '**/*'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
