@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
@@ -60,7 +61,7 @@ public class FileUtils {
     public static void deleteFile(Path path) {
         try {
             Files.delete(path);
-        } catch (FileNotFoundException fe) {
+        } catch (FileNotFoundException | NoSuchFileException fe) {
             logger.warn("Tried to delete file \"" + path + "\" but it did not exist");
         } catch (IOException e) {
             logger.error("Exception deleting file \"" + path + "\"!", e);
