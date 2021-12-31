@@ -89,7 +89,8 @@ public class PicamJNI {
                 && getSensorModel() != SensorModel.Disconnected
                 && Platform.isRaspberryPi()
                 && (Platform.currentPiVersion == PiVersion.PI_3
-                        || Platform.currentPiVersion == PiVersion.COMPUTE_MODULE_3);
+                        || Platform.currentPiVersion == PiVersion.COMPUTE_MODULE_3
+                        || Platform.currentPiVersion == PiVersion.ZERO_2_W);
     }
 
     public static SensorModel getSensorModel() {
