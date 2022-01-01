@@ -185,8 +185,7 @@ public class NetworkTablesManager {
         logger.info("Starting NT Client");
         ntInstance.stopServer();
 
-        //        ntInstance.startClientTeam(teamNumber);
-        ntInstance.startClient("localhost");
+        ntInstance.startClientTeam(teamNumber);
         ntInstance.startDSClient();
         if (ntInstance.isConnected()) {
             logger.info("[NetworkTablesManager] Connected to the robot!");
