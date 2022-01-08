@@ -8,10 +8,10 @@ nativeUtils.withBionic()
 nativeUtils.wpi.configureDependencies {
     wpiVersion = wpilibVersion
     wpimathVersion = wpilibVersion
-    niLibVersion = "2022.2.2"
+    niLibVersion = "2022.2.3"
     opencvVersion = "4.5.2-1"
     googleTestVersion = "1.9.0-5-437e100-1"
-    imguiVersion = "1.82-1"
+    imguiVersion = "1.86-1"
 }
 
 // Configure warnings and errors

@@ -1,10 +1,10 @@
 plugins {
-    id "com.diffplug.gradle.spotless" version "3.28.0"
-    id "com.github.johnrengelman.shadow" version "5.2.0"
-    id "com.github.node-gradle.node" version "2.2.4" apply false
+    id "com.diffplug.spotless" version "6.0.5"
+    id "com.github.johnrengelman.shadow" version "7.1.1"
+    id "com.github.node-gradle.node" version "3.1.1" apply false
     id "edu.wpi.first.GradleJni" version "1.0.0"
-    id "edu.wpi.first.GradleVsCode" version "1.0.0"
-    id "edu.wpi.first.NativeUtils" version "2022.4.4" apply false
+    id "edu.wpi.first.GradleVsCode" version "1.1.0"
+    id "edu.wpi.first.NativeUtils" version "2022.8.1" apply false
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
     id "org.hidetake.ssh" version "2.10.1"
 }
@@ -22,7 +22,7 @@ allprojects {
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2022.1.1-rc-1"
+    wpilibVersion = "2022.1.1"
     opencvVersion = "4.5.2-1"
     joglVersion = "2.4.0-rc-20200307"
     pubVersion = versionString
@@ -37,11 +37,13 @@ ext {
 
 spotless {
     java {
+        toggleOffOn()
         googleJavaFormat()
-        paddedCell()
         indentWithTabs(2)
         indentWithSpaces(4)
         removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
     }
     java {
         target "**/*.java"

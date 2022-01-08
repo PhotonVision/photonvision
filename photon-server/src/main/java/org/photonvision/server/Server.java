@@ -17,6 +17,7 @@
 package org.photonvision.server;
 
 import io.javalin.Javalin;
+import io.javalin.http.staticfiles.Location;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -28,7 +29,7 @@ public class Server {
                 Javalin.create(
                         config -> {
                             config.showJavalinBanner = false;
-                            config.addStaticFiles("web");
+                            config.addStaticFiles("web", Location.CLASSPATH);
                             config.enableCorsForAllOrigins();
 
                             config.requestLogger(

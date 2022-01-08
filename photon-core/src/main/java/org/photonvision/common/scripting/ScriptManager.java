@@ -65,8 +65,7 @@ public class ScriptManager {
 
         private void handleEvent(ScriptEventType eventType) {
             var toRun =
-                    events
-                            .parallelStream()
+                    events.parallelStream()
                             .filter(e -> e.config.eventType == eventType)
                             .findFirst()
                             .orElse(null);
