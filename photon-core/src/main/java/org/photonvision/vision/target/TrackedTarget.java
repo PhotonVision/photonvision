@@ -28,7 +28,7 @@ import org.photonvision.vision.opencv.*;
 
 public class TrackedTarget implements Releasable {
     public final Contour m_mainContour;
-    List<Contour> m_subContours; // can be empty
+    public List<Contour> m_subContours; // can be empty
 
     private MatOfPoint2f m_approximateBoundingPolygon;
 

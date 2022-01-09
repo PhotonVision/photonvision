@@ -16,20 +16,26 @@
  */
 package org.photonvision.common.dataflow.networktables;
 
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import org.opencv.core.Point;
+import org.photonvision.common.dataflow.CVPipelineResultConsumer;
+import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.targeting.TargetCorner;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TrackedTarget;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.photonvision.common.dataflow.CVPipelineResultConsumer;
-import org.photonvision.common.dataflow.structures.Packet;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.target.TrackedTarget;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
@@ -209,9 +215,14 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     public static List<PhotonTrackedTarget> simpleFromTrackedTargets(List<TrackedTarget> targets) {
         var ret = new ArrayList<PhotonTrackedTarget>();
         for (var t : targets) {
-            ret.add(
-                    new PhotonTrackedTarget(
-                            t.getYaw(), t.getPitch(), t.getArea(), t.getSkew(), t.getCameraToTarget()));
+            var points = new Point[4];
+            t.getMinAreaRect().points(points);
+            var cornerList = new ArrayList<TargetCorner>();
+
+            for(int i = 0; i < 4; i++) cornerList.add(new TargetCorner(points[i].x, points[i].y));
+
+            ret.add(new PhotonTrackedTarget(t.getYaw(), t.getPitch(), t.getArea(), t.getSkew(),
+                    t.getCameraToTarget(), cornerList));
         }
         return ret;
     }
