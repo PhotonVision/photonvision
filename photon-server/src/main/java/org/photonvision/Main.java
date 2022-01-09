@@ -175,10 +175,11 @@ public class Main {
         var fvs2019 = new FileVisionSource(camConf2019);
         var fvs2020 = new FileVisionSource(camConf2020);
         var fvs2022 = new FileVisionSource(camConf2022);
-        collectedSources.add(fvsShape);
-        collectedSources.add(fvs2019);
-        collectedSources.add(fvs2020);
+
         collectedSources.add(fvs2022);
+        collectedSources.add(fvsShape);
+        collectedSources.add(fvs2020);
+        collectedSources.add(fvs2019);
 
         VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
         ConfigManager.getInstance().addCameraConfigurations(collectedSources);

@@ -154,7 +154,8 @@ public class TestUtils {
     }
 
     private static Path getResourcesFolderPath(boolean testMode) {
-        return Path.of("../test-resources").toAbsolutePath();
+        System.out.println("CWD: " + Path.of("").toAbsolutePath().toString());
+        return Path.of(testMode ? "" : "../" + "test-resources").toAbsolutePath();
     }
 
     public static Path getTestMode2019ImagePath() {
