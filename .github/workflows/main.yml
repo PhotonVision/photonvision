@@ -302,7 +302,7 @@ jobs:
           name: image
           path: photonvision*.zip
 
-      - uses: eine/tip@master
+      - uses: pyTooling/Actions/releaser@r0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           tag: 'Dev'
@@ -322,9 +322,10 @@ jobs:
         with:
           name: jar
 
-      - run: |
-          chmod +x scripts/generatePiImage.sh
-          ./scripts/generatePiImage.sh
+      # And the image we made previously
+      - uses: actions/download-artifact@v2
+        with:
+          name: image
 
       # All we've downloaded (ideally) is the fat jar, pi jar, and image. So just upload it all
       - uses: softprops/action-gh-release@v1
