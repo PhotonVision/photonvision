@@ -87,62 +87,99 @@ public class Main {
     }
 
     private static void addTestModeSources() {
-        var collectedSources = new ArrayList<VisionSource>();
+        ConfigManager.getInstance().load();
 
         var camConf2019 =
-                new CameraConfiguration("WPI2019", TestUtils.getTestMode2019ImagePath().toString());
-        camConf2019.FOV = TestUtils.WPI2019Image.FOV;
-        camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2019");
+        if (camConf2019 == null) {
+            camConf2019 =
+                    new CameraConfiguration("WPI2019", TestUtils.getTestMode2019ImagePath().toString());
+            camConf2019.FOV = TestUtils.WPI2019Image.FOV;
+            camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
-        var pipeline2019 = new ReflectivePipelineSettings();
-        pipeline2019.pipelineNickname = "CargoShip";
-        pipeline2019.targetModel = TargetModel.k2019DualTarget;
-        pipeline2019.outputShowMultipleTargets = true;
-        pipeline2019.contourGroupingMode = ContourGroupingMode.Dual;
+            var pipeline2019 = new ReflectivePipelineSettings();
+            pipeline2019.pipelineNickname = "CargoShip";
+            pipeline2019.targetModel = TargetModel.k2019DualTarget;
+            pipeline2019.outputShowMultipleTargets = true;
+            pipeline2019.contourGroupingMode = ContourGroupingMode.Dual;
+            pipeline2019.inputShouldShow = true;
 
-        var psList2019 = new ArrayList<CVPipelineSettings>();
-        psList2019.add(pipeline2019);
-
-        var fvs2019 = new FileVisionSource(camConf2019);
+            var psList2019 = new ArrayList<CVPipelineSettings>();
+            psList2019.add(pipeline2019);
+            camConf2019.pipelineSettings = psList2019;
+        }
 
         var camConf2020 =
-                new CameraConfiguration("WPI2020", TestUtils.getTestMode2020ImagePath().toString());
-        camConf2020.FOV = TestUtils.WPI2020Image.FOV;
-        camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2020");
+        if (camConf2020 == null) {
+            camConf2020 =
+                    new CameraConfiguration("WPI2020", TestUtils.getTestMode2020ImagePath().toString());
+            camConf2020.FOV = TestUtils.WPI2020Image.FOV;
+            camConf2020.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
-        var pipeline2020 = new ReflectivePipelineSettings();
-        pipeline2020.pipelineNickname = "OuterPort";
-        pipeline2020.targetModel = TargetModel.k2020HighGoalOuter;
-        camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs(true));
+            var pipeline2020 = new ReflectivePipelineSettings();
+            pipeline2020.pipelineNickname = "OuterPort";
+            pipeline2020.targetModel = TargetModel.k2020HighGoalOuter;
+            camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs(true));
+            pipeline2020.inputShouldShow = true;
 
-        var psList2020 = new ArrayList<CVPipelineSettings>();
-        psList2020.add(pipeline2020);
+            var psList2020 = new ArrayList<CVPipelineSettings>();
+            psList2020.add(pipeline2020);
+            camConf2020.pipelineSettings = psList2020;
+        }
 
-        var fvs2020 = new FileVisionSource(camConf2020);
+        var camConf2022 =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2022");
+        if (camConf2022 == null) {
+            camConf2022 =
+                    new CameraConfiguration("WPI2022", TestUtils.getTestMode2022ImagePath().toString());
+            camConf2022.FOV = TestUtils.WPI2022Image.FOV;
+            camConf2022.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
-        fvs2019.getCameraConfiguration().pipelineSettings = psList2019;
-        fvs2020.getCameraConfiguration().pipelineSettings = psList2020;
-        collectedSources.add(fvs2019);
-        collectedSources.add(fvs2020);
+            var pipeline2022 = new ReflectivePipelineSettings();
+            pipeline2022.pipelineNickname = "OuterPort";
+            pipeline2022.targetModel = TargetModel.k2020HighGoalOuter;
+            pipeline2022.inputShouldShow = true;
+            //        camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs(true));
+
+            var psList2022 = new ArrayList<CVPipelineSettings>();
+            psList2022.add(pipeline2022);
+            camConf2022.pipelineSettings = psList2022;
+        }
 
         // Colored shape testing
         var camConfShape =
-                new CameraConfiguration(
-                        "Shape",
-                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_1, true)
-                                .toString());
-        var settings = new ColoredShapePipelineSettings();
-        settings.hsvHue = new IntegerCouple(0, 35);
-        settings.hsvSaturation = new IntegerCouple(82, 255);
-        settings.hsvValue = new IntegerCouple(62, 255);
-        settings.contourShape = ContourShape.Triangle;
-        settings.outputShowMultipleTargets = true;
-        settings.circleAccuracy = 15;
-        camConfShape.addPipelineSetting(settings);
-        var fvsShape = new FileVisionSource(camConfShape);
-        collectedSources.add(fvsShape);
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("Shape");
 
-        //                logger.info("Adding " + allSources.size() + " configs to VMM.");
+        // If we haven't saved shape settings, create a new one
+        if (camConfShape == null) {
+            camConfShape =
+                    new CameraConfiguration(
+                            "Shape",
+                            TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_1, true)
+                                    .toString());
+            var settings = new ColoredShapePipelineSettings();
+            settings.hsvHue = new IntegerCouple(0, 35);
+            settings.hsvSaturation = new IntegerCouple(82, 255);
+            settings.hsvValue = new IntegerCouple(62, 255);
+            settings.contourShape = ContourShape.Triangle;
+            settings.outputShowMultipleTargets = true;
+            settings.circleAccuracy = 15;
+            settings.inputShouldShow = true;
+            camConfShape.addPipelineSetting(settings);
+        }
+
+        var collectedSources = new ArrayList<VisionSource>();
+
+        var fvsShape = new FileVisionSource(camConfShape);
+        var fvs2019 = new FileVisionSource(camConf2019);
+        var fvs2020 = new FileVisionSource(camConf2020);
+        var fvs2022 = new FileVisionSource(camConf2022);
+        collectedSources.add(fvsShape);
+        collectedSources.add(fvs2019);
+        collectedSources.add(fvs2020);
+        collectedSources.add(fvs2022);
+
         VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
         ConfigManager.getInstance().addCameraConfigurations(collectedSources);
     }

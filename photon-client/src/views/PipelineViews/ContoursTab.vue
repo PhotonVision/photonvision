@@ -51,7 +51,7 @@
           name="Target Grouping"
           tooltip="Whether or not every two targets are paired with each other (good for e.g. 2019 targets)"
           :select-cols="largeBox"
-          :list="['Single','Dual']"
+          :list="['Single','Dual','2orMore']"
           @input="handlePipelineData('contourGroupingMode')"
       />
       <CVselect

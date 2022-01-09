@@ -18,6 +18,7 @@ package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.cscore.CameraServerCvJNI;
+import edu.wpi.first.math.util.Units;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -97,6 +98,26 @@ public class TestUtils {
         }
     }
 
+    public enum WPI2022Image {
+        kTerminal12ft6in(Units.feetToMeters(12.5)),
+        kTerminal22ft6in(Units.feetToMeters(22.5));
+
+        public static double FOV = 68.5;
+
+        public final double distanceMeters;
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1).replace('_', '-');
+            return Path.of("2022", "WPI", filename + ".png");
+        }
+
+        WPI2022Image(double distanceMeters) {
+            this.distanceMeters = distanceMeters;
+            this.path = getPath();
+        }
+    }
+
     public enum PolygonTestImages {
         kPolygons;
 
@@ -146,6 +167,12 @@ public class TestUtils {
         return getResourcesFolderPath(true)
                 .resolve("testimages")
                 .resolve(WPI2020Image.kBlueGoal_108in_Center.path);
+    }
+
+    public static Path getTestMode2022ImagePath() {
+        return getResourcesFolderPath(true)
+                .resolve("testimages")
+                .resolve(WPI2022Image.kTerminal22ft6in.path);
     }
 
     public static Path getTestImagesPath(boolean testMode) {

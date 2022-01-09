@@ -21,10 +21,7 @@ import java.util.Objects;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.opencv.ContourGroupingMode;
-import org.photonvision.vision.opencv.ContourIntersectionDirection;
 import org.photonvision.vision.opencv.ContourShape;
-import org.photonvision.vision.pipe.impl.CornerDetectionPipe;
 
 @JsonTypeName("ColoredShapePipelineSettings")
 public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
@@ -37,22 +34,9 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     public int minDist = 20;
     public int maxCannyThresh = 90;
     public int circleAccuracy = 20;
-    // how many contours to attempt to group (Single, Dual)
-    public ContourGroupingMode contourGroupingMode = ContourGroupingMode.Single;
-
-    // the direction in which contours must intersect to be considered intersecting
-    public ContourIntersectionDirection contourIntersection = ContourIntersectionDirection.Up;
 
     // 3d settings
     public CameraCalibrationCoefficients cameraCalibration;
-
-    // Corner detection settings
-    public CornerDetectionPipe.DetectionStrategy cornerDetectionStrategy =
-            CornerDetectionPipe.DetectionStrategy.APPROX_POLY_DP_AND_EXTREME_CORNERS;
-    public boolean cornerDetectionUseConvexHulls = true;
-    public boolean cornerDetectionExactSideCount = false;
-    public int cornerDetectionSideCount = 4;
-    public double cornerDetectionAccuracyPercentage = 10;
 
     public boolean erode = false;
     public boolean dilate = false;

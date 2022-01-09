@@ -41,6 +41,16 @@ public class GroupContoursPipe
             for (var contour : input) {
                 m_targets.add(new PotentialTarget(contour));
             }
+        }
+        // Check if we have at least 2 targets for 2 or more
+        // This will only ever return 1 contour!
+        else if (params.getGroup() == ContourGroupingMode.TwoOrMore
+                && input.size() >= ContourGroupingMode.TwoOrMore.count) {
+            // Just blob everything together
+            Contour groupedContour = Contour.combineContourList(input);
+            if (groupedContour != null) {
+                m_targets.add(new PotentialTarget(groupedContour, input));
+            }
         } else {
             int groupingCount = params.getGroup().count;
 
@@ -52,14 +62,12 @@ public class GroupContoursPipe
 
                 for (int i = 0; i < input.size() - 1; i++) {
                     // make a list of the desired count of contours to group
-                    List<Contour> groupingSet;
+                    // (Just make sure we don't get an index out of bounds exception
+                    if (i < 0 || i + groupingCount > input.size()) continue;
 
-                    // TODO: are these try/catch avoidable?
-                    try {
-                        groupingSet = input.subList(i, i + groupingCount);
-                    } catch (IndexOutOfBoundsException e) {
-                        continue;
-                    }
+                    // If we're in two or more mode, just try to group everything
+                    List<Contour> groupingSet = input.subList(i, i + groupingCount);
+
                     try {
                         // FYI: This method only takes 2 contours!
                         Contour groupedContour =
