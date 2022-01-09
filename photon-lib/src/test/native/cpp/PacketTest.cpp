@@ -26,7 +26,13 @@
 TEST(PacketTest, PhotonTrackedTarget) {
   photonlib::PhotonTrackedTarget target{
       3.0, 4.0, 9.0, -5.0,
-      frc::Transform2d(frc::Translation2d(1_m, 2_m), 1.5_rad)};
+      frc::Transform2d(frc::Translation2d(1_m, 2_m), 1.5_rad),
+      {
+        std::make_pair(1,2),
+        std::make_pair(3,4),
+        std::make_pair(5,6),
+        std::make_pair(7,8)}};
+
   photonlib::Packet p;
   p << target;
 
@@ -53,10 +59,23 @@ TEST(PacketTest, PhotonPipelineResult) {
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
       photonlib::PhotonTrackedTarget{
           3.0, -4.0, 9.0, 4.0,
-          frc::Transform2d(frc::Translation2d(1_m, 2_m), 1.5_rad)},
+          frc::Transform2d(frc::Translation2d(1_m, 2_m), 1.5_rad),
+      {
+        std::make_pair(1,2),
+        std::make_pair(3,4),
+        std::make_pair(5,6),
+        std::make_pair(7,8)}
+          },
       photonlib::PhotonTrackedTarget{
           3.0, -4.0, 9.1, 6.7,
-          frc::Transform2d(frc::Translation2d(1_m, 5_m), 1.5_rad)}};
+          frc::Transform2d(frc::Translation2d(1_m, 5_m), 1.5_rad),
+          {
+            std::make_pair(1,2),
+            std::make_pair(3,4),
+            std::make_pair(5,6),
+            std::make_pair(7,8)}
+          }
+          };
 
   photonlib::PhotonPipelineResult result2{2_s, targets};
   photonlib::Packet p2;
@@ -66,26 +85,4 @@ TEST(PacketTest, PhotonPipelineResult) {
   p2 >> b2;
 
   EXPECT_EQ(result2, b2);
-}
-
-TEST(PacketTest, BytePackFromJava) {
-  std::vector<signed char> bytePack{
-      64, 8, 0,  0,  0,  0,   0,  0,  64,  16,  0,   0,   0,   0,
-      0,  0, 64, 34, 0,  0,   0,  0,  0,   0,   -64, 20,  0,   0,
-      0,  0, 0,  0,  63, -16, 0,  0,  0,   0,   0,   0,   64,  0,
-      0,  0, 0,  0,  0,  0,   64, 85, 124, 101, 19,  -54, -47, 122};
-
-  std::vector<char> bytes;
-  for (auto a : bytePack) bytes.emplace_back(static_cast<char>(a));
-
-  photonlib::Packet packet{bytes};
-
-  photonlib::PhotonTrackedTarget res;
-  packet >> res;
-
-  photonlib::PhotonTrackedTarget target{
-      3.0, 4.0, 9.0, -5.0,
-      frc::Transform2d(frc::Translation2d(1_m, 2_m), 1.5_rad)};
-
-  EXPECT_EQ(res, target);
 }

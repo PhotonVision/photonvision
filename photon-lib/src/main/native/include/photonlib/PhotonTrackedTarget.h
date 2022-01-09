@@ -75,12 +75,15 @@ class PhotonTrackedTarget {
   double GetSkew() const { return skew; }
 
   /**
+   * Returns the corners of the minimum area rectangle bounding this target.
+   */
+  wpi::SmallVector<std::pair<double, double>, 4> GetCorners() const { return corners; }
+
+  /**
    * Returns the pose of the target relative to the robot.
    * @return The pose of the target relative to the robot.
    */
   frc::Transform2d GetCameraRelativePose() const { return cameraToTarget; }
-
-  const wpi::SmallVector<std::pair<double, double>, 4> GetCorners() const { return corners; }
 
   bool operator==(const PhotonTrackedTarget& other) const;
   bool operator!=(const PhotonTrackedTarget& other) const;

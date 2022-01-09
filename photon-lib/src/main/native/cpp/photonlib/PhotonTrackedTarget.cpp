@@ -34,7 +34,7 @@ PhotonTrackedTarget::PhotonTrackedTarget(double yaw, double pitch, double area,
 bool PhotonTrackedTarget::operator==(const PhotonTrackedTarget& other) const {
   return other.yaw == yaw && other.pitch == pitch && other.area == area &&
          other.skew == skew && other.cameraToTarget == cameraToTarget
-         && other.corners = corners;
+         && other.corners == corners;
 }
 
 bool PhotonTrackedTarget::operator!=(const PhotonTrackedTarget& other) const {
@@ -65,8 +65,12 @@ Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
       frc::Transform2d(frc::Translation2d(units::meter_t(x), units::meter_t(y)),
                        units::degree_t(rot));
 
+  target.corners.clear();
   for(int i = 0; i < 4; i++) {
-    packet >> target.corners[i].first >> target.corners[i].second;
+    double first = 0;
+    double second = 0;
+    packet >> first >> second;
+    target.corners.push_back(std::make_pair(first, second));
   }
 
   return packet;
