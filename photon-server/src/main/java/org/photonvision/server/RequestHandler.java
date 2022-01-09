@@ -224,7 +224,10 @@ public class RequestHandler {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 200 : 500);
     }
 
-    public static void restartProgram(Context ctx) { restartProgram(); }
+    public static void restartProgram(Context ctx) {
+        restartProgram();
+    }
+
     public static void restartProgram() {
         TimedTaskManager.getInstance().addOneShotTask(RequestHandler::restartProgramInternal, 0);
     }
