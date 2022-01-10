@@ -30,11 +30,11 @@ public class FindPolygonPipe
     List<CVShape> shapeList = new ArrayList<>();
 
     /*
-    * Runs the process for the pipe.
-    *
-    * @param in Input for pipe processing.
-    * @return Result of processing.
-    */
+     * Runs the process for the pipe.
+     *
+     * @param in Input for pipe processing.
+     * @return Result of processing.
+     */
     @Override
     protected List<CVShape> process(List<Contour> in) {
         shapeList.forEach(CVShape::release);

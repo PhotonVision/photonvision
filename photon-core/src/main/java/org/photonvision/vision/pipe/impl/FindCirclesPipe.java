@@ -33,15 +33,15 @@ public class FindCirclesPipe
     // (x,y,radius) or (x,y,radius,votes) .
     private final Mat circles = new Mat();
     /**
-    * Runs the process for the pipe. The reason we need a separate pipe for circles is because if we
-    * were to use the FindShapes pipe, we would have to assume that any shape more than 10-20+ sides
-    * is a circle. Only issue with such approximation is that the user would no longer be able to
-    * track shapes with 10-20+ sides. And hence, in order to overcome this edge case, we can use
-    * HoughCircles which is more flexible and accurate for finding circles.
-    *
-    * @param in Input for pipe processing. 8-bit, single-channel, grayscale input image.
-    * @return Result of processing.
-    */
+     * Runs the process for the pipe. The reason we need a separate pipe for circles is because if we
+     * were to use the FindShapes pipe, we would have to assume that any shape more than 10-20+ sides
+     * is a circle. Only issue with such approximation is that the user would no longer be able to
+     * track shapes with 10-20+ sides. And hence, in order to overcome this edge case, we can use
+     * HoughCircles which is more flexible and accurate for finding circles.
+     *
+     * @param in Input for pipe processing. 8-bit, single-channel, grayscale input image.
+     * @return Result of processing.
+     */
     @Override
     protected List<CVShape> process(Pair<Mat, List<Contour>> in) {
         circles.release();
@@ -115,16 +115,16 @@ public class FindCirclesPipe
         private final double diagonalLengthPx;
 
         /*
-        * @params minDist - Minimum distance between the centers of the detected circles.
-        * If the parameter is too small, multiple neighbor circles may be falsely detected in addition to a true one. If it is too large, some circles may be missed.
-        *
-        * @param maxCannyThresh -First method-specific parameter. In case of #HOUGH_GRADIENT and #HOUGH_GRADIENT_ALT, it is the higher threshold of the two passed to the Canny edge detector (the lower one is twice smaller).
-        * Note that #HOUGH_GRADIENT_ALT uses #Scharr algorithm to compute image derivatives, so the threshold value shough normally be higher, such as 300 or normally exposed and contrasty images.
-        *
-        *
-        * @param allowableThreshold - When finding the corresponding contour, this is used to see how close a center should be to a contour for it to be considered THAT contour.
-        * Should be increased with lower resolutions and decreased with higher resolution
-        *  */
+         * @params minDist - Minimum distance between the centers of the detected circles.
+         * If the parameter is too small, multiple neighbor circles may be falsely detected in addition to a true one. If it is too large, some circles may be missed.
+         *
+         * @param maxCannyThresh -First method-specific parameter. In case of #HOUGH_GRADIENT and #HOUGH_GRADIENT_ALT, it is the higher threshold of the two passed to the Canny edge detector (the lower one is twice smaller).
+         * Note that #HOUGH_GRADIENT_ALT uses #Scharr algorithm to compute image derivatives, so the threshold value shough normally be higher, such as 300 or normally exposed and contrasty images.
+         *
+         *
+         * @param allowableThreshold - When finding the corresponding contour, this is used to see how close a center should be to a contour for it to be considered THAT contour.
+         * Should be increased with lower resolutions and decreased with higher resolution
+         *  */
         public FindCirclePipeParams(
                 int allowableThreshold,
                 int minRadius,

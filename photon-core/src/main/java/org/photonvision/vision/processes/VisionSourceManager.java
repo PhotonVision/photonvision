@@ -61,11 +61,11 @@ public class VisionSourceManager {
     }
 
     /**
-    * Register new camera configs loaded from disk. This will add them to the list of configs to try
-    * to match, and also automatically spawn new vision processes as necessary.
-    *
-    * @param configs The loaded camera configs.
-    */
+     * Register new camera configs loaded from disk. This will add them to the list of configs to try
+     * to match, and also automatically spawn new vision processes as necessary.
+     *
+     * @param configs The loaded camera configs.
+     */
     public void registerLoadedConfigs(Collection<CameraConfiguration> configs) {
         unmatchedLoadedConfigs.addAll(configs);
     }
@@ -182,13 +182,13 @@ public class VisionSourceManager {
     }
 
     /**
-    * Create {@link CameraConfiguration}s based on a list of detected USB cameras and the configs on
-    * disk.
-    *
-    * @param detectedCamInfos Information about currently connected USB cameras.
-    * @param loadedUsbCamConfigs The USB {@link CameraConfiguration}s loaded from disk.
-    * @return the matched configurations.
-    */
+     * Create {@link CameraConfiguration}s based on a list of detected USB cameras and the configs on
+     * disk.
+     *
+     * @param detectedCamInfos Information about currently connected USB cameras.
+     * @param loadedUsbCamConfigs The USB {@link CameraConfiguration}s loaded from disk.
+     * @return the matched configurations.
+     */
     private List<CameraConfiguration> matchUSBCameras(
             List<UsbCameraInfo> detectedCamInfos, List<CameraConfiguration> loadedUsbCamConfigs) {
         var detectedCameraList = new ArrayList<>(detectedCamInfos);
@@ -319,12 +319,12 @@ public class VisionSourceManager {
     }
 
     /**
-    * Check if a given config list contains the given unique name.
-    *
-    * @param configList A list of camera configs.
-    * @param uniqueName The unique name.
-    * @return If the list of configs contains the unique name.
-    */
+     * Check if a given config list contains the given unique name.
+     *
+     * @param configList A list of camera configs.
+     * @param uniqueName The unique name.
+     * @return If the list of configs contains the unique name.
+     */
     private boolean containsName(
             final List<CameraConfiguration> configList, final String uniqueName) {
         return configList.stream()

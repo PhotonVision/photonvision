@@ -29,9 +29,9 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
 
 /**
-* A {@link FrameProvider} that will read and provide an image from a {@link java.nio.file.Path
-* path}.
-*/
+ * A {@link FrameProvider} that will read and provide an image from a {@link java.nio.file.Path
+ * path}.
+ */
 public class FileFrameProvider implements FrameProvider {
     public static final int MAX_FPS = 120;
     private static int count = 0;
@@ -46,12 +46,12 @@ public class FileFrameProvider implements FrameProvider {
     private long lastGetMillis = System.currentTimeMillis();
 
     /**
-    * Instantiates a new FileFrameProvider.
-    *
-    * @param path The path of the image to read from.
-    * @param fov The fov of the image.
-    * @param maxFPS The max framerate to provide the image at.
-    */
+     * Instantiates a new FileFrameProvider.
+     *
+     * @param path The path of the image to read from.
+     * @param fov The fov of the image.
+     * @param maxFPS The max framerate to provide the image at.
+     */
     public FileFrameProvider(Path path, double fov, int maxFPS) {
         this(path, fov, maxFPS, null, null);
     }
@@ -83,21 +83,21 @@ public class FileFrameProvider implements FrameProvider {
     }
 
     /**
-    * Instantiates a new File frame provider.
-    *
-    * @param pathAsString The path of the image to read from as a string.
-    * @param fov The fov of the image.
-    */
+     * Instantiates a new File frame provider.
+     *
+     * @param pathAsString The path of the image to read from as a string.
+     * @param fov The fov of the image.
+     */
     public FileFrameProvider(String pathAsString, double fov) {
         this(Paths.get(pathAsString), fov, MAX_FPS);
     }
 
     /**
-    * Instantiates a new File frame provider.
-    *
-    * @param path The path of the image to read from.
-    * @param fov The fov of the image.
-    */
+     * Instantiates a new File frame provider.
+     *
+     * @param path The path of the image to read from.
+     * @param fov The fov of the image.
+     */
     public FileFrameProvider(Path path, double fov) {
         this(path, fov, MAX_FPS);
     }

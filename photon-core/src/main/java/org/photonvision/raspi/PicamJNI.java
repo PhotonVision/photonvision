@@ -116,18 +116,18 @@ public class PicamJNI {
     // Everything here is static because multiple picams are unsupported at the hardware level
 
     /**
-    * Called once for each video mode change. Starts a native thread running MMAL that stays alive
-    * until destroyCamera is called.
-    *
-    * @return true on error.
-    */
+     * Called once for each video mode change. Starts a native thread running MMAL that stays alive
+     * until destroyCamera is called.
+     *
+     * @return true on error.
+     */
     public static native boolean createCamera(int width, int height, int fps);
 
     /**
-    * Destroys MMAL and EGL contexts. Called once for each video mode change *before* createCamera.
-    *
-    * @return true on error.
-    */
+     * Destroys MMAL and EGL contexts. Called once for each video mode change *before* createCamera.
+     *
+     * @return true on error.
+     */
     public static native boolean destroyCamera();
 
     public static native void setThresholds(

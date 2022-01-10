@@ -31,10 +31,10 @@ import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.PhotonCamera;
 
 /**
-* Performs estimation of the drivetrain's current position on the field, using a vision system,
-* drivetrain encoders, and a gyroscope. These sensor readings are fused together using a Kalman
-* filter. This in turn creates a best-guess at a Pose2d of where our drivetrain is currently at.
-*/
+ * Performs estimation of the drivetrain's current position on the field, using a vision system,
+ * drivetrain encoders, and a gyroscope. These sensor readings are fused together using a Kalman
+ * filter. This in turn creates a best-guess at a Pose2d of where our drivetrain is currently at.
+ */
 public class DrivetrainPoseEstimator {
     // Sensors used as part of the Pose Estimation
     private final AnalogGyro gyro = new AnalogGyro(Constants.kGyroPin);
@@ -65,12 +65,12 @@ public class DrivetrainPoseEstimator {
     public DrivetrainPoseEstimator() {}
 
     /**
-    * Perform all periodic pose estimation tasks.
-    *
-    * @param actWheelSpeeds Current Speeds (in m/s) of the drivetrain wheels
-    * @param leftDist Distance (in m) the left wheel has traveled
-    * @param rightDist Distance (in m) the right wheel has traveled
-    */
+     * Perform all periodic pose estimation tasks.
+     *
+     * @param actWheelSpeeds Current Speeds (in m/s) of the drivetrain wheels
+     * @param leftDist Distance (in m) the left wheel has traveled
+     * @param rightDist Distance (in m) the right wheel has traveled
+     */
     public void update(
             DifferentialDriveWheelSpeeds actWheelSpeeds, double leftDist, double rightDist) {
         m_poseEstimator.update(gyro.getRotation2d(), actWheelSpeeds, leftDist, rightDist);
@@ -86,12 +86,12 @@ public class DrivetrainPoseEstimator {
     }
 
     /**
-    * Force the pose estimator to a particular pose. This is useful for indicating to the software
-    * when you have manually moved your robot in a particular position on the field (EX: when you
-    * place it on the field at the start of the match).
-    *
-    * @param pose
-    */
+     * Force the pose estimator to a particular pose. This is useful for indicating to the software
+     * when you have manually moved your robot in a particular position on the field (EX: when you
+     * place it on the field at the start of the match).
+     *
+     * @param pose
+     */
     public void resetToPose(Pose2d pose) {
         m_poseEstimator.resetPosition(pose, gyro.getRotation2d());
     }

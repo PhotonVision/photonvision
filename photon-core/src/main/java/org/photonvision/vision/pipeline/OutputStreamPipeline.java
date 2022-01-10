@@ -28,9 +28,9 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
 /**
-* This is a "fake" pipeline that is just used to move identical pipe sets out of real pipelines. It
-* shall not get its settings saved, nor shall it be managed by PipelineManager
-*/
+ * This is a "fake" pipeline that is just used to move identical pipe sets out of real pipelines. It
+ * shall not get its settings saved, nor shall it be managed by PipelineManager
+ */
 public class OutputStreamPipeline {
     private final OutputMatPipe outputMatPipe = new OutputMatPipe();
     private final Draw2dCrosshairPipe draw2dCrosshairPipe = new Draw2dCrosshairPipe();

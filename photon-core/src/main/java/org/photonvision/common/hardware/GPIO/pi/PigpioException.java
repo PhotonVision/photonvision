@@ -19,11 +19,11 @@ package org.photonvision.common.hardware.GPIO.pi;
 import java.util.HashMap;
 
 /**
-* A class that defines the exceptions that can be thrown by Pigpio.
-*
-* <p>Credit to nkolban
-* https://github.com/nkolban/jpigpio/blob/master/JPigpio/src/jpigpio/PigpioException.java
-*/
+ * A class that defines the exceptions that can be thrown by Pigpio.
+ *
+ * <p>Credit to nkolban
+ * https://github.com/nkolban/jpigpio/blob/master/JPigpio/src/jpigpio/PigpioException.java
+ */
 @SuppressWarnings({"SpellCheckingInspection", "unused", "RedundantSuppression"})
 public class PigpioException extends Exception {
     private int rc = -99999999;
@@ -65,10 +65,10 @@ public class PigpioException extends Exception {
     }
 
     /**
-    * Retrieve the error code that was returned by the underlying Pigpio call.
-    *
-    * @return The error code that was returned by the underlying Pigpio call.
-    */
+     * Retrieve the error code that was returned by the underlying Pigpio call.
+     *
+     * @return The error code that was returned by the underlying Pigpio call.
+     */
     public int getErrorCode() {
         return rc;
     } // End of getErrorCode

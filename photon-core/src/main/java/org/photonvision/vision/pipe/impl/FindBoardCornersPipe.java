@@ -109,11 +109,11 @@ public class FindBoardCornersPipe
     }
 
     /**
-    * Finds the corners in a given image and returns them
-    *
-    * @param in Input for pipe processing. Pair of input and output mat
-    * @return All valid Mats for camera calibration
-    */
+     * Finds the corners in a given image and returns them
+     *
+     * @param in Input for pipe processing. Pair of input and output mat
+     * @return All valid Mats for camera calibration
+     */
     @Override
     protected Triple<Size, Mat, Mat> process(Pair<Mat, Mat> in) {
         // Create the object points
@@ -123,12 +123,12 @@ public class FindBoardCornersPipe
     }
 
     /**
-    * Figures out how much a frame or point cloud must be scaled down by to match the desired size at
-    * which to run FindCorners
-    *
-    * @param inFrame
-    * @return
-    */
+     * Figures out how much a frame or point cloud must be scaled down by to match the desired size at
+     * which to run FindCorners
+     *
+     * @param inFrame
+     * @return
+     */
     private double getFindCornersScaleFactor(Mat inFrame) {
         if (inFrame.width() > FIND_CORNERS_WIDTH_PX) {
             return ((double) FIND_CORNERS_WIDTH_PX) / inFrame.width();
@@ -138,21 +138,21 @@ public class FindBoardCornersPipe
     }
 
     /**
-    * Finds the minimum spacing between a set of x/y points Currently only considers points whose
-    * index is next to each other Which, currently, means it traverses one dimension. This is a rough
-    * heuristic approach which could be refined in the future.
-    *
-    * <p>Note that the current implementation can be fooled under the following conditions: (1) The
-    * width of the image is an odd number, and the smallest distance was actually on the between the
-    * last two points in a given row and (2) The smallest distance was actually in the direction
-    * orthogonal to that which was getting traversed by iterating through the MatOfPoint2f in order.
-    *
-    * <p>I've chosen not to handle these for speed's sake, and because, really, you don't need the
-    * exact answer for "min distance". you just need something fairly reasonable.
-    *
-    * @param inPoints point set to analyze. Must be a "tall" matrix.
-    * @return min spacing between neighbors
-    */
+     * Finds the minimum spacing between a set of x/y points Currently only considers points whose
+     * index is next to each other Which, currently, means it traverses one dimension. This is a rough
+     * heuristic approach which could be refined in the future.
+     *
+     * <p>Note that the current implementation can be fooled under the following conditions: (1) The
+     * width of the image is an odd number, and the smallest distance was actually on the between the
+     * last two points in a given row and (2) The smallest distance was actually in the direction
+     * orthogonal to that which was getting traversed by iterating through the MatOfPoint2f in order.
+     *
+     * <p>I've chosen not to handle these for speed's sake, and because, really, you don't need the
+     * exact answer for "min distance". you just need something fairly reasonable.
+     *
+     * @param inPoints point set to analyze. Must be a "tall" matrix.
+     * @return min spacing between neighbors
+     */
     private double getApproxMinSpacing(MatOfPoint2f inPoints) {
         double minSpacing = Double.MAX_VALUE;
         for (int pointIdx = 0; pointIdx < inPoints.height() - 1; pointIdx += 2) {
@@ -169,24 +169,24 @@ public class FindBoardCornersPipe
     }
 
     /**
-    * @param inFrame Full-size mat that is going to get scaled down before passing to
-    *     findBoardCorners
-    * @return the size to scale the input mat to
-    */
+     * @param inFrame Full-size mat that is going to get scaled down before passing to
+     *     findBoardCorners
+     * @return the size to scale the input mat to
+     */
     private Size getFindCornersImgSize(Mat inFrame) {
         var findcorners_height = Math.round(inFrame.height() * getFindCornersScaleFactor(inFrame));
         return new Size(FIND_CORNERS_WIDTH_PX, findcorners_height);
     }
 
     /**
-    * Given an input frame and a set of points from the "smaller" findChessboardCorner analysis,
-    * re-scale the points back to where they would have been in the input frame
-    *
-    * @param inPoints set of points derived from a call to findChessboardCorner on a shrunken mat.
-    *     Must be a "tall" matrix.
-    * @param origFrame Original frame we're rescaling points back to
-    * @param outPoints mat into which the output rescaled points get placed
-    */
+     * Given an input frame and a set of points from the "smaller" findChessboardCorner analysis,
+     * re-scale the points back to where they would have been in the input frame
+     *
+     * @param inPoints set of points derived from a call to findChessboardCorner on a shrunken mat.
+     *     Must be a "tall" matrix.
+     * @param origFrame Original frame we're rescaling points back to
+     * @param outPoints mat into which the output rescaled points get placed
+     */
     private void rescalePointsToOrigFrame(
             MatOfPoint2f inPoints, Mat origFrame, MatOfPoint2f outPoints) {
         // Rescale boardCorners back up to the inproc image size
@@ -202,12 +202,12 @@ public class FindBoardCornersPipe
     }
 
     /**
-    * Picks a window size for doing subpixel optimization based on the board type and spacing
-    * observed between the corners or points in the image
-    *
-    * @param inPoints
-    * @return
-    */
+     * Picks a window size for doing subpixel optimization based on the board type and spacing
+     * observed between the corners or points in the image
+     *
+     * @param inPoints
+     * @return
+     */
     private Size getWindowSize(MatOfPoint2f inPoints) {
         double windowHalfWidth = 11; // Dot board uses fixed-size window half-width
         if (params.type == UICalibrationData.BoardType.CHESSBOARD) {
@@ -219,10 +219,10 @@ public class FindBoardCornersPipe
     }
 
     /**
-    * Find chessboard corners given a input mat and output mat to draw on
-    *
-    * @return Frame resolution, object points, board corners
-    */
+     * Find chessboard corners given a input mat and output mat to draw on
+     *
+     * @return Frame resolution, object points, board corners
+     */
     private Triple<Size, Mat, Mat> findBoardCorners(Pair<Mat, Mat> in) {
         createObjectPoints();
 

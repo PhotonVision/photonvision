@@ -34,12 +34,12 @@ import org.photonlib.examples.simposeest.robot.Constants;
 import org.photonvision.SimVisionSystem;
 
 /**
-* Implementation of a simulation of robot physics, sensors, motor controllers Includes a Simulated
-* PhotonVision system and one vision target.
-*
-* <p>This class and its methods are only relevant during simulation. While on the real robot, the
-* real motors/sensors/physics are used instead.
-*/
+ * Implementation of a simulation of robot physics, sensors, motor controllers Includes a Simulated
+ * PhotonVision system and one vision target.
+ *
+ * <p>This class and its methods are only relevant during simulation. While on the real robot, the
+ * real motors/sensors/physics are used instead.
+ */
 public class DrivetrainSim {
     // Simulated Sensors
     AnalogGyroSim gyroSim = new AnalogGyroSim(Constants.kGyroPin);
@@ -94,9 +94,9 @@ public class DrivetrainSim {
     }
 
     /**
-    * Perform all periodic drivetrain simulation related tasks to advance our simulation of robot
-    * physics forward by a single 20ms step.
-    */
+     * Perform all periodic drivetrain simulation related tasks to advance our simulation of robot
+     * physics forward by a single 20ms step.
+     */
     public void update() {
         double leftMotorCmd = 0;
         double rightMotorCmd = 0;
@@ -135,11 +135,11 @@ public class DrivetrainSim {
     }
 
     /**
-    * Resets the simulation back to a pre-defined pose Useful to simulate the action of placing the
-    * robot onto a specific spot in the field (IE, at the start of each match).
-    *
-    * @param pose
-    */
+     * Resets the simulation back to a pre-defined pose Useful to simulate the action of placing the
+     * robot onto a specific spot in the field (IE, at the start of each match).
+     *
+     * @param pose
+     */
     public void resetPose(Pose2d pose) {
         drivetrainSimulator.setPose(pose);
     }
@@ -150,11 +150,11 @@ public class DrivetrainSim {
     }
 
     /**
-    * For testing purposes only! Applies an unmodeled, undetected offset to the pose Similar to if
-    * you magically kicked your robot to the side in a way the encoders and gyro didn't measure.
-    *
-    * <p>This distrubance should be corrected for once a vision target is in view.
-    */
+     * For testing purposes only! Applies an unmodeled, undetected offset to the pose Similar to if
+     * you magically kicked your robot to the side in a way the encoders and gyro didn't measure.
+     *
+     * <p>This distrubance should be corrected for once a vision target is in view.
+     */
     public void applyKick() {
         Pose2d newPose =
                 drivetrainSimulator

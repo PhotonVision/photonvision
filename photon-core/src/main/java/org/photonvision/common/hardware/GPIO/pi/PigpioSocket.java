@@ -40,12 +40,12 @@ public class PigpioSocket {
     }
 
     /**
-    * Creates and starts a socket connection to a pigpio daemon on a remote host with the specified
-    * address and port
-    *
-    * @param addr Address of remote pigpio daemon
-    * @param port Port of remote pigpio daemon
-    */
+     * Creates and starts a socket connection to a pigpio daemon on a remote host with the specified
+     * address and port
+     *
+     * @param addr Address of remote pigpio daemon
+     * @param port Port of remote pigpio daemon
+     */
     public PigpioSocket(String addr, int port) {
         try {
             commandSocket = new PigpioSocketLock(addr, port);
@@ -55,10 +55,10 @@ public class PigpioSocket {
     }
 
     /**
-    * Reconnects to the pigpio daemon
-    *
-    * @throws PigpioException on failure
-    */
+     * Reconnects to the pigpio daemon
+     *
+     * @throws PigpioException on failure
+     */
     public void reconnect() throws PigpioException {
         try {
             commandSocket.reconnect();
@@ -69,10 +69,10 @@ public class PigpioSocket {
     }
 
     /**
-    * Terminates the connection to the pigpio daemon
-    *
-    * @throws PigpioException on failure
-    */
+     * Terminates the connection to the pigpio daemon
+     *
+     * @throws PigpioException on failure
+     */
     public void gpioTerminate() throws PigpioException {
         try {
             commandSocket.terminate();
@@ -83,12 +83,12 @@ public class PigpioSocket {
     }
 
     /**
-    * Read the GPIO level
-    *
-    * @param pin Pin to read from
-    * @return Value of the pin
-    * @throws PigpioException on failure
-    */
+     * Read the GPIO level
+     *
+     * @param pin Pin to read from
+     * @return Value of the pin
+     * @throws PigpioException on failure
+     */
     public boolean gpioRead(int pin) throws PigpioException {
         try {
             int retCode = commandSocket.sendCmd(PigpioCommand.PCMD_READ.value, pin);
@@ -101,12 +101,12 @@ public class PigpioSocket {
     }
 
     /**
-    * Write the GPIO level
-    *
-    * @param pin Pin to write to
-    * @param value Value to write
-    * @throws PigpioException on failure
-    */
+     * Write the GPIO level
+     *
+     * @param pin Pin to write to
+     * @param value Value to write
+     * @throws PigpioException on failure
+     */
     public void gpioWrite(int pin, boolean value) throws PigpioException {
         try {
             int retCode = commandSocket.sendCmd(PigpioCommand.PCMD_WRITE.value, pin, value ? 1 : 0);
@@ -118,10 +118,10 @@ public class PigpioSocket {
     }
 
     /**
-    * Clears all waveforms and any data added by calls to {@link #waveAddGeneric(ArrayList)}
-    *
-    * @throws PigpioException on failure
-    */
+     * Clears all waveforms and any data added by calls to {@link #waveAddGeneric(ArrayList)}
+     *
+     * @throws PigpioException on failure
+     */
     public void waveClear() throws PigpioException {
         try {
             int retCode = commandSocket.sendCmd(PigpioCommand.PCMD_WVCLR.value);
@@ -133,12 +133,12 @@ public class PigpioSocket {
     }
 
     /**
-    * Adds a number of pulses to the current waveform
-    *
-    * @param pulses ArrayList of pulses to add
-    * @return the new total number of pulses in the current waveform
-    * @throws PigpioException on failure
-    */
+     * Adds a number of pulses to the current waveform
+     *
+     * @param pulses ArrayList of pulses to add
+     * @return the new total number of pulses in the current waveform
+     * @throws PigpioException on failure
+     */
     private int waveAddGeneric(ArrayList<PigpioPulse> pulses) throws PigpioException {
         // pigpio wave message format
 
@@ -174,12 +174,12 @@ public class PigpioSocket {
     }
 
     /**
-    * Creates pulses and adds them to the current waveform
-    *
-    * @param pulseTimeMillis Pulse length in milliseconds
-    * @param blinks Number of times to pulse. -1 for repeat
-    * @param pinNo Pin to pulse
-    */
+     * Creates pulses and adds them to the current waveform
+     *
+     * @param pulseTimeMillis Pulse length in milliseconds
+     * @param blinks Number of times to pulse. -1 for repeat
+     * @param pinNo Pin to pulse
+     */
     private void addBlinkPulsesToWaveform(int pulseTimeMillis, int blinks, int pinNo) {
         boolean repeat = blinks == -1;
 
@@ -207,13 +207,13 @@ public class PigpioSocket {
     }
 
     /**
-    * Generates and sends a waveform to the given pins with the specified parameters.
-    *
-    * @param pulseTimeMillis Pulse length in milliseconds
-    * @param blinks Number of times to pulse. -1 for repeat
-    * @param pins Pins to pulse
-    * @throws PigpioException on failure
-    */
+     * Generates and sends a waveform to the given pins with the specified parameters.
+     *
+     * @param pulseTimeMillis Pulse length in milliseconds
+     * @param blinks Number of times to pulse. -1 for repeat
+     * @param pins Pins to pulse
+     * @throws PigpioException on failure
+     */
     public void generateAndSendWaveform(int pulseTimeMillis, int blinks, int... pins)
             throws PigpioException {
         if (pins.length == 0) return;
@@ -262,11 +262,11 @@ public class PigpioSocket {
     }
 
     /**
-    * Stops the transmission of the current waveform
-    *
-    * @return success
-    * @throws PigpioException on failure
-    */
+     * Stops the transmission of the current waveform
+     *
+     * @return success
+     * @throws PigpioException on failure
+     */
     public boolean waveTxStop() throws PigpioException {
         try {
             int retCode = commandSocket.sendCmd(PigpioCommand.PCMD_WVHLT.value);
@@ -279,12 +279,12 @@ public class PigpioSocket {
     }
 
     /**
-    * Creates a waveform from the data provided by the prior calls to {@link
-    * #waveAddGeneric(ArrayList)} Upon success a wave ID greater than or equal to 0 is returned
-    *
-    * @return ID of the created waveform
-    * @throws PigpioException on failure
-    */
+     * Creates a waveform from the data provided by the prior calls to {@link
+     * #waveAddGeneric(ArrayList)} Upon success a wave ID greater than or equal to 0 is returned
+     *
+     * @return ID of the created waveform
+     * @throws PigpioException on failure
+     */
     public int waveCreate() throws PigpioException {
         try {
             int retCode = commandSocket.sendCmd(PigpioCommand.PCMD_WVCRE.value);
@@ -297,11 +297,11 @@ public class PigpioSocket {
     }
 
     /**
-    * Deletes the waveform with specified wave ID
-    *
-    * @param waveId ID of the waveform to delete
-    * @throws PigpioException on failure
-    */
+     * Deletes the waveform with specified wave ID
+     *
+     * @param waveId ID of the waveform to delete
+     * @throws PigpioException on failure
+     */
     public void waveDelete(int waveId) throws PigpioException {
         try {
             int retCode = commandSocket.sendCmd(PigpioCommand.PCMD_WVDEL.value, waveId);
@@ -313,12 +313,12 @@ public class PigpioSocket {
     }
 
     /**
-    * Transmits the waveform with specified wave ID. The waveform is sent once
-    *
-    * @param waveId ID of the waveform to transmit
-    * @return The number of DMA control blocks in the waveform
-    * @throws PigpioException on failure
-    */
+     * Transmits the waveform with specified wave ID. The waveform is sent once
+     *
+     * @param waveId ID of the waveform to transmit
+     * @return The number of DMA control blocks in the waveform
+     * @throws PigpioException on failure
+     */
     public int waveSendOnce(int waveId) throws PigpioException {
         try {
             int retCode = commandSocket.sendCmd(PigpioCommand.PCMD_WVTX.value, waveId);
@@ -330,13 +330,13 @@ public class PigpioSocket {
     }
 
     /**
-    * Transmits the waveform with specified wave ID. The waveform cycles until cancelled (either by
-    * the sending of a new waveform or {@link #waveTxStop()}
-    *
-    * @param waveId ID of the waveform to transmit
-    * @return The number of DMA control blocks in the waveform
-    * @throws PigpioException on failure
-    */
+     * Transmits the waveform with specified wave ID. The waveform cycles until cancelled (either by
+     * the sending of a new waveform or {@link #waveTxStop()}
+     *
+     * @param waveId ID of the waveform to transmit
+     * @return The number of DMA control blocks in the waveform
+     * @throws PigpioException on failure
+     */
     public int waveSendRepeat(int waveId) throws PigpioException {
         try {
             int retCode = commandSocket.sendCmd(PigpioCommand.PCMD_WVTXR.value, waveId);
@@ -348,14 +348,14 @@ public class PigpioSocket {
     }
 
     /**
-    * Starts hardware PWM on a GPIO at the specified frequency and dutycycle
-    *
-    * @param pin GPIO pin to start PWM on
-    * @param pwmFrequency Frequency to run at (1Hz-125MHz). Frequencies above 30MHz are unlikely to
-    *     work
-    * @param pwmDuty Duty cycle to run at (0-1,000,000)
-    * @throws PigpioException on failure
-    */
+     * Starts hardware PWM on a GPIO at the specified frequency and dutycycle
+     *
+     * @param pin GPIO pin to start PWM on
+     * @param pwmFrequency Frequency to run at (1Hz-125MHz). Frequencies above 30MHz are unlikely to
+     *     work
+     * @param pwmDuty Duty cycle to run at (0-1,000,000)
+     * @throws PigpioException on failure
+     */
     public void hardwarePWM(int pin, int pwmFrequency, int pwmDuty) throws PigpioException {
         try {
             ByteBuffer bb = ByteBuffer.allocate(4);

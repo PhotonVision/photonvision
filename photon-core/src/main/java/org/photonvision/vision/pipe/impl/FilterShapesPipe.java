@@ -28,11 +28,11 @@ public class FilterShapesPipe
     List<CVShape> outputList = new ArrayList<>();
 
     /**
-    * Runs the process for the pipe.
-    *
-    * @param in Input for pipe processing.
-    * @return Result of processing.
-    */
+     * Runs the process for the pipe.
+     *
+     * @param in Input for pipe processing.
+     * @return Result of processing.
+     */
     @Override
     protected List<CVShape> process(List<CVShape> in) {
         outputList.forEach(CVShape::release);

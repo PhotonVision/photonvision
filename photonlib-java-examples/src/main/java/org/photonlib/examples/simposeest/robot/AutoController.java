@@ -27,11 +27,11 @@ import edu.wpi.first.wpilibj.Timer;
 import java.util.List;
 
 /**
-* Implements logic to convert a set of desired waypoints (ie, a trajectory) and the current
-* estimate of where the robot is at (ie, the estimated Pose) into motion commands for a drivetrain.
-* The Ramaste controller is used to smoothly move the robot from where it thinks it is to where it
-* thinks it ought to be.
-*/
+ * Implements logic to convert a set of desired waypoints (ie, a trajectory) and the current
+ * estimate of where the robot is at (ie, the estimated Pose) into motion commands for a drivetrain.
+ * The Ramaste controller is used to smoothly move the robot from where it thinks it is to where it
+ * thinks it ought to be.
+ */
 public class AutoController {
     private Trajectory trajectory;
 
@@ -72,13 +72,13 @@ public class AutoController {
     }
 
     /**
-    * Given the current estimate of the robot's position, calculate drivetrain speed commands which
-    * will best-execute the active trajectory. Be sure to call `startPath()` prior to calling this
-    * method.
-    *
-    * @param curEstPose Current estimate of drivetrain pose on the field
-    * @return The commanded drivetrain motion
-    */
+     * Given the current estimate of the robot's position, calculate drivetrain speed commands which
+     * will best-execute the active trajectory. Be sure to call `startPath()` prior to calling this
+     * method.
+     *
+     * @param curEstPose Current estimate of drivetrain pose on the field
+     * @return The commanded drivetrain motion
+     */
     public ChassisSpeeds getCurMotorCmds(Pose2d curEstPose) {
         if (isRunning) {
             double elapsed = timer.get();
@@ -91,9 +91,9 @@ public class AutoController {
     }
 
     /**
-    * @return The position which the auto controller is attempting to move the drivetrain to right
-    *     now.
-    */
+     * @return The position which the auto controller is attempting to move the drivetrain to right
+     *     now.
+     */
     public Pose2d getCurPose2d() {
         return desiredDtState.poseMeters;
     }

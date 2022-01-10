@@ -43,12 +43,12 @@ public class ShellExec {
     }
 
     /**
-    * Execute a bash command. We can handle complex bash commands including multiple executions (; |
-    * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
-    *
-    * @param command Bash command to execute
-    * @return true if bash got started, but your command may have failed.
-    */
+     * Execute a bash command. We can handle complex bash commands including multiple executions (; |
+     * and ||), quotes, expansions ($), escapes (\), e.g.: "cd /abc/def; mv ghi 'older ghi '$(whoami)"
+     *
+     * @param command Bash command to execute
+     * @return true if bash got started, but your command may have failed.
+     */
     public int executeBashCommand(String command, boolean wait) throws IOException {
         logger.debug("Executing \"" + command + "\"");
 
@@ -71,25 +71,25 @@ public class ShellExec {
     }
 
     /**
-    * Execute a command in current folder, and wait for process to end
-    *
-    * @param command command ("c:/some/folder/script.bat" or "some/folder/script.sh")
-    * @param args 0..n command line arguments
-    * @return process exit code
-    */
+     * Execute a command in current folder, and wait for process to end
+     *
+     * @param command command ("c:/some/folder/script.bat" or "some/folder/script.sh")
+     * @param args 0..n command line arguments
+     * @return process exit code
+     */
     public int execute(String command, String... args) throws IOException {
         return execute(command, null, true, args);
     }
 
     /**
-    * Execute a command.
-    *
-    * @param command command ("c:/some/folder/script.bat" or "some/folder/script.sh")
-    * @param workdir working directory or NULL to use command folder
-    * @param wait wait for process to end
-    * @param args 0..n command line arguments
-    * @return process exit code
-    */
+     * Execute a command.
+     *
+     * @param command command ("c:/some/folder/script.bat" or "some/folder/script.sh")
+     * @param workdir working directory or NULL to use command folder
+     * @param wait wait for process to end
+     * @param args 0..n command line arguments
+     * @return process exit code
+     */
     public int execute(String command, String workdir, boolean wait, String... args)
             throws IOException {
         String[] cmdArr;
@@ -153,10 +153,10 @@ public class ShellExec {
     // ********************************************
 
     /**
-    * StreamGobbler reads inputstream to "gobble" it. This is used by Executor class when running a
-    * commandline applications. Gobblers must read/purge INSTR and ERRSTR process streams.
-    * http://www.javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html?page=4
-    */
+     * StreamGobbler reads inputstream to "gobble" it. This is used by Executor class when running a
+     * commandline applications. Gobblers must read/purge INSTR and ERRSTR process streams.
+     * http://www.javaworld.com/javaworld/jw-12-2000/jw-1229-traps.html?page=4
+     */
     @SuppressWarnings("WeakerAccess")
     private static class StreamGobbler extends Thread {
         private InputStream is;
@@ -186,19 +186,19 @@ public class ShellExec {
         }
 
         /**
-        * Get inputstream buffer or null if stream was not consumed.
-        *
-        * @return Output stream
-        */
+         * Get inputstream buffer or null if stream was not consumed.
+         *
+         * @return Output stream
+         */
         public String getOutput() {
             return (output != null ? output.toString() : null);
         }
 
         /**
-        * Is input stream completed.
-        *
-        * @return if input stream is completed
-        */
+         * Is input stream completed.
+         *
+         * @return if input stream is completed
+         */
         public boolean isCompleted() {
             return completed;
         }

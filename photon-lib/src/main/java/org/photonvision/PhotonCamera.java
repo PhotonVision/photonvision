@@ -40,10 +40,10 @@ public class PhotonCamera {
     Packet packet = new Packet(1);
 
     /**
-    * Constructs a PhotonCamera from a root table.
-    *
-    * @param rootTable The root table that the camera is broadcasting information over.
-    */
+     * Constructs a PhotonCamera from a root table.
+     *
+     * @param rootTable The root table that the camera is broadcasting information over.
+     */
     public PhotonCamera(NetworkTable rootTable) {
         path = rootTable.getPath();
         rawBytesEntry = rootTable.getEntry("rawBytes");
@@ -56,19 +56,19 @@ public class PhotonCamera {
     }
 
     /**
-    * Constructs a PhotonCamera from the name of the camera.
-    *
-    * @param cameraName The nickname of the camera (found in the PhotonVision UI).
-    */
+     * Constructs a PhotonCamera from the name of the camera.
+     *
+     * @param cameraName The nickname of the camera (found in the PhotonVision UI).
+     */
     public PhotonCamera(String cameraName) {
         this(NetworkTableInstance.getDefault().getTable("photonvision").getSubTable(cameraName));
     }
 
     /**
-    * Returns the latest pipeline result.
-    *
-    * @return The latest pipeline result.
-    */
+     * Returns the latest pipeline result.
+     *
+     * @return The latest pipeline result.
+     */
     public PhotonPipelineResult getLatestResult() {
         verifyVersion();
 
@@ -88,66 +88,66 @@ public class PhotonCamera {
     }
 
     /**
-    * Returns whether the camera is in driver mode.
-    *
-    * @return Whether the camera is in driver mode.
-    */
+     * Returns whether the camera is in driver mode.
+     *
+     * @return Whether the camera is in driver mode.
+     */
     public boolean getDriverMode() {
         return driverModeEntry.getBoolean(false);
     }
 
     /**
-    * Toggles driver mode.
-    *
-    * @param driverMode Whether to set driver mode.
-    */
+     * Toggles driver mode.
+     *
+     * @param driverMode Whether to set driver mode.
+     */
     public void setDriverMode(boolean driverMode) {
         driverModeEntry.setBoolean(driverMode);
     }
 
     /**
-    * Request the camera to save a new image file from the input camera stream with overlays. Images
-    * take up space in the filesystem of the PhotonCamera. Calling it frequently will fill up disk
-    * space and eventually cause the system to stop working. Clear out images in
-    * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
-    */
+     * Request the camera to save a new image file from the input camera stream with overlays. Images
+     * take up space in the filesystem of the PhotonCamera. Calling it frequently will fill up disk
+     * space and eventually cause the system to stop working. Clear out images in
+     * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
+     */
     public void takeInputSnapshot() {
         inputSaveImgEntry.setBoolean(true);
     }
 
     /**
-    * Request the camera to save a new image file from the output stream with overlays. Images take
-    * up space in the filesystem of the PhotonCamera. Calling it frequently will fill up disk space
-    * and eventually cause the system to stop working. Clear out images in
-    * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
-    */
+     * Request the camera to save a new image file from the output stream with overlays. Images take
+     * up space in the filesystem of the PhotonCamera. Calling it frequently will fill up disk space
+     * and eventually cause the system to stop working. Clear out images in
+     * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
+     */
     public void takeOutputSnapshot() {
         outputSaveImgEntry.setBoolean(true);
     }
 
     /**
-    * Returns the active pipeline index.
-    *
-    * @return The active pipeline index.
-    */
+     * Returns the active pipeline index.
+     *
+     * @return The active pipeline index.
+     */
     public int getPipelineIndex() {
         return pipelineIndexEntry.getNumber(0).intValue();
     }
 
     /**
-    * Allows the user to select the active pipeline index.
-    *
-    * @param index The active pipeline index.
-    */
+     * Allows the user to select the active pipeline index.
+     *
+     * @param index The active pipeline index.
+     */
     public void setPipelineIndex(int index) {
         pipelineIndexEntry.setNumber(index);
     }
 
     /**
-    * Returns the current LED mode.
-    *
-    * @return The current LED mode.
-    */
+     * Returns the current LED mode.
+     *
+     * @return The current LED mode.
+     */
     public VisionLEDMode getLEDMode() {
         int value = ledModeEntry.getNumber(-1).intValue();
         switch (value) {
@@ -164,22 +164,22 @@ public class PhotonCamera {
     }
 
     /**
-    * Sets the LED mode.
-    *
-    * @param led The mode to set to.
-    */
+     * Sets the LED mode.
+     *
+     * @param led The mode to set to.
+     */
     public void setLED(VisionLEDMode led) {
         ledModeEntry.setNumber(led.value);
     }
 
     /**
-    * Returns whether the latest target result has targets.
-    *
-    * <p>This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should be used instead.
-    *
-    * @deprecated This method should be replaced with {@link PhotonPipelineResult#hasTargets()}
-    * @return Whether the latest target result has targets.
-    */
+     * Returns whether the latest target result has targets.
+     *
+     * <p>This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should be used instead.
+     *
+     * @deprecated This method should be replaced with {@link PhotonPipelineResult#hasTargets()}
+     * @return Whether the latest target result has targets.
+     */
     @Deprecated
     public boolean hasTargets() {
         return getLatestResult().hasTargets();

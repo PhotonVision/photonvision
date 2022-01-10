@@ -35,31 +35,31 @@ public class PhotonPipelineResult {
     public PhotonPipelineResult() {}
 
     /**
-    * Constructs a pipeline result.
-    *
-    * @param latencyMillis The latency in the pipeline.
-    * @param targets The list of targets identified by the pipeline.
-    */
+     * Constructs a pipeline result.
+     *
+     * @param latencyMillis The latency in the pipeline.
+     * @param targets The list of targets identified by the pipeline.
+     */
     public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets) {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
     }
 
     /**
-    * Returns the size of the packet needed to store this pipeline result.
-    *
-    * @return The size of the packet needed to store this pipeline result.
-    */
+     * Returns the size of the packet needed to store this pipeline result.
+     *
+     * @return The size of the packet needed to store this pipeline result.
+     */
     public int getPacketSize() {
         return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES + 8 + 2;
     }
 
     /**
-    * Returns the best target in this pipeline result. If there are no targets, this method will
-    * return null. The best target is determined by the target sort mode in the PhotonVision UI.
-    *
-    * @return The best target of the pipeline result.
-    */
+     * Returns the best target in this pipeline result. If there are no targets, this method will
+     * return null. The best target is determined by the target sort mode in the PhotonVision UI.
+     *
+     * @return The best target of the pipeline result.
+     */
     public PhotonTrackedTarget getBestTarget() {
         if (!hasTargets() && !HAS_WARNED) {
             String errStr =
@@ -74,28 +74,28 @@ public class PhotonPipelineResult {
     }
 
     /**
-    * Returns the latency in the pipeline.
-    *
-    * @return The latency in the pipeline.
-    */
+     * Returns the latency in the pipeline.
+     *
+     * @return The latency in the pipeline.
+     */
     public double getLatencyMillis() {
         return latencyMillis;
     }
 
     /**
-    * Returns whether the pipeline has targets.
-    *
-    * @return Whether the pipeline has targets.
-    */
+     * Returns whether the pipeline has targets.
+     *
+     * @return Whether the pipeline has targets.
+     */
     public boolean hasTargets() {
         return targets.size() > 0;
     }
 
     /**
-    * Returns a copy of the vector of targets.
-    *
-    * @return A copy of the vector of targets.
-    */
+     * Returns a copy of the vector of targets.
+     *
+     * @return A copy of the vector of targets.
+     */
     public List<PhotonTrackedTarget> getTargets() {
         return new ArrayList<>(targets);
     }
@@ -116,11 +116,11 @@ public class PhotonPipelineResult {
     }
 
     /**
-    * Populates the fields of the pipeline result from the packet.
-    *
-    * @param packet The incoming packet.
-    * @return The incoming packet.
-    */
+     * Populates the fields of the pipeline result from the packet.
+     *
+     * @param packet The incoming packet.
+     * @return The incoming packet.
+     */
     public Packet createFromPacket(Packet packet) {
         // Decode latency, existence of targets, and number of targets.
         latencyMillis = packet.decodeDouble();
@@ -139,11 +139,11 @@ public class PhotonPipelineResult {
     }
 
     /**
-    * Populates the outgoing packet with information from this pipeline result.
-    *
-    * @param packet The outgoing packet.
-    * @return The outgoing packet.
-    */
+     * Populates the outgoing packet with information from this pipeline result.
+     *
+     * @param packet The outgoing packet.
+     * @return The outgoing packet.
+     */
     public Packet populatePacket(Packet packet) {
         // Encode latency, existence of targets, and number of targets.
         packet.encode(latencyMillis);

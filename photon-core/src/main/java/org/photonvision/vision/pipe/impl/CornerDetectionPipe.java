@@ -59,9 +59,9 @@ public class CornerDetectionPipe
     }
 
     /**
-    * @param target the target to find the corners of.
-    * @return the corners. left top, left bottom, right bottom, right top
-    */
+     * @param target the target to find the corners of.
+     * @return the corners. left top, left bottom, right bottom, right top
+     */
     private List<Point> findBoundingBoxCorners(TrackedTarget target) {
         // extract the corners
         var points = new Point[4];
@@ -88,30 +88,30 @@ public class CornerDetectionPipe
     }
 
     /**
-    * @param a First point.
-    * @param b Second point.
-    * @return The straight line distance between them.
-    */
+     * @param a First point.
+     * @param b Second point.
+     * @return The straight line distance between them.
+     */
     private static double distanceBetween(Point a, Point b) {
         return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2));
     }
 
     /**
-    * @param a First point.
-    * @param b Second point.
-    * @return The straight line distance between them.
-    */
+     * @param a First point.
+     * @param b Second point.
+     * @return The straight line distance between them.
+     */
     private static double distanceBetween(Translation2d a, Translation2d b) {
         return Math.sqrt(Math.pow(a.getX() - b.getX(), 2) + Math.pow(a.getY() - b.getY(), 2));
     }
 
     /**
-    * Find the 4 most extreme corners,
-    *
-    * @param target the target to track.
-    * @param convexHull weather to use the convex hull of the target.
-    * @return the 4 extreme corners of the contour.
-    */
+     * Find the 4 most extreme corners,
+     *
+     * @param target the target to track.
+     * @param convexHull weather to use the convex hull of the target.
+     * @return the 4 extreme corners of the contour.
+     */
     private List<Point> detectExtremeCornersByApproxPolyDp(TrackedTarget target, boolean convexHull) {
         var centroid = target.getMinAreaRect().center;
         Comparator<Point> distanceProvider =

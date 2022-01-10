@@ -29,11 +29,11 @@ public class Collect2dTargetsPipe
         extends CVPipe<
                 List<PotentialTarget>, List<TrackedTarget>, Collect2dTargetsPipe.Collect2dTargetsParams> {
     /**
-    * Processes this pipeline.
-    *
-    * @param in Input for pipe processing.
-    * @return A list of tracked targets.
-    */
+     * Processes this pipeline.
+     *
+     * @param in Input for pipe processing.
+     * @return A list of tracked targets.
+     */
     @Override
     protected List<TrackedTarget> process(List<PotentialTarget> in) {
         List<TrackedTarget> targets = new ArrayList<>();
