@@ -32,11 +32,11 @@ public class RotateImagePipe extends MutatingPipe<Mat, RotateImagePipe.RotateIma
     }
 
     /**
-    * Process this pipe
-    *
-    * @param in {@link Mat} to be rotated
-    * @return Rotated {@link Mat}
-    */
+     * Process this pipe
+     *
+     * @param in {@link Mat} to be rotated
+     * @return Rotated {@link Mat}
+     */
     @Override
     protected Void process(Mat in) {
         Core.rotate(in, in, params.rotation.value);

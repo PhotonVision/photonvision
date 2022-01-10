@@ -25,9 +25,9 @@ import java.util.StringJoiner;
 @SuppressWarnings("unused")
 public class NumberListUtils {
     /**
-    * @param collection an ArrayList of Comparable objects
-    * @return the median of collection
-    */
+     * @param collection an ArrayList of Comparable objects
+     * @return the median of collection
+     */
     public static <T extends Number> double median(List<T> collection, Comparator<T> comp) {
         double result;
         int n = collection.size() / 2;
@@ -57,9 +57,9 @@ public class NumberListUtils {
     }
 
     /**
-    * @param collection an ArrayList of Numbers
-    * @return the mean of collection
-    */
+     * @param collection an ArrayList of Numbers
+     * @return the mean of collection
+     */
     public static double mean(final List<? extends Number> collection) {
         BigDecimal sum = BigDecimal.ZERO;
         for (final Number number : collection) {
@@ -69,11 +69,11 @@ public class NumberListUtils {
     }
 
     /**
-    * @param collection a collection of Comparable objects
-    * @param n the position of the desired object, using the ordering defined on the collection
-    *     elements
-    * @return the nth smallest object
-    */
+     * @param collection a collection of Comparable objects
+     * @param n the position of the desired object, using the ordering defined on the collection
+     *     elements
+     * @return the nth smallest object
+     */
     public static <T> T nthSmallest(List<T> collection, int n, Comparator<T> comp) {
         T result, pivot;
         ArrayList<T> underPivot = new ArrayList<>(),

@@ -78,11 +78,11 @@ public class PhotonTrackedTarget {
     }
 
     /**
-    * Populates the fields of this class with information from the incoming packet.
-    *
-    * @param packet The incoming packet.
-    * @return The incoming packet.
-    */
+     * Populates the fields of this class with information from the incoming packet.
+     *
+     * @param packet The incoming packet.
+     * @return The incoming packet.
+     */
     public Packet createFromPacket(Packet packet) {
         yaw = packet.decodeDouble();
         pitch = packet.decodeDouble();
@@ -99,11 +99,11 @@ public class PhotonTrackedTarget {
     }
 
     /**
-    * Populates the outgoing packet with information from the current target.
-    *
-    * @param packet The outgoing packet.
-    * @return The outgoing packet.
-    */
+     * Populates the outgoing packet with information from the current target.
+     *
+     * @param packet The outgoing packet.
+     * @return The outgoing packet.
+     */
     public Packet populatePacket(Packet packet) {
         packet.encode(yaw);
         packet.encode(pitch);

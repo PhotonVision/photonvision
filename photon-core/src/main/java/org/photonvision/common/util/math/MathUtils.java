@@ -64,13 +64,13 @@ public class MathUtils {
     }
 
     /**
-    * Linearly interpolates between two values.
-    *
-    * @param startValue The start value.
-    * @param endValue The end value.
-    * @param t The fraction for interpolation.
-    * @return The interpolated value.
-    */
+     * Linearly interpolates between two values.
+     *
+     * @param startValue The start value.
+     * @param endValue The end value.
+     * @param t The fraction for interpolation.
+     * @return The interpolated value.
+     */
     @SuppressWarnings("ParameterName")
     public static double lerp(double startValue, double endValue, double t) {
         return startValue + (endValue - startValue) * t;

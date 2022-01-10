@@ -29,8 +29,8 @@ import org.photonvision.common.logging.Logger;
 
 @SuppressWarnings("rawtypes")
 /*
-* DO NOT use logging in this class. If you do, the logs will recurse forever!
-*/
+ * DO NOT use logging in this class. If you do, the logs will recurse forever!
+ */
 class UIOutboundSubscriber extends DataChangeSubscriber {
     Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.WebServer);
 

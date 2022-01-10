@@ -39,13 +39,13 @@ public class VisionRunner {
     private long loopCount;
 
     /**
-    * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
-    * the consumer.
-    *
-    * @param frameSupplier The supplier of the latest frame.
-    * @param pipelineSupplier The supplier of the current pipeline.
-    * @param pipelineResultConsumer The consumer of the latest result.
-    */
+     * VisionRunner contains a thread to run a pipeline, given a frame, and will give the result to
+     * the consumer.
+     *
+     * @param frameSupplier The supplier of the latest frame.
+     * @param pipelineSupplier The supplier of the current pipeline.
+     * @param pipelineResultConsumer The consumer of the latest result.
+     */
     public VisionRunner(
             FrameProvider frameSupplier,
             Supplier<CVPipeline> pipelineSupplier,

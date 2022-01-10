@@ -63,10 +63,10 @@ public class CVPipelineResult implements Releasable {
     }
 
     /**
-    * Get the latency between now (wpi::Now) and the time at which the image was captured. FOOTGUN:
-    * the latency is relative to the time at which this method is called. Waiting to call this method
-    * will change the latency this method returns.
-    */
+     * Get the latency between now (wpi::Now) and the time at which the image was captured. FOOTGUN:
+     * the latency is relative to the time at which this method is called. Waiting to call this method
+     * will change the latency this method returns.
+     */
     public double getLatencyMillis() {
         var now = MathUtils.wpiNanoTime();
         return MathUtils.nanosToMillis(now - imageCaptureTimestampNanos);

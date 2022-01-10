@@ -60,11 +60,11 @@ public class Calibrate3dPipe
     private double calibrationAccuracy;
 
     /**
-    * Runs the process for the pipe.
-    *
-    * @param in Input for pipe processing. In the format (Input image, object points, image points)
-    * @return Result of processing.
-    */
+     * Runs the process for the pipe.
+     *
+     * @param in Input for pipe processing. In the format (Input image, object points, image points)
+     * @return Result of processing.
+     */
     @Override
     protected CameraCalibrationCoefficients process(List<Triple<Size, Mat, Mat>> in) {
         in =

@@ -36,12 +36,12 @@ import org.photonvision.SimVisionSystem;
 import org.photonvision.SimVisionTarget;
 
 /**
-* Implementation of a simulation of robot physics, sensors, motor controllers Includes a Simulated
-* PhotonVision system and one vision target.
-*
-* <p>This class and its methods are only relevant during simulation. While on the real robot, the
-* real motors/sensors/physics are used instead.
-*/
+ * Implementation of a simulation of robot physics, sensors, motor controllers Includes a Simulated
+ * PhotonVision system and one vision target.
+ *
+ * <p>This class and its methods are only relevant during simulation. While on the real robot, the
+ * real motors/sensors/physics are used instead.
+ */
 public class DrivetrainSim {
     // Simulated Motor Controllers
     PWMSim leftLeader = new PWMSim(0);
@@ -108,9 +108,9 @@ public class DrivetrainSim {
     }
 
     /**
-    * Perform all periodic drivetrain simulation related tasks to advance our simulation of robot
-    * physics forward by a single 20ms step.
-    */
+     * Perform all periodic drivetrain simulation related tasks to advance our simulation of robot
+     * physics forward by a single 20ms step.
+     */
     public void update() {
         double leftMotorCmd = 0;
         double rightMotorCmd = 0;
@@ -132,11 +132,11 @@ public class DrivetrainSim {
     }
 
     /**
-    * Resets the simulation back to a pre-defined pose Useful to simulate the action of placing the
-    * robot onto a specific spot in the field (IE, at the start of each match).
-    *
-    * @param pose
-    */
+     * Resets the simulation back to a pre-defined pose Useful to simulate the action of placing the
+     * robot onto a specific spot in the field (IE, at the start of each match).
+     *
+     * @param pose
+     */
     public void resetPose(Pose2d pose) {
         drivetrainSimulator.setPose(pose);
     }

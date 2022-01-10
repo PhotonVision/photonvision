@@ -26,20 +26,20 @@ public class Packet {
     int readPos, writePos;
 
     /**
-    * Constructs an empty packet.
-    *
-    * @param size The size of the packet buffer.
-    */
+     * Constructs an empty packet.
+     *
+     * @param size The size of the packet buffer.
+     */
     public Packet(int size) {
         this.size = size;
         packetData = new byte[size];
     }
 
     /**
-    * Constructs a packet with the given data.
-    *
-    * @param data The packet data.
-    */
+     * Constructs a packet with the given data.
+     *
+     * @param data The packet data.
+     */
     public Packet(byte[] data) {
         packetData = data;
         size = packetData.length;
@@ -57,38 +57,38 @@ public class Packet {
     }
 
     /**
-    * Returns the packet data.
-    *
-    * @return The packet data.
-    */
+     * Returns the packet data.
+     *
+     * @return The packet data.
+     */
     public byte[] getData() {
         return packetData;
     }
 
     /**
-    * Sets the packet data.
-    *
-    * @param data The packet data.
-    */
+     * Sets the packet data.
+     *
+     * @param data The packet data.
+     */
     public void setData(byte[] data) {
         packetData = data;
         size = data.length;
     }
 
     /**
-    * Encodes the byte into the packet.
-    *
-    * @param src The byte to encode.
-    */
+     * Encodes the byte into the packet.
+     *
+     * @param src The byte to encode.
+     */
     public void encode(byte src) {
         packetData[writePos++] = src;
     }
 
     /**
-    * Encodes the integer into the packet.
-    *
-    * @param src The integer to encode.
-    */
+     * Encodes the integer into the packet.
+     *
+     * @param src The integer to encode.
+     */
     public void encode(int src) {
         packetData[writePos++] = (byte) (src >>> 24);
         packetData[writePos++] = (byte) (src >>> 16);
@@ -97,10 +97,10 @@ public class Packet {
     }
 
     /**
-    * Encodes the double into the packet.
-    *
-    * @param src The double to encode.
-    */
+     * Encodes the double into the packet.
+     *
+     * @param src The double to encode.
+     */
     public void encode(double src) {
         long data = Double.doubleToRawLongBits(src);
         packetData[writePos++] = (byte) ((data >> 56) & 0xff);
@@ -114,28 +114,28 @@ public class Packet {
     }
 
     /**
-    * Encodes the boolean into the packet.
-    *
-    * @param src The boolean to encode.
-    */
+     * Encodes the boolean into the packet.
+     *
+     * @param src The boolean to encode.
+     */
     public void encode(boolean src) {
         packetData[writePos++] = src ? (byte) 1 : (byte) 0;
     }
 
     /**
-    * Returns a decoded byte from the packet.
-    *
-    * @return A decoded byte from the packet.
-    */
+     * Returns a decoded byte from the packet.
+     *
+     * @return A decoded byte from the packet.
+     */
     public byte decodeByte() {
         return packetData[readPos++];
     }
 
     /**
-    * Returns a decoded int from the packet.
-    *
-    * @return A decoded int from the packet.
-    */
+     * Returns a decoded int from the packet.
+     *
+     * @return A decoded int from the packet.
+     */
     public int decodeInt() {
         return (0xff & packetData[readPos++]) << 24
                 | (0xff & packetData[readPos++]) << 16
@@ -144,10 +144,10 @@ public class Packet {
     }
 
     /**
-    * Returns a decoded double from the packet.
-    *
-    * @return A decoded double from the packet.
-    */
+     * Returns a decoded double from the packet.
+     *
+     * @return A decoded double from the packet.
+     */
     public double decodeDouble() {
         long data =
                 (long) (0xff & packetData[readPos++]) << 56
@@ -162,10 +162,10 @@ public class Packet {
     }
 
     /**
-    * Returns a decoded boolean from the packet.
-    *
-    * @return A decoded boolean from the packet.
-    */
+     * Returns a decoded boolean from the packet.
+     *
+     * @return A decoded boolean from the packet.
+     */
     public boolean decodeBoolean() {
         return packetData[readPos++] == 1;
     }

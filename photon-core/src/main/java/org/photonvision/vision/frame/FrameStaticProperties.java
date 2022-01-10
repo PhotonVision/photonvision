@@ -37,23 +37,23 @@ public class FrameStaticProperties {
     public CameraCalibrationCoefficients cameraCalibration;
 
     /**
-    * Instantiates a new Frame static properties.
-    *
-    * @param mode The Video Mode of the camera.
-    * @param fov The fov of the image.
-    */
+     * Instantiates a new Frame static properties.
+     *
+     * @param mode The Video Mode of the camera.
+     * @param fov The fov of the image.
+     */
     public FrameStaticProperties(
             VideoMode mode, double fov, Rotation2d cameraPitch, CameraCalibrationCoefficients cal) {
         this(mode != null ? mode.width : 1, mode != null ? mode.height : 1, fov, cameraPitch, cal);
     }
 
     /**
-    * Instantiates a new Frame static properties.
-    *
-    * @param imageWidth The width of the image.
-    * @param imageHeight The width of the image.
-    * @param fov The fov of the image.
-    */
+     * Instantiates a new Frame static properties.
+     *
+     * @param imageWidth The width of the image.
+     * @param imageHeight The width of the image.
+     * @param fov The fov of the image.
+     */
     public FrameStaticProperties(
             int imageWidth,
             int imageHeight,

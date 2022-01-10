@@ -139,12 +139,12 @@ public class SolvePNPPipe
     }
 
     /**
-    * Element-wise scale a matrix by a given factor
-    *
-    * @param src the source matrix
-    * @param factor by how much to scale each element
-    * @return the scaled matrix
-    */
+     * Element-wise scale a matrix by a given factor
+     *
+     * @param src the source matrix
+     * @param factor by how much to scale each element
+     * @return the scaled matrix
+     */
     @SuppressWarnings("SameParameterValue")
     private static Mat matScale(Mat src, double factor) {
         Mat dst = new Mat(src.rows(), src.cols(), src.type());

@@ -25,11 +25,11 @@ import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 import org.photonvision.PhotonCamera;
 
 /**
-* The VM is configured to automatically run this class, and to call the functions corresponding to
-* each mode, as described in the TimedRobot documentation. If you change the name of this class or
-* the package after creating this project, you must also update the build.gradle file in the
-* project.
-*/
+ * The VM is configured to automatically run this class, and to call the functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the name of this class or
+ * the package after creating this project, you must also update the build.gradle file in the
+ * project.
+ */
 public class Robot extends TimedRobot {
     // Constants such as camera and target height stored. Change per robot and goal!
     final double CAMERA_HEIGHT_METERS = Units.inchesToMeters(24);

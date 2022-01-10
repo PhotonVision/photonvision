@@ -23,9 +23,9 @@ import java.net.Socket;
 import java.nio.ByteBuffer;
 
 /**
-* Credit to nkolban
-* https://github.com/nkolban/jpigpio/blob/master/JPigpio/src/jpigpio/SocketLock.java
-*/
+ * Credit to nkolban
+ * https://github.com/nkolban/jpigpio/blob/master/JPigpio/src/jpigpio/SocketLock.java
+ */
 final class PigpioSocketLock {
     private static final int replyTimeoutMillis = 1000;
 
@@ -81,16 +81,16 @@ final class PigpioSocketLock {
     }
 
     /**
-    * Send extended command to pigpiod and return result code
-    *
-    * @param cmd Command to send
-    * @param p1 Command parameter 1
-    * @param p2 Command parameter 2
-    * @param p3 Command parameter 3 (usually length of extended data - see paramater ext)
-    * @param ext Array of bytes containing extended data
-    * @return Command result code
-    * @throws IOException in case of network connection error
-    */
+     * Send extended command to pigpiod and return result code
+     *
+     * @param cmd Command to send
+     * @param p1 Command parameter 1
+     * @param p2 Command parameter 2
+     * @param p3 Command parameter 3 (usually length of extended data - see paramater ext)
+     * @param ext Array of bytes containing extended data
+     * @return Command result code
+     * @throws IOException in case of network connection error
+     */
     @SuppressWarnings("UnusedAssignment")
     public synchronized int sendCmd(int cmd, int p1, int p2, int p3, byte[] ext) throws IOException {
         ByteBuffer bb = ByteBuffer.allocate(16 + ext.length);
@@ -135,11 +135,11 @@ final class PigpioSocketLock {
     }
 
     /**
-    * Read all remaining bytes coming from pigpiod
-    *
-    * @param data Array to store read bytes.
-    * @throws IOException if unable to read from network
-    */
+     * Read all remaining bytes coming from pigpiod
+     *
+     * @param data Array to store read bytes.
+     * @throws IOException if unable to read from network
+     */
     public void readBytes(byte[] data) throws IOException {
         in.readFully(data);
     }

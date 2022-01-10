@@ -24,11 +24,11 @@ import edu.wpi.first.math.util.Units;
 import org.photonvision.SimVisionTarget;
 
 /**
-* Holding class for all physical constants that must be used throughout the codebase. These values
-* should be set by one of a few methods: 1) Talk to your mechanical and electrical teams and
-* determine how the physical robot is being built and configured. 2) Read the game manual and look
-* at the field drawings 3) Match with how your vision coprocessor is configured.
-*/
+ * Holding class for all physical constants that must be used throughout the codebase. These values
+ * should be set by one of a few methods: 1) Talk to your mechanical and electrical teams and
+ * determine how the physical robot is being built and configured. 2) Read the game manual and look
+ * at the field drawings 3) Match with how your vision coprocessor is configured.
+ */
 public class Constants {
     //////////////////////////////////////////////////////////////////
     // Drivetrain Physical

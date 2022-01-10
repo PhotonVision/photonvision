@@ -50,11 +50,11 @@ import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 /**
-* This is the God Class
-*
-* <p>VisionModule has a pipeline manager, vision runner, and data providers. The data providers
-* provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
-*/
+ * This is the God Class
+ *
+ * <p>VisionModule has a pipeline manager, vision runner, and data providers. The data providers
+ * provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
+ */
 public class VisionModule {
     private static final int streamFPSCap = 30;
 

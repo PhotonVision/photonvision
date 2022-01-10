@@ -57,10 +57,10 @@ public class TrackedTarget implements Releasable {
     }
 
     /**
-    * Set the approximate bouding polygon.
-    *
-    * @param boundingPolygon List of points to copy. Not modified.
-    */
+     * Set the approximate bouding polygon.
+     *
+     * @param boundingPolygon List of points to copy. Not modified.
+     */
     public void setApproximateBoundingPolygon(MatOfPoint2f boundingPolygon) {
         if (m_approximateBoundingPolygon == null) m_approximateBoundingPolygon = new MatOfPoint2f();
         boundingPolygon.copyTo(m_approximateBoundingPolygon);

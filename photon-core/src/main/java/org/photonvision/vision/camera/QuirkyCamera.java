@@ -42,24 +42,24 @@ public class QuirkyCamera {
     public final HashMap<CameraQuirk, Boolean> quirks;
 
     /**
-    * Creates a QuirkyCamera that matches by USB VID/PID
-    *
-    * @param usbVid USB VID of camera
-    * @param usbPid USB PID of camera
-    * @param quirks Camera quirks
-    */
+     * Creates a QuirkyCamera that matches by USB VID/PID
+     *
+     * @param usbVid USB VID of camera
+     * @param usbPid USB PID of camera
+     * @param quirks Camera quirks
+     */
     private QuirkyCamera(int usbVid, int usbPid, CameraQuirk... quirks) {
         this(usbVid, usbPid, "", quirks);
     }
 
     /**
-    * Creates a QuirkyCamera that matches by USB VID/PID and name
-    *
-    * @param usbVid USB VID of camera
-    * @param usbPid USB PID of camera
-    * @param baseName CSCore name of camera
-    * @param quirks Camera quirks
-    */
+     * Creates a QuirkyCamera that matches by USB VID/PID and name
+     *
+     * @param usbVid USB VID of camera
+     * @param usbPid USB PID of camera
+     * @param baseName CSCore name of camera
+     * @param quirks Camera quirks
+     */
     private QuirkyCamera(int usbVid, int usbPid, String baseName, CameraQuirk... quirks) {
         this.usbVid = usbVid;
         this.usbPid = usbPid;

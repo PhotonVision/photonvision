@@ -27,10 +27,10 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.motorcontrol.PWMVictorSPX;
 
 /**
-* Implements a controller for the drivetrain. Converts a set of chassis motion commands into motor
-* controller PWM values which attempt to speed up or slow down the wheels to match the desired
-* speed.
-*/
+ * Implements a controller for the drivetrain. Converts a set of chassis motion commands into motor
+ * controller PWM values which attempt to speed up or slow down the wheels to match the desired
+ * speed.
+ */
 public class Drivetrain {
     // PWM motor controller output definitions
     PWMVictorSPX leftLeader = new PWMVictorSPX(Constants.kDtLeftLeaderPin);
@@ -77,12 +77,12 @@ public class Drivetrain {
     }
 
     /**
-    * Given a set of chassis (fwd/rev + rotate) speed commands, perform all periodic tasks to assign
-    * new outputs to the motor controllers.
-    *
-    * @param xSpeed Desired chassis Forward or Reverse speed (in meters/sec). Positive is forward.
-    * @param rot Desired chassis rotation speed in radians/sec. Positive is counter-clockwise.
-    */
+     * Given a set of chassis (fwd/rev + rotate) speed commands, perform all periodic tasks to assign
+     * new outputs to the motor controllers.
+     *
+     * @param xSpeed Desired chassis Forward or Reverse speed (in meters/sec). Positive is forward.
+     * @param rot Desired chassis rotation speed in radians/sec. Positive is counter-clockwise.
+     */
     public void drive(double xSpeed, double rot) {
         // Convert our fwd/rev and rotate commands to wheel speed commands
         DifferentialDriveWheelSpeeds speeds =
@@ -111,12 +111,12 @@ public class Drivetrain {
     }
 
     /**
-    * Force the pose estimator and all sensors to a particular pose. This is useful for indicating to
-    * the software when you have manually moved your robot in a particular position on the field (EX:
-    * when you place it on the field at the start of the match).
-    *
-    * @param pose
-    */
+     * Force the pose estimator and all sensors to a particular pose. This is useful for indicating to
+     * the software when you have manually moved your robot in a particular position on the field (EX:
+     * when you place it on the field at the start of the match).
+     *
+     * @param pose
+     */
     public void resetOdometry(Pose2d pose) {
         leftEncoder.reset();
         rightEncoder.reset();

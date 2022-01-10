@@ -43,18 +43,18 @@ public class PipelineManager {
     private CVPipeline currentUserPipeline = driverModePipeline;
 
     /**
-    * Index of the last active user-created pipeline. <br>
-    * <br>
-    * Used only when switching from any of the built-in pipelines back to a user-created pipeline.
-    */
+     * Index of the last active user-created pipeline. <br>
+     * <br>
+     * Used only when switching from any of the built-in pipelines back to a user-created pipeline.
+     */
     private int lastPipelineIndex;
 
     /**
-    * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline, and all provided
-    * pipelines.
-    *
-    * @param userPipelines Pipelines to add to the manager.
-    */
+     * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline, and all provided
+     * pipelines.
+     *
+     * @param userPipelines Pipelines to add to the manager.
+     */
     public PipelineManager(
             DriverModePipelineSettings driverSettings, List<CVPipelineSettings> userPipelines) {
         this.userPipelineSettings = new ArrayList<>(userPipelines);
@@ -70,11 +70,11 @@ public class PipelineManager {
     }
 
     /**
-    * Get the settings for a pipeline by index.
-    *
-    * @param index Index of pipeline whose settings need getting.
-    * @return The gotten settings of the pipeline whose index was provided.
-    */
+     * Get the settings for a pipeline by index.
+     *
+     * @param index Index of pipeline whose settings need getting.
+     * @return The gotten settings of the pipeline whose index was provided.
+     */
     public CVPipelineSettings getPipelineSettings(int index) {
         if (index < 0) {
             switch (index) {
@@ -92,10 +92,10 @@ public class PipelineManager {
     }
 
     /**
-    * Gets a list of nicknames for all user pipelines
-    *
-    * @return The list of nicknames for all user pipelines
-    */
+     * Gets a list of nicknames for all user pipelines
+     *
+     * @return The list of nicknames for all user pipelines
+     */
     public List<String> getPipelineNicknames() {
         List<String> ret = new ArrayList<>();
         for (var p : userPipelineSettings) {
@@ -105,19 +105,19 @@ public class PipelineManager {
     }
 
     /**
-    * Gets the index of the currently active pipeline
-    *
-    * @return The index of the currently active pipeline
-    */
+     * Gets the index of the currently active pipeline
+     *
+     * @return The index of the currently active pipeline
+     */
     public int getCurrentPipelineIndex() {
         return currentPipelineIndex;
     }
 
     /**
-    * Get the currently active pipeline.
-    *
-    * @return The currently active pipeline.
-    */
+     * Get the currently active pipeline.
+     *
+     * @return The currently active pipeline.
+     */
     public CVPipeline getCurrentUserPipeline() {
         if (currentPipelineIndex < 0) {
             switch (currentPipelineIndex) {
@@ -149,22 +149,22 @@ public class PipelineManager {
     }
 
     /**
-    * Get the currently active pipelines settings
-    *
-    * @return The currently active pipelines settings
-    */
+     * Get the currently active pipelines settings
+     *
+     * @return The currently active pipelines settings
+     */
     public CVPipelineSettings getCurrentPipelineSettings() {
         return getPipelineSettings(currentPipelineIndex);
     }
 
     /**
-    * Internal method for setting the active pipeline. <br>
-    * <br>
-    * All externally accessible methods that intend to change the active pipeline MUST go through
-    * here to ensure all proper steps are taken.
-    *
-    * @param index Index of pipeline to be active
-    */
+     * Internal method for setting the active pipeline. <br>
+     * <br>
+     * All externally accessible methods that intend to change the active pipeline MUST go through
+     * here to ensure all proper steps are taken.
+     *
+     * @param index Index of pipeline to be active
+     */
     private void setPipelineInternal(int index) {
         if (index < 0) {
             lastPipelineIndex = currentPipelineIndex;
@@ -192,33 +192,33 @@ public class PipelineManager {
     }
 
     /**
-    * Enters or exits calibration mode based on the parameter. <br>
-    * <br>
-    * Exiting returns to the last used user pipeline.
-    *
-    * @param wantsCalibration True to enter calibration mode, false to exit calibration mode.
-    */
+     * Enters or exits calibration mode based on the parameter. <br>
+     * <br>
+     * Exiting returns to the last used user pipeline.
+     *
+     * @param wantsCalibration True to enter calibration mode, false to exit calibration mode.
+     */
     public void setCalibrationMode(boolean wantsCalibration) {
         if (!wantsCalibration) calibration3dPipeline.finishCalibration();
         setPipelineInternal(wantsCalibration ? CAL_3D_INDEX : lastPipelineIndex);
     }
 
     /**
-    * Enters or exits driver mode based on the parameter. <br>
-    * <br>
-    * Exiting returns to the last used user pipeline.
-    *
-    * @param state True to enter driver mode, false to exit driver mode.
-    */
+     * Enters or exits driver mode based on the parameter. <br>
+     * <br>
+     * Exiting returns to the last used user pipeline.
+     *
+     * @param state True to enter driver mode, false to exit driver mode.
+     */
     public void setDriverMode(boolean state) {
         setPipelineInternal(state ? DRIVERMODE_INDEX : lastPipelineIndex);
     }
 
     /**
-    * Returns whether or not driver mode is active.
-    *
-    * @return Whether or not driver mode is active.
-    */
+     * Returns whether or not driver mode is active.
+     *
+     * @return Whether or not driver mode is active.
+     */
     public boolean getDriverMode() {
         return currentPipelineIndex == DRIVERMODE_INDEX;
     }
@@ -227,10 +227,10 @@ public class PipelineManager {
             Comparator.comparingInt(o -> o.pipelineIndex);
 
     /**
-    * Sorts the pipeline list by index, and reassigns their indexes to match the new order. <br>
-    * <br>
-    * I don't like this but I have no other ideas, and it works so ¯\_(ツ)_/¯
-    */
+     * Sorts the pipeline list by index, and reassigns their indexes to match the new order. <br>
+     * <br>
+     * I don't like this but I have no other ideas, and it works so ¯\_(ツ)_/¯
+     */
     private void reassignIndexes() {
         userPipelineSettings.sort(PipelineSettingsIndexComparator);
         for (int i = 0; i < userPipelineSettings.size(); i++) {
@@ -283,10 +283,10 @@ public class PipelineManager {
     }
 
     /**
-    * Remove a pipeline settings at the given index and return the new current index
-    *
-    * @param index The idx to remove
-    */
+     * Remove a pipeline settings at the given index and return the new current index
+     *
+     * @param index The idx to remove
+     */
     private int removePipelineInternal(int index) {
         userPipelineSettings.remove(index);
         currentPipelineIndex = Math.min(index, userPipelineSettings.size() - 1);
@@ -311,11 +311,11 @@ public class PipelineManager {
     }
 
     /**
-    * Duplicate a pipeline at a given index
-    *
-    * @param index the index of the target pipeline
-    * @return The new index
-    */
+     * Duplicate a pipeline at a given index
+     *
+     * @param index the index of the target pipeline
+     * @return The new index
+     */
     public int duplicatePipeline(int index) {
         var settings = userPipelineSettings.get(index);
         var newSettings = settings.clone();
