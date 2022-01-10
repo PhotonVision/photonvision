@@ -21,7 +21,6 @@ import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
@@ -156,8 +155,14 @@ public class SimVisionSystem {
                     if (camCanSeeTarget(distMeters, yawDegrees, pitchDegrees, area)) {
                         // TODO simulate target corners
                         visibleTgtList.add(
-                                new PhotonTrackedTarget(yawDegrees, pitchDegrees, area, 0.0, camToTargetTrans,
-                                        List.of(new TargetCorner(0, 0), new TargetCorner(0,0),
+                                new PhotonTrackedTarget(
+                                        yawDegrees,
+                                        pitchDegrees,
+                                        area,
+                                        0.0,
+                                        camToTargetTrans,
+                                        List.of(
+                                                new TargetCorner(0, 0), new TargetCorner(0, 0),
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0))));
                     }
                 });

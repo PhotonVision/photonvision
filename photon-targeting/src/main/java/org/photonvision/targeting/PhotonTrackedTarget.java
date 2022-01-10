@@ -19,7 +19,6 @@ package org.photonvision.targeting;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -37,10 +36,14 @@ public class PhotonTrackedTarget {
 
     public PhotonTrackedTarget() {}
 
-    /**
-     * Construct a tracked target, given exactly 4 corners
-     */
-    public PhotonTrackedTarget(double yaw, double pitch, double area, double skew, Transform2d pose, List<TargetCorner> corners) {
+    /** Construct a tracked target, given exactly 4 corners */
+    public PhotonTrackedTarget(
+            double yaw,
+            double pitch,
+            double area,
+            double skew,
+            Transform2d pose,
+            List<TargetCorner> corners) {
         assert corners.size() == 4;
         this.yaw = yaw;
         this.pitch = pitch;
@@ -67,9 +70,9 @@ public class PhotonTrackedTarget {
     }
 
     /**
-     * Return a list of the 4 corners in image space (origin top left, x left, y down), in no particular order,
-     * of the minimum area bounding rectangle of this target
-     */
+    * Return a list of the 4 corners in image space (origin top left, x left, y down), in no
+    * particular order, of the minimum area bounding rectangle of this target
+    */
     public List<TargetCorner> getCorners() {
         return targetCorners;
     }
@@ -112,7 +115,7 @@ public class PhotonTrackedTarget {
         double r = packet.decodeDouble();
 
         this.targetCorners = new ArrayList<>(4);
-        for(int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             double cx = packet.decodeDouble();
             double cy = packet.decodeDouble();
             targetCorners.add(new TargetCorner(cx, cy));
@@ -138,7 +141,7 @@ public class PhotonTrackedTarget {
         packet.encode(cameraToTarget.getTranslation().getY());
         packet.encode(cameraToTarget.getRotation().getDegrees());
 
-        for(int i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             packet.encode(targetCorners.get(i).x);
             packet.encode(targetCorners.get(i).y);
         }

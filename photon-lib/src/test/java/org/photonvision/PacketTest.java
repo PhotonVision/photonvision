@@ -33,13 +33,16 @@ class PacketTest {
     void testSimpleTrackedTarget() {
         var target =
                 new PhotonTrackedTarget(
-                        3.0, 4.0, 9.0, -5.0, new Transform2d(new Translation2d(1, 2), new Rotation2d(1.5)),
+                        3.0,
+                        4.0,
+                        9.0,
+                        -5.0,
+                        new Transform2d(new Translation2d(1, 2), new Rotation2d(1.5)),
                         List.of(
-                                new TargetCorner(1,2),
-                                new TargetCorner(3,4),
-                                new TargetCorner(5,6),
-                                new TargetCorner(7,8)
-                        ));
+                                new TargetCorner(1, 2),
+                                new TargetCorner(3, 4),
+                                new TargetCorner(5, 6),
+                                new TargetCorner(7, 8)));
         var p = new Packet(PhotonTrackedTarget.PACK_SIZE_BYTES);
         target.populatePacket(p);
 
@@ -71,11 +74,10 @@ class PacketTest {
                                         4.0,
                                         new Transform2d(new Translation2d(1, 2), new Rotation2d(1.5)),
                                         List.of(
-                                                new TargetCorner(1,2),
-                                                new TargetCorner(3,4),
-                                                new TargetCorner(5,6),
-                                                new TargetCorner(7,8)
-                                        )),
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         3.0,
                                         -4.0,
@@ -83,11 +85,10 @@ class PacketTest {
                                         6.7,
                                         new Transform2d(new Translation2d(1, 5), new Rotation2d(1.5)),
                                         List.of(
-                                                new TargetCorner(1,2),
-                                                new TargetCorner(3,4),
-                                                new TargetCorner(5,6),
-                                                new TargetCorner(7,8)
-                                        ))));
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)))));
         var p2 = new Packet(result2.getPacketSize());
         result2.populatePacket(p2);
 
