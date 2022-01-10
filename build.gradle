@@ -44,7 +44,7 @@ spotless {
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()
- targets   }
+    }
     java {
         target "**/*.java"
         licenseHeaderFile "$rootDir/LicenseHeader.txt"

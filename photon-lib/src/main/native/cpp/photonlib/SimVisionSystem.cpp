@@ -87,10 +87,10 @@ void SimVisionSystem::ProcessFrame(frc::Pose2d robotPose) {
     if (CamCanSeeTarget(distHypot, yawAngle, pitchAngle, area)) {
       PhotonTrackedTarget newTgt = PhotonTrackedTarget(
           yawAngle.value(), pitchAngle.value(), area, 0.0, camToTargetTrans,
-           {std::make_pair(1,2),
-            std::make_pair(3,4),
-            std::make_pair(5,6),
-            std::make_pair(7,8)});
+           {std::pair{1,2},
+            std::pair{3,4},
+            std::pair{5,6},
+            std::pair{7,8}});
       visibleTgtList.push_back(newTgt);
     }
   }
