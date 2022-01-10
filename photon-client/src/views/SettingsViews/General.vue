@@ -250,7 +250,7 @@ export default {
                 {headers: {"Content-Type": "multipart/form-data"}}).then(() => {
                 this.snackbar = {
                     color: "success",
-                    text: "Settings imported successfully! Program will now exit...",
+                    text: "Settings imported successfully! PhotonVision will restart in the background...",
                 };
                 this.snack = true;
             }).catch(err => {
@@ -296,7 +296,7 @@ export default {
                 }).then(() => {
                 this.snackbar = {
                     color: "success",
-                    text: "New .jar copied successfully! Program will now exit...",
+                    text: "New .jar copied successfully! PhotonVision will restart in the background...",
                 };
                 this.snack = true;
             }).catch(err => {

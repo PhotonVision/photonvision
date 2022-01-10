@@ -40,6 +40,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
+import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.target.TargetModel;
@@ -99,8 +100,7 @@ public class RequestHandler {
 
             ctx.status(200);
             logger.info("Settings uploaded, going down for restart.");
-            restartProgram(ctx);
-
+            restartProgram();
         } else {
             logger.error("Couldn't read uploaded file! Ignoring.");
             ctx.status(500);
@@ -128,7 +128,7 @@ public class RequestHandler {
 
                     ctx.status(200);
                     logger.info("New .jar in place, going down for restart...");
-                    restartProgram(ctx);
+                    restartProgram();
 
                 } catch (FileNotFoundException e) {
                     logger.error(
@@ -224,13 +224,19 @@ public class RequestHandler {
         ctx.status(HardwareManager.getInstance().restartDevice() ? 200 : 500);
     }
 
+    public static void restartProgram(Context ctx) {
+        restartProgram();
+    }
+
+    public static void restartProgram() {
+        TimedTaskManager.getInstance().addOneShotTask(RequestHandler::restartProgramInternal, 0);
+    }
+
     /**
     * Note that this doesn't actually restart the program itself -- instead, it relies on systemd or
     * an equivalent.
     */
-    public static void restartProgram(Context ctx) {
-        ctx.status(200);
-
+    public static void restartProgramInternal() {
         if (Platform.isRaspberryPi()) {
             try {
                 new ShellExec().executeBashCommand("systemctl restart photonvision.service");
