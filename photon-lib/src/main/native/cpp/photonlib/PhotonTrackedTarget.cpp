@@ -25,16 +25,21 @@
 
 namespace photonlib {
 
-PhotonTrackedTarget::PhotonTrackedTarget(double yaw, double pitch, double area,
-                                         double skew,
-                                         const frc::Transform2d& pose,
-                                         const wpi::SmallVector<std::pair<double, double>, 4> corners)
-    : yaw(yaw), pitch(pitch), area(area), skew(skew), cameraToTarget(pose), corners(corners) {}
+PhotonTrackedTarget::PhotonTrackedTarget(
+    double yaw, double pitch, double area, double skew,
+    const frc::Transform2d& pose,
+    const wpi::SmallVector<std::pair<double, double>, 4> corners)
+    : yaw(yaw),
+      pitch(pitch),
+      area(area),
+      skew(skew),
+      cameraToTarget(pose),
+      corners(corners) {}
 
 bool PhotonTrackedTarget::operator==(const PhotonTrackedTarget& other) const {
   return other.yaw == yaw && other.pitch == pitch && other.area == area &&
-         other.skew == skew && other.cameraToTarget == cameraToTarget
-         && other.corners == corners;
+         other.skew == skew && other.cameraToTarget == cameraToTarget &&
+         other.corners == corners;
 }
 
 bool PhotonTrackedTarget::operator!=(const PhotonTrackedTarget& other) const {
@@ -43,14 +48,14 @@ bool PhotonTrackedTarget::operator!=(const PhotonTrackedTarget& other) const {
 
 Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
   packet << target.yaw << target.pitch << target.area << target.skew
-                << target.cameraToTarget.Translation().X().value()
-                << target.cameraToTarget.Translation().Y().value()
-                << target.cameraToTarget.Rotation().Degrees().value();
+         << target.cameraToTarget.Translation().X().value()
+         << target.cameraToTarget.Translation().Y().value()
+         << target.cameraToTarget.Rotation().Degrees().value();
 
-  for(int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     packet << target.corners[i].first << target.corners[i].second;
   }
-  
+
   return packet;
 }
 
@@ -66,7 +71,7 @@ Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
                        units::degree_t(rot));
 
   target.corners.clear();
-  for(int i = 0; i < 4; i++) {
+  for (int i = 0; i < 4; i++) {
     double first = 0;
     double second = 0;
     packet >> first >> second;

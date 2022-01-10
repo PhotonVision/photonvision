@@ -25,13 +25,12 @@
 
 TEST(PacketTest, PhotonTrackedTarget) {
   photonlib::PhotonTrackedTarget target{
-      3.0, 4.0, 9.0, -5.0,
+      3.0,
+      4.0,
+      9.0,
+      -5.0,
       frc::Transform2d(frc::Translation2d(1_m, 2_m), 1.5_rad),
-      {
-        std::pair{1,2},
-        std::pair{3,4},
-        std::pair{5,6},
-        std::pair{7,8}}};
+      {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}};
 
   photonlib::Packet p;
   p << target;
@@ -58,24 +57,20 @@ TEST(PacketTest, PhotonPipelineResult) {
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
       photonlib::PhotonTrackedTarget{
-          3.0, -4.0, 9.0, 4.0,
+          3.0,
+          -4.0,
+          9.0,
+          4.0,
           frc::Transform2d(frc::Translation2d(1_m, 2_m), 1.5_rad),
-      {
-        std::pair{1,2},
-        std::pair{3,4},
-        std::pair{5,6},
-        std::pair{7,8}}
-          },
+          {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}},
       photonlib::PhotonTrackedTarget{
-          3.0, -4.0, 9.1, 6.7,
+          3.0,
+          -4.0,
+          9.1,
+          6.7,
           frc::Transform2d(frc::Translation2d(1_m, 5_m), 1.5_rad),
-          {
-            std::pair{1,2},
-            std::pair{3,4},
-            std::pair{5,6},
-            std::pair{7,8}}
-          }
-          };
+          {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
+           std::pair{7, 8}}}};
 
   photonlib::PhotonPipelineResult result2{2_s, targets};
   photonlib::Packet p2;
