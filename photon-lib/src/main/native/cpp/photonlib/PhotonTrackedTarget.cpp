@@ -70,7 +70,7 @@ Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
     double first = 0;
     double second = 0;
     packet >> first >> second;
-    target.corners.push_back(std::make_pair(first, second));
+    target.corners.emplace_back(first, second);
   }
 
   return packet;
