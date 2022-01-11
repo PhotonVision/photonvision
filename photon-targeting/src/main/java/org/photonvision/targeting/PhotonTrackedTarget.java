@@ -70,9 +70,9 @@ public class PhotonTrackedTarget {
     }
 
     /**
-    * Return a list of the 4 corners in image space (origin top left, x left, y down), in no
-    * particular order, of the minimum area bounding rectangle of this target
-    */
+     * Return a list of the 4 corners in image space (origin top left, x left, y down), in no
+     * particular order, of the minimum area bounding rectangle of this target
+     */
     public List<TargetCorner> getCorners() {
         return targetCorners;
     }
