@@ -54,6 +54,7 @@ task testHeadless(type: Test) {
     systemProperty("java.awt.headless", "true")
     useJUnitPlatform()
     exclude '**/*BenchmarkTest*'
+    workingDir = "../"
 }
 
 task generateJavaDocs(type: Javadoc) {
