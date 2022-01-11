@@ -19,26 +19,38 @@ package org.photonvision.targeting;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class PhotonTrackedTarget {
-    public static final int PACK_SIZE_BYTES = Double.BYTES * 7;
+    public static final int PACK_SIZE_BYTES = Double.BYTES * (7 + 2 * 4);
 
     private double yaw;
     private double pitch;
     private double area;
     private double skew;
     private Transform2d cameraToTarget = new Transform2d();
+    private List<TargetCorner> targetCorners;
 
     public PhotonTrackedTarget() {}
 
-    public PhotonTrackedTarget(double yaw, double pitch, double area, double skew, Transform2d pose) {
+    /** Construct a tracked target, given exactly 4 corners */
+    public PhotonTrackedTarget(
+            double yaw,
+            double pitch,
+            double area,
+            double skew,
+            Transform2d pose,
+            List<TargetCorner> corners) {
+        assert corners.size() == 4;
         this.yaw = yaw;
         this.pitch = pitch;
         this.area = area;
         this.skew = skew;
-        cameraToTarget = pose;
+        this.cameraToTarget = pose;
+        this.targetCorners = corners;
     }
 
     public double getYaw() {
@@ -57,6 +69,14 @@ public class PhotonTrackedTarget {
         return skew;
     }
 
+    /**
+     * Return a list of the 4 corners in image space (origin top left, x left, y down), in no
+     * particular order, of the minimum area bounding rectangle of this target
+     */
+    public List<TargetCorner> getCorners() {
+        return targetCorners;
+    }
+
     public Transform2d getCameraToTarget() {
         return cameraToTarget;
     }
@@ -69,7 +89,8 @@ public class PhotonTrackedTarget {
         return Double.compare(that.yaw, yaw) == 0
                 && Double.compare(that.pitch, pitch) == 0
                 && Double.compare(that.area, area) == 0
-                && Objects.equals(cameraToTarget, that.cameraToTarget);
+                && Objects.equals(cameraToTarget, that.cameraToTarget)
+                && Objects.equals(targetCorners, that.targetCorners);
     }
 
     @Override
@@ -84,16 +105,23 @@ public class PhotonTrackedTarget {
      * @return The incoming packet.
      */
     public Packet createFromPacket(Packet packet) {
-        yaw = packet.decodeDouble();
-        pitch = packet.decodeDouble();
-        area = packet.decodeDouble();
-        skew = packet.decodeDouble();
+        this.yaw = packet.decodeDouble();
+        this.pitch = packet.decodeDouble();
+        this.area = packet.decodeDouble();
+        this.skew = packet.decodeDouble();
 
         double x = packet.decodeDouble();
         double y = packet.decodeDouble();
         double r = packet.decodeDouble();
 
-        cameraToTarget = new Transform2d(new Translation2d(x, y), Rotation2d.fromDegrees(r));
+        this.targetCorners = new ArrayList<>(4);
+        for (int i = 0; i < 4; i++) {
+            double cx = packet.decodeDouble();
+            double cy = packet.decodeDouble();
+            targetCorners.add(new TargetCorner(cx, cy));
+        }
+
+        this.cameraToTarget = new Transform2d(new Translation2d(x, y), Rotation2d.fromDegrees(r));
 
         return packet;
     }
@@ -112,6 +140,11 @@ public class PhotonTrackedTarget {
         packet.encode(cameraToTarget.getTranslation().getX());
         packet.encode(cameraToTarget.getTranslation().getY());
         packet.encode(cameraToTarget.getRotation().getDegrees());
+
+        for (int i = 0; i < 4; i++) {
+            packet.encode(targetCorners.get(i).x);
+            packet.encode(targetCorners.get(i).y);
+        }
 
         return packet;
     }

@@ -26,13 +26,23 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.targeting.TargetCorner;
 
 class PacketTest {
     @Test
     void testSimpleTrackedTarget() {
         var target =
                 new PhotonTrackedTarget(
-                        3.0, 4.0, 9.0, -5.0, new Transform2d(new Translation2d(1, 2), new Rotation2d(1.5)));
+                        3.0,
+                        4.0,
+                        9.0,
+                        -5.0,
+                        new Transform2d(new Translation2d(1, 2), new Rotation2d(1.5)),
+                        List.of(
+                                new TargetCorner(1, 2),
+                                new TargetCorner(3, 4),
+                                new TargetCorner(5, 6),
+                                new TargetCorner(7, 8)));
         var p = new Packet(PhotonTrackedTarget.PACK_SIZE_BYTES);
         target.populatePacket(p);
 
@@ -62,13 +72,23 @@ class PacketTest {
                                         -4.0,
                                         9.0,
                                         4.0,
-                                        new Transform2d(new Translation2d(1, 2), new Rotation2d(1.5))),
+                                        new Transform2d(new Translation2d(1, 2), new Rotation2d(1.5)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         3.0,
                                         -4.0,
                                         9.1,
                                         6.7,
-                                        new Transform2d(new Translation2d(1, 5), new Rotation2d(1.5)))));
+                                        new Transform2d(new Translation2d(1, 5), new Rotation2d(1.5)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)))));
         var p2 = new Packet(result2.getPacketSize());
         result2.populatePacket(p2);
 
@@ -76,47 +96,5 @@ class PacketTest {
         b2.createFromPacket(p2);
 
         Assertions.assertEquals(result2, b2);
-    }
-
-    @Test
-    void testBytePackFromCpp() {
-        byte[] bytePack = {
-            64, 8, 0, 0, 0, 0, 0, 0, 64, 16, 0, 0, 0, 0, 0, 0, 64, 34, 0, 0, 0, 0, 0, 0, -64, 20, 0, 0, 0,
-            0, 0, 0, 63, -16, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0, 0, 64, 85, 124, 101, 19, -54, -47,
-            122
-        };
-        var t = new PhotonTrackedTarget();
-        t.createFromPacket(new Packet(bytePack));
-
-        var target =
-                new PhotonTrackedTarget(
-                        3.0, 4.0, 9.0, -5.0, new Transform2d(new Translation2d(1, 2), new Rotation2d(1.5)));
-
-        Assertions.assertEquals(t, target);
-    }
-
-    @Test
-    void testPacketv2021_1_6() {
-        // From v2021.1.6
-        var simplified =
-                new PhotonPipelineResult(
-                        12.34,
-                        List.of(
-                                new PhotonTrackedTarget(
-                                        -23, -10, 6, 1, new Transform2d(new Translation2d(1, 2), new Rotation2d(3)))));
-        byte[] bytes = {
-            64, 40, -82, 20, 122, -31, 71, -82, 1, -64, 55, 0, 0, 0, 0, 0, 0, -64, 36, 0, 0, 0, 0, 0, 0,
-            64, 24, 0, 0, 0, 0, 0, 0, 63, -16, 0, 0, 0, 0, 0, 0, 63, -16, 0, 0, 0, 0, 0, 0, 64, 0, 0, 0,
-            0, 0, 0, 0, 64, 101, 124, 101, 19, -54, -47, 122, 0
-        };
-
-        // Let's check that those bytes still mean the same thing
-        Packet packet = new Packet(1);
-        packet.clear();
-        packet.setData(bytes);
-        var ret = new PhotonPipelineResult();
-        ret.createFromPacket(packet);
-        System.out.println(ret);
-        Assertions.assertEquals(simplified, ret);
     }
 }

@@ -19,9 +19,11 @@
 
 #include <cstddef>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <frc/geometry/Transform2d.h>
+#include <wpi/SmallVector.h>
 
 #include "photonlib/Packet.h"
 
@@ -43,9 +45,12 @@ class PhotonTrackedTarget {
    * @param area The area of the target.
    * @param skew The skew of the target.
    * @param pose The camera-relative pose of the target.
+   * @Param corners The corners of the bounding rectangle.
    */
-  PhotonTrackedTarget(double yaw, double pitch, double area, double skew,
-                      const frc::Transform2d& pose);
+  PhotonTrackedTarget(
+      double yaw, double pitch, double area, double skew,
+      const frc::Transform2d& pose,
+      const wpi::SmallVector<std::pair<double, double>, 4> corners);
 
   /**
    * Returns the target yaw (positive-left).
@@ -72,6 +77,13 @@ class PhotonTrackedTarget {
   double GetSkew() const { return skew; }
 
   /**
+   * Returns the corners of the minimum area rectangle bounding this target.
+   */
+  wpi::SmallVector<std::pair<double, double>, 4> GetCorners() const {
+    return corners;
+  }
+
+  /**
    * Returns the pose of the target relative to the robot.
    * @return The pose of the target relative to the robot.
    */
@@ -89,5 +101,6 @@ class PhotonTrackedTarget {
   double area = 0;
   double skew = 0;
   frc::Transform2d cameraToTarget;
+  wpi::SmallVector<std::pair<double, double>, 4> corners;
 };
 }  // namespace photonlib
