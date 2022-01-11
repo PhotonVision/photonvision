@@ -56,7 +56,7 @@ public class CirclePNPTest {
     }
 
     private CameraCalibrationCoefficients getCoeffs(String filename) {
-        var cameraCalibration = TestUtils.getCoeffs(filename, false);
+        var cameraCalibration = TestUtils.getCoeffs(filename);
         checkCameraCoefficients(cameraCalibration);
         return cameraCalibration;
     }
@@ -108,10 +108,10 @@ public class CirclePNPTest {
 
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
+                        TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6),
                         TestUtils.WPI2020Image.FOV,
                         new Rotation2d(),
-                        TestUtils.get2020LifeCamCoeffs(true));
+                        TestUtils.get2020LifeCamCoeffs());
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
@@ -139,7 +139,7 @@ public class CirclePNPTest {
         TestUtils.loadLibraries();
         var frameProvider =
                 new FileFrameProvider(
-                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes, false),
+                        TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in_HighRes),
                         TestUtils.WPI2019Image.FOV);
 
         var settings = new ReflectivePipelineSettings();

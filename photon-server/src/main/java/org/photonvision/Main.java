@@ -95,7 +95,7 @@ public class Main {
             camConf2019 =
                     new CameraConfiguration("WPI2019", TestUtils.getTestMode2019ImagePath().toString());
             camConf2019.FOV = TestUtils.WPI2019Image.FOV;
-            camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+            camConf2019.calibrations.add(TestUtils.get2019LifeCamCoeffs());
 
             var pipeline2019 = new ReflectivePipelineSettings();
             pipeline2019.pipelineNickname = "CargoShip";
@@ -115,12 +115,12 @@ public class Main {
             camConf2020 =
                     new CameraConfiguration("WPI2020", TestUtils.getTestMode2020ImagePath().toString());
             camConf2020.FOV = TestUtils.WPI2020Image.FOV;
-            camConf2020.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+            camConf2020.calibrations.add(TestUtils.get2019LifeCamCoeffs());
 
             var pipeline2020 = new ReflectivePipelineSettings();
             pipeline2020.pipelineNickname = "OuterPort";
             pipeline2020.targetModel = TargetModel.k2020HighGoalOuter;
-            camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs(true));
+            camConf2020.calibrations.add(TestUtils.get2020LifeCamCoeffs());
             pipeline2020.inputShouldShow = true;
 
             var psList2020 = new ArrayList<CVPipelineSettings>();
@@ -134,7 +134,7 @@ public class Main {
             camConf2022 =
                     new CameraConfiguration("WPI2022", TestUtils.getTestMode2022ImagePath().toString());
             camConf2022.FOV = TestUtils.WPI2022Image.FOV;
-            camConf2022.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+            camConf2022.calibrations.add(TestUtils.get2019LifeCamCoeffs());
 
             var pipeline2022 = new ReflectivePipelineSettings();
             pipeline2022.pipelineNickname = "OuterPort";
@@ -156,7 +156,7 @@ public class Main {
             camConfShape =
                     new CameraConfiguration(
                             "Shape",
-                            TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_1, true)
+                            TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_1)
                                     .toString());
             var settings = new ColoredShapePipelineSettings();
             settings.hsvHue = new IntegerCouple(0, 35);

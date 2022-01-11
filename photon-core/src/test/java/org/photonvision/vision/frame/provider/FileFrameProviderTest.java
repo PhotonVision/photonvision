@@ -39,13 +39,12 @@ public class FileFrameProviderTest {
 
     @Test
     public void TestFilesExist() {
-        assertTrue(Files.exists(TestUtils.getTestImagesPath(false)));
+        assertTrue(Files.exists(TestUtils.getTestImagesPath()));
     }
 
     @Test
     public void Load2019ImageOnceTest() {
-        var goodFilePath =
-                TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in, false);
+        var goodFilePath = TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark72in);
 
         assertTrue(Files.exists(goodFilePath));
 
@@ -77,8 +76,7 @@ public class FileFrameProviderTest {
 
     @Test
     public void Load2020ImageOnceTest() {
-        var goodFilePath =
-                TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center, false);
+        var goodFilePath = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_108in_Center);
 
         assertTrue(Files.exists(goodFilePath));
 
