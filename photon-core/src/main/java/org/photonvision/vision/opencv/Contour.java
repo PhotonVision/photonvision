@@ -16,6 +16,8 @@
  */
 package org.photonvision.vision.opencv;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import org.jetbrains.annotations.Nullable;
 import org.opencv.core.CvType;
@@ -192,7 +194,11 @@ public class Contour implements Releasable {
                 || secondContour.isIntersecting(firstContour, intersectionDirection);
     }
 
-    private static Contour combineContours(Contour... contours) {
+    public static Contour combineContours(Contour... contours) {
+        return combineContourList(Arrays.asList(contours));
+    }
+
+    public static Contour combineContourList(Collection<Contour> contours) {
         var points = new MatOfPoint();
 
         for (var contour : contours) {
