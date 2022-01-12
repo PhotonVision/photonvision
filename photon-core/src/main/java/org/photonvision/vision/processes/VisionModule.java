@@ -89,13 +89,22 @@ public class VisionModule {
                         visionSource.getSettables().getConfiguration().nickname,
                         LogGroup.VisionModule);
 
-        // do this
+        // Find quirks for the current camera
         if (visionSource instanceof USBCameraSource) {
             cameraQuirks = ((USBCameraSource) visionSource).cameraQuirks;
         } else if (visionSource instanceof ZeroCopyPicamSource) {
             cameraQuirks = QuirkyCamera.ZeroCopyPiCamera;
         } else {
             cameraQuirks = QuirkyCamera.DefaultCamera;
+        }
+
+        // We don't show gain if the config says it's -1. So check here to make sure it's non-negative
+        // if it _is_ supported
+        if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
+            pipelineManager.userPipelineSettings.forEach(
+                    it -> {
+                        if (it.cameraGain == -1) it.cameraGain = 20; // Sane default
+                    });
         }
 
         this.pipelineManager = pipelineManager;
@@ -371,10 +380,12 @@ public class VisionModule {
         visionSource.getSettables().setExposure(config.cameraExposure);
         visionSource.getSettables().setGain(config.cameraGain);
 
-        if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
-            config.cameraGain = -1;
-        } else {
+        if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
+            // If the gain is disabled for some reason, re-enable it
+            if (config.cameraGain == -1) config.cameraGain = 20;
             visionSource.getSettables().setGain(Math.max(0, config.cameraGain));
+        } else {
+            config.cameraGain = -1;
         }
 
         setVisionLEDs(config.ledMode);
