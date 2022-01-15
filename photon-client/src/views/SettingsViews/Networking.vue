@@ -10,46 +10,52 @@
         name="Team Number"
         :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
         class="mb-4"
-        :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
+        :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 5"
       />
-      <v-chip label color="red" v-bind:style="$vuetify.breakpoint.xsOnly ? 'height: auto;' : ''" text-color="white" v-if="parseInt(teamNumber) < 1 && !runNTServer">
-        <span class="text-wrap">
-          Team number not set! NetworkTables cannot connect.
-        </span>
-      </v-chip>
+      <v-banner
+        v-show="(teamNumber < 1 || teamNumber > 10000) && !runNTServer"
+        rounded
+        color="red"
+        text-color="white"
+      >
+        Team number is unset or invalid. NetworkTables will not be able to connect.
+      </v-banner>
       <CVradio
-          v-model="connectionType"
+        v-show="$store.state.settings.networkSettings.supported"
+        v-model="connectionType"
+        :input-cols="inputCols"
+        name="IP Assignment Mode"
+        tooltip="DHCP will make the radio (router) automatically assign an IP address; this may result in an IP address that changes across reboots. Static IP assignment means that you pick the IP address and it won't change."
         :list="['DHCP','Static']"
-        :disabled="!$store.state.settings.networkSettings.supported"
       />
-      <template v-if="!isDHCP">
-        <CVinput
-          v-model="staticIp"
-          :input-cols="inputCols"
-          :rules="[v => isIPv4(v) || 'Invalid IPv4 address']"
-          name="IP"
-        />
-      </template>
+      <CVinput
+        v-if="!isDHCP"
+        v-model="staticIp"
+        :input-cols="inputCols"
+        :rules="[v => isIPv4(v) || 'Invalid IPv4 address']"
+        name="IP"
+      />
       <CVinput
         v-model="hostname"
         :input-cols="inputCols"
         :rules="[v => isHostname(v) || 'Invalid hostname']"
         name="Hostname"
       />
-      Advanced
-      <v-divider/>
       <CVSwitch
-          v-model="runNTServer"
-          name="Run NetworkTables Server (Debugging Only!)"
-          tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
-          class="mt-3 mb-3"
-          :text-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
+        v-model="runNTServer"
+        name="Run NetworkTables Server (Debugging Only)"
+        tooltip="If enabled, this device will create a NT server. This is useful for home debugging, but should be disabled on-robot."
+        class="mt-3 mb-3"
+        :text-cols="$vuetify.breakpoint.mdAndUp ? undefined : 5"
       />
-      <v-chip label color="red" text-color="white" v-if="runNTServer">
-        <span>
-          Disable this switch if you're on a robot! Photonlib will NOT work.
-        </span>
-      </v-chip>
+      <v-banner
+        v-show="runNTServer"
+        rounded
+        color="red"
+        text-color="white"
+      >
+        This switch is intended for testing; it should be off on a robot. PhotonLib will NOT work!
+      </v-banner>
     </v-form>
     <v-btn
       color="accent"
@@ -60,55 +66,60 @@
     >
       Save
     </v-btn>
-    <v-divider class="mt-4 mb-4"/>
+    <v-divider class="mt-4 mb-4" />
     <v-row>
-      <v-col cols="12" sm="6">
-
+      <v-col
+        cols="12"
+        sm="6"
+      >
         <v-simple-table
-            fixed-header
-            height="100%"
-            dense
+          fixed-header
+          height="100%"
+          dense
         >
           <template v-slot:default>
             <thead style="font-size: 1.25rem;">
-            <tr>
-              <th>
-                Device IPs
-              </th>
-            </tr>
+              <tr>
+                <th>
+                  Device IPs
+                </th>
+              </tr>
             </thead>
             <tbody>
-            <tr
+              <tr
                 v-for="(value, index) in $store.state.ntConnectionInfo.deviceips"
                 :key="index"
-            >
-              <td>{{ value }}</td>
-            </tr>
+              >
+                <td>{{ value }}</td>
+              </tr>
             </tbody>
           </template>
         </v-simple-table>
       </v-col>
-      <v-col cols="12" sm="6">
+      <v-col
+        cols="12"
+        sm="6"
+      >
         <v-simple-table
-            fixed-header
-            height="100%"
-            dense
+          fixed-header
+          height="100%"
+          dense
         >
           <template v-slot:default>
             <thead style="font-size: 1.25rem;">
-            <tr>
-              <th>
-                Possible RoboRIOs
-              </th>
-            </tr>
+              <tr>
+                <th>
+                  Possible RoboRIOs
+                </th>
+              </tr>
             </thead>
             <tbody>
-            <tr
+              <tr
                 v-for="(value, index) in $store.state.ntConnectionInfo.possibleRios"
                 :key="index"
-            >
-              <td>{{ value }}</td>
-            </tr>
+              >
+                <td>{{ value }}</td>
+              </tr>
             </tbody>
           </template>
         </v-simple-table>
@@ -150,7 +161,7 @@ export default {
     },
     computed: {
         inputCols() {
-            return this.$vuetify.breakpoint.smAndUp ? 10 : 7;
+            return this.$vuetify.breakpoint.mdAndUp ? 10 : 7;
         },
         isDHCP() {
             return this.settings.connectionType === 0;

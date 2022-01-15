@@ -3,7 +3,7 @@
     <v-tooltip
       :disabled="tooltip === undefined"
       right
-      open-delay="600"
+      open-delay="300"
     >
       <template v-slot:activator="{ on, attrs }">
         <span

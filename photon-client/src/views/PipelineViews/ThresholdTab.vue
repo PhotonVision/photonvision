@@ -1,66 +1,65 @@
 <template>
   <div>
     <CVrangeSlider
-        v-model="hsvHue"
-        name="Hue"
-        tooltip="Describes color"
-        :min="0"
-        :max="180"
-        @input="handlePipelineData('hsvHue')"
-        @rollback="e => rollback('hue',e)"
+      v-model="hsvHue"
+      name="Hue"
+      tooltip="Describes color"
+      :min="0"
+      :max="180"
+      @input="handlePipelineData('hsvHue')"
+      @rollback="e => rollback('hue',e)"
     />
     <CVrangeSlider
-        v-model="hsvSaturation"
-        name="Saturation"
-        tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
-        :min="0"
-        :max="255"
-        @input="handlePipelineData('hsvSaturation')"
-        @rollback="e => rollback('saturation',e)"
+      v-model="hsvSaturation"
+      name="Saturation"
+      tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
+      :min="0"
+      :max="255"
+      @input="handlePipelineData('hsvSaturation')"
+      @rollback="e => rollback('saturation',e)"
     />
     <CVrangeSlider
-        v-model="hsvValue"
-        name="Value"
-        tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
-        :min="0"
-        :max="255"
-        @input="handlePipelineData('hsvValue')"
-        @rollback="e => rollback('value',e)"
+      v-model="hsvValue"
+      name="Value"
+      tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
+      :min="0"
+      :max="255"
+      @input="handlePipelineData('hsvValue')"
+      @rollback="e => rollback('value',e)"
     />
-    <template v-if="this.currentPipelineType() === 3">
+    <template v-if="currentPipelineType() === 3">
       <CVSwitch
-          v-model="erode"
-          name="Erode"
-          tooltip="Removes pixels around the edges of white areas in the thresholded image"
-          @input="handlePipelineData('erode')"
-          @rollback="e => rollback('erode',e)"
+        v-model="erode"
+        name="Erode"
+        tooltip="Removes pixels around the edges of white areas in the thresholded image"
+        @input="handlePipelineData('erode')"
+        @rollback="e => rollback('erode',e)"
       />
       <CVSwitch
-          v-model="dilate"
-          class="mb-0"
-          name="Dilate"
-          tooltip="Adds pixels around the edges of white areas in the thresholded image"
-          @input="handlePipelineData('dilate')"
-          @rollback="e => rollback('dilate',e)"
+        v-model="dilate"
+        class="mb-0"
+        name="Dilate"
+        tooltip="Adds pixels around the edges of white areas in the thresholded image"
+        @input="handlePipelineData('dilate')"
+        @rollback="e => rollback('dilate',e)"
       />
     </template>
-    <v-divider class="mb-3 mt-3"/>
     <div class="pt-3 white--text">
       Color Picker
     </div>
     <v-divider
-        class="mt-3"
+      class="mt-3"
     />
     <v-row
-        justify="center"
-        class="mt-3 mb-3"
+      justify="center"
+      class="mt-3 mb-3"
     >
       <template v-if="!$store.state.colorPicking">
         <v-btn
-            color="accent"
-            class="ma-2 black--text"
-            small
-            @click="setFunction(3)"
+          color="accent"
+          class="ma-2 black--text"
+          small
+          @click="setFunction(3)"
         >
           <v-icon left>
             mdi-minus
@@ -68,10 +67,10 @@
           Shrink Range
         </v-btn>
         <v-btn
-            color="accent"
-            class="ma-2 black--text"
-            small
-            @click="setFunction(1)"
+          color="accent"
+          class="ma-2 black--text"
+          small
+          @click="setFunction(1)"
         >
           <v-icon left>
             mdi-plus-minus
@@ -79,10 +78,10 @@
           Set To Average
         </v-btn>
         <v-btn
-            color="accent"
-            class="ma-2 black--text"
-            small
-            @click="setFunction(2)"
+          color="accent"
+          class="ma-2 black--text"
+          small
+          @click="setFunction(2)"
         >
           <v-icon left>
             mdi-plus
@@ -92,16 +91,17 @@
       </template>
       <template v-else>
         <v-btn
-            color="accent"
-            class="ma-2 black--text"
-            style="width: 30%;"
-            small
-            @click="setFunction(0)"
+          color="accent"
+          class="ma-2 black--text"
+          style="width: 30%;"
+          small
+          @click="setFunction(0)"
         >
           Cancel
         </v-btn>
       </template>
     </v-row>
+    <v-divider class="mb-3" />
   </div>
 </template>
 

@@ -13,7 +13,7 @@
     export default {
         name: "CvImage",
         // eslint-disable-next-line vue/require-prop-types
-        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
+        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightLg', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
         data() {
             return {
                 seed: 1.0,
@@ -37,7 +37,9 @@
 
                     if (this.$vuetify.breakpoint.xl) {
                       ret["max-height"] = this.maxHeightXl;
-                    } else if (this.$vuetify.breakpoint.mdAndUp) {
+                    } else if (this.$vuetify.breakpoint.lg) {
+                      ret["max-height"] = this.maxHeightLg;
+                    } else if (this.$vuetify.breakpoint.md) {
                       ret["max-height"] = this.maxHeightMd;
                     }
 

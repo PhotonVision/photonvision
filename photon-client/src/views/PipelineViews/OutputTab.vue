@@ -1,8 +1,5 @@
 <template>
   <div>
-    <span class="white--text">Target Manipulation</span>
-    <v-divider class="mt-2" />
-
     <CVselect
       v-model="contourTargetOffsetPointEdge"
       name="Target Offset Point"
@@ -31,8 +28,7 @@
 
       @rollback="e=> rollback('outputShowMultipleTargets', e)"
     />
-    <span class="white--text">Robot Offset</span>
-    <v-divider class="mt-2" />
+    <v-divider />
     <CVselect
       v-model="offsetRobotOffsetMode"
       name="Robot Offset Mode"

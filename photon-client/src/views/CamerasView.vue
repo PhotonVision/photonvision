@@ -20,8 +20,8 @@
               v-model="currentCameraIndex"
               name="Camera"
               :list="$store.getters.cameraList"
-              @input="handleInput('currentCamera',currentCameraIndex)"
               :select-cols="$vuetify.breakpoint.mdAndUp ? 10 : 7"
+              @input="handleInput('currentCamera',currentCameraIndex)"
             />
             <CVnumberinput
               v-model="cameraSettings.fov"
