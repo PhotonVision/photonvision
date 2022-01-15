@@ -384,7 +384,7 @@ export default {
         if (this.isPipelineNameEdit) {
           this.handleInputWithIndex("changePipelineName", this.newPipelineName);
         } else {
-          this.handleInputWithIndex("addNewPipeline", [this.newPipelineName, this.newPipelineType]); // 0 for reflective, 1 for colored shpae
+          this.handleInputWithIndex("addNewPipeline", [this.newPipelineName, this.currentPipelineType]); // 0 for reflective, 1 for colored shpae
         }
         this.discardPipelineNameChange();
       }
