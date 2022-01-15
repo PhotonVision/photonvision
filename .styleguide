@@ -25,7 +25,3 @@ includeOtherLibs {
   ^units/
   ^wpi/
 }
-
-licenseUpdateExclude {
-  \.java$
-}

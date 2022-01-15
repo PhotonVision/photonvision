@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
 package org.photonvision.vision.frame.provider;
 
 import edu.wpi.first.math.geometry.Rotation2d;
