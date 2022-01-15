@@ -6,6 +6,7 @@
       tooltip="Describes color"
       :min="0"
       :max="180"
+      invertable="true"
       @input="handlePipelineData('hsvHue')"
       @rollback="e => rollback('hue',e)"
     />
