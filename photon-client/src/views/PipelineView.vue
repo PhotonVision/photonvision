@@ -30,20 +30,13 @@
                 :class="fpsTooLow ? 'ml-2 mt-1' : 'mt-2'"
                 x-small
                 label
-                :color="fpsTooLow ? 'red' : 'transparent'"
+                :color="fpsTooLow ? 'error' : 'transparent'"
                 :text-color="fpsTooLow ? 'white' : 'grey'"
               >
                 <span class="pr-1">{{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
                 <span v-if="!fpsTooLow">{{ Math.min(Math.round($store.state.pipelineResults.latency), 100) }} ms latency</span>
                 <span v-else-if="!$store.getters.currentPipelineSettings.inputShouldShow">HSV thresholds are too broad; narrow them for better performance</span>
                 <span v-else>stop viewing the color stream for better performance</span>
-              </v-chip>
-              <v-chip small label color="red" text-color="white" v-if="!$store.state.ntConnectionInfo.connected || $store.state.settings.networkSettings.runNTServer">
-                <span>
-                {{ $store.state.settings.networkSettings.runNTServer ?
-                    "NetworkTables Server Enabled! Photonlib may not work" :
-                    "NetworkTables not connected!" }}
-                </span>
               </v-chip>
               <v-switch
                 v-model="driverMode"
@@ -71,7 +64,8 @@
                     :disconnected="!$store.state.backendConnected"
                     scale="100"
                     :max-height="$store.getters.isDriverMode ? '40vh' : '300px'"
-                    :max-height-md="$store.getters.isDriverMode ? '50vh' : '320px'"
+                    :max-height-md="$store.getters.isDriverMode ? '50vh' : '380px'"
+                    :max-height-lg="$store.getters.isDriverMode ? '55vh' : '390px'"
                     :max-height-xl="$store.getters.isDriverMode ? '60vh' : '450px'"
                     :alt="'Stream' + idx"
                     :color-picking="$store.state.colorPicking && idx === 0"
@@ -90,23 +84,18 @@
         >
           <v-card
             color="primary"
-            class="mt-3"
           >
-            <!--            <v-btn @click="onCamNameChange">-->
-            <!--              Reload-->
-            <!--            </v-btn>-->
             <camera-and-pipeline-select @camera-name-changed="reloadStreams" />
           </v-card>
           <v-card
             :disabled="$store.getters.isDriverMode || $store.state.colorPicking"
-            class="mt-6 mb-3"
+            class="mt-3"
             color="primary"
           >
             <v-row
               align="center"
               class="pl-3 pr-3"
             >
-              <!--  -->
               <v-col lg="12">
                 <p style="color: white;">
                   Processing mode:
@@ -206,21 +195,24 @@
         </v-col>
       </v-row>
     </v-container>
-    <!-- snack bar and modal -->
+
     <v-snackbar
-      v-model="snackbar"
-      :timeout="3000"
-      top
+      v-model="showNTWarning"
       color="error"
+      timeout="-1"
+      top
     >
-      <span style="color:#000">Can not remove the only pipeline!</span>
-      <v-btn
-        color="black"
-        text
-        @click="snackbar = false"
-      >
-        Close
-      </v-btn>
+      {{ $store.state.settings.networkSettings.runNTServer ?
+        "NetworkTables server enabled! PhotonLib may not work." :
+        "NetworkTables not connected! Are you on a network with a robot?" }}
+      <template v-slot:action>
+        <v-btn
+          text
+          @click="hideNTWarning = true"
+        >
+          Hide
+        </v-btn>
+      </template>
     </v-snackbar>
 
     <v-dialog
@@ -286,10 +278,10 @@ export default {
     data() {
         return {
             selectedTabsData: [0, 0, 0, 0],
-            snackbar: false,
             counterData: 0,
             dialog: false,
-            processingModeOverride: false
+            processingModeOverride: false,
+            hideNTWarning: false,
         }
     },
     computed: {
@@ -434,7 +426,12 @@ export default {
             // return this.$store.state.ntConnectionInfo.connected && this.$store.state.backendConnected;
             return true;
           }
-        }
+        },
+        showNTWarning: {
+          get() {
+            return (!this.$store.state.ntConnectionInfo.connected || this.$store.state.settings.networkSettings.runNTServer) && this.$store.state.settings.networkSettings.teamNumber > 0 && this.$store.state.backendConnected && !this.hideNTWarning;
+          }
+        },
     },
     created() {
         this.$store.state.connectedCallbacks.push(this.reloadStreams)

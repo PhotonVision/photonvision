@@ -143,7 +143,7 @@
           <v-icon left>
             mdi-restart
           </v-icon>
-          Restart Photon
+          Restart PhotonVision
         </v-btn>
       </v-col>
       <v-col
@@ -155,7 +155,7 @@
           @click="restartDevice()"
         >
           <v-icon left>
-            mdi-restart
+            mdi-restart-alert
           </v-icon>
           Restart Device
         </v-btn>

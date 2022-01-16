@@ -87,31 +87,56 @@
             </v-icon>
           </v-list-item-icon>
           <v-list-item-content>
-            <v-list-item-title>Advanced Mode</v-list-item-title>
+            <v-list-item-title>Compact Mode</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
 
         <div style="position: absolute; bottom: 0; left: 0;">
           <v-list-item>
             <v-list-item-icon>
-              <v-icon v-if="$store.state.settings.networkSettings.runNTServer">mdi-server</v-icon>
-              <img v-else-if="$store.state.ntConnectionInfo.connected" src="@/assets/robot.svg" alt="">
-              <img v-else class="pulse" style="border-radius: 100%" src="@/assets/robot-off.svg" alt="">
+              <v-icon v-if="$store.state.settings.networkSettings.runNTServer">
+                mdi-server
+              </v-icon>
+              <img
+                v-else-if="$store.state.ntConnectionInfo.connected"
+                src="@/assets/robot.svg"
+                alt=""
+              >
+              <img
+                v-else
+                class="pulse"
+                style="border-radius: 100%"
+                src="@/assets/robot-off.svg"
+                alt=""
+              >
             </v-list-item-icon>
             <v-list-item-content>
-              <v-list-item-title class="text-wrap" v-if="$store.state.settings.networkSettings.runNTServer">
-                NetworkTables server running for {{$store.state.ntConnectionInfo.clients ? $store.state.ntConnectionInfo.clients : 'zero'}} clients!
+              <v-list-item-title
+                v-if="$store.state.settings.networkSettings.runNTServer"
+                class="text-wrap"
+              >
+                NetworkTables server running for {{ $store.state.ntConnectionInfo.clients ? $store.state.ntConnectionInfo.clients : 'zero' }} clients!
               </v-list-item-title>
-              <v-list-item-title class="text-wrap" v-else-if="$store.state.ntConnectionInfo.connected && $store.state.backendConnected">
-                Robot connected! {{$store.state.ntConnectionInfo.address}}
+              <v-list-item-title
+                v-else-if="$store.state.ntConnectionInfo.connected && $store.state.backendConnected"
+                class="text-wrap"
+              >
+                Robot connected! {{ $store.state.ntConnectionInfo.address }}
               </v-list-item-title>
-              <v-list-item-title class="text-wrap" v-else>
+              <v-list-item-title
+                v-else
+                class="text-wrap"
+              >
                 Not connected to robot!
               </v-list-item-title>
-              <a
-                  href="/#/settings"
-                  style="color:#FFD843"
-              >{{"Team: " + $store.state.settings.networkSettings.teamNumber}}</a>
+              <router-link
+                v-if="!$store.state.settings.networkSettings.runNTServer"
+                to="settings"
+                class="accent--text"
+                @click="switchToSettingsTab"
+              >
+                Team number is {{ $store.state.settings.networkSettings.teamNumber }}
+              </router-link>
             </v-list-item-content>
           </v-list-item>
 
@@ -121,9 +146,9 @@
                 mdi-wifi
               </v-icon>
               <v-icon
-                  v-else
-                  class="pulse"
-                  style="border-radius: 100%;"
+                v-else
+                class="pulse"
+                style="border-radius: 100%;"
               >
                 mdi-wifi-off
               </v-icon>
@@ -135,7 +160,6 @@
             </v-list-item-content>
           </v-list-item>
         </div>
-
       </v-list>
     </v-navigation-drawer>
     <v-main>
@@ -159,23 +183,27 @@
       <logs />
     </v-dialog>
     <v-dialog
-        v-model="needsTeamNumberSet"
-        width="500"
-        dark
-        persistent
+      v-model="needsTeamNumberSet"
+      width="500"
+      dark
+      persistent
     >
       <v-card
-          dark
-          color="primary"
-          flat
+        dark
+        color="primary"
+        flat
       >
         <v-card-title>No team number set!</v-card-title>
         <v-card-text>
           PhotonVision cannot connect to your robot! Please
-          <a
-              href="/#/settings"
-              style="color:#FFD843"
-          >head to the settings page</a> and set your team number.
+          <router-link
+            to="settings"
+            class="accent--text"
+            @click="switchToSettingsTab"
+          >
+            vist the settings tab
+          </router-link>
+          and set your team number.
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -219,12 +247,6 @@ export default {
                     localStorage.setItem("compactMode", value);
                 },
             },
-            // ...mapState({
-              // ntServerMode: state => state.settings.networkSettings.runNTServer,
-              // ntClients: state => state.ntConnectionInfo.clients,
-              // ntConnected: state => state.ntConnectionInfo.connected,
-              // backendConnected: state => state.backendConnected
-            // })
         },
         created() {
             document.addEventListener("keydown", e => {
@@ -319,8 +341,7 @@ export default {
                 }
               }
               this.previouslySelectedIndices = null;
-            }
-,
+            },
             switchToSettingsTab() {
                 this.axios.post('http://' + this.$address + '/api/sendMetrics', {})
             }

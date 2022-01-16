@@ -1,11 +1,15 @@
 <template>
   <div>
-    <v-row align="center">
+    <v-row
+      align="center"
+      class="pl-6"
+    >
       <v-col
         cols="10"
         md="5"
         lg="10"
-        class="pt-0 pb-0 pl-6"
+        no-gutters
+        class="pa-0"
       >
         <CVselect
           v-if="isCameraNameEdit === false"
@@ -59,7 +63,8 @@
         cols="10"
         md="5"
         lg="10"
-        class="pt-0 pb-0 pl-6"
+        no-gutters
+        class="pa-0"
       >
         <CVselect
           v-model="currentPipelineIndex"
@@ -139,14 +144,16 @@
       <v-col
         v-if="currentPipelineType >= 0"
         cols="10"
-        md="5"
+        md="11"
         lg="10"
-        class="pt-0 pb-0 pl-6"
+        no-gutters
+        class="pa-0"
       >
         <CVselect
           v-model="currentPipelineType"
           name="Type"
-          :list="['Reflective', 'Shape']"
+          tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
+          :list="['Reflective Tape', 'Colored Shape']"
           @input="e => showTypeDialog(e)"
         />
       </v-col>
@@ -176,12 +183,6 @@
             name="Name"
             :error-message="checkPipelineName"
           />
-<!--          <CVselect-->
-<!--            v-model="currentPipelineType"-->
-<!--            name="Pipeline Type"-->
-<!--            :list="['Reflective', 'Shape']"-->
-<!--            :disabled="true"-->
-<!--          />-->
         </v-card-text>
         <v-divider />
         <v-card-actions>
@@ -276,12 +277,12 @@ export default {
           for (let cam in this.cameraList) {
             if (this.cameraList.hasOwnProperty(cam)) {
               if (this.newCameraName === this.cameraList[cam]) {
-                return "A camera by that name already Exists"
+                return "A camera by that name already exists"
               }
             }
           }
         } else {
-          return "A camera name can only contain letters, numbers and spaces"
+          return "A camera name can only contain letters, numbers, and spaces"
         }
       }
       return "";

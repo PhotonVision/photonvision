@@ -1,28 +1,46 @@
 <template>
   <div>
-    <v-radio-group
-      v-model="localValue"
-      row
-      dark
-      :mandatory="true"
+    <v-row
+      dense
+      align="center"
     >
-      <v-radio
-        v-for="(name,index) in list"
-        :key="index"
-        color="#ffd843"
-        :label="name"
-        :value="index"
-        :disabled="disabled"
-      />
-    </v-radio-group>
+      <v-col :cols="12 - (inputCols || 8)">
+        <tooltipped-label
+          :tooltip="tooltip"
+          :text="name"
+        />
+      </v-col>
+      <v-col :cols="inputCols || 8">
+        <v-radio-group
+          v-model="localValue"
+          row
+          dark
+          :mandatory="true"
+        >
+          <v-radio
+            v-for="(name,index) in list"
+            :key="index"
+            color="#ffd843"
+            :label="name"
+            :value="index"
+            :disabled="disabled"
+          />
+        </v-radio-group>
+      </v-col>
+    </v-row>
   </div>
 </template>
 
 <script>
+    import TooltippedLabel from "./cv-tooltipped-label";
+
     export default {
         name: 'Radio',
+        components: {
+          TooltippedLabel
+        },
       // eslint-disable-next-line vue/require-prop-types
-        props: ['value', 'list', 'disabled'],
+        props: ['name', 'value', 'list', 'disabled', 'inputCols', 'tooltip'],
         data() {
             return {}
         },
