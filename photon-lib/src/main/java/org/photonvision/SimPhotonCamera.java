@@ -40,7 +40,7 @@ public class SimPhotonCamera extends PhotonCamera {
      *
      * @param instance The NetworkTableInstance to pull data from. This can be a custom
      *                 instance in simulation, but should *usually* be the default NTInstance
-     *                 from {@link NetworkTableInstance::getDefault}
+     *                 from NetworkTableInstance::getDefault
      * @param cameraName The name of the camera, as seen in the UI.
      */
     public SimPhotonCamera(NetworkTableInstance instance, String cameraName) {

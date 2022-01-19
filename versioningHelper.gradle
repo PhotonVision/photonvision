@@ -28,13 +28,14 @@ gradle.allprojects {
         ext.versionString = getCurrentVersion()
     }
 
-    ext.writePhotonVersionFile = { Path path, String version ->
+    ext.writePhotonVersionFile = {File versionFileIn, Path path, String version ->
         println("Writing " + version + " to " + path.toAbsolutePath().toString())
         String date = DateTimeFormatter.ofPattern("yyyy-M-d hh:mm:ss").format(LocalDateTime.now())
         File versionFileOut = new File(path.toAbsolutePath().toString())
         versionFileOut.delete()
-        def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
         def read = versionFileIn.text.replace('${version}', version).replace('${date}', date)
+        if (!versionFileOut.parentFile.exists()) versionFileOut.mkdirs()
+        if (!versionFileOut.exists()) versionFileOut.createNewFile()
         versionFileOut.write(read)
     }
 }

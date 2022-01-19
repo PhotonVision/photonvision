@@ -58,6 +58,7 @@ model {
                     }
                     exportedHeaders {
                         srcDirs "src/main/native/include"
+                        srcDirs "src/generate/native/include"
                     }
                 }
             }
@@ -105,11 +106,15 @@ task generateVendorJson() {
 build.dependsOn generateVendorJson
 
 
-task writeCurrentVersionJava {
-    writePhotonVersionFile(Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
+task writeCurrentVersion {
+    def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
+    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
+            versionString)
+    versionFileIn = file("${rootDir}/shared/PhotonVersion.h.in")
+    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "generate", "native", "include", "PhotonVersion.h"),
             versionString)
 }
 
-build.dependsOn writeCurrentVersionJava
+build.dependsOn writeCurrentVersion
 
 apply from: "publish.gradle"

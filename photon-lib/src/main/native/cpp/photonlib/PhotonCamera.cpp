@@ -17,16 +17,23 @@
 
 #include "photonlib/PhotonCamera.h"
 
+#include <frc/Errors.h>
+
+#include "PhotonVersion.h"
 #include "photonlib/Packet.h"
 
 namespace photonlib {
-PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance, wpi::Twine cameraName)
-    : rawBytesEntry(rootTable->GetEntry("rawBytes")),
+PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance, const std::string& cameraName)
+    : mainTable(instance->GetTable("photonvision")),
+      rootTable(mainTable->GetSubTable(cameraName)),
+      rawBytesEntry(rootTable->GetEntry("rawBytes")),
       driverModeEntry(rootTable->GetEntry("driverMode")),
       inputSaveImgEntry(rootTable->GetEntry("inputSaveImgCmd")),
       outputSaveImgEntry(rootTable->GetEntry("outputSaveImgCmd")),
       pipelineIndexEntry(rootTable->GetEntry("pipelineIndex")),
-      ledModeEntry(mainTable->GetEntry("ledMode")) {}
+      ledModeEntry(mainTable->GetEntry("ledMode")),
+      versionEntry(mainTable->GetEntry("version")),
+      path(rootTable->GetPath()) {}
 
 PhotonCamera::PhotonCamera(const std::string& cameraName)
     : PhotonCamera(nt::NetworkTableInstance::GetDefault(), cameraName) {}
@@ -78,4 +85,15 @@ LEDMode PhotonCamera::GetLEDMode() const {
 void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModeEntry.SetDouble(static_cast<double>(static_cast<int>(mode)));
 }
+
+void PhotonCamera::VerifyVersion() {
+  const std::string& versionString = versionEntry.GetString("");
+  if(versionString.empty()) {
+    FRC_ReportError("PhotonVision coprocessor at path {} not found on NetworkTables!", path);
+  } else if (!VersionMatches(versionString)) {
+    FRC_ReportError("Photon version {} does not match coprocessor version {}!",
+        PhotonVersion::versionString, versionString);
+  }
+}
+
 }  // namespace photonlib
