@@ -26,6 +26,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera {
+    protected final NetworkTable rootTable;
     final NetworkTableEntry rawBytesEntry;
     final NetworkTableEntry driverModeEntry;
     final NetworkTableEntry inputSaveImgEntry;
@@ -34,7 +35,6 @@ public class PhotonCamera {
     final NetworkTableEntry ledModeEntry;
     final NetworkTableEntry versionEntry;
 
-    final NetworkTable mainTable = NetworkTableInstance.getDefault().getTable("photonvision");
     private final String path;
 
     Packet packet = new Packet(1);
@@ -42,9 +42,14 @@ public class PhotonCamera {
     /**
      * Constructs a PhotonCamera from a root table.
      *
-     * @param rootTable The root table that the camera is broadcasting information over.
+     * @param instance The NetworkTableInstance to pull data from. This can be a custom
+     *                 instance in simulation, but should *usually* be the default NTInstance
+     *                 from {@link NetworkTableInstance::getDefault}
+     * @param cameraName The name of the camera, as seen in the UI.
      */
-    public PhotonCamera(NetworkTable rootTable) {
+    public PhotonCamera(NetworkTableInstance instance, String cameraName) {
+        var mainTable = instance.getTable("photonvision");
+        this.rootTable = mainTable.getSubTable(cameraName);
         path = rootTable.getPath();
         rawBytesEntry = rootTable.getEntry("rawBytes");
         driverModeEntry = rootTable.getEntry("driverMode");
@@ -61,7 +66,7 @@ public class PhotonCamera {
      * @param cameraName The nickname of the camera (found in the PhotonVision UI).
      */
     public PhotonCamera(String cameraName) {
-        this(NetworkTableInstance.getDefault().getTable("photonvision").getSubTable(cameraName));
+        this(NetworkTableInstance.getDefault(), cameraName);
     }
 
     /**

@@ -20,7 +20,7 @@
 #include "photonlib/Packet.h"
 
 namespace photonlib {
-PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTable> rootTable)
+PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance, wpi::Twine cameraName)
     : rawBytesEntry(rootTable->GetEntry("rawBytes")),
       driverModeEntry(rootTable->GetEntry("driverMode")),
       inputSaveImgEntry(rootTable->GetEntry("inputSaveImgCmd")),
@@ -29,9 +29,7 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTable> rootTable)
       ledModeEntry(mainTable->GetEntry("ledMode")) {}
 
 PhotonCamera::PhotonCamera(const std::string& cameraName)
-    : PhotonCamera(nt::NetworkTableInstance::GetDefault()
-                       .GetTable("photonvision")
-                       ->GetSubTable(cameraName)) {}
+    : PhotonCamera(nt::NetworkTableInstance::GetDefault(), cameraName) {}
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() const {
   // Clear the current packet.
