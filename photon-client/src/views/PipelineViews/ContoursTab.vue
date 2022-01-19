@@ -121,7 +121,7 @@
         v-model="circleAccuracy"
         :disabled="currentPipelineSettings().contourShape !== 0"
         name="Circle Accuracy"
-        min="0"
+        min="1"
         max="100"
         :slider-cols="largeBox"
         @input="handlePipelineData('circleAccuracy')"
