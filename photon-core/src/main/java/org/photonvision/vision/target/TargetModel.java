@@ -73,6 +73,25 @@ public enum TargetModel implements Releasable {
                             -Units.inchesToMeters(7) / 2,
                             -Units.inchesToMeters(7) / 2)),
             0),
+            k2022CircularCargoBall(
+                List.of(
+                        new Point3(
+                                -Units.inchesToMeters(9.5) / 2,
+                                -Units.inchesToMeters(9.5) / 2,
+                                -Units.inchesToMeters(9.5) / 2),
+                        new Point3(
+                                -Units.inchesToMeters(9.5) / 2,
+                                Units.inchesToMeters(9.5) / 2,
+                                -Units.inchesToMeters(9.5) / 2),
+                        new Point3(
+                                Units.inchesToMeters(9.5) / 2,
+                                Units.inchesToMeters(9.5) / 2,
+                                -Units.inchesToMeters(9.5) / 2),
+                        new Point3(
+                                Units.inchesToMeters(9.5) / 2,
+                                -Units.inchesToMeters(9.5) / 2,
+                                -Units.inchesToMeters(9.5) / 2)),
+                0),
     k2016HighGoal(
             List.of(
                     new Point3(Units.inchesToMeters(-10), Units.inchesToMeters(12), 0),
