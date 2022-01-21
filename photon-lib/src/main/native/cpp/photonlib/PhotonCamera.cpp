@@ -34,7 +34,7 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
       pipelineIndexEntry(rootTable->GetEntry("pipelineIndex")),
       ledModeEntry(mainTable->GetEntry("ledMode")),
       versionEntry(mainTable->GetEntry("version")),
-      path (rootTable->GetPath()) {}
+      path(rootTable->GetPath()) {}
 
 PhotonCamera::PhotonCamera(const std::string& cameraName)
     : PhotonCamera(std::make_shared<nt::NetworkTableInstance>(
