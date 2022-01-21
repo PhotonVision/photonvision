@@ -32,11 +32,12 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance, c
       outputSaveImgEntry(rootTable->GetEntry("outputSaveImgCmd")),
       pipelineIndexEntry(rootTable->GetEntry("pipelineIndex")),
       ledModeEntry(mainTable->GetEntry("ledMode")),
-      versionEntry(mainTable->GetEntry("version")),
-      path(rootTable->GetPath()) {}
+      versionEntry(mainTable->GetEntry("version")) {
+        path = rootTable->GetPath();
+      }
 
 PhotonCamera::PhotonCamera(const std::string& cameraName)
-    : PhotonCamera(nt::NetworkTableInstance::GetDefault(), cameraName) {}
+    : PhotonCamera(std::make_shared<nt::NetworkTableInstance>(nt::NetworkTableInstance::GetDefault()), cameraName) {}
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() const {
   // Clear the current packet.
@@ -89,9 +90,10 @@ void PhotonCamera::SetLEDMode(LEDMode mode) {
 void PhotonCamera::VerifyVersion() {
   const std::string& versionString = versionEntry.GetString("");
   if(versionString.empty()) {
-    FRC_ReportError("PhotonVision coprocessor at path {} not found on NetworkTables!", path);
+    std::string path_ = path;
+    FRC_ReportError(frc::warn::Warning, "PhotonVision coprocessor at path {} not found on NetworkTables!", path_);
   } else if (!VersionMatches(versionString)) {
-    FRC_ReportError("Photon version {} does not match coprocessor version {}!",
+    FRC_ReportError(frc::warn::Warning, "Photon version {} does not match coprocessor version {}!",
         PhotonVersion::versionString, versionString);
   }
 }

@@ -24,18 +24,20 @@
  */
 
 namespace photonlib {
-  const std::string versionString = "${version}";
-  const std::string buildDate = "${date}";
-  const bool isRelease = !versionString.rfind("dev", 0) == 0;
+  namespace PhotonVersion {
+    const std::string versionString = "dev-v2022.1.4-2-ga22f8af0";
+    const std::string buildDate = "2022-1-20 10:10:04";
+    const bool isRelease = !versionString.rfind("dev", 0) == 0;
+  }
 
   bool VersionMatches(const std::string& other) {
     std::smatch match;
     std::regex versionPattern{"v[0-9]+.[0-9]+.[0-9]+"};
     // Check that both versions are in the right format
-    if (std::regex_search(versionString, match, versionPattern) &&
+    if (std::regex_search(PhotonVersion::versionString, match, versionPattern) &&
         std::regex_search(other, match, versionPattern)) {
       // If they are, check string equality
-      return (versionString == other);
+      return (PhotonVersion::versionString == other);
     } else {
         return false;
     }

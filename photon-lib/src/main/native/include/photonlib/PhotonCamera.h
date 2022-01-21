@@ -130,9 +130,6 @@ class PhotonCamera {
       "This method should be replaced with PhotonPipelineResult::HasTargets()")
   bool HasTargets() const { return GetLatestResult().HasTargets(); }
 
- private:
-  void VerifyVersion();
-
  protected:
   std::shared_ptr<nt::NetworkTable> mainTable;
   std::shared_ptr<nt::NetworkTable> rootTable;
@@ -147,6 +144,10 @@ class PhotonCamera {
   std::string path;
 
   mutable Packet packet;
+
+ private:
+  void VerifyVersion();
+
 };
 
 }  // namespace photonlib
