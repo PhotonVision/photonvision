@@ -23,7 +23,8 @@
 #include "photonlib/Packet.h"
 
 namespace photonlib {
-PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance, const std::string& cameraName)
+PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
+                           const std::string& cameraName)
     : mainTable(instance->GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(rootTable->GetEntry("rawBytes")),
@@ -33,11 +34,13 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance, c
       pipelineIndexEntry(rootTable->GetEntry("pipelineIndex")),
       ledModeEntry(mainTable->GetEntry("ledMode")),
       versionEntry(mainTable->GetEntry("version")) {
-        path = rootTable->GetPath();
-      }
+  path = rootTable->GetPath();
+}
 
 PhotonCamera::PhotonCamera(const std::string& cameraName)
-    : PhotonCamera(std::make_shared<nt::NetworkTableInstance>(nt::NetworkTableInstance::GetDefault()), cameraName) {}
+    : PhotonCamera(std::make_shared<nt::NetworkTableInstance>(
+                       nt::NetworkTableInstance::GetDefault()),
+                   cameraName) {}
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() const {
   // Clear the current packet.
@@ -89,12 +92,16 @@ void PhotonCamera::SetLEDMode(LEDMode mode) {
 
 void PhotonCamera::VerifyVersion() {
   const std::string& versionString = versionEntry.GetString("");
-  if(versionString.empty()) {
+  if (versionString.empty()) {
     std::string path_ = path;
-    FRC_ReportError(frc::warn::Warning, "PhotonVision coprocessor at path {} not found on NetworkTables!", path_);
+    FRC_ReportError(
+        frc::warn::Warning,
+        "PhotonVision coprocessor at path {} not found on NetworkTables!",
+        path_);
   } else if (!VersionMatches(versionString)) {
-    FRC_ReportError(frc::warn::Warning, "Photon version {} does not match coprocessor version {}!",
-        PhotonVersion::versionString, versionString);
+    FRC_ReportError(frc::warn::Warning,
+                    "Photon version {} does not match coprocessor version {}!",
+                    PhotonVersion::versionString, versionString);
   }
 }
 

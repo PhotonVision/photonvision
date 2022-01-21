@@ -37,12 +37,13 @@ class SimPhotonCamera : public PhotonCamera {
   /**
    * Constructs a Simulated PhotonCamera from a root table.
    *
-   * @param instance The NetworkTableInstance to pull data from. This can be a custom
-   *                 instance in simulation, but should *usually* be the default NTInstance
-   *                 from {@link NetworkTableInstance::getDefault}
+   * @param instance The NetworkTableInstance to pull data from. This can be a
+   * custom instance in simulation, but should *usually* be the default
+   * NTInstance from {@link NetworkTableInstance::getDefault}
    * @param cameraName The name of the camera, as seen in the UI.
    */
-  explicit SimPhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance, const std::string& cameraName);
+  explicit SimPhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
+                           const std::string& cameraName);
 
   /**
    * Constructs a Simulated PhotonCamera from the name of the camera.
