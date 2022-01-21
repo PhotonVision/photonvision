@@ -147,7 +147,7 @@ class PhotonCamera {
   mutable Packet packet;
 
  private:
-  void VerifyVersion();
+  void VerifyVersion() const;
 };
 
 }  // namespace photonlib

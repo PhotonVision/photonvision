@@ -43,6 +43,9 @@ PhotonCamera::PhotonCamera(const std::string& cameraName)
                    cameraName) {}
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() const {
+  // Prints warning if not connected
+  VerifyVersion();
+
   // Clear the current packet.
   packet.Clear();
 
@@ -90,7 +93,7 @@ void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModeEntry.SetDouble(static_cast<double>(static_cast<int>(mode)));
 }
 
-void PhotonCamera::VerifyVersion() {
+void PhotonCamera::VerifyVersion() const {
   const std::string& versionString = versionEntry.GetString("");
   if (versionString.empty()) {
     std::string path_ = path;
