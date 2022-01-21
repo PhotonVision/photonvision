@@ -16,7 +16,6 @@
  */
 package org.photonvision;
 
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.Arrays;
@@ -38,9 +37,9 @@ public class SimPhotonCamera extends PhotonCamera {
     /**
      * Constructs a Simulated PhotonCamera from a root table.
      *
-     * @param instance The NetworkTableInstance to pull data from. This can be a custom
-     *                 instance in simulation, but should *usually* be the default NTInstance
-     *                 from NetworkTableInstance::getDefault
+     * @param instance The NetworkTableInstance to pull data from. This can be a custom instance in
+     *     simulation, but should *usually* be the default NTInstance from
+     *     NetworkTableInstance::getDefault
      * @param cameraName The name of the camera, as seen in the UI.
      */
     public SimPhotonCamera(NetworkTableInstance instance, String cameraName) {

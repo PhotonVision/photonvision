@@ -42,9 +42,9 @@ public class PhotonCamera {
     /**
      * Constructs a PhotonCamera from a root table.
      *
-     * @param instance The NetworkTableInstance to pull data from. This can be a custom
-     *                 instance in simulation, but should *usually* be the default NTInstance
-     *                 from NetworkTableInstance::getDefault
+     * @param instance The NetworkTableInstance to pull data from. This can be a custom instance in
+     *     simulation, but should *usually* be the default NTInstance from
+     *     NetworkTableInstance::getDefault
      * @param cameraName The name of the camera, as seen in the UI.
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
