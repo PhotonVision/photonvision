@@ -17,20 +17,92 @@
 
 package org.photonvision.vision.frame.consumer;
 
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.cscore.MjpegServer;
-import edu.wpi.first.cscore.VideoEvent;
-import edu.wpi.first.cscore.VideoListener;
-import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.cscore.*;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import java.awt.*;
 import java.util.ArrayList;
-import org.opencv.core.Size;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.imgproc.Imgproc;
+import org.photonvision.common.util.ColorHelper;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameDivisor;
 
 public class MJPGFrameConsumer {
+    public static final Mat EMPTY_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
+    private static final double EMPTY_FRAMERATE = 2;
+    private long lastEmptyTime;
+
+    static {
+        EMPTY_MAT.setTo(ColorHelper.colorToScalar(Color.BLACK));
+        var col = 0;
+        Imgproc.rectangle(
+                EMPTY_MAT,
+                new Rect(col, 0, 15, EMPTY_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0xa2a2a2)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                EMPTY_MAT,
+                new Rect(col, 0, 15, EMPTY_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0xa2a300)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                EMPTY_MAT,
+                new Rect(col, 0, 15, EMPTY_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0x00a3a2)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                EMPTY_MAT,
+                new Rect(col, 0, 15, EMPTY_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0x00a200)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                EMPTY_MAT,
+                new Rect(col, 0, 15, EMPTY_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0x440045)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                EMPTY_MAT,
+                new Rect(col, 0, 15, EMPTY_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0x0000a2)),
+                -1);
+        col += 15;
+        Imgproc.rectangle(
+                EMPTY_MAT,
+                new Rect(col, 0, 15, EMPTY_MAT.height()),
+                ColorHelper.colorToScalar(new Color(0)),
+                -1);
+        Imgproc.rectangle(
+                EMPTY_MAT,
+                new Rect(0, 50, EMPTY_MAT.width(), 10),
+                ColorHelper.colorToScalar(new Color(0)),
+                -1);
+        Imgproc.rectangle(
+                EMPTY_MAT, new Rect(15, 50, 30, 10), ColorHelper.colorToScalar(Color.WHITE), -1);
+
+        Imgproc.putText(
+                EMPTY_MAT, "Stream", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.white), 2);
+        Imgproc.putText(
+                EMPTY_MAT,
+                "Disabled",
+                new Point(14, 45),
+                0,
+                0.6,
+                ColorHelper.colorToScalar(Color.white),
+                2);
+        Imgproc.putText(
+                EMPTY_MAT, "Stream", new Point(14, 20), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
+        Imgproc.putText(
+                EMPTY_MAT, "Disabled", new Point(14, 45), 0, 0.6, ColorHelper.colorToScalar(Color.RED), 1);
+    }
+
     private CvSource cvSource;
     private MjpegServer mjpegServer;
 
@@ -38,6 +110,7 @@ public class MJPGFrameConsumer {
     private VideoListener listener;
 
     private final NetworkTable table;
+    boolean isDisabled = false;
 
     public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
         this.cvSource = new CvSource(sourceName, VideoMode.PixelFormat.kMJPEG, width, height, 30);
@@ -96,11 +169,23 @@ public class MJPGFrameConsumer {
     public void accept(Frame frame) {
         if (frame != null && !frame.image.getMat().empty()) {
             cvSource.putFrame(frame.image.getMat());
+
+            // Make sure our disabled framerate limiting doesn't get confused
+            isDisabled = false;
+            lastEmptyTime = 0;
         }
     }
 
-    private Size getScaledSize(Size orig, FrameDivisor divisor) {
-        return new Size(orig.width / divisor.value, orig.height / divisor.value);
+    public void disabledTick() {
+        if (!isDisabled) {
+            cvSource.setVideoMode(VideoMode.PixelFormat.kMJPEG, EMPTY_MAT.width(), EMPTY_MAT.height(), 0);
+            isDisabled = true;
+        }
+
+        if (System.currentTimeMillis() - lastEmptyTime > 1000.0 / EMPTY_FRAMERATE) {
+            cvSource.putFrame(EMPTY_MAT);
+            lastEmptyTime = System.currentTimeMillis();
+        }
     }
 
     public int getCurrentStreamPort() {
