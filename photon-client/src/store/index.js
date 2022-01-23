@@ -55,7 +55,8 @@ export default new Vuex.Store({
                     // Settings that apply to all pipeline types
                     cameraExposure: 1,
                     cameraBrightness: 2,
-                    cameraGain: 3,
+                    cameraRedGain: 3,
+                    cameraBlueGain: 4,
                     inputImageRotationMode: 0,
                     cameraVideoModeIndex: 0,
                     streamingFrameDivisor: 0,
