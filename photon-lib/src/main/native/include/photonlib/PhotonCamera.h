@@ -45,10 +45,15 @@ class PhotonCamera {
  public:
   /**
    * Constructs a PhotonCamera from a root table.
-   * @param rootTable The root table that the camera is broadcasting information
+   *
+   * @param instance The NetworkTableInstance to pull data from. This can be a
+   * custom instance in simulation, but should *usually* be the default
+   * NTInstance from {@link NetworkTableInstance::getDefault}
+   * @param cameraName The name of the camera, as seen in the UI.
    * over.
    */
-  explicit PhotonCamera(std::shared_ptr<nt::NetworkTable> rootTable);
+  explicit PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
+                        const std::string& cameraName);
 
   /**
    * Constructs a PhotonCamera from the name of the camera.
@@ -133,19 +138,23 @@ class PhotonCamera {
       "This method should be replaced with PhotonPipelineResult::HasTargets()")
   bool HasTargets() const { return GetLatestResult().HasTargets(); }
 
- private:
-  std::shared_ptr<nt::NetworkTable> mainTable =
-      nt::NetworkTableInstance::GetDefault().GetTable("photonvision");
-
  protected:
+  std::shared_ptr<nt::NetworkTable> mainTable;
+  std::shared_ptr<nt::NetworkTable> rootTable;
   nt::NetworkTableEntry rawBytesEntry;
   nt::NetworkTableEntry driverModeEntry;
   nt::NetworkTableEntry inputSaveImgEntry;
   nt::NetworkTableEntry outputSaveImgEntry;
   nt::NetworkTableEntry pipelineIndexEntry;
   nt::NetworkTableEntry ledModeEntry;
+  nt::NetworkTableEntry versionEntry;
+
+  std::string path;
 
   mutable Packet packet;
+
+ private:
+  void VerifyVersion() const;
 };
 
 }  // namespace photonlib

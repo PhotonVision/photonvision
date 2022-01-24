@@ -24,23 +24,34 @@
 
 #include "photonlib/PhotonCamera.h"
 
+#include <frc/Errors.h>
+
+#include "PhotonVersion.h"
 #include "photonlib/Packet.h"
 
 namespace photonlib {
-PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTable> rootTable)
-    : rawBytesEntry(rootTable->GetEntry("rawBytes")),
+PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
+                           const std::string& cameraName)
+    : mainTable(instance->GetTable("photonvision")),
+      rootTable(mainTable->GetSubTable(cameraName)),
+      rawBytesEntry(rootTable->GetEntry("rawBytes")),
       driverModeEntry(rootTable->GetEntry("driverMode")),
       inputSaveImgEntry(rootTable->GetEntry("inputSaveImgCmd")),
       outputSaveImgEntry(rootTable->GetEntry("outputSaveImgCmd")),
       pipelineIndexEntry(rootTable->GetEntry("pipelineIndex")),
-      ledModeEntry(mainTable->GetEntry("ledMode")) {}
+      ledModeEntry(mainTable->GetEntry("ledMode")),
+      versionEntry(mainTable->GetEntry("version")),
+      path(rootTable->GetPath()) {}
 
 PhotonCamera::PhotonCamera(const std::string& cameraName)
-    : PhotonCamera(nt::NetworkTableInstance::GetDefault()
-                       .GetTable("photonvision")
-                       ->GetSubTable(cameraName)) {}
+    : PhotonCamera(std::make_shared<nt::NetworkTableInstance>(
+                       nt::NetworkTableInstance::GetDefault()),
+                   cameraName) {}
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() const {
+  // Prints warning if not connected
+  VerifyVersion();
+
   // Clear the current packet.
   packet.Clear();
 
@@ -87,4 +98,20 @@ LEDMode PhotonCamera::GetLEDMode() const {
 void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModeEntry.SetDouble(static_cast<double>(static_cast<int>(mode)));
 }
+
+void PhotonCamera::VerifyVersion() const {
+  const std::string& versionString = versionEntry.GetString("");
+  if (versionString.empty()) {
+    std::string path_ = path;
+    FRC_ReportError(
+        frc::warn::Warning,
+        "PhotonVision coprocessor at path {} not found on NetworkTables!",
+        path_);
+  } else if (!VersionMatches(versionString)) {
+    FRC_ReportError(frc::warn::Warning,
+                    "Photon version {} does not match coprocessor version {}!",
+                    PhotonVersion::versionString, versionString);
+  }
+}
+
 }  // namespace photonlib

@@ -25,7 +25,8 @@ dependencies {
 }
 
 task writeCurrentVersionJava {
-    writePhotonVersionFile(Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
+    def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
+    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
             versionString)
 }
 

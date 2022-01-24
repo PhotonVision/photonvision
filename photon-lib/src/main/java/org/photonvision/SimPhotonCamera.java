@@ -24,7 +24,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.Arrays;
@@ -46,10 +45,13 @@ public class SimPhotonCamera extends PhotonCamera {
     /**
      * Constructs a Simulated PhotonCamera from a root table.
      *
-     * @param rootTable The root table that the camera is broadcasting information over.
+     * @param instance The NetworkTableInstance to pull data from. This can be a custom instance in
+     *     simulation, but should *usually* be the default NTInstance from
+     *     NetworkTableInstance::getDefault
+     * @param cameraName The name of the camera, as seen in the UI.
      */
-    public SimPhotonCamera(NetworkTable rootTable) {
-        super(rootTable);
+    public SimPhotonCamera(NetworkTableInstance instance, String cameraName) {
+        super(instance, cameraName);
 
         latencyMillisEntry = rootTable.getEntry("latencyMillis");
         hasTargetEntry = rootTable.getEntry("hasTargetEntry");
@@ -66,7 +68,7 @@ public class SimPhotonCamera extends PhotonCamera {
      * @param cameraName The nickname of the camera (found in the PhotonVision UI).
      */
     public SimPhotonCamera(String cameraName) {
-        this(NetworkTableInstance.getDefault().getTable("photonvision").getSubTable(cameraName));
+        this(NetworkTableInstance.getDefault(), cameraName);
     }
 
     /**

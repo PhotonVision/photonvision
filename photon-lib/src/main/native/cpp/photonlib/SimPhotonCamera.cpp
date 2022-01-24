@@ -26,8 +26,10 @@
 
 namespace photonlib {
 
-SimPhotonCamera::SimPhotonCamera(std::shared_ptr<nt::NetworkTable> rootTable)
-    : PhotonCamera(rootTable) {}
+SimPhotonCamera::SimPhotonCamera(
+    std::shared_ptr<nt::NetworkTableInstance> instance,
+    const std::string& cameraName)
+    : PhotonCamera(instance, cameraName) {}
 
 SimPhotonCamera::SimPhotonCamera(const std::string& cameraName)
     : PhotonCamera(cameraName) {}
