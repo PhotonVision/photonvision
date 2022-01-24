@@ -194,11 +194,14 @@ public class VisionModule {
                 result -> {
                     if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
                         dashboardInputStreamer.accept(result.inputFrame);
+                    else dashboardInputStreamer.disabledTick();
                 });
         fpsLimitedResultConsumers.add(
                 result -> {
                     if (this.pipelineManager.getCurrentPipelineSettings().outputShouldShow)
                         dashboardOutputStreamer.accept(result.outputFrame);
+                    else dashboardInputStreamer.disabledTick();
+                    ;
                 });
     }
 
