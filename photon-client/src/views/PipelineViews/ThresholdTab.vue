@@ -1,6 +1,8 @@
 <template>
-  <div>
+  <div :style="{'--averageHue': averageHue}">
     <CVrangeSlider
+      id="hue-slider"
+      :class="hueInverted ? 'inverted-slider' : 'normal-slider'"
       v-model="hsvHue"
       name="Hue"
       tooltip="Describes color"
@@ -11,6 +13,8 @@
       @rollback="e => rollback('hue',e)"
     />
     <CVrangeSlider
+      id="sat-slider"
+      class="normal-slider"
       v-model="hsvSaturation"
       name="Saturation"
       tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
@@ -20,6 +24,8 @@
       @rollback="e => rollback('saturation',e)"
     />
     <CVrangeSlider
+      id="value-slider"
+      class="normal-slider"
       v-model="hsvValue"
       name="Value"
       tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
@@ -134,6 +140,20 @@ export default {
         this.$store.commit("mutatePipeline", {"hsvHue": val})
       }
     },
+    averageHue: {
+      get() {
+        const arr = this.$store.getters.currentPipelineSettings.hsvHue;
+        if (Array.isArray(arr)) {
+          return (arr[0] + arr[1])
+        }
+        return (arr.first + arr.second);
+      },
+    },
+    hueInverted: {
+      get() {
+        return this.$store.getters.currentPipelineSettings.hueRangeInverted || true
+      },
+    },
     hsvSaturation: {
       get() {
         return this.$store.getters.currentPipelineSettings.hsvSaturation
@@ -234,3 +254,31 @@ export default {
 }
 
 </script>
+
+<style lang="css" scoped>
+#hue-slider >>> .v-slider {
+  background: linear-gradient( to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100% );
+  border-radius: 10px;
+  box-shadow: 0px 0px 5px #333, inset 0px 0px 3px #333;
+}
+#sat-slider >>> .v-slider {
+  background: linear-gradient( to right, #fff 0%, hsl(var(--averageHue),100%,50%) 100% );
+  border-radius: 10px;
+  box-shadow: 0px 0px 5px #333, inset 0px 0px 3px #333;
+}
+#value-slider >>> .v-slider {
+  background: linear-gradient( to right, #000 0%, hsl(var(--averageHue), 100%, 50%) 100% );
+  border-radius: 10px;
+  box-shadow: 0px 0px 5px #333, inset 0px 0px 3px #333;
+}
+>>> .v-slider__thumb {
+  outline: black solid medium;
+}
+.normal-slider >>> .v-slider__track-fill {
+    outline: black solid thin;
+}
+
+.inverted-slider >>> .v-slider__track-background {
+  outline: black solid thin;
+}
+</style>
