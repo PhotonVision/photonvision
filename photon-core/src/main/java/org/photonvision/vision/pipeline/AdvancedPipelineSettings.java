@@ -38,6 +38,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public IntegerCouple hsvHue = new IntegerCouple(50, 180);
     public IntegerCouple hsvSaturation = new IntegerCouple(50, 255);
     public IntegerCouple hsvValue = new IntegerCouple(50, 255);
+    public boolean hueRangeInverted = false;
 
     public boolean outputShouldDraw = true;
     public boolean outputShowMultipleTargets = false;

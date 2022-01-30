@@ -90,7 +90,7 @@ public class ColoredShapePipeline
             PicamJNI.setShouldCopyColor(settings.inputShouldShow);
         } else {
             var hsvParams =
-                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
+                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue, settings.hueRangeInverted);
             hsvPipe.setParams(hsvParams);
         }
 
@@ -98,10 +98,6 @@ public class ColoredShapePipeline
                 new ErodeDilatePipe.ErodeDilateParams(settings.erode, settings.dilate, 5);
         // TODO: add kernel size to pipeline settings
         erodeDilatePipe.setParams(erodeDilateParams);
-
-        HSVPipe.HSVParams hsvParams =
-                new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
-        hsvPipe.setParams(hsvParams);
 
         SpeckleRejectPipe.SpeckleRejectParams speckleRejectParams =
                 new SpeckleRejectPipe.SpeckleRejectParams(settings.contourSpecklePercentage);
