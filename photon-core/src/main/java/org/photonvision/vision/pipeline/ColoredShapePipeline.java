@@ -90,7 +90,11 @@ public class ColoredShapePipeline
             PicamJNI.setShouldCopyColor(settings.inputShouldShow);
         } else {
             var hsvParams =
-                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue, settings.hueRangeInverted);
+                    new HSVPipe.HSVParams(
+                            settings.hsvHue,
+                            settings.hsvSaturation,
+                            settings.hsvValue,
+                            settings.hueRangeInverted);
             hsvPipe.setParams(hsvParams);
         }
 

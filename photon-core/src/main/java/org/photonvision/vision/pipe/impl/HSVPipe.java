@@ -33,14 +33,15 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         // rather than copying. Free performance!
         Imgproc.cvtColor(in, outputMat, Imgproc.COLOR_BGR2HSV, 3);
 
-        if(params.getHueInverted()) {
+        if (params.getHueInverted()) {
             // In Java code we do this by taking an image thresholded
             // from [0, minHue] and ORing it with [maxHue, 180]
 
             // we want hue from the end of the slider to max hue
             Scalar firstLower = params.getHsvLower().clone();
             Scalar firstUpper = params.getHsvUpper().clone();
-            firstLower.val[0] = params.getHsvUpper().val[0];;
+            firstLower.val[0] = params.getHsvUpper().val[0];
+            ;
             firstUpper.val[0] = 180;
 
             var lowerThresholdMat = new Mat();
@@ -72,7 +73,8 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         private final Scalar m_hsvUpper;
         private final boolean m_hueInverted;
 
-        public HSVParams(IntegerCouple hue, IntegerCouple saturation, IntegerCouple value, boolean hueInverted) {
+        public HSVParams(
+                IntegerCouple hue, IntegerCouple saturation, IntegerCouple value, boolean hueInverted) {
             m_hsvLower = new Scalar(hue.getFirst(), saturation.getFirst(), value.getFirst());
             m_hsvUpper = new Scalar(hue.getSecond(), saturation.getSecond(), value.getSecond());
 
@@ -88,7 +90,7 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         }
 
         public boolean getHueInverted() {
-            return true;//m_hueInverted;
+            return true; // m_hueInverted;
         }
     }
 }
