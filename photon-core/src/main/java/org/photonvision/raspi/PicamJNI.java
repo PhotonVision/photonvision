@@ -86,7 +86,7 @@ public class PicamJNI {
 
     public static boolean isSupported() {
         return libraryLoaded
-                && !isVCSMSupported()
+                && isVCSMSupported()
                 && getSensorModel() != SensorModel.Disconnected
                 && Platform.isRaspberryPi()
                 && (Platform.currentPiVersion == PiVersion.PI_3
