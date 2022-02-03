@@ -66,10 +66,6 @@ public class ColoredShapePipeline
 
     @Override
     protected void setPipeParamsImpl() {
-        if(settings.hsvHueShouldInvert) {
-               settings.hsvHue.invert(); 
-        }
-
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
                         settings.offsetDualPointA,
@@ -92,10 +88,6 @@ public class ColoredShapePipeline
 
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
             PicamJNI.setShouldCopyColor(settings.inputShouldShow);
-        } else {
-            var hsvParams =
-                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
-            hsvPipe.setParams(hsvParams);
         }
 
         ErodeDilatePipe.ErodeDilateParams erodeDilateParams =
@@ -104,7 +96,7 @@ public class ColoredShapePipeline
         erodeDilatePipe.setParams(erodeDilateParams);
 
         HSVPipe.HSVParams hsvParams =
-                new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
+                new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue, settings.hsvHueShouldInvert);
         hsvPipe.setParams(hsvParams);
 
         SpeckleRejectPipe.SpeckleRejectParams speckleRejectParams =

@@ -30,17 +30,46 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         var outputMat = new Mat();
         in.copyTo(outputMat);
         Imgproc.cvtColor(outputMat, outputMat, Imgproc.COLOR_BGR2HSV, 3);
-        Core.inRange(outputMat, params.getHsvLower(), params.getHsvUpper(), outputMat);
+        if(params.hueShouldInvert) {
+             Coire.inRange(outputMat, params.getHsvLowerStart(), params.getHsvLowerEnd(), outputMat);
+             Coire.inRange(outputMat, params.getHsvUpperStart(), params.getHsvUpperEnd(), outputMat);
+
+        } else {
+            Coire.inRange(outputMat, params.getHsvLower(), params.getHsvUpper(), outputMat);
+        }
         return outputMat;
     }
 
     public static class HSVParams {
         private final Scalar m_hsvLower;
         private final Scalar m_hsvUpper;
+        private final boolean hueShouldInvert;
 
-        public HSVParams(IntegerCouple hue, IntegerCouple saturation, IntegerCouple value) {
+        private final Scaler m_hsvLowerStart;
+        private final Scaler m_hsvLowerEnd;
+        private final Scaler m_hsvUpperStart;
+        private final Scaler m_hsvUpperEnd;
+        
+
+        public HSVParams(IntegerCouple hue, IntegerCouple saturation, IntegerCouple value, boolean hueShouldInvert) {
             m_hsvLower = new Scalar(hue.getFirst(), saturation.getFirst(), value.getFirst());
             m_hsvUpper = new Scalar(hue.getSecond(), saturation.getSecond(), value.getSecond());
+            hueShouldInvert = hueShouldInvert;
+
+            if(hueShouldInvert) {
+                //Hue is limited to numbers between 0->255. We have to map our ranges within these bounds
+                //Since hue is circular, we might want to have a range like X -> 255 & 0 -> Y
+                //For this, we must specify two ranges
+                //One range from 0 -> Lower Bound, another from Upper Bound -> 255
+                
+                //0->X
+                m_hsvLowerStart =   new Scaler(0,              saturation.getFirst(), value.getFirst());
+                m_hsvLowerEnd   =   new Scalar(hue.getFirst(), saturation.getSecond(), value.getSecond());
+
+                //Y->255
+                m_hsvUpperStart =   new Scaler(hue.getSecond(), saturation.getFirst(), value.getFirst());
+                m_hsvUpperEnd   =   new Scalar(255,             saturation.getSecond(), value.getSecond());
+            }
         }
 
         public Scalar getHsvLower() {
@@ -49,6 +78,26 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
 
         public Scalar getHsvUpper() {
             return m_hsvUpper;
+        }
+
+        public boolean getHueShouldInvert() {
+            return hueShouldInvert;
+        }
+
+        public Scalar getHsvLowerStart() {
+            return m_hsvLowerStart;
+        }
+
+        public Scalar getHsvLowerEnd() {
+            return m_hsvLowerEnd;
+        }
+
+        public Scalar getHsvUpperStart() {
+            return m_hsvUpperStart;
+        }
+
+        public Scalar getHsvUpperEnd() {
+            return m_hsvUpperEnd;
         }
     }
 }
