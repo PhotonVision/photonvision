@@ -33,7 +33,6 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         if(params.hueShouldInvert) {
              Coire.inRange(outputMat, params.getHsvLowerStart(), params.getHsvLowerEnd(), outputMat);
              Coire.inRange(outputMat, params.getHsvUpperStart(), params.getHsvUpperEnd(), outputMat);
-
         } else {
             Coire.inRange(outputMat, params.getHsvLower(), params.getHsvUpper(), outputMat);
         }
@@ -49,7 +48,6 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         private final Scaler m_hsvLowerEnd;
         private final Scaler m_hsvUpperStart;
         private final Scaler m_hsvUpperEnd;
-        
 
         public HSVParams(IntegerCouple hue, IntegerCouple saturation, IntegerCouple value, boolean hueShouldInvert) {
             m_hsvLower = new Scalar(hue.getFirst(), saturation.getFirst(), value.getFirst());
