@@ -82,7 +82,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             PicamJNI.setShouldCopyColor(settings.inputShouldShow);
         } else {
             var hsvParams =
-                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue);
+                    new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue, settings.hsvHueShouldInvert);
             hsvPipe.setParams(hsvParams);
         }
 
