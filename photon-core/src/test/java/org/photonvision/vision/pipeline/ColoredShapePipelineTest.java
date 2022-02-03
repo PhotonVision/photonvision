@@ -74,7 +74,6 @@ public class ColoredShapePipelineTest {
         settings.hsvHue.set(10, 40);
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(100, 255);
-        settings.hsvHueShouldInvert = false;
         settings.maxCannyThresh = 50;
         settings.circleAccuracy = 15;
         settings.circleDetectThreshold = 5;
@@ -97,7 +96,6 @@ public class ColoredShapePipelineTest {
         settings.hsvHue.set(0, 100);
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(100, 255);
-        settings.hsvHueShouldInvert = false;
         settings.outputShouldDraw = true;
         settings.outputShowMultipleTargets = true;
         settings.contourGroupingMode = ContourGroupingMode.Single;

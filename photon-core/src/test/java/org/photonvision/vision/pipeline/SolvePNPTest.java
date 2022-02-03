@@ -92,7 +92,6 @@ public class SolvePNPTest {
         pipeline.getSettings().hsvHue.set(60, 100);
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
-        pipeline.getSettings().hsvHueShouldInvert = false;
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().solvePNPEnabled = true;
@@ -130,7 +129,6 @@ public class SolvePNPTest {
         pipeline.getSettings().hsvHue.set(60, 100);
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(60, 255);
-        pipeline.getSettings().hsvHueShouldInvert = false;
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().solvePNPEnabled = true;
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
@@ -183,7 +181,6 @@ public class SolvePNPTest {
         settings.hsvHue.set(60, 100);
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(190, 255);
-        settings.hsvHueShouldInvert = false;
         settings.outputShouldDraw = true;
         settings.outputShowMultipleTargets = true;
         settings.contourGroupingMode = ContourGroupingMode.Dual;

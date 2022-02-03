@@ -36,7 +36,6 @@ public class ReflectivePipelineTest {
         pipeline.getSettings().hsvHue.set(60, 100);
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
-        pipeline.getSettings().hsvHueShouldInvert = false;
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Dual;
@@ -68,7 +67,6 @@ public class ReflectivePipelineTest {
         pipeline.getSettings().hsvHue.set(60, 100);
         pipeline.getSettings().hsvSaturation.set(200, 255);
         pipeline.getSettings().hsvValue.set(200, 255);
-        pipeline.getSettings().hsvHueShouldInvert = false;
         pipeline.getSettings().outputShouldDraw = true;
 
         var frameProvider =
@@ -108,7 +106,6 @@ public class ReflectivePipelineTest {
         settings.hsvHue.set(60, 100);
         settings.hsvSaturation.set(100, 255);
         settings.hsvValue.set(190, 255);
-        settings.hsvHueShouldInvert = false;
         settings.outputShouldDraw = true;
         settings.outputShowMultipleTargets = true;
         settings.contourGroupingMode = ContourGroupingMode.Dual;

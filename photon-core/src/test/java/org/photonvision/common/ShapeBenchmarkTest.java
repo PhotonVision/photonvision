@@ -64,7 +64,6 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().hsvHue.set(60, 100);
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
-        pipeline.getSettings().hsvHueShouldInvert = false;
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
@@ -86,7 +85,6 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().hsvHue.set(60, 100);
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
-        pipeline.getSettings().hsvHueShouldInvert = false;
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
@@ -109,7 +107,6 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().hsvHue.set(60, 100);
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
-        pipeline.getSettings().hsvHueShouldInvert = false;
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
@@ -132,7 +129,6 @@ public class ShapeBenchmarkTest {
         pipeline.getSettings().hsvHue.set(60, 100);
         pipeline.getSettings().hsvSaturation.set(100, 255);
         pipeline.getSettings().hsvValue.set(190, 255);
-        pipeline.getSettings().hsvHueShouldInvert = false;
         pipeline.getSettings().outputShouldDraw = true;
         pipeline.getSettings().outputShowMultipleTargets = true;
         pipeline.getSettings().contourGroupingMode = ContourGroupingMode.Single;
