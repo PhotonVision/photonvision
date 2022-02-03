@@ -96,7 +96,11 @@ public class ColoredShapePipeline
         erodeDilatePipe.setParams(erodeDilateParams);
 
         HSVPipe.HSVParams hsvParams =
-                new HSVPipe.HSVParams(settings.hsvHue, settings.hsvSaturation, settings.hsvValue, settings.hsvHueShouldInvert);
+                new HSVPipe.HSVParams(
+                        settings.hsvHue,
+                        settings.hsvSaturation,
+                        settings.hsvValue,
+                        settings.hsvHueShouldInvert);
         hsvPipe.setParams(hsvParams);
 
         SpeckleRejectPipe.SpeckleRejectParams speckleRejectParams =

@@ -27,14 +27,25 @@ import org.photonvision.vision.pipe.CVPipe;
 public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
     @Override
     protected Mat process(Mat in) {
-        var outputMat = new Mat();
-        in.copyTo(outputMat);
-        Imgproc.cvtColor(outputMat, outputMat, Imgproc.COLOR_BGR2HSV, 3);
-        if(params.hueShouldInvert) {
-             Coire.inRange(outputMat, params.getHsvLowerStart(), params.getHsvLowerEnd(), outputMat);
-             Coire.inRange(outputMat, params.getHsvUpperStart(), params.getHsvUpperEnd(), outputMat);
+        var hsvMatrix = new Mat();
+        // Converting the in matrix from BGR to HSV with 3 channel (no alpha) and saving the result in
+        // hsvMatrix
+        Imgproc.cvtColor(in, hsvMatrix, Imgproc.COLOR_BGR2HSV, 3);
+        if (params.hueShouldInvert) {
+            var tempMat = new Mat();
+            // Check if hsvMatrix contains any elements between lower and upper HSV and save in our temp
+            // matrix
+            Core.inRange(hsvMatrix, params.getHsvLowerStart(), params.getHsvLowerEnd(), tempMat);
+            // Check if hsvMatrix contains any elements between lower and upper HSV and save it in
+            // hsvMatrix
+            Core.inRange(hsvMatrix, params.getHsvUpperStart(), params.getHsvUpperEnd(), hsvMatrix);
+            // Then take the two matrices, perform an OR on each element.
+            // OR meaning every element is compared in the two matrices, and if either are 1 (meaning in
+            // range of our HSV filtering), return 1
+            // Store the result in hsvMatrix
+            Core.bitwise_or(tempMat, hsvMatrix, hsvMatrix);
         } else {
-            Coire.inRange(outputMat, params.getHsvLower(), params.getHsvUpper(), outputMat);
+            Core.inRange(outputMat, params.getHsvLower(), params.getHsvUpper(), outputMat);
         }
         return outputMat;
     }
@@ -44,29 +55,30 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         private final Scalar m_hsvUpper;
         private final boolean hueShouldInvert;
 
-        private final Scaler m_hsvLowerStart;
-        private final Scaler m_hsvLowerEnd;
-        private final Scaler m_hsvUpperStart;
-        private final Scaler m_hsvUpperEnd;
+        private final Scalar m_hsvLowerStart;
+        private final Scalar m_hsvLowerEnd;
+        private final Scalar m_hsvUpperStart;
+        private final Scalar m_hsvUpperEnd;
 
-        public HSVParams(IntegerCouple hue, IntegerCouple saturation, IntegerCouple value, boolean hueShouldInvert) {
+        public HSVParams(
+                IntegerCouple hue, IntegerCouple saturation, IntegerCouple value, boolean hueShouldInvert) {
             m_hsvLower = new Scalar(hue.getFirst(), saturation.getFirst(), value.getFirst());
             m_hsvUpper = new Scalar(hue.getSecond(), saturation.getSecond(), value.getSecond());
             hueShouldInvert = hueShouldInvert;
 
-            if(hueShouldInvert) {
-                //Hue is limited to numbers between 0->255. We have to map our ranges within these bounds
-                //Since hue is circular, we might want to have a range like X -> 255 & 0 -> Y
-                //For this, we must specify two ranges
-                //One range from 0 -> Lower Bound, another from Upper Bound -> 255
-                
-                //0->X
-                m_hsvLowerStart =   new Scaler(0,              saturation.getFirst(), value.getFirst());
-                m_hsvLowerEnd   =   new Scalar(hue.getFirst(), saturation.getSecond(), value.getSecond());
+            if (hueShouldInvert) {
+                // Hue is limited to numbers between 0->255. We have to map our ranges within these bounds
+                // Since hue is circular, we might want to have a range like X -> 255 & 0 -> Y
+                // For this, we must specify two ranges
+                // One range from 0 -> Lower Bound, another from Upper Bound -> 255
 
-                //Y->255
-                m_hsvUpperStart =   new Scaler(hue.getSecond(), saturation.getFirst(), value.getFirst());
-                m_hsvUpperEnd   =   new Scalar(255,             saturation.getSecond(), value.getSecond());
+                // 0->X
+                m_hsvLowerStart = new Scaler(0, saturation.getFirst(), value.getFirst());
+                m_hsvLowerEnd = new Scalar(hue.getFirst(), saturation.getSecond(), value.getSecond());
+
+                // Y->255
+                m_hsvUpperStart = new Scaler(hue.getSecond(), saturation.getFirst(), value.getFirst());
+                m_hsvUpperEnd = new Scalar(255, saturation.getSecond(), value.getSecond());
             }
         }
 
