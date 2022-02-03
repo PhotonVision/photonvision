@@ -39,6 +39,8 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public IntegerCouple hsvSaturation = new IntegerCouple(50, 255);
     public IntegerCouple hsvValue = new IntegerCouple(50, 255);
 
+    public boolean hsvHueShouldInvert = false;
+
     public boolean outputShouldDraw = true;
     public boolean outputShowMultipleTargets = false;
 
@@ -109,6 +111,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 && Objects.equals(hsvHue, that.hsvHue)
                 && Objects.equals(hsvSaturation, that.hsvSaturation)
                 && Objects.equals(hsvValue, that.hsvValue)
+                && hsvHueShouldInvert == that.hsvHueShouldInvert
                 && Objects.equals(contourArea, that.contourArea)
                 && Objects.equals(contourRatio, that.contourRatio)
                 && Objects.equals(contourFullness, that.contourFullness)
@@ -132,6 +135,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 hsvHue,
                 hsvSaturation,
                 hsvValue,
+                hsvHueShouldInvert,
                 outputShouldDraw,
                 outputShowMultipleTargets,
                 contourArea,

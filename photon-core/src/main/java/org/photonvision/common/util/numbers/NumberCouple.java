@@ -49,6 +49,10 @@ public abstract class NumberCouple<T extends Number> {
         this.second = second;
     }
 
+    public void invert() {
+        this.set(this.second, this.first);
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof NumberCouple)) {

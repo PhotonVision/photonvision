@@ -27,6 +27,13 @@
       @input="handlePipelineData('hsvValue')"
       @rollback="e => rollback('value',e)"
     />
+    <CVSwitch
+        v-model="hsvHueShouldInvert"
+        name="Invert Hue Selection?"
+        tooltip="For red colored objects."
+        @input="handlePipelineData('hsvHueShouldInvert')"
+        @rollback="e => rollback('hsvHueShouldInvert',e)"
+      />
     <template v-if="currentPipelineType() === 3">
       <CVSwitch
         v-model="erode"
@@ -147,6 +154,14 @@ export default {
       },
       set(val) {
         this.$store.commit("mutatePipeline", {"hsvValue": val})
+      }
+    },
+    hsvHueShouldInvert: {
+      get() {
+        return this.$store.getters.currentPipelineSettings.hsvHueShouldInvert
+      },
+      set(val) {
+        this.$store.commit("mutatePipeline", {"hsvHueShouldInvert": val})
       }
     },
     erode: {

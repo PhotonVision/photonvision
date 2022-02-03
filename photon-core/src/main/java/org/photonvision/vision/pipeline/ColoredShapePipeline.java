@@ -66,6 +66,10 @@ public class ColoredShapePipeline
 
     @Override
     protected void setPipeParamsImpl() {
+        if(settings.hsvHueShouldInvert) {
+               settings.hsvHue.invert(); 
+        }
+
         DualOffsetValues dualOffsetValues =
                 new DualOffsetValues(
                         settings.offsetDualPointA,
