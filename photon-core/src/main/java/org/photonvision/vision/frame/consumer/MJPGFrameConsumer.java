@@ -28,9 +28,16 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.frame.Frame;
 
+//=======================================================================================
+//
+//  This class manages video streamed to dashboards and other network clients.
+//
 public class MJPGFrameConsumer {
+
     public static final Mat EMPTY_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
     private static final double EMPTY_FRAMERATE = 2;
     private long lastEmptyTime;
@@ -112,7 +119,24 @@ public class MJPGFrameConsumer {
     private final NetworkTable table;
     boolean isDisabled = false;
 
+    private String privSourceName;
+
+    private Logger logger = new Logger(MJPGFrameConsumer.class, LogGroup.VisionModule);
+
+    //--------are any streaming clients connected
+    //--------  -1 = unknown
+    //--------  0 = no connected clients
+    //--------  1 = clients connected
+    private int privClientsConnected = -1;
+
+    //------------------------------------------------------------------------------------
+    //  constructor
+    //
     public MJPGFrameConsumer(String sourceName, int width, int height, int port) {
+
+        //--------save source name for logging
+        privSourceName = sourceName;
+
         this.cvSource = new CvSource(sourceName, VideoMode.PixelFormat.kMJPEG, width, height, 30);
         this.table =
                 NetworkTableInstance.getDefault().getTable("/CameraPublisher").getSubTable(sourceName);
@@ -130,12 +154,19 @@ public class MJPGFrameConsumer {
                                 table.getEntry("mode").setString(videoModeToString(cvSource.getVideoMode()));
                                 table.getEntry("modes").setStringArray(getSourceModeValues(cvSource.getHandle()));
                                 updateStreamValues();
+                                logger.info( privSourceName + " - Received event - kNetworkInterfacesChanged");
                             }
                         },
                         0x4fff,
                         true);
+
+        logger.info( privSourceName + " - server created.");
     }
 
+    //------------------------------------------------------------------------------------
+    //
+    //  update network tables entry with stream connection URLs
+    //
     private synchronized void updateStreamValues() {
         // Get port
         int port = mjpegServer.getPort();
@@ -162,10 +193,18 @@ public class MJPGFrameConsumer {
         table.getEntry("streams").setStringArray(streamAddresses);
     }
 
+    //------------------------------------------------------------------------------------
+    //
+    //  alternate constructor, with hardcoded resolution.
+    //
     public MJPGFrameConsumer(String name, int port) {
         this(name, 320, 240, port);
     }
 
+    //------------------------------------------------------------------------------------
+    //
+    //  accept a new video frame and update the stream source.
+    //
     public void accept(Frame frame) {
         if (frame != null && !frame.image.getMat().empty()) {
             cvSource.putFrame(frame.image.getMat());
@@ -176,6 +215,13 @@ public class MJPGFrameConsumer {
         }
     }
 
+    //------------------------------------------------------------------------------------
+    //
+    //  This is called if video streaming is disallowed.  It sets a disabled flag.
+    //  A "Streaming Disabled" picture will be sent to the stream source once a second.
+    //  With implementation of the AnyConnectedClients, this should only be called
+    //  when there are no active stream clients (dashboards).
+    //
     public void disabledTick() {
         if (!isDisabled) {
             cvSource.setVideoMode(VideoMode.PixelFormat.kMJPEG, EMPTY_MAT.width(), EMPTY_MAT.height(), 0);
@@ -188,14 +234,26 @@ public class MJPGFrameConsumer {
         }
     }
 
+    //------------------------------------------------------------------------------------
+    //
+    //  Return the TCP port number for this object.
+    //
     public int getCurrentStreamPort() {
         return mjpegServer.getPort();
     }
 
+    //------------------------------------------------------------------------------------
+    //
+    //  Create the stream URL string.
+    //
     private static String makeStreamValue(String address, int port) {
         return "mjpg:http://" + address + ":" + port + "/?action=stream";
     }
 
+    //------------------------------------------------------------------------------------
+    //
+    //  Get video source modes
+    //  
     private static String[] getSourceModeValues(int sourceHandle) {
         VideoMode[] modes = CameraServerJNI.enumerateSourceVideoModes(sourceHandle);
         String[] modeStrings = new String[modes.length];
@@ -205,6 +263,10 @@ public class MJPGFrameConsumer {
         return modeStrings;
     }
 
+    //------------------------------------------------------------------------------------
+    //
+    //  Format video mode for sending to NetworkTables
+    //
     private static String videoModeToString(VideoMode mode) {
         return mode.width
                 + "x"
@@ -216,6 +278,10 @@ public class MJPGFrameConsumer {
                 + " fps";
     }
 
+    //------------------------------------------------------------------------------------
+    //
+    //  Format video mode pixel format
+    //
     private static String pixelFormatToString(VideoMode.PixelFormat pixelFormat) {
         switch (pixelFormat) {
             case kMJPEG:
@@ -233,6 +299,10 @@ public class MJPGFrameConsumer {
         }
     }
 
+    //------------------------------------------------------------------------------------
+    //   
+    //  shutdown this object
+    //
     public void close() {
         table.getEntry("connected").setBoolean(false);
         mjpegServer.close();
@@ -241,5 +311,28 @@ public class MJPGFrameConsumer {
         mjpegServer = null;
         cvSource = null;
         listener = null;
+        logger = null;
+    }
+
+    //------------------------------------------------------------------------------------
+    //   
+    //  Determine if any clients are connected to this stream server.
+    //  
+    //
+    public boolean anyClientConnections() {
+
+        //--------query the cscore stream server to see if there are connected clients
+        boolean locBoolClientsConnected = this.mjpegServer.getSource().isEnabled();
+
+        //--------if the value changed, log it.
+        int locIntClientsConnected = (locBoolClientsConnected ? 1:0);
+        if ( locIntClientsConnected != privClientsConnected ) {
+            privClientsConnected = locIntClientsConnected;
+            if ( locBoolClientsConnected )
+                logger.info( privSourceName + " - Mjpeg streaming client connected.");
+            else
+                logger.info( privSourceName + " - Mjpeg streaming, all clients disconnected.");
+        }
+        return locBoolClientsConnected; 
     }
 }
