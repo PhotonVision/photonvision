@@ -50,7 +50,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
-//=======================================================================================
+// =======================================================================================
 /**
  * This is the God Class
  *
@@ -191,25 +191,23 @@ public class VisionModule {
         rawResultConsumers.add((in, out, tgts) -> inputFrameSaver.accept(in));
         fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
 
-        //--------only send the video frame to the mjpeg server if there are connected clients
-        //--------The check for pipelinesettings inputShouldShow is reudundant since these
-        //--------clients act like any other streaming client and thus will show up as a 
-        //--------connected client.
+        // --------only send the video frame to the mjpeg server if there are connected clients
+        // --------The check for pipelinesettings inputShouldShow is reudundant since these
+        // --------clients act like any other streaming client and thus will show up as a
+        // --------connected client.
         fpsLimitedResultConsumers.add(
                 result -> {
-                    //----if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
-                    if ( dashboardInputStreamer.anyClientConnections())
+                    // ----if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
+                    if (dashboardInputStreamer.anyClientConnections())
                         dashboardInputStreamer.accept(result.inputFrame);
-                    else 
-                        dashboardInputStreamer.disabledTick();
+                    else dashboardInputStreamer.disabledTick();
                 });
         fpsLimitedResultConsumers.add(
                 result -> {
-                    //----if (this.pipelineManager.getCurrentPipelineSettings().outputShouldShow)
-                    if ( dashboardOutputStreamer.anyClientConnections())
+                    // ----if (this.pipelineManager.getCurrentPipelineSettings().outputShouldShow)
+                    if (dashboardOutputStreamer.anyClientConnections())
                         dashboardOutputStreamer.accept(result.outputFrame);
-                    else
-                        dashboardOutputStreamer.disabledTick();
+                    else dashboardOutputStreamer.disabledTick();
                 });
     }
 
