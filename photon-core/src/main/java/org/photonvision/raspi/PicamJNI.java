@@ -140,7 +140,11 @@ public class PicamJNI {
 
     public static native boolean setBrightness(int brightness);
 
+    // This adjusts the analog gain (normalized to 0-100); ignores the digital gain
     public static native boolean setGain(int gain);
+
+    // Adjusts the auto white balance gains, which are normalized 0-100 in the native code
+    public static native boolean setAwbGain(int red, int blue);
 
     public static native boolean setRotation(int rotation);
 

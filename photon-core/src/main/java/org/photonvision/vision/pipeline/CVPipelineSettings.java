@@ -41,7 +41,12 @@ public class CVPipelineSettings implements Cloneable {
     public String pipelineNickname = "New Pipeline";
     public double cameraExposure = 50;
     public int cameraBrightness = 50;
+    // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
+    // quirk
     public int cameraGain = 50;
+    // Currently only used by the zero-copy Pi Camera driver
+    public int cameraRedGain = 50;
+    public int cameraBlueGain = 50;
     public int cameraVideoModeIndex = 0;
     public FrameDivisor streamingFrameDivisor = FrameDivisor.NONE;
     public boolean ledMode = false;
@@ -57,6 +62,8 @@ public class CVPipelineSettings implements Cloneable {
                 && Double.compare(that.cameraExposure, cameraExposure) == 0
                 && Double.compare(that.cameraBrightness, cameraBrightness) == 0
                 && Double.compare(that.cameraGain, cameraGain) == 0
+                && Double.compare(that.cameraRedGain, cameraRedGain) == 0
+                && Double.compare(that.cameraBlueGain, cameraBlueGain) == 0
                 && cameraVideoModeIndex == that.cameraVideoModeIndex
                 && ledMode == that.ledMode
                 && pipelineType == that.pipelineType
@@ -79,6 +86,8 @@ public class CVPipelineSettings implements Cloneable {
                 cameraExposure,
                 cameraBrightness,
                 cameraGain,
+                cameraRedGain,
+                cameraBlueGain,
                 cameraVideoModeIndex,
                 streamingFrameDivisor,
                 ledMode,
