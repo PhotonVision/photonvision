@@ -130,8 +130,5 @@ export default {
 };
 </script>
 
-<style lang="css" scoped>
-.flipped {
-  transform: scale(-1, 1);
-}
+<style lang="" scoped>
 </style>
