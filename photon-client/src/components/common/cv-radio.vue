@@ -18,10 +18,10 @@
           :mandatory="true"
         >
           <v-radio
-            v-for="(name,index) in list"
+            v-for="(radioName,index) in list"
             :key="index"
             color="#ffd843"
-            :label="name"
+            :label="radioName"
             :value="index"
             :disabled="disabled"
           />

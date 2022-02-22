@@ -2,20 +2,20 @@
   <div :style="{'--averageHue': averageHue}">
     <CVrangeSlider
       id="hue-slider"
-      :class="hueInverted ? 'inverted-slider' : 'normal-slider'"
       v-model="hsvHue"
+      :class="hueInverted ? 'inverted-slider' : 'normal-slider'"
       name="Hue"
       tooltip="Describes color"
       :min="0"
       :max="180"
-      invertable="true"
+      :inverted="hueInverted"
       @input="handlePipelineData('hsvHue')"
       @rollback="e => rollback('hue',e)"
     />
     <CVrangeSlider
       id="sat-slider"
-      class="normal-slider"
       v-model="hsvSaturation"
+      class="normal-slider"
       name="Saturation"
       tooltip="Describes colorfulness; the smaller this value the 'whiter' the color becomes"
       :min="0"
@@ -25,14 +25,21 @@
     />
     <CVrangeSlider
       id="value-slider"
-      class="normal-slider"
       v-model="hsvValue"
+      class="normal-slider"
       name="Value"
       tooltip="Describes lightness; the smaller this value the 'blacker' the color becomes"
       :min="0"
       :max="255"
       @input="handlePipelineData('hsvValue')"
       @rollback="e => rollback('value',e)"
+    />
+    <CVSwitch
+      v-model="hueInverted"
+      name="Invert hue"
+      tooltip="Selects the hue range outside of the hue slider bounds instead of inside"
+      @input="handlePipelineData('hueInverted')"
+      @rollback="e => rollback('hueInverted',e)"
     />
     <template v-if="currentPipelineType() === 3">
       <CVSwitch
@@ -151,12 +158,15 @@ export default {
     },
     hueInverted: {
       get() {
-        return this.$store.getters.currentPipelineSettings.hueRangeInverted || true
+        return this.$store.getters.currentPipelineSettings.hueInverted;
       },
+      set(val) {
+        this.$store.commit("mutatePipeline", {"hueInverted": val});
+      }
     },
     hsvSaturation: {
       get() {
-        return this.$store.getters.currentPipelineSettings.hsvSaturation
+        return this.$store.getters.currentPipelineSettings.hsvSaturation;
       },
       set(val) {
         this.$store.commit("mutatePipeline", {"hsvSaturation": val})
@@ -164,15 +174,15 @@ export default {
     },
     hsvValue: {
       get() {
-        return this.$store.getters.currentPipelineSettings.hsvValue
+        return this.$store.getters.currentPipelineSettings.hsvValue;
       },
       set(val) {
-        this.$store.commit("mutatePipeline", {"hsvValue": val})
+        this.$store.commit("mutatePipeline", {"hsvValue": val});
       }
     },
     erode: {
       get() {
-        return this.$store.getters.currentPipelineSettings.erode
+        return this.$store.getters.currentPipelineSettings.erode;
       },
       set(val) {
         this.$store.commit("mutatePipeline", {"erode": val});
@@ -180,7 +190,7 @@ export default {
     },
     dilate: {
       get() {
-        return this.$store.getters.currentPipelineSettings.dilate
+        return this.$store.getters.currentPipelineSettings.dilate;
       },
       set(val) {
         this.$store.commit("mutatePipeline", {"dilate": val});
@@ -262,7 +272,7 @@ export default {
   box-shadow: 0px 0px 5px #333, inset 0px 0px 3px #333;
 }
 #sat-slider >>> .v-slider {
-  background: linear-gradient( to right, #fff 0%, hsl(var(--averageHue),100%,50%) 100% );
+  background: linear-gradient( to right, #fff 0%, hsl(var(--averageHue), 100%, 50%) 100% );
   border-radius: 10px;
   box-shadow: 0px 0px 5px #333, inset 0px 0px 3px #333;
 }
@@ -272,7 +282,7 @@ export default {
   box-shadow: 0px 0px 5px #333, inset 0px 0px 3px #333;
 }
 >>> .v-slider__thumb {
-  outline: black solid medium;
+  outline: black solid thin;
 }
 .normal-slider >>> .v-slider__track-fill {
     outline: black solid thin;

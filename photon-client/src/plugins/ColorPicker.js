@@ -6,8 +6,10 @@ function initColorPicker() {
         canvas = document.createElement('canvas');
 
     image = document.querySelector('#normal-stream');
-    canvas.width = image.width;
-    canvas.height = image.height;
+    if (image !== null) {
+      canvas.width = image.width;
+      canvas.height = image.height;
+    }
 }
 
 //Called on click of the image,

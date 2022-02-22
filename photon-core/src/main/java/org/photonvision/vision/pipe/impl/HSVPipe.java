@@ -25,7 +25,6 @@ import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
-
     @Override
     protected Mat process(Mat in) {
         var outputMat = new Mat();
@@ -90,7 +89,7 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
         }
 
         public boolean getHueInverted() {
-            return true; // m_hueInverted;
+            return m_hueInverted;
         }
     }
 }

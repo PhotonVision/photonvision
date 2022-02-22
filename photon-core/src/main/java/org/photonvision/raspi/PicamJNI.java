@@ -134,6 +134,8 @@ public class PicamJNI {
     public static native void setThresholds(
             double hL, double sL, double vL, double hU, double sU, double vU);
 
+    public static native void setInvertHue(boolean shouldInvert);
+
     public static native boolean setExposure(int exposure);
 
     public static native boolean setBrightness(int brightness);

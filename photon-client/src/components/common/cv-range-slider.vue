@@ -4,24 +4,11 @@
       dense
       align="center"
     >
-      <v-col :cols="invertable ? 1 : 2">
+      <v-col cols="2">
         <tooltipped-label
           :tooltip="tooltip"
           :text="name"
         />
-      </v-col>
-      <v-col
-        v-if="invertable"
-        cols="1"
-      >
-        <v-btn
-          dark
-          icon
-          :class="inverted ? 'flipped' : ''"
-          @click="inverted = !inverted"
-        >
-          <v-icon>mdi-invert-colors</v-icon>
-        </v-btn>
       </v-col>
       <v-col cols="10">
         <v-range-slider
@@ -91,13 +78,12 @@ export default {
     TooltippedLabel,
   },
   // eslint-disable-next-line vue/require-prop-types
-  props: ["name", "min", "max", "value", "step", "tooltip", "disabled", "invertable"],
+  props: ["name", "min", "max", "value", "step", "tooltip", "disabled", "inverted"],
   data() {
     return {
       prependFocused: false,
       appendFocused: false,
       currentTempVal: null,
-      inverted: false,
     };
   },
   computed: {

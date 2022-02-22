@@ -77,16 +77,14 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                     settings.hsvHue.getSecond() / 180d,
                     settings.hsvSaturation.getSecond() / 255d,
                     settings.hsvValue.getSecond() / 255d);
+            PicamJNI.setInvertHue(settings.hueInverted);
 
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
             PicamJNI.setShouldCopyColor(settings.inputShouldShow);
         } else {
             var hsvParams =
                     new HSVPipe.HSVParams(
-                            settings.hsvHue,
-                            settings.hsvSaturation,
-                            settings.hsvValue,
-                            settings.hueRangeInverted);
+                            settings.hsvHue, settings.hsvSaturation, settings.hsvValue, settings.hueInverted);
             hsvPipe.setParams(hsvParams);
         }
 
