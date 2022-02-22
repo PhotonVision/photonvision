@@ -18,6 +18,7 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.math.Pair;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -87,6 +88,7 @@ public class ZeroCopyPicamSource extends VisionSource {
         private double lastExposure;
         private int lastBrightness;
         private int lastGain;
+        private Pair<Integer, Integer> lastAwbGains;
 
         public PicamSettables(CameraConfiguration configuration) {
             super(configuration);
@@ -137,21 +139,38 @@ public class ZeroCopyPicamSource extends VisionSource {
         public void setExposure(double exposure) {
             lastExposure = exposure;
             var failure = PicamJNI.setExposure((int) Math.round(exposure));
-            if (failure) logger.warn("Couldn't set Pi camera exposure");
+            if (failure) logger.warn("Couldn't set Pi Camera exposure");
         }
 
         @Override
         public void setBrightness(int brightness) {
             lastBrightness = brightness;
             var failure = PicamJNI.setBrightness(brightness);
-            if (failure) logger.warn("Couldn't set Pi camera brightness");
+            if (failure) logger.warn("Couldn't set Pi Camera brightness");
         }
 
         @Override
         public void setGain(int gain) {
             lastGain = gain;
             var failure = PicamJNI.setGain(gain);
-            if (failure) logger.warn("Couldn't set Pi camera gain");
+            if (failure) logger.warn("Couldn't set Pi Camera gain");
+        }
+
+        @Override
+        public void setRedGain(int red) {
+            lastAwbGains = Pair.of(red, lastAwbGains.getSecond());
+            setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
+        }
+
+        @Override
+        public void setBlueGain(int blue) {
+            lastAwbGains = Pair.of(lastAwbGains.getFirst(), blue);
+            setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
+        }
+
+        public void setAwbGain(int red, int blue) {
+            var failure = PicamJNI.setAwbGain(red, blue);
+            if (failure) logger.warn("Couldn't set Pi Camera AWB gains");
         }
 
         @Override
@@ -165,17 +184,18 @@ public class ZeroCopyPicamSource extends VisionSource {
             var failure = PicamJNI.destroyCamera();
             if (failure)
                 throw new RuntimeException(
-                        "Couldn't destroy a zero copy Pi camera while switching video modes");
+                        "Couldn't destroy a zero copy Pi Camera while switching video modes");
             failure = PicamJNI.createCamera(mode.width, mode.height, mode.fpsActual);
             if (failure)
                 throw new RuntimeException(
-                        "Couldn't create a zero copy Pi camera while switching video modes");
+                        "Couldn't create a zero copy Pi Camera while switching video modes");
 
             // We don't store last settings on the native side, and when you change video mode these get
             // reset on MMAL's end
             setExposure(lastExposure);
             setBrightness(lastBrightness);
             setGain(lastGain);
+            setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
 
             currentVideoMode = mode;
         }

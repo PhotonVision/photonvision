@@ -107,6 +107,13 @@ public class VisionModule {
                         if (it.cameraGain == -1) it.cameraGain = 20; // Sane default
                     });
         }
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+            pipelineManager.userPipelineSettings.forEach(
+                    it -> {
+                        if (it.cameraRedGain == -1) it.cameraRedGain = 16; // Sane defaults
+                        if (it.cameraBlueGain == -1) it.cameraBlueGain = 16;
+                    });
+        }
 
         this.pipelineManager = pipelineManager;
         this.visionSource = visionSource;
@@ -345,6 +352,10 @@ public class VisionModule {
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             settings.cameraGain = -1;
         }
+        if (!cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+            settings.cameraRedGain = -1;
+            settings.cameraBlueGain = -1;
+        }
 
         setPipeline(PipelineManager.CAL_3D_INDEX);
     }
@@ -390,6 +401,16 @@ public class VisionModule {
             visionSource.getSettables().setGain(Math.max(0, config.cameraGain));
         } else {
             config.cameraGain = -1;
+        }
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+            // If the AWB gains are disabled for some reason, re-enable it
+            if (config.cameraRedGain == -1) config.cameraRedGain = 16;
+            if (config.cameraBlueGain == -1) config.cameraBlueGain = 16;
+            visionSource.getSettables().setRedGain(Math.max(0, config.cameraRedGain));
+            visionSource.getSettables().setBlueGain(Math.max(0, config.cameraBlueGain));
+        } else {
+            config.cameraRedGain = -1;
+            config.cameraBlueGain = -1;
         }
 
         setVisionLEDs(config.ledMode);
