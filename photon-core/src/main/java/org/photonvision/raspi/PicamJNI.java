@@ -86,7 +86,7 @@ public class PicamJNI {
 
     public static boolean isSupported() {
         return libraryLoaded
-                && !isVCSMSupported()
+                && isVCSMSupported()
                 && getSensorModel() != SensorModel.Disconnected
                 && Platform.isRaspberryPi()
                 && (Platform.currentPiVersion == PiVersion.PI_3
@@ -133,6 +133,8 @@ public class PicamJNI {
 
     public static native void setThresholds(
             double hL, double sL, double vL, double hU, double sU, double vU);
+
+    public static native void setInvertHue(boolean shouldInvert);
 
     public static native boolean setExposure(int exposure);
 

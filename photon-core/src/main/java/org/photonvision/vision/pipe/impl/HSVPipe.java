@@ -28,19 +28,56 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
     @Override
     protected Mat process(Mat in) {
         var outputMat = new Mat();
-        in.copyTo(outputMat);
-        Imgproc.cvtColor(outputMat, outputMat, Imgproc.COLOR_BGR2HSV, 3);
-        Core.inRange(outputMat, params.getHsvLower(), params.getHsvUpper(), outputMat);
+        // We can save a copy here by sending the output of cvtcolor to outputMat directly
+        // rather than copying. Free performance!
+        Imgproc.cvtColor(in, outputMat, Imgproc.COLOR_BGR2HSV, 3);
+
+        if (params.getHueInverted()) {
+            // In Java code we do this by taking an image thresholded
+            // from [0, minHue] and ORing it with [maxHue, 180]
+
+            // we want hue from the end of the slider to max hue
+            Scalar firstLower = params.getHsvLower().clone();
+            Scalar firstUpper = params.getHsvUpper().clone();
+            firstLower.val[0] = params.getHsvUpper().val[0];
+            ;
+            firstUpper.val[0] = 180;
+
+            var lowerThresholdMat = new Mat();
+            Core.inRange(outputMat, firstLower, firstUpper, lowerThresholdMat);
+
+            // We want hue from 0 to the start of the slider
+            var secondLower = params.getHsvLower().clone();
+            var secondUpper = params.getHsvUpper().clone();
+            secondLower.val[0] = 0;
+            secondUpper.val[0] = params.getHsvLower().val[0];
+
+            // Now that the output mat's been used by the first inRange, it's fine to mutate it
+            Core.inRange(outputMat, secondLower, secondUpper, outputMat);
+
+            // Now OR the two images together to make a mat that combines the lower and upper bounds
+            // outputMat holds the second half of the range
+            Core.bitwise_or(lowerThresholdMat, outputMat, outputMat);
+
+            lowerThresholdMat.release();
+        } else {
+            Core.inRange(outputMat, params.getHsvLower(), params.getHsvUpper(), outputMat);
+        }
+
         return outputMat;
     }
 
     public static class HSVParams {
         private final Scalar m_hsvLower;
         private final Scalar m_hsvUpper;
+        private final boolean m_hueInverted;
 
-        public HSVParams(IntegerCouple hue, IntegerCouple saturation, IntegerCouple value) {
+        public HSVParams(
+                IntegerCouple hue, IntegerCouple saturation, IntegerCouple value, boolean hueInverted) {
             m_hsvLower = new Scalar(hue.getFirst(), saturation.getFirst(), value.getFirst());
             m_hsvUpper = new Scalar(hue.getSecond(), saturation.getSecond(), value.getSecond());
+
+            this.m_hueInverted = hueInverted;
         }
 
         public Scalar getHsvLower() {
@@ -49,6 +86,10 @@ public class HSVPipe extends CVPipe<Mat, Mat, HSVPipe.HSVParams> {
 
         public Scalar getHsvUpper() {
             return m_hsvUpper;
+        }
+
+        public boolean getHueInverted() {
+            return m_hueInverted;
         }
     }
 }

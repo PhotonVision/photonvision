@@ -19,7 +19,9 @@
           hide-details
           class="align-center"
           dark
-          color="accent"
+          :color="inverted ? 'rgba(255, 255, 255, 0.2)' : 'accent'"
+          :track-color="inverted ? 'accent' : undefined"
+          thumb-color="accent"
           :step="step"
           @input="handleInput"
           @mousedown="$emit('rollback', localValue)"
@@ -76,7 +78,7 @@ export default {
     TooltippedLabel,
   },
   // eslint-disable-next-line vue/require-prop-types
-  props: ["name", "min", "max", "value", "step", "tooltip", "disabled"],
+  props: ["name", "min", "max", "value", "step", "tooltip", "disabled", "inverted"],
   data() {
     return {
       prependFocused: false,
