@@ -73,7 +73,7 @@
           color="accent"
           class="ma-2 black--text"
           small
-          @click="setFunction(3)"
+          @click="setFunction(hueInverted ? 2 : 3)"
         >
           <v-icon left>
             mdi-minus
@@ -89,13 +89,13 @@
           <v-icon left>
             mdi-plus-minus
           </v-icon>
-          Set To Average
+          {{ hueInverted ? "Exclude" : "Set to" }} Average
         </v-btn>
         <v-btn
           color="accent"
           class="ma-2 black--text"
           small
-          @click="setFunction(2)"
+          @click="setFunction(hueInverted ? 3: 2)"
         >
           <v-icon left>
             mdi-plus
