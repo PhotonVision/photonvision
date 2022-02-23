@@ -85,10 +85,10 @@ public class ZeroCopyPicamSource extends VisionSource {
 
     public static class PicamSettables extends VisionSourceSettables {
         private FPSRatedVideoMode currentVideoMode;
-        private double lastExposure;
-        private int lastBrightness;
-        private int lastGain;
-        private Pair<Integer, Integer> lastAwbGains;
+        private double lastExposure = 50;
+        private int lastBrightness = 50;
+        private int lastGain = 50;
+        private Pair<Integer, Integer> lastAwbGains = new Pair(18, 18);
 
         public PicamSettables(CameraConfiguration configuration) {
             super(configuration);
