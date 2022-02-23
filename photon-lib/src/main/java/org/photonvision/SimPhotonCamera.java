@@ -41,6 +41,7 @@ public class SimPhotonCamera extends PhotonCamera {
     private final NetworkTableEntry targetAreaEntry;
     private final NetworkTableEntry targetSkewEntry;
     private final NetworkTableEntry targetPoseEntry;
+    private final NetworkTableEntry versionEntry;
 
     /**
      * Constructs a Simulated PhotonCamera from a root table.
@@ -60,6 +61,10 @@ public class SimPhotonCamera extends PhotonCamera {
         targetAreaEntry = rootTable.getEntry("targetAreaEntry");
         targetSkewEntry = rootTable.getEntry("targetSkewEntry");
         targetPoseEntry = rootTable.getEntry("targetPoseEntry");
+        versionEntry = rootTable.getEntry("versionEntry");
+
+        // Sets the version string so that it will always match the current version
+        versionEntry.setString(PhotonVersion.versionString);
     }
 
     /**
