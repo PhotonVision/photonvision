@@ -196,13 +196,24 @@
                   @input="e => handlePipelineUpdate('cameraBrightness', e)"
                 />
                 <CVslider
-                  v-if="$store.getters.currentPipelineSettings.cameraGain !== -1"
-                  v-model="$store.getters.currentPipelineSettings.cameraGain"
-                  name="Gain"
-                  :min="0"
-                  :max="100"
-                  slider-cols="8"
-                  @input="e => handlePipelineUpdate('cameraGain', e)"
+                  v-if="$store.getters.currentPipelineSettings.cameraRedGain !== -1"
+                  v-model="$store.getters.currentPipelineSettings.cameraRedGain"
+                  name="Red AWB Gain"
+                  min="0"
+                  max="100"
+                  tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
+                  :slider-cols="8"
+                  @input="e => handlePipelineData('cameraRedGain', e)"
+                />
+                <CVslider
+                  v-if="$store.getters.currentPipelineSettings.cameraBlueGain !== -1"
+                  v-model="$store.getters.currentPipelineSettings.cameraBlueGain"
+                  name="Blue AWB Gain"
+                  min="0"
+                  max="100"
+                  tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
+                  :slider-cols="8"
+                  @input="e => handlePipelineData('cameraBlueGain', e)"
                 />
               </v-col>
             </v-row>
