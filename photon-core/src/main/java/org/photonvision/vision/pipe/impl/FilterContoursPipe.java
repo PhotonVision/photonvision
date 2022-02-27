@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.opencv.core.Rect;
@@ -48,38 +49,51 @@ public class FilterContoursPipe
     private void rejectOutliers(List<Contour> list, double xTol, double yTol) {
         if (list.size() < 2) return; // Must have at least 2 points to reject outliers
 
-        // the inter-quartile range is the value at the 75th percentile - 25th percentile
-        List<Double> xCoords =
-                list.stream().map(it -> it.getCenterPoint().x).collect(Collectors.toList());
-        double p75 = MathUtils.getPercentile(xCoords, 75);
-        double p25 = MathUtils.getPercentile(xCoords, 25);
-        double iqr_x = p75 - p25; // Difference between 75th and 25th
+/*
+        // Sort by X and find median
+        list.sort(Comparator.comparingDouble(c -> c.getCenterPoint().x));
 
-        // Kill all further than N * the iqr in x
+        double medianX = list.get(list.size() / 2).getCenterPoint().x;
+        if (list.size() % 2 == 0)
+            medianX = (medianX + list.get(list.size() / 2 - 1).getCenterPoint().x) / 2;
+*/
+
+        double meanX = list.stream().mapToDouble(it -> it.getCenterPoint().x).sum() / list.size();
+
+        double stdDevX =
+                list.stream().mapToDouble(it -> Math.pow(it.getCenterPoint().x - meanX, 2.0)).sum();
+        stdDevX /= (list.size() - 1);
+        stdDevX = Math.sqrt(stdDevX);
+
+/*
+        // Sort by Y and find median
+        list.sort(Comparator.comparingDouble(c -> c.getCenterPoint().y));
+
+        double medianY = list.get(list.size() / 2).getCenterPoint().y;
+        if (list.size() % 2 == 0)
+            medianY = (medianY + list.get(list.size() / 2 - 1).getCenterPoint().y) / 2;
+*/
+
+        double meanY = list.stream().mapToDouble(it -> it.getCenterPoint().y).sum() / list.size();
+
+        double stdDevY =
+                list.stream().mapToDouble(it -> Math.pow(it.getCenterPoint().y - meanY, 2.0)).sum();
+        stdDevY /= (list.size() - 1);
+        stdDevY = Math.sqrt(stdDevY);
+
         for (var it = list.iterator(); it.hasNext(); ) {
-            var x = it.next().getCenterPoint().x;
+            // Reject points more than N standard devs above/below median
+            // That is, |point - median| > std dev * tol
+            Contour c = it.next();
+            double x = c.getCenterPoint().x;
+            double y = c.getCenterPoint().y;
 
-            // Remove points further than xTol * IQR above 75th, or below 25th
-            if ((x > p75 + xTol * iqr_x) || (x < p25 - 1.5 * iqr_x)) {
+            if (Math.abs(x - meanX) > stdDevX * xTol) {
+                it.remove();
+            } else if (Math.abs(y - meanY) > stdDevY * yTol) {
                 it.remove();
             }
-        }
-
-        // Repeat for Y. Maybe less to do this time!
-        List<Double> yCoords =
-                list.stream().map(it -> it.getCenterPoint().y).collect(Collectors.toList());
-        p75 = MathUtils.getPercentile(yCoords, 75);
-        p25 = MathUtils.getPercentile(yCoords, 25);
-        double iqr_y = p75 - p25; // Difference between 75th and 25th
-
-        // Kill all further than N * the iqr in y
-        for (var it = list.iterator(); it.hasNext(); ) {
-            var y = it.next().getCenterPoint().y;
-
-            // Remove points further than xTol * IQR above 75th, or below 25th
-            if ((y > p75 + yTol * iqr_x) || (y < p25 - 1.5 * iqr_y)) {
-                it.remove();
-            }
+            // Otherwise we're good! Keep it in
         }
     }
 

@@ -5,7 +5,7 @@
       name="Area"
       min="0"
       max="100"
-      step="0.1"
+      step="0.01"
       @input="handlePipelineData('contourArea')"
     />
     <CVrangeSlider
@@ -47,24 +47,24 @@
     />
     <template v-if="currentPipelineType() !== 3">
       <CVslider
-        v-model="contourIqrRangeX"
-        name="IQR Range X"
-        tooltip="Rejects contours whose center X is further than X IQRs above/below the 75th/25th quartiles"
-        min="0"
+        v-model="contourFilterRangeX"
+        name="X filter tightness"
+        tooltip="Rejects contours whose center X is further than X standard deviations above/below the mean X location"
+        min="0.1"
         max="6"
         step="0.1"
         :slider-cols="largeBox"
-        @input="handlePipelineData('contourIqrRangeX')"
+        @input="handlePipelineData('contourFilterRangeX')"
       />
       <CVslider
-        v-model="contourIqrRangeY"
-        name="IQR Range Y"
-        tooltip="Rejects contours whose center Y is further than X IQRs above/below the 75th/25th quartiles"
-        min="0"
+        v-model="contourFilterRangeY"
+        name="Y filter tightness"
+        tooltip="Rejects contours whose center Y is further than X standard deviations above/below the mean Y location"
+        min="0.1"
         max="6"
         step="0.1"
         :slider-cols="largeBox"
-        @input="handlePipelineData('contourIqrRangeY')"
+        @input="handlePipelineData('contourFilterRangeY')"
       />
       <CVselect
         v-model="contourGroupingMode"
@@ -227,23 +227,23 @@ export default {
         this.$store.commit("mutatePipeline", {"contourSpecklePercentage": val});
       }
     },
-    contourIqrRangeX: {
+    contourFilterRangeX: {
       get() {
-        console.log(this.$store.getters.currentPipelineSettings.contourIqrRangeX)
-        return this.$store.getters.currentPipelineSettings.contourIqrRangeX
+        console.log(this.$store.getters.currentPipelineSettings.contourFilterRangeX)
+        return this.$store.getters.currentPipelineSettings.contourFilterRangeX
       },
       set(val) {
         console.log("set")
         console.log(val)
-        this.$store.commit("mutatePipeline", {"contourIqrRangeX": val});
+        this.$store.commit("mutatePipeline", {"contourFilterRangeX": val});
       }
     },
-    contourIqrRangeY: {
+    contourFilterRangeY: {
       get() {
-        return this.$store.getters.currentPipelineSettings.contourIqrRangeY
+        return this.$store.getters.currentPipelineSettings.contourFilterRangeY
       },
       set(val) {
-        this.$store.commit("mutatePipeline", {"contourIqrRangeY": val});
+        this.$store.commit("mutatePipeline", {"contourFilterRangeY": val});
       }
     },
     contourGroupingMode: {
