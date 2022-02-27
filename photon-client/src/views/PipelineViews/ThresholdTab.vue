@@ -73,7 +73,7 @@
           color="accent"
           class="ma-2 black--text"
           small
-          @click="setFunction(3)"
+          @click="setFunction(hueInverted ? 2 : 3)"
         >
           <v-icon left>
             mdi-minus
@@ -89,13 +89,13 @@
           <v-icon left>
             mdi-plus-minus
           </v-icon>
-          Set To Average
+          {{ hueInverted ? "Exclude" : "Set to" }} Average
         </v-btn>
         <v-btn
           color="accent"
           class="ma-2 black--text"
           small
-          @click="setFunction(2)"
+          @click="setFunction(hueInverted ? 3: 2)"
         >
           <v-icon left>
             mdi-plus
@@ -149,11 +149,26 @@ export default {
     },
     averageHue: {
       get() {
+        var isInverted = this.$store.getters.currentPipelineSettings.hueInverted;
         const arr = this.$store.getters.currentPipelineSettings.hsvHue;
+        var retVal = 0;
+
         if (Array.isArray(arr)) {
-          return (arr[0] + arr[1])
+          retVal = (arr[0] + arr[1]);
+        } else {
+          retVal = (arr.first + arr.second);
         }
-        return (arr.first + arr.second);
+
+        if(isInverted){
+          retVal += 180;
+        }
+
+        if(retVal > 360){
+          retVal -= 360;
+        }
+
+        return retVal;
+
       },
     },
     hueInverted: {
