@@ -205,7 +205,7 @@ public class PhotonCamera {
     }
 
     private void verifyVersion() {
-        if(!VERSION_CHECK_ENABLED) return;
+        if (!VERSION_CHECK_ENABLED) return;
 
         String versionString = versionEntry.getString("");
         if (versionString.equals("")) {
