@@ -130,6 +130,7 @@ class SimVisionSystemTest {
                 new SimVisionSystem("Test", 80.0, 0.0, new Transform2d(), 1, 99999, 640, 480, 0);
         sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 1.0, 3.0, 3.0));
 
+        PhotonCamera.setVersionCheckEnabled(false);
         var robotPose = new Pose2d(new Translation2d(5, 0), Rotation2d.fromDegrees(5));
         sysUnderTest.processFrame(robotPose);
         assertTrue(sysUnderTest.cam.getLatestResult().hasTargets());

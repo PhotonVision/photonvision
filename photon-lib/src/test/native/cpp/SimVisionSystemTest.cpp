@@ -294,6 +294,7 @@ TEST_P(SimVisionSystemCameraPitchParamTest, CameraPitch) {
       frc::Transform2d(frc::Translation2d(), frc::Rotation2d()), 0.0_m,
       units::degree_t(testPitch));
 
+  photonlib::PhotonCamera::SetVersionCheckEnabled(false);
   sysUnderTest.ProcessFrame(robotPose);
   auto result = sysUnderTest.cam.GetLatestResult();
   ASSERT_TRUE(result.HasTargets());
