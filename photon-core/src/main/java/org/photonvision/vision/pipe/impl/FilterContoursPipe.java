@@ -19,8 +19,10 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.Contour;
@@ -36,7 +38,49 @@ public class FilterContoursPipe
         for (Contour contour : in) {
             filterContour(contour);
         }
+
+        // we need the whole list for outlier rejection
+        rejectOutliers(m_filteredContours, params.xTol, params.yTol);
+
         return m_filteredContours;
+    }
+
+    private void rejectOutliers(List<Contour> list, double xTol, double yTol) {
+        if (list.size() < 2) return; // Must have at least 2 points to reject outliers
+
+        // the inter-quartile range is the value at the 75th percentile - 25th percentile
+        List<Double> xCoords =
+                list.stream().map(it -> it.getCenterPoint().x).collect(Collectors.toList());
+        double p75 = MathUtils.getPercentile(xCoords, 75);
+        double p25 = MathUtils.getPercentile(xCoords, 25);
+        double iqr_x = p75 - p25; // Difference between 75th and 25th
+
+        // Kill all further than N * the iqr in x
+        for (var it = list.iterator(); it.hasNext(); ) {
+            var x = it.next().getCenterPoint().x;
+
+            // Remove points further than xTol * IQR above 75th, or below 25th
+            if ((x > p75 + xTol * iqr_x) || (x < p25 - 1.5 * iqr_x)) {
+                it.remove();
+            }
+        }
+
+        // Repeat for Y. Maybe less to do this time!
+        List<Double> yCoords =
+                list.stream().map(it -> it.getCenterPoint().y).collect(Collectors.toList());
+        p75 = MathUtils.getPercentile(yCoords, 75);
+        p25 = MathUtils.getPercentile(yCoords, 25);
+        double iqr_y = p75 - p25; // Difference between 75th and 25th
+
+        // Kill all further than N * the iqr in y
+        for (var it = list.iterator(); it.hasNext(); ) {
+            var y = it.next().getCenterPoint().y;
+
+            // Remove points further than xTol * IQR above 75th, or below 25th
+            if ((y > p75 + yTol * iqr_x) || (y < p25 - 1.5 * iqr_y)) {
+                it.remove();
+            }
+        }
     }
 
     private void filterContour(Contour contour) {
@@ -69,16 +113,22 @@ public class FilterContoursPipe
         private final DoubleCouple m_ratio;
         private final DoubleCouple m_fullness;
         private final FrameStaticProperties m_frameStaticProperties;
+        private final double xTol; // IQR tolerance for x
+        private final double yTol; // IQR tolerance for x
 
         public FilterContoursParams(
                 DoubleCouple area,
                 DoubleCouple ratio,
                 DoubleCouple extent,
-                FrameStaticProperties camProperties) {
+                FrameStaticProperties camProperties,
+                double xTol,
+                double yTol) {
             this.m_area = area;
             this.m_ratio = ratio;
             this.m_fullness = extent;
             this.m_frameStaticProperties = camProperties;
+            this.xTol = xTol;
+            this.yTol = yTol;
         }
 
         public DoubleCouple getArea() {

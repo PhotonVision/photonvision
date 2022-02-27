@@ -46,6 +46,26 @@
       @input="handlePipelineData('contourSpecklePercentage')"
     />
     <template v-if="currentPipelineType() !== 3">
+      <CVslider
+        v-model="contourIqrRangeX"
+        name="IQR Range X"
+        tooltip="Rejects contours whose center X is further than X IQRs above/below the 75th/25th quartiles"
+        min="0"
+        max="6"
+        step="0.1"
+        :slider-cols="largeBox"
+        @input="handlePipelineData('contourIqrRangeX')"
+      />
+      <CVslider
+        v-model="contourIqrRangeY"
+        name="IQR Range Y"
+        tooltip="Rejects contours whose center Y is further than X IQRs above/below the 75th/25th quartiles"
+        min="0"
+        max="6"
+        step="0.1"
+        :slider-cols="largeBox"
+        @input="handlePipelineData('contourIqrRangeY')"
+      />
       <CVselect
         v-model="contourGroupingMode"
         name="Target Grouping"
@@ -205,6 +225,25 @@ export default {
       },
       set(val) {
         this.$store.commit("mutatePipeline", {"contourSpecklePercentage": val});
+      }
+    },
+    contourIqrRangeX: {
+      get() {
+        console.log(this.$store.getters.currentPipelineSettings.contourIqrRangeX)
+        return this.$store.getters.currentPipelineSettings.contourIqrRangeX
+      },
+      set(val) {
+        console.log("set")
+        console.log(val)
+        this.$store.commit("mutatePipeline", {"contourIqrRangeX": val});
+      }
+    },
+    contourIqrRangeY: {
+      get() {
+        return this.$store.getters.currentPipelineSettings.contourIqrRangeY
+      },
+      set(val) {
+        this.$store.commit("mutatePipeline", {"contourIqrRangeY": val});
       }
     },
     contourGroupingMode: {
