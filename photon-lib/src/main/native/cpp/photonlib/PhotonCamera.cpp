@@ -100,7 +100,7 @@ void PhotonCamera::SetLEDMode(LEDMode mode) {
 }
 
 void PhotonCamera::VerifyVersion() const {
-  if(!PhotonCamera::VERSION_CHECK_ENABLED) return;
+  if (!PhotonCamera::VERSION_CHECK_ENABLED) return;
 
   const std::string& versionString = versionEntry.GetString("");
   if (versionString.empty()) {

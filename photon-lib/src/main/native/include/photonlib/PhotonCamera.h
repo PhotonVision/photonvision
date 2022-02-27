@@ -138,7 +138,9 @@ class PhotonCamera {
       "This method should be replaced with PhotonPipelineResult::HasTargets()")
   bool HasTargets() const { return GetLatestResult().HasTargets(); }
 
-  inline static void SetVersionCheckEnabled(bool enabled) { PhotonCamera::VERSION_CHECK_ENABLED = enabled; }
+  inline static void SetVersionCheckEnabled(bool enabled) {
+    PhotonCamera::VERSION_CHECK_ENABLED = enabled;
+  }
 
  protected:
   std::shared_ptr<nt::NetworkTable> mainTable;
