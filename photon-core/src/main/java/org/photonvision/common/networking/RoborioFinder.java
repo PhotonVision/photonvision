@@ -19,10 +19,9 @@ package org.photonvision.common.networking;
 import edu.wpi.first.util.MulticastServiceResolver;
 import edu.wpi.first.util.ServiceData;
 import edu.wpi.first.util.WPIUtilJNI;
-import org.photonvision.common.util.TimedTaskManager;
-
 import java.util.ArrayList;
 import java.util.List;
+import org.photonvision.common.util.TimedTaskManager;
 
 public class RoborioFinder {
     private static RoborioFinder INSTANCE;
@@ -49,7 +48,7 @@ public class RoborioFinder {
         }
 
         var allData = resolver.getData();
-        if(allData == null) return retList;
+        if (allData == null) return retList;
         for (var data : allData) {
             if (data.getTxt().containsKey("MAC") && !retList.contains(data)) {
                 retList.add(data);

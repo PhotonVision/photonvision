@@ -30,7 +30,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
