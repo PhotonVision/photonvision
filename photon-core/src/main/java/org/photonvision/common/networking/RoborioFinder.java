@@ -31,31 +31,40 @@ public class RoborioFinder {
         return INSTANCE;
     }
 
+    List<ServiceData> possibleRioList = new ArrayList<>();
+
     private final MulticastServiceResolver resolver = new MulticastServiceResolver("_ni._tcp");
 
     public List<ServiceData> findAll() {
-        List<ServiceData> retList = new ArrayList<>();
 
         if (resolver.hasImplementation()) {
             var event = resolver.getEventHandle();
             try {
                 var timedOut = WPIUtilJNI.waitForObjectTimeout(event, 0);
-                if (timedOut) return retList;
+                if (timedOut) return possibleRioList;
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                return retList;
+                return possibleRioList;
             }
         }
 
         var allData = resolver.getData();
-        if (allData == null) return retList;
+        if (allData == null) return possibleRioList;
         for (var data : allData) {
-            if (data.getTxt().containsKey("MAC") && !retList.contains(data)) {
-                retList.add(data);
+            // Don't add if it doesn't have the "MAC" key
+            if (!data.getTxt().containsKey("MAC")) {
+                continue;
             }
+
+            // If we already see the ipv4, don't add it
+            if(possibleRioList.stream().anyMatch(it -> it.getIpv4Address() == data.getIpv4Address())) {
+                continue;
+            }
+
+            possibleRioList.add(data);
         }
 
-        return retList;
+        return possibleRioList;
     }
 
     public void start() {
