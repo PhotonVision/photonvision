@@ -37,15 +37,15 @@ public class RoborioFinder {
 
     public List<ServiceData> findAll() {
 
-        if (resolver.hasImplementation()) {
-            var event = resolver.getEventHandle();
-            try {
-                var timedOut = WPIUtilJNI.waitForObjectTimeout(event, 0);
-                if (timedOut) return possibleRioList;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                return possibleRioList;
-            }
+        if (!resolver.hasImplementation()) return possibleRioList;
+
+        var event = resolver.getEventHandle();
+        try {
+            var timedOut = WPIUtilJNI.waitForObjectTimeout(event, 0);
+            if (timedOut) return possibleRioList;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return possibleRioList;
         }
 
         var allData = resolver.getData();
