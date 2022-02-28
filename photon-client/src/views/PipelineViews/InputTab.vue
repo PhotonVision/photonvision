@@ -22,15 +22,26 @@
       @rollback="e => rollback('cameraBrightness', e)"
     />
     <CVslider
-      v-if="cameraGain !== -1"
-      v-model="cameraGain"
-      name="Gain"
+      v-if="cameraRedGain !== -1"
+      v-model="cameraRedGain"
+      name="Red AWB Gain"
       min="0"
       max="100"
-      tooltip="Controls automatic white balance gain, which affects how the camera captures colors in different conditions"
+      tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
       :slider-cols="largeBox"
-      @input="handlePipelineData('cameraGain')"
-      @rollback="e => rollback('cameraGain', e)"
+      @input="handlePipelineData('cameraRedGain')"
+      @rollback="e => rollback('cameraRedGain', e)"
+    />
+    <CVslider
+      v-if="cameraBlueGain !== -1"
+      v-model="cameraBlueGain"
+      name="Blue AWB Gain"
+      min="0"
+      max="100"
+      tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
+      :slider-cols="largeBox"
+      @input="handlePipelineData('cameraBlueGain')"
+      @rollback="e => rollback('cameraBlueGain', e)"
     />
     <CVselect
       v-model="inputImageRotationMode"
@@ -105,12 +116,20 @@
                     this.$store.commit("mutatePipeline", {"cameraBrightness": parseInt(val)});
                 }
             },
-            cameraGain: {
+            cameraRedGain: {
                 get() {
-                    return parseInt(this.$store.getters.currentPipelineSettings.cameraGain)
+                    return parseInt(this.$store.getters.currentPipelineSettings.cameraRedGain)
                 },
                 set(val) {
-                    this.$store.commit("mutatePipeline", {"cameraGain": parseInt(val)});
+                    this.$store.commit("mutatePipeline", {"cameraRedGain": parseInt(val)});
+                }
+            },
+            cameraBlueGain: {
+                get() {
+                    return parseInt(this.$store.getters.currentPipelineSettings.cameraBlueGain)
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"cameraBlueGain": parseInt(val)});
                 }
             },
             inputImageRotationMode: {
