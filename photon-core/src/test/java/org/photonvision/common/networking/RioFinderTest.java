@@ -15,13 +15,9 @@ public class RioFinderTest {
 
         while(!Thread.currentThread().isInterrupted()) {
             var event = resolver.getEventHandle();
-            try {
-                if(!WPIUtilJNI.waitForObjectTimeout(event, 0)) {
-                    var data = resolver.getData();
-                    System.out.println(Arrays.toString(data));
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            if(!WPIUtilJNI.waitForObjectTimeout(event,10)) {
+                var data = resolver.getData();
+                System.out.println(Arrays.toString(data));
             }
         }
     }
