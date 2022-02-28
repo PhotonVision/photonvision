@@ -109,14 +109,14 @@ public class NetworkTablesManager {
                         .toArray());
         logger.info("Searching for rios");
         List<String> possibleRioList = new ArrayList<>();
-        for (var ip : CameraServerJNI.getNetworkInterfaces()) {
-            logger.info("Trying " + ip);
-            var possibleRioAddr = getPossibleRioAddress(ip);
-            if (possibleRioAddr != null) {
-                logger.info("Maybe found " + ip);
-                searchForHost(possibleRioList, possibleRioAddr);
-            }
-        }
+//        for (var ip : CameraServerJNI.getNetworkInterfaces()) {
+//            logger.info("Trying " + ip);
+//            var possibleRioAddr = getPossibleRioAddress(ip);
+//            if (possibleRioAddr != null) {
+//                logger.info("Maybe found " + ip);
+//                searchForHost(possibleRioList, possibleRioAddr);
+//            }
+//        }
 
         var rios = RoborioFinder.getInstance().findAll();
         for (var rio : rios) {

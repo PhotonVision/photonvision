@@ -64,6 +64,7 @@ public class RoborioFinder {
             possibleRioList.add(data);
         }
 
+        possibleRioList.forEach(it ->System.out.println(it.getHostName()));
         return possibleRioList;
     }
 
