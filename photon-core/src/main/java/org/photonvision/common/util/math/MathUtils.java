@@ -18,6 +18,8 @@
 package org.photonvision.common.util.math;
 
 import edu.wpi.first.util.WPIUtilJNI;
+import java.util.Arrays;
+import java.util.List;
 
 public class MathUtils {
     MathUtils() {}
@@ -64,6 +66,58 @@ public class MathUtils {
         return (int) Math.floor(map((double) value, inMin, inMax, outMin, outMax) + 0.5);
     }
 
+    public static long wpiNanoTime() {
+        return microsToNanos(WPIUtilJNI.now());
+    }
+
+    /**
+     * Get the value of the nTh percentile of a list
+     *
+     * @param list The list to evaluate
+     * @param p The percentile, in [0,100]
+     * @return
+     */
+    public static double getPercentile(List<Double> list, double p) {
+        if ((p > 100) || (p <= 0)) {
+            throw new IllegalArgumentException("invalid quantile value: " + p);
+        }
+
+        if (list.size() == 0) {
+            return Double.NaN;
+        }
+        if (list.size() == 1) {
+            return list.get(0); // always return single value for n = 1
+        }
+
+        // Sort array.  We avoid a third copy here by just creating the
+        // list directly.
+        double[] sorted = new double[list.size()];
+        for (int i = 0; i < list.size(); i++) {
+            sorted[i] = list.get(i);
+        }
+        Arrays.sort(sorted);
+
+        return evaluateSorted(sorted, p);
+    }
+
+    private static double evaluateSorted(final double[] sorted, final double p) {
+        double n = sorted.length;
+        double pos = p * (n + 1) / 100;
+        double fpos = Math.floor(pos);
+        int intPos = (int) fpos;
+        double dif = pos - fpos;
+
+        if (pos < 1) {
+            return sorted[0];
+        }
+        if (pos >= n) {
+            return sorted[sorted.length - 1];
+        }
+        double lower = sorted[intPos - 1];
+        double upper = sorted[intPos];
+        return lower + dif * (upper - lower);
+    }
+
     /**
      * Linearly interpolates between two values.
      *
@@ -75,9 +129,5 @@ public class MathUtils {
     @SuppressWarnings("ParameterName")
     public static double lerp(double startValue, double endValue, double t) {
         return startValue + (endValue - startValue) * t;
-    }
-
-    public static long wpiNanoTime() {
-        return microsToNanos(WPIUtilJNI.now());
     }
 }

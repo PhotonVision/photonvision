@@ -100,7 +100,9 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         settings.contourArea,
                         settings.contourRatio,
                         settings.contourFullness,
-                        frameStaticProperties);
+                        frameStaticProperties,
+                        settings.contourFilterRangeX,
+                        settings.contourFilterRangeY);
         filterContoursPipe.setParams(filterContoursParams);
 
         var groupContoursParams =

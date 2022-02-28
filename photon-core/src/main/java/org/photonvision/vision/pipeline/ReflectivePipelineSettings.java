@@ -21,6 +21,9 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 @JsonTypeName("ReflectivePipelineSettings")
 public class ReflectivePipelineSettings extends AdvancedPipelineSettings {
+    public double contourFilterRangeX = 2;
+    public double contourFilterRangeY = 2;
+
     public ReflectivePipelineSettings() {
         super();
         pipelineType = PipelineType.Reflective;

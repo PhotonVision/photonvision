@@ -5,7 +5,7 @@
       name="Area"
       min="0"
       max="100"
-      step="0.1"
+      step="0.01"
       @input="handlePipelineData('contourArea')"
     />
     <CVrangeSlider
@@ -46,6 +46,26 @@
       @input="handlePipelineData('contourSpecklePercentage')"
     />
     <template v-if="currentPipelineType() !== 3">
+      <CVslider
+        v-model="contourFilterRangeX"
+        name="X filter tightness"
+        tooltip="Rejects contours whose center X is further than X standard deviations above/below the mean X location"
+        min="0.1"
+        max="4"
+        step="0.1"
+        :slider-cols="largeBox"
+        @input="handlePipelineData('contourFilterRangeX')"
+      />
+      <CVslider
+        v-model="contourFilterRangeY"
+        name="Y filter tightness"
+        tooltip="Rejects contours whose center Y is further than X standard deviations above/below the mean Y location"
+        min="0.1"
+        max="4"
+        step="0.1"
+        :slider-cols="largeBox"
+        @input="handlePipelineData('contourFilterRangeY')"
+      />
       <CVselect
         v-model="contourGroupingMode"
         name="Target Grouping"
@@ -205,6 +225,25 @@ export default {
       },
       set(val) {
         this.$store.commit("mutatePipeline", {"contourSpecklePercentage": val});
+      }
+    },
+    contourFilterRangeX: {
+      get() {
+        console.log(this.$store.getters.currentPipelineSettings.contourFilterRangeX)
+        return this.$store.getters.currentPipelineSettings.contourFilterRangeX
+      },
+      set(val) {
+        console.log("set")
+        console.log(val)
+        this.$store.commit("mutatePipeline", {"contourFilterRangeX": val});
+      }
+    },
+    contourFilterRangeY: {
+      get() {
+        return this.$store.getters.currentPipelineSettings.contourFilterRangeY
+      },
+      set(val) {
+        this.$store.commit("mutatePipeline", {"contourFilterRangeY": val});
       }
     },
     contourGroupingMode: {

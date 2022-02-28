@@ -18,9 +18,12 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.Contour;
@@ -36,7 +39,62 @@ public class FilterContoursPipe
         for (Contour contour : in) {
             filterContour(contour);
         }
+
+        // we need the whole list for outlier rejection
+        rejectOutliers(m_filteredContours, params.xTol, params.yTol);
+
         return m_filteredContours;
+    }
+
+    private void rejectOutliers(List<Contour> list, double xTol, double yTol) {
+        if (list.size() < 2) return; // Must have at least 2 points to reject outliers
+
+/*
+        // Sort by X and find median
+        list.sort(Comparator.comparingDouble(c -> c.getCenterPoint().x));
+
+        double medianX = list.get(list.size() / 2).getCenterPoint().x;
+        if (list.size() % 2 == 0)
+            medianX = (medianX + list.get(list.size() / 2 - 1).getCenterPoint().x) / 2;
+*/
+
+        double meanX = list.stream().mapToDouble(it -> it.getCenterPoint().x).sum() / list.size();
+
+        double stdDevX =
+                list.stream().mapToDouble(it -> Math.pow(it.getCenterPoint().x - meanX, 2.0)).sum();
+        stdDevX /= (list.size() - 1);
+        stdDevX = Math.sqrt(stdDevX);
+
+/*
+        // Sort by Y and find median
+        list.sort(Comparator.comparingDouble(c -> c.getCenterPoint().y));
+
+        double medianY = list.get(list.size() / 2).getCenterPoint().y;
+        if (list.size() % 2 == 0)
+            medianY = (medianY + list.get(list.size() / 2 - 1).getCenterPoint().y) / 2;
+*/
+
+        double meanY = list.stream().mapToDouble(it -> it.getCenterPoint().y).sum() / list.size();
+
+        double stdDevY =
+                list.stream().mapToDouble(it -> Math.pow(it.getCenterPoint().y - meanY, 2.0)).sum();
+        stdDevY /= (list.size() - 1);
+        stdDevY = Math.sqrt(stdDevY);
+
+        for (var it = list.iterator(); it.hasNext(); ) {
+            // Reject points more than N standard devs above/below median
+            // That is, |point - median| > std dev * tol
+            Contour c = it.next();
+            double x = c.getCenterPoint().x;
+            double y = c.getCenterPoint().y;
+
+            if (Math.abs(x - meanX) > stdDevX * xTol) {
+                it.remove();
+            } else if (Math.abs(y - meanY) > stdDevY * yTol) {
+                it.remove();
+            }
+            // Otherwise we're good! Keep it in
+        }
     }
 
     private void filterContour(Contour contour) {
@@ -69,16 +127,22 @@ public class FilterContoursPipe
         private final DoubleCouple m_ratio;
         private final DoubleCouple m_fullness;
         private final FrameStaticProperties m_frameStaticProperties;
+        private final double xTol; // IQR tolerance for x
+        private final double yTol; // IQR tolerance for x
 
         public FilterContoursParams(
                 DoubleCouple area,
                 DoubleCouple ratio,
                 DoubleCouple extent,
-                FrameStaticProperties camProperties) {
+                FrameStaticProperties camProperties,
+                double xTol,
+                double yTol) {
             this.m_area = area;
             this.m_ratio = ratio;
             this.m_fullness = extent;
             this.m_frameStaticProperties = camProperties;
+            this.xTol = xTol;
+            this.yTol = yTol;
         }
 
         public DoubleCouple getArea() {
