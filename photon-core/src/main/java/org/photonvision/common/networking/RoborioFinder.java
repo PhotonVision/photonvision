@@ -62,7 +62,7 @@ public class RoborioFinder {
     public void start() {
         resolver.start();
 
-        TimedTaskManager.getInstance().addTask("RoborioFinder", );
+        TimedTaskManager.getInstance().addTask("RoborioFinder", this::findAll, 5000);
     }
 
     public void stop() {

@@ -116,30 +116,15 @@ public class NetworkTablesManager {
             if (possibleRioAddr != null) {
                 logger.info("Maybe found " + ip);
                 searchForHost(possibleRioList, possibleRioAddr);
-            } else {
-                logger.info("Didn't match RIO IP");
             }
         }
-        String name =
-                "roboRIO-"
-                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
-                        + "-FRC.local";
-        searchForHost(possibleRioList, name);
-        name =
-                "roboRIO-"
-                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
-                        + "-FRC.lan";
-        searchForHost(possibleRioList, name);
-        name =
-                "roboRIO-"
-                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
-                        + "-FRC.frc-field.local";
-        searchForHost(possibleRioList, name);
+
         var rios = RoborioFinder.getInstance().findAll();
         for (var rio : rios) {
             possibleRioList.add(rio.getHostName());
             possibleRioList.add(String.valueOf(rio.getIpv4Address()));
         }
+
         subMap.put("possibleRios", possibleRioList.toArray());
         DataChangeService.getInstance()
                 .publishEvent(new OutgoingUIEvent<>("networkTablesConnected", map));
