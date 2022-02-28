@@ -120,9 +120,9 @@ public class ZeroCopyPicamSource extends VisionSource {
                 videoModes.put(
                         1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 85, 90, 1));
                 videoModes.put(
-                        2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 45, 60, 1));
+                        2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 45, 49, 0.74));
                 videoModes.put(
-                        3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 30, 45, 0.92));
+                        3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 30, 45, 0.91));
                 videoModes.put(
                         4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, 0.72));
             }
