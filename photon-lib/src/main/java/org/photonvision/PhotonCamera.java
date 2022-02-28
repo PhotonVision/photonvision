@@ -45,6 +45,12 @@ public class PhotonCamera {
 
     private final String path;
 
+    private static boolean VERSION_CHECK_ENABLED = true;
+
+    public static void setVersionCheckEnabled(boolean enabled) {
+        VERSION_CHECK_ENABLED = enabled;
+    }
+
     Packet packet = new Packet(1);
 
     /**
@@ -199,6 +205,8 @@ public class PhotonCamera {
     }
 
     private void verifyVersion() {
+        if (!VERSION_CHECK_ENABLED) return;
+
         String versionString = versionEntry.getString("");
         if (versionString.equals("")) {
             DriverStation.reportError(
