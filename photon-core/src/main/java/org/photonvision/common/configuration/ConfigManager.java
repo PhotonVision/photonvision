@@ -32,7 +32,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.FileUtils;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
@@ -57,6 +56,7 @@ public class ConfigManager {
     final File configDirectoryFile;
 
     private long saveRequestTimestamp = -1;
+    private Thread settingsSaveThread;
 
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
@@ -97,7 +97,8 @@ public class ConfigManager {
                 new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
         this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
 
-        TimedTaskManager.getInstance().addTask("ConfigManager", this::checkSaveAndWrite, 1000);
+        settingsSaveThread = new Thread(this::saveAndWriteTask);
+        settingsSaveThread.start();
     }
 
     public void load() {
@@ -425,12 +426,20 @@ public class ConfigManager {
         saveRequestTimestamp = System.currentTimeMillis();
     }
 
-    private void checkSaveAndWrite() {
+    private void saveAndWriteTask() {
         // Only save if 1 second has past since the request was made
-        if (saveRequestTimestamp > 0 && (System.currentTimeMillis() - saveRequestTimestamp) > 1000L) {
-            saveRequestTimestamp = -1;
-            logger.debug("Saving to disk...");
-            saveToDisk();
+        while (!Thread.currentThread().isInterrupted()) {
+            if (saveRequestTimestamp > 0 && (System.currentTimeMillis() - saveRequestTimestamp) > 1000L) {
+                saveRequestTimestamp = -1;
+                logger.debug("Saving to disk...");
+                saveToDisk();
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                logger.error("Exception waiting for settings semaphor", e);
+            }
         }
     }
 }
