@@ -18,6 +18,13 @@
 package org.photonvision;
 
 import edu.wpi.first.cscore.CameraServerCvJNI;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -46,14 +53,6 @@ import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
@@ -74,11 +73,7 @@ public class Main {
                 false,
                 "Run in test mode with 2019 and 2020 WPI field images in place of cameras");
 
-        options.addOption(
-                "p",
-                "path",
-                true,
-                "Point test mode to a specific folder");
+        options.addOption("p", "path", true, "Point test mode to a specific folder");
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = parser.parse(options, args);
@@ -109,37 +104,43 @@ public class Main {
 
     private static void addTestModeFromFolder() {
         try {
-            List<VisionSource> collectedSources = Files.list(testModeFolder)
-                    .filter(p -> p.toFile().isFile())
-                    .map(p -> {
-                        try {
+            List<VisionSource> collectedSources =
+                    Files.list(testModeFolder)
+                            .filter(p -> p.toFile().isFile())
+                            .map(
+                                    p -> {
+                                        try {
 
-                            var camConf =
-                                    ConfigManager.getInstance().getConfig().getCameraConfigurations().get(p.getFileName().toString());
-                            if (camConf == null) {
-                                camConf =
-                                        new CameraConfiguration(p.getFileName().toString(), p.toAbsolutePath().toString());
-                                camConf.FOV = TestUtils.WPI2019Image.FOV; // Good guess?
-                                camConf.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+                                            var camConf =
+                                                    ConfigManager.getInstance()
+                                                            .getConfig()
+                                                            .getCameraConfigurations()
+                                                            .get(p.getFileName().toString());
+                                            if (camConf == null) {
+                                                camConf =
+                                                        new CameraConfiguration(
+                                                                p.getFileName().toString(), p.toAbsolutePath().toString());
+                                                camConf.FOV = TestUtils.WPI2019Image.FOV; // Good guess?
+                                                camConf.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
-                                var pipeSettings = new ReflectivePipelineSettings();
-                                pipeSettings.pipelineNickname = p.getFileName().toString();
-                                pipeSettings.outputShowMultipleTargets = true;
-                                pipeSettings.inputShouldShow = true;
+                                                var pipeSettings = new ReflectivePipelineSettings();
+                                                pipeSettings.pipelineNickname = p.getFileName().toString();
+                                                pipeSettings.outputShowMultipleTargets = true;
+                                                pipeSettings.inputShouldShow = true;
 
-                                var psList2019 = new ArrayList<CVPipelineSettings>();
-                                psList2019.add(pipeSettings);
-                                camConf.pipelineSettings = psList2019;
-                            }
+                                                var psList2019 = new ArrayList<CVPipelineSettings>();
+                                                psList2019.add(pipeSettings);
+                                                camConf.pipelineSettings = psList2019;
+                                            }
 
-                            return new FileVisionSource(camConf);
-                        } catch (Exception e) {
-                            logger.error("Couldn't load image " + p.getFileName().toString());
-                            return null;
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
+                                            return new FileVisionSource(camConf);
+                                        } catch (Exception e) {
+                                            logger.error("Couldn't load image " + p.getFileName().toString());
+                                            return null;
+                                        }
+                                    })
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
 
             VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
             ConfigManager.getInstance().addCameraConfigurations(collectedSources);
@@ -302,10 +303,8 @@ public class Main {
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
             VisionSourceManager.getInstance().registerTimedTask();
         } else {
-            if (testModeFolder == null)
-                addTestModeSources();
-            else
-                addTestModeFromFolder();
+            if (testModeFolder == null) addTestModeSources();
+            else addTestModeFromFolder();
         }
 
         Server.main(DEFAULT_WEBPORT);
