@@ -18,15 +18,6 @@
 package org.photonvision;
 
 import edu.wpi.first.cscore.CameraServerCvJNI;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-
 import org.apache.commons.cli.*;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
@@ -54,6 +45,14 @@ import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
@@ -98,7 +97,7 @@ public class Main {
                 isTestMode = true;
                 logger.info("Running in test mode - Cameras will not be used");
 
-                if(cmd.hasOption("path")) {
+                if (cmd.hasOption("path")) {
                     Path p = Path.of(cmd.getOptionValue("path"));
                     logger.info("Loading from Path " + p.toAbsolutePath().toString());
                     testModeFolder = p;
@@ -113,32 +112,40 @@ public class Main {
             List<VisionSource> collectedSources = Files.list(testModeFolder)
                     .filter(p -> p.toFile().isFile())
                     .map(p -> {
-                        var camConf =
-                                ConfigManager.getInstance().getConfig().getCameraConfigurations().get(p.getFileName().toString());
-                        if (camConf == null) {
-                            camConf =
-                                    new CameraConfiguration(p.getFileName().toString(), p.toAbsolutePath().toString());
-                            camConf.FOV = TestUtils.WPI2019Image.FOV; // Good guess?
-                            camConf.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+                        try {
 
-                            var pipeSettings = new ReflectivePipelineSettings();
-                            pipeSettings.pipelineNickname = p.getFileName().toString();
-                            pipeSettings.outputShowMultipleTargets = true;
-                            pipeSettings.inputShouldShow = true;
+                            var camConf =
+                                    ConfigManager.getInstance().getConfig().getCameraConfigurations().get(p.getFileName().toString());
+                            if (camConf == null) {
+                                camConf =
+                                        new CameraConfiguration(p.getFileName().toString(), p.toAbsolutePath().toString());
+                                camConf.FOV = TestUtils.WPI2019Image.FOV; // Good guess?
+                                camConf.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
-                            var psList2019 = new ArrayList<CVPipelineSettings>();
-                            psList2019.add(pipeSettings);
-                            camConf.pipelineSettings = psList2019;
+                                var pipeSettings = new ReflectivePipelineSettings();
+                                pipeSettings.pipelineNickname = p.getFileName().toString();
+                                pipeSettings.outputShowMultipleTargets = true;
+                                pipeSettings.inputShouldShow = true;
+
+                                var psList2019 = new ArrayList<CVPipelineSettings>();
+                                psList2019.add(pipeSettings);
+                                camConf.pipelineSettings = psList2019;
+                            }
+
+                            return new FileVisionSource(camConf);
+                        } catch (Exception e) {
+                            logger.error("Couldn't load image " + p.getFileName().toString());
+                            return null;
                         }
-
-                        return new FileVisionSource(camConf);
                     })
+                    .filter(Objects::nonNull)
                     .collect(Collectors.toList());
 
             VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
             ConfigManager.getInstance().addCameraConfigurations(collectedSources);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Path does not exist!");
+            System.exit(1);
         }
     }
 
@@ -237,13 +244,16 @@ public class Main {
         collectedSources.add(fvs2020);
         collectedSources.add(fvs2019);
 
+        ConfigManager.getInstance().unloadCameraConfigs();
         VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
         ConfigManager.getInstance().addCameraConfigurations(collectedSources);
     }
 
     public static void main(String[] args) {
         try {
-            if (!handleArgs(args)) return;
+            if (!handleArgs(args)) {
+                System.exit(0);
+            }
         } catch (ParseException e) {
             logger.error("Failed to parse command-line options!", e);
         }
@@ -292,7 +302,7 @@ public class Main {
                             ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
             VisionSourceManager.getInstance().registerTimedTask();
         } else {
-            if(testModeFolder == null)
+            if (testModeFolder == null)
                 addTestModeSources();
             else
                 addTestModeFromFolder();
