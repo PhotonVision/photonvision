@@ -110,7 +110,6 @@ public class Main {
                             .map(
                                     p -> {
                                         try {
-
                                             var camConf =
                                                     ConfigManager.getInstance()
                                                             .getConfig()
