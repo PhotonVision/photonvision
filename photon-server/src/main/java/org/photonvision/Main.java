@@ -121,7 +121,6 @@ public class Main {
                                                         new CameraConfiguration(
                                                                 p.getFileName().toString(), p.toAbsolutePath().toString());
                                                 camConf.FOV = TestUtils.WPI2019Image.FOV; // Good guess?
-                                                camConf.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
 
                                                 var pipeSettings = new ReflectivePipelineSettings();
                                                 pipeSettings.pipelineNickname = p.getFileName().toString();
