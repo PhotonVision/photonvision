@@ -50,7 +50,6 @@ import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
-import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 
 public class Main {
@@ -103,7 +102,11 @@ public class Main {
     }
 
     private static void addTestModeFromFolder() {
+        ConfigManager.getInstance().load();
+
         try {
+            var reflective = new ReflectivePipelineSettings();
+            var shape = new ColoredShapePipelineSettings();
             List<VisionSource> collectedSources =
                     Files.list(testModeFolder)
                             .filter(p -> p.toFile().isFile())
@@ -126,9 +129,10 @@ public class Main {
                                                 pipeSettings.outputShowMultipleTargets = true;
                                                 pipeSettings.inputShouldShow = true;
 
-                                                var psList2019 = new ArrayList<CVPipelineSettings>();
-                                                psList2019.add(pipeSettings);
-                                                camConf.pipelineSettings = psList2019;
+                                                var psList = new ArrayList<CVPipelineSettings>();
+                                                psList.add(reflective);
+                                                psList.add(shape);
+                                                camConf.pipelineSettings = psList;
                                             }
 
                                             return new FileVisionSource(camConf);
@@ -140,6 +144,7 @@ public class Main {
                             .filter(Objects::nonNull)
                             .collect(Collectors.toList());
 
+            ConfigManager.getInstance().unloadCameraConfigs();
             VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
             ConfigManager.getInstance().addCameraConfigurations(collectedSources);
         } catch (IOException e) {
@@ -295,15 +300,19 @@ public class Main {
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
-        if (!isTestMode) {
-            VisionSourceManager.getInstance()
-                    .registerLoadedConfigs(
-                            ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
-            VisionSourceManager.getInstance().registerTimedTask();
-        } else {
-            if (testModeFolder == null) addTestModeSources();
-            else addTestModeFromFolder();
-        }
+        testModeFolder = Path.of("foo");
+        addTestModeFromFolder();
+
+        // if (!isTestMode) {
+        //     VisionSourceManager.getInstance()
+        //             .registerLoadedConfigs(
+        //
+        // ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
+        //     VisionSourceManager.getInstance().registerTimedTask();
+        // } else {
+        //     if (testModeFolder == null) addTestModeSources();
+        //     else addTestModeFromFolder();
+        // }
 
         Server.main(DEFAULT_WEBPORT);
     }
