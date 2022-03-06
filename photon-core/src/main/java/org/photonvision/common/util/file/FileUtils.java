@@ -46,7 +46,8 @@ public class FileUtils {
 
         try {
             try {
-                Files.move(origPath, newPath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+                Files.move(
+                        origPath, newPath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
             } catch (AtomicMoveNotSupportedException e) {
                 Files.move(origPath, newPath, StandardCopyOption.REPLACE_EXISTING);
             }
