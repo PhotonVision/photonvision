@@ -69,13 +69,13 @@ public class ConfigManager {
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
         folderPath.mkdirs();
         ZipUtil.unpack(uploadPath, folderPath);
-        FileUtils.deleteDirectory(getRootFolder());
+
+        FileUtils.renameDirectory(getRootFolder(), Path.of(getRootFolder() + "_old"));
         try {
             org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
             logger.info("Copied settings successfully!");
         } catch (IOException e) {
             logger.error("Exception copying uploaded settings!", e);
-            return;
         }
     }
 
@@ -191,8 +191,8 @@ public class ConfigManager {
     }
 
     public void saveToDisk() {
-        // Delete old configs
-        FileUtils.deleteDirectory(camerasFolder.toPath());
+        // Move old configs
+        FileUtils.renameDirectory(camerasFolder.toPath(), Path.of(camerasFolder + "_old"));
 
         try {
             JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());

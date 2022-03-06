@@ -20,9 +20,7 @@ package org.photonvision.common.util.file;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
+import java.nio.file.*;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
@@ -39,6 +37,23 @@ public class FileUtils {
     private static final Logger logger = new Logger(FileUtils.class, LogGroup.General);
     private static final Set<PosixFilePermission> allReadWriteExecutePerms =
             new HashSet<>(Arrays.asList(PosixFilePermission.values()));
+
+    public static void renameDirectory(Path origPath, Path newPath) {
+        if (!origPath.toFile().isDirectory()) {
+            logger.error("Attempt to move file instead of directory!");
+            return;
+        }
+
+        try {
+            try {
+                Files.move(origPath, newPath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(origPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            logger.error("Exception renaming " + origPath + " to " + newPath + "!", e);
+        }
+    }
 
     public static void deleteDirectory(Path path) {
         try {
