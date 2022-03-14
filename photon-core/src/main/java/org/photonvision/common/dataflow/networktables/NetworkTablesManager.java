@@ -30,12 +30,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.networking.RoborioFinder;
 import org.photonvision.common.scripting.ScriptEventType;
 import org.photonvision.common.scripting.ScriptManager;
 import org.photonvision.common.util.TimedTaskManager;
@@ -109,31 +109,21 @@ public class NetworkTablesManager {
                         .toArray());
         logger.info("Searching for rios");
         List<String> possibleRioList = new ArrayList<>();
-        for (var ip : CameraServerJNI.getNetworkInterfaces()) {
-            logger.info("Trying " + ip);
-            var possibleRioAddr = getPossibleRioAddress(ip);
-            if (possibleRioAddr != null) {
-                logger.info("Maybe found " + ip);
-                searchForHost(possibleRioList, possibleRioAddr);
-            } else {
-                logger.info("Didn't match RIO IP");
-            }
+//        for (var ip : CameraServerJNI.getNetworkInterfaces()) {
+//            logger.info("Trying " + ip);
+//            var possibleRioAddr = getPossibleRioAddress(ip);
+//            if (possibleRioAddr != null) {
+//                logger.info("Maybe found " + ip);
+//                searchForHost(possibleRioList, possibleRioAddr);
+//            }
+//        }
+
+        var rios = RoborioFinder.getInstance().findAll();
+        for (var rio : rios) {
+            possibleRioList.add(rio.getHostName());
+            possibleRioList.add(String.valueOf(rio.getIpv4Address()));
         }
-        String name =
-                "roboRIO-"
-                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
-                        + "-FRC.local";
-        searchForHost(possibleRioList, name);
-        name =
-                "roboRIO-"
-                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
-                        + "-FRC.lan";
-        searchForHost(possibleRioList, name);
-        name =
-                "roboRIO-"
-                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
-                        + "-FRC.frc-field.local";
-        searchForHost(possibleRioList, name);
+
         subMap.put("possibleRios", possibleRioList.toArray());
         DataChangeService.getInstance()
                 .publishEvent(new OutgoingUIEvent<>("networkTablesConnected", map));
