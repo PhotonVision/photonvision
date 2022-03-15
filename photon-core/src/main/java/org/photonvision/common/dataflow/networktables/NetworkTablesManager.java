@@ -17,20 +17,12 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
-import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -87,6 +79,7 @@ public class NetworkTablesManager {
     private void broadcastConnectedStatusImpl() {
         HashMap<String, Object> map = new HashMap<>();
         var subMap = new HashMap<String, Object>();
+
         subMap.put("connected", ntInstance.isConnected());
         if (ntInstance.isConnected()) {
             var connections = getInstance().ntInstance.getConnections();
@@ -99,73 +92,6 @@ public class NetworkTablesManager {
         map.put("ntConnectionInfo", subMap);
         DataChangeService.getInstance()
                 .publishEvent(new OutgoingUIEvent<>("networkTablesConnected", map));
-
-        // Seperate from the above so we don't hold stuff up
-        System.setProperty("java.net.preferIPv4Stack", "true");
-        subMap.put(
-                "deviceips",
-                Arrays.stream(CameraServerJNI.getNetworkInterfaces())
-                        .filter(it -> !it.equals("0.0.0.0"))
-                        .toArray());
-        logger.info("Searching for rios");
-        List<String> possibleRioList = new ArrayList<>();
-        for (var ip : CameraServerJNI.getNetworkInterfaces()) {
-            logger.info("Trying " + ip);
-            var possibleRioAddr = getPossibleRioAddress(ip);
-            if (possibleRioAddr != null) {
-                logger.info("Maybe found " + ip);
-                searchForHost(possibleRioList, possibleRioAddr);
-            } else {
-                logger.info("Didn't match RIO IP");
-            }
-        }
-        String name =
-                "roboRIO-"
-                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
-                        + "-FRC.local";
-        searchForHost(possibleRioList, name);
-        name =
-                "roboRIO-"
-                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
-                        + "-FRC.lan";
-        searchForHost(possibleRioList, name);
-        name =
-                "roboRIO-"
-                        + ConfigManager.getInstance().getConfig().getNetworkConfig().teamNumber
-                        + "-FRC.frc-field.local";
-        searchForHost(possibleRioList, name);
-        subMap.put("possibleRios", possibleRioList.toArray());
-        DataChangeService.getInstance()
-                .publishEvent(new OutgoingUIEvent<>("networkTablesConnected", map));
-    }
-
-    String getPossibleRioAddress(String ip) {
-        try {
-            InetAddress addr = InetAddress.getByName(ip);
-            var address = addr.getAddress();
-            if (address[0] != (byte) (10 & 0xff)) return null;
-            address[3] = (byte) (2 & 0xff);
-            return InetAddress.getByAddress(address).getHostAddress();
-        } catch (UnknownHostException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    void searchForHost(List<String> list, String hostname) {
-        try {
-            logger.info("Looking up " + hostname);
-            InetAddress testAddr = InetAddress.getByName(hostname);
-            logger.info("Pinging " + hostname);
-            var canContact = testAddr.isReachable(500);
-            if (canContact) {
-                logger.info("Was able to connect to " + hostname);
-                if (!list.contains(hostname)) list.add(hostname);
-            } else {
-                logger.info("Unable to reach " + hostname);
-            }
-        } catch (IOException ignored) {
-        }
     }
 
     private void broadcastVersion() {

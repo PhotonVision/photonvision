@@ -87,7 +87,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="(value, index) in $store.state.ntConnectionInfo.deviceips"
+                v-for="(value, index) in $store.state.networkInfo.deviceips"
                 :key="index"
               >
                 <td>{{ value }}</td>
@@ -115,7 +115,7 @@
             </thead>
             <tbody>
               <tr
-                v-for="(value, index) in $store.state.ntConnectionInfo.possibleRios"
+                v-for="(value, index) in $store.state.networkInfo.possibleRios"
                 :key="index"
               >
                 <td>{{ value }}</td>

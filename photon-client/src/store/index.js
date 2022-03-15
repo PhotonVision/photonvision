@@ -19,6 +19,8 @@ export default new Vuex.Store({
             connected: false,
             address: "",
             clients: 0,
+        },
+        networkInfo: {
             possibleRios: ["Loading..."],
             deviceips: ["Loading..."],
         },
@@ -155,6 +157,7 @@ export default new Vuex.Store({
         calibrationData: set('calibrationData'),
         metrics: set('metrics'),
         ntConnectionInfo: set('ntConnectionInfo'),
+        networkInfo: set('networkInfo'),
         backendConnected: set('backendConnected'),
         logString: (state, newStr) => {
             const str = state.logMessages;
