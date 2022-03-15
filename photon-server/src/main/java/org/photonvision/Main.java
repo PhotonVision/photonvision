@@ -50,6 +50,7 @@ import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
+import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 
 public class Main {
@@ -128,6 +129,7 @@ public class Main {
                                                 pipeSettings.pipelineNickname = p.getFileName().toString();
                                                 pipeSettings.outputShowMultipleTargets = true;
                                                 pipeSettings.inputShouldShow = true;
+                                                pipeSettings.outputShouldShow = true;
 
                                                 var psList = new ArrayList<CVPipelineSettings>();
                                                 psList.add(reflective);
@@ -300,19 +302,19 @@ public class Main {
         NetworkTablesManager.getInstance()
                 .setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
 
-        testModeFolder = Path.of("foo");
-        addTestModeFromFolder();
+        if (!isTestMode) {
+            VisionSourceManager.getInstance()
+                    .registerLoadedConfigs(
+                            ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
 
-        // if (!isTestMode) {
-        //     VisionSourceManager.getInstance()
-        //             .registerLoadedConfigs(
-        //
-        // ConfigManager.getInstance().getConfig().getCameraConfigurations().values());
-        //     VisionSourceManager.getInstance().registerTimedTask();
-        // } else {
-        //     if (testModeFolder == null) addTestModeSources();
-        //     else addTestModeFromFolder();
-        // }
+            VisionSourceManager.getInstance().registerTimedTask();
+        } else {
+            if (testModeFolder == null) {
+                addTestModeSources();
+            } else {
+                addTestModeFromFolder();
+            }
+        }
 
         Server.main(DEFAULT_WEBPORT);
     }
