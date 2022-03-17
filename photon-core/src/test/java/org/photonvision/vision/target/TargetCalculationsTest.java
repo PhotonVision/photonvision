@@ -92,10 +92,21 @@ public class TargetCalculationsTest {
         Size rectSize = new Size(10, 5);
         double angle = 30;
         RotatedRect rect = new RotatedRect(center, rectSize, angle);
-        Point result =
-                TargetCalculations.calculateTargetOffsetPoint(false, TargetOffsetPointEdge.Top, rect);
-        assertEquals(4.3, result.x, 0.33, "Target offset x not as expected");
-        assertEquals(2.5, result.y, 0.05, "Target offset Y not as expected");
+
+        // We pretend like x/y are in pixels, so the "top" is actually the bottom
+        var result =
+                TargetCalculations.calculateTargetOffsetPoint(true, TargetOffsetPointEdge.Top, rect);
+        assertEquals(1.25, result.x, 0.1, "Target offset x not as expected");
+        assertEquals(-2.17, result.y, 0.1, "Target offset Y not as expected");
+        result =
+                TargetCalculations.calculateTargetOffsetPoint(true, TargetOffsetPointEdge.Bottom, rect);
+        assertEquals(-1.25, result.x, 0.1, "Target offset x not as expected");
+        assertEquals(2.17, result.y, 0.1, "Target offset Y not as expected");
+    }
+
+    public static void main(String[] args) {
+        TestUtils.loadLibraries();
+        new TargetCalculationsTest().targetOffsetTest();
     }
 
     @Test
