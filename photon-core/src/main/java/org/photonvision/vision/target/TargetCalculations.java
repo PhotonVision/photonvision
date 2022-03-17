@@ -54,26 +54,27 @@ public class TargetCalculations {
 
         minAreaRect.points(vertices);
 
-        Point bl = getMiddle(vertices[0], vertices[1]);
-        Point tl = getMiddle(vertices[1], vertices[2]);
-        Point tr = getMiddle(vertices[2], vertices[3]);
-        Point br = getMiddle(vertices[3], vertices[0]);
-        boolean orientation;
-        if (isLandscape) {
-            orientation = minAreaRect.size.width > minAreaRect.size.height;
-        } else {
-            orientation = minAreaRect.size.width < minAreaRect.size.height;
-        }
+        Point bottom = getMiddle(vertices[0], vertices[1]);
+        Point left = getMiddle(vertices[1], vertices[2]);
+        Point top = getMiddle(vertices[2], vertices[3]);
+        Point right = getMiddle(vertices[3], vertices[0]);
+
+        boolean orientationCorrect = minAreaRect.size.width > minAreaRect.size.height;
+        if (!isLandscape) orientationCorrect = !orientationCorrect;
 
         switch (offsetRegion) {
             case Top:
-                return orientation ? tl : tr;
+                if (orientationCorrect) return (left.y < right.y) ? left : right;
+                else return (top.y < bottom.y) ? top : bottom;
             case Bottom:
-                return orientation ? br : bl;
+                if (orientationCorrect) return (left.y > right.y) ? left : right;
+                else return (top.y > bottom.y) ? top : bottom;
             case Left:
-                return orientation ? bl : tl;
+                if (orientationCorrect) return (top.x < bottom.x) ? top : bottom;
+                else return (left.x < right.x) ? left : right;
             case Right:
-                return orientation ? tr : br;
+                if (orientationCorrect) return (top.x > bottom.x) ? top : bottom;
+                else return (left.x > right.x) ? left : right;
             default:
                 return minAreaRect.center;
         }
