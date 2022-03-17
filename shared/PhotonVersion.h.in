@@ -25,8 +25,8 @@
 
 namespace photonlib {
   namespace PhotonVersion {
-    const std::string versionString = "dev-v2022.1.4-2-ga22f8af0";
-    const std::string buildDate = "2022-1-20 10:10:04";
+    const std::string versionString = "${version}";
+    const std::string buildDate = "${date}";
     const bool isRelease = !(versionString.rfind("dev", 0) == 0);
   }
 
