@@ -442,4 +442,8 @@ public class ConfigManager {
             }
         }
     }
+
+    public void unloadCameraConfigs() {
+        this.config.getCameraConfigurations().clear();
+    }
 }
