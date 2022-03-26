@@ -281,7 +281,7 @@ public class RequestHandler {
 
     public static void sendMetrics(Context ctx) {
         MetricsPublisher.getInstance().publish();
-        TimedTaskManager.getInstance().addOneShotTask(() -> RoborioFinder.getInstance().findRios(), 0);
+        // TimedTaskManager.getInstance().addOneShotTask(() -> RoborioFinder.getInstance().findRios(), 0);
         ctx.status(200);
     }
 
