@@ -40,7 +40,6 @@ import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
-import org.photonvision.common.networking.RoborioFinder;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
@@ -281,7 +280,8 @@ public class RequestHandler {
 
     public static void sendMetrics(Context ctx) {
         MetricsPublisher.getInstance().publish();
-        TimedTaskManager.getInstance().addOneShotTask(() -> RoborioFinder.getInstance().findRios(), 0);
+        // TimedTaskManager.getInstance().addOneShotTask(() -> RoborioFinder.getInstance().findRios(),
+        // 0);
         ctx.status(200);
     }
 
