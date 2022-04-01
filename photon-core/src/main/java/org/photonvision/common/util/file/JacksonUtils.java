@@ -34,7 +34,7 @@ import java.nio.file.Path;
 
 public class JacksonUtils {
     public static <T> void serialize(Path path, T object) throws IOException {
-        serialize(path, object, false);
+        serialize(path, object, true);
     }
 
     public static <T> void serialize(Path path, T object, boolean forceSync) throws IOException {
@@ -80,7 +80,7 @@ public class JacksonUtils {
 
     public static <T> void serialize(Path path, T object, Class<T> ref, StdSerializer<T> serializer)
             throws IOException {
-        serialize(path, object, ref, serializer, false);
+        serialize(path, object, ref, serializer, true);
     }
 
     public static <T> void serialize(
