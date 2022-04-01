@@ -18,16 +18,14 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.opencv.core.Rect;
+
 import org.opencv.core.RotatedRect;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.pipe.CVPipe;
+import org.photonvision.vision.target.TargetCalculations;
 
 public class FilterContoursPipe
         extends CVPipe<List<Contour>, List<Contour>, FilterContoursPipe.FilterContoursParams> {
@@ -114,8 +112,7 @@ public class FilterContoursPipe
         if (contourArea <= minFullness || contourArea >= maxFullness) return;
 
         // Aspect Ratio Filtering.
-        Rect boundingRect = contour.getBoundingRect();
-        double aspectRatio = (double) boundingRect.width / boundingRect.height;
+        double aspectRatio = TargetCalculations.getAspectRatio(contour.getMinAreaRect(), params.isLandscape);
         if (aspectRatio < params.getRatio().getFirst() || aspectRatio > params.getRatio().getSecond())
             return;
 
@@ -129,6 +126,7 @@ public class FilterContoursPipe
         private final FrameStaticProperties m_frameStaticProperties;
         private final double xTol; // IQR tolerance for x
         private final double yTol; // IQR tolerance for x
+        public final boolean isLandscape;
 
         public FilterContoursParams(
                 DoubleCouple area,
@@ -136,13 +134,14 @@ public class FilterContoursPipe
                 DoubleCouple extent,
                 FrameStaticProperties camProperties,
                 double xTol,
-                double yTol) {
+                double yTol, boolean isLandscape) {
             this.m_area = area;
             this.m_ratio = ratio;
             this.m_fullness = extent;
             this.m_frameStaticProperties = camProperties;
             this.xTol = xTol;
             this.yTol = yTol;
+            this.isLandscape = isLandscape;
         }
 
         public DoubleCouple getArea() {

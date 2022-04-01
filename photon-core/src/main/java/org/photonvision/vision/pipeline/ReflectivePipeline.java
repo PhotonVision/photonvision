@@ -30,6 +30,7 @@ import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
+import org.photonvision.vision.target.TargetOrientation;
 import org.photonvision.vision.target.TrackedTarget;
 
 /** Represents a pipeline for tracking retro-reflective targets. */
@@ -102,7 +103,8 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         settings.contourFullness,
                         frameStaticProperties,
                         settings.contourFilterRangeX,
-                        settings.contourFilterRangeY);
+                        settings.contourFilterRangeY,
+                        settings.contourTargetOrientation == TargetOrientation.Landscape);
         filterContoursPipe.setParams(filterContoursParams);
 
         var groupContoursParams =

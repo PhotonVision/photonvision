@@ -111,6 +111,23 @@ public class TargetCalculations {
         }
     }
 
+    public static double getAspectRatio(RotatedRect rect, boolean isLandscape) {
+        if (rect.size.width == 0 || rect.size.height == 0) return 0;
+        double ratio = rect.size.width / rect.size.height;
+
+        // In landscape, we should be shorter than we are wide (that is, aspect ratio should be >1)
+        if (isLandscape && ratio < 1) {
+            ratio = 1.0 / ratio;
+        }
+
+        // If portrait, should always be taller than wide (ratio < 1)
+        else if (!isLandscape && ratio > 1) {
+            ratio = 1.0 / ratio;
+        }
+
+        return ratio;
+    }
+
     public static Point calculateDualOffsetCrosshair(
             DualOffsetValues dualOffsetValues, double currentArea) {
         boolean firstLarger = dualOffsetValues.firstPointArea >= dualOffsetValues.secondPointArea;
