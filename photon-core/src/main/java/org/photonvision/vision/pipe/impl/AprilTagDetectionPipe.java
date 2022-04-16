@@ -37,10 +37,22 @@ public class AprilTagDetectionPipe
 
     @Override
     public void setParams(AprilTagDetectionParams params) {
-        if(!(this.params.tagFamily.equals(params.tagFamily))){
+        if(this.params == null) {
+            super.setParams(params);
+            createDetector(params.tagFamily);
+        }
+        else {
+            if(!(this
+            .params
+            .tagFamily
+            .equals(
+                params
+                .tagFamily))){
             createDetector(params.tagFamily);
         }
         super.setParams(params);
+        }
+
     }
 
     private void createDetector(String fam) {

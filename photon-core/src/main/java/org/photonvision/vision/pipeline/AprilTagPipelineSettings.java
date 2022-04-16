@@ -26,7 +26,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
 
-    public String tagFamily;
+    public String tagFamily = "36h11";
     // 3d settings
     public CameraCalibrationCoefficients cameraCalibration;
 

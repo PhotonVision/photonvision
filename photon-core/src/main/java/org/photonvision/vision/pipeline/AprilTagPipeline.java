@@ -145,6 +145,7 @@ public class AprilTagPipeline
         for (DetectionResult detection : tagDetectionPipeResult.output) {
                 // populate the target list
                 // Challenge here is that TrackedTarget functions with OpenCV Contours
+                System.out.println(detection.getId());
                 
         }
 
