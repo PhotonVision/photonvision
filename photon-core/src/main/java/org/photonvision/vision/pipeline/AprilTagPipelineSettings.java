@@ -17,16 +17,16 @@
 
 package org.photonvision.vision.pipeline;
 
-import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.Objects;
-import org.photonvision.common.util.numbers.DoubleCouple;
-import org.photonvision.common.util.numbers.IntegerCouple;
+
+import com.fasterxml.jackson.annotation.JsonTypeName;
+
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.opencv.ContourShape;
 
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
 
+    public String tagFamily;
     // 3d settings
     public CameraCalibrationCoefficients cameraCalibration;
 
@@ -42,13 +42,15 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         AprilTagPipelineSettings that = (AprilTagPipelineSettings) o;
-        return Objects.equals(cameraCalibration, that.cameraCalibration);
+        return Objects.equals(cameraCalibration, that.cameraCalibration)
+                && Objects.equals(tagFamily, that.tagFamily);
     }
 
     @Override
     public int hashCode() {
         return Objects.hash(
                 super.hashCode(),
+                tagFamily,
                 cameraCalibration);
     }
 }

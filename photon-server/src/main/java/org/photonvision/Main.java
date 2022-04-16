@@ -43,6 +43,7 @@ import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourShape;
+import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.PipelineProfiler;
@@ -108,6 +109,7 @@ public class Main {
         try {
             var reflective = new ReflectivePipelineSettings();
             var shape = new ColoredShapePipelineSettings();
+            var aprilTag = new AprilTagPipelineSettings();
             List<VisionSource> collectedSources =
                     Files.list(testModeFolder)
                             .filter(p -> p.toFile().isFile())
@@ -134,6 +136,7 @@ public class Main {
                                                 var psList = new ArrayList<CVPipelineSettings>();
                                                 psList.add(reflective);
                                                 psList.add(shape);
+                                                psList.add(aprilTag);
                                                 camConf.pipelineSettings = psList;
                                             }
 

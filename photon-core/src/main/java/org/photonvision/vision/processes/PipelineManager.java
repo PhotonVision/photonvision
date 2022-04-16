@@ -188,6 +188,9 @@ public class PipelineManager {
                     currentUserPipeline =
                             new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
                     break;
+                case AprilTag:
+                    currentUserPipeline = 
+                            new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
             }
         }
     }

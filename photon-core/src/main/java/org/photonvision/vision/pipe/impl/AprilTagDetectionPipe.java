@@ -21,17 +21,33 @@ import java.util.List;
 
 import org.opencv.core.Mat;
 import org.photonvision.vision.apriltag.AprilTagJNI;
+import org.photonvision.vision.apriltag.DetectionResult;
 //import apriltag.TagDetection //
 import org.photonvision.vision.pipe.CVPipe;
 
 
 public class AprilTagDetectionPipe
-        extends CVPipe<Mat, List<AprilTagJNI.AprilTagDetection>, AprilTagDetectionPipe.AprilTagDetectionParams> {
-    private final long m_detector_ptr = AprilTagJNI.AprilTag_Create(params.tagFamily, 1.0, 0.0, 4, false, true);
+        extends CVPipe<Mat, List<DetectionResult>, AprilTagDetectionPipe.AprilTagDetectionParams> {
+    private long m_detector_ptr = 0L;
 
     @Override
-    protected List<AprilTagJNI.AprilTagDetection> process(Mat in) {
-        return List.of(AprilTagJNI.AprilTag_Detect(m_detector_ptr, in.getNativeObjAddr()));
+    protected List<DetectionResult> process(Mat in) {
+        return List.of(AprilTagJNI.AprilTag_Detect(m_detector_ptr, in));
+    }
+
+    @Override
+    public void setParams(AprilTagDetectionParams params) {
+        if(!(this.params.tagFamily.equals(params.tagFamily))){
+            createDetector(params.tagFamily);
+        }
+        super.setParams(params);
+    }
+
+    private void createDetector(String fam) {
+        if(m_detector_ptr != 0L) {
+            //AprilTagJNI.AprilTag_Destroy(m_detector_ptr);
+        }
+        m_detector_ptr = AprilTagJNI.AprilTag_Create(fam, 1.0, 0.0, 4, false, true);
     }
 
     public static class AprilTagDetectionParams {

@@ -29,6 +29,7 @@ import org.opencv.core.Point;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.apriltag.AprilTagJNI;
+import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.*;
@@ -85,7 +86,9 @@ public class AprilTagPipeline
 
         // TODO Set the camera to output in grayscale
 
-
+        AprilTagDetectionPipe.AprilTagDetectionParams aprilTagDetectionParams =
+                new AprilTagDetectionPipe.AprilTagDetectionParams(settings.tagFamily);
+        aprilTagDetectionPipe.setParams(aprilTagDetectionParams);
         var draw3dTargetsParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
                         settings.outputShouldDraw,
@@ -132,14 +135,14 @@ public class AprilTagPipeline
         }
 
         List<TrackedTarget> targetList;
-        CVPipeResult<List<AprilTagJNI.AprilTagDetection>> tagDetectionPipeResult;
+        CVPipeResult<List<DetectionResult>> tagDetectionPipeResult;
         
         tagDetectionPipeResult = aprilTagDetectionPipe.run(grayscalePipeResult.output);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         targetList = List.of();
 
-        for (AprilTagJNI.AprilTagDetection detection : tagDetectionPipeResult.output) {
+        for (DetectionResult detection : tagDetectionPipeResult.output) {
                 // populate the target list
                 // Challenge here is that TrackedTarget functions with OpenCV Contours
                 
