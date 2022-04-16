@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ import javax.sound.midi.Track;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
@@ -35,8 +37,11 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.*;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
+import org.photonvision.vision.pipe.impl.Draw2dTargetsPipe.Draw2dTargetsParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.PotentialTarget;
+import org.photonvision.vision.target.RobotOffsetPointMode;
+import org.photonvision.vision.target.TargetOffsetPointEdge;
 import org.photonvision.vision.target.TrackedTarget;
 
 @SuppressWarnings({"DuplicatedCode"})
@@ -47,7 +52,7 @@ public class AprilTagPipeline
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
-    private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
+    private final Draw2dTargetsPipe draw3dTargetsPipe = new Draw2dTargetsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private final Point[] rectPoints = new Point[4];
@@ -90,10 +95,9 @@ public class AprilTagPipeline
                 new AprilTagDetectionPipe.AprilTagDetectionParams(settings.tagFamily);
         aprilTagDetectionPipe.setParams(aprilTagDetectionParams);
         var draw3dTargetsParams =
-                new Draw3dTargetsPipe.Draw3dContoursParams(
+                new Draw2dTargetsParams(
                         settings.outputShouldDraw,
-                        frameStaticProperties.cameraCalibration,
-                        settings.targetModel,
+                        settings.outputShowMultipleTargets,
                         settings.streamingFrameDivisor);
         draw3dTargetsPipe.setParams(draw3dTargetsParams);
     }
@@ -140,13 +144,32 @@ public class AprilTagPipeline
         tagDetectionPipeResult = aprilTagDetectionPipe.run(grayscalePipeResult.output);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
-        targetList = List.of();
+        targetList = new ArrayList<TrackedTarget>();
 
         for (DetectionResult detection : tagDetectionPipeResult.output) {
                 // populate the target list
                 // Challenge here is that TrackedTarget functions with OpenCV Contours
-                System.out.println(detection.getId());
-                
+                //System.out.println(detection.getId());
+                List<Point> points = new ArrayList<>();
+                points.add(new Point(detection.getCorners()[0], detection.getCorners()[1]));
+                points.add(new Point(detection.getCorners()[2], detection.getCorners()[3]));
+                points.add(new Point(detection.getCorners()[4], detection.getCorners()[5]));
+                points.add(new Point(detection.getCorners()[6], detection.getCorners()[7]));
+                MatOfPoint mPoints = new MatOfPoint();
+                mPoints.fromList(points);
+                Contour contour = new Contour(mPoints);
+                PotentialTarget potentialTarget = new PotentialTarget(contour);
+                TrackedTarget.TargetCalculationParameters calcParams = new TrackedTarget.TargetCalculationParameters(
+                    true,
+                    TargetOffsetPointEdge.Center,
+                    RobotOffsetPointMode.None, new Point(), 
+                    new DualOffsetValues(
+                    ), frameStaticProperties);
+                TrackedTarget trackedTarget = new TrackedTarget(
+                    potentialTarget, calcParams, new CVShape(contour, ContourShape.Quadrilateral)
+                );
+            targetList.add(trackedTarget);
+                 
         }
 
         draw3dTargetsPipe.run(Pair.of(rawInputMat, targetList));

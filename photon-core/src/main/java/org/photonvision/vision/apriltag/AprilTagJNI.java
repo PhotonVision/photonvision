@@ -20,7 +20,6 @@ public class AprilTagJNI {
     public static native DetectionResult[] AprilTag_Detect(long detector, long imgAddr, int rows, int cols);
     // Detect targets given a GRAY frame. Returns a pointer toa zarray
     public static DetectionResult[] AprilTag_Detect(long detector, Mat img) {
-        System.out.println("detect");
         //return AprilTag_Detect(detector, img.dataAddr(), img.rows(), img.cols());
         DetectionResult stub = new DetectionResult(1, 1, 100.0f, 
             new double[]{1.0, 1.0, 1.0,
