@@ -27,6 +27,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
 
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -264,11 +266,20 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            // System.loadLibrary("apriltag");
-            System.load("/home/bankst/photonvision/apriltag/build/libapriltag.so");
-            System.out.println("Lib load OK!");
+            CameraServerCvJNI.forceLoad();
+            PicamJNI.forceLoad();
+            TestUtils.loadLibraries();
+            logger.info("Native libraries loaded.");
         } catch (Exception e) {
-            System.out.println("Lib load FAIL!");
+            logger.error("Failed to load native libraries!", e);
+        }
+
+        try {
+            System.loadLibrary("apriltag");
+            // System.load("/home/bankst/photonvision/apriltag/build/libapriltag.so");
+            logger.info("Lib load OK!");
+        } catch (Exception e) {
+            logger.error("Lib load FAIL!");
             e.printStackTrace();
         }
 
@@ -279,12 +290,14 @@ public class Main {
             var detectPipe = new AprilTagDetectionPipe();
             detectPipe.setParams(new AprilTagDetectionPipe.AprilTagDetectionParams("tag36h11"));
             var imgPath = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_060in_Center, false);
-            var imgMat = Imgcodecs.imread(imgPath.toString());
-
+            // var imgMat = Imgcodecs.imread(imgPath.toString());
+            var imgMat = Mat.zeros(320, 240, CvType.CV_8UC3);
             var result = detectPipe.run(imgMat);
 
+            logger.info("Ran pipe!");
+            logger.info("Result count: " + result.output.size());
             for(var detResult : result.output) {
-                System.out.println(detResult);
+                logger.info(detResult.toString());
             }
 
 
