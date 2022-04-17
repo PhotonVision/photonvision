@@ -134,9 +134,12 @@ public class Draw2dTargetsPipe
                                     center.y - params.kPixelsToOffset * imageSize);
                     dividePoint(textPos);
 
+                    int id = target.getFiducialId();
+                    var contourNumber = String.valueOf(id == -1 ? i : id);
+
                     Imgproc.putText(
                             in.getLeft(),
-                            String.valueOf(i),
+                            contourNumber,
                             textPos,
                             0,
                             textSize,

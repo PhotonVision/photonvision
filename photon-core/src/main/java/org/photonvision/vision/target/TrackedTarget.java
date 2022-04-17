@@ -46,6 +46,8 @@ public class TrackedTarget implements Releasable {
 
     private CVShape m_shape;
 
+    private int m_fiducialId = -1;
+
     private Mat m_cameraRelativeTvec, m_cameraRelativeRvec;
 
     public TrackedTarget(
@@ -54,6 +56,14 @@ public class TrackedTarget implements Releasable {
         this.m_subContours = origTarget.m_subContours;
         this.m_shape = shape;
         calculateValues(params);
+    }
+
+    public void setFiducialId(int id) {
+        m_fiducialId = id;
+    }
+
+    public int getFiducialId() {
+        return m_fiducialId;
     }
 
     /**

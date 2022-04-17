@@ -17,20 +17,12 @@
 
 package org.photonvision.vision.pipeline;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.sound.midi.Track;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
-import org.photonvision.vision.apriltag.AprilTagJNI;
 import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
@@ -44,7 +36,10 @@ import org.photonvision.vision.target.RobotOffsetPointMode;
 import org.photonvision.vision.target.TargetOffsetPointEdge;
 import org.photonvision.vision.target.TrackedTarget;
 
-@SuppressWarnings({"DuplicatedCode"})
+import java.util.ArrayList;
+import java.util.List;
+
+@SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline
         extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
     private final PipelineType pipelineType = PipelineType.AprilTag;           
@@ -72,24 +67,10 @@ public class AprilTagPipeline
         rotateImagePipe.setParams(rotateImageParams);
 
         if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
-        //     PicamJNI.setThresholds(
-        //             settings.hsvHue.getFirst() / 180d,
-        //             settings.hsvSaturation.getFirst() / 255d,
-        //             settings.hsvValue.getFirst() / 255d,
-        //             settings.hsvHue.getSecond() / 180d,
-        //             settings.hsvSaturation.getSecond() / 255d,
-        //             settings.hsvValue.getSecond() / 255d);
-
+            // TODO: Picam grayscale
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
             PicamJNI.setShouldCopyColor(settings.inputShouldShow);
-        } else {
-        //     var hsvParams =
-        //             new HSVPipe.HSVParams(
-        //                     settings.hsvHue, settings.hsvSaturation, settings.hsvValue, settings.hueInverted);
-        //     hsvPipe.setParams(hsvParams);
         }
-
-        // TODO Set the camera to output in grayscale
 
         AprilTagDetectionPipe.AprilTagDetectionParams aprilTagDetectionParams =
                 new AprilTagDetectionPipe.AprilTagDetectionParams(settings.tagFamily);
@@ -123,8 +104,6 @@ public class AprilTagPipeline
                 // If we grabbed it (in color copy mode), make a new Mat of it
                 rawInputMat = new Mat(inputMatPtr);
             } else {
-                //                // Otherwise, use a blank/empty mat as placeholder
-                //                rawInputMat = new Mat();
                 // Otherwise, the input mat is frame we got from the camera
                 rawInputMat = frame.image.getMat();
             }
@@ -146,35 +125,33 @@ public class AprilTagPipeline
 
         targetList = new ArrayList<TrackedTarget>();
         for (DetectionResult detection : tagDetectionPipeResult.output) {
-                // populate the target list
-                // Challenge here is that TrackedTarget functions with OpenCV Contours
-                System.out.println(detection.getId());
-                
-                List<Point> points = new ArrayList<>();
-                points.add(new Point(detection.getCorners()[0], detection.getCorners()[1]));
-                points.add(new Point(detection.getCorners()[2], detection.getCorners()[3]));
-                points.add(new Point(detection.getCorners()[4], detection.getCorners()[5]));
-                points.add(new Point(detection.getCorners()[6], detection.getCorners()[7]));
-                MatOfPoint mPoints = new MatOfPoint();
-                mPoints.fromList(points);
-                Contour contour = new Contour(mPoints);
-                PotentialTarget potentialTarget = new PotentialTarget(contour);
-                TrackedTarget.TargetCalculationParameters calcParams = new TrackedTarget.TargetCalculationParameters(
-                    true,
-                    TargetOffsetPointEdge.Center,
-                    RobotOffsetPointMode.None, new Point(), 
-                    new DualOffsetValues(
-                    ), frameStaticProperties);
-                TrackedTarget trackedTarget = new TrackedTarget(
-                    potentialTarget, calcParams, new CVShape(contour, ContourShape.Quadrilateral)
-                );
+            // populate the target list
+            // Challenge here is that TrackedTarget functions with OpenCV Contours
+            System.out.println(detection.getId());
+
+            List<Point> points = new ArrayList<>();
+            points.add(new Point(detection.getCorners()[0], detection.getCorners()[1]));
+            points.add(new Point(detection.getCorners()[2], detection.getCorners()[3]));
+            points.add(new Point(detection.getCorners()[4], detection.getCorners()[5]));
+            points.add(new Point(detection.getCorners()[6], detection.getCorners()[7]));
+            MatOfPoint mPoints = new MatOfPoint();
+            mPoints.fromList(points);
+            Contour contour = new Contour(mPoints);
+            PotentialTarget potentialTarget = new PotentialTarget(contour);
+            TrackedTarget.TargetCalculationParameters calcParams = new TrackedTarget.TargetCalculationParameters(
+                true,
+                TargetOffsetPointEdge.Center,
+                RobotOffsetPointMode.None, new Point(),
+                new DualOffsetValues(
+                ), frameStaticProperties);
+            TrackedTarget trackedTarget = new TrackedTarget(
+                potentialTarget, calcParams, new CVShape(contour, ContourShape.Quadrilateral)
+            );
+            trackedTarget.setFiducialId(detection.getId());
             targetList.add(trackedTarget);
-                 
         }
 
         draw3dTargetsPipe.run(Pair.of(rawInputMat, targetList));
-
-
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
