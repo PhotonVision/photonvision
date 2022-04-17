@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
+
+import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe.java;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -43,6 +46,7 @@ import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourShape;
+import org.photonvision.vision.apriltag.AprilTagJNI;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
@@ -259,6 +263,38 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        try {
+            // System.loadLibrary("apriltag");
+            System.load("/home/bankst/photonvision/apriltag/build/libapriltag.so");
+            System.out.println("Lib load OK!");
+        } catch (Exception e) {
+            System.out.println("Lib load FAIL!");
+            e.printStackTrace();
+        }
+
+        // long detectorHandle = 0;
+
+        try {
+            // detectorHandle = AprilTagJNI.AprilTag_Create("tag36h11", 2.0, 1.0, 4, false, true);
+            var detectPipe = new AprilTagDetectionPipe();
+            detectPipe.setParams(new AprilTagDetectionPipe.AprilTagDetectionParams("tag36h11"));
+            var imgPath = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_060in_Center, false);
+            var imgMat = Imgcodecs.imread(imgPath);
+
+            var result = detectPipe.run(imgMat);
+
+            for(var detResult : result) {
+                System.out.println(detResult);
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // System.out.printf("AprilTag_Create handle: %d", handle);
+        System.exit(1);
+
         try {
             if (!handleArgs(args)) {
                 System.exit(0);

@@ -66,4 +66,11 @@ public class DetectionResult{
         this.centerY = centerY;
         this.corners = corners;
     }
+
+    @Override
+    public String toString() {
+        return "ID " + id + " ham " + hamming + " decision margin " + decision_margin
+                + " homography " + homography + " cx " + centerX + " cy " + centerY
+                + " corners " + corners;
+    }
 }
