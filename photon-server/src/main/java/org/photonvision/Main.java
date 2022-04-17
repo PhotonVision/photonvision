@@ -310,7 +310,7 @@ public class Main {
         }
 
         // System.out.printf("AprilTag_Create handle: %d", handle);
-        System.exit(0);
+        //System.exit(0);
 
         try {
             if (!handleArgs(args)) {

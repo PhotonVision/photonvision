@@ -145,11 +145,11 @@ public class AprilTagPipeline
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         targetList = new ArrayList<TrackedTarget>();
-
         for (DetectionResult detection : tagDetectionPipeResult.output) {
                 // populate the target list
                 // Challenge here is that TrackedTarget functions with OpenCV Contours
-                //System.out.println(detection.getId());
+                System.out.println(detection.getId());
+                
                 List<Point> points = new ArrayList<>();
                 points.add(new Point(detection.getCorners()[0], detection.getCorners()[1]));
                 points.add(new Point(detection.getCorners()[2], detection.getCorners()[3]));
