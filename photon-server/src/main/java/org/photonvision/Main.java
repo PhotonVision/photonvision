@@ -31,6 +31,7 @@ import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
+import org.photonvision.vision.pipe.impl.GrayscalePipe;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -289,10 +290,13 @@ public class Main {
             // detectorHandle = AprilTagJNI.AprilTag_Create("tag36h11", 2.0, 1.0, 4, false, true);
             var detectPipe = new AprilTagDetectionPipe();
             detectPipe.setParams(new AprilTagDetectionPipe.AprilTagDetectionParams("tag36h11"));
-            var imgPath = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_060in_Center, false);
-            // var imgMat = Imgcodecs.imread(imgPath.toString());
-            var imgMat = Mat.zeros(320, 240, CvType.CV_8UC3);
-            var result = detectPipe.run(imgMat);
+            //var imgPath = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_060in_Center, false);
+            var imgMat = Imgcodecs.imread("/home/jashu/git/photon-shueja-personal/test-resources/testimages/apriltag/robots.jpeg");
+            System.out.println(imgMat.type());
+            var grayscalePipe = new GrayscalePipe();
+            var gray = grayscalePipe.run(imgMat);
+            //var imgMat = Mat.zeros(320, 240, CvType.CV_8UC3);
+            var result = detectPipe.run(gray.output);
 
             logger.info("Ran pipe!");
             logger.info("Result count: " + result.output.size());
@@ -306,7 +310,7 @@ public class Main {
         }
 
         // System.out.printf("AprilTag_Create handle: %d", handle);
-        System.exit(1);
+        System.exit(0);
 
         try {
             if (!handleArgs(args)) {

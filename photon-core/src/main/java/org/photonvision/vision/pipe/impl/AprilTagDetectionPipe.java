@@ -32,7 +32,13 @@ public class AprilTagDetectionPipe
 
     @Override
     protected List<DetectionResult> process(Mat in) {
-        return List.of(AprilTagJNI.AprilTag_Detect(m_detector_ptr, in));
+        if(m_detector_ptr != 0L) {
+            return List.of(AprilTagJNI.AprilTag_Detect(m_detector_ptr, in));
+        }
+        else {
+            return List.of();
+        }
+        
     }
 
     @Override

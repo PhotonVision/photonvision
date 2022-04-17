@@ -20,7 +20,7 @@ public class AprilTagJNI {
     public static void main(String[] args) {
         System.loadLibrary("apriltag");
 
-        long detector = AprilTag_Create("tag36h11", 2, 0, 1, false, true);
+        long detector = AprilTag_Create("tag36h11", 2, 2, 1, false, true);
 
         // var buff = ByteBuffer.allocateDirect(1280 * 720);
 
