@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
 
 import org.opencv.imgcodecs.Imgcodecs;
-import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe.java;
+import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -279,11 +279,11 @@ public class Main {
             var detectPipe = new AprilTagDetectionPipe();
             detectPipe.setParams(new AprilTagDetectionPipe.AprilTagDetectionParams("tag36h11"));
             var imgPath = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_060in_Center, false);
-            var imgMat = Imgcodecs.imread(imgPath);
+            var imgMat = Imgcodecs.imread(imgPath.toString());
 
             var result = detectPipe.run(imgMat);
 
-            for(var detResult : result) {
+            for(var detResult : result.output) {
                 System.out.println(detResult);
             }
 
