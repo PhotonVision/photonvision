@@ -26,7 +26,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
 
-    public String tagFamily = "36h11";
+    public String tagFamily = "tag36h11";
     public double decimate = 1.0;
     public double blur = 0.5;
     public int threads = 1;
@@ -52,17 +52,5 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
             && threads == that.threads
             && debug == that.debug
             && refineEdges == that.refineEdges;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(
-                super.hashCode(),
-                tagFamily,
-                decimate,
-                blur,
-                threads,
-                debug,
-                refineEdges);
     }
 }
