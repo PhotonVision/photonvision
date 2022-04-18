@@ -243,14 +243,6 @@ public class TestUtils {
         return getCoeffs(LIFECAM_480P_CAL_FILE, testMode);
     }
 
-    public static void loadLibraries() {
-        try {
-            CameraServerCvJNI.forceLoad();
-        } catch (IOException e) {
-            // ignored
-        }
-    }
-
     private static int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {
