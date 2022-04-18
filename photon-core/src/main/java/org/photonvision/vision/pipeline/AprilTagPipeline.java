@@ -23,6 +23,7 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
+import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
@@ -72,14 +73,14 @@ public class AprilTagPipeline
             PicamJNI.setShouldCopyColor(settings.inputShouldShow);
         }
 
-        AprilTagDetectionPipe.AprilTagDetectionParams aprilTagDetectionParams =
-                new AprilTagDetectionPipe.AprilTagDetectionParams(
+        AprilTagDetectorParams aprilTagDetectionParams =
+                new AprilTagDetectorParams(
                     settings.tagFamily,
-                settings.decimate, 
-                settings.blur, 
-                settings.threads, 
-                settings.debug, 
-                settings.refineEdges);
+                    settings.decimate,
+                    settings.blur,
+                    settings.threads,
+                    settings.debug,
+                    settings.refineEdges);
         aprilTagDetectionPipe.setParams(aprilTagDetectionParams);
         var draw3dTargetsParams =
                 new Draw2dTargetsParams(
