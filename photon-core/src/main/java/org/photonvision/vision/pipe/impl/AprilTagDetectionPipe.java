@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.opencv.core.Mat;
 import org.photonvision.vision.apriltag.AprilTagJNI;
@@ -43,40 +44,76 @@ public class AprilTagDetectionPipe
 
     @Override
     public void setParams(AprilTagDetectionParams params) {
-        if(this.params == null) {
-            super.setParams(params);
-            createDetector(params.tagFamily);
-        }
-        else {
-            if(!(this
-            .params
-            .tagFamily
-            .equals(
-                params
-                .tagFamily))){
-            createDetector(params.tagFamily);
+        if(!params.equals(this.params)) {
+            createDetector(params.tagFamily, params.decimate, params.blur, params.threads, params.debug, params.refineEdges);
         }
         super.setParams(params);
-        }
-
     }
 
-    private void createDetector(String fam) {
+    private void createDetector(String fam, double decimate, double blur, int threads, boolean debug, boolean refineEdges) {
         if(m_detector_ptr != 0L) {
             //AprilTagJNI.AprilTag_Destroy(m_detector_ptr);
         }
-        m_detector_ptr = AprilTagJNI.AprilTag_Create(fam, 1.0, 0.0, 4, false, true);
+        m_detector_ptr = AprilTagJNI.AprilTag_Create(fam, decimate,blur, threads, debug, refineEdges);
     }
 
     public static class AprilTagDetectionParams {
         private final String tagFamily;
+        private final double decimate;
 
-        public AprilTagDetectionParams(String fam) {
-            tagFamily = fam;
+
+        private final double blur;
+        private final int threads;
+        private final boolean debug;
+        private final boolean refineEdges;
+
+        public AprilTagDetectionParams(String tagFamily, double decimate, double blur, int threads, boolean debug,
+                boolean refineEdges) {
+            this.tagFamily = tagFamily;
+            this.decimate = decimate;
+            this.blur = blur;
+            this.threads = threads;
+            this.debug = debug;
+            this.refineEdges = refineEdges;
         }
 
-        public String getFamily() {
+        public String getTagFamily() {
             return tagFamily;
         }
+
+        public double getDecimate() {
+            return decimate;
+        }
+
+        public double getBlur() {
+            return blur;
+        }
+
+        public int getThreads() {
+            return threads;
+        }
+
+        public boolean isDebug() {
+            return debug;
+        }
+
+        public boolean isRefineEdges() {
+            return refineEdges;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            if (!super.equals(o)) return false;
+            AprilTagDetectionParams that = (AprilTagDetectionParams) o;
+            return Objects.equals(tagFamily, that.tagFamily)
+                && Double.compare(decimate, that.decimate) == 0
+                && Double.compare(blur, that.blur) == 0
+                && threads == that.threads
+                && debug == that.debug
+                && refineEdges == that.refineEdges;
+        }
+    
     }
 }
