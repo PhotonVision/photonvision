@@ -64,6 +64,8 @@ public class PipelineManager {
         this.driverModePipeline.setSettings(driverSettings);
 
         if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
+
+        addPipeline(PipelineType.AprilTag);
     }
 
     public PipelineManager(CameraConfiguration config) {
@@ -269,6 +271,12 @@ public class PipelineManager {
             case ColoredShape:
                 {
                     var added = new ColoredShapePipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
+            case AprilTag:
+                {
+                    var added = new AprilTagPipelineSettings();
                     added.pipelineNickname = nickname;
                     return added;
                 }

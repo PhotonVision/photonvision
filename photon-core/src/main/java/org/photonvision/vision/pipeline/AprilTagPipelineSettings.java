@@ -27,8 +27,12 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
 
     public String tagFamily = "36h11";
+    public double decimate = 1.0;
+    public double blur = 0.5;
+    public int threads = 1;
+    public boolean debug = false;
+    public boolean refineEdges = true;
     // 3d settings
-    public CameraCalibrationCoefficients cameraCalibration;
 
 
     public AprilTagPipelineSettings() {
@@ -42,8 +46,12 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (o == null || getClass() != o.getClass()) return false;
         if (!super.equals(o)) return false;
         AprilTagPipelineSettings that = (AprilTagPipelineSettings) o;
-        return Objects.equals(cameraCalibration, that.cameraCalibration)
-                && Objects.equals(tagFamily, that.tagFamily);
+        return Objects.equals(tagFamily, that.tagFamily)
+            && Double.compare(decimate, that.decimate) == 0
+            && Double.compare(blur, that.blur) == 0
+            && threads == that.threads
+            && debug == that.debug
+            && refineEdges == that.refineEdges;
     }
 
     @Override
@@ -51,6 +59,10 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         return Objects.hash(
                 super.hashCode(),
                 tagFamily,
-                cameraCalibration);
+                decimate,
+                blur,
+                threads,
+                debug,
+                refineEdges);
     }
 }

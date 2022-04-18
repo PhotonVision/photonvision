@@ -73,7 +73,13 @@ public class AprilTagPipeline
         }
 
         AprilTagDetectionPipe.AprilTagDetectionParams aprilTagDetectionParams =
-                new AprilTagDetectionPipe.AprilTagDetectionParams(settings.tagFamily);
+                new AprilTagDetectionPipe.AprilTagDetectionParams(
+                    settings.tagFamily,
+                settings.decimate, 
+                settings.blur, 
+                settings.threads, 
+                settings.debug, 
+                settings.refineEdges);
         aprilTagDetectionPipe.setParams(aprilTagDetectionParams);
         var draw3dTargetsParams =
                 new Draw2dTargetsParams(
@@ -126,8 +132,7 @@ public class AprilTagPipeline
         targetList = new ArrayList<TrackedTarget>();
         for (DetectionResult detection : tagDetectionPipeResult.output) {
             // populate the target list
-            // Challenge here is that TrackedTarget functions with OpenCV Contours
-            System.out.println(detection.getId());
+            // Challenge here is that TrackedTarget functions with OpenCV Contour
 
             List<Point> points = new ArrayList<>();
             points.add(new Point(detection.getCorners()[0], detection.getCorners()[1]));

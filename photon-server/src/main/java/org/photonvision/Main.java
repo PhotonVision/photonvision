@@ -289,7 +289,7 @@ public class Main {
         try {
             // detectorHandle = AprilTagJNI.AprilTag_Create("tag36h11", 2.0, 1.0, 4, false, true);
             var detectPipe = new AprilTagDetectionPipe();
-            detectPipe.setParams(new AprilTagDetectionPipe.AprilTagDetectionParams("tag36h11"));
+            detectPipe.setParams(new AprilTagDetectionPipe.AprilTagDetectionParams("tag36h11", 1.0, 1.0, 4, false, true));
             //var imgPath = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_060in_Center, false);
             var imgMat = Imgcodecs.imread("/home/jashu/git/photon-shueja-personal/test-resources/testimages/apriltag/robots.jpeg");
             System.out.println(imgMat.type());
