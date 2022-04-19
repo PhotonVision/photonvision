@@ -27,7 +27,6 @@ public class AprilTagDetectorParams {
   public boolean equals(Object o) {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
-    if (!super.equals(o)) return false;
     AprilTagDetectorParams that = (AprilTagDetectorParams) o;
     return Objects.equals(tagFamily, that.tagFamily)
             && Double.compare(decimate, that.decimate) == 0
