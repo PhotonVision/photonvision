@@ -49,6 +49,7 @@ import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourShape;
+import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.apriltag.AprilTagJNI;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
@@ -269,15 +270,15 @@ public class Main {
         try {
             CameraServerCvJNI.forceLoad();
             PicamJNI.forceLoad();
-            TestUtils.loadLibraries();
+            AprilTagJNI.forceLoad();
+            //TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
         }
 
         try {
-            System.loadLibrary("apriltag");
-            // System.load("/home/bankst/photonvision/apriltag/build/libapriltag.so");
+            //System.loadLibrary("apriltag")
             logger.info("Lib load OK!");
         } catch (Exception e) {
             logger.error("Lib load FAIL!");
@@ -289,7 +290,7 @@ public class Main {
         try {
             // detectorHandle = AprilTagJNI.AprilTag_Create("tag36h11", 2.0, 1.0, 4, false, true);
             var detectPipe = new AprilTagDetectionPipe();
-            detectPipe.setParams(new AprilTagDetectionPipe.AprilTagDetectionParams("tag36h11", 1.0, 1.0, 4, false, true));
+            detectPipe.setParams(new AprilTagDetectorParams("tag36h11", 1.0, 1.0, 4, false, true));
             //var imgPath = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_060in_Center, false);
             var imgMat = Imgcodecs.imread("/home/jashu/git/photon-shueja-personal/test-resources/testimages/apriltag/robots.jpeg");
             System.out.println(imgMat.type());
@@ -341,7 +342,7 @@ public class Main {
         try {
             CameraServerCvJNI.forceLoad();
             PicamJNI.forceLoad();
-            TestUtils.loadLibraries();
+            //TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);

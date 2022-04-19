@@ -10,7 +10,7 @@ import org.opencv.core.Mat;
 import org.photonvision.common.util.NativeLibHelper;
 
 public class AprilTagJNI {
-  static final String NATIVE_LIBRARY_NAME = "apriltag";
+  static final String NATIVE_LIBRARY_NAME = "apriltags";
   static boolean s_libraryLoaded = false;
   static RuntimeLoader<AprilTagJNI> s_loader = null;
 
@@ -74,7 +74,7 @@ public class AprilTagJNI {
   }
 
   public static void main(String[] args) {
-    System.loadLibrary("apriltag");
+    //System.loadLibrary("apriltag");
 
     long detector = AprilTag_Create("tag36h11", 2, 2, 1, false, true);
 
