@@ -41,6 +41,7 @@ import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.RandomAccess;
 
 @SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline
@@ -168,25 +169,22 @@ public class AprilTagPipeline
 
         }
 
-
-        Mat outputFrame = new Mat();
-        Imgproc.cvtColor(grayscalePipeResult.output, outputFrame, Imgproc.COLOR_GRAY2RGB);
         draw2dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
-        draw2dAprilTagsPipe.run(Pair.of(outputFrame, targetList));
         if(settings.solvePNPEnabled) {
             draw3dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
-            draw3dAprilTagsPipe.run(Pair.of(outputFrame, targetList));
         }
 
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
+        var outputFrame = new Frame(new CVMat(rawInputMat), frame.frameStaticProperties);
+
         return new CVPipelineResult(
                 sumPipeNanosElapsed,
                 fps,
                 targetList,
-                new Frame(new CVMat(outputFrame), frame.frameStaticProperties),
-                new Frame(new CVMat(rawInputMat), frame.frameStaticProperties));
+                outputFrame,
+                outputFrame);
     }
 }
