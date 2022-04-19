@@ -21,6 +21,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.Point;
+import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
@@ -168,11 +169,15 @@ public class AprilTagPipeline
         }
 
 
-        Mat outputFrame = grayscalePipeResult.output;
+        Mat outputFrame = new Mat();
+        Imgproc.cvtColor(grayscalePipeResult.output, outputFrame, Imgproc.COLOR_GRAY2RGB);
         draw2dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
         draw2dAprilTagsPipe.run(Pair.of(outputFrame, targetList));
-        draw3dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
-        draw3dAprilTagsPipe.run(Pair.of(outputFrame, targetList));
+        if(settings.solvePNPEnabled) {
+            draw3dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
+            draw3dAprilTagsPipe.run(Pair.of(outputFrame, targetList));
+        }
+
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
@@ -181,7 +186,7 @@ public class AprilTagPipeline
                 sumPipeNanosElapsed,
                 fps,
                 targetList,
-                new Frame(new CVMat(grayscalePipeResult.output), frame.frameStaticProperties),
+                new Frame(new CVMat(outputFrame), frame.frameStaticProperties),
                 new Frame(new CVMat(rawInputMat), frame.frameStaticProperties));
     }
 }
