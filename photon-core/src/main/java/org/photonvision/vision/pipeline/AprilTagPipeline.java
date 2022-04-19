@@ -49,7 +49,9 @@ public class AprilTagPipeline
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
-    private final Draw2dAprilTagsPipe draw3dTargetsPipe = new Draw2dAprilTagsPipe();
+    private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
+    private final Draw2dAprilTagsPipe draw2dAprilTagsPipe = new Draw2dAprilTagsPipe();
+    private final Draw3dAprilTagsPipe draw3dAprilTagsPipe = new Draw3dAprilTagsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private final Point[] rectPoints = new Point[4];
@@ -83,12 +85,27 @@ public class AprilTagPipeline
                     settings.debug,
                     settings.refineEdges);
         aprilTagDetectionPipe.setParams(aprilTagDetectionParams);
-        var draw3dTargetsParams =
+
+        var solvePNPParams =
+                new SolvePNPPipe.SolvePNPPipeParams(
+                        frameStaticProperties.cameraCalibration,
+                        frameStaticProperties.cameraPitch,
+                        settings.targetModel);
+        solvePNPPipe.setParams(solvePNPParams);
+
+        var draw2dTargetsParams =
                 new Draw2dAprilTagsPipe.Draw2dAprilTagsParams(
                         settings.outputShouldDraw,
                         settings.outputShowMultipleTargets,
                         settings.streamingFrameDivisor);
-        draw3dTargetsPipe.setParams(draw3dTargetsParams);
+        draw2dAprilTagsPipe.setParams(draw2dTargetsParams);
+        var draw3dTargetsParams =
+        new Draw3dAprilTagsPipe.Draw3dAprilTagsParams(
+                settings.outputShouldDraw,
+                frameStaticProperties.cameraCalibration,
+                settings.targetModel,
+                settings.streamingFrameDivisor);
+        draw3dAprilTagsPipe.setParams(draw3dTargetsParams);
     }
 
     @Override
@@ -144,9 +161,18 @@ public class AprilTagPipeline
            null, frameStaticProperties));
             targetList.add(target);
         }
+
+        if(settings.solvePNPEnabled) {
+            targetList = solvePNPPipe.run(targetList).output;
+
+        }
+
+
         Mat outputFrame = grayscalePipeResult.output;
-        draw3dTargetsPipe.run(Pair.of(rawInputMat, targetList));
-        draw3dTargetsPipe.run(Pair.of(outputFrame, targetList));
+        draw2dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
+        draw2dAprilTagsPipe.run(Pair.of(outputFrame, targetList));
+        draw3dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
+        draw3dAprilTagsPipe.run(Pair.of(outputFrame, targetList));
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;

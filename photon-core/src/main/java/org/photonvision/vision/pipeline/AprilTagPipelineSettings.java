@@ -22,6 +22,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
@@ -40,6 +41,8 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         pipelineType = PipelineType.AprilTag;
         outputShowMultipleTargets = true;
         skipOutputStreamPipeline = true;
+        targetModel = TargetModel.k200mmAprilTag;
+        cameraExposure = 100.0;
     }
 
     @Override
