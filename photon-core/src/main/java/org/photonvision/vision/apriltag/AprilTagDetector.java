@@ -13,7 +13,7 @@ public class AprilTagDetector {
   private void updateDetector() {
     if (m_detectorPtr != 0) {
       // TODO: in JNI
-      // AprilTagJNI.AprilTag_Destroy(m_detectorPtr);
+      AprilTagJNI.AprilTag_Destroy(m_detectorPtr);
       m_detectorPtr = 0;
     }
 
