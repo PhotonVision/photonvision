@@ -89,6 +89,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
     public boolean cornerDetectionExactSideCount = false;
     public int cornerDetectionSideCount = 4;
     public double cornerDetectionAccuracyPercentage = 10;
+    public boolean skipOutputStreamPipeline = false;
 
     @Override
     public boolean equals(Object o) {
@@ -124,7 +125,8 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 && contourGroupingMode == that.contourGroupingMode
                 && contourIntersection == that.contourIntersection
                 && Objects.equals(targetModel, that.targetModel)
-                && cornerDetectionStrategy == that.cornerDetectionStrategy;
+                && cornerDetectionStrategy == that.cornerDetectionStrategy
+                && skipOutputStreamPipeline == that.skipOutputStreamPipeline;
     }
 
     @Override
@@ -158,6 +160,7 @@ public class AdvancedPipelineSettings extends CVPipelineSettings {
                 cornerDetectionUseConvexHulls,
                 cornerDetectionExactSideCount,
                 cornerDetectionSideCount,
-                cornerDetectionAccuracyPercentage);
+                cornerDetectionAccuracyPercentage,
+                skipOutputStreamPipeline);
     }
 }

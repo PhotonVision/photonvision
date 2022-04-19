@@ -20,9 +20,11 @@ import edu.wpi.first.math.geometry.Transform2d;
 import java.util.HashMap;
 import java.util.List;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.*;
 
@@ -58,6 +60,29 @@ public class TrackedTarget implements Releasable {
         calculateValues(params);
     }
 
+    public TrackedTarget(DetectionResult result, TargetCalculationParameters params) {
+        m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
+        m_robotOffsetPoint = new Point();
+
+        m_pitch = TargetCalculations.calculatePitch( result.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
+        m_yaw = TargetCalculations.calculateYaw( result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
+        double[] corners = result.getCorners();
+        Point[] cornerPoints = new Point[] {
+            new Point(corners[0], corners[1]),
+            new Point(corners[2], corners[3]),
+            new Point(corners[4], corners[5]),
+            new Point(corners[6], corners[7])
+        };
+        m_targetCorners = List.of(cornerPoints);
+        MatOfPoint contourMat = new MatOfPoint(cornerPoints);
+        m_approximateBoundingPolygon = new MatOfPoint2f(cornerPoints);
+        m_mainContour = new Contour(contourMat);
+        m_area = m_mainContour.getArea() / params.imageArea * 100;
+        m_fiducialId = result.getId();
+        m_shape = null;
+        m_skew = 0;
+
+    }
     public void setFiducialId(int id) {
         m_fiducialId = id;
     }

@@ -273,7 +273,14 @@ public class VisionModule {
                 if (shouldRun) {
                     consumeRawResults(inputFrame, outputFrame, targets);
                     try {
-                        var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
+                        CVPipelineResult osr;
+                        if(!settings.skipOutputStreamPipeline) {
+                            osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
+                        }
+                        else {
+                            osr = new CVPipelineResult(0, 0, targets, outputFrame, inputFrame);
+                        }
+                        
                         consumeFpsLimitedResult(osr);
                     } catch (Exception e) {
                         // Never die

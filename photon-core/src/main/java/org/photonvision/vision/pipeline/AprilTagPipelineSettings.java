@@ -38,6 +38,8 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagPipelineSettings() {
         super();
         pipelineType = PipelineType.AprilTag;
+        outputShowMultipleTargets = true;
+        skipOutputStreamPipeline = true;
     }
 
     @Override

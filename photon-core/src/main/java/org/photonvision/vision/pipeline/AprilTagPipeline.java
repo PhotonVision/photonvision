@@ -36,6 +36,7 @@ import org.photonvision.vision.target.PotentialTarget;
 import org.photonvision.vision.target.RobotOffsetPointMode;
 import org.photonvision.vision.target.TargetOffsetPointEdge;
 import org.photonvision.vision.target.TrackedTarget;
+import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,7 +49,7 @@ public class AprilTagPipeline
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
-    private final Draw2dTargetsPipe draw3dTargetsPipe = new Draw2dTargetsPipe();
+    private final Draw2dAprilTagsPipe draw3dTargetsPipe = new Draw2dAprilTagsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private final Point[] rectPoints = new Point[4];
@@ -83,7 +84,7 @@ public class AprilTagPipeline
                     settings.refineEdges);
         aprilTagDetectionPipe.setParams(aprilTagDetectionParams);
         var draw3dTargetsParams =
-                new Draw2dTargetsParams(
+                new Draw2dAprilTagsPipe.Draw2dAprilTagsParams(
                         settings.outputShouldDraw,
                         settings.outputShowMultipleTargets,
                         settings.streamingFrameDivisor);
@@ -135,29 +136,17 @@ public class AprilTagPipeline
             // populate the target list
             // Challenge here is that TrackedTarget functions with OpenCV Contour
 
-            List<Point> points = new ArrayList<>();
-            points.add(new Point(detection.getCorners()[0], detection.getCorners()[1]));
-            points.add(new Point(detection.getCorners()[2], detection.getCorners()[3]));
-            points.add(new Point(detection.getCorners()[4], detection.getCorners()[5]));
-            points.add(new Point(detection.getCorners()[6], detection.getCorners()[7]));
-            MatOfPoint mPoints = new MatOfPoint();
-            mPoints.fromList(points);
-            Contour contour = new Contour(mPoints);
-            PotentialTarget potentialTarget = new PotentialTarget(contour);
-            TrackedTarget.TargetCalculationParameters calcParams = new TrackedTarget.TargetCalculationParameters(
-                true,
-                TargetOffsetPointEdge.Center,
-                RobotOffsetPointMode.None, new Point(),
-                new DualOffsetValues(
-                ), frameStaticProperties);
-            TrackedTarget trackedTarget = new TrackedTarget(
-                potentialTarget, calcParams, new CVShape(contour, ContourShape.Quadrilateral)
-            );
-            trackedTarget.setFiducialId(detection.getId());
-            targetList.add(trackedTarget);
+           TrackedTarget target = new TrackedTarget(detection, 
+           new TargetCalculationParameters(false, 
+           null, 
+           null, 
+           null, 
+           null, frameStaticProperties));
+            targetList.add(target);
         }
-
+        Mat outputFrame = grayscalePipeResult.output;
         draw3dTargetsPipe.run(Pair.of(rawInputMat, targetList));
+        draw3dTargetsPipe.run(Pair.of(outputFrame, targetList));
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
