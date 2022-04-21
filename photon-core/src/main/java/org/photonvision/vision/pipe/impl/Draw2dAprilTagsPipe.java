@@ -75,6 +75,7 @@ public class Draw2dAprilTagsPipe
                         //                        divideMat2f(poly, pointMat);
                         var mat = new MatOfPoint();
                         mat.fromArray(poly.toArray());
+                        divideMat(mat, mat);
                         Imgproc.drawContours(
                                 in.getLeft(), List.of(mat), -1, ColorHelper.colorToScalar(Color.blue), 2);
                         mat.release();

@@ -43,6 +43,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
+import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -273,13 +274,9 @@ public class VisionModule {
                 if (shouldRun) {
                     consumeRawResults(inputFrame, outputFrame, targets);
                     try {
-                        CVPipelineResult osr;
-                        if(!settings.skipOutputStreamPipeline) {
-                            osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
-                        }
-                        else {
-                            osr = new CVPipelineResult(0, 0, targets, outputFrame, inputFrame);
-                        }
+                        CVPipelineResult osr
+                         = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
+
                         
                         consumeFpsLimitedResult(osr);
                     } catch (Exception e) {

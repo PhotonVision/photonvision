@@ -143,11 +143,6 @@ public class AprilTagPipeline
             targetList = solvePNPPipe.run(targetList).output;
         }
 
-        draw2dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
-        if(settings.solvePNPEnabled) {
-            draw3dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
-        }
-
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
