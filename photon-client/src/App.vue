@@ -201,7 +201,7 @@
             class="accent--text"
             @click="switchToSettingsTab"
           >
-            vist the settings tab
+            visit the settings tab
           </router-link>
           and set your team number.
         </v-card-text>
