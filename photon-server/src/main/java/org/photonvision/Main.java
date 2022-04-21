@@ -271,47 +271,10 @@ public class Main {
             CameraServerCvJNI.forceLoad();
             PicamJNI.forceLoad();
             AprilTagJNI.forceLoad();
-            //TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
         }
-
-        try {
-            //System.loadLibrary("apriltag")
-            logger.info("Lib load OK!");
-        } catch (Exception e) {
-            logger.error("Lib load FAIL!");
-            e.printStackTrace();
-        }
-
-        // long detectorHandle = 0;
-
-        try {
-            // detectorHandle = AprilTagJNI.AprilTag_Create("tag36h11", 2.0, 1.0, 4, false, true);
-            var detectPipe = new AprilTagDetectionPipe();
-            detectPipe.setParams(new AprilTagDetectorParams("tag36h11", 1.0, 1.0, 4, false, true));
-            //var imgPath = TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_060in_Center, false);
-            var imgMat = Imgcodecs.imread("/home/jashu/git/photon-shueja-personal/test-resources/testimages/apriltag/robots.jpeg");
-            System.out.println(imgMat.type());
-            var grayscalePipe = new GrayscalePipe();
-            var gray = grayscalePipe.run(imgMat);
-            //var imgMat = Mat.zeros(320, 240, CvType.CV_8UC3);
-            var result = detectPipe.run(gray.output);
-
-            logger.info("Ran pipe!");
-            logger.info("Result count: " + result.output.size());
-            for(var detResult : result.output) {
-                logger.info(detResult.toString());
-            }
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // System.out.printf("AprilTag_Create handle: %d", handle);
-        //System.exit(0);
 
         try {
             if (!handleArgs(args)) {
