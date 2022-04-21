@@ -19,34 +19,24 @@ package org.photonvision.vision.pipeline;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint;
-import org.opencv.core.Point;
-import org.opencv.imgproc.Imgproc;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.opencv.*;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
-import org.photonvision.vision.pipe.impl.Draw2dTargetsPipe.Draw2dTargetsParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.target.PotentialTarget;
-import org.photonvision.vision.target.RobotOffsetPointMode;
-import org.photonvision.vision.target.TargetOffsetPointEdge;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.RandomAccess;
 
 @SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline
         extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
-    private final PipelineType pipelineType = PipelineType.AprilTag;           
 
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
@@ -55,8 +45,6 @@ public class AprilTagPipeline
     private final Draw2dAprilTagsPipe draw2dAprilTagsPipe = new Draw2dAprilTagsPipe();
     private final Draw3dAprilTagsPipe draw3dAprilTagsPipe = new Draw3dAprilTagsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
-
-    private final Point[] rectPoints = new Point[4];
 
     public AprilTagPipeline() {
         settings = new AprilTagPipelineSettings();
@@ -75,7 +63,7 @@ public class AprilTagPipeline
         if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
             // TODO: Picam grayscale
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
-            PicamJNI.setShouldCopyColor(settings.inputShouldShow);
+            PicamJNI.setShouldCopyColor(true); // need the color image to grayscale
         }
 
         AprilTagDetectorParams aprilTagDetectionParams =
@@ -116,41 +104,28 @@ public class AprilTagPipeline
 
         CVPipeResult<Mat> grayscalePipeResult;
         Mat rawInputMat;
-        if (frame.image.getMat().channels() != 1) {
-            var rotateImageResult = rotateImagePipe.run(frame.image.getMat());
-            sumPipeNanosElapsed = rotateImageResult.nanosElapsed;
+        boolean inputSingleChannel = frame.image.getMat().channels() == 1;
 
-            rawInputMat = frame.image.getMat();
-
-            grayscalePipeResult = grayscalePipe.run(rawInputMat);
-            sumPipeNanosElapsed += grayscalePipeResult.nanosElapsed;
+        if (inputSingleChannel) {
+            rawInputMat = new Mat(PicamJNI.grabFrame(true));
+            frame.image.getMat().release(); // release the 8bit frame ASAP.
         } else {
-            // Try to copy the color frame.
-            long inputMatPtr = PicamJNI.grabFrame(true);
-            if (inputMatPtr != 0) {
-                // If we grabbed it (in color copy mode), make a new Mat of it
-                rawInputMat = new Mat(inputMatPtr);
-            } else {
-                // Otherwise, the input mat is frame we got from the camera
-                rawInputMat = frame.image.getMat();
-            }
-
-            // We can skip a few steps if the image is single channel because we've already done them on
-            // the GPU
-            grayscalePipeResult = new CVPipeResult<>();
-            grayscalePipeResult.output = frame.image.getMat();
-            grayscalePipeResult.nanosElapsed = MathUtils.wpiNanoTime() - frame.timestampNanos;
-
-            sumPipeNanosElapsed += grayscalePipeResult.nanosElapsed;
+            rawInputMat = frame.image.getMat();
+            var rotateImageResult = rotateImagePipe.run(rawInputMat);
+            sumPipeNanosElapsed += rotateImageResult.nanosElapsed;
         }
+
+        grayscalePipeResult = grayscalePipe.run(rawInputMat);
+        sumPipeNanosElapsed += grayscalePipeResult.nanosElapsed;
 
         List<TrackedTarget> targetList;
         CVPipeResult<List<DetectionResult>> tagDetectionPipeResult;
         
         tagDetectionPipeResult = aprilTagDetectionPipe.run(grayscalePipeResult.output);
+        grayscalePipeResult.output.release();
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
-        targetList = new ArrayList<TrackedTarget>();
+        targetList = new ArrayList<>();
         for (DetectionResult detection : tagDetectionPipeResult.output) {
             // populate the target list
             // Challenge here is that TrackedTarget functions with OpenCV Contour
@@ -166,7 +141,6 @@ public class AprilTagPipeline
 
         if(settings.solvePNPEnabled) {
             targetList = solvePNPPipe.run(targetList).output;
-
         }
 
         draw2dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
@@ -174,17 +148,18 @@ public class AprilTagPipeline
             draw3dAprilTagsPipe.run(Pair.of(rawInputMat, targetList));
         }
 
-
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        var outputFrame = new Frame(new CVMat(rawInputMat), frame.frameStaticProperties);
+        var inputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
+        // empty output frame
+        var outputFrame = Frame.emptyFrame(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight);
 
         return new CVPipelineResult(
                 sumPipeNanosElapsed,
                 fps,
                 targetList,
                 outputFrame,
-                outputFrame);
+                inputFrame);
     }
 }
