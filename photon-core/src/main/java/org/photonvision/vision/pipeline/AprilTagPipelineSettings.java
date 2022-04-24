@@ -28,9 +28,9 @@ import org.photonvision.vision.target.TargetModel;
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
 
     public String tagFamily = "tag36h11";
-    public double decimate = 3.0;
-    public double blur = 0.5;
-    public int threads = 2;
+    public double decimate = 1.0;
+    public double blur = 0;
+    public int threads = 1;
     public boolean debug = false;
     public boolean refineEdges = true;
     // 3d settings

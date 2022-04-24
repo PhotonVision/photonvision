@@ -64,8 +64,6 @@ public class PipelineManager {
         this.driverModePipeline.setSettings(driverSettings);
 
         if (userPipelines.size() < 1) addPipeline(PipelineType.Reflective);
-
-        addPipeline(PipelineType.AprilTag);
     }
 
     public PipelineManager(CameraConfiguration config) {
@@ -403,7 +401,7 @@ public class PipelineManager {
         // But they're different enough it shouldn't be an issue
         var name = getCurrentPipelineSettings().pipelineNickname;
         var newSettings = createSettingsForType(type, name);
-
+        
         var idx = currentPipelineIndex;
         if (idx < 0) {
             logger.error("Cannot replace non-user pipeline!");
@@ -411,7 +409,9 @@ public class PipelineManager {
         }
 
         logger.info("Adding new pipe of type " + type.toString() + " at idx " + idx);
+        newSettings.pipelineIndex = idx;
         userPipelineSettings.set(idx, newSettings);
         setPipelineInternal(idx);
+        reassignIndexes();
     }
 }
