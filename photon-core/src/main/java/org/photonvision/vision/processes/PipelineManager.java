@@ -403,5 +403,6 @@ public class PipelineManager {
         newSettings.pipelineIndex = idx;
         userPipelineSettings.set(idx, newSettings);
         setPipelineInternal(idx);
+        reassignIndexes();
     }
 }
