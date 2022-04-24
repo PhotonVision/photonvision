@@ -1,18 +1,25 @@
 package org.photonvision.vision.apriltag;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import edu.wpi.first.cscore.CameraServerJNI;
-import edu.wpi.first.util.RuntimeLoader;
 import org.opencv.core.Mat;
-import org.photonvision.common.util.NativeLibHelper;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+
+import edu.wpi.first.util.RuntimeLoader;
 
 public class AprilTagJNI {
   static final String NATIVE_LIBRARY_NAME = "apriltags";
   static boolean s_libraryLoaded = false;
   static RuntimeLoader<AprilTagJNI> s_loader = null;
+  private static Logger logger = new Logger(AprilTagJNI.class, LogGroup.Camera);
 
   public static class Helper {
     private static AtomicBoolean extractOnStaticLoad = new AtomicBoolean(true);
@@ -26,36 +33,60 @@ public class AprilTagJNI {
     }
   }
 
-  static {
-    if (Helper.getExtractOnStaticLoad()) {
-      try {
-        s_loader =
-          new RuntimeLoader<>(
-            NATIVE_LIBRARY_NAME,
-            NativeLibHelper.getInstance().NativeLibPath.toString(),
-            AprilTagJNI.class);
-        s_loader.loadLibrary();
-      } catch (IOException ex) {
-        ex.printStackTrace();
-        System.exit(1);
-      }
-      s_libraryLoaded = true;
-    }
-  }
+  // static {
+  //   if (Helper.getExtractOnStaticLoad()) {
+  //     try {
+  //       forceLoad();
+  //     } catch (IOException ex) {
+  //       ex.printStackTrace();
+  //       System.exit(1);
+  //     }
+  //   }
+  // }
 
   public static synchronized void forceLoad() throws IOException {
-    if (s_libraryLoaded) {
-      return;
+    // if (s_libraryLoaded) {
+    //   return;
+    // }
+
+    // s_loader = new RuntimeLoader<>(
+    //   NATIVE_LIBRARY_NAME,
+    //   NativeLibHelper.getInstance().NativeLibPath.toString(),
+    //   AprilTagJNI.class
+    // );
+
+    // s_loader.loadLibrary();
+    // s_libraryLoaded = true;
+
+    if (s_libraryLoaded) return;
+
+    try {
+        String libFileName = System.mapLibraryName("apriltag");
+        File libDirectory = Path.of("lib/").toFile();
+        if (!libDirectory.exists()) {
+            Files.createDirectory(libDirectory.toPath()).toFile();
+        }
+
+        // We always extract the shared object (we could hash each so, but that's a lot of work)
+        URL resourceURL = AprilTagJNI.class.getResource("/nativelibraries/apriltag/" + libFileName);
+        File libFile = Path.of("lib/" + libFileName).toFile();
+        try (InputStream in = resourceURL.openStream()) {
+            if (libFile.exists()) Files.delete(libFile.toPath());
+            Files.copy(in, libFile.toPath());
+        }
+        System.load(libFile.getAbsolutePath());
+
+        s_libraryLoaded = true;
+        //logger.info("Successfully loaded libpicam shared object");
+    } catch (UnsatisfiedLinkError e) {
+        logger.error("Couldn't load apriltag shared object");
+        e.printStackTrace();
+    } catch (IOException ioe) {
+        logger.error("IO exception copying apriltag shared object");
+        ioe.printStackTrace();
     }
 
-    s_loader = new RuntimeLoader<>(
-      NATIVE_LIBRARY_NAME,
-      NativeLibHelper.getInstance().NativeLibPath.toString(),
-      AprilTagJNI.class
-    );
-
-    s_loader.loadLibrary();
-    s_libraryLoaded = true;
+    logger.warn("Tried to load apriltags, success: " + s_libraryLoaded);
   }
 
   // Returns a pointer to a apriltag_detector_t
