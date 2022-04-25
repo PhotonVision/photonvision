@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.opencv.core.Mat;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -68,7 +69,13 @@ public class AprilTagJNI {
         }
 
         // We always extract the shared object (we could hash each so, but that's a lot of work)
-        URL resourceURL = AprilTagJNI.class.getResource("/nativelibraries/apriltag/" + libFileName);
+        URL resourceURL;
+        if (Platform.isRaspberryPi()) {
+          resourceURL = AprilTagJNI.class.getResource("/nativelibraries/apriltag/raspi/" + libFileName);
+        }
+        else {
+          resourceURL = AprilTagJNI.class.getResource("/nativelibraries/apriltag/" + libFileName);
+        }
         File libFile = Path.of("lib/" + libFileName).toFile();
         try (InputStream in = resourceURL.openStream()) {
             if (libFile.exists()) Files.delete(libFile.toPath());
