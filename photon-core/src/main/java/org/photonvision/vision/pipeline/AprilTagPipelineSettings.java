@@ -42,6 +42,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         outputShowMultipleTargets = true;
         targetModel = TargetModel.k200mmAprilTag;
         cameraExposure = 60.0;
+        ledMode = false;
     }
 
     @Override
