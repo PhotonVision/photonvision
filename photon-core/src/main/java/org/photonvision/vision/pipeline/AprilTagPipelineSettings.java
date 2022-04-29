@@ -23,11 +23,12 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.target.TargetModel;
+import org.photonvision.vision.apriltag.AprilTagFamily;
 
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
 
-    public String tagFamily = "tag36h11";
+    public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
     public double decimate = 1.0;
     public double blur = 0;
     public int threads = 1;

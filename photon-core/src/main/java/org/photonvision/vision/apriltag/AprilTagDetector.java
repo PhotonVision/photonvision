@@ -17,8 +17,9 @@ public class AprilTagDetector {
       m_detectorPtr = 0;
     }
 
+    System.out.println("Creating detector with params " + m_detectorParams);
     m_detectorPtr = AprilTagJNI.AprilTag_Create(
-      m_detectorParams.tagFamily, m_detectorParams.decimate,
+      m_detectorParams.tagFamily.getNativeName(), m_detectorParams.decimate,
       m_detectorParams.blur, m_detectorParams.threads,
       m_detectorParams.debug, m_detectorParams.refineEdges
     );

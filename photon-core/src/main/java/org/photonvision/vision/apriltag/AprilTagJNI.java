@@ -17,7 +17,7 @@ import org.photonvision.common.logging.Logger;
 import edu.wpi.first.util.RuntimeLoader;
 
 public class AprilTagJNI {
-  static final String NATIVE_LIBRARY_NAME = "apriltags";
+  static final String NATIVE_LIBRARY_NAME = "apriltagd";
   static boolean s_libraryLoaded = false;
   static RuntimeLoader<AprilTagJNI> s_loader = null;
   private static Logger logger = new Logger(AprilTagJNI.class, LogGroup.Camera);

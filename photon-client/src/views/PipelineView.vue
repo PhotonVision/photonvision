@@ -175,7 +175,7 @@
               slider-color="accent"
             >
               <v-tab
-                v-for="(tab, i) in tabs.filter(it => it.name !== '3D' || $store.getters.currentPipelineSettings.solvePNPEnabled)"
+                v-for="(tab, i) in tabs"
                 :key="i"
               >
                 {{ tab.name }}
@@ -262,6 +262,7 @@ import ContoursTab from './PipelineViews/ContoursTab';
 import OutputTab from './PipelineViews/OutputTab';
 import TargetsTab from "./PipelineViews/TargetsTab";
 import PnPTab from './PipelineViews/PnPTab';
+import AprilTagTab from './PipelineViews/AprilTagTab';
 
 export default {
     name: 'Pipeline',
@@ -274,6 +275,7 @@ export default {
         OutputTab,
         TargetsTab,
         PnPTab,
+        AprilTagTab,
     },
     data() {
         return {
@@ -308,6 +310,10 @@ export default {
                         name: "Contours",
                         component: "ContoursTab",
                     },
+                    apriltag: {
+                        name: "AprilTag",
+                        component: "AprilTagTab",
+                    },
                     output: {
                         name: "Output",
                         component: "OutputTab",
@@ -322,6 +328,13 @@ export default {
                     }
                 };
 
+                // If not in 3d, name "3D" is illegal
+                const allow3d = this.$store.getters.currentPipelineSettings.solvePNPEnabled;
+                // If in apriltag, "Threshold" and "Contours" are illegal -- otherwise "AprilTag" is
+                const isAprilTag = (this.$store.getters.currentPipelineSettings.pipelineType - 2) === 2;
+
+                console.log("allow 3d " + allow3d + " is april " + isAprilTag);
+
                 // 2D array of tab names and component names; each sub-array is a separate tab group
                 let ret = [];
                 if (this.$vuetify.breakpoint.smAndDown || this.$store.getters.isDriverMode || (this.$vuetify.breakpoint.mdAndDown && !this.$store.state.compactMode)) {
@@ -329,22 +342,40 @@ export default {
                     ret[0] = Object.values(tabs);
                 } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
                     // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
-                    ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.output];
+                    ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.apriltag, tabs.output];
                     ret[1] = [tabs.targets, tabs.pnp];
                 } else if (this.$vuetify.breakpoint.lgAndDown) {
                     // Three tab groups, one with "input", one with "threshold, contours, output", and the other with "target info, 3D"
                     ret[0] = [tabs.input];
-                    ret[1] = [tabs.threshold, tabs.contours, tabs.output];
+                    ret[1] = [tabs.threshold, tabs.contours, tabs.apriltag, tabs.output];
                     ret[2] = [tabs.targets, tabs.pnp];
                 } else if (this.$vuetify.breakpoint.xl) {
                     // Three tab groups, one with "input", one with "threshold, contours", and the other with "output, target info, 3D"
                     ret[0] = [tabs.input];
                     ret[1] = [tabs.threshold];
-                    ret[2] = [tabs.contours, tabs.output];
+                    ret[2] = [tabs.contours, tabs.apriltag, tabs.output];
                     ret[3] = [tabs.targets, tabs.pnp];
                 }
 
-                return ret;
+                for(let i = 0; i < ret.length; i++) {
+                  const group = ret[i];
+                  const start = JSON.stringify(ret[i].map(it => it.name))
+
+                  // All the tabs we allow
+                  const filteredGroup = group.filter(it => 
+                          !(!allow3d && it.name === "3D")
+                       && !(isAprilTag && (it.name === "Threshold"))
+                       && !(isAprilTag && (it.name === "Contours"))
+                       && !(!isAprilTag && it.name === "AprilTag")
+                      );
+                  ret[i] = filteredGroup;
+
+                  const end = JSON.stringify(ret[i].map(it => it.name))
+                  console.log("Start " + start + " end " + end);
+                }
+
+                // One last filter to remove empty lists
+                return ret.filter(it => it !== undefined && it.length > 0);
             }
         },
         processingMode: {

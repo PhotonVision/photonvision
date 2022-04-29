@@ -4,16 +4,16 @@ import java.util.Objects;
 
 public class AprilTagDetectorParams {
   public static AprilTagDetectorParams DEFAULT_36H11 = new AprilTagDetectorParams(
-          "tag36h11", 1.0, 0.0, 1, false, false);
+          AprilTagFamily.kTag36h11, 1.0, 0.0, 1, false, false);
 
-  public final String tagFamily;
+  public final AprilTagFamily tagFamily;
   public final double decimate;
   public final double blur;
   public final int threads;
   public final boolean debug;
   public final boolean refineEdges;
 
-  public AprilTagDetectorParams(String tagFamily, double decimate, double blur, int threads, boolean debug,
+  public AprilTagDetectorParams(AprilTagFamily tagFamily, double decimate, double blur, int threads, boolean debug,
                                 boolean refineEdges) {
     this.tagFamily = tagFamily;
     this.decimate = decimate;
@@ -36,4 +36,15 @@ public class AprilTagDetectorParams {
             && refineEdges == that.refineEdges;
   }
 
+  @Override
+  public String toString() {
+    return "AprilTagDetectorParams{" +
+            "tagFamily=" + tagFamily.getNativeName() +
+            ", decimate=" + decimate +
+            ", blur=" + blur +
+            ", threads=" + threads +
+            ", debug=" + debug +
+            ", refineEdges=" + refineEdges +
+            '}';
+  }
 }

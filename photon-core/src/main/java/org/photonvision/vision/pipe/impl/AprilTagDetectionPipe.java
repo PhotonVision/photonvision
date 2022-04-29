@@ -18,13 +18,10 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.List;
-import java.util.Objects;
 
-import com.jogamp.opengl.math.geom.AABBox;
 import org.opencv.core.Mat;
 import org.photonvision.vision.apriltag.AprilTagDetector;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
-import org.photonvision.vision.apriltag.AprilTagJNI;
 import org.photonvision.vision.apriltag.DetectionResult;
 //import apriltag.TagDetection //
 import org.photonvision.vision.pipe.CVPipe;
