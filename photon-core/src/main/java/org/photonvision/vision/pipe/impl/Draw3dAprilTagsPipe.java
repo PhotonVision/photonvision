@@ -36,7 +36,8 @@ import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw3dAprilTagsPipe
-        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw3dAprilTagsPipe.Draw3dAprilTagsParams> {
+        extends MutatingPipe<
+                Pair<Mat, List<TrackedTarget>>, Draw3dAprilTagsPipe.Draw3dAprilTagsParams> {
     Logger logger = new Logger(Draw3dAprilTagsPipe.class, LogGroup.VisionModule);
 
     @Override

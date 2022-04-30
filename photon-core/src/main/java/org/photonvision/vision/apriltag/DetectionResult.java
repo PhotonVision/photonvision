@@ -17,7 +17,7 @@
 
 package org.photonvision.vision.apriltag;
 
-public class DetectionResult{
+public class DetectionResult {
     public int getId() {
         return id;
     }
@@ -73,8 +73,14 @@ public class DetectionResult{
     double centerX, centerY;
     double[] corners;
 
-    public DetectionResult(int id, int hamming, float decision_margin, double[] homography, double centerX,
-            double centerY, double[] corners) {
+    public DetectionResult(
+            int id,
+            int hamming,
+            float decision_margin,
+            double[] homography,
+            double centerX,
+            double centerY,
+            double[] corners) {
         this.id = id;
         this.hamming = hamming;
         this.decision_margin = decision_margin;
@@ -86,8 +92,19 @@ public class DetectionResult{
 
     @Override
     public String toString() {
-        return "ID " + id + " ham " + hamming + " decision margin " + decision_margin
-                + " homography " + homography + " cx " + centerX + " cy " + centerY
-                + " corners " + corners;
+        return "ID "
+                + id
+                + " ham "
+                + hamming
+                + " decision margin "
+                + decision_margin
+                + " homography "
+                + homography
+                + " cx "
+                + centerX
+                + " cy "
+                + centerY
+                + " corners "
+                + corners;
     }
 }

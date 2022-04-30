@@ -26,12 +26,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
-
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.photonvision.vision.pipe.impl.AprilTagDetectionPipe;
-import org.photonvision.vision.pipe.impl.GrayscalePipe;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -45,12 +39,11 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.server.Server;
+import org.photonvision.vision.apriltag.AprilTagJNI;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourShape;
-import org.photonvision.vision.apriltag.AprilTagDetectorParams;
-import org.photonvision.vision.apriltag.AprilTagJNI;
 import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
@@ -305,7 +298,7 @@ public class Main {
         try {
             CameraServerCvJNI.forceLoad();
             PicamJNI.forceLoad();
-            //TestUtils.loadLibraries();
+            // TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);

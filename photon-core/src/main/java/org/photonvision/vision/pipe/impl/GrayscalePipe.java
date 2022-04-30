@@ -33,6 +33,6 @@ public class GrayscalePipe extends CVPipe<Mat, Mat, GrayscalePipe.GrayscaleParam
     }
 
     public static class GrayscaleParams {
-        public GrayscaleParams(){}
+        public GrayscaleParams() {}
     }
 }

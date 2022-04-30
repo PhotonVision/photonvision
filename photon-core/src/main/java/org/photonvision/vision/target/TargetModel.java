@@ -99,16 +99,14 @@ public enum TargetModel implements Releasable {
                     new Point3(Units.inchesToMeters(10), Units.inchesToMeters(0), 0),
                     new Point3(Units.inchesToMeters(10), Units.inchesToMeters(12), 0)),
             Units.inchesToMeters(6)),
-   k200mmAprilTag( //Nominal edge length of 200 mm includes the white border, but solvePNP corners do not
+    k200mmAprilTag( // Nominal edge length of 200 mm includes the white border, but solvePNP corners
+            // do not
             List.of(
                     new Point3(-0.08, -0.08, 0),
                     new Point3(0.08, -0.08, 0),
                     new Point3(0.08, 0.08, 0),
-                    new Point3(-0.08, 0.08, 0)
-                    ),
-        0.16
-    )
-    ;
+                    new Point3(-0.08, 0.08, 0)),
+            0.16);
 
     @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
     @JsonIgnore private MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();

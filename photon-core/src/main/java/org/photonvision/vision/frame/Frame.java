@@ -51,8 +51,7 @@ public class Frame implements Releasable {
         return new Frame(
                 new CVMat(Mat.zeros(new Size(width, height), CvType.CV_8UC3)),
                 MathUtils.wpiNanoTime(),
-                new FrameStaticProperties(width, height, 0, new Rotation2d(), null)
-        );
+                new FrameStaticProperties(width, height, 0, new Rotation2d(), null));
     }
 
     public void copyTo(Frame destFrame) {

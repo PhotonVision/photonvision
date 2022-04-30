@@ -18,14 +18,12 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.List;
-
 import org.opencv.core.Mat;
 import org.photonvision.vision.apriltag.AprilTagDetector;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.apriltag.DetectionResult;
-//import apriltag.TagDetection //
+// import apriltag.TagDetection //
 import org.photonvision.vision.pipe.CVPipe;
-
 
 public class AprilTagDetectionPipe
         extends CVPipe<Mat, List<DetectionResult>, AprilTagDetectorParams> {

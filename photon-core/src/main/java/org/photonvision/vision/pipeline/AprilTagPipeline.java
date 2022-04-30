@@ -17,7 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
-import org.apache.commons.lang3.tuple.Pair;
+import java.util.ArrayList;
+import java.util.List;
 import org.opencv.core.Mat;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
@@ -31,12 +32,8 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @SuppressWarnings("DuplicatedCode")
-public class AprilTagPipeline
-        extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
+public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
@@ -67,12 +64,12 @@ public class AprilTagPipeline
 
         AprilTagDetectorParams aprilTagDetectionParams =
                 new AprilTagDetectorParams(
-                    settings.tagFamily,
-                    settings.decimate,
-                    settings.blur,
-                    settings.threads,
-                    settings.debug,
-                    settings.refineEdges);
+                        settings.tagFamily,
+                        settings.decimate,
+                        settings.blur,
+                        settings.threads,
+                        settings.debug,
+                        settings.refineEdges);
         aprilTagDetectionPipe.setParams(aprilTagDetectionParams);
 
         var solvePNPParams =
@@ -89,11 +86,11 @@ public class AprilTagPipeline
                         settings.streamingFrameDivisor);
         draw2dAprilTagsPipe.setParams(draw2dTargetsParams);
         var draw3dTargetsParams =
-        new Draw3dAprilTagsPipe.Draw3dAprilTagsParams(
-                settings.outputShouldDraw,
-                frameStaticProperties.cameraCalibration,
-                settings.targetModel,
-                settings.streamingFrameDivisor);
+                new Draw3dAprilTagsPipe.Draw3dAprilTagsParams(
+                        settings.outputShouldDraw,
+                        frameStaticProperties.cameraCalibration,
+                        settings.targetModel,
+                        settings.streamingFrameDivisor);
         draw3dAprilTagsPipe.setParams(draw3dTargetsParams);
     }
 
@@ -129,16 +126,15 @@ public class AprilTagPipeline
             // populate the target list
             // Challenge here is that TrackedTarget functions with OpenCV Contour
 
-           TrackedTarget target = new TrackedTarget(detection,
-           new TargetCalculationParameters(false,
-           null,
-           null,
-           null,
-           null, frameStaticProperties));
+            TrackedTarget target =
+                    new TrackedTarget(
+                            detection,
+                            new TargetCalculationParameters(
+                                    false, null, null, null, null, frameStaticProperties));
             targetList.add(target);
         }
 
-        if(settings.solvePNPEnabled) {
+        if (settings.solvePNPEnabled) {
             targetList = solvePNPPipe.run(targetList).output;
         }
 
@@ -147,13 +143,9 @@ public class AprilTagPipeline
 
         var inputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
         // empty output frame
-        var outputFrame = Frame.emptyFrame(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight);
+        var outputFrame =
+                Frame.emptyFrame(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight);
 
-        return new CVPipelineResult(
-                sumPipeNanosElapsed,
-                fps,
-                targetList,
-                outputFrame,
-                inputFrame);
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, outputFrame, inputFrame);
     }
 }

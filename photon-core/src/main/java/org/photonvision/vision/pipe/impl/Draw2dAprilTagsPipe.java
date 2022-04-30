@@ -33,7 +33,8 @@ import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class Draw2dAprilTagsPipe
-        extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw2dAprilTagsPipe.Draw2dAprilTagsParams> {
+        extends MutatingPipe<
+                Pair<Mat, List<TrackedTarget>>, Draw2dAprilTagsPipe.Draw2dAprilTagsParams> {
     MatOfPoint tempMat = new MatOfPoint();
     private static final Logger logger = new Logger(Draw2dAprilTagsPipe.class, LogGroup.General);
 
@@ -64,20 +65,20 @@ public class Draw2dAprilTagsPipe
                 }
 
                 TrackedTarget target = in.getRight().get(i);
-                    // draw approximate polygon
-                    var poly = target.getApproximateBoundingPolygon();
+                // draw approximate polygon
+                var poly = target.getApproximateBoundingPolygon();
 
-                    // fall back on the shape's approx poly dp
-                    if (poly == null && target.getShape() != null)
-                        poly = target.getShape().getContour().getApproxPolyDp();
-                    if (poly != null) {
-                        //                        divideMat2f(poly, pointMat);
-                        var mat = new MatOfPoint();
-                        mat.fromArray(poly.toArray());
-                        divideMat(mat, mat);
-                        Imgproc.drawContours(
-                                in.getLeft(), List.of(mat), -1, ColorHelper.colorToScalar(Color.blue), 2);
-                        mat.release();
+                // fall back on the shape's approx poly dp
+                if (poly == null && target.getShape() != null)
+                    poly = target.getShape().getContour().getApproxPolyDp();
+                if (poly != null) {
+                    //                        divideMat2f(poly, pointMat);
+                    var mat = new MatOfPoint();
+                    mat.fromArray(poly.toArray());
+                    divideMat(mat, mat);
+                    Imgproc.drawContours(
+                            in.getLeft(), List.of(mat), -1, ColorHelper.colorToScalar(Color.blue), 2);
+                    mat.release();
                 }
 
                 if (params.showContourNumber) {
