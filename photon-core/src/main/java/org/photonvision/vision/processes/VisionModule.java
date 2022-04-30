@@ -277,7 +277,7 @@ public class VisionModule {
                         CVPipelineResult osr
                          = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
 
-                        
+
                         consumeFpsLimitedResult(osr);
                     } catch (Exception e) {
                         // Never die

@@ -362,7 +362,7 @@ export default {
                   const start = JSON.stringify(ret[i].map(it => it.name))
 
                   // All the tabs we allow
-                  const filteredGroup = group.filter(it => 
+                  const filteredGroup = group.filter(it =>
                           !(!allow3d && it.name === "3D")
                        && !(isAprilTag && (it.name === "Threshold"))
                        && !(isAprilTag && (it.name === "Contours"))

@@ -44,7 +44,6 @@ public class Draw3dAprilTagsPipe
         if (!params.shouldDraw) return null;
 
         for (var target : in.getRight()) {
-
             // Draw floor and top
             if (target.getCameraRelativeRvec() != null && target.getCameraRelativeTvec() != null) {
                 var tempMat = new MatOfPoint2f();

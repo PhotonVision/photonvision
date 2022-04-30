@@ -189,7 +189,7 @@ public class PipelineManager {
                             new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
                     break;
                 case AprilTag:
-                    currentUserPipeline = 
+                    currentUserPipeline =
                             new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
             }
         }
@@ -401,7 +401,7 @@ public class PipelineManager {
         // But they're different enough it shouldn't be an issue
         var name = getCurrentPipelineSettings().pipelineNickname;
         var newSettings = createSettingsForType(type, name);
-        
+
         var idx = currentPipelineIndex;
         if (idx < 0) {
             logger.error("Cannot replace non-user pipeline!");

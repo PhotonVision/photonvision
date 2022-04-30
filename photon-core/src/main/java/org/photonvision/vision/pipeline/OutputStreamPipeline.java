@@ -127,7 +127,7 @@ public class OutputStreamPipeline {
         if(!(settings instanceof AprilTagPipelineSettings)) {
                 var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
                 sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
-                
+
                 // Draw 3D Targets on input and output if necessary
                 if (settings.solvePNPEnabled
                         || (settings.solvePNPEnabled
@@ -165,7 +165,7 @@ public class OutputStreamPipeline {
         }
 
         // Draw 2D contours on input and output
-        
+
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;

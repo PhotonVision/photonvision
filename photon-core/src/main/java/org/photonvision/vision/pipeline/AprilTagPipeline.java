@@ -37,7 +37,6 @@ import java.util.List;
 @SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline
         extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
-
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
@@ -120,7 +119,7 @@ public class AprilTagPipeline
 
         List<TrackedTarget> targetList;
         CVPipeResult<List<DetectionResult>> tagDetectionPipeResult;
-        
+
         tagDetectionPipeResult = aprilTagDetectionPipe.run(grayscalePipeResult.output);
         grayscalePipeResult.output.release();
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
@@ -130,11 +129,11 @@ public class AprilTagPipeline
             // populate the target list
             // Challenge here is that TrackedTarget functions with OpenCV Contour
 
-           TrackedTarget target = new TrackedTarget(detection, 
-           new TargetCalculationParameters(false, 
-           null, 
-           null, 
-           null, 
+           TrackedTarget target = new TrackedTarget(detection,
+           new TargetCalculationParameters(false,
+           null,
+           null,
+           null,
            null, frameStaticProperties));
             targetList.add(target);
         }

@@ -59,7 +59,6 @@ public class Draw2dAprilTagsPipe
             var shapeColour = ColorHelper.colorToScalar(params.shapeOutlineColour);
 
             for (int i = 0; i < (params.showMultipleTargets ? in.getRight().size() : 1); i++) {
-
                 if (i != 0 && !params.showMultipleTargets) {
                     break;
                 }
