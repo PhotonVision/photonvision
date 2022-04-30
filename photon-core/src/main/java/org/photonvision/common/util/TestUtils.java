@@ -35,7 +35,7 @@ public class TestUtils {
         try {
             CameraServerCvJNI.forceLoad();
 //        PicamJNI.forceLoad();
-            AprilTagJNI.forceLoad();
+            //AprilTagJNI.forceLoad();
         } catch (IOException ex) {
             // ignored
         }
