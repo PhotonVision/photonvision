@@ -17,6 +17,8 @@
 package org.photonvision.vision.target;
 
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
+
 import java.util.HashMap;
 import java.util.List;
 import org.opencv.core.Mat;
@@ -45,6 +47,7 @@ public class TrackedTarget implements Releasable {
     private double m_skew;
 
     private Transform2d m_cameraToTarget = new Transform2d();
+    private Transform3d m_cameraToTarget3d = new Transform3d();
 
     private CVShape m_shape;
 
@@ -184,8 +187,16 @@ public class TrackedTarget implements Releasable {
         return m_cameraToTarget;
     }
 
+    public Transform3d getCameraToTarget3d() {
+        return m_cameraToTarget3d;
+    }
+
     public void setCameraToTarget(Transform2d pose) {
         this.m_cameraToTarget = pose;
+    }
+
+    public void setCameraToTarget3d(Transform3d pose) {
+        this.m_cameraToTarget3d = pose;
     }
 
     public Mat getCameraRelativeTvec() {
@@ -220,17 +231,21 @@ public class TrackedTarget implements Releasable {
         ret.put("yaw", getYaw());
         ret.put("skew", getSkew());
         ret.put("area", getArea());
-        if (getCameraToTarget() != null) {
-            ret.put("pose", transformToMap(getCameraToTarget()));
+        if (getCameraToTarget3d() != null) {
+            ret.put("pose", transformToMap(getCameraToTarget3d()));
         }
         return ret;
     }
 
-    private static HashMap<String, Object> transformToMap(Transform2d transform) {
+    private static HashMap<String, Object> transformToMap(Transform3d transform) {
         var ret = new HashMap<String, Object>();
         ret.put("x", transform.getTranslation().getX());
         ret.put("y", transform.getTranslation().getY());
-        ret.put("rot", transform.getRotation().getDegrees());
+        ret.put("z", transform.getTranslation().getZ());
+        ret.put("qw", transform.getRotation().getQuaternion().getW());
+        ret.put("qx", transform.getRotation().getQuaternion().getX());
+        ret.put("qy", transform.getRotation().getQuaternion().getY());
+        ret.put("qz", transform.getRotation().getQuaternion().getZ());
         return ret;
     }
 

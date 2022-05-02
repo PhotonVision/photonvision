@@ -255,6 +255,10 @@ public class TestUtils {
         return getCoeffs(LIFECAM_480P_CAL_FILE, testMode);
     }
 
+    public static CameraCalibrationCoefficients getLaptop() {
+        return getCoeffs("laptop.json", true);
+    }
+
     private static int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {

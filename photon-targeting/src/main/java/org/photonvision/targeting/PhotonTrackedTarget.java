@@ -17,33 +17,38 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Quaternion;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
+import org.photonvision.common.dataflow.structures.Packet;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import org.photonvision.common.dataflow.structures.Packet;
 
 public class PhotonTrackedTarget {
-    public static final int PACK_SIZE_BYTES = Double.BYTES * (7 + 2 * 4);
+    public static final int PACK_SIZE_BYTES = Double.BYTES * (4 + 7 + 2 * 4);
 
     private double yaw;
     private double pitch;
     private double area;
     private double skew;
-    private Transform2d cameraToTarget = new Transform2d();
+    private Transform3d cameraToTarget = new Transform3d();
     private List<TargetCorner> targetCorners;
 
-    public PhotonTrackedTarget() {}
+    public PhotonTrackedTarget() {
+    }
 
-    /** Construct a tracked target, given exactly 4 corners */
+    /**
+     * Construct a tracked target, given exactly 4 corners
+     */
     public PhotonTrackedTarget(
             double yaw,
             double pitch,
             double area,
             double skew,
-            Transform2d pose,
+            Transform3d pose,
             List<TargetCorner> corners) {
         assert corners.size() == 4;
         this.yaw = yaw;
@@ -78,7 +83,7 @@ public class PhotonTrackedTarget {
         return targetCorners;
     }
 
-    public Transform2d getCameraToTarget() {
+    public Transform3d getCameraToTarget() {
         return cameraToTarget;
     }
 
@@ -113,7 +118,13 @@ public class PhotonTrackedTarget {
 
         double x = packet.decodeDouble();
         double y = packet.decodeDouble();
-        double r = packet.decodeDouble();
+        double z = packet.decodeDouble();
+        var translation = new Translation3d(x, y, z);
+        double w = packet.decodeDouble();
+        x = packet.decodeDouble();
+        y = packet.decodeDouble();
+        z = packet.decodeDouble();
+        var rotation = new Rotation3d(new Quaternion(w, x, y, z));
 
         this.targetCorners = new ArrayList<>(4);
         for (int i = 0; i < 4; i++) {
@@ -122,7 +133,7 @@ public class PhotonTrackedTarget {
             targetCorners.add(new TargetCorner(cx, cy));
         }
 
-        this.cameraToTarget = new Transform2d(new Translation2d(x, y), Rotation2d.fromDegrees(r));
+        this.cameraToTarget = new Transform3d(translation, rotation);
 
         return packet;
     }
@@ -140,7 +151,11 @@ public class PhotonTrackedTarget {
         packet.encode(skew);
         packet.encode(cameraToTarget.getTranslation().getX());
         packet.encode(cameraToTarget.getTranslation().getY());
-        packet.encode(cameraToTarget.getRotation().getDegrees());
+        packet.encode(cameraToTarget.getTranslation().getZ());
+        packet.encode(cameraToTarget.getRotation().getQuaternion().getW());
+        packet.encode(cameraToTarget.getRotation().getQuaternion().getX());
+        packet.encode(cameraToTarget.getRotation().getQuaternion().getY());
+        packet.encode(cameraToTarget.getRotation().getQuaternion().getZ());
 
         for (int i = 0; i < 4; i++) {
             packet.encode(targetCorners.get(i).x);

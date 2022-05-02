@@ -124,33 +124,38 @@ public class Main {
                             .map(
                                     p -> {
                                         try {
-                                            var camConf =
-                                                    ConfigManager.getInstance()
-                                                            .getConfig()
-                                                            .getCameraConfigurations()
-                                                            .get(p.getFileName().toString());
-                                            if (camConf == null) {
+//                                            var camConf =
+//                                                    ConfigManager.getInstance()
+//                                                            .getConfig()
+//                                                            .getCameraConfigurations()
+//                                                            .get(p.getFileName().toString());
+
+//                                            if (camConf == null && false) {
+                                            CameraConfiguration camConf;
+                                            if (true) {
                                                 camConf =
                                                         new CameraConfiguration(
                                                                 p.getFileName().toString(), p.toAbsolutePath().toString());
                                                 camConf.FOV = TestUtils.WPI2019Image.FOV; // Good guess?
+                                                camConf.addCalibration(TestUtils.get2020LifeCamCoeffs(false));
 
-                                                var pipeSettings = new ReflectivePipelineSettings();
+                                                var pipeSettings = new AprilTagPipelineSettings();
                                                 pipeSettings.pipelineNickname = p.getFileName().toString();
                                                 pipeSettings.outputShowMultipleTargets = true;
                                                 pipeSettings.inputShouldShow = true;
-                                                pipeSettings.outputShouldShow = true;
+                                                pipeSettings.outputShouldShow = false;
+                                                pipeSettings.solvePNPEnabled = true;
 
                                                 var psList = new ArrayList<CVPipelineSettings>();
-                                                psList.add(reflective);
-                                                psList.add(shape);
+//                                                psList.add(reflective);
+//                                                psList.add(shape);
                                                 psList.add(aprilTag);
                                                 camConf.pipelineSettings = psList;
                                             }
 
                                             return new FileVisionSource(camConf);
                                         } catch (Exception e) {
-                                            logger.error("Couldn't load image " + p.getFileName().toString());
+                                            logger.error("Couldn't load image " + p.getFileName().toString(), e);
                                             return null;
                                         }
                                     })
@@ -269,10 +274,18 @@ public class Main {
     public static void main(String[] args) {
         try {
             CameraServerCvJNI.forceLoad();
-            PicamJNI.forceLoad();
-            AprilTagJNI.forceLoad();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
+            logger.error("Failed to load native libraries!", e);
+        }
+        try {
+            AprilTagJNI.forceLoad();
+        } catch (IOException e) {
+            logger.error("Failed to load native libraries!", e);
+        }
+        try {
+            PicamJNI.forceLoad();
+        } catch (IOException e) {
             logger.error("Failed to load native libraries!", e);
         }
 

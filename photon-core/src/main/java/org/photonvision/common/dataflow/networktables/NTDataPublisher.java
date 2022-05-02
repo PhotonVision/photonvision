@@ -224,7 +224,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                             t.getPitch(),
                             t.getArea(),
                             t.getSkew(),
-                            t.getCameraToTarget(),
+                            t.getCameraToTarget3d(),
                             cornerList));
         }
         return ret;
