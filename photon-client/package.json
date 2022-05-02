@@ -16,6 +16,7 @@
     "jspdf": "^2.4.0",
     "material-design-icons-iconfont": "^5.0.1",
     "msgpack5": "^4.2.1",
+    "three-full": "^28.0.2",
     "vue": "^2.6.12",
     "vue-axios": "^2.1.5",
     "vue-native-websocket": "git+https://github.com/PhotonVision/vue-native-websocket.git#7a32791",

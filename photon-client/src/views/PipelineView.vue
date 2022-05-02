@@ -329,7 +329,7 @@ export default {
                 };
 
                 // If not in 3d, name "3D" is illegal
-                const allow3d = this.$store.getters.currentPipelineSettings.solvePNPEnabled;
+                const allow3d = this.$store.getters.currentPipelineSettings.solvePNPEnabled || true;
                 // If in apriltag, "Threshold" and "Contours" are illegal -- otherwise "AprilTag" is
                 const isAprilTag = (this.$store.getters.currentPipelineSettings.pipelineType - 2) === 2;
 
