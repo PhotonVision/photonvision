@@ -24,10 +24,12 @@ import {
   BoxGeometry,
   Mesh,
   MeshNormalMaterial,
-  PerspectiveCamera, Quaternion,
+  PerspectiveCamera,
+  Quaternion,
   Scene,
   TrackballControls,
   Vector3,
+    Color,
   WebGLRenderer
 } from "three-full";
 
@@ -59,22 +61,56 @@ export default {
       this.scene.remove(...this.cubes)
       this.cubes = []
 
-      console.log(this.targets)
-
       for (const target of this.targets) {
-        const geometry = new BoxGeometry(0.5, 0.5, 0.5 / 5);
+        const geometry = new BoxGeometry(0.2, 0.2, 0.3 / 5);
         const material = new MeshNormalMaterial();
-        const cube = new Mesh(geometry, material);
-        cube.position.set(target.pose.x, target.pose.y, target.pose.z)
-        cube.rotation.setFromQuaternion(new Quaternion(
+        console.log(target.pose)
+        let quat = (new Quaternion(
             target.pose.qx,
             target.pose.qy,
             target.pose.qz,
             target.pose.qw,
         ))
+        const cube = new Mesh(geometry, material);
+        cube.position.set(target.pose.x, target.pose.y, target.pose.z)
+        cube.rotation.setFromQuaternion(quat);
         this.cubes.push(cube)
+
+        let arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
+            1, // length
+            0xff0000,
+            0.2,
+            0.2,
+        ));
+        arrow.rotation.setFromQuaternion(quat)
+        arrow.rotateZ(-Math.PI / 2)
+        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
+        this.cubes.push(arrow);
+
+        arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
+            1, // length
+            0x00ff00,
+            0.2,
+            0.2,
+        ));
+        arrow.rotation.setFromQuaternion(quat)
+        // arrow.rotateX(Math.PI / 2)
+        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
+        this.cubes.push(arrow);
+        console.log(this.cubes)
+        arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
+            1, // length
+            0x0000ff,
+            0.2,
+            0.2,
+        ));
+        arrow.setRotationFromQuaternion(quat)
+        arrow.rotateX(Math.PI / 2)
+        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
+        this.cubes.push(arrow);
       }
-      this.scene.add(...this.cubes);
+      if(this.cubes.length > 0)
+        this.scene.add(...this.cubes);
     }
   },
   mounted() {
@@ -87,8 +123,8 @@ export default {
     // document.body.appendChild(renderer.domElement);
     // canvas.appendChild(renderer.dome)
 
-    renderer.setSize(800, 800);
-
+    renderer.setSize(600, 600);
+    scene.background = new Color(0xa9a9a9)
 
     scene.add(new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
         2, // length

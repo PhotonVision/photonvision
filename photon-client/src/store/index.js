@@ -108,7 +108,7 @@ export default new Vuex.Store({
                     skew: 0,
                     area: 0,
                     // 3D only
-                    pose: {x: 1, y: 1, z: 0, qw: 0, qx: 1, qy: 0, qz: 0},
+                    pose: {x: 1, y: 1, z: 0, qw: 1, qx: 0, qy: 0, qz: 0},
                 },
             {
                 // Available in both 2D and 3D
@@ -117,7 +117,7 @@ export default new Vuex.Store({
                 skew: 0,
                 area: 0,
                 // 3D only
-                pose: {x: 2, y: 3, z: 0, qw: 0, qx: 0, qy: 1, qz: 0},
+                pose: {x: 2, y: 3, z: 0, qw: 1, qx: 0, qy: 0, qz: 0},
             }]
         },
         settings: {
