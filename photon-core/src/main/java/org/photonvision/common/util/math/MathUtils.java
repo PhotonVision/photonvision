@@ -156,6 +156,6 @@ public class MathUtils {
 
         return new Pose3d(
                 pose.getTranslation().rotateBy(rotationQuat),
-                pose.getRotation().times(-1).rotateBy(rotationQuat));
+                pose.getRotation().rotateBy(rotationQuat));
     }
 }
