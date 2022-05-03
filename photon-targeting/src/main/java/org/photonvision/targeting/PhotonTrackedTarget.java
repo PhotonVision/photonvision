@@ -27,12 +27,13 @@ import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class PhotonTrackedTarget {
-    public static final int PACK_SIZE_BYTES = Double.BYTES * (4 + 7 + 2 * 4);
+    public static final int PACK_SIZE_BYTES = Double.BYTES * (5 + 7 + 2 * 4);
 
     private double yaw;
     private double pitch;
     private double area;
     private double skew;
+    private int fiducialId;
     private Transform3d cameraToTarget = new Transform3d();
     private List<TargetCorner> targetCorners;
 
@@ -44,6 +45,7 @@ public class PhotonTrackedTarget {
             double pitch,
             double area,
             double skew,
+            int id,
             Transform3d pose,
             List<TargetCorner> corners) {
         assert corners.size() == 4;
@@ -51,6 +53,7 @@ public class PhotonTrackedTarget {
         this.pitch = pitch;
         this.area = area;
         this.skew = skew;
+        this.fiducialId = id;
         this.cameraToTarget = pose;
         this.targetCorners = corners;
     }
@@ -69,6 +72,10 @@ public class PhotonTrackedTarget {
 
     public double getSkew() {
         return skew;
+    }
+
+    public int getFiducialId() {
+        return fiducialId;
     }
 
     /**
@@ -111,6 +118,7 @@ public class PhotonTrackedTarget {
         this.pitch = packet.decodeDouble();
         this.area = packet.decodeDouble();
         this.skew = packet.decodeDouble();
+        this.fiducialId = packet.decodeInt();
 
         double x = packet.decodeDouble();
         double y = packet.decodeDouble();
@@ -145,6 +153,7 @@ public class PhotonTrackedTarget {
         packet.encode(pitch);
         packet.encode(area);
         packet.encode(skew);
+        packet.encode(fiducialId);
         packet.encode(cameraToTarget.getTranslation().getX());
         packet.encode(cameraToTarget.getTranslation().getY());
         packet.encode(cameraToTarget.getTranslation().getZ());
