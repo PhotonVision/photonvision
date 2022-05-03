@@ -113,59 +113,58 @@ public class OutputStreamPipeline {
         sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
 
         // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
-        if(outMat.channels() == 1) {
-                var outputMatPipeResult = outputMatPipe.run(outMat);
-                sumPipeNanosElapsed += pipeProfileNanos[2] = outputMatPipeResult.nanosElapsed;
+        if (outMat.channels() == 1) {
+            var outputMatPipeResult = outputMatPipe.run(outMat);
+            sumPipeNanosElapsed += pipeProfileNanos[2] = outputMatPipeResult.nanosElapsed;
         } else {
-                pipeProfileNanos[2] = 0;
+            pipeProfileNanos[2] = 0;
         }
 
         // Draw 2D Crosshair on input and output
         var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
         sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
-        if(!(settings instanceof AprilTagPipelineSettings)) {
-                var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
-                
-                // Draw 3D Targets on input and output if necessary
-                if (settings.solvePNPEnabled
-                        || (settings.solvePNPEnabled
-                                && settings instanceof ColoredShapePipelineSettings
-                                && ((ColoredShapePipelineSettings) settings).contourShape == ContourShape.Circle)) {
+        if (!(settings instanceof AprilTagPipelineSettings)) {
+            var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
+            sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
+
+            // Draw 3D Targets on input and output if necessary
+            if (settings.solvePNPEnabled
+                    || (settings.solvePNPEnabled
+                            && settings instanceof ColoredShapePipelineSettings
+                            && ((ColoredShapePipelineSettings) settings).contourShape == ContourShape.Circle)) {
                 var drawOnInputResult = draw3dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
                 sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
 
                 var drawOnOutputResult = draw3dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
                 sumPipeNanosElapsed += pipeProfileNanos[8] = drawOnOutputResult.nanosElapsed;
-                } else {
-                        pipeProfileNanos[7] = 0;
-                        pipeProfileNanos[8] = 0;
-                }
-
-                var draw2dTargetsOnInput = draw2dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
-
-                var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
-        } else {
-                pipeProfileNanos[4] = 0;
-                if (settings.solvePNPEnabled) {
-                        var drawOnInputResult = draw3dAprilTagsPipe.run(Pair.of(inMat, targetsToDraw));
-                        sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
-                } else {
-                        pipeProfileNanos[7] = 0;
-                }
+            } else {
+                pipeProfileNanos[7] = 0;
                 pipeProfileNanos[8] = 0;
+            }
 
-                var draw2dTargetsOnInput = draw2dAprilTagsPipe.run(Pair.of(inMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
+            var draw2dTargetsOnInput = draw2dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
+            sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
 
-                pipeProfileNanos[6] = 0;
+            var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
+            sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
+        } else {
+            pipeProfileNanos[4] = 0;
+            if (settings.solvePNPEnabled) {
+                var drawOnInputResult = draw3dAprilTagsPipe.run(Pair.of(inMat, targetsToDraw));
+                sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
+            } else {
+                pipeProfileNanos[7] = 0;
+            }
+            pipeProfileNanos[8] = 0;
+
+            var draw2dTargetsOnInput = draw2dAprilTagsPipe.run(Pair.of(inMat, targetsToDraw));
+            sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
+
+            pipeProfileNanos[6] = 0;
         }
 
         // Draw 2D contours on input and output
-        
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;

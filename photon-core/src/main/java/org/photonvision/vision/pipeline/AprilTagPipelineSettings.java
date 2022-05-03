@@ -17,17 +17,13 @@
 
 package org.photonvision.vision.pipeline;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonTypeName;
-
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.target.TargetModel;
+import java.util.Objects;
 import org.photonvision.vision.apriltag.AprilTagFamily;
+import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
-
     public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
     public double decimate = 1.0;
     public double blur = 0;
@@ -35,7 +31,6 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public boolean debug = false;
     public boolean refineEdges = true;
     // 3d settings
-
 
     public AprilTagPipelineSettings() {
         super();
@@ -53,10 +48,10 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         if (!super.equals(o)) return false;
         AprilTagPipelineSettings that = (AprilTagPipelineSettings) o;
         return Objects.equals(tagFamily, that.tagFamily)
-            && Double.compare(decimate, that.decimate) == 0
-            && Double.compare(blur, that.blur) == 0
-            && threads == that.threads
-            && debug == that.debug
-            && refineEdges == that.refineEdges;
+                && Double.compare(decimate, that.decimate) == 0
+                && Double.compare(blur, that.blur) == 0
+                && threads == that.threads
+                && debug == that.debug
+                && refineEdges == that.refineEdges;
     }
 }

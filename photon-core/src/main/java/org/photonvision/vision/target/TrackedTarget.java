@@ -67,15 +67,20 @@ public class TrackedTarget implements Releasable {
         m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
         m_robotOffsetPoint = new Point();
 
-        m_pitch = TargetCalculations.calculatePitch( result.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
-        m_yaw = TargetCalculations.calculateYaw( result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
+        m_pitch =
+                TargetCalculations.calculatePitch(
+                        result.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
+        m_yaw =
+                TargetCalculations.calculateYaw(
+                        result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
         double[] corners = result.getCorners();
-        Point[] cornerPoints = new Point[] {
-            new Point(corners[0], corners[1]),
-            new Point(corners[2], corners[3]),
-            new Point(corners[4], corners[5]),
-            new Point(corners[6], corners[7])
-        };
+        Point[] cornerPoints =
+                new Point[] {
+                    new Point(corners[0], corners[1]),
+                    new Point(corners[2], corners[3]),
+                    new Point(corners[4], corners[5]),
+                    new Point(corners[6], corners[7])
+                };
         m_targetCorners = List.of(cornerPoints);
         MatOfPoint contourMat = new MatOfPoint(cornerPoints);
         m_approximateBoundingPolygon = new MatOfPoint2f(cornerPoints);
@@ -84,8 +89,8 @@ public class TrackedTarget implements Releasable {
         m_fiducialId = result.getId();
         m_shape = null;
         m_skew = 0;
-
     }
+
     public void setFiducialId(int id) {
         m_fiducialId = id;
     }
