@@ -103,12 +103,6 @@ public class SolvePNPPipe
         target.setCameraToTarget(targetPose);
     }
 
-    Mat rotationMatrix = new Mat();
-    Mat inverseRotationMatrix = new Mat();
-    Mat pzeroWorld = new Mat();
-    Mat kMat = new Mat();
-    Mat scaledTvec;
-
     private Transform3d calculate3dTransform(Mat tvec, Mat rvec) {
         Translation3d translation = new Translation3d(
                 tvec.get(0, 0)[0],
@@ -125,13 +119,15 @@ public class SolvePNPPipe
         );
 
         var ocvPose = new Pose3d(translation, rotation);
+        {
+            var ret = ocvPose;
+            System.out.println(ret.getTranslation() + String.format(" Angle: X %.2f Y %.2f Z %.2f",
+                    ret.getRotation().getX(), ret.getRotation().getY(), ret.getRotation().getZ()));
+        }
 
         // SolvePNP is in EDN, we want NWU (north-west-up)
         var NWU = MathUtils.EDNtoNWU(ocvPose);
         var ret = new Transform3d(NWU.getTranslation(), NWU.getRotation());
-
-        System.out.println(ret.getTranslation() + String.format(" Angle: X %.2f Y %.2f Z %.2f",
-                ret.getRotation().getX(), ret.getRotation().getY(), ret.getRotation().getZ()));
 
         return ret;
     }
