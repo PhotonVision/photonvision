@@ -169,6 +169,7 @@ public class SimVisionSystem {
                                         pitchDegrees,
                                         area,
                                         0.0,
+                                        -1, // TODO fiducial ID
                                         new Transform3d(),
                                         List.of(
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0),
