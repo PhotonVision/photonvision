@@ -62,7 +62,7 @@ export default {
       console.log(this.targets)
 
       for (const target of this.targets) {
-        const geometry = new BoxGeometry();
+        const geometry = new BoxGeometry(0.5, 0.5, 0.5 / 5);
         const material = new MeshNormalMaterial();
         const cube = new Mesh(geometry, material);
         cube.position.set(target.pose.x, target.pose.y, target.pose.z)
