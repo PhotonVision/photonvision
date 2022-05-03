@@ -190,7 +190,7 @@ public class ColoredShapePipeline
         var draw3dTargetsParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
                         settings.outputShouldDraw,
-                        true, true, frameStaticProperties.cameraCalibration,
+                        frameStaticProperties.cameraCalibration,
                         settings.targetModel,
                         settings.streamingFrameDivisor);
         draw3dTargetsPipe.setParams(draw3dTargetsParams);

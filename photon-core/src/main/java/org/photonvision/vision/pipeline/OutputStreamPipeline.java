@@ -80,7 +80,7 @@ public class OutputStreamPipeline {
         var draw3dTargetsParams =
                 new Draw3dTargetsPipe.Draw3dContoursParams(
                         settings.outputShouldDraw,
-                        true, true, frameStaticProperties.cameraCalibration,
+                        frameStaticProperties.cameraCalibration,
                         settings.targetModel,
                         settings.streamingFrameDivisor);
         draw3dTargetsPipe.setParams(draw3dTargetsParams);
@@ -149,19 +149,13 @@ public class OutputStreamPipeline {
             var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
             sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
         } else {
-            pipeProfileNanos[4] = 0;
             if (settings.solvePNPEnabled) {
                 var drawOnInputResult = draw3dAprilTagsPipe.run(Pair.of(inMat, targetsToDraw));
                 sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
             } else {
-                pipeProfileNanos[7] = 0;
+                var draw2dTargetsOnInput = draw2dAprilTagsPipe.run(Pair.of(inMat, targetsToDraw));
+                sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
             }
-            pipeProfileNanos[8] = 0;
-
-            var draw2dTargetsOnInput = draw2dAprilTagsPipe.run(Pair.of(inMat, targetsToDraw));
-            sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
-
-            pipeProfileNanos[6] = 0;
         }
 
         // Draw 2D contours on input and output

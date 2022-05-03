@@ -19,6 +19,8 @@ package org.photonvision.vision.pipe.impl;
 
 import org.photonvision.vision.frame.FrameDivisor;
 
+import java.awt.*;
+
 public class Draw2dAprilTagsPipe
         extends Draw2dTargetsPipe {
     public static class Draw2dAprilTagsParams extends Draw2dTargetsPipe.Draw2dTargetsParams {
@@ -26,6 +28,8 @@ public class Draw2dAprilTagsPipe
             super(shouldDraw, showMultipleTargets, divisor);
             // We want to show the polygon, not the rotated box
             this.showRotatedBox = false;
+            this.showMaximumBox = false;
+            this.rotatedBoxColor = Color.RED;
         }
     }
 }

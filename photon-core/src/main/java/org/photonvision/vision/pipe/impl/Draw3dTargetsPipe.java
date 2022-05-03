@@ -46,7 +46,8 @@ public class Draw3dTargetsPipe
 
         for (var target : in.getRight()) {
             // draw convex hull
-            if (params.shouldDrawHull) {
+            if (params.shouldDrawHull(target)) {
+                System.out.println("Hull");
                 var pointMat = new MatOfPoint();
                 divideMat2f(target.m_mainContour.getConvexHull(), pointMat);
                 if (pointMat.size().empty()) {
@@ -172,25 +173,25 @@ public class Draw3dTargetsPipe
         public Color color = Color.RED;
 
         public final boolean shouldDraw;
-        public final boolean shouldDrawHull;
-        public final boolean shouldDrawBox;
+        public boolean shouldDrawHull = true;
+        public boolean shouldDrawBox = true;
         public final TargetModel targetModel;
         public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
         public final FrameDivisor divisor;
 
         public Draw3dContoursParams(
                 boolean shouldDraw,
-                boolean shouldDrawHull,
-                boolean shouldDrawBox,
                 CameraCalibrationCoefficients cameraCalibrationCoefficients,
                 TargetModel targetModel,
                 FrameDivisor divisor) {
             this.shouldDraw = shouldDraw;
-            this.shouldDrawHull = shouldDrawHull;
-            this.shouldDrawBox = shouldDrawBox;
             this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
             this.targetModel = targetModel;
             this.divisor = divisor;
+        }
+
+        public boolean shouldDrawHull(TrackedTarget t) {
+            return !t.isFiducial() && this.shouldDrawHull;
         }
     }
 }

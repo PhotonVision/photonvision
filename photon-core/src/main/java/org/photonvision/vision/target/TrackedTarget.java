@@ -254,6 +254,10 @@ public class TrackedTarget implements Releasable {
         return ret;
     }
 
+    public boolean isFiducial() {
+        return this.m_fiducialId >= 0;
+    }
+
     public static class TargetCalculationParameters {
         // TargetOffset calculation values
         final boolean isLandscape;

@@ -38,8 +38,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
     private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
-    private final Draw2dAprilTagsPipe draw2dAprilTagsPipe = new Draw2dAprilTagsPipe();
-    private final Draw3dAprilTagsPipe draw3dAprilTagsPipe = new Draw3dAprilTagsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     public AprilTagPipeline() {
@@ -78,20 +76,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         frameStaticProperties.cameraPitch,
                         settings.targetModel);
         solvePNPPipe.setParams(solvePNPParams);
-
-        var draw2dTargetsParams =
-                new Draw2dAprilTagsPipe.Draw2dAprilTagsParams(
-                        settings.outputShouldDraw,
-                        settings.outputShowMultipleTargets,
-                        settings.streamingFrameDivisor);
-        draw2dAprilTagsPipe.setParams(draw2dTargetsParams);
-        var draw3dTargetsParams =
-                new Draw3dAprilTagsPipe.Draw3dAprilTagsParams(
-                        settings.outputShouldDraw,
-                        frameStaticProperties.cameraCalibration,
-                        settings.targetModel,
-                        settings.streamingFrameDivisor);
-        draw3dAprilTagsPipe.setParams(draw3dTargetsParams);
     }
 
     @Override
