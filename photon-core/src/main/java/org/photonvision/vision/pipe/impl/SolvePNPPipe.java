@@ -23,6 +23,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import java.util.List;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -35,8 +36,6 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-
-import java.util.List;
 
 public class SolvePNPPipe
         extends CVPipe<List<TrackedTarget>, List<TrackedTarget>, SolvePNPPipe.SolvePNPPipeParams> {
@@ -99,30 +98,27 @@ public class SolvePNPPipe
         target.setCameraToTarget3d(calculate3dTransform(tVec, rVec));
 
         // Pose in the flat, top down field view
-        targetPose = correctLocationForCameraPitch(target.getCameraToTarget3d(), params.cameraPitchAngle);
+        targetPose =
+                correctLocationForCameraPitch(target.getCameraToTarget3d(), params.cameraPitchAngle);
         target.setCameraToTarget(targetPose);
     }
 
     private Transform3d calculate3dTransform(Mat tvec, Mat rvec) {
-        Translation3d translation = new Translation3d(
-                tvec.get(0, 0)[0],
-                tvec.get(1, 0)[0],
-                tvec.get(2, 0)[0]
-        );
-        Rotation3d rotation = new Rotation3d(
-                VecBuilder.fill(
-                        rvec.get(0, 0)[0],
-                        rvec.get(1, 0)[0],
-                        rvec.get(2, 0)[0]
-                ),
-                Core.norm(rvec)
-        );
+        Translation3d translation =
+                new Translation3d(tvec.get(0, 0)[0], tvec.get(1, 0)[0], tvec.get(2, 0)[0]);
+        Rotation3d rotation =
+                new Rotation3d(
+                        VecBuilder.fill(rvec.get(0, 0)[0], rvec.get(1, 0)[0], rvec.get(2, 0)[0]),
+                        Core.norm(rvec));
 
         var ocvPose = new Pose3d(translation, rotation);
         {
             var ret = ocvPose;
-            System.out.println(ret.getTranslation() + String.format(" Angle: X %.2f Y %.2f Z %.2f",
-                    ret.getRotation().getX(), ret.getRotation().getY(), ret.getRotation().getZ()));
+            System.out.println(
+                    ret.getTranslation()
+                            + String.format(
+                                    " Angle: X %.2f Y %.2f Z %.2f",
+                                    ret.getRotation().getX(), ret.getRotation().getY(), ret.getRotation().getZ()));
         }
 
         // SolvePNP is in EDN, we want NWU (north-west-up)
@@ -138,21 +134,21 @@ public class SolvePNPPipe
 
         // We want the pose as seen by a person at the same pose as the camera, but facing
         // forward instead of pitched up
-        Pose3d poseRotatedByCamAngle = pose.transformBy(new Transform3d(
-                new Translation3d(),
-                new Rotation3d(0, -cameraPitch.getRadians(), 0)
-        ));
+        Pose3d poseRotatedByCamAngle =
+                pose.transformBy(
+                        new Transform3d(new Translation3d(), new Rotation3d(0, -cameraPitch.getRadians(), 0)));
 
         // The pose2d from the flattened coordinate system is just the X/Y components of the 3d pose
         // and the rotation about the Z axis (which is up in the camera/field frame)
-        return new Transform2d(new Translation2d(poseRotatedByCamAngle.getX(), poseRotatedByCamAngle.getY()),
+        return new Transform2d(
+                new Translation2d(poseRotatedByCamAngle.getX(), poseRotatedByCamAngle.getY()),
                 new Rotation2d(poseRotatedByCamAngle.getRotation().getZ()));
     }
 
     /**
      * Element-wise scale a matrix by a given factor
      *
-     * @param src    the source matrix
+     * @param src the source matrix
      * @param factor by how much to scale each element
      * @return the scaled matrix
      */

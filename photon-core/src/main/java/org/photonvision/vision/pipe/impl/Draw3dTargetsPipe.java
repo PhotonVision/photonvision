@@ -17,6 +17,8 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import java.awt.*;
+import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
@@ -32,9 +34,6 @@ import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.MutatingPipe;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
-
-import java.awt.*;
-import java.util.List;
 
 public class Draw3dTargetsPipe
         extends MutatingPipe<Pair<Mat, List<TrackedTarget>>, Draw3dTargetsPipe.Draw3dContoursParams> {
@@ -70,7 +69,9 @@ public class Draw3dTargetsPipe
             }
 
             // Draw floor and top
-            if (target.getCameraRelativeRvec() != null && target.getCameraRelativeTvec() != null && params.shouldDrawBox) {
+            if (target.getCameraRelativeRvec() != null
+                    && target.getCameraRelativeTvec() != null
+                    && params.shouldDrawBox) {
                 var tempMat = new MatOfPoint2f();
                 var jac = new Mat();
                 var bottomModel = params.targetModel.getVisualizationBoxBottom();
@@ -158,9 +159,7 @@ public class Draw3dTargetsPipe
         dst.fromArray(pointArray);
     }
 
-    /**
-     * Scale a given point list by the current frame divisor. the point list is mutated!
-     */
+    /** Scale a given point list by the current frame divisor. the point list is mutated! */
     private void dividePointList(List<Point> points) {
         for (var p : points) {
             p.x = p.x / (double) params.divisor.value;

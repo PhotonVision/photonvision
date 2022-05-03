@@ -18,7 +18,6 @@ package org.photonvision.vision.target;
 
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-
 import java.util.HashMap;
 import java.util.List;
 import org.opencv.core.Mat;

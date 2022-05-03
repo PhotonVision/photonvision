@@ -117,13 +117,16 @@ public class Main {
                             .map(
                                     p -> {
                                         try {
-//                                            var camConf =
-//                                                    ConfigManager.getInstance()
-//                                                            .getConfig()
-//                                                            .getCameraConfigurations()
-//                                                            .get(p.getFileName().toString());
+                                            //                                            var camConf =
+                                            //
+                                            // ConfigManager.getInstance()
+                                            //                                                            .getConfig()
+                                            //
+                                            // .getCameraConfigurations()
+                                            //
+                                            // .get(p.getFileName().toString());
 
-//                                            if (camConf == null && false) {
+                                            //                                            if (camConf == null && false) {
                                             CameraConfiguration camConf;
                                             if (true) {
                                                 camConf =
@@ -140,8 +143,8 @@ public class Main {
                                                 pipeSettings.solvePNPEnabled = true;
 
                                                 var psList = new ArrayList<CVPipelineSettings>();
-//                                                psList.add(reflective);
-//                                                psList.add(shape);
+                                                //                                                psList.add(reflective);
+                                                //                                                psList.add(shape);
                                                 psList.add(aprilTag);
                                                 camConf.pipelineSettings = psList;
                                             }

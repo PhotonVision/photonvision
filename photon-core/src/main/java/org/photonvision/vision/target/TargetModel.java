@@ -20,12 +20,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.util.Units;
+import java.util.ArrayList;
+import java.util.List;
 import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point3;
 import org.photonvision.vision.opencv.Releasable;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public enum TargetModel implements Releasable {
     k2020HighGoalOuter(
@@ -109,12 +108,9 @@ public enum TargetModel implements Releasable {
                     new Point3(-0.08, -0.08, 0)),
             -0.16);
 
-    @JsonIgnore
-    private MatOfPoint3f realWorldTargetCoordinates;
-    @JsonIgnore
-    private MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
-    @JsonIgnore
-    private MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
+    @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
+    @JsonIgnore private MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();
+    @JsonIgnore private MatOfPoint3f visualizationBoxTop = new MatOfPoint3f();
 
     @JsonProperty("realWorldCoordinatesArray")
     private List<Point3> realWorldCoordinatesArray;
@@ -122,8 +118,7 @@ public enum TargetModel implements Releasable {
     @JsonProperty("boxHeight")
     private double boxHeight;
 
-    TargetModel() {
-    }
+    TargetModel() {}
 
     TargetModel(MatOfPoint3f realWorldTargetCoordinates, double boxHeight) {
         this.realWorldTargetCoordinates = realWorldTargetCoordinates;

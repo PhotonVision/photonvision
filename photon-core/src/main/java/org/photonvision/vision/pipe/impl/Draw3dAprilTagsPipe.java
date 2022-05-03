@@ -21,10 +21,13 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.target.TargetModel;
 
-public class Draw3dAprilTagsPipe
-        extends Draw3dTargetsPipe {
+public class Draw3dAprilTagsPipe extends Draw3dTargetsPipe {
     public static class Draw3dAprilTagsParams extends Draw3dContoursParams {
-        public Draw3dAprilTagsParams(boolean shouldDraw, CameraCalibrationCoefficients cameraCalibrationCoefficients, TargetModel targetModel, FrameDivisor divisor) {
+        public Draw3dAprilTagsParams(
+                boolean shouldDraw,
+                CameraCalibrationCoefficients cameraCalibrationCoefficients,
+                TargetModel targetModel,
+                FrameDivisor divisor) {
             super(shouldDraw, cameraCalibrationCoefficients, targetModel, divisor);
             this.shouldDrawHull = false;
         }

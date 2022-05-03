@@ -88,8 +88,10 @@ public class DrivetrainPoseEstimator {
         if (res.hasTargets()) {
             double imageCaptureTime = Timer.getFPGATimestamp() - res.getLatencyMillis();
             Transform3d camToTargetTrans = res.getBestTarget().getCameraToTarget();
-            var transform = new Transform2d(camToTargetTrans.getTranslation().toTranslation2d(),
-                    camToTargetTrans.getRotation().toRotation2d());
+            var transform =
+                    new Transform2d(
+                            camToTargetTrans.getTranslation().toTranslation2d(),
+                            camToTargetTrans.getRotation().toRotation2d());
             Pose2d camPose = Constants.kFarTargetPose.transformBy(transform.inverse());
             m_poseEstimator.addVisionMeasurement(
                     camPose.transformBy(Constants.kCameraToRobot), imageCaptureTime);

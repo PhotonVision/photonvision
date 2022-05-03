@@ -19,13 +19,12 @@ package org.photonvision.common.util.math;
 
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Quaternion;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.Arrays;
 import java.util.List;
-
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Quaternion;
 
 public class MathUtils {
     MathUtils() {}
@@ -142,10 +141,7 @@ public class MathUtils {
         // old basis vectors mapped to its representation in the new basis.
         //
         // E (+X) -> N (-Y), D (+Y) -> W (-Z), N (+Z) -> U (+X)
-        var R = new MatBuilder<>(Nat.N3(), Nat.N3()).fill(
-                0, 0, 1,
-                -1, 0, 0,
-                0, -1, 0);
+        var R = new MatBuilder<>(Nat.N3(), Nat.N3()).fill(0, 0, 1, -1, 0, 0, 0, -1, 0);
 
         // https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
         double w = Math.sqrt(1.0 + R.get(0, 0) + R.get(1, 1) + R.get(2, 2)) / 2.0;
@@ -155,7 +151,6 @@ public class MathUtils {
         var rotationQuat = new Rotation3d(new Quaternion(w, x, y, z));
 
         return new Pose3d(
-                pose.getTranslation().rotateBy(rotationQuat),
-                pose.getRotation().rotateBy(rotationQuat));
+                pose.getTranslation().rotateBy(rotationQuat), pose.getRotation().rotateBy(rotationQuat));
     }
 }

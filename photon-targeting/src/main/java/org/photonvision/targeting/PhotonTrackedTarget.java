@@ -21,11 +21,10 @@ import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import org.photonvision.common.dataflow.structures.Packet;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import org.photonvision.common.dataflow.structures.Packet;
 
 public class PhotonTrackedTarget {
     public static final int PACK_SIZE_BYTES = Double.BYTES * (4 + 7 + 2 * 4);
@@ -37,12 +36,9 @@ public class PhotonTrackedTarget {
     private Transform3d cameraToTarget = new Transform3d();
     private List<TargetCorner> targetCorners;
 
-    public PhotonTrackedTarget() {
-    }
+    public PhotonTrackedTarget() {}
 
-    /**
-     * Construct a tracked target, given exactly 4 corners
-     */
+    /** Construct a tracked target, given exactly 4 corners */
     public PhotonTrackedTarget(
             double yaw,
             double pitch,

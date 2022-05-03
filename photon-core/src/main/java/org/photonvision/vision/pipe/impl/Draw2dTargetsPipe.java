@@ -101,7 +101,11 @@ public class Draw2dTargetsPipe
                         mat.fromArray(poly.toArray());
                         divideMat(mat, mat);
                         Imgproc.drawContours(
-                                in.getLeft(), List.of(mat), -1, ColorHelper.colorToScalar(params.rotatedBoxColor), 2);
+                                in.getLeft(),
+                                List.of(mat),
+                                -1,
+                                ColorHelper.colorToScalar(params.rotatedBoxColor),
+                                2);
                         mat.release();
                     }
                 }
