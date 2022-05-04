@@ -159,7 +159,9 @@ export default {
     controls.keys = [65, 83, 68];
 
 
-    camera.position.z = 5;
+    camera.position.set(-0.1,0,0);
+    camera.rotation.set(-90, 0, 90);
+    camera.up.set(0,0,1);
     controls.update();
 
     function animate() {
