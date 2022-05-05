@@ -24,6 +24,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.opencv.calib3d.Calib3d;
@@ -78,22 +79,28 @@ public class SolvePNPPipe
             return;
         }
         this.imagePoints.fromList(corners);
-
+        
+        var rVecs = new ArrayList<Mat>();
+        var tVecs = new ArrayList<Mat>();
         var rVec = new Mat();
         var tVec = new Mat();
         try {
-            Calib3d.solvePnP(
+            Calib3d.solvePnPGeneric(
                     params.targetModel.getRealWorldTargetCoordinates(),
                     imagePoints,
                     params.cameraCoefficients.getCameraIntrinsicsMat(),
                     params.cameraCoefficients.getCameraExtrinsicsMat(),
-                    rVec,
-                    tVec);
+                    rVecs,
+                    tVecs,
+                    false,
+                    Calib3d.SOLVEPNP_IPPE_SQUARE);
         } catch (Exception e) {
             logger.error("Exception when attempting solvePnP!", e);
             return;
         }
 
+        tVec = tVecs.get(0);
+        rVec = rVecs.get(0);
         target.setCameraRelativeTvec(tVec);
         target.setCameraRelativeRvec(rVec);
 
@@ -125,7 +132,7 @@ public class SolvePNPPipe
 //                            + String.format(
 //                            " Angle: X %.2f Y %.2f Z %.2f",
 //                            ret.getRotation().getX(), ret.getRotation().getY(), ret.getRotation().getZ()));
-            System.out.println("Axis " + Arrays.toString(ret.getRotation().getAxis().getData()) + " angle " + ret.getRotation().getAngle());
+            //System.out.println("Axis " + Arrays.toString(ret.getRotation().getAxis().getData()) + " angle " + ret.getRotation().getAngle());
         }
 
         return ret;

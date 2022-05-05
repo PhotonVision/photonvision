@@ -18,13 +18,19 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
+import org.opencv.core.Point3;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -73,9 +79,11 @@ public class Draw3dTargetsPipe
                     && target.getCameraRelativeTvec() != null
                     && params.shouldDrawBox) {
                 var tempMat = new MatOfPoint2f();
+                
                 var jac = new Mat();
                 var bottomModel = params.targetModel.getVisualizationBoxBottom();
                 var topModel = params.targetModel.getVisualizationBoxTop();
+                
                 Calib3d.projectPoints(
                         bottomModel,
                         target.getCameraRelativeRvec(),
@@ -84,7 +92,11 @@ public class Draw3dTargetsPipe
                         params.cameraCalibrationCoefficients.getCameraExtrinsicsMat(),
                         tempMat,
                         jac);
+                // Distort the points so they match the image they're being overlaid on
+                distortPoints(tempMat, tempMat);
                 var bottomPoints = tempMat.toList();
+                
+
                 Calib3d.projectPoints(
                         topModel,
                         target.getCameraRelativeRvec(),
@@ -93,6 +105,7 @@ public class Draw3dTargetsPipe
                         params.cameraCalibrationCoefficients.getCameraExtrinsicsMat(),
                         tempMat,
                         jac);
+                distortPoints(tempMat, tempMat);
                 var topPoints = tempMat.toList();
 
                 dividePointList(bottomPoints);
@@ -147,7 +160,60 @@ public class Draw3dTargetsPipe
         return null;
     }
 
+    private void distortPoints(MatOfPoint2f src, MatOfPoint2f dst){
+        var pointsList = src.toList();
+        var dstList = new ArrayList<Point>();
+        final Mat cameraMatrix = params.cameraCalibrationCoefficients.getCameraIntrinsicsMat();
+        //k1, k2, p1, p2, k3
+        final Mat distCoeffs = params.cameraCalibrationCoefficients.getCameraExtrinsicsMat();
+        var cx = cameraMatrix.get(0, 2)[0];
+        var cy = cameraMatrix.get(1, 2)[0];
+        var fx = cameraMatrix.get(0, 0)[0];
+        var fy = cameraMatrix.get(1, 1)[0];
+        var k1 = distCoeffs.get(0, 0)[0];
+        var k2 = distCoeffs.get(0, 1)[0];
+        var k3 = distCoeffs.get(0, 4)[0];
+        var p1 = distCoeffs.get(0, 2)[0];
+        var p2 = distCoeffs.get(0, 3)[0];
+
+
+
+        for (Point point: pointsList) {
+                  // To relative coordinates <- this is the step you are missing.
+            double x = (point.x - cx) / fx; // cx, cy is the center of distortion
+            double y = (point.y - cy) / fy;
+
+            double r2 = x*x + y*y; //square of the radius from center
+
+            // Radial distorsion
+            double xDistort = x * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
+            double yDistort = y * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
+
+            // Tangential distorsion
+            xDistort = xDistort + (2 * p1 * x * y + p2 * (r2 + 2 * x * x));
+            yDistort = yDistort + (p1 * (r2 + 2 * y * y) + 2 * p2 * x * y);
+
+            // Back to absolute coordinates.
+            xDistort = xDistort * fx + cx;
+            yDistort = yDistort * fy + cy;
+            dstList.add(new Point(xDistort, yDistort));
+        }
+        dst.fromList(dstList);
+    }
+    
     private void divideMat2f(MatOfPoint2f src, MatOfPoint dst) {
+        var hull = src.toArray();
+        var pointArray = new Point[hull.length];
+        for (int i = 0; i < hull.length; i++) {
+            var hullAtI = hull[i];
+            pointArray[i] =
+                    new Point(
+                            hullAtI.x / (double) params.divisor.value, hullAtI.y / (double) params.divisor.value);
+        }
+        dst.fromArray(pointArray);
+    }
+
+    private void divideMat2f(MatOfPoint2f src, MatOfPoint2f dst) {
         var hull = src.toArray();
         var pointArray = new Point[hull.length];
         for (int i = 0; i < hull.length; i++) {
