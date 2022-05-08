@@ -129,7 +129,10 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
          * eg : Q58 for qualfication match 58.
          * If not in event, returns N/A-0
          */
-        String matchType = matchTypes[(int)ntMatchType.getDouble(0)];
+        int matchTypeIndex = (int)ntMatchType.getDouble(0);
+        if(matchTypeIndex < 0 || matchTypeIndex > matchTypes.length)
+            matchTypeIndex = 0; // If not valid - change to N/A
+        String matchType = matchTypes[matchTypeIndex];
         String matchNum = String.valueOf(ntMatchNum.getDouble(0));
         return matchType + "-" + matchNum;
     }
