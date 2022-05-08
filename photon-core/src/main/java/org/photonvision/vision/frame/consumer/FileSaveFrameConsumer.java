@@ -122,4 +122,15 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         String matchNum = String.valueOf(ntMatchNum.getDouble(0));
         return matchType + "-" + matchNum;
     }
+
+    private String getMatchData() {
+        /**
+         * Returns the match Data collected from the NT.
+         * eg : Q58 for qualfication match 58.
+         * If not in event, returns N/A-0
+         */
+        String matchType = matchTypes[(int)ntMatchType.getDouble(0)];
+        String matchNum = String.valueOf(ntMatchNum.getDouble(0));
+        return matchType + "-" + matchNum;
+    }
 }
