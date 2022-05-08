@@ -37,10 +37,14 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private static String FILE_EXTENSION = ".jpg";
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
     DateFormat tf = new SimpleDateFormat("hhmmssSS");
+    private final NetworkTableEntry ntMatchNum;
+    private final NetworkTableEntry ntMatchType;
+    private final String[] matchTypes = {"N/A","P","Q","E","EV"}; //match type's values from the FMS.
     private final String NT_SUFFIX = "SaveImgCmd";
     private final String ntEntryName;
     private NetworkTable subTable;
     private final NetworkTable rootTable;
+    private final NetworkTable FMSTable;
     private final Logger logger;
     private long imgSaveCountInternal = 0;
     private String camNickname;
@@ -51,6 +55,9 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         this.fnamePrefix = camNickname + "_" + streamPrefix;
         this.ntEntryName = streamPrefix + NT_SUFFIX;
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
+        this.FMSTable = NetworkTablesManager.getInstance().FMSTable;
+        this.ntMatchNum = FMSTable.getEntry("MatchNumber");
+        this.ntMatchType = FMSTable.getEntry("MatchType");
         updateCameraNickname(camNickname);
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
     }
@@ -72,6 +79,8 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
                                     + df.format(now)
                                     + "T"
                                     + tf.format(now)
+                                    + "_"
+                                    + getMatchData()
                                     + FILE_EXTENSION;
 
                     // write to file
@@ -101,5 +110,16 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         this.subTable = rootTable.getSubTable(this.camNickname);
         this.subTable.getEntry(ntEntryName).setInteger(imgSaveCountInternal);
         this.entry = subTable.getIntegerTopic(ntEntryName).getEntry(-1); // Default negative
+    }
+
+    private String getMatchData() {
+        /**
+         * Returns the match Data collected from the NT.
+         * eg : Q58 for qualfication match 58.
+         * If not in event, returns N/A-0
+         */
+        String matchType = matchTypes[(int)ntMatchType.getDouble(0)];
+        String matchNum = String.valueOf(ntMatchNum.getDouble(0));
+        return matchType + "-" + matchNum;
     }
 }
