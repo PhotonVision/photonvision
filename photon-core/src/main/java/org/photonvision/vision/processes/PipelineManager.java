@@ -400,7 +400,9 @@ public class PipelineManager {
         }
 
         logger.info("Adding new pipe of type " + type.toString() + " at idx " + idx);
+        newSettings.pipelineIndex = idx;
         userPipelineSettings.set(idx, newSettings);
         setPipelineInternal(idx);
+        reassignIndexes();
     }
 }
