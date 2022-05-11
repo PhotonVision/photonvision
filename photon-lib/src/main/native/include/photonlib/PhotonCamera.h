@@ -27,6 +27,8 @@
 #include <memory>
 #include <string>
 
+#include <units/time.h>
+
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableEntry.h>
 #include <networktables/NetworkTableInstance.h>
@@ -66,7 +68,7 @@ class PhotonCamera {
    * Returns the latest pipeline result.
    * @return The latest pipeline result.
    */
-  PhotonPipelineResult GetLatestResult() const;
+  PhotonPipelineResult GetLatestResult();
 
   /**
    * Toggles driver mode.
@@ -136,7 +138,7 @@ class PhotonCamera {
    */
   WPI_DEPRECATED(
       "This method should be replaced with PhotonPipelineResult::HasTargets()")
-  bool HasTargets() const { return GetLatestResult().HasTargets(); }
+  bool HasTargets() { return GetLatestResult().HasTargets(); }
 
   inline static void SetVersionCheckEnabled(bool enabled) {
     PhotonCamera::VERSION_CHECK_ENABLED = enabled;
@@ -158,9 +160,10 @@ class PhotonCamera {
   mutable Packet packet;
 
  private:
+  units::second_t lastVersionCheckTime = 0_s;
   inline static bool VERSION_CHECK_ENABLED = true;
 
-  void VerifyVersion() const;
+  void VerifyVersion();
 };
 
 }  // namespace photonlib

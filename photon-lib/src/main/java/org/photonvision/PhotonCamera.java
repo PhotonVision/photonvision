@@ -28,6 +28,8 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
+
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -46,6 +48,8 @@ public class PhotonCamera {
     private final String path;
 
     private static boolean VERSION_CHECK_ENABLED = true;
+    private static long VERSION_CHECK_INTERVAL = 1;
+    private double lastVersionCheckTime = 0;
 
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
@@ -206,6 +210,9 @@ public class PhotonCamera {
 
     private void verifyVersion() {
         if (!VERSION_CHECK_ENABLED) return;
+
+        if((Timer.getFPGATimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
+        lastVersionCheckTime = Timer.getFPGATimestamp();
 
         String versionString = versionEntry.getString("");
         if (versionString.equals("")) {
