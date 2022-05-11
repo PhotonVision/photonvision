@@ -106,7 +106,9 @@ void PhotonCamera::SetLEDMode(LEDMode mode) {
 void PhotonCamera::VerifyVersion() {
   if (!PhotonCamera::VERSION_CHECK_ENABLED) return;
 
-  if((frc::Timer::GetFPGATimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
+  if((frc::Timer::GetFPGATimestamp() - lastVersionCheckTime) <
+      VERSION_CHECK_INTERVAL)
+    return;
   this->lastVersionCheckTime = frc::Timer::GetFPGATimestamp();
 
   const std::string& versionString = versionEntry.GetString("");
