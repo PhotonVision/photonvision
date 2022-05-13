@@ -139,7 +139,7 @@ public class NetworkTablesManager {
     // service)
     private void ntTick() {
         if (!ntInstance.isConnected()
-                && ConfigManager.getInstance().getConfig().getNetworkConfig().runNTServer) {
+                && !ConfigManager.getInstance().getConfig().getNetworkConfig().runNTServer) {
             setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
         }
     }
