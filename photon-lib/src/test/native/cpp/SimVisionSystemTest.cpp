@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -356,7 +356,7 @@ INSTANTIATE_TEST_SUITE_P(
 //   ASSERT_TRUE(result.HasTargets());
 //   auto tgt = result.GetBestTarget();
 //   EXPECT_DOUBLE_EQ(tgt.GetYaw(), 0.0);
-//   units::meter_t distMeas = 
+//   units::meter_t distMeas =
 //   photonlib::PhotonUtils::CalculateDistanceToTarget(
 //       units::meter_t(testHeight), units::meter_t(testDist),
 //       units::degree_t(testPitch), units::degree_t(tgt.GetPitch()));
