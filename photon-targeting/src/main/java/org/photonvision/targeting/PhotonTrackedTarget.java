@@ -172,14 +172,21 @@ public class PhotonTrackedTarget {
 
     @Override
     public String toString() {
-        return "PhotonTrackedTarget{" +
-                "yaw=" + yaw +
-                ", pitch=" + pitch +
-                ", area=" + area +
-                ", skew=" + skew +
-                ", fiducialId=" + fiducialId +
-                ", cameraToTarget=" + cameraToTarget +
-                ", targetCorners=" + targetCorners +
-                '}';
+        return "PhotonTrackedTarget{"
+                + "yaw="
+                + yaw
+                + ", pitch="
+                + pitch
+                + ", area="
+                + area
+                + ", skew="
+                + skew
+                + ", fiducialId="
+                + fiducialId
+                + ", cameraToTarget="
+                + cameraToTarget
+                + ", targetCorners="
+                + targetCorners
+                + '}';
     }
 }

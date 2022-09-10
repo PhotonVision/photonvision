@@ -22,15 +22,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.calib3d.Calib3d;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfDouble;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
-import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
-import org.opencv.core.Point3;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -79,11 +74,11 @@ public class Draw3dTargetsPipe
                     && target.getCameraRelativeTvec() != null
                     && params.shouldDrawBox) {
                 var tempMat = new MatOfPoint2f();
-                
+
                 var jac = new Mat();
                 var bottomModel = params.targetModel.getVisualizationBoxBottom();
                 var topModel = params.targetModel.getVisualizationBoxTop();
-                
+
                 Calib3d.projectPoints(
                         bottomModel,
                         target.getCameraRelativeRvec(),
@@ -95,7 +90,6 @@ public class Draw3dTargetsPipe
                 // Distort the points so they match the image they're being overlaid on
                 distortPoints(tempMat, tempMat);
                 var bottomPoints = tempMat.toList();
-                
 
                 Calib3d.projectPoints(
                         topModel,
@@ -160,11 +154,11 @@ public class Draw3dTargetsPipe
         return null;
     }
 
-    private void distortPoints(MatOfPoint2f src, MatOfPoint2f dst){
+    private void distortPoints(MatOfPoint2f src, MatOfPoint2f dst) {
         var pointsList = src.toList();
         var dstList = new ArrayList<Point>();
         final Mat cameraMatrix = params.cameraCalibrationCoefficients.getCameraIntrinsicsMat();
-        //k1, k2, p1, p2, k3
+        // k1, k2, p1, p2, k3
         final Mat distCoeffs = params.cameraCalibrationCoefficients.getCameraExtrinsicsMat();
         var cx = cameraMatrix.get(0, 2)[0];
         var cy = cameraMatrix.get(1, 2)[0];
@@ -176,14 +170,12 @@ public class Draw3dTargetsPipe
         var p1 = distCoeffs.get(0, 2)[0];
         var p2 = distCoeffs.get(0, 3)[0];
 
-
-
-        for (Point point: pointsList) {
-                  // To relative coordinates <- this is the step you are missing.
+        for (Point point : pointsList) {
+            // To relative coordinates <- this is the step you are missing.
             double x = (point.x - cx) / fx; // cx, cy is the center of distortion
             double y = (point.y - cy) / fy;
 
-            double r2 = x*x + y*y; //square of the radius from center
+            double r2 = x * x + y * y; // square of the radius from center
 
             // Radial distorsion
             double xDistort = x * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
@@ -200,7 +192,7 @@ public class Draw3dTargetsPipe
         }
         dst.fromList(dstList);
     }
-    
+
     private void divideMat2f(MatOfPoint2f src, MatOfPoint dst) {
         var hull = src.toArray();
         var pointArray = new Point[hull.length];

@@ -23,9 +23,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -41,8 +39,12 @@ import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class SolvePNPAprilTagsPipe
-        extends CVPipe<List<TrackedTarget>, List<TrackedTarget>, SolvePNPAprilTagsPipe.SolvePNPAprilTagsPipeParams> {
-    private static final Logger logger = new Logger(SolvePNPAprilTagsPipe.class, LogGroup.VisionModule);
+        extends CVPipe<
+                List<TrackedTarget>,
+                List<TrackedTarget>,
+                SolvePNPAprilTagsPipe.SolvePNPAprilTagsPipeParams> {
+    private static final Logger logger =
+            new Logger(SolvePNPAprilTagsPipe.class, LogGroup.VisionModule);
 
     private final MatOfPoint2f imagePoints = new MatOfPoint2f();
 
@@ -79,7 +81,7 @@ public class SolvePNPAprilTagsPipe
             return;
         }
         this.imagePoints.fromList(corners);
-        
+
         var rVecs = new ArrayList<Mat>();
         var tVecs = new ArrayList<Mat>();
         var rVec = new Mat();
@@ -127,12 +129,14 @@ public class SolvePNPAprilTagsPipe
         var ret = new Transform3d(NWU.getTranslation(), NWU.getRotation());
 
         {
-//            System.out.println(
-//                    ret.getTranslation()
-//                            + String.format(
-//                            " Angle: X %.2f Y %.2f Z %.2f",
-//                            ret.getRotation().getX(), ret.getRotation().getY(), ret.getRotation().getZ()));
-            //System.out.println("Axis " + Arrays.toString(ret.getRotation().getAxis().getData()) + " angle " + ret.getRotation().getAngle());
+            //            System.out.println(
+            //                    ret.getTranslation()
+            //                            + String.format(
+            //                            " Angle: X %.2f Y %.2f Z %.2f",
+            //                            ret.getRotation().getX(), ret.getRotation().getY(),
+            // ret.getRotation().getZ()));
+            // System.out.println("Axis " + Arrays.toString(ret.getRotation().getAxis().getData()) + "
+            // angle " + ret.getRotation().getAngle());
         }
 
         return ret;
