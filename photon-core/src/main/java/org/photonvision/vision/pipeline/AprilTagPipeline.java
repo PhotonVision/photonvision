@@ -37,7 +37,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
-    private final SolvePNPPipe solvePNPPipe = new SolvePNPPipe();
+    private final SolvePNPAprilTagsPipe solvePNPPipe = new SolvePNPAprilTagsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     public AprilTagPipeline() {
@@ -71,7 +71,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         aprilTagDetectionPipe.setParams(aprilTagDetectionParams);
 
         var solvePNPParams =
-                new SolvePNPPipe.SolvePNPPipeParams(
+                new SolvePNPAprilTagsPipe.SolvePNPAprilTagsPipeParams(
                         frameStaticProperties.cameraCalibration,
                         frameStaticProperties.cameraPitch,
                         settings.targetModel);
