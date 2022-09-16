@@ -26,17 +26,17 @@ import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagDetectionPipe
-        extends CVPipe<Mat, List<DetectionResult>, AprilTagDetectorParams> {
+        extends CVPipe<Mat, List<DetectionResult>, AprilTagDetectionPipeParams> {
     private final AprilTagDetector m_detector = new AprilTagDetector();
 
     @Override
     protected List<DetectionResult> process(Mat in) {
-        return List.of(m_detector.detect(in));
+        return List.of(m_detector.detect(in, params.cameraCalibrationCoefficients));
     }
 
     @Override
-    public void setParams(AprilTagDetectorParams params) {
+    public void setParams(AprilTagDetectionPipeParams params) {
         super.setParams(params);
-        m_detector.updateParams(params);
+        m_detector.updateParams(params.detectorParams);
     }
 }

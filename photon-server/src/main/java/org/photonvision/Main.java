@@ -90,7 +90,7 @@ public class Main {
                 logger.info("Enabled debug logging");
             }
 
-            if (cmd.hasOption("test-mode") || true) {
+            if (cmd.hasOption("test-mode")) {
                 isTestMode = true;
                 logger.info("Running in test mode - Cameras will not be used");
 
