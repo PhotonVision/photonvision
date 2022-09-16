@@ -18,6 +18,7 @@
 package org.photonvision.vision.apriltag;
 
 import org.opencv.core.Mat;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class AprilTagDetector {
     private long m_detectorPtr = 0;
@@ -52,12 +53,21 @@ public class AprilTagDetector {
         }
     }
 
-    public DetectionResult[] detect(Mat grayscaleImg) {
-        System.out.println("Called from thread " + Thread.currentThread().getName());
+    public DetectionResult[] detect(Mat grayscaleImg, CameraCalibrationCoefficients coeffs) {
+        //System.out.println("Called from thread " + Thread.currentThread().getName());
         if (m_detectorPtr == 0) return new DetectionResult[] {};
+        final Mat cameraMatrix = coeffs.getCameraIntrinsicsMat();
+            if (cameraMatrix == null) {
+                return AprilTagJNI.AprilTag_Detect(m_detectorPtr, grayscaleImg,
+                false, 0.1, 0, 0, 0, 0, 100
+            );
+        }
+        var cx = cameraMatrix.get(0, 2)[0];
+        var cy = cameraMatrix.get(1, 2)[0];
+        var fx = cameraMatrix.get(0, 0)[0];
+        var fy = cameraMatrix.get(1, 1)[0];
         return AprilTagJNI.AprilTag_Detect(m_detectorPtr, grayscaleImg,
-            // TODO don't hardcode this
-            true, 0.1, 100, 100, 100, 100, 100
+            true, 0.1, fx, fy, cx, cy, 100
         );
     }
 }

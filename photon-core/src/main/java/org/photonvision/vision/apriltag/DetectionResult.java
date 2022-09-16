@@ -74,6 +74,22 @@ public class DetectionResult {
         this.corners = corners;
     }
 
+    public double getError1() {
+        return error1;
+    }
+
+    public double getError2() {
+        return error2;
+    }
+
+    public Pose3d getPoseResult1() {
+        return poseResult1;
+    }
+
+    public Pose3d getPoseResult2() {
+        return poseResult2;
+    }
+
     int id;
     int hamming;
     float decision_margin;

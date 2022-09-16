@@ -14,6 +14,8 @@ import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.numbers.N3;
 import java.util.Objects;
 
+import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
+
 /** A rotation in a 3D coordinate frame represented by a quaternion. */
 public class Rotation3d implements Interpolatable<Rotation3d> {
   private Quaternion m_q = new Quaternion();

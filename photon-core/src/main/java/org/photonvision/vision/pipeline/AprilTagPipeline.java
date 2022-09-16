@@ -32,7 +32,13 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 @SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
@@ -70,7 +76,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         settings.threads,
                         settings.debug,
                         settings.refineEdges);
-        aprilTagDetectionPipe.setParams(aprilTagDetectionParams);
+        aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(aprilTagDetectionParams, frameStaticProperties.cameraCalibration));
 
         var solvePNPParams =
                 new SolvePNPAprilTagsPipe.SolvePNPAprilTagsPipeParams(
@@ -111,18 +117,20 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         for (DetectionResult detection : tagDetectionPipeResult.output) {
             // populate the target list
             // Challenge here is that TrackedTarget functions with OpenCV Contour
-
             TrackedTarget target =
                     new TrackedTarget(
                             detection,
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
 
-            target.setCameraToTarget3d(new Transform3d());
-
+            target.setCameraToTarget(correctLocationForCameraPitch(target.getCameraToTarget3d(), frameStaticProperties.cameraPitch));
             targetList.add(target);
         }
+        try{
+        Thread.sleep(500);
+        } catch(InterruptedException e) {
 
+        }
         // if (settings.solvePNPEnabled) {
         //     targetList = solvePNPPipe.run(targetList).output;
         // }
@@ -136,5 +144,23 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 Frame.emptyFrame(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight);
 
         return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, outputFrame, inputFrame);
+    }
+
+    // TODO: Refactor into new pipe?
+    private Transform2d correctLocationForCameraPitch(
+            Transform3d cameraToTarget3d, Rotation2d cameraPitch) {
+        Pose3d pose = new Pose3d(cameraToTarget3d.getTranslation(), cameraToTarget3d.getRotation());
+
+        // We want the pose as seen by a person at the same pose as the camera, but facing
+        // forward instead of pitched up
+        Pose3d poseRotatedByCamAngle =
+                pose.transformBy(
+                        new Transform3d(new Translation3d(), new Rotation3d(0, -cameraPitch.getRadians(), 0)));
+
+        // The pose2d from the flattened coordinate system is just the X/Y components of the 3d pose
+        // and the rotation about the Z axis (which is up in the camera/field frame)
+        return new Transform2d(
+                new Translation2d(poseRotatedByCamAngle.getX(), poseRotatedByCamAngle.getY()),
+                new Rotation2d(poseRotatedByCamAngle.getRotation().getZ()));
     }
 }
