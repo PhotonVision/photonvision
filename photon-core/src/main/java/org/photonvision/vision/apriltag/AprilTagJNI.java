@@ -118,11 +118,14 @@ public class AprilTagJNI {
     // Destroy and free a previously created detector.
     public static native long AprilTag_Destroy(long detector);
 
-    private static native Object[] AprilTag_Detect(long detector, long imgAddr, int rows, int cols);
+    private static native Object[] AprilTag_Detect(long detector, long imgAddr, int rows, int cols, boolean doPoseEstimation,
+        double tagWidth, double fx, double fy, double cx, double cy, int nIters);
 
     // Detect targets given a GRAY frame. Returns a pointer toa zarray
-    public static DetectionResult[] AprilTag_Detect(long detector, Mat img) {
-        return (DetectionResult[]) AprilTag_Detect(detector, img.dataAddr(), img.rows(), img.cols());
+    public static DetectionResult[] AprilTag_Detect(long detector, Mat img, boolean doPoseEstimation,
+            double tagWidth, double fx, double fy, double cx, double cy, int nIters) {
+        return (DetectionResult[]) AprilTag_Detect(detector, img.dataAddr(), img.rows(), img.cols(), doPoseEstimation,
+        tagWidth, fx, fy, cx, cy, nIters);
     }
 
     public static void main(String[] args) {
@@ -142,9 +145,9 @@ public class AprilTagJNI {
         // // TestUtils.loadLibraries();
         // var img = Imgcodecs.imread("~/Downloads/TagFams.jpg");
 
-        var ret = AprilTag_Detect(detector, 0, 720, 1280);
+        // var ret = AprilTag_Detect(detector, 0, 720, 1280);
         // System.out.println(detector);
         // System.out.println(ret);
-        System.out.println(List.of(ret));
+        // System.out.println(List.of(ret));
     }
 }
