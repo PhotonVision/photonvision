@@ -164,6 +164,22 @@ public class TestUtils {
         }
     }
 
+    public enum ApriltagTestImages {
+        kRobots;
+
+        public final Path path;
+
+        Path getPath() {
+            // Strip leading k
+            var filename = this.toString().substring(1).toLowerCase();
+            return Path.of("apriltag", filename + ".jpg");
+        }
+
+        ApriltagTestImages() {
+            this.path = getPath();
+        }
+    }
+
     private static Path getResourcesFolderPath(boolean testMode) {
         System.out.println("CWD: " + Path.of("").toAbsolutePath().toString());
         return Path.of("test-resources").toAbsolutePath();
@@ -185,6 +201,12 @@ public class TestUtils {
         return getResourcesFolderPath(true)
                 .resolve("testimages")
                 .resolve(WPI2022Image.kTerminal22ft6in.path);
+    }
+
+    public static Path getTestModeApriltagPath() {
+        return getResourcesFolderPath(true)
+                .resolve("testimages")
+                .resolve(ApriltagTestImages.kRobots.path);
     }
 
     public static Path getTestImagesPath(boolean testMode) {

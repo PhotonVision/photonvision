@@ -90,12 +90,12 @@ public class Main {
                 logger.info("Enabled debug logging");
             }
 
-            if (cmd.hasOption("test-mode")) {
+            if (cmd.hasOption("test-mode") || true) {
                 isTestMode = true;
                 logger.info("Running in test mode - Cameras will not be used");
 
                 if (cmd.hasOption("path")) {
-                    Path p = Path.of(cmd.getOptionValue("path"));
+                    Path p = Path.of(System.getProperty("PATH_PREFIX", "") + cmd.getOptionValue("path"));
                     logger.info("Loading from Path " + p.toAbsolutePath().toString());
                     testModeFolder = p;
                 }
@@ -169,6 +169,24 @@ public class Main {
 
     private static void addTestModeSources() {
         ConfigManager.getInstance().load();
+
+        var camConfApril =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("Apriltag");
+        if (camConfApril == null) {
+            camConfApril =
+                    new CameraConfiguration("Apriltag", TestUtils.getTestModeApriltagPath().toString());
+            camConfApril.FOV = TestUtils.WPI2019Image.FOV;
+            camConfApril.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
+
+            var pipeline2019 = new AprilTagPipelineSettings();
+            pipeline2019.pipelineNickname = "Robots";
+            pipeline2019.outputShowMultipleTargets = true;
+            pipeline2019.inputShouldShow = true;
+
+            var psList2019 = new ArrayList<CVPipelineSettings>();
+            psList2019.add(pipeline2019);
+            camConfApril.pipelineSettings = psList2019;
+        }
 
         var camConf2019 =
                 ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2019");
@@ -252,11 +270,13 @@ public class Main {
 
         var collectedSources = new ArrayList<VisionSource>();
 
+        var fvsApril = new FileVisionSource(camConfApril);
         var fvsShape = new FileVisionSource(camConfShape);
         var fvs2019 = new FileVisionSource(camConf2019);
         var fvs2020 = new FileVisionSource(camConf2020);
         var fvs2022 = new FileVisionSource(camConf2022);
 
+        collectedSources.add(fvsApril);
         collectedSources.add(fvs2022);
         collectedSources.add(fvsShape);
         collectedSources.add(fvs2020);

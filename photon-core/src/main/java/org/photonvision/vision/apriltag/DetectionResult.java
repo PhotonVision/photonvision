@@ -92,6 +92,7 @@ public class DetectionResult {
             double centerX,
             double centerY,
             double[] corners,
+
             double[] pose1TransArr,
             double[] pose1RotArr,
             double err1,
