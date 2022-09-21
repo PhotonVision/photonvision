@@ -55,7 +55,7 @@ public class AprilTagDetector {
 
     public DetectionResult[] detect(Mat grayscaleImg, CameraCalibrationCoefficients coeffs) {
         //System.out.println("Called from thread " + Thread.currentThread().getName());
-        if (m_detectorPtr == 0) return new DetectionResult[] {};
+        if (m_detectorPtr == 0 || coeffs == null) return new DetectionResult[] {};
         final Mat cameraMatrix = coeffs.getCameraIntrinsicsMat();
             if (cameraMatrix == null) {
                 return AprilTagJNI.AprilTag_Detect(m_detectorPtr, grayscaleImg,
