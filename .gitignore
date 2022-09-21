@@ -145,3 +145,4 @@ photon-lib/src/main/java/org/photonvision/PhotonVersion.java
 /photonlib-java-examples/bin/
 photon-lib/src/generate/native/include/PhotonVersion.h
 .gitattributes
+lib/*
