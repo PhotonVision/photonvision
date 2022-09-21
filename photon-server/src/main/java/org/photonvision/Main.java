@@ -61,7 +61,7 @@ public class Main {
     private static final Logger logger = new Logger(Main.class, LogGroup.General);
     private static final boolean isRelease = PhotonVersion.isRelease;
 
-    private static boolean isTestMode;
+    private static boolean isTestMode = true;
     private static Path testModeFolder = null;
     private static boolean printDebugLogs;
 
