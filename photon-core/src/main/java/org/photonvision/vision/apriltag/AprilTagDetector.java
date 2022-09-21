@@ -53,11 +53,7 @@ public class AprilTagDetector {
     }
 
     public DetectionResult[] detect(Mat grayscaleImg) {
-        System.out.println("Called from thread " + Thread.currentThread().getName());
         if (m_detectorPtr == 0) return new DetectionResult[] {};
-        return AprilTagJNI.AprilTag_Detect(m_detectorPtr, grayscaleImg,
-            // TODO don't hardcode this
-            true, 0.1, 100, 100, 100, 100, 100
-        );
+        return AprilTagJNI.AprilTag_Detect(m_detectorPtr, grayscaleImg);
     }
 }

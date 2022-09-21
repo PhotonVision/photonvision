@@ -32,8 +32,6 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
-import edu.wpi.first.math.geometry.Transform3d;
-
 @SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
@@ -117,15 +115,12 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                             detection,
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
-
-            target.setCameraToTarget3d(new Transform3d());
-
             targetList.add(target);
         }
 
-        // if (settings.solvePNPEnabled) {
-        //     targetList = solvePNPPipe.run(targetList).output;
-        // }
+        if (settings.solvePNPEnabled) {
+            targetList = solvePNPPipe.run(targetList).output;
+        }
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
