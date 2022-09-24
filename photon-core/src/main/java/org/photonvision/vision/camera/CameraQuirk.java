@@ -25,5 +25,7 @@ public enum CameraQuirk {
     /** Cap at 100FPS for high-bandwidth cameras */
     FPSCap100,
     /** Separate red/blue gain controls available */
-    AWBGain
+    AWBGain,
+    /** Will not work with photonvision - Logitec C270 at least */
+    CompletelyBroken
 }

@@ -46,6 +46,7 @@ public class USBCameraSource extends VisionSource {
 
     public USBCameraSource(CameraConfiguration config) {
         super(config);
+
         logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
         camera = new UsbCamera(config.nickname, config.path);
         cvSink = CameraServer.getInstance().getVideo(this.camera);
@@ -58,10 +59,23 @@ public class USBCameraSource extends VisionSource {
             logger.info("Quirky camera detected: " + cameraQuirks.baseName);
         }
 
-        setLowExposureOptimizationImpl(false);
+        if(cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)){
+            //set some defaults, as these should never be used.
+            logger.info("Camera " + cameraQuirks.baseName + " is not supported for PhotonVision");
+            usbCameraSettables = null;
+            usbFrameProvider = null;
+        } else {
+            //Normal init
+            setLowExposureOptimizationImpl(false);
+            usbCameraSettables = new USBCameraSettables(config);
+            usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
+        }
 
-        usbCameraSettables = new USBCameraSettables(config);
-        usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
+
+
+    }
+
+    void setLowExposureOptimizationImpl(boolean lowExposureMode){
 
     }
 
@@ -95,13 +109,20 @@ public class USBCameraSource extends VisionSource {
 
         } else {
             //Case - this is some other USB cam. Default to wpilib's implementation
+
+            var canSetWhiteBalance = !cameraQuirks.hasQuirk(CameraQuirk.Gain);
+
             if(lowExposureMode){
                 // Pick a bunch of reasonable setting defaults for vision processing retroreflective
-                camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
+                if(canSetWhiteBalance){
+                    camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
+                }
                 this.getSettables().setExposure(50); // auto exposure disabled, put a sane default
             } else {
                 // Pick a bunch of reasonable setting defaults for driver, aurco, or otherwise nice-for-humans
-                camera.setWhiteBalanceAuto(); // Auto white-balance enabled
+                if(canSetWhiteBalance){
+                    camera.setWhiteBalanceAuto(); // Auto white-balance enabled
+                }
                 camera.setExposureAuto(); // auto exposure enabled
             }
 
