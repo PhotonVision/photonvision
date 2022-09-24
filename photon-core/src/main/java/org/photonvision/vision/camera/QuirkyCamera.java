@@ -25,7 +25,7 @@ public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
                     new QuirkyCamera(0x2000, 0x1415, CameraQuirk.Gain, CameraQuirk.FPSCap100), // PS3Eye
-                    new QuirkyCamera(-1, -1, "mmal service 16.1", CameraQuirk.PiCam) // PiCam (via V4L2)
+                    new QuirkyCamera(-1, -1, "mmal service 16.1", CameraQuirk.PiCam) // PiCam (via V4L2, not zerocopy)
                     );
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");
@@ -35,7 +35,8 @@ public class QuirkyCamera {
                     -1,
                     "mmal service 16.1",
                     CameraQuirk.PiCam,
-                    CameraQuirk.Gain); // PiCam (special zerocopy version)
+                    CameraQuirk.Gain,
+                    CameraQuirk.AWBGain); // PiCam (special zerocopy version)
 
     public final String baseName;
     public final int usbVid;
