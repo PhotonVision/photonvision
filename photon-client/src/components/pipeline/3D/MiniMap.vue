@@ -1,17 +1,20 @@
 <template>
-  <div>
+  <div id="MapContainer" style="flex-grow:1">
     <v-row>
       <v-col
-          align="center"
-          cols="12"
+        align="center"
+        cols="12"
       >
-        <span class="white--text">Target Location</span>
-        <canvas
-            id="canvasId"
-            class="mt-2"
-            width="800"
-            height="800"
-        />
+        <span class="white--text" >Target Location</span>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col
+        align="center"
+        cols="12"
+        align-self="stretch"
+      >
+        <canvas id="canvasId" style="width:100%;height:100%"/>
       </v-col>
     </v-row>
   </div>
@@ -111,20 +114,34 @@ export default {
       }
       if(this.cubes.length > 0)
         this.scene.add(...this.cubes);
-    }
+    },
+    onWindowResize() {
+      var container = document.getElementById("MapContainer")
+      if(container){
+        this.canvas.width = container.clientWidth * 0.95;
+        this.canvas.height = container.clientWidth * 0.85;
+        this.camera.aspect = this.canvas.width / this.canvas.height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize( this.canvas.width, this.canvas.height );
+      }
+    },
   },
+
   mounted() {
     const scene = new Scene();
-    this.scene = scene
+    this.scene = scene;
     const camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
+    this.camera = camera;
 
     const canvas = document.getElementById("canvasId"); // getting the canvas element
+    this.canvas = canvas;
     const renderer = new WebGLRenderer({"canvas": canvas});
-    // document.body.appendChild(renderer.domElement);
-    // canvas.appendChild(renderer.dome)
-
-    renderer.setSize(600, 600);
+    this.renderer = renderer;
     scene.background = new Color(0xa9a9a9)
+
+
+    this.onWindowResize();
+    window.addEventListener( 'resize', this.onWindowResize, false );
 
     scene.add(new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
         2, // length
@@ -175,6 +192,8 @@ export default {
 
     animate();
   }
+
+
 }
 </script>
 
