@@ -65,6 +65,8 @@ public abstract class VisionSourceSettables {
         calculateFrameStaticProps();
     }
 
+    public abstract void setLowExposureOptimization(boolean mode);
+
     protected abstract void setVideoModeInternal(VideoMode videoMode);
 
     public void setCameraPitch(Rotation2d pitch) {

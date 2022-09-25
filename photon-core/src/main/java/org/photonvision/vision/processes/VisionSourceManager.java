@@ -31,6 +31,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.raspi.PicamJNI;
+import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.camera.ZeroCopyPicamSource;
@@ -314,7 +315,13 @@ public class VisionSourceManager {
                 cameraSources.add(piCamSrc);
                 continue;
             }
-            cameraSources.add(new USBCameraSource(configuration));
+
+            var newCam = new USBCameraSource(configuration);
+
+            if(!newCam.cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)){
+                cameraSources.add(newCam);
+            }
+
         }
         return cameraSources;
     }

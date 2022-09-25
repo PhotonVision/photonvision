@@ -99,6 +99,9 @@ public class FileVisionSource extends VisionSource {
         public void setGain(int gain) {}
 
         @Override
+        public void setLowExposureOptimization(boolean mode) {}
+
+        @Override
         public VideoMode getCurrentVideoMode() {
             return videoMode;
         }
