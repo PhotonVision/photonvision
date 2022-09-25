@@ -42,8 +42,6 @@ public class USBCameraSource extends VisionSource {
 
     public final QuirkyCamera cameraQuirks;
 
-    
-
     public USBCameraSource(CameraConfiguration config) {
         super(config);
 
@@ -59,71 +57,70 @@ public class USBCameraSource extends VisionSource {
             logger.info("Quirky camera detected: " + cameraQuirks.baseName);
         }
 
-        if(cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)){
-            //set some defaults, as these should never be used.
+        if (cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)) {
+            // set some defaults, as these should never be used.
             logger.info("Camera " + cameraQuirks.baseName + " is not supported for PhotonVision");
             usbCameraSettables = null;
             usbFrameProvider = null;
         } else {
-            //Normal init
+            // Normal init
             setLowExposureOptimizationImpl(false);
             usbCameraSettables = new USBCameraSettables(config);
             usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
         }
-
-
-
     }
 
-    void setLowExposureOptimizationImpl(boolean lowExposureMode){
+    void setLowExposureOptimizationImpl(boolean lowExposureMode) {
 
         if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-            //Case, we know this is a picam. Go through v4l2-ctl interface directly
+            // Case, we know this is a picam. Go through v4l2-ctl interface directly
 
-            //Common settings
-            camera.getProperty("image_stabilization").set(0); //No image stabilization, as this will throw off odometry
-            camera.getProperty("power_line_frequency").set(2); //Assume 60Hz USA
-            camera.getProperty("scene_mode").set(0); //no presets
+            // Common settings
+            camera
+                    .getProperty("image_stabilization")
+                    .set(0); // No image stabilization, as this will throw off odometry
+            camera.getProperty("power_line_frequency").set(2); // Assume 60Hz USA
+            camera.getProperty("scene_mode").set(0); // no presets
             camera.getProperty("exposure_metering_mode").set(0);
             camera.getProperty("exposure_dynamic_framerate").set(0);
 
-            if(lowExposureMode){
+            if (lowExposureMode) {
                 // Pick a bunch of reasonable setting defaults for vision processing retroreflective
                 camera.getProperty("auto_exposure_bias").set(0);
-                camera.getProperty("iso_sensitivity_auto").set(0); //Disable auto ISO adjustement
-                camera.getProperty("iso_sensitivity").set(0); //Manual ISO adjustement 
+                camera.getProperty("iso_sensitivity_auto").set(0); // Disable auto ISO adjustement
+                camera.getProperty("iso_sensitivity").set(0); // Manual ISO adjustement
                 camera.getProperty("white_balance_auto_preset").set(2); // Auto white-balance disabled
                 camera.getProperty("auto_exposure").set(1); // auto exposure disabled
             } else {
-                // Pick a bunch of reasonable setting defaults for driver, aurco, or otherwise nice-for-humans
+                // Pick a bunch of reasonable setting defaults for driver, aurco, or otherwise
+                // nice-for-humans
                 camera.getProperty("auto_exposure_bias").set(12);
                 camera.getProperty("iso_sensitivity_auto").set(1);
-                camera.getProperty("iso_sensitivity").set(1); //Manual ISO adjustement by default
+                camera.getProperty("iso_sensitivity").set(1); // Manual ISO adjustement by default
                 camera.getProperty("white_balance_auto_preset").set(1); // Auto white-balance enabled
                 camera.getProperty("auto_exposure").set(0); // auto exposure enabled
             }
 
         } else {
-            //Case - this is some other USB cam. Default to wpilib's implementation
+            // Case - this is some other USB cam. Default to wpilib's implementation
 
             var canSetWhiteBalance = !cameraQuirks.hasQuirk(CameraQuirk.Gain);
 
-            if(lowExposureMode){
+            if (lowExposureMode) {
                 // Pick a bunch of reasonable setting defaults for vision processing retroreflective
-                if(canSetWhiteBalance){
+                if (canSetWhiteBalance) {
                     camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
                 }
                 this.getSettables().setExposure(50); // auto exposure disabled, put a sane default
             } else {
-                // Pick a bunch of reasonable setting defaults for driver, aurco, or otherwise nice-for-humans
-                if(canSetWhiteBalance){
+                // Pick a bunch of reasonable setting defaults for driver, aurco, or otherwise
+                // nice-for-humans
+                if (canSetWhiteBalance) {
                     camera.setWhiteBalanceAuto(); // Auto white-balance enabled
                 }
                 camera.setExposureAuto(); // auto exposure enabled
             }
-
         }
-
     }
 
     @Override
@@ -145,7 +142,10 @@ public class USBCameraSource extends VisionSource {
 
         private int timeToPiCamRawExposure(double time_us) {
             int retVal =
-                    (int) Math.round(time_us / 100.0); // Pi Cam's (both v1 and v2) need exposure time in units of 100us/bit
+                    (int)
+                            Math.round(
+                                    time_us / 100.0); // Pi Cam's (both v1 and v2) need exposure time in units of
+            // 100us/bit
             return Math.min(Math.max(retVal, 1), 10000); // Cap to allowable range for parameter
         }
 
@@ -165,7 +165,7 @@ public class USBCameraSource extends VisionSource {
 
         @Override
         public void setExposure(double exposure) {
-            if(exposure >= 0.0){
+            if (exposure >= 0.0) {
                 try {
                     int scaledExposure = 1;
                     if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
@@ -210,7 +210,6 @@ public class USBCameraSource extends VisionSource {
             }
         }
 
-
         @Override
         public VideoMode getCurrentVideoMode() {
             return camera.isConnected() ? camera.getVideoMode() : null;
@@ -242,7 +241,7 @@ public class USBCameraSource extends VisionSource {
                                     new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 90),
                                     new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 30),
                                     new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 15),
-                                    new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240,10),
+                                    new VideoMode(VideoMode.PixelFormat.kBGR, 320, 240, 10),
                                     new VideoMode(VideoMode.PixelFormat.kBGR, 640, 480, 90),
                                     new VideoMode(VideoMode.PixelFormat.kBGR, 640, 480, 45),
                                     new VideoMode(VideoMode.PixelFormat.kBGR, 640, 480, 30),
@@ -280,7 +279,8 @@ public class USBCameraSource extends VisionSource {
 
                         videoModesList.add(videoMode);
 
-                        // TODO - do we want to trim down FPS modes? in cases where the camera has no gain control,
+                        // TODO - do we want to trim down FPS modes? in cases where the camera has no gain
+                        // control,
                         // lower FPS might be needed to ensure total exposure is acceptable.
                         // We look for modes with the same height/width/pixelformat as this mode
                         // and remove all the ones that are slower. This is sorted low to high.

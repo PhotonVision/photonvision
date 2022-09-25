@@ -21,7 +21,10 @@ import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.Arrays;
 import java.util.List;
@@ -152,5 +155,23 @@ public class MathUtils {
 
         return new Pose3d(
                 pose.getTranslation().rotateBy(rotationQuat), pose.getRotation().rotateBy(rotationQuat));
+    }
+
+    // TODO: Refactor into new pipe?
+    public static Transform3d correctLocationForCameraPitch(
+            Transform3d cameraToTarget3d, Rotation2d cameraPitch) {
+        Pose3d pose = new Pose3d(cameraToTarget3d.getTranslation(), cameraToTarget3d.getRotation());
+        pose = MathUtils.EDNtoNWU(pose);
+
+        // We want the pose as seen by a person at the same pose as the camera, but facing
+        // forward instead of pitched up
+        Pose3d poseRotatedByCamAngle =
+                pose.transformBy(
+                        new Transform3d(new Translation3d(), new Rotation3d(0, -cameraPitch.getRadians(), 0)));
+
+        // The pose2d from the flattened coordinate system is just the X/Y components of the 3d pose
+        // and the rotation about the Z axis (which is up in the camera/field frame)
+        return new Transform3d(
+                poseRotatedByCamAngle.getTranslation(), poseRotatedByCamAngle.getRotation());
     }
 }

@@ -99,7 +99,6 @@ public class VisionModuleManagerTest {
             ret.put(0, getCurrentVideoMode());
             return ret;
         }
-
     }
 
     private static class TestDataConsumer implements CVPipelineResultConsumer {

@@ -30,7 +30,8 @@ import org.photonvision.common.logging.Logger;
 
 public class PicamJNI {
     private static boolean libraryLoaded = false;
-    private static boolean enabled = false; //TODO once we've sorted out what apriltags needs to be doing, we can bring this back?
+    private static boolean enabled =
+            false; // TODO once we've sorted out what apriltags needs to be doing, we can bring this back?
     private static Logger logger = new Logger(PicamJNI.class, LogGroup.Camera);
 
     public enum SensorModel {

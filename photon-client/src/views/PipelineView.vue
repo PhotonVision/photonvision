@@ -34,7 +34,7 @@
                 :text-color="fpsTooLow ? 'white' : 'grey'"
               >
                 <span class="pr-1">{{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
-                <span v-if="!fpsTooLow">{{ Math.min(Math.round($store.state.pipelineResults.latency), 100) }} ms latency</span>
+                <span v-if="!fpsTooLow">{{ Math.min(Math.round($store.state.pipelineResults.latency), 9999) }} ms latency</span>
                 <span v-else-if="!$store.getters.currentPipelineSettings.inputShouldShow">HSV thresholds are too broad; narrow them for better performance</span>
                 <span v-else>stop viewing the color stream for better performance</span>
               </v-chip>
@@ -333,8 +333,6 @@ export default {
                 // If in apriltag, "Threshold" and "Contours" are illegal -- otherwise "AprilTag" is
                 const isAprilTag = (this.$store.getters.currentPipelineSettings.pipelineType - 2) === 2;
 
-                console.log("allow 3d " + allow3d + " is april " + isAprilTag);
-
                 // 2D array of tab names and component names; each sub-array is a separate tab group
                 let ret = [];
                 if (this.$vuetify.breakpoint.smAndDown || this.$store.getters.isDriverMode || (this.$vuetify.breakpoint.mdAndDown && !this.$store.state.compactMode)) {
@@ -371,7 +369,6 @@ export default {
                   ret[i] = filteredGroup;
 
                   const end = JSON.stringify(ret[i].map(it => it.name))
-                  console.log("Start " + start + " end " + end);
                 }
 
                 // One last filter to remove empty lists

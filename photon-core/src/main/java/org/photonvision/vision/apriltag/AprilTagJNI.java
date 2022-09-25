@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.apriltag;
 
+import edu.wpi.first.util.RuntimeDetector;
 import edu.wpi.first.util.RuntimeLoader;
 import java.io.File;
 import java.io.IOException;
@@ -24,82 +25,72 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.opencv.core.Mat;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class AprilTagJNI {
-    static final String NATIVE_LIBRARY_NAME = "apriltagd";
+
+    static final boolean USE_DEBUG =
+            false; // Development flag - should be false on release, but flip to True to read in a debug
+    // version of the library
+    static final String NATIVE_DEBUG_LIBRARY_NAME = "apriltagd";
+    static final String NATIVE_RELEASE_LIBRARY_NAME = "apriltag";
+
     static boolean s_libraryLoaded = false;
     static RuntimeLoader<AprilTagJNI> s_loader = null;
-    private static Logger logger = new Logger(AprilTagJNI.class, LogGroup.Camera);
-
-    public static class Helper {
-        private static AtomicBoolean extractOnStaticLoad = new AtomicBoolean(true);
-
-        public static boolean getExtractOnStaticLoad() {
-            return extractOnStaticLoad.get();
-        }
-
-        public static void setExtractOnStaticLoad(boolean load) {
-            extractOnStaticLoad.set(load);
-        }
-    }
-
-    // static {
-    //   if (Helper.getExtractOnStaticLoad()) {
-    //     try {
-    //       forceLoad();
-    //     } catch (IOException ex) {
-    //       ex.printStackTrace();
-    //       System.exit(1);
-    //     }
-    //   }
-    // }
+    private static Logger logger = new Logger(AprilTagJNI.class, LogGroup.VisionModule);
 
     public static synchronized void forceLoad() throws IOException {
-        // if (s_libraryLoaded) {
-        //   return;
-        // }
-
-        // s_loader = new RuntimeLoader<>(
-        //   NATIVE_LIBRARY_NAME,
-        //   NativeLibHelper.getInstance().NativeLibPath.toString(),
-        //   AprilTagJNI.class
-        // );
-
-        // s_loader.loadLibrary();
-        // s_libraryLoaded = true;
 
         if (s_libraryLoaded) return;
 
         try {
-            String libFileName = System.mapLibraryName("apriltag");
+
+            // Ensure the lib directory has been created to receive the unpacked shared object
             File libDirectory = Path.of("lib/").toFile();
             if (!libDirectory.exists()) {
                 Files.createDirectory(libDirectory.toPath()).toFile();
             }
 
-            // We always extract the shared object (we could hash each so, but that's a lot of work)
-            URL resourceURL;
-            if (Platform.isRaspberryPi()) {
-                resourceURL =
-                        AprilTagJNI.class.getResource("/nativelibraries/apriltag/raspi/" + libFileName);
-            } else {
-                resourceURL = AprilTagJNI.class.getResource("/nativelibraries/apriltag/" + libFileName);
-            }
+            // Pick the proper library based on development flags
+            String libBaseName = USE_DEBUG ? NATIVE_DEBUG_LIBRARY_NAME : NATIVE_RELEASE_LIBRARY_NAME;
+            String libFileName = System.mapLibraryName(libBaseName);
             File libFile = Path.of("lib/" + libFileName).toFile();
+
+            // Always extract the library fresh
+            // Yes, technically, a hashing strategy should speed this up, but it's only a
+            // one-time, at-startup time hit. And not very big.
+            URL resourceURL;
+            
+            String subfolder;
+            // TODO 64-bit Pi support
+            if (RuntimeDetector.isAarch64()) { subfolder = "aarch64"; }
+            else if (RuntimeDetector.isAthena()) { subfolder = "athena"; }
+            else if (RuntimeDetector.isRaspbian()) { subfolder = "raspbian"; }
+            else if (RuntimeDetector.isWindows()) { subfolder = "win64"; }
+            else if (RuntimeDetector.isLinux()) { subfolder = "linux64"; }
+            else if (RuntimeDetector.isMac()) { subfolder = "mac"; } // NOT m1, afaict, lol
+            else {
+                logger.error("Could not determine platform! Cannot load Apriltag JNI");
+                return;
+            }
+
+            resourceURL = AprilTagJNI.class.getResource("/nativelibraries/apriltag/" + subfolder + "/" + libFileName);
+
             try (InputStream in = resourceURL.openStream()) {
+                // Remove the file if it already exists
                 if (libFile.exists()) Files.delete(libFile.toPath());
+                // Copy in a fresh resource
                 Files.copy(in, libFile.toPath());
             }
+
+            // Actually load the library
             System.load(libFile.getAbsolutePath());
 
             s_libraryLoaded = true;
-            // logger.info("Successfully loaded libpicam shared object");
+
         } catch (UnsatisfiedLinkError e) {
             logger.error("Couldn't load apriltag shared object");
             e.printStackTrace();
@@ -108,7 +99,11 @@ public class AprilTagJNI {
             ioe.printStackTrace();
         }
 
-        logger.warn("Tried to load apriltags, success: " + s_libraryLoaded);
+        if (!s_libraryLoaded) {
+            logger.error("Failed to load AprilTag Native Library!");
+        } else {
+            logger.info("AprilTag Native Library loaded successfully");
+        }
     }
 
     // Returns a pointer to a apriltag_detector_t
@@ -118,14 +113,43 @@ public class AprilTagJNI {
     // Destroy and free a previously created detector.
     public static native long AprilTag_Destroy(long detector);
 
-    private static native Object[] AprilTag_Detect(long detector, long imgAddr, int rows, int cols, boolean doPoseEstimation,
-        double tagWidth, double fx, double fy, double cx, double cy, int nIters);
+    private static native Object[] AprilTag_Detect(
+            long detector,
+            long imgAddr,
+            int rows,
+            int cols,
+            boolean doPoseEstimation,
+            double tagWidth,
+            double fx,
+            double fy,
+            double cx,
+            double cy,
+            int nIters);
 
     // Detect targets given a GRAY frame. Returns a pointer toa zarray
-    public static DetectionResult[] AprilTag_Detect(long detector, Mat img, boolean doPoseEstimation,
-            double tagWidth, double fx, double fy, double cx, double cy, int nIters) {
-        return (DetectionResult[]) AprilTag_Detect(detector, img.dataAddr(), img.rows(), img.cols(), doPoseEstimation,
-        tagWidth, fx, fy, cx, cy, nIters);
+    public static DetectionResult[] AprilTag_Detect(
+            long detector,
+            Mat img,
+            boolean doPoseEstimation,
+            double tagWidth,
+            double fx,
+            double fy,
+            double cx,
+            double cy,
+            int nIters) {
+        return (DetectionResult[])
+                AprilTag_Detect(
+                        detector,
+                        img.dataAddr(),
+                        img.rows(),
+                        img.cols(),
+                        doPoseEstimation,
+                        tagWidth,
+                        fx,
+                        fy,
+                        cx,
+                        cy,
+                        nIters);
     }
 
     public static void main(String[] args) {

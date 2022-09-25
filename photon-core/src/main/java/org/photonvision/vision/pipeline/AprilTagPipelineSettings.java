@@ -30,6 +30,8 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int threads = 1;
     public boolean debug = false;
     public boolean refineEdges = true;
+    public int numIterations = 200;
+
     // 3d settings
 
     public AprilTagPipelineSettings() {

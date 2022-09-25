@@ -24,10 +24,14 @@ import java.util.Objects;
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
-                    new QuirkyCamera(0x9331, 0x5A3, CameraQuirk.CompletelyBroken), // Chris's older generic "Logitec HD Webcam"
+                    new QuirkyCamera(
+                            0x9331,
+                            0x5A3,
+                            CameraQuirk.CompletelyBroken), // Chris's older generic "Logitec HD Webcam"
                     new QuirkyCamera(0x825, 0x46D, CameraQuirk.CompletelyBroken), // Logitec C270
                     new QuirkyCamera(0x2000, 0x1415, CameraQuirk.Gain, CameraQuirk.FPSCap100), // PS3Eye
-                    new QuirkyCamera(-1, -1, "mmal service 16.1", CameraQuirk.PiCam) // PiCam (via V4L2, not zerocopy)
+                    new QuirkyCamera(
+                            -1, -1, "mmal service 16.1", CameraQuirk.PiCam) // PiCam (via V4L2, not zerocopy)
                     );
 
     public static final QuirkyCamera DefaultCamera = new QuirkyCamera(0, 0, "");

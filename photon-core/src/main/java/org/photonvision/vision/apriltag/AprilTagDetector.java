@@ -18,9 +18,12 @@
 package org.photonvision.vision.apriltag;
 
 import org.opencv.core.Mat;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class AprilTagDetector {
+    private static final Logger logger = new Logger(AprilTagDetector.class, LogGroup.VisionModule);
     private long m_detectorPtr = 0;
     private AprilTagDetectorParams m_detectorParams = AprilTagDetectorParams.DEFAULT_36H11;
 
@@ -35,7 +38,7 @@ public class AprilTagDetector {
             m_detectorPtr = 0;
         }
 
-        System.out.println("Creating detector with params " + m_detectorParams);
+        logger.debug("Creating detector with params " + m_detectorParams);
         m_detectorPtr =
                 AprilTagJNI.AprilTag_Create(
                         m_detectorParams.tagFamily.getNativeName(),
@@ -53,21 +56,37 @@ public class AprilTagDetector {
         }
     }
 
-    public DetectionResult[] detect(Mat grayscaleImg, CameraCalibrationCoefficients coeffs) {
-        //System.out.println("Called from thread " + Thread.currentThread().getName());
-        if (m_detectorPtr == 0 || coeffs == null) return new DetectionResult[] {};
-        final Mat cameraMatrix = coeffs.getCameraIntrinsicsMat();
-            if (cameraMatrix == null) {
-                return AprilTagJNI.AprilTag_Detect(m_detectorPtr, grayscaleImg,
-                false, 0.1, 0, 0, 0, 0, 100
-            );
+    public DetectionResult[] detect(
+            Mat grayscaleImg,
+            CameraCalibrationCoefficients coeffs,
+            boolean useNativePoseEst,
+            int numIterations,
+            double tagWidthMeters) {
+        if (m_detectorPtr == 0) {
+            // Detector not set up (JNI issue? or similar?)
+            // No detection is possible.
+            return new DetectionResult[] {};
         }
-        var cx = cameraMatrix.get(0, 2)[0];
-        var cy = cameraMatrix.get(1, 2)[0];
-        var fx = cameraMatrix.get(0, 0)[0];
-        var fy = cameraMatrix.get(1, 1)[0];
-        return AprilTagJNI.AprilTag_Detect(m_detectorPtr, grayscaleImg,
-            true, 0.1, fx, fy, cx, cy, 100
-        );
+
+        var cx = 0.0;
+        var cy = 0.0;
+        var fx = 0.0;
+        var fy = 0.0;
+        var doPoseEst = false;
+
+        if (coeffs != null && useNativePoseEst) {
+            final Mat cameraMatrix = coeffs.getCameraIntrinsicsMat();
+            if (cameraMatrix != null) {
+                // Camera calibration has been done, we should be able to do pose estimation
+                cx = cameraMatrix.get(0, 2)[0];
+                cy = cameraMatrix.get(1, 2)[0];
+                fx = cameraMatrix.get(0, 0)[0];
+                fy = cameraMatrix.get(1, 1)[0];
+                doPoseEst = true;
+            }
+        }
+
+        return AprilTagJNI.AprilTag_Detect(
+                m_detectorPtr, grayscaleImg, doPoseEst, tagWidthMeters, fx, fy, cx, cy, numIterations);
     }
 }

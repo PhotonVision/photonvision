@@ -330,7 +330,7 @@ public class VisionModule {
         return visionSource.isVendorCamera();
     }
 
-    void changePipelineType(int newType){
+    void changePipelineType(int newType) {
         pipelineManager.changePipelineType(newType);
         setPipeline(pipelineManager.getCurrentPipelineIndex());
         saveAndBroadcastAll();
@@ -339,7 +339,10 @@ public class VisionModule {
     void setDriverMode(boolean isDriverMode) {
         pipelineManager.setDriverMode(isDriverMode);
         setVisionLEDs(!isDriverMode);
-        setPipeline(isDriverMode ? PipelineManager.DRIVERMODE_INDEX : pipelineManager.getCurrentPipelineIndex());
+        setPipeline(
+                isDriverMode
+                        ? PipelineManager.DRIVERMODE_INDEX
+                        : pipelineManager.getCurrentPipelineIndex());
         saveAndBroadcastAll();
     }
 
@@ -406,23 +409,22 @@ public class VisionModule {
         visionSource.getSettables().setBrightness(pipelineSettings.cameraBrightness);
         visionSource.getSettables().setGain(pipelineSettings.cameraGain);
 
-
-            
         // set to true to change camera gain/exposure settings for low exposure
         // false will keep the camera running in a more "nice-for-humans" mode
         // Each camera type is allowed to decide what settings that exactly means
-        boolean lowExposureOptimization = (pipelineSettings.pipelineType == PipelineType.ColoredShape || 
-                                            pipelineSettings.pipelineType == PipelineType.Reflective);
+        boolean lowExposureOptimization =
+                (pipelineSettings.pipelineType == PipelineType.ColoredShape
+                        || pipelineSettings.pipelineType == PipelineType.Reflective);
         visionSource.getSettables().setLowExposureOptimization(lowExposureOptimization);
 
-        if(lowExposureOptimization){
-            if (pipelineSettings.cameraExposure == -1) pipelineSettings.cameraExposure = 10; //reasonable default
+        if (lowExposureOptimization) {
+            if (pipelineSettings.cameraExposure == -1)
+                pipelineSettings.cameraExposure = 10; // reasonable default
         } else {
-            //in human-friendly mode, exposure is automatic
+            // in human-friendly mode, exposure is automatic
             pipelineSettings.cameraExposure = -1;
         }
         visionSource.getSettables().setExposure(pipelineSettings.cameraExposure);
-
 
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             // If the gain is disabled for some reason, re-enable it

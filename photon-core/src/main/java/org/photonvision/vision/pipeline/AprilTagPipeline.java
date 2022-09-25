@@ -17,9 +17,11 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import org.opencv.core.Mat;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.apriltag.DetectionResult;
@@ -32,20 +34,11 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
-
 @SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
-    private final SolvePNPAprilTagsPipe solvePNPPipe = new SolvePNPAprilTagsPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     public AprilTagPipeline() {
@@ -58,6 +51,10 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
     @Override
     protected void setPipeParamsImpl() {
+
+        // Sanitize thread count - not supported to ahve fewer than 1 threads
+        settings.threads = Math.max(1, settings.threads);
+
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
@@ -76,14 +73,27 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         settings.threads,
                         settings.debug,
                         settings.refineEdges);
-        aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(aprilTagDetectionParams, frameStaticProperties.cameraCalibration));
 
-        var solvePNPParams =
-                new SolvePNPAprilTagsPipe.SolvePNPAprilTagsPipeParams(
+        // TODO (HACK): tag width is Fun because it really belongs in the "target model", sorta
+        // for now, hard code tag width based on enum value
+        double tagWidth = 0.08; // guess at 200mm??
+        switch (settings.targetModel) {
+            case k200mmAprilTag:
+                {
+                    tagWidth = Units.inchesToMeters(3.15 * 2);
+                }
+            default:
+                {
+                    break;
+                }
+        }
+
+        aprilTagDetectionPipe.setParams(
+                new AprilTagDetectionPipeParams(
+                        aprilTagDetectionParams,
                         frameStaticProperties.cameraCalibration,
-                        frameStaticProperties.cameraPitch,
-                        settings.targetModel);
-        solvePNPPipe.setParams(solvePNPParams);
+                        settings.numIterations,
+                        tagWidth));
     }
 
     @Override
@@ -109,6 +119,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         List<TrackedTarget> targetList;
         CVPipeResult<List<DetectionResult>> tagDetectionPipeResult;
 
+        // Use the solvePNP Enabled flag to enable native pose estimation
+        aprilTagDetectionPipe.setNativePoseEstimationEnabled(settings.solvePNPEnabled);
+
         tagDetectionPipeResult = aprilTagDetectionPipe.run(grayscalePipeResult.output);
         grayscalePipeResult.output.release();
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
@@ -123,17 +136,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
 
-            target.setCameraToTarget(correctLocationForCameraPitch(target.getCameraToTarget3d(), frameStaticProperties.cameraPitch));
+            var correctedPose =
+                    MathUtils.correctLocationForCameraPitch(
+                            target.getCameraToTarget3d(), frameStaticProperties.cameraPitch);
+            target.setCameraToTarget3d(correctedPose);
+
             targetList.add(target);
         }
-        try{
-        Thread.sleep(500);
-        } catch(InterruptedException e) {
-
-        }
-        // if (settings.solvePNPEnabled) {
-        //     targetList = solvePNPPipe.run(targetList).output;
-        // }
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
@@ -144,23 +153,5 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 Frame.emptyFrame(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight);
 
         return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, outputFrame, inputFrame);
-    }
-
-    // TODO: Refactor into new pipe?
-    private Transform2d correctLocationForCameraPitch(
-            Transform3d cameraToTarget3d, Rotation2d cameraPitch) {
-        Pose3d pose = new Pose3d(cameraToTarget3d.getTranslation(), cameraToTarget3d.getRotation());
-
-        // We want the pose as seen by a person at the same pose as the camera, but facing
-        // forward instead of pitched up
-        Pose3d poseRotatedByCamAngle =
-                pose.transformBy(
-                        new Transform3d(new Translation3d(), new Rotation3d(0, -cameraPitch.getRadians(), 0)));
-
-        // The pose2d from the flattened coordinate system is just the X/Y components of the 3d pose
-        // and the rotation about the Z axis (which is up in the camera/field frame)
-        return new Transform2d(
-                new Translation2d(poseRotatedByCamAngle.getX(), poseRotatedByCamAngle.getY()),
-                new Rotation2d(poseRotatedByCamAngle.getRotation().getZ()));
     }
 }

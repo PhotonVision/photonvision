@@ -47,7 +47,6 @@ public class Draw3dTargetsPipe
         for (var target : in.getRight()) {
             // draw convex hull
             if (params.shouldDrawHull(target)) {
-                System.out.println("Hull");
                 var pointMat = new MatOfPoint();
                 divideMat2f(target.m_mainContour.getConvexHull(), pointMat);
                 if (pointMat.size().empty()) {

@@ -67,7 +67,6 @@ export default {
       for (const target of this.targets) {
         const geometry = new BoxGeometry(0.2, 0.2, 0.3 / 5);
         const material = new MeshNormalMaterial();
-        console.log(target.pose)
         let quat = (new Quaternion(
             target.pose.qx,
             target.pose.qy,
@@ -100,7 +99,6 @@ export default {
         // arrow.rotateX(Math.PI / 2)
         arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
         this.cubes.push(arrow);
-        console.log(this.cubes)
         arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
             1, // length
             0x0000ff,
