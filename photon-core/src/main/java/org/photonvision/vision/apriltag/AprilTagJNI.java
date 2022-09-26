@@ -26,7 +26,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.opencv.core.Mat;
-import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -63,21 +62,30 @@ public class AprilTagJNI {
             // Yes, technically, a hashing strategy should speed this up, but it's only a
             // one-time, at-startup time hit. And not very big.
             URL resourceURL;
-            
+
             String subfolder;
             // TODO 64-bit Pi support
-            if (RuntimeDetector.isAthena()) { subfolder = "athena"; }
-            else if (RuntimeDetector.isAarch64()) { subfolder = "aarch64"; }
-            else if (RuntimeDetector.isRaspbian()) { subfolder = "raspbian"; }
-            else if (RuntimeDetector.isWindows()) { subfolder = "win64"; }
-            else if (RuntimeDetector.isLinux()) { subfolder = "linux64"; }
-            else if (RuntimeDetector.isMac()) { subfolder = "mac"; } // NOT m1, afaict, lol
+            if (RuntimeDetector.isAthena()) {
+                subfolder = "athena";
+            } else if (RuntimeDetector.isAarch64()) {
+                subfolder = "aarch64";
+            } else if (RuntimeDetector.isRaspbian()) {
+                subfolder = "raspbian";
+            } else if (RuntimeDetector.isWindows()) {
+                subfolder = "win64";
+            } else if (RuntimeDetector.isLinux()) {
+                subfolder = "linux64";
+            } else if (RuntimeDetector.isMac()) {
+                subfolder = "mac";
+            } // NOT m1, afaict, lol
             else {
                 logger.error("Could not determine platform! Cannot load Apriltag JNI");
                 return;
             }
 
-            resourceURL = AprilTagJNI.class.getResource("/nativelibraries/apriltag/" + subfolder + "/" + libFileName);
+            resourceURL =
+                    AprilTagJNI.class.getResource(
+                            "/nativelibraries/apriltag/" + subfolder + "/" + libFileName);
 
             try (InputStream in = resourceURL.openStream()) {
                 // Remove the file if it already exists
