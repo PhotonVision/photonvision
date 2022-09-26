@@ -357,7 +357,6 @@ export default {
 
                 for(let i = 0; i < ret.length; i++) {
                   const group = ret[i];
-                  const start = JSON.stringify(ret[i].map(it => it.name))
 
                   // All the tabs we allow
                   const filteredGroup = group.filter(it =>
@@ -367,8 +366,6 @@ export default {
                        && !(!isAprilTag && it.name === "AprilTag")
                       );
                   ret[i] = filteredGroup;
-
-                  const end = JSON.stringify(ret[i].map(it => it.name))
                 }
 
                 // One last filter to remove empty lists

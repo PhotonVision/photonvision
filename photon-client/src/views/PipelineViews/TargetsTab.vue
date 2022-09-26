@@ -18,7 +18,10 @@
               <th class="text-center">
                 Target
               </th>
-              <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled && $store.getters.pipelineType !== 4">
+              <th class="text-center" v-if="$store.getters.pipelineType === 4">
+                Fiducial ID
+              </th>
+              <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center">
                   Pitch,&nbsp;&deg;
                 </th>
@@ -32,10 +35,7 @@
                   Area, %
                 </th>
               </template>
-              <template v-else-if="$store.getters.pipelineType === 4">
-                <th class="text-center">
-                  Fiducial ID
-                </th>
+              <template v-else-if="$store.getters.pipelineType === 4 && $store.getters.currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center">
                   X,&nbsp;m 
                 </th>
@@ -65,14 +65,17 @@
               :key="index"
             >
               <td>{{ index }}</td>
+              <td v-if="$store.getters.pipelineType === 4">
+                {{ parseInt(value.fiducialId) }} 
+              </td>
               <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <td>{{ parseFloat(value.pitch).toFixed(2) }}</td>
                 <td>{{ parseFloat(value.yaw).toFixed(2) }}</td>
                 <td>{{ parseFloat(value.skew).toFixed(2) }}</td>
                 <td>{{ parseFloat(value.area).toFixed(2) }}</td>
               </template>
-              <template v-else-if="$store.getters.pipelineType === 4">
-                <td>{{ parseInt(value.fiducialId) }}</td>
+              <template v-else-if="$store.getters.currentPipelineSettings.solvePNPEnabled && $store.getters.pipelineType === 4">
+                <td>{{ parseInt(value.fiducialId) }} </td>
                 <td>{{ parseFloat(value.pose.x).toFixed(2) }}&nbsp;m</td>
                 <td>{{ parseFloat(value.pose.y).toFixed(2) }}&nbsp;m</td>
                 <td>{{ (parseFloat(value.pose.angle_z) * 180 / Math.PI).toFixed(2) }}&deg;</td>
