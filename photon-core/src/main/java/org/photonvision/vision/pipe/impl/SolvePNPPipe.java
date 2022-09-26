@@ -17,9 +17,11 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
@@ -28,6 +30,7 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Scalar;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TargetModel;
@@ -61,7 +64,7 @@ public class SolvePNPPipe
     }
 
     private void calculateTargetPose(TrackedTarget target) {
-        Transform2d targetPose;
+        Transform3d targetPose;
 
         var corners = target.getTargetCorners();
         if (corners == null
@@ -91,9 +94,17 @@ public class SolvePNPPipe
         target.setCameraRelativeTvec(tVec);
         target.setCameraRelativeRvec(rVec);
 
-        targetPose = correctLocationForCameraPitch(tVec, rVec, params.cameraPitchAngle);
+        Translation3d translation =
+                new Translation3d(tVec.get(0, 0)[0], tVec.get(1, 0)[0], tVec.get(2, 0)[0]);
+        Rotation3d rotation =
+                new Rotation3d(
+                        VecBuilder.fill(rVec.get(0, 0)[0], rVec.get(1, 0)[0], rVec.get(2, 0)[0]),
+                        Core.norm(rVec));
 
-        target.setCameraToTarget(targetPose);
+        targetPose =
+                MathUtils.correctLocationForCameraPitch(
+                        new Transform3d(translation, rotation), params.cameraPitchAngle);
+        target.setCameraToTarget3d(targetPose);
     }
 
     Mat rotationMatrix = new Mat();
@@ -101,43 +112,6 @@ public class SolvePNPPipe
     Mat pzeroWorld = new Mat();
     Mat kMat = new Mat();
     Mat scaledTvec;
-
-    @SuppressWarnings("DuplicatedCode") // yes I know we have another solvePNP pipe
-    private Transform2d correctLocationForCameraPitch(
-            Mat tVec, Mat rVec, Rotation2d cameraPitchAngle) {
-        // Algorithm from team 5190 Green Hope Falcons. Can also be found in Ligerbot's vision
-        // whitepaper
-        var tiltAngle = cameraPitchAngle.getRadians();
-
-        // the left/right distance to the target, unchanged by tilt.
-        var x = tVec.get(0, 0)[0];
-
-        // Z distance in the flat plane is given by
-        // Z_field = z cos theta + y sin theta.
-        // Z is the distance "out" of the camera (straight forward).
-        var zField = tVec.get(2, 0)[0] * Math.cos(tiltAngle) + tVec.get(1, 0)[0] * Math.sin(tiltAngle);
-
-        Calib3d.Rodrigues(rVec, rotationMatrix);
-        Core.transpose(rotationMatrix, inverseRotationMatrix);
-
-        scaledTvec = matScale(tVec, -1);
-
-        Core.gemm(inverseRotationMatrix, scaledTvec, 1, kMat, 0, pzeroWorld);
-        scaledTvec.release();
-
-        var angle2 = Math.atan2(pzeroWorld.get(0, 0)[0], pzeroWorld.get(2, 0)[0]);
-
-        // target rotation is the rotation of the target relative to straight ahead. this number
-        // should be unchanged if the robot purely translated left/right.
-        var targetRotation = -angle2; // radians
-
-        // We want a vector that is X forward and Y left.
-        // We have a Z_field (out of the camera projected onto the field), and an X left/right.
-        // so Z_field becomes X, and X becomes Y
-
-        var targetLocation = new Translation2d(zField, -x);
-        return new Transform2d(targetLocation, new Rotation2d(targetRotation));
-    }
 
     /**
      * Element-wise scale a matrix by a given factor

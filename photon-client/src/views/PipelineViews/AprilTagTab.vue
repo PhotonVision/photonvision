@@ -34,8 +34,8 @@
       class="pt-2"
       slider-cols="12"
       name="Threads"
-      min="0"
-      max="5"
+      min="1"
+      max="8"
       step="1"
       @input="handlePipelineData('threads')"
     />

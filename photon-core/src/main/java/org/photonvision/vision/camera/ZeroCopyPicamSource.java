@@ -46,11 +46,12 @@ public class ZeroCopyPicamSource extends VisionSource {
         settables = new PicamSettables(configuration);
         frameProvider = new AcceleratedPicamFrameProvider(settables);
 
-        setLowExposureOptimizationImpl(false); 
+        setLowExposureOptimizationImpl(false);
     }
 
-    static void setLowExposureOptimizationImpl(boolean mode){
-        //TODO - ZeroCopy does not... yet? ... have the configuration params necessary to make this work well.
+    static void setLowExposureOptimizationImpl(boolean mode) {
+        // TODO - ZeroCopy does not... yet? ... have the configuration params necessary to make this
+        // work well.
     }
 
     @Override
@@ -152,8 +153,8 @@ public class ZeroCopyPicamSource extends VisionSource {
         @Override
         public void setExposure(double exposure) {
 
-            //Todo - for now, handle auto exposure by using 100% exposure
-            if(exposure < 0.0){
+            // Todo - for now, handle auto exposure by using 100% exposure
+            if (exposure < 0.0) {
                 exposure = 100.0;
             }
 

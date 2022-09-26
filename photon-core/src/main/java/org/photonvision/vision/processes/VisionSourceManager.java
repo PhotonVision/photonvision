@@ -318,10 +318,9 @@ public class VisionSourceManager {
 
             var newCam = new USBCameraSource(configuration);
 
-            if(!newCam.cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)){
+            if (!newCam.cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)) {
                 cameraSources.add(newCam);
             }
-
         }
         return cameraSources;
     }

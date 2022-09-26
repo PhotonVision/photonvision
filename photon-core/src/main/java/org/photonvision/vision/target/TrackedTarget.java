@@ -17,10 +17,10 @@
 package org.photonvision.vision.target;
 
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashMap;
 import java.util.List;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
@@ -46,7 +46,6 @@ public class TrackedTarget implements Releasable {
     private double m_area;
     private double m_skew;
 
-    private Transform2d m_cameraToTarget = new Transform2d();
     private Transform3d m_cameraToTarget3d = new Transform3d();
 
     private CVShape m_shape;
@@ -74,15 +73,14 @@ public class TrackedTarget implements Releasable {
                 TargetCalculations.calculateYaw(
                         result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
         Pose3d bestPose = new Pose3d();
-        if(result.getError1() <= result.getError2()) {
+        if (result.getError1() <= result.getError2()) {
             bestPose = result.getPoseResult1();
-        }
-        else {
+        } else {
             bestPose = result.getPoseResult2();
         }
 
         m_cameraToTarget3d = new Transform3d(new Pose3d(), bestPose);
-        
+
         double[] corners = result.getCorners();
         Point[] cornerPoints =
                 new Point[] {
@@ -98,7 +96,27 @@ public class TrackedTarget implements Releasable {
         m_area = m_mainContour.getArea() / params.imageArea * 100;
         m_fiducialId = result.getId();
         m_shape = null;
+
+        // TODO implement skew? or just yeet
         m_skew = 0;
+
+        var tvec = new Mat(3, 1, CvType.CV_64FC1);
+        tvec.put(
+                0,
+                0,
+                new double[] {
+                    bestPose.getTranslation().getX(),
+                    bestPose.getTranslation().getY(),
+                    bestPose.getTranslation().getZ()
+                });
+        setCameraRelativeTvec(tvec);
+
+        // Opencv expects a 3d vector with norm = angle and direction = axis
+        var rvec = new Mat(3, 1, CvType.CV_64FC1);
+        var angle = bestPose.getRotation().getAngle();
+        var axis = bestPose.getRotation().getAxis().times(angle);
+        rvec.put(0, 0, axis.getData());
+        setCameraRelativeRvec(rvec);
     }
 
     public void setFiducialId(int id) {
@@ -198,16 +216,8 @@ public class TrackedTarget implements Releasable {
         return !m_subContours.isEmpty();
     }
 
-    public Transform2d getCameraToTarget() {
-        return m_cameraToTarget;
-    }
-
     public Transform3d getCameraToTarget3d() {
         return m_cameraToTarget3d;
-    }
-
-    public void setCameraToTarget(Transform2d pose) {
-        this.m_cameraToTarget = pose;
     }
 
     public void setCameraToTarget3d(Transform3d pose) {
@@ -249,6 +259,7 @@ public class TrackedTarget implements Releasable {
         if (getCameraToTarget3d() != null) {
             ret.put("pose", transformToMap(getCameraToTarget3d()));
         }
+        ret.put("fiducialId", getFiducialId());
         return ret;
     }
 
@@ -261,6 +272,8 @@ public class TrackedTarget implements Releasable {
         ret.put("qx", transform.getRotation().getQuaternion().getX());
         ret.put("qy", transform.getRotation().getQuaternion().getY());
         ret.put("qz", transform.getRotation().getQuaternion().getZ());
+
+        ret.put("angle_z", transform.getRotation().getZ() + Math.PI / 2.0);
         return ret;
     }
 

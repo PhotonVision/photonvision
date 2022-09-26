@@ -21,7 +21,7 @@ import java.util.Objects;
 
 public class AprilTagDetectorParams {
     public static AprilTagDetectorParams DEFAULT_36H11 =
-            new AprilTagDetectorParams(AprilTagFamily.kTag36h11, 1.0, 0.0, 1, false, false);
+            new AprilTagDetectorParams(AprilTagFamily.kTag36h11, 1.0, 0.0, 4, false, false);
 
     public final AprilTagFamily tagFamily;
     public final double decimate;

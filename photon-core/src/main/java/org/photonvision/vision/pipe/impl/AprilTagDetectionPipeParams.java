@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.util.Objects;
-
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -27,6 +26,8 @@ public class AprilTagDetectionPipeParams {
 
     public final AprilTagDetectorParams detectorParams;
     public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
+    public final int numIterations;
+    public final double tagWidthMeters;
 
     public AprilTagDetectionPipeParams(
             AprilTagFamily tagFamily,
@@ -35,18 +36,25 @@ public class AprilTagDetectionPipeParams {
             int threads,
             boolean debug,
             boolean refineEdges,
+            int numIters,
+            double tagWidthMeters,
             CameraCalibrationCoefficients cameraCalibrationCoefficients) {
-        detectorParams = new AprilTagDetectorParams(tagFamily, decimate, blur, threads, debug, refineEdges);
+        detectorParams =
+                new AprilTagDetectorParams(tagFamily, decimate, blur, threads, debug, refineEdges);
         this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
-
+        this.numIterations = numIters;
+        this.tagWidthMeters = tagWidthMeters;
     }
 
     public AprilTagDetectionPipeParams(
-        AprilTagDetectorParams detectorParams,
-        CameraCalibrationCoefficients cameraCalibrationCoefficients
-    ) {
+            AprilTagDetectorParams detectorParams,
+            CameraCalibrationCoefficients cameraCalibrationCoefficients,
+            int numIters,
+            double tagWidthMeters) {
         this.detectorParams = detectorParams;
         this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
+        this.numIterations = numIters;
+        this.tagWidthMeters = tagWidthMeters;
     }
 
     @Override

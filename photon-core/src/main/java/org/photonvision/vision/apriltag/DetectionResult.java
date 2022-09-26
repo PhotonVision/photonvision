@@ -17,13 +17,12 @@
 
 package org.photonvision.vision.apriltag;
 
-import java.util.Arrays;
-
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import java.util.Arrays;
 
 public class DetectionResult {
     public int getId() {
@@ -97,8 +96,10 @@ public class DetectionResult {
     double centerX, centerY;
     double[] corners;
 
-    Pose3d poseResult1; double error1;
-    Pose3d poseResult2; double error2;
+    Pose3d poseResult1;
+    double error1;
+    Pose3d poseResult2;
+    double error2;
 
     public DetectionResult(
             int id,
@@ -108,14 +109,12 @@ public class DetectionResult {
             double centerX,
             double centerY,
             double[] corners,
-
             double[] pose1TransArr,
             double[] pose1RotArr,
             double err1,
             double[] pose2TransArr,
             double[] pose2RotArr,
-            double err2
-            ) {
+            double err2) {
         this.id = id;
         this.hamming = hamming;
         this.decision_margin = decision_margin;
@@ -125,28 +124,41 @@ public class DetectionResult {
         this.corners = corners;
 
         this.error1 = err1;
-        this.poseResult1 = new Pose3d(
-            new Translation3d(
-                pose1TransArr[0],
-                pose1TransArr[1],
-                pose1TransArr[2]),
-            new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose1RotArr))
-        );
+        this.poseResult1 =
+                new Pose3d(
+                        new Translation3d(pose1TransArr[0], pose1TransArr[1], pose1TransArr[2]),
+                        new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose1RotArr)));
         this.error2 = err2;
-        this.poseResult2 = new Pose3d(
-            new Translation3d(
-                pose2TransArr[0],
-                pose2TransArr[1],
-                pose2TransArr[2]),
-            new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose2RotArr))
-        );
+        this.poseResult2 =
+                new Pose3d(
+                        new Translation3d(pose2TransArr[0], pose2TransArr[1], pose2TransArr[2]),
+                        new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose2RotArr)));
     }
 
     @Override
     public String toString() {
-        return "DetectionResult [centerX=" + centerX + ", centerY=" + centerY + ", corners=" + Arrays.toString(corners)
-                + ", decision_margin=" + decision_margin + ", error1=" + error1 + ", error2=" + error2 + ", hamming="
-                + hamming + ", homography=" + Arrays.toString(homography) + ", id=" + id + ", poseResult1="
-                + poseResult1 + ", poseResult2=" + poseResult2 + "]";
+        return "DetectionResult [centerX="
+                + centerX
+                + ", centerY="
+                + centerY
+                + ", corners="
+                + Arrays.toString(corners)
+                + ", decision_margin="
+                + decision_margin
+                + ", error1="
+                + error1
+                + ", error2="
+                + error2
+                + ", hamming="
+                + hamming
+                + ", homography="
+                + Arrays.toString(homography)
+                + ", id="
+                + id
+                + ", poseResult1="
+                + poseResult1
+                + ", poseResult2="
+                + poseResult2
+                + "]";
     }
 }

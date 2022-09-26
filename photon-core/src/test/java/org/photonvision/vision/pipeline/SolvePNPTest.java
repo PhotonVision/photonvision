@@ -113,10 +113,10 @@ public class SolvePNPTest {
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getCameraToTarget();
+        var pose = pipelineResult.targets.get(0).getCameraToTarget3d();
         Assertions.assertEquals(1.1, pose.getTranslation().getX(), 0.05);
         Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.05);
-        Assertions.assertEquals(1, pose.getRotation().getDegrees(), 1);
+        Assertions.assertEquals(1, pose.getRotation().toRotation2d().getDegrees(), 1);
 
         Imgcodecs.imwrite("D:\\out.jpg", pipelineResult.outputFrame.image.getMat());
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
@@ -146,10 +146,10 @@ public class SolvePNPTest {
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getCameraToTarget();
+        var pose = pipelineResult.targets.get(0).getCameraToTarget3d();
         Assertions.assertEquals(Units.inchesToMeters(240.26), pose.getTranslation().getX(), 0.05);
         Assertions.assertEquals(Units.inchesToMeters(35), pose.getTranslation().getY(), 0.05);
-        Assertions.assertEquals(42, pose.getRotation().getDegrees(), 1);
+        Assertions.assertEquals(42, pose.getRotation().toRotation2d().getDegrees(), 1);
 
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
     }
@@ -197,7 +197,7 @@ public class SolvePNPTest {
         System.out.println(
                 "Found targets at "
                         + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getCameraToTarget)
+                                .map(TrackedTarget::getCameraToTarget3d)
                                 .collect(Collectors.toList()));
     }
 }
