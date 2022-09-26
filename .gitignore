@@ -147,3 +147,4 @@ photon-lib/src/generate/native/include/PhotonVersion.h
 .gitattributes
 lib/*
 photon-server/lib/libapriltag.so
+photon-server/bin/main/nativelibraries/apriltag/*
