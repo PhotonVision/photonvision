@@ -66,8 +66,8 @@ public class AprilTagJNI {
             
             String subfolder;
             // TODO 64-bit Pi support
-            if (RuntimeDetector.isAarch64()) { subfolder = "aarch64"; }
-            else if (RuntimeDetector.isAthena()) { subfolder = "athena"; }
+            if (RuntimeDetector.isAthena()) { subfolder = "athena"; }
+            else if (RuntimeDetector.isAarch64()) { subfolder = "aarch64"; }
             else if (RuntimeDetector.isRaspbian()) { subfolder = "raspbian"; }
             else if (RuntimeDetector.isWindows()) { subfolder = "win64"; }
             else if (RuntimeDetector.isLinux()) { subfolder = "linux64"; }
