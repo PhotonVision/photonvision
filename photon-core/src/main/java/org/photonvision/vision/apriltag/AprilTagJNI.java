@@ -30,7 +30,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class AprilTagJNI {
-
     static final boolean USE_DEBUG =
             false; // Development flag - should be false on release, but flip to True to read in a debug
     // version of the library
@@ -42,11 +41,9 @@ public class AprilTagJNI {
     private static Logger logger = new Logger(AprilTagJNI.class, LogGroup.VisionModule);
 
     public static synchronized void forceLoad() throws IOException {
-
         if (s_libraryLoaded) return;
 
         try {
-
             // Ensure the lib directory has been created to receive the unpacked shared object
             File libDirectory = Path.of("lib/").toFile();
             if (!libDirectory.exists()) {

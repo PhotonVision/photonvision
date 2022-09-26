@@ -37,7 +37,7 @@
               </template>
               <template v-else-if="$store.getters.pipelineType === 4 && $store.getters.currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center">
-                  X,&nbsp;m 
+                  X,&nbsp;m
                 </th>
                 <th class="text-center">
                   Y,&nbsp;m
@@ -48,7 +48,7 @@
               </template>
               <template v-else-if="$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center">
-                  X,&nbsp;m 
+                  X,&nbsp;m
                 </th>
                 <th class="text-center">
                   Y,&nbsp;m
@@ -66,7 +66,7 @@
             >
               <td>{{ index }}</td>
               <td v-if="$store.getters.pipelineType === 4">
-                {{ parseInt(value.fiducialId) }} 
+                {{ parseInt(value.fiducialId) }}
               </td>
               <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <td>{{ parseFloat(value.pitch).toFixed(2) }}</td>

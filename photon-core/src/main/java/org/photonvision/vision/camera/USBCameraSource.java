@@ -71,7 +71,6 @@ public class USBCameraSource extends VisionSource {
     }
 
     void setLowExposureOptimizationImpl(boolean lowExposureMode) {
-
         if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
             // Case, we know this is a picam. Go through v4l2-ctl interface directly
 
@@ -169,7 +168,6 @@ public class USBCameraSource extends VisionSource {
                 try {
                     int scaledExposure = 1;
                     if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-
                         scaledExposure =
                                 (int) Math.round(timeToPiCamRawExposure(pctToExposureTimeUs(exposure)));
                         logger.debug("Setting camera raw exposure to " + Integer.toString(scaledExposure));

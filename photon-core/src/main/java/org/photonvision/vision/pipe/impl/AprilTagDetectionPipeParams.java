@@ -23,7 +23,6 @@ import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class AprilTagDetectionPipeParams {
-
     public final AprilTagDetectorParams detectorParams;
     public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
     public final int numIterations;

@@ -51,7 +51,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
     @Override
     protected void setPipeParamsImpl() {
-
         // Sanitize thread count - not supported to ahve fewer than 1 threads
         settings.threads = Math.max(1, settings.threads);
 

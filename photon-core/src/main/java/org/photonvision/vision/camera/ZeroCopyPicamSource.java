@@ -152,7 +152,6 @@ public class ZeroCopyPicamSource extends VisionSource {
 
         @Override
         public void setExposure(double exposure) {
-
             // Todo - for now, handle auto exposure by using 100% exposure
             if (exposure < 0.0) {
                 exposure = 100.0;
