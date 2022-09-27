@@ -34,7 +34,7 @@ jobs:
 
     # Setup Node.js
     - name: Setup Node.js
-      uses: actions/setup-node@v1
+      uses: actions/setup-node@v3.4.1
       with:
         node-version: 14
 

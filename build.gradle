@@ -28,9 +28,14 @@ ext {
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
 
+    if(project.hasProperty('pionly')) {
+        jniPlatforms = ['linuxraspbian']
+    } else if(project.hasProperty('winonly')) {
+        jniPlatforms = ['windowsx86-64']
+    } else {
+        jniPlatforms = ['linuxaarch64bionic', 'linuxraspbian', 'linuxx86-64', 'osxx86-64', 'windowsx86-64']
 
-    jniPlatforms = project.hasProperty('pionly') ? ['linuxraspbian']
-        : ['linuxaarch64bionic', 'linuxraspbian', 'linuxx86-64', 'osxx86-64', 'windowsx86-64']
+    }
 
     println("Building for archs " + jniPlatforms)
 }

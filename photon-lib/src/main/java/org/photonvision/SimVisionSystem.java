@@ -26,6 +26,7 @@ package org.photonvision;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
@@ -168,7 +169,8 @@ public class SimVisionSystem {
                                         pitchDegrees,
                                         area,
                                         0.0,
-                                        camToTargetTrans,
+                                        -1, // TODO fiducial ID
+                                        new Transform3d(),
                                         List.of(
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0),
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0))));

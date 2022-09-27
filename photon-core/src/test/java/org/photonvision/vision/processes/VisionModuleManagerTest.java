@@ -80,6 +80,9 @@ public class VisionModuleManagerTest {
         public void setGain(int gain) {}
 
         @Override
+        public void setLowExposureOptimization(boolean mode) {}
+
+        @Override
         public VideoMode getCurrentVideoMode() {
             return new VideoMode(0, 320, 240, 254);
         }

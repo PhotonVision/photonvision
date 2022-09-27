@@ -1,6 +1,7 @@
 <template>
   <div>
     <CVslider
+      v-if="cameraExposure !== -1"
       v-model="cameraExposure"
       name="Exposure"
       min="0"
