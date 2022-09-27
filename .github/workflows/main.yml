@@ -36,15 +36,11 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v1
       with:
-        node-version: 10
-
-    # Install latest npm
-    - name: Install latest npm
-    - run: |
-        npm install -g npm 
+        node-version: 14
        
     # Run npm
     - run: |
+        npm install -g npm 
         npm ci
         npm run build --if-present
 
