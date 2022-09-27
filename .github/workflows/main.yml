@@ -38,6 +38,11 @@ jobs:
       with:
         node-version: 10
 
+    # Install latest npm
+    - name: Install latest npm
+    - run: |
+        npm install -g npm 
+       
     # Run npm
     - run: |
         npm ci
