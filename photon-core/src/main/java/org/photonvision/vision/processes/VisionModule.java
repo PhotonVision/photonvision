@@ -311,12 +311,9 @@ public class VisionModule {
                 () ->
                         "Setting "
                                 + settables.getConfiguration().nickname
-                                + ": pitch ("
-                                + pitch.getDegrees()
                                 + ") FOV ("
                                 + fov
                                 + ")");
-        settables.setCameraPitch(pitch);
 
         // Only set FOV if we have no vendor JSON and we aren't using a PiCAM
         if (isVendorCamera()) {
@@ -509,7 +506,6 @@ public class VisionModule {
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
         ret.fov = visionSource.getSettables().getFOV();
-        ret.tiltDegrees = this.visionSource.getSettables().getCameraPitch().getDegrees();
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
         ret.currentPipelineSettings =
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());

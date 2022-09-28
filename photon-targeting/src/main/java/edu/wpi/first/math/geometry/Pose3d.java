@@ -61,6 +61,10 @@ public class Pose3d implements Interpolatable<Pose3d> {
         m_rotation = rotation;
     }
 
+    public Pose3d(Transform3d transform) {
+        this (transform.getTranslation(), transform.getRotation());
+    }
+
     /**
      * Transforms the pose by the given transformation and returns the new transformed pose.
      *

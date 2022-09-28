@@ -38,7 +38,7 @@ public class TargetCalculationsTest {
 
     private static final FrameStaticProperties props =
             new FrameStaticProperties(
-                    (int) imageSize.width, (int) imageSize.height, diagFOV, new Rotation2d(), null);
+                    (int) imageSize.width, (int) imageSize.height, diagFOV, null);
     private static final TrackedTarget.TargetCalculationParameters params =
             new TrackedTarget.TargetCalculationParameters(
                     true,

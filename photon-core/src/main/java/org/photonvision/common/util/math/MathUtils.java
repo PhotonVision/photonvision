@@ -19,6 +19,7 @@ package org.photonvision.common.util.math;
 
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -158,20 +159,23 @@ public class MathUtils {
     }
 
     // TODO: Refactor into new pipe?
-    public static Transform3d correctLocationForCameraPitch(
-            Transform3d cameraToTarget3d, Rotation2d cameraPitch) {
-        Pose3d pose = new Pose3d(cameraToTarget3d.getTranslation(), cameraToTarget3d.getRotation());
-        pose = MathUtils.EDNtoNWU(pose);
+    public static Pose3d convertOpenCVtoPhotonPose(Transform3d cameraToTarget3d) {
+        // CameraToTarget _should_ be in opencv-land EDN
 
-        // We want the pose as seen by a person at the same pose as the camera, but facing
-        // forward instead of pitched up
-        Pose3d poseRotatedByCamAngle =
-                pose.transformBy(
-                        new Transform3d(new Translation3d(), new Rotation3d(0, -cameraPitch.getRadians(), 0)));
+        var pose = CoordinateSystem.convert(new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
 
-        // The pose2d from the flattened coordinate system is just the X/Y components of the 3d pose
-        // and the rotation about the Z axis (which is up in the camera/field frame)
-        return new Transform3d(
-                poseRotatedByCamAngle.getTranslation(), poseRotatedByCamAngle.getRotation());
+        return pose;
+    }
+
+    public static Pose3d convertApriltagtoPhotonPose(Transform3d cameraToTarget3d) {
+        // CameraToTarget _should_ be in opencv-land EDN
+        var pose = CoordinateSystem.convert(new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
+
+        // Apply an extra rotation so that at zero pose, X ls left, Y is up, and Z is towards the camera
+        // to a camera facing along the +X axis of the field parallel with the ground plane
+        // So we need a 180 flip about X axis
+        var newRotation = pose.getRotation().rotateBy(new Rotation3d(0, Math.PI, 0));
+
+        return new Pose3d(pose.getTranslation(), newRotation);
     }
 }

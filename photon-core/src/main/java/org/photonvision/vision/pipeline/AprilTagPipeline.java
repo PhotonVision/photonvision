@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
@@ -135,10 +136,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
 
-            var correctedPose =
-                    MathUtils.correctLocationForCameraPitch(
-                            target.getCameraToTarget3d(), frameStaticProperties.cameraPitch);
-            target.setCameraToTarget3d(correctedPose);
+            var correctedPose = MathUtils.convertApriltagtoPhotonPose(target.getCameraToTarget3d());
+            target.setCameraToTarget3d(new Transform3d(correctedPose.getTranslation(), correctedPose.getRotation()));
 
             targetList.add(target);
         }

@@ -141,7 +141,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
         var solvePNPParams =
                 new SolvePNPPipe.SolvePNPPipeParams(
                         frameStaticProperties.cameraCalibration,
-                        frameStaticProperties.cameraPitch,
                         settings.targetModel);
         solvePNPPipe.setParams(solvePNPParams);
     }

@@ -142,19 +142,19 @@ export default {
     window.addEventListener( 'resize', this.onWindowResize, false );
 
     scene.add(new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
-        2, // length
+        1, // length
         0xff0000,
         0.5,
         0.5,
     ))
     scene.add(new ArrowHelper(new Vector3(0, 1, 0).normalize(), new Vector3(0, 0, 0),
-        2, // length
+        1, // length
         0x00ff00,
         0.5,
         0.5,
     ))
     scene.add(new ArrowHelper(new Vector3(0, 0, 1).normalize(), new Vector3(0, 0, 0),
-        2, // length
+        1, // length
         0x0000ff,
         0.5,
         0.5,

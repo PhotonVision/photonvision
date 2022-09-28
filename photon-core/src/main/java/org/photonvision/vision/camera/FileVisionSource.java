@@ -43,7 +43,6 @@ public class FileVisionSource extends VisionSource {
                         Path.of(cameraConfiguration.path),
                         cameraConfiguration.FOV,
                         FileFrameProvider.MAX_FPS,
-                        cameraConfiguration.camPitch,
                         calibration);
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);

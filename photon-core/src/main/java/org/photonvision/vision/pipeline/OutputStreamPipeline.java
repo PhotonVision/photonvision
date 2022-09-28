@@ -141,13 +141,14 @@ public class OutputStreamPipeline {
             } else {
                 pipeProfileNanos[7] = 0;
                 pipeProfileNanos[8] = 0;
+
+                var draw2dTargetsOnInput = draw2dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
+                sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
+
+                var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
+                sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
             }
 
-            var draw2dTargetsOnInput = draw2dTargetsPipe.run(Pair.of(inMat, targetsToDraw));
-            sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
-
-            var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
-            sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
         } else {
             if (settings.solvePNPEnabled) {
                 var drawOnInputResult = draw3dAprilTagsPipe.run(Pair.of(inMat, targetsToDraw));
@@ -157,8 +158,6 @@ public class OutputStreamPipeline {
                 sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
             }
         }
-
-        // Draw 2D contours on input and output
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;

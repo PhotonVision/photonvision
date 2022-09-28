@@ -44,14 +44,14 @@ public class Frame implements Releasable {
         this(
                 new CVMat(),
                 MathUtils.wpiNanoTime(),
-                new FrameStaticProperties(0, 0, 0, new Rotation2d(), null));
+                new FrameStaticProperties(0, 0, 0, null));
     }
 
     public static Frame emptyFrame(int width, int height) {
         return new Frame(
                 new CVMat(Mat.zeros(new Size(width, height), CvType.CV_8UC3)),
                 MathUtils.wpiNanoTime(),
-                new FrameStaticProperties(width, height, 0, new Rotation2d(), null));
+                new FrameStaticProperties(width, height, 0, null));
     }
 
     public void copyTo(Frame destFrame) {

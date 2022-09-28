@@ -104,7 +104,6 @@ public class SolvePNPTest {
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
                         TestUtils.WPI2019Image.FOV,
-                        new Rotation2d(),
                         TestUtils.get2019LifeCamCoeffs(false));
 
         CVPipelineResult pipelineResult;
@@ -139,7 +138,6 @@ public class SolvePNPTest {
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
                         TestUtils.WPI2020Image.FOV,
-                        new Rotation2d(),
                         TestUtils.get2020LifeCamCoeffs(false));
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);

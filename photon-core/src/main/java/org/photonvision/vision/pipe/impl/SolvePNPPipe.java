@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -64,7 +65,6 @@ public class SolvePNPPipe
     }
 
     private void calculateTargetPose(TrackedTarget target) {
-        Transform3d targetPose;
 
         var corners = target.getTargetCorners();
         if (corners == null
@@ -101,10 +101,8 @@ public class SolvePNPPipe
                         VecBuilder.fill(rVec.get(0, 0)[0], rVec.get(1, 0)[0], rVec.get(2, 0)[0]),
                         Core.norm(rVec));
 
-        targetPose =
-                MathUtils.correctLocationForCameraPitch(
-                        new Transform3d(translation, rotation), params.cameraPitchAngle);
-        target.setCameraToTarget3d(targetPose);
+        Pose3d targetPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d(translation, rotation));
+        target.setCameraToTarget3d(new Transform3d(targetPose.getTranslation(), targetPose.getRotation()));
     }
 
     Mat rotationMatrix = new Mat();
@@ -130,15 +128,12 @@ public class SolvePNPPipe
 
     public static class SolvePNPPipeParams {
         private final CameraCalibrationCoefficients cameraCoefficients;
-        private final Rotation2d cameraPitchAngle;
         private final TargetModel targetModel;
 
         public SolvePNPPipeParams(
                 CameraCalibrationCoefficients cameraCoefficients,
-                Rotation2d cameraPitchAngle,
                 TargetModel targetModel) {
             this.cameraCoefficients = cameraCoefficients;
-            this.cameraPitchAngle = cameraPitchAngle;
             this.targetModel = targetModel;
         }
     }

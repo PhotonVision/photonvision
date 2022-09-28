@@ -34,7 +34,7 @@ import org.photonvision.vision.opencv.CVMat;
  * path}.
  */
 public class FileFrameProvider implements FrameProvider {
-    public static final int MAX_FPS = 10;
+    public static final int MAX_FPS = 5;
     private static int count = 0;
 
     private final int thisIndex = count++;
@@ -54,19 +54,18 @@ public class FileFrameProvider implements FrameProvider {
      * @param maxFPS The max framerate to provide the image at.
      */
     public FileFrameProvider(Path path, double fov, int maxFPS) {
-        this(path, fov, maxFPS, null, null);
+        this(path, fov, maxFPS, null);
     }
 
     public FileFrameProvider(
-            Path path, double fov, Rotation2d pitch, CameraCalibrationCoefficients calibration) {
-        this(path, fov, MAX_FPS, pitch, calibration);
+            Path path, double fov, CameraCalibrationCoefficients calibration) {
+        this(path, fov, MAX_FPS, calibration);
     }
 
     public FileFrameProvider(
             Path path,
             double fov,
             int maxFPS,
-            Rotation2d pitch,
             CameraCalibrationCoefficients calibration) {
         if (!Files.exists(path))
             throw new RuntimeException("Invalid path for image: " + path.toAbsolutePath().toString());
@@ -76,7 +75,7 @@ public class FileFrameProvider implements FrameProvider {
         Mat rawImage = Imgcodecs.imread(path.toString());
         if (rawImage.cols() > 0 && rawImage.rows() > 0) {
             properties =
-                    new FrameStaticProperties(rawImage.width(), rawImage.height(), fov, pitch, calibration);
+                    new FrameStaticProperties(rawImage.width(), rawImage.height(), fov, calibration);
             originalFrame = new Frame(new CVMat(rawImage), properties);
         } else {
             throw new RuntimeException("Image loading failed!");

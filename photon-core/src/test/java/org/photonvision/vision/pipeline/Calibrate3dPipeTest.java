@@ -104,7 +104,7 @@ public class Calibrate3dPipeTest {
             var frame =
                     new Frame(
                             new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                            new FrameStaticProperties(640, 480, 60, new Rotation2d(), null));
+                            new FrameStaticProperties(640, 480, 60, null));
             var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
             // TestUtils.showImage(output.outputFrame.image.getMat());
             output.release();
@@ -120,7 +120,7 @@ public class Calibrate3dPipeTest {
         var frame =
                 new Frame(
                         new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
-                        new FrameStaticProperties(640, 480, 60, new Rotation2d(), null));
+                        new FrameStaticProperties(640, 480, 60, null));
         calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera).release();
         frame.release();
 
@@ -268,7 +268,7 @@ public class Calibrate3dPipeTest {
                         new Frame(
                                 new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
                                 new FrameStaticProperties(
-                                        (int) imgRes.width, (int) imgRes.height, 67, new Rotation2d(), null));
+                                        (int) imgRes.width, (int) imgRes.height, 67, null));
                 var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
 
                 // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
