@@ -64,7 +64,6 @@ public class SolvePNPPipe
     }
 
     private void calculateTargetPose(TrackedTarget target) {
-
         var corners = target.getTargetCorners();
         if (corners == null
                 || corners.isEmpty()
