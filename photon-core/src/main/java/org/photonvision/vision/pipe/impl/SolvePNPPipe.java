@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -102,7 +101,8 @@ public class SolvePNPPipe
                         Core.norm(rVec));
 
         Pose3d targetPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d(translation, rotation));
-        target.setCameraToTarget3d(new Transform3d(targetPose.getTranslation(), targetPose.getRotation()));
+        target.setCameraToTarget3d(
+                new Transform3d(targetPose.getTranslation(), targetPose.getRotation()));
     }
 
     Mat rotationMatrix = new Mat();
@@ -131,8 +131,7 @@ public class SolvePNPPipe
         private final TargetModel targetModel;
 
         public SolvePNPPipeParams(
-                CameraCalibrationCoefficients cameraCoefficients,
-                TargetModel targetModel) {
+                CameraCalibrationCoefficients cameraCoefficients, TargetModel targetModel) {
             this.cameraCoefficients = cameraCoefficients;
             this.targetModel = targetModel;
         }

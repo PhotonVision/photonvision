@@ -18,7 +18,6 @@ package org.photonvision.vision.target;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,8 +36,7 @@ public class TargetCalculationsTest {
     private static final double diagFOV = Math.toRadians(70.0);
 
     private static final FrameStaticProperties props =
-            new FrameStaticProperties(
-                    (int) imageSize.width, (int) imageSize.height, diagFOV, null);
+            new FrameStaticProperties((int) imageSize.width, (int) imageSize.height, diagFOV, null);
     private static final TrackedTarget.TargetCalculationParameters params =
             new TrackedTarget.TargetCalculationParameters(
                     true,

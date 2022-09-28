@@ -162,8 +162,7 @@ public class ColoredShapePipeline
 
         var solvePNPParams =
                 new SolvePNPPipe.SolvePNPPipeParams(
-                        frameStaticProperties.cameraCalibration,
-                        settings.targetModel);
+                        frameStaticProperties.cameraCalibration, settings.targetModel);
         solvePNPPipe.setParams(solvePNPParams);
 
         Draw2dTargetsPipe.Draw2dTargetsParams draw2DTargetsParams =

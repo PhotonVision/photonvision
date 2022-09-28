@@ -19,7 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import java.io.File;
 import java.nio.file.Path;
@@ -267,8 +266,7 @@ public class Calibrate3dPipeTest {
                 var frame =
                         new Frame(
                                 new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
-                                new FrameStaticProperties(
-                                        (int) imgRes.width, (int) imgRes.height, 67, null));
+                                new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
                 var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
 
                 // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);

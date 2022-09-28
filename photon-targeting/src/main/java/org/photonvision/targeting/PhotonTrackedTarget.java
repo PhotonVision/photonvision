@@ -74,9 +74,7 @@ public class PhotonTrackedTarget {
         return skew;
     }
 
-    /**
-     * Get the Fiducial ID, or -1 if not set.
-     */
+    /** Get the Fiducial ID, or -1 if not set. */
     public int getFiducialId() {
         return fiducialId;
     }
@@ -90,8 +88,8 @@ public class PhotonTrackedTarget {
     }
 
     /**
-     * Get the transform that maps camera space (X = forward, Y = left, Z = up)
-     * to object/fiducial tag space (X right, Y up, Z towards the camera/out of the wall) 
+     * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
+     * space (X right, Y up, Z towards the camera/out of the wall)
      */
     public Transform3d getCameraToTarget() {
         return cameraToTarget;

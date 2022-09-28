@@ -137,7 +137,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                                     false, null, null, null, null, frameStaticProperties));
 
             var correctedPose = MathUtils.convertApriltagtoPhotonPose(target.getCameraToTarget3d());
-            target.setCameraToTarget3d(new Transform3d(correctedPose.getTranslation(), correctedPose.getRotation()));
+            target.setCameraToTarget3d(
+                    new Transform3d(correctedPose.getTranslation(), correctedPose.getRotation()));
 
             targetList.add(target);
         }

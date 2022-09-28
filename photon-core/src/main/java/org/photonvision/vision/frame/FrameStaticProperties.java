@@ -18,7 +18,6 @@
 package org.photonvision.vision.frame;
 
 import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.math.geometry.Rotation2d;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -42,8 +41,7 @@ public class FrameStaticProperties {
      * @param mode The Video Mode of the camera.
      * @param fov The fov of the image.
      */
-    public FrameStaticProperties(
-            VideoMode mode, double fov, CameraCalibrationCoefficients cal) {
+    public FrameStaticProperties(VideoMode mode, double fov, CameraCalibrationCoefficients cal) {
         this(mode != null ? mode.width : 1, mode != null ? mode.height : 1, fov, cal);
     }
 
@@ -55,10 +53,7 @@ public class FrameStaticProperties {
      * @param fov The fov of the image.
      */
     public FrameStaticProperties(
-            int imageWidth,
-            int imageHeight,
-            double fov,
-            CameraCalibrationCoefficients cal) {
+            int imageWidth, int imageHeight, double fov, CameraCalibrationCoefficients cal) {
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
         this.fov = fov;

@@ -307,13 +307,7 @@ public class VisionModule {
 
     public void setFovAndPitch(double fov, Rotation2d pitch) {
         var settables = visionSource.getSettables();
-        logger.trace(
-                () ->
-                        "Setting "
-                                + settables.getConfiguration().nickname
-                                + ") FOV ("
-                                + fov
-                                + ")");
+        logger.trace(() -> "Setting " + settables.getConfiguration().nickname + ") FOV (" + fov + ")");
 
         // Only set FOV if we have no vendor JSON and we aren't using a PiCAM
         if (isVendorCamera()) {

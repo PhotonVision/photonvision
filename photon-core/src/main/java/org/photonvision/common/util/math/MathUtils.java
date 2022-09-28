@@ -22,10 +22,8 @@ import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.Arrays;
 import java.util.List;
@@ -162,14 +160,18 @@ public class MathUtils {
     public static Pose3d convertOpenCVtoPhotonPose(Transform3d cameraToTarget3d) {
         // CameraToTarget _should_ be in opencv-land EDN
 
-        var pose = CoordinateSystem.convert(new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
+        var pose =
+                CoordinateSystem.convert(
+                        new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
 
         return pose;
     }
 
     public static Pose3d convertApriltagtoPhotonPose(Transform3d cameraToTarget3d) {
         // CameraToTarget _should_ be in opencv-land EDN
-        var pose = CoordinateSystem.convert(new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
+        var pose =
+                CoordinateSystem.convert(
+                        new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
 
         // Apply an extra rotation so that at zero pose, X ls left, Y is up, and Z is towards the camera
         // to a camera facing along the +X axis of the field parallel with the ground plane

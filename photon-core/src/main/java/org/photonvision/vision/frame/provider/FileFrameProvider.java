@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.frame.provider;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -57,16 +56,12 @@ public class FileFrameProvider implements FrameProvider {
         this(path, fov, maxFPS, null);
     }
 
-    public FileFrameProvider(
-            Path path, double fov, CameraCalibrationCoefficients calibration) {
+    public FileFrameProvider(Path path, double fov, CameraCalibrationCoefficients calibration) {
         this(path, fov, MAX_FPS, calibration);
     }
 
     public FileFrameProvider(
-            Path path,
-            double fov,
-            int maxFPS,
-            CameraCalibrationCoefficients calibration) {
+            Path path, double fov, int maxFPS, CameraCalibrationCoefficients calibration) {
         if (!Files.exists(path))
             throw new RuntimeException("Invalid path for image: " + path.toAbsolutePath().toString());
         this.path = path;
@@ -74,8 +69,7 @@ public class FileFrameProvider implements FrameProvider {
 
         Mat rawImage = Imgcodecs.imread(path.toString());
         if (rawImage.cols() > 0 && rawImage.rows() > 0) {
-            properties =
-                    new FrameStaticProperties(rawImage.width(), rawImage.height(), fov, calibration);
+            properties = new FrameStaticProperties(rawImage.width(), rawImage.height(), fov, calibration);
             originalFrame = new Frame(new CVMat(rawImage), properties);
         } else {
             throw new RuntimeException("Image loading failed!");

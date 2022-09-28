@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.frame;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Size;
@@ -41,10 +40,7 @@ public class Frame implements Releasable {
     }
 
     public Frame() {
-        this(
-                new CVMat(),
-                MathUtils.wpiNanoTime(),
-                new FrameStaticProperties(0, 0, 0, null));
+        this(new CVMat(), MathUtils.wpiNanoTime(), new FrameStaticProperties(0, 0, 0, null));
     }
 
     public static Frame emptyFrame(int width, int height) {

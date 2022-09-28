@@ -20,15 +20,12 @@ package org.photonvision.vision.pipeline;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -119,11 +116,14 @@ public class SolvePNPTest {
         Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.05);
 
         // We expect the object X axis to be to the right, or negative-Y in world space
-        Assertions.assertEquals(-1, new Translation3d(1,0,0).rotateBy(pose.getRotation()).getY(), 0.05);
+        Assertions.assertEquals(
+                -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getY(), 0.05);
         // We expect the object Y axis to be up, or +Z in world space
-        Assertions.assertEquals(1, new Translation3d(0,1,0).rotateBy(pose.getRotation()).getZ(), 0.05);
+        Assertions.assertEquals(
+                1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getZ(), 0.05);
         // We expect the object Z axis to towards the camera, or negative-X in world space
-        Assertions.assertEquals(-1, new Translation3d(0,0,1).rotateBy(pose.getRotation()).getX(), 0.05);
+        Assertions.assertEquals(
+                -1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getX(), 0.05);
 
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
     }
