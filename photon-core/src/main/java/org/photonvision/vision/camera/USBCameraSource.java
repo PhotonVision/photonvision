@@ -91,7 +91,7 @@ public class USBCameraSource extends VisionSource {
                 camera.getProperty("white_balance_auto_preset").set(2); // Auto white-balance disabled
                 camera.getProperty("auto_exposure").set(1); // auto exposure disabled
             } else {
-                // Pick a bunch of reasonable setting defaults for driver, aurco, or otherwise
+                // Pick a bunch of reasonable setting defaults for driver, fiducials, or otherwise
                 // nice-for-humans
                 camera.getProperty("auto_exposure_bias").set(12);
                 camera.getProperty("iso_sensitivity_auto").set(1);
@@ -112,7 +112,7 @@ public class USBCameraSource extends VisionSource {
                 }
                 this.getSettables().setExposure(50); // auto exposure disabled, put a sane default
             } else {
-                // Pick a bunch of reasonable setting defaults for driver, aurco, or otherwise
+                // Pick a bunch of reasonable setting defaults for driver, fiducials, or otherwise
                 // nice-for-humans
                 if (canSetWhiteBalance) {
                     camera.setWhiteBalanceAuto(); // Auto white-balance enabled

@@ -52,7 +52,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
     @Override
     protected void setPipeParamsImpl() {
-        // Sanitize thread count - not supported to ahve fewer than 1 threads
+        // Sanitize thread count - not supported to have fewer than 1 threads
         settings.threads = Math.max(1, settings.threads);
 
         RotateImagePipe.RotateImageParams rotateImageParams =
@@ -74,13 +74,17 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         settings.debug,
                         settings.refineEdges);
 
-        // TODO (HACK): tag width is Fun because it really belongs in the "target model", sorta
+        // TODO (HACK): tag width is Fun because it really belongs in the "target model"
+        // We need the tag width for the JNI to figure out target pose, but we need a
+        // target model for the draw 3d targets pipeline to work...
+
         // for now, hard code tag width based on enum value
         double tagWidth = 0.08; // guess at 200mm??
         switch (settings.targetModel) {
             case k200mmAprilTag:
                 {
                     tagWidth = Units.inchesToMeters(3.15 * 2);
+                    break;
                 }
             default:
                 {
