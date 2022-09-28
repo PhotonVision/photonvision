@@ -79,17 +79,16 @@ class DrivetrainSim {
   // Configure these to match your PhotonVision Camera,
   // pipeline, and LED setup.
   units::degree_t camDiagFOV = 170.0_deg;  // assume wide-angle camera
-  units::degree_t camPitch = 15_deg;
   units::meter_t camHeightOffGround = 24_in;
   units::meter_t maxLEDRange = 20_m;
   int camResolutionWidth = 640;   // pixels
   int camResolutionHeight = 480;  // pixels
   double minTargetArea = 10;      // square pixels
 
-  photonlib::SimVisionSystem simVision{
-      "photonvision",     camDiagFOV,          camPitch,
-      frc::Transform2d{}, camHeightOffGround,  maxLEDRange,
-      camResolutionWidth, camResolutionHeight, minTargetArea};
+  photonlib::SimVisionSystem simVision{"photonvision",      camDiagFOV,
+                                       frc::Transform2d{},  camHeightOffGround,
+                                       maxLEDRange,         camResolutionWidth,
+                                       camResolutionHeight, minTargetArea};
 
   // See
   // https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020FieldDrawing-SeasonSpecific.pdf
