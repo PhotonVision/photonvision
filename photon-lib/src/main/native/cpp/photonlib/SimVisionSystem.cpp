@@ -34,13 +34,11 @@ namespace photonlib {
 
 SimVisionSystem::SimVisionSystem(const std::string& name,
                                  units::degree_t camDiagFOV,
-                                 units::degree_t camPitch,
                                  frc::Transform2d cameraToRobot,
                                  units::meter_t cameraHeightOffGround,
                                  units::meter_t maxLEDRange, int cameraResWidth,
                                  int cameraResHeight, double minTargetArea)
-    : camPitch(camPitch),
-      cameraToRobot(cameraToRobot),
+    : cameraToRobot(cameraToRobot),
       cameraHeightOffGround(cameraHeightOffGround),
       maxLEDRange(maxLEDRange),
       cameraResWidth(cameraResWidth),
@@ -59,11 +57,9 @@ void SimVisionSystem::AddSimVisionTarget(SimVisionTarget tgt) {
 }
 
 void SimVisionSystem::MoveCamera(frc::Transform2d newCameraToRobot,
-                                 units::meter_t newCamHeight,
-                                 units::degree_t newCamPitch) {
+                                 units::meter_t newCamHeight) {
   cameraToRobot = newCameraToRobot;
   cameraHeightOffGround = newCamHeight;
-  camPitch = newCamPitch;
 }
 
 void SimVisionSystem::ProcessFrame(frc::Pose2d robotPose) {
@@ -89,12 +85,17 @@ void SimVisionSystem::ProcessFrame(frc::Pose2d robotPose) {
     units::degree_t yawAngle = -units::math::atan2(
         camToTargetTrans.Translation().Y(), camToTargetTrans.Translation().X());
     units::degree_t pitchAngle =
-        units::math::atan2(distVertical, distAlongGround) - camPitch;
+        units::math::atan2(distVertical, distAlongGround);
+
+    auto translation = frc::Translation3d(camToTargetTrans.Translation().X(),
+                                          camToTargetTrans.Translation().Y(),
+                                          units::meter_t(0));  // TODO z height
+    auto rotation = frc::Rotation3d(units::radian_t(0), pitchAngle, -yawAngle);
+    frc::Transform3d camToTarget3d{translation, rotation};
 
     if (CamCanSeeTarget(distHypot, yawAngle, pitchAngle, area)) {
       PhotonTrackedTarget newTgt = PhotonTrackedTarget(
-          yawAngle.value(), pitchAngle.value(), area, 0.0, -1,
-          frc::Transform3d(),  // TODO fiducial 3d pose
+          yawAngle.value(), pitchAngle.value(), area, 0.0, -1, camToTarget3d,
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}});
       visibleTgtList.push_back(newTgt);
     }

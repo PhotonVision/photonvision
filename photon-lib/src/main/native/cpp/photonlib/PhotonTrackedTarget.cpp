@@ -72,7 +72,8 @@ Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
 }
 
 Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
-  packet >> target.yaw >> target.pitch >> target.area >> target.skew;
+  packet >> target.yaw >> target.pitch >> target.area >> target.skew >>
+      target.fiducialId;
   double x = 0;
   double y = 0;
   double z = 0;
