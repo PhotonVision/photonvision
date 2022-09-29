@@ -87,7 +87,7 @@ public class Draw3dTargetsPipe
                         tempMat,
                         jac);
                 // Distort the points so they match the image they're being overlaid on
-                distortPoints(tempMat, tempMat);
+                //distortPoints(tempMat, tempMat);
                 var bottomPoints = tempMat.toList();
 
                 Calib3d.projectPoints(
@@ -98,7 +98,7 @@ public class Draw3dTargetsPipe
                         params.cameraCalibrationCoefficients.getCameraExtrinsicsMat(),
                         tempMat,
                         jac);
-                distortPoints(tempMat, tempMat);
+                //distortPoints(tempMat, tempMat);
                 var topPoints = tempMat.toList();
 
                 dividePointList(bottomPoints);
