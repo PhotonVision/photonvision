@@ -35,18 +35,7 @@
                   Area, %
                 </th>
               </template>
-              <template v-else-if="$store.getters.pipelineType === 4 && $store.getters.currentPipelineSettings.solvePNPEnabled">
-                <th class="text-center">
-                  X,&nbsp;m
-                </th>
-                <th class="text-center">
-                  Y,&nbsp;m
-                </th>
-                <th class="text-center">
-                  Z Angle,&nbsp;&deg;
-                </th>
-              </template>
-              <template v-else-if="$store.getters.currentPipelineSettings.solvePNPEnabled">
+              <template v-else>
                 <th class="text-center">
                   X,&nbsp;m
                 </th>

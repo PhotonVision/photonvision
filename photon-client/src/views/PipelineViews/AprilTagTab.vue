@@ -16,7 +16,7 @@
       name="Decimate"
       min="0"
       max="3"
-      step=".01"
+      step=".5"
       @input="handlePipelineData('decimate')"
     />
     <CVslider
