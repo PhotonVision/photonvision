@@ -29,6 +29,16 @@ import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class TestUtils {
+    public static void loadLibraries() {
+        try {
+            CameraServerCvJNI.forceLoad();
+            //        PicamJNI.forceLoad();
+            // AprilTagJNI.forceLoad();
+        } catch (IOException ex) {
+            // ignored
+        }
+    }
+
     @SuppressWarnings("unused")
     public enum WPI2019Image {
         kCargoAngledDark48in(1.2192),
@@ -154,6 +164,22 @@ public class TestUtils {
         }
     }
 
+    public enum ApriltagTestImages {
+        kRobots;
+
+        public final Path path;
+
+        Path getPath() {
+            // Strip leading k
+            var filename = this.toString().substring(1).toLowerCase();
+            return Path.of("apriltag", filename + ".jpg");
+        }
+
+        ApriltagTestImages() {
+            this.path = getPath();
+        }
+    }
+
     private static Path getResourcesFolderPath(boolean testMode) {
         System.out.println("CWD: " + Path.of("").toAbsolutePath().toString());
         return Path.of("test-resources").toAbsolutePath();
@@ -175,6 +201,12 @@ public class TestUtils {
         return getResourcesFolderPath(true)
                 .resolve("testimages")
                 .resolve(WPI2022Image.kTerminal22ft6in.path);
+    }
+
+    public static Path getTestModeApriltagPath() {
+        return getResourcesFolderPath(true)
+                .resolve("testimages")
+                .resolve(ApriltagTestImages.kRobots.path);
     }
 
     public static Path getTestImagesPath(boolean testMode) {
@@ -243,12 +275,8 @@ public class TestUtils {
         return getCoeffs(LIFECAM_480P_CAL_FILE, testMode);
     }
 
-    public static void loadLibraries() {
-        try {
-            CameraServerCvJNI.forceLoad();
-        } catch (IOException e) {
-            // ignored
-        }
+    public static CameraCalibrationCoefficients getLaptop() {
+        return getCoeffs("laptop.json", true);
     }
 
     private static int DefaultTimeoutMillis = 5000;

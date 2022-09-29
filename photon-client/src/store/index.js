@@ -51,7 +51,7 @@ export default new Vuex.Store({
                 isFovConfigurable: true,
                 calibrated: false,
                 currentPipelineSettings: {
-                    pipelineType: 2, // One of "calib", "driver", "reflective", "shape"
+                    pipelineType: 4, // One of "calib", "driver", "reflective", "shape", "AprilTag"
                     // 2 is reflective
 
                     // Settings that apply to all pipeline types
@@ -88,7 +88,13 @@ export default new Vuex.Store({
 
                     cornerDetectionAccuracyPercentage: 10,
 
-                    // Settings that apply to shape
+                    // Settings that apply to AprilTag
+                    tagFamily: 0,
+                    decimate: 1.0,
+                    blur: 0.0,
+                    threads: 1,
+                    debug: false,
+                    refineEdges: true
                 }
             }
         ],
@@ -102,9 +108,18 @@ export default new Vuex.Store({
                     skew: 0,
                     area: 0,
                     // 3D only
-                    pose: {x: 0, y: 0, rot: 0},
-                }]
-            },
+                    pose: {x: 1, y: 1, z: 0, qw: 1, qx: 0, qy: 0, qz: 0},
+                },
+            {
+                // Available in both 2D and 3D
+                pitch: 0,
+                yaw: 0,
+                skew: 0,
+                area: 0,
+                // 3D only
+                pose: {x: 2, y: 3, z: 0, qw: 1, qx: 0, qy: 0, qz: 0},
+            }]
+        },
         settings: {
             general: {
                 version: "Unknown",

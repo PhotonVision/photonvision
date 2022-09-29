@@ -20,7 +20,6 @@ package org.photonvision.vision.processes;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -80,14 +79,16 @@ public class VisionModuleManagerTest {
         public void setGain(int gain) {}
 
         @Override
+        public void setLowExposureOptimization(boolean mode) {}
+
+        @Override
         public VideoMode getCurrentVideoMode() {
             return new VideoMode(0, 320, 240, 254);
         }
 
         @Override
         public void setVideoModeInternal(VideoMode videoMode) {
-            this.frameStaticProperties =
-                    new FrameStaticProperties(getCurrentVideoMode(), getFOV(), new Rotation2d(), null);
+            this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV(), null);
         }
 
         @Override

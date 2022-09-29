@@ -43,7 +43,6 @@ public class FileVisionSource extends VisionSource {
                         Path.of(cameraConfiguration.path),
                         cameraConfiguration.FOV,
                         FileFrameProvider.MAX_FPS,
-                        cameraConfiguration.camPitch,
                         calibration);
         settables =
                 new FileSourceSettables(cameraConfiguration, frameProvider.get().frameStaticProperties);
@@ -97,6 +96,9 @@ public class FileVisionSource extends VisionSource {
 
         @Override
         public void setGain(int gain) {}
+
+        @Override
+        public void setLowExposureOptimization(boolean mode) {}
 
         @Override
         public VideoMode getCurrentVideoMode() {

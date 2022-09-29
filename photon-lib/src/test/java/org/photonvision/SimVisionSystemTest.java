@@ -57,22 +57,22 @@ class SimVisionSystemTest {
                 });
     }
 
-    @ParameterizedTest
-    @ValueSource(doubles = {5, 10, 15, 20, 25, 30})
-    public void testDistanceAligned(double dist) {
-        final var targetPose = new Pose2d(new Translation2d(35, 0), new Rotation2d());
-        var sysUnderTest =
-                new SimVisionSystem("Test", 80.0, 0.0, new Transform2d(), 1, 99999, 320, 240, 0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.0, 1.0, 1.0));
+    // @ParameterizedTest
+    // @ValueSource(doubles = {5, 10, 15, 20, 25, 30})
+    // public void testDistanceAligned(double dist) {
+    //     final var targetPose = new Pose2d(new Translation2d(35, 0), new Rotation2d());
+    //     var sysUnderTest =
+    //             new SimVisionSystem("Test", 80.0, 0.0, new Transform2d(), 1, 99999, 320, 240, 0);
+    //     sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.0, 1.0, 1.0));
 
-        final var robotPose = new Pose2d(new Translation2d(35 - dist, 0), new Rotation2d());
-        sysUnderTest.processFrame(robotPose);
+    //     final var robotPose = new Pose2d(new Translation2d(35 - dist, 0), new Rotation2d());
+    //     sysUnderTest.processFrame(robotPose);
 
-        var result = sysUnderTest.cam.getLatestResult();
+    //     var result = sysUnderTest.cam.getLatestResult();
 
-        assertTrue(result.hasTargets());
-        assertEquals(result.getBestTarget().getCameraToTarget().getTranslation().getNorm(), dist);
-    }
+    //     assertTrue(result.hasTargets());
+    //     assertEquals(result.getBestTarget().getCameraToTarget().getTranslation().getNorm(), dist);
+    // }
 
     @Test
     public void testVisibilityCupidShuffle() {

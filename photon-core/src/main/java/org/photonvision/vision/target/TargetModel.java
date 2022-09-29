@@ -47,6 +47,7 @@ public enum TargetModel implements Releasable {
                             Units.inchesToMeters(2d * 12d + 5.25)),
                     new Point3(Units.inchesToMeters(19.625), 0, Units.inchesToMeters(2d * 12d + 5.25))),
             Units.inchesToMeters(12)),
+
     k2019DualTarget(
             List.of(
                     new Point3(Units.inchesToMeters(-5.936), Units.inchesToMeters(2.662), 0),
@@ -54,6 +55,7 @@ public enum TargetModel implements Releasable {
                     new Point3(Units.inchesToMeters(7.313), Units.inchesToMeters(-2.662), 0),
                     new Point3(Units.inchesToMeters(5.936), Units.inchesToMeters(2.662), 0)),
             0.1),
+
     kCircularPowerCell7in(
             List.of(
                     new Point3(
@@ -99,7 +101,14 @@ public enum TargetModel implements Releasable {
                     new Point3(Units.inchesToMeters(10), Units.inchesToMeters(0), 0),
                     new Point3(Units.inchesToMeters(10), Units.inchesToMeters(12), 0)),
             Units.inchesToMeters(6)),
-    ;
+    k200mmAprilTag( // Nominal edge length of 200 mm includes the white border, but solvePNP corners
+            // do not
+            List.of(
+                    new Point3(-Units.inchesToMeters(3.25), Units.inchesToMeters(3.25), 0),
+                    new Point3(Units.inchesToMeters(3.25), Units.inchesToMeters(3.25), 0),
+                    new Point3(Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0),
+                    new Point3(-Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0)),
+            -Units.inchesToMeters(3.25 * 2));
 
     @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
     @JsonIgnore private MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();

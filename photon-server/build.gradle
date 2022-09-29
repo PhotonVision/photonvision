@@ -112,6 +112,9 @@ task findDeployTarget {
     }
 }
 
+run {
+  environment "PATH_PREFIX", "../"
+}
 
 task deploy {
     dependsOn assemble

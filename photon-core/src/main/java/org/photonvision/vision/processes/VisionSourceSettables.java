@@ -18,7 +18,6 @@
 package org.photonvision.vision.processes;
 
 import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
@@ -65,16 +64,9 @@ public abstract class VisionSourceSettables {
         calculateFrameStaticProps();
     }
 
+    public abstract void setLowExposureOptimization(boolean mode);
+
     protected abstract void setVideoModeInternal(VideoMode videoMode);
-
-    public void setCameraPitch(Rotation2d pitch) {
-        configuration.camPitch = pitch;
-        calculateFrameStaticProps();
-    }
-
-    public Rotation2d getCameraPitch() {
-        return configuration.camPitch;
-    }
 
     @SuppressWarnings("unused")
     public void setVideoModeIndex(int index) {
@@ -103,7 +95,6 @@ public abstract class VisionSourceSettables {
                 new FrameStaticProperties(
                         videoMode,
                         getFOV(),
-                        configuration.camPitch,
                         configuration.calibrations.stream()
                                 .filter(
                                         it ->

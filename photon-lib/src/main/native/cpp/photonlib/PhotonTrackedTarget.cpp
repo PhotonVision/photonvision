@@ -33,13 +33,14 @@
 namespace photonlib {
 
 PhotonTrackedTarget::PhotonTrackedTarget(
-    double yaw, double pitch, double area, double skew,
-    const frc::Transform2d& pose,
+    double yaw, double pitch, double area, double skew, int id,
+    const frc::Transform3d& pose,
     const wpi::SmallVector<std::pair<double, double>, 4> corners)
     : yaw(yaw),
       pitch(pitch),
       area(area),
       skew(skew),
+      fiducialId(id),
       cameraToTarget(pose),
       corners(corners) {}
 
@@ -55,9 +56,13 @@ bool PhotonTrackedTarget::operator!=(const PhotonTrackedTarget& other) const {
 
 Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
   packet << target.yaw << target.pitch << target.area << target.skew
-         << target.cameraToTarget.Translation().X().value()
+         << target.fiducialId << target.cameraToTarget.Translation().X().value()
          << target.cameraToTarget.Translation().Y().value()
-         << target.cameraToTarget.Rotation().Degrees().value();
+         << target.cameraToTarget.Translation().Z().value()
+         << target.cameraToTarget.Rotation().GetQuaternion().W()
+         << target.cameraToTarget.Rotation().GetQuaternion().X()
+         << target.cameraToTarget.Rotation().GetQuaternion().Y()
+         << target.cameraToTarget.Rotation().GetQuaternion().Z();
 
   for (int i = 0; i < 4; i++) {
     packet << target.corners[i].first << target.corners[i].second;
@@ -67,15 +72,19 @@ Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
 }
 
 Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
-  packet >> target.yaw >> target.pitch >> target.area >> target.skew;
+  packet >> target.yaw >> target.pitch >> target.area >> target.skew >>
+      target.fiducialId;
   double x = 0;
   double y = 0;
-  double rot = 0;
-  packet >> x >> y >> rot;
+  double z = 0;
+  double w = 0;
+  packet >> x >> y >> z;
+  const auto translation = frc::Translation3d(
+      units::meter_t(x), units::meter_t(y), units::meter_t(z));
+  packet >> w >> x >> y >> z;
+  const auto rotation = frc::Rotation3d(frc::Quaternion(w, x, y, z));
 
-  target.cameraToTarget =
-      frc::Transform2d(frc::Translation2d(units::meter_t(x), units::meter_t(y)),
-                       units::degree_t(rot));
+  target.cameraToTarget = frc::Transform3d(translation, rotation);
 
   target.corners.clear();
   for (int i = 0; i < 4; i++) {

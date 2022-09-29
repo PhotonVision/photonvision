@@ -97,11 +97,15 @@ public class Draw2dTargetsPipe
                     if (poly == null && target.getShape() != null)
                         poly = target.getShape().getContour().getApproxPolyDp();
                     if (poly != null) {
-                        //                        divideMat2f(poly, pointMat);
                         var mat = new MatOfPoint();
                         mat.fromArray(poly.toArray());
+                        divideMat(mat, mat);
                         Imgproc.drawContours(
-                                in.getLeft(), List.of(mat), -1, ColorHelper.colorToScalar(Color.blue), 2);
+                                in.getLeft(),
+                                List.of(mat),
+                                -1,
+                                ColorHelper.colorToScalar(params.rotatedBoxColor),
+                                2);
                         mat.release();
                     }
                 }
@@ -134,9 +138,12 @@ public class Draw2dTargetsPipe
                                     center.y - params.kPixelsToOffset * imageSize);
                     dividePoint(textPos);
 
+                    int id = target.getFiducialId();
+                    var contourNumber = String.valueOf(id == -1 ? i : id);
+
                     Imgproc.putText(
                             in.getLeft(),
-                            String.valueOf(i),
+                            contourNumber,
                             textPos,
                             0,
                             textSize,
@@ -175,6 +182,14 @@ public class Draw2dTargetsPipe
     }
 
     private void divideMat(MatOfPoint src, MatOfPoint dst) {
+        var hull = src.toArray();
+        for (Point point : hull) {
+            dividePoint(point);
+        }
+        dst.fromArray(hull);
+    }
+
+    private void divideMat(MatOfPoint2f src, MatOfPoint dst) {
         var hull = src.toArray();
         for (Point point : hull) {
             dividePoint(point);

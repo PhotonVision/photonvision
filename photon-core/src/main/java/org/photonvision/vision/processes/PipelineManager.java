@@ -188,6 +188,9 @@ public class PipelineManager {
                     currentUserPipeline =
                             new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
                     break;
+                case AprilTag:
+                    currentUserPipeline =
+                            new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
             }
         }
     }
@@ -266,6 +269,12 @@ public class PipelineManager {
             case ColoredShape:
                 {
                     var added = new ColoredShapePipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
+            case AprilTag:
+                {
+                    var added = new AprilTagPipelineSettings();
                     added.pipelineNickname = nickname;
                     return added;
                 }

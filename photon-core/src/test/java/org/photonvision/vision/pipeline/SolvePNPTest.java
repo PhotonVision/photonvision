@@ -20,13 +20,12 @@ package org.photonvision.vision.pipeline;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
@@ -104,7 +103,6 @@ public class SolvePNPTest {
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2019Image.kCargoStraightDark48in, false),
                         TestUtils.WPI2019Image.FOV,
-                        new Rotation2d(),
                         TestUtils.get2019LifeCamCoeffs(false));
 
         CVPipelineResult pipelineResult;
@@ -113,12 +111,20 @@ public class SolvePNPTest {
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getCameraToTarget();
+        var pose = pipelineResult.targets.get(0).getCameraToTarget3d();
         Assertions.assertEquals(1.1, pose.getTranslation().getX(), 0.05);
         Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.05);
-        Assertions.assertEquals(1, pose.getRotation().getDegrees(), 1);
 
-        Imgcodecs.imwrite("D:\\out.jpg", pipelineResult.outputFrame.image.getMat());
+        // We expect the object X axis to be to the right, or negative-Y in world space
+        Assertions.assertEquals(
+                -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getY(), 0.05);
+        // We expect the object Y axis to be up, or +Z in world space
+        Assertions.assertEquals(
+                1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getZ(), 0.05);
+        // We expect the object Z axis to towards the camera, or negative-X in world space
+        Assertions.assertEquals(
+                -1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getX(), 0.05);
+
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
     }
 
@@ -139,19 +145,18 @@ public class SolvePNPTest {
                 new FileFrameProvider(
                         TestUtils.getWPIImagePath(TestUtils.WPI2020Image.kBlueGoal_224in_Left, false),
                         TestUtils.WPI2020Image.FOV,
-                        new Rotation2d(),
                         TestUtils.get2020LifeCamCoeffs(false));
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getCameraToTarget();
+        var pose = pipelineResult.targets.get(0).getCameraToTarget3d();
         Assertions.assertEquals(Units.inchesToMeters(240.26), pose.getTranslation().getX(), 0.05);
         Assertions.assertEquals(Units.inchesToMeters(35), pose.getTranslation().getY(), 0.05);
-        Assertions.assertEquals(42, pose.getRotation().getDegrees(), 1);
+        Assertions.assertEquals(Units.degreesToRadians(-42), pose.getRotation().getZ(), 1);
 
-        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
+        TestUtils.showImage(pipelineResult.inputFrame.image.getMat(), "Pipeline output", 999999);
     }
 
     private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {
@@ -197,7 +202,7 @@ public class SolvePNPTest {
         System.out.println(
                 "Found targets at "
                         + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getCameraToTarget)
+                                .map(TrackedTarget::getCameraToTarget3d)
                                 .collect(Collectors.toList()));
     }
 }
