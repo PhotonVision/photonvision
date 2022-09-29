@@ -64,7 +64,6 @@
                 <td>{{ parseFloat(value.area).toFixed(2) }}</td>
               </template>
               <template v-else-if="$store.getters.currentPipelineSettings.solvePNPEnabled && $store.getters.pipelineType === 4">
-                <td>{{ parseInt(value.fiducialId) }} </td>
                 <td>{{ parseFloat(value.pose.x).toFixed(2) }}&nbsp;m</td>
                 <td>{{ parseFloat(value.pose.y).toFixed(2) }}&nbsp;m</td>
                 <td>{{ (parseFloat(value.pose.angle_z) * 180 / Math.PI).toFixed(2) }}&deg;</td>

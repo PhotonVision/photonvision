@@ -196,8 +196,12 @@ public class TrackedTarget implements Releasable {
     @Override
     public void release() {
         m_mainContour.release();
-        for (var sc : m_subContours) {
-            sc.release();
+        
+        // TODO how can this check fail?
+        if (m_subContours != null) {
+            for (var sc : m_subContours) {
+                sc.release();
+            }
         }
 
         if (m_cameraRelativeTvec != null) m_cameraRelativeTvec.release();
