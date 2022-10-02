@@ -43,6 +43,11 @@ public class Draw3dTargetsPipe
     @Override
     protected Void process(Pair<Mat, List<TrackedTarget>> in) {
         if (!params.shouldDraw) return null;
+        if (params.cameraCalibrationCoefficients == null
+                || params.cameraCalibrationCoefficients.getCameraIntrinsicsMat() == null
+                || params.cameraCalibrationCoefficients.getCameraExtrinsicsMat() == null) {
+                    return null;
+        }
 
         for (var target : in.getRight()) {
             // draw convex hull
