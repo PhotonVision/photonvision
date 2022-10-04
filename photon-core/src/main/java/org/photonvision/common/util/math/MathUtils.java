@@ -20,13 +20,11 @@ package org.photonvision.common.util.math;
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.Arrays;
@@ -168,18 +166,20 @@ public class MathUtils {
                 new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
     }
 
-    private static final Vector<N3> APRILTAG_BASE_ROTATION_AXIS = VecBuilder.fill(1, 0, 0);
-    private static final double APRILTAG_BASE_ROTATION_ANGLE = Units.degreesToRadians(180);
-    private static final Rotation3d APRILTAG_BASE_ROTATION =
-            new Rotation3d(APRILTAG_BASE_ROTATION_AXIS, APRILTAG_BASE_ROTATION_ANGLE);
-
-    /**
+    /*
      * The AprilTag pose rotation outputs are X left, Y down, Z away from the tag with the tag facing
      * the camera upright and the camera facing the target parallel to the floor. But our OpenCV
      * solvePNP code would have X left, Y up, Z towards the camera with the target facing the camera
      * and both parallel to the floor. So we apply a base rotation to the rotation component of the
      * apriltag pose to make it consistent with the EDN system that OpenCV uses, internally a 180
      * rotation about the X axis
+     */
+    private static final Rotation3d APRILTAG_BASE_ROTATION =
+            new Rotation3d(VecBuilder.fill(1, 0, 0), Units.degreesToRadians(180));
+
+    /**
+     * Apply a 180 degree rotation about X to the rotation component of a given Apriltag pose. This
+     * aligns it with the OpenCV poses we use in other places.
      */
     public static Transform3d convertApriltagtoOpenCV(Transform3d pose) {
         var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(pose.getRotation());
