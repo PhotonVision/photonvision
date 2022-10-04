@@ -16,7 +16,6 @@
  */
 package org.photonvision.vision.target;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashMap;
 import java.util.List;
@@ -73,16 +72,16 @@ public class TrackedTarget implements Releasable {
         m_yaw =
                 TargetCalculations.calculateYaw(
                         result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
-        Pose3d bestPose = new Pose3d();
+        var bestPose = new Transform3d();
         if (result.getError1() <= result.getError2()) {
             bestPose = result.getPoseResult1();
         } else {
             bestPose = result.getPoseResult2();
         }
 
-        bestPose = MathUtils.convertApriltagtoOpencv(bestPose);
+        bestPose = MathUtils.convertApriltagtoOpenCV(bestPose);
 
-        m_cameraToTarget3d = new Transform3d(new Pose3d(), bestPose);
+        m_cameraToTarget3d = bestPose;
 
         double[] corners = result.getCorners();
         Point[] cornerPoints =
