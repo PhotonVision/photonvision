@@ -25,7 +25,9 @@ import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.MatOfPoint3f;
 import org.opencv.core.Point;
+import org.opencv.core.Point3;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -127,8 +129,51 @@ public class Draw3dTargetsPipe
                             ColorHelper.colorToScalar(Color.orange),
                             3);
                 }
+
+                // Draw X, Y and Z axis
+                MatOfPoint3f pointMat = new MatOfPoint3f();
+                var list =
+                        List.of(
+                                new Point3(0, 0, 0),
+                                new Point3(0.2, 0, 0),
+                                new Point3(0, 0.2, 0),
+                                new Point3(0, 0, 0.2));
+                pointMat.fromList(list);
+
+                Calib3d.projectPoints(
+                        pointMat,
+                        target.getCameraRelativeRvec(),
+                        target.getCameraRelativeTvec(),
+                        params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
+                        params.cameraCalibrationCoefficients.getCameraExtrinsicsMat(),
+                        tempMat,
+                        jac);
+                var axisPoints = tempMat.toList();
+                dividePointList(axisPoints);
+
+                // Red = x, green y, blue z
+                Imgproc.line(
+                        in.getLeft(),
+                        axisPoints.get(0),
+                        axisPoints.get(1),
+                        ColorHelper.colorToScalar(Color.RED),
+                        3);
+                Imgproc.line(
+                        in.getLeft(),
+                        axisPoints.get(0),
+                        axisPoints.get(2),
+                        ColorHelper.colorToScalar(Color.GREEN),
+                        3);
+                Imgproc.line(
+                        in.getLeft(),
+                        axisPoints.get(0),
+                        axisPoints.get(3),
+                        ColorHelper.colorToScalar(Color.BLUE),
+                        3);
+
                 tempMat.release();
                 jac.release();
+                pointMat.release();
             }
 
             // draw corners

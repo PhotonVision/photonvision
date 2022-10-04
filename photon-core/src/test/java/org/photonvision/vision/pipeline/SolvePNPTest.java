@@ -150,6 +150,14 @@ public class SolvePNPTest {
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
+        // Draw on input
+        var outputPipe = new OutputStreamPipeline();
+        outputPipe.process(
+                pipelineResult.inputFrame,
+                pipelineResult.outputFrame,
+                pipeline.getSettings(),
+                pipelineResult.targets);
+
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getCameraToTarget3d();
         Assertions.assertEquals(Units.inchesToMeters(240.26), pose.getTranslation().getX(), 0.05);

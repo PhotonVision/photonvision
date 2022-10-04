@@ -108,7 +108,7 @@ public enum TargetModel implements Releasable {
                     new Point3(Units.inchesToMeters(3.25), Units.inchesToMeters(3.25), 0),
                     new Point3(Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0),
                     new Point3(-Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0)),
-            -Units.inchesToMeters(3.25 * 2));
+            Units.inchesToMeters(3.25 * 2));
 
     @JsonIgnore private MatOfPoint3f realWorldTargetCoordinates;
     @JsonIgnore private MatOfPoint3f visualizationBoxBottom = new MatOfPoint3f();

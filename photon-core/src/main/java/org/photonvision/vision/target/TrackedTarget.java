@@ -26,6 +26,7 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.*;
@@ -79,6 +80,8 @@ public class TrackedTarget implements Releasable {
             bestPose = result.getPoseResult2();
         }
 
+        bestPose = MathUtils.convertApriltagtoOpencv(bestPose);
+
         m_cameraToTarget3d = new Transform3d(new Pose3d(), bestPose);
 
         double[] corners = result.getCorners();
@@ -113,9 +116,7 @@ public class TrackedTarget implements Releasable {
 
         // Opencv expects a 3d vector with norm = angle and direction = axis
         var rvec = new Mat(3, 1, CvType.CV_64FC1);
-        var angle = bestPose.getRotation().getAngle();
-        var axis = bestPose.getRotation().getAxis().times(angle);
-        rvec.put(0, 0, axis.getData());
+        MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
         setCameraRelativeRvec(rvec);
     }
 

@@ -13,6 +13,7 @@ apply from: "${rootDir}/shared/common.gradle"
 
 dependencies {
     implementation project(':photon-core')
+    implementation project(':photon-targeting')
 
     implementation "io.javalin:javalin:4.2.0"
 
