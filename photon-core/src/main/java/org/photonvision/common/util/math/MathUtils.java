@@ -175,9 +175,11 @@ public class MathUtils {
 
     /**
      * The AprilTag pose rotation outputs are X left, Y down, Z away from the tag with the tag facing
-     * the camera upright but our OpenCV solvePNP code uses X left, Y up, Z towards the camera. So we
-     * need apply an extra rotation to the rotation component of the apriltag pose to make it
-     * consistent with the EDN system that OpenCV uses So we need a 180 flip about X axis
+     * the camera upright and the camera facing the target parallel to the floor. But our OpenCV
+     * solvePNP code would have X left, Y up, Z towards the camera with the target facing the camera
+     * and both parallel to the floor. So we apply a base rotation to the rotation component of the
+     * apriltag pose to make it consistent with the EDN system that OpenCV uses, internally a 180
+     * rotation about the X axis
      */
     public static Transform3d convertApriltagtoOpenCV(Transform3d pose) {
         var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(pose.getRotation());
