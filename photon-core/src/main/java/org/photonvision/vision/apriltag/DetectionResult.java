@@ -135,6 +135,21 @@ public class DetectionResult {
                         new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose2RotArr)));
     }
 
+    /**
+     * Get the ratio of pose reprojection errors, called ambiguity. Numbers above 0.2 are likely to be
+     * ambiguous.
+     */
+    public double getPoseAmbiguity() {
+        var min = Math.min(error1, error2);
+        var max = Math.max(error1, error2);
+        
+        if (max > 0) {
+            return min / max;
+        } else {
+            return -1;
+        }
+    }
+
     @Override
     public String toString() {
         return "DetectionResult [centerX="

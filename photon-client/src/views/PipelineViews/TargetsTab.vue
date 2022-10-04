@@ -46,6 +46,11 @@
                   Z Angle,&nbsp;&deg;
                 </th>
               </template>
+              <template v-if="$store.getters.pipelineType === 4 && $store.getters.currentPipelineSettings.solvePNPEnabled">
+                <th class="text-center" >
+                  Ambiguity
+                </th>
+              </template>
             </tr>
           </thead>
           <tbody>
@@ -72,6 +77,11 @@
                 <td>{{ parseFloat(value.pose.x).toFixed(2) }}&nbsp;m</td>
                 <td>{{ parseFloat(value.pose.y).toFixed(2) }}&nbsp;m</td>
                 <td>{{ (parseFloat(value.pose.angle_z) * 180 / Math.PI).toFixed(2) }}&deg;</td>
+              </template>
+              <template v-if="$store.getters.pipelineType === 4 && $store.getters.currentPipelineSettings.solvePNPEnabled">
+              <td>
+                {{ parseFloat(value.ambiguity).toFixed(2) }}
+              </td>
               </template>
             </tr>
           </tbody>

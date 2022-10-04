@@ -51,6 +51,7 @@ public class TrackedTarget implements Releasable {
     private CVShape m_shape;
 
     private int m_fiducialId = -1;
+    private double m_poseAmbiguity = -1;
 
     private Mat m_cameraRelativeTvec, m_cameraRelativeRvec;
 
@@ -117,6 +118,8 @@ public class TrackedTarget implements Releasable {
         var axis = bestPose.getRotation().getAxis().times(angle);
         rvec.put(0, 0, axis.getData());
         setCameraRelativeRvec(rvec);
+
+        m_poseAmbiguity = result.getPoseAmbiguity();
     }
 
     public void setFiducialId(int id) {
@@ -125,6 +128,14 @@ public class TrackedTarget implements Releasable {
 
     public int getFiducialId() {
         return m_fiducialId;
+    }
+
+    public void setPoseAmbiguity(double ambiguity) {
+        m_poseAmbiguity = ambiguity;
+    }
+
+    public double getPoseAmbiguity() {
+        return m_poseAmbiguity;
     }
 
     /**
@@ -260,6 +271,7 @@ public class TrackedTarget implements Releasable {
         ret.put("yaw", getYaw());
         ret.put("skew", getSkew());
         ret.put("area", getArea());
+        ret.put("ambiguity", getPoseAmbiguity());
         if (getCameraToTarget3d() != null) {
             ret.put("pose", transformToMap(getCameraToTarget3d()));
         }
