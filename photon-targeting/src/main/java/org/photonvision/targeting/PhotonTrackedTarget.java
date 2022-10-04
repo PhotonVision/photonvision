@@ -87,7 +87,7 @@ public class PhotonTrackedTarget {
      * ambiguous. -1 if invalid.
      */
     public double getPoseAmbiguity() {
-        return poseAmbiguity; 
+        return poseAmbiguity;
     }
 
     /**
@@ -154,7 +154,6 @@ public class PhotonTrackedTarget {
             double cy = packet.decodeDouble();
             targetCorners.add(new TargetCorner(cx, cy));
         }
-
 
         return packet;
     }

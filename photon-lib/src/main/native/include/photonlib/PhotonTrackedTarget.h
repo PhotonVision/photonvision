@@ -91,12 +91,10 @@ class PhotonTrackedTarget {
   }
 
   /**
-   * Get the ratio of pose reprojection errors, called ambiguity. Numbers above 0.2 are likely to be
-   * ambiguous. -1 if invalid.
+   * Get the ratio of pose reprojection errors, called ambiguity. Numbers above
+   * 0.2 are likely to be ambiguous. -1 if invalid.
    */
-  double GetPoseAmbiguity() const {
-      return poseAmbiguity; 
-  }
+  double GetPoseAmbiguity() const { return poseAmbiguity; }
 
   /**
    * Returns the pose of the target relative to the robot.

@@ -142,7 +142,7 @@ public class DetectionResult {
     public double getPoseAmbiguity() {
         var min = Math.min(error1, error2);
         var max = Math.max(error1, error2);
-        
+
         if (max > 0) {
             return min / max;
         } else {
