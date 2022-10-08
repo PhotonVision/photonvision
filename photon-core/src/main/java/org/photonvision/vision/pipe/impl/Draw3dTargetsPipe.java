@@ -46,7 +46,7 @@ public class Draw3dTargetsPipe
         if (params.cameraCalibrationCoefficients == null
                 || params.cameraCalibrationCoefficients.getCameraIntrinsicsMat() == null
                 || params.cameraCalibrationCoefficients.getCameraExtrinsicsMat() == null) {
-                    return null;
+            return null;
         }
 
         for (var target : in.getRight()) {
