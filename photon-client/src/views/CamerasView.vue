@@ -176,9 +176,9 @@
                           {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "—" }}
                         </td>
                         <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "—" }} </td>
-                        <td> {{ isCalibrated(value) ? value.horizontalFOV.toFixed(2) : "—" }} </td>
-                        <td> {{ isCalibrated(value) ? value.verticalFOV.toFixed(2) : "—" }} </td>
-                        <td> {{ isCalibrated(value) ? value.diagonalFOV.toFixed(2) : "—" }} </td>
+                        <td> {{ isCalibrated(value) ? value.horizontalFOV.toFixed(2) + "°" : "—" }} </td>
+                        <td> {{ isCalibrated(value) ? value.verticalFOV.toFixed(2) + "°" : "—" }} </td>
+                        <td> {{ isCalibrated(value) ? value.diagonalFOV.toFixed(2) + "°" : "—" }} </td>
                       </tr>
                     </tbody>
                   </v-simple-table>
