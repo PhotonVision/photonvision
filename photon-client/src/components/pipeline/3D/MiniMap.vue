@@ -81,8 +81,8 @@ export default {
         let arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
             1, // length
             0xff0000,
-            0.2,
-            0.2,
+            0.1,
+            0.1,
         ));
         arrow.rotation.setFromQuaternion(quat)
         arrow.rotateZ(-Math.PI / 2)
@@ -92,8 +92,8 @@ export default {
         arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
             1, // length
             0x00ff00,
-            0.2,
-            0.2,
+            0.1,
+            0.1,
         ));
         arrow.rotation.setFromQuaternion(quat)
         // arrow.rotateX(Math.PI / 2)
@@ -102,8 +102,8 @@ export default {
         arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
             1, // length
             0x0000ff,
-            0.2,
-            0.2,
+            0.1,
+            0.1,
         ));
         arrow.setRotationFromQuaternion(quat)
         arrow.rotateX(Math.PI / 2)
