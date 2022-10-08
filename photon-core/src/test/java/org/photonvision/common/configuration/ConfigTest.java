@@ -30,6 +30,7 @@ import org.photonvision.common.logging.LogLevel;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.file.JacksonUtils;
+import org.photonvision.vision.pipeline.AprilTagPipelineSettings;
 import org.photonvision.vision.pipeline.ColoredShapePipelineSettings;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.target.TargetModel;
@@ -40,6 +41,7 @@ public class ConfigTest {
             new CameraConfiguration("TestCamera", "/dev/video420");
     private static ReflectivePipelineSettings REFLECTIVE_PIPELINE_SETTINGS;
     private static ColoredShapePipelineSettings COLORED_SHAPE_PIPELINE_SETTINGS;
+    private static AprilTagPipelineSettings APRIL_TAG_PIPELINE_SETTINGS;
 
     @BeforeAll
     public static void init() {
@@ -51,6 +53,7 @@ public class ConfigTest {
 
         REFLECTIVE_PIPELINE_SETTINGS = new ReflectivePipelineSettings();
         COLORED_SHAPE_PIPELINE_SETTINGS = new ColoredShapePipelineSettings();
+        APRIL_TAG_PIPELINE_SETTINGS = new AprilTagPipelineSettings();
 
         REFLECTIVE_PIPELINE_SETTINGS.pipelineNickname = "2019Tape";
         REFLECTIVE_PIPELINE_SETTINGS.targetModel = TargetModel.k2019DualTarget;
@@ -58,8 +61,12 @@ public class ConfigTest {
         COLORED_SHAPE_PIPELINE_SETTINGS.pipelineNickname = "2019Cargo";
         COLORED_SHAPE_PIPELINE_SETTINGS.pipelineIndex = 1;
 
+        APRIL_TAG_PIPELINE_SETTINGS.pipelineNickname = "apriltag";
+        APRIL_TAG_PIPELINE_SETTINGS.pipelineIndex = 2;
+
         cameraConfig.addPipelineSetting(REFLECTIVE_PIPELINE_SETTINGS);
         cameraConfig.addPipelineSetting(COLORED_SHAPE_PIPELINE_SETTINGS);
+        cameraConfig.addPipelineSetting(APRIL_TAG_PIPELINE_SETTINGS);
     }
 
     @Test
@@ -90,9 +97,12 @@ public class ConfigTest {
                 configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(0);
         var coloredShapePipelineSettings =
                 configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(1);
+        var apriltagPipelineSettings =
+                configMgr.getConfig().getCameraConfigurations().get("TestCamera").pipelineSettings.get(2);
 
         Assertions.assertEquals(REFLECTIVE_PIPELINE_SETTINGS, reflectivePipelineSettings);
         Assertions.assertEquals(COLORED_SHAPE_PIPELINE_SETTINGS, coloredShapePipelineSettings);
+        Assertions.assertEquals(APRIL_TAG_PIPELINE_SETTINGS, apriltagPipelineSettings);
 
         Assertions.assertTrue(
                 reflectivePipelineSettings instanceof ReflectivePipelineSettings,
@@ -100,6 +110,9 @@ public class ConfigTest {
         Assertions.assertTrue(
                 coloredShapePipelineSettings instanceof ColoredShapePipelineSettings,
                 "Conig loaded pipeline settings for index 1 not of expected type ColoredShapePipelineSettings!");
+        Assertions.assertTrue(
+                apriltagPipelineSettings instanceof AprilTagPipelineSettings,
+                "Conig loaded pipeline settings for index 2 not of expected type AprilTagPipelineSettings!");
     }
 
     @AfterAll

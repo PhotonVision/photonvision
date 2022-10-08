@@ -19,14 +19,17 @@ package org.photonvision.common.util.math;
 
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Quaternion;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.Arrays;
 import java.util.List;
+import org.opencv.core.Mat;
 
 public class MathUtils {
     MathUtils() {}
@@ -159,25 +162,33 @@ public class MathUtils {
     // TODO: Refactor into new pipe?
     public static Pose3d convertOpenCVtoPhotonPose(Transform3d cameraToTarget3d) {
         // CameraToTarget _should_ be in opencv-land EDN
-
-        var pose =
-                CoordinateSystem.convert(
-                        new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
-
-        return pose;
+        return CoordinateSystem.convert(
+                new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
     }
 
-    public static Pose3d convertApriltagtoPhotonPose(Transform3d cameraToTarget3d) {
-        // CameraToTarget _should_ be in opencv-land EDN
-        var pose =
-                CoordinateSystem.convert(
-                        new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
+    /*
+     * The AprilTag pose rotation outputs are X left, Y down, Z away from the tag with the tag facing
+     * the camera upright and the camera facing the target parallel to the floor. But our OpenCV
+     * solvePNP code would have X left, Y up, Z towards the camera with the target facing the camera
+     * and both parallel to the floor. So we apply a base rotation to the rotation component of the
+     * apriltag pose to make it consistent with the EDN system that OpenCV uses, internally a 180
+     * rotation about the X axis
+     */
+    private static final Rotation3d APRILTAG_BASE_ROTATION =
+            new Rotation3d(VecBuilder.fill(1, 0, 0), Units.degreesToRadians(180));
 
-        // Apply an extra rotation so that at zero pose, X ls left, Y is up, and Z is towards the camera
-        // to a camera facing along the +X axis of the field parallel with the ground plane
-        // So we need a 180 flip about X axis
-        var newRotation = pose.getRotation().rotateBy(new Rotation3d(0, Math.PI, 0));
+    /**
+     * Apply a 180 degree rotation about X to the rotation component of a given Apriltag pose. This
+     * aligns it with the OpenCV poses we use in other places.
+     */
+    public static Transform3d convertApriltagtoOpenCV(Transform3d pose) {
+        var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(pose.getRotation());
+        return new Transform3d(pose.getTranslation(), ocvRotation);
+    }
 
-        return new Pose3d(pose.getTranslation(), newRotation);
+    public static void rotationToOpencvRvec(Rotation3d rotation, Mat rvecOutput) {
+        var angle = rotation.getAngle();
+        var axis = rotation.getAxis().times(angle);
+        rvecOutput.put(0, 0, axis.getData());
     }
 }

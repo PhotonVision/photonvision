@@ -94,7 +94,8 @@ export default new Vuex.Store({
                     blur: 0.0,
                     threads: 1,
                     debug: false,
-                    refineEdges: true
+                    refineEdges: true,
+                    numIterations: 1,
                 }
             }
         ],

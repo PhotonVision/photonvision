@@ -27,7 +27,7 @@ import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class PhotonTrackedTarget {
-    public static final int PACK_SIZE_BYTES = Double.BYTES * (5 + 7 + 2 * 4);
+    public static final int PACK_SIZE_BYTES = Double.BYTES * (5 + 7 + 2 * 4 + 1);
 
     private double yaw;
     private double pitch;
@@ -35,6 +35,7 @@ public class PhotonTrackedTarget {
     private double skew;
     private int fiducialId;
     private Transform3d cameraToTarget = new Transform3d();
+    private double poseAmbiguity;
     private List<TargetCorner> targetCorners;
 
     public PhotonTrackedTarget() {}
@@ -47,6 +48,7 @@ public class PhotonTrackedTarget {
             double skew,
             int id,
             Transform3d pose,
+            double ambiguity,
             List<TargetCorner> corners) {
         assert corners.size() == 4;
         this.yaw = yaw;
@@ -56,6 +58,7 @@ public class PhotonTrackedTarget {
         this.fiducialId = id;
         this.cameraToTarget = pose;
         this.targetCorners = corners;
+        this.poseAmbiguity = ambiguity;
     }
 
     public double getYaw() {
@@ -77,6 +80,14 @@ public class PhotonTrackedTarget {
     /** Get the Fiducial ID, or -1 if not set. */
     public int getFiducialId() {
         return fiducialId;
+    }
+
+    /**
+     * Get the ratio of pose reprojection errors, called ambiguity. Numbers above 0.2 are likely to be
+     * ambiguous. -1 if invalid.
+     */
+    public double getPoseAmbiguity() {
+        return poseAmbiguity;
     }
 
     /**
@@ -134,6 +145,8 @@ public class PhotonTrackedTarget {
         y = packet.decodeDouble();
         z = packet.decodeDouble();
         var rotation = new Rotation3d(new Quaternion(w, x, y, z));
+        this.cameraToTarget = new Transform3d(translation, rotation);
+        this.poseAmbiguity = packet.decodeDouble();
 
         this.targetCorners = new ArrayList<>(4);
         for (int i = 0; i < 4; i++) {
@@ -141,8 +154,6 @@ public class PhotonTrackedTarget {
             double cy = packet.decodeDouble();
             targetCorners.add(new TargetCorner(cx, cy));
         }
-
-        this.cameraToTarget = new Transform3d(translation, rotation);
 
         return packet;
     }
@@ -166,6 +177,7 @@ public class PhotonTrackedTarget {
         packet.encode(cameraToTarget.getRotation().getQuaternion().getX());
         packet.encode(cameraToTarget.getRotation().getQuaternion().getY());
         packet.encode(cameraToTarget.getRotation().getQuaternion().getZ());
+        packet.encode(poseAmbiguity);
 
         for (int i = 0; i < 4; i++) {
             packet.encode(targetCorners.get(i).x);

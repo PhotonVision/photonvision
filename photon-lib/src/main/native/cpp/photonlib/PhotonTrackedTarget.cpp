@@ -62,7 +62,8 @@ Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
          << target.cameraToTarget.Rotation().GetQuaternion().W()
          << target.cameraToTarget.Rotation().GetQuaternion().X()
          << target.cameraToTarget.Rotation().GetQuaternion().Y()
-         << target.cameraToTarget.Rotation().GetQuaternion().Z();
+         << target.cameraToTarget.Rotation().GetQuaternion().Z()
+         << target.poseAmbiguity;
 
   for (int i = 0; i < 4; i++) {
     packet << target.corners[i].first << target.corners[i].second;
@@ -85,6 +86,8 @@ Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
   const auto rotation = frc::Rotation3d(frc::Quaternion(w, x, y, z));
 
   target.cameraToTarget = frc::Transform3d(translation, rotation);
+
+  packet >> target.poseAmbiguity;
 
   target.corners.clear();
   for (int i = 0; i < 4; i++) {

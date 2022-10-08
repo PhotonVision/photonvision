@@ -19,8 +19,8 @@ package org.photonvision.vision.apriltag;
 
 import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.Arrays;
 
@@ -81,11 +81,11 @@ public class DetectionResult {
         return error2;
     }
 
-    public Pose3d getPoseResult1() {
+    public Transform3d getPoseResult1() {
         return poseResult1;
     }
 
-    public Pose3d getPoseResult2() {
+    public Transform3d getPoseResult2() {
         return poseResult2;
     }
 
@@ -96,9 +96,9 @@ public class DetectionResult {
     double centerX, centerY;
     double[] corners;
 
-    Pose3d poseResult1;
+    Transform3d poseResult1;
     double error1;
-    Pose3d poseResult2;
+    Transform3d poseResult2;
     double error2;
 
     public DetectionResult(
@@ -125,14 +125,29 @@ public class DetectionResult {
 
         this.error1 = err1;
         this.poseResult1 =
-                new Pose3d(
+                new Transform3d(
                         new Translation3d(pose1TransArr[0], pose1TransArr[1], pose1TransArr[2]),
                         new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose1RotArr)));
         this.error2 = err2;
         this.poseResult2 =
-                new Pose3d(
+                new Transform3d(
                         new Translation3d(pose2TransArr[0], pose2TransArr[1], pose2TransArr[2]),
                         new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose2RotArr)));
+    }
+
+    /**
+     * Get the ratio of pose reprojection errors, called ambiguity. Numbers above 0.2 are likely to be
+     * ambiguous.
+     */
+    public double getPoseAmbiguity() {
+        var min = Math.min(error1, error2);
+        var max = Math.max(error1, error2);
+
+        if (max > 0) {
+            return min / max;
+        } else {
+            return -1;
+        }
     }
 
     @Override

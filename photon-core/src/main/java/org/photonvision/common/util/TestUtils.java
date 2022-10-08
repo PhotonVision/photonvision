@@ -33,7 +33,6 @@ public class TestUtils {
         try {
             CameraServerCvJNI.forceLoad();
             //        PicamJNI.forceLoad();
-            // AprilTagJNI.forceLoad();
         } catch (IOException ex) {
             // ignored
         }
@@ -165,7 +164,8 @@ public class TestUtils {
     }
 
     public enum ApriltagTestImages {
-        kRobots;
+        kRobots,
+        kTag1_640_480;
 
         public final Path path;
 
@@ -230,6 +230,10 @@ public class TestUtils {
     }
 
     public static Path getPolygonImagePath(PolygonTestImages image, boolean testMode) {
+        return getTestImagesPath(testMode).resolve(image.path);
+    }
+
+    public static Path getApriltagImagePath(ApriltagTestImages image, boolean testMode) {
         return getTestImagesPath(testMode).resolve(image.path);
     }
 
