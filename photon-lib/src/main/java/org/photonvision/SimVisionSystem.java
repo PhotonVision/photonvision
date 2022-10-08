@@ -171,6 +171,7 @@ public class SimVisionSystem {
                                         0.0,
                                         -1, // TODO fiducial ID
                                         new Transform3d(),
+                                        0.25,
                                         List.of(
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0),
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0))));

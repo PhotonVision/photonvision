@@ -91,6 +91,12 @@ class PhotonTrackedTarget {
   }
 
   /**
+   * Get the ratio of pose reprojection errors, called ambiguity. Numbers above
+   * 0.2 are likely to be ambiguous. -1 if invalid.
+   */
+  double GetPoseAmbiguity() const { return poseAmbiguity; }
+
+  /**
    * Returns the pose of the target relative to the robot.
    * @return The pose of the target relative to the robot.
    */
@@ -109,6 +115,7 @@ class PhotonTrackedTarget {
   double skew = 0;
   int fiducialId;
   frc::Transform3d cameraToTarget;
+  double poseAmbiguity;
   wpi::SmallVector<std::pair<double, double>, 4> corners;
 };
 }  // namespace photonlib
