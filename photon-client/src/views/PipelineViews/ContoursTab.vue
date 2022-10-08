@@ -19,12 +19,12 @@
       @input="handlePipelineData('contourRatio')"
     />
     <CVselect
-        v-model="contourTargetOrientation"
-        name="Target Orientation"
-        tooltip="Used to determine how to calculate target landmarks, as well as aspect ratio"
-        :list="['Portrait', 'Landscape']"
-        @input="handlePipelineData('contourTargetOrientation')"
-        @rollback="e=> rollback('contourTargetOrientation', e)"
+      v-model="contourTargetOrientation"
+      name="Target Orientation"
+      tooltip="Used to determine how to calculate target landmarks, as well as aspect ratio"
+      :list="['Portrait', 'Landscape']"
+      @input="handlePipelineData('contourTargetOrientation')"
+      @rollback="e=> rollback('contourTargetOrientation', e)"
     />
     <CVrangeSlider
       v-if="currentPipelineType() !== 3"

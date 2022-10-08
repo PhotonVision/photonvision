@@ -1,11 +1,14 @@
 <template>
-  <div id="MapContainer" style="flex-grow:1">
+  <div
+    id="MapContainer"
+    style="flex-grow:1"
+  >
     <v-row>
       <v-col
         align="center"
         cols="12"
       >
-        <span class="white--text" >Target Location</span>
+        <span class="white--text">Target Location</span>
       </v-col>
     </v-row>
     <v-row>
@@ -14,7 +17,10 @@
         cols="12"
         align-self="stretch"
       >
-        <canvas id="canvasId" style="width:100%;height:100%"/>
+        <canvas
+          id="canvasId"
+          style="width:100%;height:100%"
+        />
       </v-col>
     </v-row>
   </div>
@@ -56,71 +62,6 @@ export default {
       deep: true,
       handler() {
         this.drawTargets();
-      }
-    },
-  },
-  methods: {
-    drawTargets() {
-      this.scene.remove(...this.cubes)
-      this.cubes = []
-
-      for (const target of this.targets) {
-        const geometry = new BoxGeometry(0.2, 0.2, 0.3 / 5);
-        const material = new MeshNormalMaterial();
-        let quat = (new Quaternion(
-            target.pose.qx,
-            target.pose.qy,
-            target.pose.qz,
-            target.pose.qw,
-        ))
-        const cube = new Mesh(geometry, material);
-        cube.position.set(target.pose.x, target.pose.y, target.pose.z)
-        cube.rotation.setFromQuaternion(quat);
-        this.cubes.push(cube)
-
-        let arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
-            1, // length
-            0xff0000,
-            0.1,
-            0.1,
-        ));
-        arrow.rotation.setFromQuaternion(quat)
-        arrow.rotateZ(-Math.PI / 2)
-        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
-        this.cubes.push(arrow);
-
-        arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
-            1, // length
-            0x00ff00,
-            0.1,
-            0.1,
-        ));
-        arrow.rotation.setFromQuaternion(quat)
-        // arrow.rotateX(Math.PI / 2)
-        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
-        this.cubes.push(arrow);
-        arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
-            1, // length
-            0x0000ff,
-            0.1,
-            0.1,
-        ));
-        arrow.setRotationFromQuaternion(quat)
-        arrow.rotateX(Math.PI / 2)
-        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
-        this.cubes.push(arrow);
-      }
-      if(this.cubes.length > 0)
-        this.scene.add(...this.cubes);
-    },
-    onWindowResize() {
-      var container = document.getElementById("MapContainer")
-      if(container){
-        this.canvas.width = container.clientWidth * 0.95;
-        this.canvas.height = container.clientWidth * 0.85;
-        this.camera.aspect = this.canvas.width / this.canvas.height;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize( this.canvas.width, this.canvas.height );
       }
     },
   },
@@ -189,6 +130,71 @@ export default {
     this.drawTargets()
 
     animate();
+  },
+  methods: {
+    drawTargets() {
+      this.scene.remove(...this.cubes)
+      this.cubes = []
+
+      for (const target of this.targets) {
+        const geometry = new BoxGeometry(0.2, 0.2, 0.3 / 5);
+        const material = new MeshNormalMaterial();
+        let quat = (new Quaternion(
+            target.pose.qx,
+            target.pose.qy,
+            target.pose.qz,
+            target.pose.qw,
+        ))
+        const cube = new Mesh(geometry, material);
+        cube.position.set(target.pose.x, target.pose.y, target.pose.z)
+        cube.rotation.setFromQuaternion(quat);
+        this.cubes.push(cube)
+
+        let arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
+            1, // length
+            0xff0000,
+            0.1,
+            0.1,
+        ));
+        arrow.rotation.setFromQuaternion(quat)
+        arrow.rotateZ(-Math.PI / 2)
+        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
+        this.cubes.push(arrow);
+
+        arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
+            1, // length
+            0x00ff00,
+            0.1,
+            0.1,
+        ));
+        arrow.rotation.setFromQuaternion(quat)
+        // arrow.rotateX(Math.PI / 2)
+        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
+        this.cubes.push(arrow);
+        arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
+            1, // length
+            0x0000ff,
+            0.1,
+            0.1,
+        ));
+        arrow.setRotationFromQuaternion(quat)
+        arrow.rotateX(Math.PI / 2)
+        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
+        this.cubes.push(arrow);
+      }
+      if(this.cubes.length > 0)
+        this.scene.add(...this.cubes);
+    },
+    onWindowResize() {
+      var container = document.getElementById("MapContainer")
+      if(container){
+        this.canvas.width = container.clientWidth * 0.95;
+        this.canvas.height = container.clientWidth * 0.85;
+        this.camera.aspect = this.canvas.width / this.canvas.height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize( this.canvas.width, this.canvas.height );
+      }
+    },
   }
 
 

@@ -18,7 +18,10 @@
               <th class="text-center">
                 Target
               </th>
-              <th class="text-center" v-if="$store.getters.pipelineType === 4">
+              <th
+                v-if="$store.getters.pipelineType === 4"
+                class="text-center"
+              >
                 Fiducial ID
               </th>
               <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled">
