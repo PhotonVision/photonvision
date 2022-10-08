@@ -16,7 +16,6 @@
  */
 package org.photonvision.vision.target;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +25,7 @@ import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.*;
@@ -73,14 +73,16 @@ public class TrackedTarget implements Releasable {
         m_yaw =
                 TargetCalculations.calculateYaw(
                         result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
-        Pose3d bestPose = new Pose3d();
+        var bestPose = new Transform3d();
         if (result.getError1() <= result.getError2()) {
             bestPose = result.getPoseResult1();
         } else {
             bestPose = result.getPoseResult2();
         }
 
-        m_cameraToTarget3d = new Transform3d(new Pose3d(), bestPose);
+        bestPose = MathUtils.convertApriltagtoOpenCV(bestPose);
+
+        m_cameraToTarget3d = bestPose;
 
         double[] corners = result.getCorners();
         Point[] cornerPoints =
@@ -114,9 +116,7 @@ public class TrackedTarget implements Releasable {
 
         // Opencv expects a 3d vector with norm = angle and direction = axis
         var rvec = new Mat(3, 1, CvType.CV_64FC1);
-        var angle = bestPose.getRotation().getAngle();
-        var axis = bestPose.getRotation().getAxis().times(angle);
-        rvec.put(0, 0, axis.getData());
+        MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
         setCameraRelativeRvec(rvec);
 
         m_poseAmbiguity = result.getPoseAmbiguity();
