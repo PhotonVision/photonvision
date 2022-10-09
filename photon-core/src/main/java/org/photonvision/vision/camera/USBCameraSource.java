@@ -19,7 +19,6 @@ package org.photonvision.vision.camera;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.*;
-
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
