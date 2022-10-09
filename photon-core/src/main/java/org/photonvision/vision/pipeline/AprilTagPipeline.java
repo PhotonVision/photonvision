@@ -117,8 +117,12 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             sumPipeNanosElapsed += rotateImageResult.nanosElapsed;
         }
 
+        var inputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
+
         grayscalePipeResult = grayscalePipe.run(rawInputMat);
         sumPipeNanosElapsed += grayscalePipeResult.nanosElapsed;
+
+        var outputFrame = new Frame(new CVMat(grayscalePipeResult.output), frameStaticProperties);
 
         List<TrackedTarget> targetList;
         CVPipeResult<List<DetectionResult>> tagDetectionPipeResult;
@@ -127,7 +131,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         aprilTagDetectionPipe.setNativePoseEstimationEnabled(settings.solvePNPEnabled);
 
         tagDetectionPipeResult = aprilTagDetectionPipe.run(grayscalePipeResult.output);
-        grayscalePipeResult.output.release();
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         targetList = new ArrayList<>();
@@ -149,11 +152,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
-
-        var inputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
-        // empty output frame
-        var outputFrame =
-                Frame.emptyFrame(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight);
 
         return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, outputFrame, inputFrame);
     }

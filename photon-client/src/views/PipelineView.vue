@@ -36,7 +36,7 @@
                 <span class="pr-1">{{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
                 <span v-if="!fpsTooLow">{{ Math.min(Math.round($store.state.pipelineResults.latency), 9999) }} ms latency</span>
                 <span v-else-if="!$store.getters.currentPipelineSettings.inputShouldShow">HSV thresholds are too broad; narrow them for better performance</span>
-                <span v-else>stop viewing the color stream for better performance</span>
+                <span v-else>stop viewing the raw stream for better performance</span>
               </v-chip>
               <v-switch
                 v-model="driverMode"
@@ -136,15 +136,15 @@
                     color="secondary"
                     class="fill"
                   >
-                    <v-icon>mdi-palette</v-icon>
-                    <span>Normal</span>
+                    <v-icon>mdi-import</v-icon>
+                    <span>Raw</span>
                   </v-btn>
                   <v-btn
                     color="secondary"
                     class="fill"
                   >
-                    <v-icon>mdi-compare</v-icon>
-                    <span>Threshold</span>
+                    <v-icon>mdi-export</v-icon>
+                    <span>Processed</span>
                   </v-btn>
                 </v-btn-toggle>
               </v-col>
