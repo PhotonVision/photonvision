@@ -70,12 +70,13 @@ public class USBCameraSource extends VisionSource {
     }
 
     void disableAutoFocus() {
-        VideoProperty autoFocus = camera.getProperty("focus_auto");
-        VideoProperty focusValue = camera.getProperty("focus_absolute");
-
-        if (autoFocus.isBoolean() && focusValue.isInteger()) {
-            autoFocus.set(0);
-            focusValue.set(0); // Focus into infinity
+        if (cameraQuirks.hasQuirk(CameraQuirk.AdjustableFocus)) {
+            try {
+                camera.getProperty("focus_auto").set(0);
+                camera.getProperty("focus_absolute").set(0); // Focus into infinity
+            } catch (VideoException e) {
+                logger.error("Unable to disable autofocus!", e);
+            }
         }
     }
 
