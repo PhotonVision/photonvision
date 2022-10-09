@@ -27,5 +27,7 @@ public enum CameraQuirk {
     /** Separate red/blue gain controls available */
     AWBGain,
     /** Will not work with photonvision - Logitec C270 at least */
-    CompletelyBroken
+    CompletelyBroken,
+    /** Has adjustable focus and autofocus switch */
+    AdjustableFocus,
 }

@@ -18,10 +18,7 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CvSink;
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.cscore.*;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -65,8 +62,20 @@ public class USBCameraSource extends VisionSource {
         } else {
             // Normal init
             setLowExposureOptimizationImpl(false);
+            disableAutoFocus();
             usbCameraSettables = new USBCameraSettables(config);
             usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
+        }
+    }
+
+    void disableAutoFocus() {
+        if (cameraQuirks.hasQuirk(CameraQuirk.AdjustableFocus)) {
+            try {
+                camera.getProperty("focus_auto").set(0);
+                camera.getProperty("focus_absolute").set(0); // Focus into infinity
+            } catch (VideoException e) {
+                logger.error("Unable to disable autofocus!", e);
+            }
         }
     }
 
