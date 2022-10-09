@@ -18,10 +18,8 @@
 package org.photonvision.vision.camera;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.CvSink;
-import edu.wpi.first.cscore.UsbCamera;
-import edu.wpi.first.cscore.VideoException;
-import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.cscore.*;
+
 import java.util.*;
 import java.util.stream.Collectors;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -65,8 +63,21 @@ public class USBCameraSource extends VisionSource {
         } else {
             // Normal init
             setLowExposureOptimizationImpl(false);
+            disableAutoFocus();
             usbCameraSettables = new USBCameraSettables(config);
             usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
+        }
+    }
+
+    void disableAutoFocus() {
+        VideoProperty autoFocus = camera.getProperty("focus_auto");
+        VideoProperty focusValue = camera.getProperty("focus_absolute");
+
+        // These values are from a Logitech C925-e
+        if (autoFocus.isBoolean() && focusValue.isInteger()) {
+            logger.info("Disabling Auto Focus on USB Camera");
+            autoFocus.set(0);
+            focusValue.set(0); // Focus into infinity
         }
     }
 
