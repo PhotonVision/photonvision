@@ -538,8 +538,6 @@ public class VisionModule {
             internalMap.put("height", c.resolution.height);
             internalMap.put("intrinsics", c.cameraIntrinsics.data);
             internalMap.put("extrinsics", c.cameraExtrinsics.data);
-            System.out.println(c.cameraIntrinsics.data);
-
 
             calList.add(internalMap);
         }
