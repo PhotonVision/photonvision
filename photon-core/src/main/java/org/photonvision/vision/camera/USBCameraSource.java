@@ -73,9 +73,7 @@ public class USBCameraSource extends VisionSource {
         VideoProperty autoFocus = camera.getProperty("focus_auto");
         VideoProperty focusValue = camera.getProperty("focus_absolute");
 
-        // These values are from a Logitech C925-e
         if (autoFocus.isBoolean() && focusValue.isInteger()) {
-            logger.info("Disabling Auto Focus on USB Camera");
             autoFocus.set(0);
             focusValue.set(0); // Focus into infinity
         }
