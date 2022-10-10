@@ -40,7 +40,8 @@ public class CVPipelineSettings implements Cloneable {
     public ImageFlipMode inputImageFlipMode = ImageFlipMode.NONE;
     public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
     public String pipelineNickname = "New Pipeline";
-    // Only used if the pipeline type does not enable auto-exposure
+    public boolean cameraAutoExposure = false;
+    // manual exposure only used if cameraAutoExposure if false
     public double cameraExposure = 100;
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain

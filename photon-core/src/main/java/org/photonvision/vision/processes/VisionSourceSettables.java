@@ -44,6 +44,8 @@ public abstract class VisionSourceSettables {
 
     public abstract void setExposure(double exposure);
 
+    public abstract void setAutoExposure(boolean cameraAutoExposure);
+
     public abstract void setBrightness(int brightness);
 
     public abstract void setGain(int gain);
@@ -63,8 +65,6 @@ public abstract class VisionSourceSettables {
         setVideoModeInternal(mode);
         calculateFrameStaticProps();
     }
-
-    public abstract void setLowExposureOptimization(boolean mode);
 
     protected abstract void setVideoModeInternal(VideoMode videoMode);
 

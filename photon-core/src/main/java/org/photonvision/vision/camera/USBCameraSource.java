@@ -61,8 +61,9 @@ public class USBCameraSource extends VisionSource {
             usbFrameProvider = null;
         } else {
             // Normal init
-            setLowExposureOptimizationImpl(false);
+            // auto exposure/brightness/gain will be set by the visionmodule later
             disableAutoFocus();
+
             usbCameraSettables = new USBCameraSettables(config);
             usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
         }
@@ -75,58 +76,6 @@ public class USBCameraSource extends VisionSource {
                 camera.getProperty("focus_absolute").set(0); // Focus into infinity
             } catch (VideoException e) {
                 logger.error("Unable to disable autofocus!", e);
-            }
-        }
-    }
-
-    void setLowExposureOptimizationImpl(boolean lowExposureMode) {
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-            // Case, we know this is a picam. Go through v4l2-ctl interface directly
-
-            // Common settings
-            camera
-                    .getProperty("image_stabilization")
-                    .set(0); // No image stabilization, as this will throw off odometry
-            camera.getProperty("power_line_frequency").set(2); // Assume 60Hz USA
-            camera.getProperty("scene_mode").set(0); // no presets
-            camera.getProperty("exposure_metering_mode").set(0);
-            camera.getProperty("exposure_dynamic_framerate").set(0);
-
-            if (lowExposureMode) {
-                // Pick a bunch of reasonable setting defaults for vision processing retroreflective
-                camera.getProperty("auto_exposure_bias").set(0);
-                camera.getProperty("iso_sensitivity_auto").set(0); // Disable auto ISO adjustement
-                camera.getProperty("iso_sensitivity").set(0); // Manual ISO adjustement
-                camera.getProperty("white_balance_auto_preset").set(2); // Auto white-balance disabled
-                camera.getProperty("auto_exposure").set(1); // auto exposure disabled
-            } else {
-                // Pick a bunch of reasonable setting defaults for driver, fiducials, or otherwise
-                // nice-for-humans
-                camera.getProperty("auto_exposure_bias").set(12);
-                camera.getProperty("iso_sensitivity_auto").set(1);
-                camera.getProperty("iso_sensitivity").set(1); // Manual ISO adjustement by default
-                camera.getProperty("white_balance_auto_preset").set(1); // Auto white-balance enabled
-                camera.getProperty("auto_exposure").set(0); // auto exposure enabled
-            }
-
-        } else {
-            // Case - this is some other USB cam. Default to wpilib's implementation
-
-            var canSetWhiteBalance = !cameraQuirks.hasQuirk(CameraQuirk.Gain);
-
-            if (lowExposureMode) {
-                // Pick a bunch of reasonable setting defaults for vision processing retroreflective
-                if (canSetWhiteBalance) {
-                    camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
-                }
-                this.getSettables().setExposure(50); // auto exposure disabled, put a sane default
-            } else {
-                // Pick a bunch of reasonable setting defaults for driver, fiducials, or otherwise
-                // nice-for-humans
-                if (canSetWhiteBalance) {
-                    camera.setWhiteBalanceAuto(); // Auto white-balance enabled
-                }
-                camera.setExposureAuto(); // auto exposure enabled
             }
         }
     }
@@ -148,6 +97,59 @@ public class USBCameraSource extends VisionSource {
             setVideoMode(videoModes.get(0));
         }
 
+        public void setAutoExposure(boolean cameraAutoExposure) {
+            logger.debug("Setting auto exposure to " + cameraAutoExposure);
+
+            if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+                // Case, we know this is a picam. Go through v4l2-ctl interface directly
+
+                // Common settings
+                camera
+                        .getProperty("image_stabilization")
+                        .set(0); // No image stabilization, as this will throw off odometry
+                camera.getProperty("power_line_frequency").set(2); // Assume 60Hz USA
+                camera.getProperty("scene_mode").set(0); // no presets
+                camera.getProperty("exposure_metering_mode").set(0);
+                camera.getProperty("exposure_dynamic_framerate").set(0);
+
+                if (!cameraAutoExposure) {
+                    // Pick a bunch of reasonable setting defaults for vision processing retroreflective
+                    camera.getProperty("auto_exposure_bias").set(0);
+                    camera.getProperty("iso_sensitivity_auto").set(0); // Disable auto ISO adjustement
+                    camera.getProperty("iso_sensitivity").set(0); // Manual ISO adjustement
+                    camera.getProperty("white_balance_auto_preset").set(2); // Auto white-balance disabled
+                    camera.getProperty("auto_exposure").set(1); // auto exposure disabled
+                } else {
+                    // Pick a bunch of reasonable setting defaults for driver, fiducials, or otherwise
+                    // nice-for-humans
+                    camera.getProperty("auto_exposure_bias").set(12);
+                    camera.getProperty("iso_sensitivity_auto").set(1);
+                    camera.getProperty("iso_sensitivity").set(1); // Manual ISO adjustement by default
+                    camera.getProperty("white_balance_auto_preset").set(1); // Auto white-balance enabled
+                    camera.getProperty("auto_exposure").set(0); // auto exposure enabled
+                }
+
+            } else {
+                // Case - this is some other USB cam. Default to wpilib's implementation
+
+                var canSetWhiteBalance = !cameraQuirks.hasQuirk(CameraQuirk.Gain);
+
+                if (!cameraAutoExposure) {
+                    // Pick a bunch of reasonable setting defaults for vision processing retroreflective
+                    if (canSetWhiteBalance) {
+                        camera.setWhiteBalanceManual(4000); // Auto white-balance disabled, 4000K preset
+                    }
+                } else {
+                    // Pick a bunch of reasonable setting defaults for driver, fiducials, or otherwise
+                    // nice-for-humans
+                    if (canSetWhiteBalance) {
+                        camera.setWhiteBalanceAuto(); // Auto white-balance enabled
+                    }
+                    camera.setExposureAuto(); // auto exposure enabled
+                }
+            }
+        }
+
         private int timeToPiCamRawExposure(double time_us) {
             int retVal =
                     (int)
@@ -164,11 +166,6 @@ public class USBCameraSource extends VisionSource {
             final double PADDING_HIGH_US = 10;
             return PADDING_LOW_US
                     + (pct_in / 100.0) * ((1e6 / (double) camera.getVideoMode().fps) - PADDING_HIGH_US);
-        }
-
-        @Override
-        public void setLowExposureOptimization(boolean mode) {
-            setLowExposureOptimizationImpl(mode);
         }
 
         @Override

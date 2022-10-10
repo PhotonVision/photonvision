@@ -44,7 +44,6 @@ import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
-import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
 import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -361,7 +360,7 @@ public class VisionModule {
             settings.cameraBlueGain = -1;
         }
 
-        settings.cameraExposure = -1;
+        settings.cameraAutoExposure = true;
 
         setPipeline(PipelineManager.CAL_3D_INDEX);
     }
@@ -400,22 +399,14 @@ public class VisionModule {
         visionSource.getSettables().setBrightness(pipelineSettings.cameraBrightness);
         visionSource.getSettables().setGain(pipelineSettings.cameraGain);
 
-        // set to true to change camera gain/exposure settings for low exposure
-        // false will keep the camera running in a more "nice-for-humans" mode
-        // Each camera type is allowed to decide what settings that exactly means
-        boolean lowExposureOptimization =
-                (pipelineSettings.pipelineType == PipelineType.ColoredShape
-                        || pipelineSettings.pipelineType == PipelineType.Reflective);
-        visionSource.getSettables().setLowExposureOptimization(lowExposureOptimization);
-
-        if (lowExposureOptimization) {
-            if (pipelineSettings.cameraExposure == -1)
+        // If manual exposure, force exposure slider to be valid
+        if (!pipelineSettings.cameraAutoExposure) {
+            if (pipelineSettings.cameraExposure < 0)
                 pipelineSettings.cameraExposure = 10; // reasonable default
-        } else {
-            // in human-friendly mode, exposure is automatic
-            pipelineSettings.cameraExposure = -1;
         }
+
         visionSource.getSettables().setExposure(pipelineSettings.cameraExposure);
+        visionSource.getSettables().setAutoExposure(pipelineSettings.cameraAutoExposure);
 
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             // If the gain is disabled for some reason, re-enable it

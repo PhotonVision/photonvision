@@ -45,13 +45,6 @@ public class ZeroCopyPicamSource extends VisionSource {
 
         settables = new PicamSettables(configuration);
         frameProvider = new AcceleratedPicamFrameProvider(settables);
-
-        setLowExposureOptimizationImpl(false);
-    }
-
-    static void setLowExposureOptimizationImpl(boolean mode) {
-        // TODO - ZeroCopy does not... yet? ... have the configuration params necessary to make this
-        // work well.
     }
 
     @Override
@@ -94,6 +87,7 @@ public class ZeroCopyPicamSource extends VisionSource {
         private FPSRatedVideoMode currentVideoMode;
         private double lastExposure = 50;
         private int lastBrightness = 50;
+        private boolean lastExposureMode;
         private int lastGain = 50;
         private Pair<Integer, Integer> lastAwbGains = new Pair(18, 18);
 
@@ -151,8 +145,14 @@ public class ZeroCopyPicamSource extends VisionSource {
         }
 
         @Override
+        public void setAutoExposure(boolean cameraAutoExposure) {
+            lastExposureMode = cameraAutoExposure;
+            // TODO (Matt) -- call PicamJNI's auto exposure function, when that exists
+        }
+
+        @Override
         public void setExposure(double exposure) {
-            // Todo - for now, handle auto exposure by using 100% exposure
+            // Todo (Chris) - for now, handle auto exposure by using 100% exposure
             if (exposure < 0.0) {
                 exposure = 100.0;
             }
@@ -160,11 +160,6 @@ public class ZeroCopyPicamSource extends VisionSource {
             lastExposure = exposure;
             var failure = PicamJNI.setExposure((int) Math.round(exposure));
             if (failure) logger.warn("Couldn't set Pi Camera exposure");
-        }
-
-        @Override
-        public void setLowExposureOptimization(boolean mode) {
-            setLowExposureOptimizationImpl(mode);
         }
 
         @Override
@@ -218,6 +213,7 @@ public class ZeroCopyPicamSource extends VisionSource {
             // We don't store last settings on the native side, and when you change video mode these get
             // reset on MMAL's end
             setExposure(lastExposure);
+            setAutoExposure(lastExposureMode);
             setBrightness(lastBrightness);
             setGain(lastGain);
             setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());

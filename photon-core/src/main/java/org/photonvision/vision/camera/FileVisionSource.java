@@ -91,14 +91,13 @@ public class FileVisionSource extends VisionSource {
         @Override
         public void setExposure(double exposure) {}
 
+        public void setAutoExposure(boolean cameraAutoExposure) {}
+
         @Override
         public void setBrightness(int brightness) {}
 
         @Override
         public void setGain(int gain) {}
-
-        @Override
-        public void setLowExposureOptimization(boolean mode) {}
 
         @Override
         public VideoMode getCurrentVideoMode() {
