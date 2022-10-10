@@ -43,6 +43,7 @@ public abstract class VisionSourceSettables {
     }
 
     public abstract void setExposure(double exposure);
+
     public abstract void setAutoExposure(boolean cameraAutoExposure);
 
     public abstract void setBrightness(int brightness);

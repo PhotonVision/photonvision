@@ -90,6 +90,7 @@ public class FileVisionSource extends VisionSource {
 
         @Override
         public void setExposure(double exposure) {}
+
         public void setAutoExposure(boolean cameraAutoExposure) {}
 
         @Override
