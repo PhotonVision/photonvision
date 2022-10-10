@@ -52,12 +52,12 @@
 <script>
     import Papa from 'papaparse';
     import miniMap from '../../components/pipeline/3D/MiniMap';
-    import CVslider from '../../components/common/cv-slider'
+    //import CVslider from '../../components/common/cv-slider'
 
     export default {
         name: "PnP",
         components: {
-            CVslider,
+            //CVslider,
             miniMap
         },
         data() {

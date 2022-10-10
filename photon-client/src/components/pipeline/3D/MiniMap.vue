@@ -236,6 +236,7 @@ export default {
     },
     resetCamThirdPerson(){
       //Sets camera to third person position
+      this.controls.reset();
       this.camera.position.set(-1.39,-1.09,1.17);
       this.camera.up.set(0,0,1);
       //this.camera.rotation.set(1.20*180/Math.PI, -1.29*180/Math.PI, -0.39*180/Math.PI);
@@ -243,6 +244,7 @@ export default {
     },
     resetCamFirstPerson(){
       //Sets camera to first person position
+      this.controls.reset();
       this.camera.position.set(-0.1,0,0);
       this.camera.up.set(0,0,1);
       this.camera.lookAt( new Vector3(0,0,0) ); // camera looks toward origin
