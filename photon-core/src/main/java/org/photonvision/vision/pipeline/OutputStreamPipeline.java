@@ -155,7 +155,6 @@ public class OutputStreamPipeline {
         } else {
             // If we are doing apriltags...
             if (settings.solvePNPEnabled) {
-
                 // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
                 pipeProfileNanos[5] = 0;
                 pipeProfileNanos[6] = 0;
