@@ -261,6 +261,7 @@ import ThresholdTab from './PipelineViews/ThresholdTab';
 import ContoursTab from './PipelineViews/ContoursTab';
 import OutputTab from './PipelineViews/OutputTab';
 import TargetsTab from "./PipelineViews/TargetsTab";
+import Map3DTab from './PipelineViews/Map3DTab';
 import PnPTab from './PipelineViews/PnPTab';
 import AprilTagTab from './PipelineViews/AprilTagTab';
 
@@ -274,6 +275,7 @@ export default {
         ContoursTab,
         OutputTab,
         TargetsTab,
+        Map3DTab,
         PnPTab,
         AprilTagTab,
     },
@@ -319,12 +321,16 @@ export default {
                         component: "OutputTab",
                     },
                     targets: {
-                        name: "Target Info",
+                        name: "Targets",
                         component: "TargetsTab",
                     },
                     pnp: {
-                        name: "3D",
+                        name: "PnP",
                         component: "PnPTab",
+                    },
+                    map3d: {
+                        name: "3D",
+                        component: "Map3DTab",
                     }
                 };
 
@@ -341,18 +347,18 @@ export default {
                 } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
                     // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
                     ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.apriltag, tabs.output];
-                    ret[1] = [tabs.targets, tabs.pnp];
+                    ret[1] = [tabs.targets, tabs.pnp, tabs.map3d];
                 } else if (this.$vuetify.breakpoint.lgAndDown) {
                     // Three tab groups, one with "input", one with "threshold, contours, output", and the other with "target info, 3D"
                     ret[0] = [tabs.input];
                     ret[1] = [tabs.threshold, tabs.contours, tabs.apriltag, tabs.output];
-                    ret[2] = [tabs.targets, tabs.pnp];
+                    ret[2] = [tabs.targets, tabs.pnp, tabs.map3d];
                 } else if (this.$vuetify.breakpoint.xl) {
                     // Three tab groups, one with "input", one with "threshold, contours", and the other with "output, target info, 3D"
                     ret[0] = [tabs.input];
                     ret[1] = [tabs.threshold];
                     ret[2] = [tabs.contours, tabs.apriltag, tabs.output];
-                    ret[3] = [tabs.targets, tabs.pnp];
+                    ret[3] = [tabs.targets, tabs.pnp, tabs.map3d];
                 }
 
                 for(let i = 0; i < ret.length; i++) {
@@ -360,10 +366,11 @@ export default {
 
                   // All the tabs we allow
                   const filteredGroup = group.filter(it =>
-                          !(!allow3d && it.name === "3D")
-                       && !(isAprilTag && (it.name === "Threshold"))
-                       && !(isAprilTag && (it.name === "Contours"))
-                       && !(!isAprilTag && it.name === "AprilTag")
+                          !(!allow3d && it.name === "3D") //Filter out 3D tab any time 3D isn't calibrated
+                       && !((!allow3d || isAprilTag) && it.name === "PnP") //Filter out the PnP config tab if 3D isn't available, or we're doing Apriltags
+                       && !(isAprilTag && (it.name === "Threshold")) //Filter out threshold tab if we're doing apriltags
+                       && !(isAprilTag && (it.name === "Contours")) //Filter out contours if we're doing Apriltag
+                       && !(!isAprilTag && it.name === "AprilTag") //Filter out apriltag unless we actually are doing Apriltags
                       );
                   ret[i] = filteredGroup;
                 }
