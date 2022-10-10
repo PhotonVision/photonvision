@@ -125,7 +125,7 @@ public class OutputStreamPipeline {
         sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
         if (!(settings instanceof AprilTagPipelineSettings)) {
-            //If we're processing anything other than Apriltags...
+            // If we're processing anything other than Apriltags...
 
             var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
             sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
@@ -153,10 +153,10 @@ public class OutputStreamPipeline {
             }
 
         } else {
-            //If we are doing apriltags...
+            // If we are doing apriltags...
             if (settings.solvePNPEnabled) {
-                
-                //Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
+
+                // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
                 pipeProfileNanos[5] = 0;
                 pipeProfileNanos[6] = 0;
 
@@ -166,7 +166,7 @@ public class OutputStreamPipeline {
                 pipeProfileNanos[8] = 0;
 
             } else {
-                //Draw 2d apriltag markers
+                // Draw 2d apriltag markers
                 var draw2dTargetsOnInput = draw2dAprilTagsPipe.run(Pair.of(outMat, targetsToDraw));
                 sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
 
