@@ -22,6 +22,22 @@
           style="width:100%;height:100%"
         />
       </v-col>
+      <v-btn
+        class="ml-10"
+        color="secondary"
+        width="250"
+        @click="resetCamThirdPerson"
+      >
+        Third Person
+      </v-btn>
+      <v-btn
+        class="ml-10"
+        color="secondary"
+        width="250"
+        @click="resetCamFirstPerson"
+      >
+        First Person
+      </v-btn>
     </v-row>
   </div>
 </template>
@@ -31,6 +47,7 @@
 import {
   ArrowHelper,
   BoxGeometry,
+  ConeGeometry,
   Mesh,
   MeshNormalMaterial,
   PerspectiveCamera,
@@ -78,28 +95,43 @@ export default {
     this.renderer = renderer;
     scene.background = new Color(0xa9a9a9)
 
-
+    //Set up resize handlers
     this.onWindowResize();
     window.addEventListener( 'resize', this.onWindowResize, false );
 
+    //Add the reference frame cues
+    // coordinate system
     scene.add(new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
         1, // length
         0xff0000,
-        0.5,
-        0.5,
+        0.1,
+        0.1,
     ))
     scene.add(new ArrowHelper(new Vector3(0, 1, 0).normalize(), new Vector3(0, 0, 0),
         1, // length
         0x00ff00,
-        0.5,
-        0.5,
+        0.1,
+        0.1,
     ))
     scene.add(new ArrowHelper(new Vector3(0, 0, 1).normalize(), new Vector3(0, 0, 0),
         1, // length
         0x0000ff,
-        0.5,
-        0.5,
+        0.1,
+        0.1,
     ))
+
+    //something that looks vaguely like a camera
+    const camSize = 0.2;
+    const camBodyGeometry = new BoxGeometry(camSize, camSize, camSize);
+    const camLensGeometry = new ConeGeometry(camSize*0.4, camSize*0.8, 30);
+    const camMaterial = new MeshNormalMaterial( {color: 0xffff00} );
+    const camBody = new Mesh(camBodyGeometry, camMaterial);
+    const camLens = new Mesh(camLensGeometry, camMaterial);
+    camBody.position.set(0,0,0);
+    camLens.rotateZ(Math.PI / 2);
+    camLens.position.set(camSize*0.8,0,0);
+    scene.add(camBody)
+    scene.add(camLens)
 
     var controls = new TrackballControls(
         camera,
@@ -115,9 +147,8 @@ export default {
     controls.keys = [65, 83, 68];
 
 
-    camera.position.set(-0.1,0,0);
-    camera.rotation.set(-90, 0, 90);
-    camera.up.set(0,0,1);
+
+    this.resetCamFirstPerson();
     controls.update();
 
     function animate() {
@@ -125,6 +156,13 @@ export default {
 
       controls.update();
       renderer.render(scene, camera);
+
+      camera.updateMatrixWorld();
+      console.log("================")
+      console.log(camera.position);
+      console.log(camera.rotation);
+      console.log(camera.up);
+
     }
 
     this.drawTargets()
@@ -185,6 +223,7 @@ export default {
       if(this.cubes.length > 0)
         this.scene.add(...this.cubes);
     },
+
     onWindowResize() {
       var container = document.getElementById("MapContainer")
       if(container){
@@ -194,6 +233,19 @@ export default {
         this.camera.updateProjectionMatrix();
         this.renderer.setSize( this.canvas.width, this.canvas.height );
       }
+    },
+    resetCamThirdPerson(){
+      //Sets camera to third person position
+      this.camera.position.set(-1.39,-1.09,1.17);
+      this.camera.up.set(0,0,1);
+      //this.camera.rotation.set(1.20*180/Math.PI, -1.29*180/Math.PI, -0.39*180/Math.PI);
+      this.camera.lookAt( new Vector3(0,0,5.0) ); // camera looks out along the camera axis
+    },
+    resetCamFirstPerson(){
+      //Sets camera to first person position
+      this.camera.position.set(-0.1,0,0);
+      this.camera.up.set(0,0,1);
+      this.camera.lookAt( new Vector3(0,0,0) ); // camera looks toward origin
     },
   }
 

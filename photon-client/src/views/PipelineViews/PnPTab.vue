@@ -10,6 +10,7 @@
       @change="readFile"
     >
 
+    <!--
     <v-select
       v-model="selectedModel"
       dark
@@ -32,6 +33,7 @@
       @input="handlePipelineData('cornerDetectionAccuracyPercentage')"
       @rollback="e => rollback('cornerDetectionAccuracyPercentage', e)"
     />
+    -->
     <mini-map
       class="miniMapClass"
       :targets="targets"
