@@ -618,8 +618,7 @@ export default {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
                 "settings": this.cameraSettings,
                 "index": this.$store.state.currentCameraIndex
-            }).then(
-                function (response) {
+            }).then(response => {
                     if (response.status === 200) {
                         this.$store.state.saveBar = true;
                     }

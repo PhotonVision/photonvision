@@ -304,7 +304,7 @@ public class VisionModule {
         streamRunnable.start();
     }
 
-    public void setFovAndPitch(double fov, Rotation2d pitch) {
+    public void setFov(double fov) {
         var settables = visionSource.getSettables();
         logger.trace(() -> "Setting " + settables.getConfiguration().nickname + ") FOV (" + fov + ")");
 
