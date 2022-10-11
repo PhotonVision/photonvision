@@ -31,7 +31,6 @@
               :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
             />
             <br>
-            <br>
             <v-btn
               style="margin-top:10px"
               small
