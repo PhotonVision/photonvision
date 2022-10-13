@@ -19,7 +19,6 @@ package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.math.geometry.Rotation2d;
 import io.javalin.http.Context;
 import java.io.File;
 import java.io.FileInputStream;
@@ -173,12 +172,10 @@ public class RequestHandler {
             var settings = (HashMap<String, Object>) settingsAndIndex.get("settings");
             int index = (Integer) settingsAndIndex.get("index");
 
-            // The only settings we actually care about are FOV 
+            // The only settings we actually care about are FOV
             var fov = Double.parseDouble(settings.get("fov").toString());
 
-            logger.info(
-                    String.format(
-                            "Setting camera %s's fov to %s", index, fov));
+            logger.info(String.format("Setting·camera·%s's·fov·to·%s",·index,·fov));
             var module = VisionModuleManager.getInstance().getModule(index);
             module.setFov(fov);
             module.saveModule();
