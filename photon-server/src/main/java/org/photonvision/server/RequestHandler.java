@@ -175,7 +175,7 @@ public class RequestHandler {
             // The only settings we actually care about are FOV
             var fov = Double.parseDouble(settings.get("fov").toString());
 
-            logger.info(String.format("Setting·camera·%s's·fov·to·%s",·index,·fov));
+            logger.info(String.format("Setting camera %s's fov to %s", index, fov));
             var module = VisionModuleManager.getInstance().getModule(index);
             module.setFov(fov);
             module.saveModule();
