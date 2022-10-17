@@ -159,11 +159,21 @@ public class MathUtils {
                 pose.getTranslation().rotateBy(rotationQuat), pose.getRotation().rotateBy(rotationQuat));
     }
 
-    // TODO: Refactor into new pipe?
+    /**
+     * All our solvepnp code returns a tag with X left, Y up, and Z out of the tag To better match
+     * wpilib, we want to apply another rotation so that we get Z up, X out of the tag, and Y to the
+     * right. We apply the following change of basis: X -> Y Y -> Z Z -> X
+     */
+    private static final Rotation3d WPILIB_BASE_ROTATION =
+            new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(0, 1, 0, 0, 0, 1, 1, 0, 0));
+
     public static Pose3d convertOpenCVtoPhotonPose(Transform3d cameraToTarget3d) {
+        // TODO: Refactor into new pipe?
         // CameraToTarget _should_ be in opencv-land EDN
-        return CoordinateSystem.convert(
-                new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
+        var nwu =
+                CoordinateSystem.convert(
+                        new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
+        return new Pose3d(nwu.getTranslation(), WPILIB_BASE_ROTATION.rotateBy(nwu.getRotation()));
     }
 
     /*
