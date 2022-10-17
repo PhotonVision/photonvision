@@ -194,7 +194,7 @@ public class TestUtils {
     public static Path getTestMode2020ImagePath() {
         return getResourcesFolderPath(true)
                 .resolve("testimages")
-                .resolve(WPI2020Image.kBlueGoal_108in_Center.path);
+                .resolve(WPI2020Image.kBlueGoal_156in_Left.path);
     }
 
     public static Path getTestMode2022ImagePath() {

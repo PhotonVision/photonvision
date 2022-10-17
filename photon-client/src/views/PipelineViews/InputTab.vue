@@ -31,13 +31,13 @@
     <CVslider
       v-if="cameraGain >= 0"
       v-model="cameraGain"
-      name="Camera gain"
+      name="Camera Gain"
       min="0"
       max="100"
       tooltip="Controls camera gain, similar to brightness"
       :slider-cols="largeBox"
-      @input="handlePipelineData('cameraRedGain')"
-      @rollback="e => rollback('cameraRedGain', e)"
+      @input="handlePipelineData('cameraGain')"
+      @rollback="e => rollback('cameraGain', e)"
     />
     <CVslider
       v-if="cameraRedGain !== -1"
@@ -142,6 +142,14 @@
                 },
                 set(val) {
                     this.$store.commit("mutatePipeline", {"cameraBrightness": parseInt(val)});
+                }
+            },
+            cameraGain: {
+                get() {
+                    return parseInt(this.$store.getters.currentPipelineSettings.cameraGain)
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"cameraGain": parseInt(val)});
                 }
             },
             cameraRedGain: {

@@ -181,7 +181,7 @@ export default {
       this.cubes = []
 
       for (const target of this.targets) {
-        const geometry = new BoxGeometry(0.2, 0.2, 0.3 / 5);
+        const geometry = new BoxGeometry(0.3 / 5, 0.2, 0.2);
         const material = new MeshNormalMaterial();
         let quat = (new Quaternion(
             target.pose.qx,
