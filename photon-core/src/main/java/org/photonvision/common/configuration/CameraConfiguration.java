@@ -20,7 +20,6 @@ package org.photonvision.common.configuration;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
@@ -50,7 +49,6 @@ public class CameraConfiguration {
     public double FOV = 70;
     public final List<CameraCalibrationCoefficients> calibrations;
     public int currentPipelineIndex = 0;
-    public Rotation2d camPitch = new Rotation2d();
 
     public int streamIndex = 0; // 0 index means ports [1181, 1182], 1 means [1183, 1184], etc...
 
@@ -90,8 +88,7 @@ public class CameraConfiguration {
             @JsonProperty("path") String path,
             @JsonProperty("cameraType") CameraType cameraType,
             @JsonProperty("calibration") List<CameraCalibrationCoefficients> calibrations,
-            @JsonProperty("currentPipelineIndex") int currentPipelineIndex,
-            @JsonProperty("camPitch") Rotation2d camPitch) {
+            @JsonProperty("currentPipelineIndex") int currentPipelineIndex) {
         this.baseName = baseName;
         this.uniqueName = uniqueName;
         this.nickname = nickname;
@@ -100,7 +97,6 @@ public class CameraConfiguration {
         this.cameraType = cameraType;
         this.calibrations = calibrations != null ? calibrations : new ArrayList<>();
         this.currentPipelineIndex = currentPipelineIndex;
-        this.camPitch = camPitch;
 
         logger.debug(
                 "Creating camera configuration for "

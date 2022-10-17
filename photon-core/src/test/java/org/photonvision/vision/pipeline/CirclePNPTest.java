@@ -19,7 +19,6 @@ package org.photonvision.vision.pipeline;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -111,7 +110,6 @@ public class CirclePNPTest {
                 new FileFrameProvider(
                         TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
                         TestUtils.WPI2020Image.FOV,
-                        new Rotation2d(),
                         TestUtils.get2020LifeCamCoeffs(true));
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
@@ -163,7 +161,7 @@ public class CirclePNPTest {
         System.out.println(
                 "Found targets at "
                         + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getCameraToTarget)
+                                .map(TrackedTarget::getCameraToTarget3d)
                                 .collect(Collectors.toList()));
     }
 }

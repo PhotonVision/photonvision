@@ -45,7 +45,6 @@ namespace photonlib {
 class SimVisionSystem {
  public:
   explicit SimVisionSystem(const std::string& name, units::degree_t camDiagFOV,
-                           units::degree_t camPitch,
                            frc::Transform2d cameraToRobot,
                            units::meter_t cameraHeightOffGround,
                            units::meter_t maxLEDRange, int cameraResWidth,
@@ -53,11 +52,10 @@ class SimVisionSystem {
 
   void AddSimVisionTarget(SimVisionTarget tgt);
   void MoveCamera(frc::Transform2d newcameraToRobot,
-                  units::meter_t newCamHeight, units::degree_t newCamPitch);
+                  units::meter_t newCamHeight);
   void ProcessFrame(frc::Pose2d robotPose);
 
  private:
-  units::degree_t camPitch;
   frc::Transform2d cameraToRobot;
   units::meter_t cameraHeightOffGround;
   units::meter_t maxLEDRange;

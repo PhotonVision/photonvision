@@ -18,7 +18,6 @@
 package org.photonvision.vision.frame;
 
 import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.math.geometry.Rotation2d;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
@@ -34,7 +33,6 @@ public class FrameStaticProperties {
     public final Point centerPoint;
     public final double horizontalFocalLength;
     public final double verticalFocalLength;
-    public final Rotation2d cameraPitch;
     public CameraCalibrationCoefficients cameraCalibration;
 
     /**
@@ -43,9 +41,8 @@ public class FrameStaticProperties {
      * @param mode The Video Mode of the camera.
      * @param fov The fov of the image.
      */
-    public FrameStaticProperties(
-            VideoMode mode, double fov, Rotation2d cameraPitch, CameraCalibrationCoefficients cal) {
-        this(mode != null ? mode.width : 1, mode != null ? mode.height : 1, fov, cameraPitch, cal);
+    public FrameStaticProperties(VideoMode mode, double fov, CameraCalibrationCoefficients cal) {
+        this(mode != null ? mode.width : 1, mode != null ? mode.height : 1, fov, cal);
     }
 
     /**
@@ -56,15 +53,10 @@ public class FrameStaticProperties {
      * @param fov The fov of the image.
      */
     public FrameStaticProperties(
-            int imageWidth,
-            int imageHeight,
-            double fov,
-            Rotation2d cameraPitch,
-            CameraCalibrationCoefficients cal) {
+            int imageWidth, int imageHeight, double fov, CameraCalibrationCoefficients cal) {
         this.imageWidth = imageWidth;
         this.imageHeight = imageHeight;
         this.fov = fov;
-        this.cameraPitch = cameraPitch;
         this.cameraCalibration = cal;
 
         imageArea = this.imageWidth * this.imageHeight;

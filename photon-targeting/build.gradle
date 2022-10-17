@@ -5,6 +5,14 @@ targetCompatibility = 11
 
 dependencies {
     implementation "edu.wpi.first.wpimath:wpimath-java:$wpilibVersion"
+    implementation "org.ejml:ejml-simple:0.41"
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
 }
 
 java {

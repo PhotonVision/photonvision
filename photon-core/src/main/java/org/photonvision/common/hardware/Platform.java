@@ -49,20 +49,20 @@ public enum Platform {
 
     // These are queried on init and should never change after
     public static final Platform currentPlatform = getCurrentPlatform();
-    protected static final String currentPiVersionStr = getPiVersionString();
+    static final String currentPiVersionStr = getPiVersionString();
     public static final PiVersion currentPiVersion = PiVersion.getPiVersion();
 
-    private static String UnknownPlatformString =
+    private static final String UnknownPlatformString =
             String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
 
-    public boolean isWindows() {
-        return this == WINDOWS_64 || this == WINDOWS_32;
+    public static boolean isWindows() {
+        return currentPlatform == WINDOWS_64 || currentPlatform == WINDOWS_32;
     }
 
     public static boolean isLinux() {
-        return getCurrentPlatform() == LINUX_64
-                || getCurrentPlatform() == LINUX_RASPBIAN
-                || getCurrentPlatform() == LINUX_ARM64;
+        return currentPlatform == LINUX_64
+                || currentPlatform == LINUX_RASPBIAN
+                || currentPlatform == LINUX_ARM64;
     }
 
     public static boolean isRaspberryPi() {

@@ -17,9 +17,19 @@
 
 package org.photonvision.common.util.math;
 
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.geometry.CoordinateSystem;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Quaternion;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.Arrays;
 import java.util.List;
+import org.opencv.core.Mat;
 
 public class MathUtils {
     MathUtils() {}
@@ -129,5 +139,66 @@ public class MathUtils {
     @SuppressWarnings("ParameterName")
     public static double lerp(double startValue, double endValue, double t) {
         return startValue + (endValue - startValue) * t;
+    }
+
+    public static Pose3d EDNtoNWU(final Pose3d pose) {
+        // Change of basis matrix from EDN to NWU. Each column vector is one of the
+        // old basis vectors mapped to its representation in the new basis.
+        //
+        // E (+X) -> N (-Y), D (+Y) -> W (-Z), N (+Z) -> U (+X)
+        var R = new MatBuilder<>(Nat.N3(), Nat.N3()).fill(0, 0, 1, -1, 0, 0, 0, -1, 0);
+
+        // https://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+        double w = Math.sqrt(1.0 + R.get(0, 0) + R.get(1, 1) + R.get(2, 2)) / 2.0;
+        double x = (R.get(2, 1) - R.get(1, 2)) / (4.0 * w);
+        double y = (R.get(0, 2) - R.get(2, 0)) / (4.0 * w);
+        double z = (R.get(1, 0) - R.get(0, 1)) / (4.0 * w);
+        var rotationQuat = new Rotation3d(new Quaternion(w, x, y, z));
+
+        return new Pose3d(
+                pose.getTranslation().rotateBy(rotationQuat), pose.getRotation().rotateBy(rotationQuat));
+    }
+
+    /**
+     * All our solvepnp code returns a tag with X left, Y up, and Z out of the tag To better match
+     * wpilib, we want to apply another rotation so that we get Z up, X out of the tag, and Y to the
+     * right. We apply the following change of basis: X -> Y Y -> Z Z -> X
+     */
+    private static final Rotation3d WPILIB_BASE_ROTATION =
+            new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(0, 1, 0, 0, 0, 1, 1, 0, 0));
+
+    public static Pose3d convertOpenCVtoPhotonPose(Transform3d cameraToTarget3d) {
+        // TODO: Refactor into new pipe?
+        // CameraToTarget _should_ be in opencv-land EDN
+        var nwu =
+                CoordinateSystem.convert(
+                        new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
+        return new Pose3d(nwu.getTranslation(), WPILIB_BASE_ROTATION.rotateBy(nwu.getRotation()));
+    }
+
+    /*
+     * The AprilTag pose rotation outputs are X left, Y down, Z away from the tag with the tag facing
+     * the camera upright and the camera facing the target parallel to the floor. But our OpenCV
+     * solvePNP code would have X left, Y up, Z towards the camera with the target facing the camera
+     * and both parallel to the floor. So we apply a base rotation to the rotation component of the
+     * apriltag pose to make it consistent with the EDN system that OpenCV uses, internally a 180
+     * rotation about the X axis
+     */
+    private static final Rotation3d APRILTAG_BASE_ROTATION =
+            new Rotation3d(VecBuilder.fill(1, 0, 0), Units.degreesToRadians(180));
+
+    /**
+     * Apply a 180 degree rotation about X to the rotation component of a given Apriltag pose. This
+     * aligns it with the OpenCV poses we use in other places.
+     */
+    public static Transform3d convertApriltagtoOpenCV(Transform3d pose) {
+        var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(pose.getRotation());
+        return new Transform3d(pose.getTranslation(), ocvRotation);
+    }
+
+    public static void rotationToOpencvRvec(Rotation3d rotation, Mat rvecOutput) {
+        var angle = rotation.getAngle();
+        var axis = rotation.getAxis().times(angle);
+        rvecOutput.put(0, 0, axis.getData());
     }
 }

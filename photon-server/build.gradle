@@ -13,6 +13,7 @@ apply from: "${rootDir}/shared/common.gradle"
 
 dependencies {
     implementation project(':photon-core')
+    implementation project(':photon-targeting')
 
     implementation "io.javalin:javalin:4.2.0"
 
@@ -112,6 +113,9 @@ task findDeployTarget {
     }
 }
 
+run {
+  environment "PATH_PREFIX", "../"
+}
 
 task deploy {
     dependsOn assemble

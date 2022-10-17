@@ -146,6 +146,24 @@
                             text="Standard Deviation"
                           />
                         </th>
+                        <th class="text-center">
+                          <tooltipped-label
+                            tooltip="Estimated Horizontal FOV, in degrees"
+                            text="Horizontal FOV"
+                          />
+                        </th>
+                        <th class="text-center">
+                          <tooltipped-label
+                            tooltip="Estimated Vertical FOV, in degrees"
+                            text="Vertical FOV"
+                          />
+                        </th>
+                        <th class="text-center">
+                          <tooltipped-label
+                            tooltip="Estimated Diagonal FOV, in degrees"
+                            text="Diagonal FOV"
+                          />
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -158,6 +176,9 @@
                           {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "—" }}
                         </td>
                         <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "—" }} </td>
+                        <td> {{ isCalibrated(value) ? value.horizontalFOV.toFixed(2) + "°" : "—" }} </td>
+                        <td> {{ isCalibrated(value) ? value.verticalFOV.toFixed(2) + "°" : "—" }} </td>
+                        <td> {{ isCalibrated(value) ? value.diagonalFOV.toFixed(2) + "°" : "—" }} </td>
                       </tr>
                     </tbody>
                   </v-simple-table>
@@ -396,6 +417,9 @@ export default {
                         if (calib != null) {
                             it['standardDeviation'] = calib.standardDeviation;
                             it['mean'] = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
+                            it['horizontalFOV'] = 2 * Math.atan2(it.width/2,calib.intrinsics[0]) * (180/Math.PI);
+                            it['verticalFOV'] = 2 * Math.atan2(it.height/2,calib.intrinsics[4]) * (180/Math.PI);
+                            it['diagonalFOV'] = 2 * Math.atan2(Math.sqrt(it.width**2 + (it.height/(calib.intrinsics[4]/calib.intrinsics[0]))**2)/2,calib.intrinsics[0]) * (180/Math.PI);
                         }
                         filtered.push(it);
                     }

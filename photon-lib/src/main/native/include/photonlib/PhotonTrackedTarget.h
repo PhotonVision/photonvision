@@ -29,7 +29,7 @@
 #include <utility>
 #include <vector>
 
-#include <frc/geometry/Transform2d.h>
+#include <frc/geometry/Transform3d.h>
 #include <wpi/SmallVector.h>
 
 #include "photonlib/Packet.h"
@@ -55,8 +55,8 @@ class PhotonTrackedTarget {
    * @Param corners The corners of the bounding rectangle.
    */
   PhotonTrackedTarget(
-      double yaw, double pitch, double area, double skew,
-      const frc::Transform2d& pose,
+      double yaw, double pitch, double area, double skew, int fiducialID,
+      const frc::Transform3d& pose,
       const wpi::SmallVector<std::pair<double, double>, 4> corners);
 
   /**
@@ -91,10 +91,16 @@ class PhotonTrackedTarget {
   }
 
   /**
+   * Get the ratio of pose reprojection errors, called ambiguity. Numbers above
+   * 0.2 are likely to be ambiguous. -1 if invalid.
+   */
+  double GetPoseAmbiguity() const { return poseAmbiguity; }
+
+  /**
    * Returns the pose of the target relative to the robot.
    * @return The pose of the target relative to the robot.
    */
-  frc::Transform2d GetCameraRelativePose() const { return cameraToTarget; }
+  frc::Transform3d GetCameraToTarget() const { return cameraToTarget; }
 
   bool operator==(const PhotonTrackedTarget& other) const;
   bool operator!=(const PhotonTrackedTarget& other) const;
@@ -107,7 +113,9 @@ class PhotonTrackedTarget {
   double pitch = 0;
   double area = 0;
   double skew = 0;
-  frc::Transform2d cameraToTarget;
+  int fiducialId;
+  frc::Transform3d cameraToTarget;
+  double poseAmbiguity;
   wpi::SmallVector<std::pair<double, double>, 4> corners;
 };
 }  // namespace photonlib

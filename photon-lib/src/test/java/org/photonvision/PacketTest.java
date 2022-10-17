@@ -24,9 +24,7 @@
 
 package org.photonvision;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Assertions;
@@ -45,7 +43,9 @@ class PacketTest {
                         4.0,
                         9.0,
                         -5.0,
-                        new Transform2d(new Translation2d(1, 2), new Rotation2d(1.5)),
+                        -1,
+                        new Transform3d(new Translation3d(), new Rotation3d()),
+                        0.25,
                         List.of(
                                 new TargetCorner(1, 2),
                                 new TargetCorner(3, 4),
@@ -80,7 +80,9 @@ class PacketTest {
                                         -4.0,
                                         9.0,
                                         4.0,
-                                        new Transform2d(new Translation2d(1, 2), new Rotation2d(1.5)),
+                                        2,
+                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        0.25,
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -91,7 +93,9 @@ class PacketTest {
                                         -4.0,
                                         9.1,
                                         6.7,
-                                        new Transform2d(new Translation2d(1, 5), new Rotation2d(1.5)),
+                                        3,
+                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
+                                        0.25,
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),

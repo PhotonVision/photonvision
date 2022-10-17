@@ -87,6 +87,7 @@ public class ZeroCopyPicamSource extends VisionSource {
         private FPSRatedVideoMode currentVideoMode;
         private double lastExposure = 50;
         private int lastBrightness = 50;
+        private boolean lastExposureMode;
         private int lastGain = 50;
         private Pair<Integer, Integer> lastAwbGains = new Pair(18, 18);
 
@@ -101,10 +102,14 @@ public class ZeroCopyPicamSource extends VisionSource {
                 videoModes.put(
                         0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 120, 120, .39));
                 videoModes.put(
-                        1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65, 90, .39));
+                        1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 30, 30, .39));
+                videoModes.put(
+                        2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65, 90, .39));
+                videoModes.put(
+                        3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 30, 30, .39));
                 // TODO: fix 1280x720 in the native code and re-add it
                 videoModes.put(
-                        3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, .53));
+                        4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, .53));
             } else {
                 if (sensorModel == PicamJNI.SensorModel.IMX477) {
                     logger.warn(
@@ -118,13 +123,17 @@ public class ZeroCopyPicamSource extends VisionSource {
                 videoModes.put(
                         0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 90, 90, 1));
                 videoModes.put(
-                        1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 85, 90, 1));
+                        1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 30, 30, 1));
                 videoModes.put(
-                        2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 45, 49, 0.74));
+                        2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 85, 90, 1));
                 videoModes.put(
-                        3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 30, 45, 0.91));
+                        3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 30, 30, 1));
                 videoModes.put(
-                        4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, 0.72));
+                        4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 45, 49, 0.74));
+                videoModes.put(
+                        5, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 30, 45, 0.91));
+                videoModes.put(
+                        6, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, 0.72));
             }
 
             currentVideoMode = (FPSRatedVideoMode) videoModes.get(0);
@@ -136,7 +145,18 @@ public class ZeroCopyPicamSource extends VisionSource {
         }
 
         @Override
+        public void setAutoExposure(boolean cameraAutoExposure) {
+            lastExposureMode = cameraAutoExposure;
+            // TODO (Matt) -- call PicamJNI's auto exposure function, when that exists
+        }
+
+        @Override
         public void setExposure(double exposure) {
+            // Todo (Chris) - for now, handle auto exposure by using 100% exposure
+            if (exposure < 0.0) {
+                exposure = 100.0;
+            }
+
             lastExposure = exposure;
             var failure = PicamJNI.setExposure((int) Math.round(exposure));
             if (failure) logger.warn("Couldn't set Pi Camera exposure");
@@ -193,6 +213,7 @@ public class ZeroCopyPicamSource extends VisionSource {
             // We don't store last settings on the native side, and when you change video mode these get
             // reset on MMAL's end
             setExposure(lastExposure);
+            setAutoExposure(lastExposureMode);
             setBrightness(lastBrightness);
             setGain(lastGain);
             setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());

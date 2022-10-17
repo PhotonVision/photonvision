@@ -1,154 +1,268 @@
 <template>
-  <div>
+  <div
+    id="MapContainer"
+    style="flex-grow:1"
+  >
     <v-row>
       <v-col
         align="center"
         cols="12"
       >
         <span class="white--text">Target Location</span>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col
+        align="center"
+        cols="12"
+        align-self="stretch"
+      >
         <canvas
           id="canvasId"
-          class="mt-2"
-          width="800"
-          height="800"
+          style="width:100%;height:100%"
         />
       </v-col>
+      <v-row>
+        <v-col>
+          <v-btn
+            class="ml-10"
+            color="secondary"
+            @click="resetCamFirstPerson"
+          >
+            First Person
+          </v-btn>
+        </v-col>
+        <v-col>
+          <v-btn
+            class="ml-10"
+            color="secondary"
+            @click="resetCamThirdPerson"
+          >
+            Third Person
+          </v-btn>
+        </v-col>
+      </v-row>
     </v-row>
   </div>
 </template>
 
 <script>
-    import theme from "../../../theme";
 
-    export default {
-        name: "MiniMap",
-        props: {
-          // eslint-disable-next-line vue/require-default-prop
-          targets: Array,
-          // eslint-disable-next-line vue/require-default-prop
-          horizontalFOV: Number
-        },
-        data() {
-            return {
-                ctx: undefined,
-                canvas: undefined,
-                x: 0,
-                y: 0,
-                targetWidth: 40,
-                targetHeight: 6
-            }
-        },
-        computed: {
-            hLen: {
-                get() {
-                    return Math.tan(this.horizontalFOV / 2 * Math.PI / 180) * 150;
-                }
-            }
-        },
-        watch: {
-            targets: {
-                deep: true,
-                handler() {
-                    this.draw();
-                }
-            },
-            horizontalFOV() {
-                this.draw();
-            }
-        },
-        mounted: function () {
-            const canvas = document.getElementById("canvasId"); // getting the canvas element
-            const ctx = canvas.getContext("2d"); // getting the canvas context
-            this.canvas = canvas; // setting the canvas as a vue variable
-            this.ctx = ctx; // setting the canvas context as a vue variable
-            this.grad = this.ctx.createLinearGradient(400, 800, 400, 600);
-            this.grad.addColorStop(0, "rgb(119,119,119)");
-            this.grad.addColorStop(0.05, "rgba(14,92,22,0.96)");
-            this.grad.addColorStop(0.8, 'rgba(43,43,43,0.48)');
+import {
+  ArrowHelper,
+  BoxGeometry,
+  ConeGeometry,
+  Mesh,
+  MeshNormalMaterial,
+  PerspectiveCamera,
+  Quaternion,
+  Scene,
+  TrackballControls,
+  Vector3,
+    Color,
+  WebGLRenderer
+} from "three-full";
 
-            // setting canvas context values for drawing
+export default {
+  name: "MiniMap",
+  props: {
+    // eslint-disable-next-line vue/require-default-prop
+    targets: Array,
+    // eslint-disable-next-line vue/require-default-prop
+    horizontalFOV: Number
+  },
+  data() {
+    return {
+      scene: undefined,
+      cubes: [],
 
-
-            this.ctx.font = "26px Arial";
-            this.ctx.strokeStyle = "whitesmoke";
-            this.ctx.lineWidth = 2;
-
-            this.$nextTick(function () {
-                this.drawPlayer();
-            });
-        },
-        methods: {
-            draw() {
-                this.clearBoard();
-                this.drawPlayer();
-                for (let index in this.targets) {
-                    this.drawTarget(index, this.targets[index].pose);
-                }
-            },
-            drawTarget(index, target) {
-                // first save the untranslated/unrotated context
-                let x = 800 - (160 * target.x); // getting meters as pixels
-                let y = 400 - (160 * target.y);
-                this.ctx.save();
-                this.ctx.beginPath();
-                // move the rotation point to the center of the rect
-                this.ctx.translate(y + this.targetWidth / 2, x + this.targetHeight / 2); // wpi lib makes x forward and back and y left to right
-                // rotate the rect
-                this.ctx.rotate(target.rot * -1 * Math.PI / 180.0);
-
-                // draw the rect on the transformed context
-                // Note: after transforming [0,0] is visually [x,y]
-                //       so the rect needs to be offset accordingly when drawn
-                this.ctx.rect(-this.targetWidth / 2, -this.targetHeight / 2, this.targetWidth, this.targetHeight);
-
-                this.ctx.fillStyle = theme.accent;
-                this.ctx.fill();
-
-                // restore the context to its untranslated/unrotated state
-                this.ctx.restore();
-                this.ctx.fillStyle = "whitesmoke";
-                this.ctx.beginPath();
-                this.ctx.arc(y + this.targetWidth / 2, x + this.targetHeight / 2, 3, 0, 2 * Math.PI, true);
-                this.ctx.fill();
-                this.ctx.fillText(index, y - 30, x - 5);
-
-            },
-            drawPlayer() {
-                this.ctx.beginPath();
-                this.ctx.moveTo(400, 820);
-                this.ctx.lineTo(400 + this.hLen, 650);
-                this.ctx.lineTo(400 - this.hLen, 650);
-                this.ctx.closePath();
-                this.ctx.fillStyle = this.grad;
-                this.ctx.fill();
-                this.ctx.beginPath();
-                this.ctx.moveTo(400, 820);
-                this.ctx.lineTo(400 + this.hLen, 650);
-                this.ctx.stroke();
-                this.ctx.moveTo(400, 820);
-                this.ctx.lineTo(400 - this.hLen, 650);
-                this.ctx.stroke();
-
-            },
-            clearBoard() {
-                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // clearing the canvas
-            }
-        }
     }
+  },
+  watch: {
+    targets: {
+      deep: true,
+      handler() {
+        this.drawTargets();
+      }
+    },
+  },
+
+  mounted() {
+    const scene = new Scene();
+    this.scene = scene;
+    const camera = new PerspectiveCamera(75, 800 / 800, 0.1, 1000);
+    this.camera = camera;
+
+    const canvas = document.getElementById("canvasId"); // getting the canvas element
+    this.canvas = canvas;
+    const renderer = new WebGLRenderer({"canvas": canvas});
+    this.renderer = renderer;
+    scene.background = new Color(0xa9a9a9)
+
+    //Set up resize handlers
+    this.onWindowResize();
+    window.addEventListener( 'resize', this.onWindowResize, false );
+
+    //Add the reference frame cues
+    this.refFrameCues = []
+    // coordinate system
+    this.refFrameCues.push(new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
+        1, // length
+        0xff0000,
+        0.1,
+        0.1,
+    ))
+    this.refFrameCues.push(new ArrowHelper(new Vector3(0, 1, 0).normalize(), new Vector3(0, 0, 0),
+        1, // length
+        0x00ff00,
+        0.1,
+        0.1,
+    ))
+    this.refFrameCues.push(new ArrowHelper(new Vector3(0, 0, 1).normalize(), new Vector3(0, 0, 0),
+        1, // length
+        0x0000ff,
+        0.1,
+        0.1,
+    ))
+
+    //something that looks vaguely like a camera
+    const camSize = 0.2;
+    const camBodyGeometry = new BoxGeometry(camSize, camSize, camSize);
+    const camLensGeometry = new ConeGeometry(camSize*0.4, camSize*0.8, 30);
+    const camMaterial = new MeshNormalMaterial();
+    const camBody = new Mesh(camBodyGeometry, camMaterial);
+    const camLens = new Mesh(camLensGeometry, camMaterial);
+    camBody.position.set(0,0,0);
+    camLens.rotateZ(Math.PI / 2);
+    camLens.position.set(camSize*0.8,0,0);
+    this.refFrameCues.push(camBody)
+    this.refFrameCues.push(camLens)
+
+    var controls = new TrackballControls(
+        camera,
+        renderer.domElement
+    );
+    controls.rotateSpeed = 1.0;
+    controls.zoomSpeed = 1.2;
+    controls.panSpeed = 0.8;
+    controls.noZoom = false;
+    controls.noPan = false;
+    controls.staticMoving = true;
+    controls.dynamicDampingFactor = 0.3;
+    controls.keys = [65, 83, 68];
+    this.controls = controls;
+
+    this.scene.add(...this.refFrameCues)
+    this.resetCamFirstPerson();
+
+    controls.update();
+
+    function animate() {
+      requestAnimationFrame(animate);
+
+      controls.update();
+      renderer.render(scene, camera);
+
+      //camera.updateMatrixWorld();
+      //console.log("================")
+      //console.log(camera.position);
+      //console.log(camera.rotation);
+      //console.log(camera.up);
+
+    }
+
+    this.drawTargets()
+
+    animate();
+  },
+  methods: {
+    drawTargets() {
+      this.scene.remove(...this.cubes)
+      this.cubes = []
+
+      for (const target of this.targets) {
+        const geometry = new BoxGeometry(0.3 / 5, 0.2, 0.2);
+        const material = new MeshNormalMaterial();
+        let quat = (new Quaternion(
+            target.pose.qx,
+            target.pose.qy,
+            target.pose.qz,
+            target.pose.qw,
+        ))
+        const cube = new Mesh(geometry, material);
+        cube.position.set(target.pose.x, target.pose.y, target.pose.z)
+        cube.rotation.setFromQuaternion(quat);
+        this.cubes.push(cube)
+
+        let arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
+            1, // length
+            0xff0000,
+            0.1,
+            0.1,
+        ));
+        arrow.rotation.setFromQuaternion(quat)
+        arrow.rotateZ(-Math.PI / 2)
+        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
+        this.cubes.push(arrow);
+
+        arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
+            1, // length
+            0x00ff00,
+            0.1,
+            0.1,
+        ));
+        arrow.rotation.setFromQuaternion(quat)
+        // arrow.rotateX(Math.PI / 2)
+        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
+        this.cubes.push(arrow);
+        arrow = (new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
+            1, // length
+            0x0000ff,
+            0.1,
+            0.1,
+        ));
+        arrow.setRotationFromQuaternion(quat)
+        arrow.rotateX(Math.PI / 2)
+        arrow.position.set(target.pose.x, target.pose.y, target.pose.z)
+        this.cubes.push(arrow);
+      }
+      if(this.cubes.length > 0)
+        this.scene.add(...this.cubes);
+    },
+
+    onWindowResize() {
+      var container = document.getElementById("MapContainer")
+      if(container){
+        this.canvas.width = container.clientWidth * 0.95;
+        this.canvas.height = container.clientWidth * 0.85;
+        this.camera.aspect = this.canvas.width / this.canvas.height;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize( this.canvas.width, this.canvas.height );
+      }
+    },
+    resetCamThirdPerson(){
+      //Sets camera to third person position
+      this.controls.reset();
+      this.camera.position.set(-1.39,-1.09,1.17);
+      this.camera.up.set(0,0,1);
+      this.controls.target.set(4.0,0.0,0.0);
+      this.controls.update();
+      this.scene.add(...this.refFrameCues)
+    },
+    resetCamFirstPerson(){
+      //Sets camera to first person position
+      this.controls.reset();
+      this.camera.position.set(-0.1,0,0);
+      this.camera.up.set(0,0,1);
+      this.controls.target.set(0.0,0.0,0.0);
+      this.controls.update();
+      this.scene.remove(...this.refFrameCues)
+    },
+  }
+
+
+}
 </script>
 
 <style scoped>
-    #canvasId {
-        width: 400px;
-        height: 400px;
-        background-color: #232C37;
-        border-radius: 5px;
-        border: 2px solid grey;
-        box-shadow: 0 0 5px 1px;
-    }
-
-    th {
-        width: 80px;
-        text-align: center;
-    }
 </style>

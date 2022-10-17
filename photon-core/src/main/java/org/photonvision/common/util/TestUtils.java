@@ -29,6 +29,15 @@ import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class TestUtils {
+    public static void loadLibraries() {
+        try {
+            CameraServerCvJNI.forceLoad();
+            //        PicamJNI.forceLoad();
+        } catch (IOException ex) {
+            // ignored
+        }
+    }
+
     @SuppressWarnings("unused")
     public enum WPI2019Image {
         kCargoAngledDark48in(1.2192),
@@ -154,6 +163,23 @@ public class TestUtils {
         }
     }
 
+    public enum ApriltagTestImages {
+        kRobots,
+        kTag1_640_480;
+
+        public final Path path;
+
+        Path getPath() {
+            // Strip leading k
+            var filename = this.toString().substring(1).toLowerCase();
+            return Path.of("apriltag", filename + ".jpg");
+        }
+
+        ApriltagTestImages() {
+            this.path = getPath();
+        }
+    }
+
     private static Path getResourcesFolderPath(boolean testMode) {
         System.out.println("CWD: " + Path.of("").toAbsolutePath().toString());
         return Path.of("test-resources").toAbsolutePath();
@@ -168,13 +194,19 @@ public class TestUtils {
     public static Path getTestMode2020ImagePath() {
         return getResourcesFolderPath(true)
                 .resolve("testimages")
-                .resolve(WPI2020Image.kBlueGoal_108in_Center.path);
+                .resolve(WPI2020Image.kBlueGoal_156in_Left.path);
     }
 
     public static Path getTestMode2022ImagePath() {
         return getResourcesFolderPath(true)
                 .resolve("testimages")
                 .resolve(WPI2022Image.kTerminal22ft6in.path);
+    }
+
+    public static Path getTestModeApriltagPath() {
+        return getResourcesFolderPath(true)
+                .resolve("testimages")
+                .resolve(ApriltagTestImages.kRobots.path);
     }
 
     public static Path getTestImagesPath(boolean testMode) {
@@ -198,6 +230,10 @@ public class TestUtils {
     }
 
     public static Path getPolygonImagePath(PolygonTestImages image, boolean testMode) {
+        return getTestImagesPath(testMode).resolve(image.path);
+    }
+
+    public static Path getApriltagImagePath(ApriltagTestImages image, boolean testMode) {
         return getTestImagesPath(testMode).resolve(image.path);
     }
 
@@ -243,12 +279,8 @@ public class TestUtils {
         return getCoeffs(LIFECAM_480P_CAL_FILE, testMode);
     }
 
-    public static void loadLibraries() {
-        try {
-            CameraServerCvJNI.forceLoad();
-        } catch (IOException e) {
-            // ignored
-        }
+    public static CameraCalibrationCoefficients getLaptop() {
+        return getCoeffs("laptop.json", true);
     }
 
     private static int DefaultTimeoutMillis = 5000;

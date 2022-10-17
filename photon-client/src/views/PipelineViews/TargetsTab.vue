@@ -18,29 +18,40 @@
               <th class="text-center">
                 Target
               </th>
+              <th
+                v-if="$store.getters.pipelineType === 4"
+                class="text-center"
+              >
+                Fiducial ID
+              </th>
               <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center">
-                  Pitch
+                  Pitch,&nbsp;&deg;
                 </th>
                 <th class="text-center">
-                  Yaw
+                  Yaw,&nbsp;&deg;
                 </th>
                 <th class="text-center">
-                  Skew
+                  Skew,&nbsp;&deg;
+                </th>
+                <th class="text-center">
+                  Area, %
                 </th>
               </template>
-              <th class="text-center">
-                Area
-              </th>
-              <template v-if="$store.getters.currentPipelineSettings.solvePNPEnabled">
+              <template v-else>
                 <th class="text-center">
-                  X
+                  X,&nbsp;m
                 </th>
                 <th class="text-center">
-                  Y
+                  Y,&nbsp;m
                 </th>
                 <th class="text-center">
-                  Angle
+                  Z Angle,&nbsp;&deg;
+                </th>
+              </template>
+              <template v-if="$store.getters.pipelineType === 4 && $store.getters.currentPipelineSettings.solvePNPEnabled">
+                <th class="text-center" >
+                  Ambiguity
                 </th>
               </template>
             </tr>
@@ -51,17 +62,29 @@
               :key="index"
             >
               <td>{{ index }}</td>
+              <td v-if="$store.getters.pipelineType === 4">
+                {{ parseInt(value.fiducialId) }}
+              </td>
               <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <td>{{ parseFloat(value.pitch).toFixed(2) }}</td>
                 <td>{{ parseFloat(value.yaw).toFixed(2) }}</td>
                 <td>{{ parseFloat(value.skew).toFixed(2) }}</td>
+                <td>{{ parseFloat(value.area).toFixed(2) }}</td>
               </template>
-              <td>{{ parseFloat(value.area).toFixed(2) }}</td>
-              <template v-if="$store.getters.currentPipelineSettings.solvePNPEnabled">
-                <!-- TODO: Make sure that units are correct -->
+              <template v-else-if="$store.getters.currentPipelineSettings.solvePNPEnabled && $store.getters.pipelineType === 4">
                 <td>{{ parseFloat(value.pose.x).toFixed(2) }}&nbsp;m</td>
                 <td>{{ parseFloat(value.pose.y).toFixed(2) }}&nbsp;m</td>
-                <td>{{ parseFloat(value.pose.rot).toFixed(2) }}&deg;</td>
+                <td>{{ (parseFloat(value.pose.angle_z) * 180 / Math.PI).toFixed(2) }}&deg;</td>
+              </template>
+              <template v-else-if="$store.getters.currentPipelineSettings.solvePNPEnabled">
+                <td>{{ parseFloat(value.pose.x).toFixed(2) }}&nbsp;m</td>
+                <td>{{ parseFloat(value.pose.y).toFixed(2) }}&nbsp;m</td>
+                <td>{{ (parseFloat(value.pose.angle_z) * 180 / Math.PI).toFixed(2) }}&deg;</td>
+              </template>
+              <template v-if="$store.getters.pipelineType === 4 && $store.getters.currentPipelineSettings.solvePNPEnabled">
+              <td>
+                {{ parseFloat(value.ambiguity).toFixed(2) }}
+              </td>
               </template>
             </tr>
           </tbody>

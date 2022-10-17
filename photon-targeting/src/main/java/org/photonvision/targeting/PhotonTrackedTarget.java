@@ -17,22 +17,25 @@
 
 package org.photonvision.targeting;
 
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Quaternion;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class PhotonTrackedTarget {
-    public static final int PACK_SIZE_BYTES = Double.BYTES * (7 + 2 * 4);
+    public static final int PACK_SIZE_BYTES = Double.BYTES * (5 + 7 + 2 * 4 + 1);
 
     private double yaw;
     private double pitch;
     private double area;
     private double skew;
-    private Transform2d cameraToTarget = new Transform2d();
+    private int fiducialId;
+    private Transform3d cameraToTarget = new Transform3d();
+    private double poseAmbiguity;
     private List<TargetCorner> targetCorners;
 
     public PhotonTrackedTarget() {}
@@ -43,15 +46,19 @@ public class PhotonTrackedTarget {
             double pitch,
             double area,
             double skew,
-            Transform2d pose,
+            int id,
+            Transform3d pose,
+            double ambiguity,
             List<TargetCorner> corners) {
         assert corners.size() == 4;
         this.yaw = yaw;
         this.pitch = pitch;
         this.area = area;
         this.skew = skew;
+        this.fiducialId = id;
         this.cameraToTarget = pose;
         this.targetCorners = corners;
+        this.poseAmbiguity = ambiguity;
     }
 
     public double getYaw() {
@@ -70,6 +77,19 @@ public class PhotonTrackedTarget {
         return skew;
     }
 
+    /** Get the Fiducial ID, or -1 if not set. */
+    public int getFiducialId() {
+        return fiducialId;
+    }
+
+    /**
+     * Get the ratio of pose reprojection errors, called ambiguity. Numbers above 0.2 are likely to be
+     * ambiguous. -1 if invalid.
+     */
+    public double getPoseAmbiguity() {
+        return poseAmbiguity;
+    }
+
     /**
      * Return a list of the 4 corners in image space (origin top left, x left, y down), in no
      * particular order, of the minimum area bounding rectangle of this target
@@ -78,7 +98,11 @@ public class PhotonTrackedTarget {
         return targetCorners;
     }
 
-    public Transform2d getCameraToTarget() {
+    /**
+     * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
+     * space (X right, Y up, Z towards the camera/out of the wall)
+     */
+    public Transform3d getCameraToTarget() {
         return cameraToTarget;
     }
 
@@ -110,10 +134,19 @@ public class PhotonTrackedTarget {
         this.pitch = packet.decodeDouble();
         this.area = packet.decodeDouble();
         this.skew = packet.decodeDouble();
+        this.fiducialId = packet.decodeInt();
 
         double x = packet.decodeDouble();
         double y = packet.decodeDouble();
-        double r = packet.decodeDouble();
+        double z = packet.decodeDouble();
+        var translation = new Translation3d(x, y, z);
+        double w = packet.decodeDouble();
+        x = packet.decodeDouble();
+        y = packet.decodeDouble();
+        z = packet.decodeDouble();
+        var rotation = new Rotation3d(new Quaternion(w, x, y, z));
+        this.cameraToTarget = new Transform3d(translation, rotation);
+        this.poseAmbiguity = packet.decodeDouble();
 
         this.targetCorners = new ArrayList<>(4);
         for (int i = 0; i < 4; i++) {
@@ -121,8 +154,6 @@ public class PhotonTrackedTarget {
             double cy = packet.decodeDouble();
             targetCorners.add(new TargetCorner(cx, cy));
         }
-
-        this.cameraToTarget = new Transform2d(new Translation2d(x, y), Rotation2d.fromDegrees(r));
 
         return packet;
     }
@@ -138,9 +169,15 @@ public class PhotonTrackedTarget {
         packet.encode(pitch);
         packet.encode(area);
         packet.encode(skew);
+        packet.encode(fiducialId);
         packet.encode(cameraToTarget.getTranslation().getX());
         packet.encode(cameraToTarget.getTranslation().getY());
-        packet.encode(cameraToTarget.getRotation().getDegrees());
+        packet.encode(cameraToTarget.getTranslation().getZ());
+        packet.encode(cameraToTarget.getRotation().getQuaternion().getW());
+        packet.encode(cameraToTarget.getRotation().getQuaternion().getX());
+        packet.encode(cameraToTarget.getRotation().getQuaternion().getY());
+        packet.encode(cameraToTarget.getRotation().getQuaternion().getZ());
+        packet.encode(poseAmbiguity);
 
         for (int i = 0; i < 4; i++) {
             packet.encode(targetCorners.get(i).x);
@@ -148,5 +185,25 @@ public class PhotonTrackedTarget {
         }
 
         return packet;
+    }
+
+    @Override
+    public String toString() {
+        return "PhotonTrackedTarget{"
+                + "yaw="
+                + yaw
+                + ", pitch="
+                + pitch
+                + ", area="
+                + area
+                + ", skew="
+                + skew
+                + ", fiducialId="
+                + fiducialId
+                + ", cameraToTarget="
+                + cameraToTarget
+                + ", targetCorners="
+                + targetCorners
+                + '}';
     }
 }
