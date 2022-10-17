@@ -19,7 +19,6 @@ package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import edu.wpi.first.math.geometry.Rotation2d;
 import io.javalin.http.Context;
 import java.io.File;
 import java.io.FileInputStream;
@@ -173,16 +172,12 @@ public class RequestHandler {
             var settings = (HashMap<String, Object>) settingsAndIndex.get("settings");
             int index = (Integer) settingsAndIndex.get("index");
 
-            // The only settings we actually care about are FOV and pitch
+            // The only settings we actually care about are FOV
             var fov = Double.parseDouble(settings.get("fov").toString());
-            var pitch =
-                    Rotation2d.fromDegrees(Double.parseDouble(settings.get("tiltDegrees").toString()));
 
-            logger.info(
-                    String.format(
-                            "Setting camera %s's fov to %s w/pitch %s", index, fov, pitch.getDegrees()));
+            logger.info(String.format("Setting camera %s's fov to %s", index, fov));
             var module = VisionModuleManager.getInstance().getModule(index);
-            module.setFovAndPitch(fov, pitch);
+            module.setFov(fov);
             module.saveModule();
         } catch (JsonProcessingException e) {
             logger.error("Got invalid camera setting JSON from frontend!");

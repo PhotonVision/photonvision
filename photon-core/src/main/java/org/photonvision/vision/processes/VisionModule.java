@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.processes;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.*;
@@ -304,7 +303,7 @@ public class VisionModule {
         streamRunnable.start();
     }
 
-    public void setFovAndPitch(double fov, Rotation2d pitch) {
+    public void setFov(double fov) {
         var settables = visionSource.getSettables();
         logger.trace(() -> "Setting " + settables.getConfiguration().nickname + ") FOV (" + fov + ")");
 
