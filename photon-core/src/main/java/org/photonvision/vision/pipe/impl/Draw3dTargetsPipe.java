@@ -146,9 +146,9 @@ public class Draw3dTargetsPipe
                 var list =
                         List.of(
                                 new Point3(0, 0, 0),
-                                new Point3(0,0,AXIS_LEN),
-                                new Point3(AXIS_LEN,0,0),
-                                new Point3(0,AXIS_LEN,0));
+                                new Point3(0, 0, AXIS_LEN),
+                                new Point3(AXIS_LEN, 0, 0),
+                                new Point3(0, AXIS_LEN, 0));
                 pointMat.fromList(list);
 
                 Calib3d.projectPoints(
