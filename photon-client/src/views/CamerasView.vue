@@ -31,14 +31,6 @@
               :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
             />
             <br>
-            <CVnumberinput
-              v-model="cameraSettings.tiltDegrees"
-              name="Camera pitch"
-              tooltip="How many degrees above the horizontal the physical camera is tilted"
-              :step="0.01"
-              :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
-            />
-            <br>
             <v-btn
               style="margin-top:10px"
               small
@@ -625,8 +617,7 @@ export default {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
                 "settings": this.cameraSettings,
                 "index": this.$store.state.currentCameraIndex
-            }).then(
-                function (response) {
+            }).then(response => {
                     if (response.status === 200) {
                         this.$store.state.saveBar = true;
                     }
