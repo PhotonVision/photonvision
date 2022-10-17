@@ -115,15 +115,15 @@ public class SolvePNPTest {
         Assertions.assertEquals(1.1, pose.getTranslation().getX(), 0.05);
         Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.05);
 
-        // We expect the object X axis to be to the right, or negative-Y in world space
+        // We expect the object X to be forward, or -X in world space
         Assertions.assertEquals(
-                -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getY(), 0.05);
-        // We expect the object Y axis to be up, or +Z in world space
+                -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.05);
+        // We expect the object Y axis to be right, or negative-Y in world space
         Assertions.assertEquals(
-                1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getZ(), 0.05);
-        // We expect the object Z axis to towards the camera, or negative-X in world space
+                -1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.05);
+        // We expect the object Z axis to be up, or +Z in world space
         Assertions.assertEquals(
-                -1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getX(), 0.05);
+                1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.05);
 
         TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
     }
@@ -162,7 +162,8 @@ public class SolvePNPTest {
         var pose = pipelineResult.targets.get(0).getCameraToTarget3d();
         Assertions.assertEquals(Units.inchesToMeters(240.26), pose.getTranslation().getX(), 0.05);
         Assertions.assertEquals(Units.inchesToMeters(35), pose.getTranslation().getY(), 0.05);
-        Assertions.assertEquals(Units.degreesToRadians(-42), pose.getRotation().getZ(), 1);
+        // Z rotation should be mostly facing us
+        Assertions.assertEquals(Units.degreesToRadians(-140), pose.getRotation().getZ(), 1);
 
         TestUtils.showImage(pipelineResult.inputFrame.image.getMat(), "Pipeline output", 999999);
     }
