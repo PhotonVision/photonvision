@@ -137,12 +137,18 @@ public class Draw3dTargetsPipe
 
                 // Draw X, Y and Z axis
                 MatOfPoint3f pointMat = new MatOfPoint3f();
+                // Those points are in opencv-land, but we are in NWU
+                // NWU | EDN
+                // X: Z
+                // Y: -X
+                // Z: -Y
+                final double AXIS_LEN = 0.2;
                 var list =
                         List.of(
                                 new Point3(0, 0, 0),
-                                new Point3(0.2, 0, 0),
-                                new Point3(0, 0.2, 0),
-                                new Point3(0, 0, 0.2));
+                                new Point3(0,0,AXIS_LEN),
+                                new Point3(AXIS_LEN,0,0),
+                                new Point3(0,AXIS_LEN,0));
                 pointMat.fromList(list);
 
                 Calib3d.projectPoints(
