@@ -30,11 +30,11 @@ jobs:
 
     steps:
     # Checkout code.
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
 
     # Setup Node.js
     - name: Setup Node.js
-      uses: actions/setup-node@v3.4.1
+      uses: actions/setup-node@v3
       with:
         node-version: 14
 
@@ -57,7 +57,7 @@ jobs:
     steps:
       # Checkout code.
       - name: Checkout code
-        uses: actions/checkout@v1
+        uses: actions/checkout@v3
 
       # Fetch tags.
       - name: Fetch tags
@@ -65,7 +65,7 @@ jobs:
 
       # Install Java 11.
       - name: Install Java 11
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
           java-version: 11
 
@@ -85,12 +85,12 @@ jobs:
 
       # Publish Coverage Report.
       - name: Publish Server Coverage Report
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file: ./photon-server/build/reports/jacoco/test/jacocoTestReport.xml
 
       - name: Publish Core Coverage Report
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v3
         with:
           file: ./photon-core/build/reports/jacoco/test/jacocoTestReport.xml
 
@@ -99,13 +99,13 @@ jobs:
 
     steps:
       # Checkout docs.
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           repository: 'PhotonVision/photonvision-docs.git'
           ref: master
 
       # Install Python.
-      - uses: actions/setup-python@v2
+      - uses: actions/setup-python@v4
         with:
           python-version: '3.6'
 
@@ -136,10 +136,10 @@ jobs:
 
     steps:
       # Checkout code.
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       # Install Java 11.
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: 11
 
@@ -168,10 +168,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: "Photonlib - Build - ${{ matrix.artifact-name }}"
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: 11
       - run: git fetch --tags --force
@@ -200,10 +200,10 @@ jobs:
     container: ${{ matrix.container }}
     name: "Photonlib - Build - ${{ matrix.artifact-name }}"
     steps:
-      - uses: actions/checkout@v2.3.4
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: 11
       - run: |
@@ -220,14 +220,14 @@ jobs:
     name: "wpiformat"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Fetch all history and metadata
         run: |
           git fetch --prune --unshallow
           git checkout -b pr
           git branch -f master origin/master
       - name: Set up Python 3.8
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.8
       - name: Install clang-format
@@ -244,7 +244,7 @@ jobs:
       - name: Generate diff
         run: git diff HEAD > wpiformat-fixes.patch
         if: ${{ failure() }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: wpiformat fixes
           path: wpiformat-fixes.patch
@@ -258,10 +258,10 @@ jobs:
 
     steps:
       # Checkout code.
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v3
 
       # Install Java 11.
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
           java-version: 11
 
@@ -271,13 +271,13 @@ jobs:
           mkdir -p photon-server/src/main/resources/web/docs
 
       # Download client artifact to resources folder.
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: built-client
           path: photon-server/src/main/resources/web/
 
       # Download docs artifact to resources folder.
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: built-docs
           path: photon-server/src/main/resources/web/docs
@@ -296,7 +296,7 @@ jobs:
           ./scripts/generatePiImage.sh
 
       # Upload final fat jar as artifact.
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v3
         with:
           name: jar
           path: photon-server/build/libs
