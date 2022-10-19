@@ -37,7 +37,6 @@ public abstract class MetricsBase {
 
     public static String cpuUptimeCommand = "uptime -p | cut -c 4-";
 
-
     // GPU
     public static String gpuMemoryCommand = "vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
     public static String gpuMemUsageCommand = "vcgencmd get_mem malloc | grep -Eo '[0-9]+'";
