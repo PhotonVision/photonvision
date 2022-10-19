@@ -124,7 +124,7 @@ public class PhotonCamera {
      */
     public PhotonPipelineResult getLatestResult() {
         synchronized (m_queue) {
-            var ret = m_queue.poll();
+            var ret = m_queue.peek();
             if (ret == null) {
                 ret = new PhotonPipelineResult();
             }

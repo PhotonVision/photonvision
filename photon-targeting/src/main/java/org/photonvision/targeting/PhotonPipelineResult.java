@@ -124,7 +124,7 @@ public class PhotonPipelineResult {
 
     @Override
     public int hashCode() {
-        return Objects.hash(latencyMillis, targets);
+        return Objects.hash(fpgaTimestamp, latencyMillis, targets);
     }
 
     /**

@@ -120,7 +120,7 @@ public class PhotonTrackedTarget {
 
     @Override
     public int hashCode() {
-        return Objects.hash(yaw, pitch, area, cameraToTarget);
+        return Objects.hash(yaw, pitch, area, cameraToTarget, skew, fiducialId, poseAmbiguity, targetCorners);
     }
 
     /**
