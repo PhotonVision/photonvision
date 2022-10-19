@@ -11,8 +11,10 @@ cppSrcFileInclude {
 
 modifiableFileExclude {
   \.jpg$
+  \.jpeg$
   \.png$
   \.so$
+  \.dll$
 }
 
 includeProject {

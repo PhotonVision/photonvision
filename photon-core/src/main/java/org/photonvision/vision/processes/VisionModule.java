@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.processes;
 
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.*;
@@ -107,7 +106,7 @@ public class VisionModule {
                         if (it.cameraGain == -1) it.cameraGain = 20; // Sane default
                     });
         }
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+        if (cameraQuirks.hasQuirk(CameraQuirk.AWBGain)) {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
                         if (it.cameraRedGain == -1) it.cameraRedGain = 16; // Sane defaults
@@ -273,7 +272,9 @@ public class VisionModule {
                 if (shouldRun) {
                     consumeRawResults(inputFrame, outputFrame, targets);
                     try {
-                        var osr = outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
+                        CVPipelineResult osr =
+                                outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
+
                         consumeFpsLimitedResult(osr);
                     } catch (Exception e) {
                         // Never die
@@ -297,29 +298,14 @@ public class VisionModule {
         }
     }
 
-    void setDriverMode(boolean isDriverMode) {
-        pipelineManager.setDriverMode(isDriverMode);
-        setVisionLEDs(!isDriverMode);
-        saveAndBroadcastAll();
-    }
-
     public void start() {
         visionRunner.startProcess();
         streamRunnable.start();
     }
 
-    public void setFovAndPitch(double fov, Rotation2d pitch) {
+    public void setFov(double fov) {
         var settables = visionSource.getSettables();
-        logger.trace(
-                () ->
-                        "Setting "
-                                + settables.getConfiguration().nickname
-                                + ": pitch ("
-                                + pitch.getDegrees()
-                                + ") FOV ("
-                                + fov
-                                + ")");
-        settables.setCameraPitch(pitch);
+        logger.trace(() -> "Setting " + settables.getConfiguration().nickname + ") FOV (" + fov + ")");
 
         // Only set FOV if we have no vendor JSON and we aren't using a PiCAM
         if (isVendorCamera()) {
@@ -331,6 +317,22 @@ public class VisionModule {
 
     private boolean isVendorCamera() {
         return visionSource.isVendorCamera();
+    }
+
+    void changePipelineType(int newType) {
+        pipelineManager.changePipelineType(newType);
+        setPipeline(pipelineManager.getCurrentPipelineIndex());
+        saveAndBroadcastAll();
+    }
+
+    void setDriverMode(boolean isDriverMode) {
+        pipelineManager.setDriverMode(isDriverMode);
+        setVisionLEDs(!isDriverMode);
+        setPipeline(
+                isDriverMode
+                        ? PipelineManager.DRIVERMODE_INDEX
+                        : pipelineManager.getCurrentPipelineIndex());
+        saveAndBroadcastAll();
     }
 
     public void startCalibration(UICalibrationData data) {
@@ -352,10 +354,12 @@ public class VisionModule {
         if (!cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             settings.cameraGain = -1;
         }
-        if (!cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+        if (!cameraQuirks.hasQuirk(CameraQuirk.AWBGain)) {
             settings.cameraRedGain = -1;
             settings.cameraBlueGain = -1;
         }
+
+        settings.cameraAutoExposure = true;
 
         setPipeline(PipelineManager.CAL_3D_INDEX);
     }
@@ -383,37 +387,46 @@ public class VisionModule {
     void setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
         pipelineManager.setIndex(index);
-        var config = pipelineManager.getPipelineSettings(index);
+        var pipelineSettings = pipelineManager.getPipelineSettings(index);
 
-        if (config == null) {
+        if (pipelineSettings == null) {
             logger.error("Config for index " + index + " was null!");
             return;
         }
 
-        visionSource.getSettables().setVideoModeInternal(config.cameraVideoModeIndex);
-        visionSource.getSettables().setBrightness(config.cameraBrightness);
-        visionSource.getSettables().setExposure(config.cameraExposure);
-        visionSource.getSettables().setGain(config.cameraGain);
+        visionSource.getSettables().setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
+        visionSource.getSettables().setBrightness(pipelineSettings.cameraBrightness);
+        visionSource.getSettables().setGain(pipelineSettings.cameraGain);
+
+        // If manual exposure, force exposure slider to be valid
+        if (!pipelineSettings.cameraAutoExposure) {
+            if (pipelineSettings.cameraExposure < 0)
+                pipelineSettings.cameraExposure = 10; // reasonable default
+        }
+
+        visionSource.getSettables().setExposure(pipelineSettings.cameraExposure);
+        visionSource.getSettables().setAutoExposure(pipelineSettings.cameraAutoExposure);
 
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             // If the gain is disabled for some reason, re-enable it
-            if (config.cameraGain == -1) config.cameraGain = 20;
-            visionSource.getSettables().setGain(Math.max(0, config.cameraGain));
+            if (pipelineSettings.cameraGain == -1) pipelineSettings.cameraGain = 20;
+            visionSource.getSettables().setGain(Math.max(0, pipelineSettings.cameraGain));
         } else {
-            config.cameraGain = -1;
-        }
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-            // If the AWB gains are disabled for some reason, re-enable it
-            if (config.cameraRedGain == -1) config.cameraRedGain = 16;
-            if (config.cameraBlueGain == -1) config.cameraBlueGain = 16;
-            visionSource.getSettables().setRedGain(Math.max(0, config.cameraRedGain));
-            visionSource.getSettables().setBlueGain(Math.max(0, config.cameraBlueGain));
-        } else {
-            config.cameraRedGain = -1;
-            config.cameraBlueGain = -1;
+            pipelineSettings.cameraGain = -1;
         }
 
-        setVisionLEDs(config.ledMode);
+        if (cameraQuirks.hasQuirk(CameraQuirk.AWBGain)) {
+            // If the AWB gains are disabled for some reason, re-enable it
+            if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 16;
+            if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 16;
+            visionSource.getSettables().setRedGain(Math.max(0, pipelineSettings.cameraRedGain));
+            visionSource.getSettables().setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain));
+        } else {
+            pipelineSettings.cameraRedGain = -1;
+            pipelineSettings.cameraBlueGain = -1;
+        }
+
+        setVisionLEDs(pipelineSettings.ledMode);
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
                 pipelineManager.getCurrentPipelineIndex();
@@ -477,7 +490,6 @@ public class VisionModule {
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
         ret.fov = visionSource.getSettables().getFOV();
-        ret.tiltDegrees = this.visionSource.getSettables().getCameraPitch().getDegrees();
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
         ret.currentPipelineSettings =
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());

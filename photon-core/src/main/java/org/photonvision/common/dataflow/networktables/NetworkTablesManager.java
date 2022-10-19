@@ -23,6 +23,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.HashMap;
 import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -39,6 +40,7 @@ public class NetworkTablesManager {
 
     private NetworkTablesManager() {
         ntInstance.addLogger(new NTLogger(), 0, 255); // to hide error messages
+        TimedTaskManager.getInstance().addTask("NTManager", this::ntTick, 5000);
     }
 
     private static NetworkTablesManager INSTANCE;
@@ -128,5 +130,17 @@ public class NetworkTablesManager {
         ntInstance.stopClient();
         ntInstance.startServer();
         broadcastVersion();
+    }
+
+    // So it seems like if Photon starts before the robot NT server does, and both aren't static IP,
+    // it'll never connect. This hack works around it by restarting the client/server while the nt
+    // instance
+    // isn't connected, same as clicking the save button in the settings menu (or restarting the
+    // service)
+    private void ntTick() {
+        if (!ntInstance.isConnected()
+                && !ConfigManager.getInstance().getConfig().getNetworkConfig().runNTServer) {
+            setConfig(ConfigManager.getInstance().getConfig().getNetworkConfig());
+        }
     }
 }

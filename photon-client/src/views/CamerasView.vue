@@ -31,14 +31,6 @@
               :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
             />
             <br>
-            <CVnumberinput
-              v-model="cameraSettings.tiltDegrees"
-              name="Camera pitch"
-              tooltip="How many degrees above the horizontal the physical camera is tilted"
-              :step="0.01"
-              :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
-            />
-            <br>
             <v-btn
               style="margin-top:10px"
               small
@@ -146,6 +138,24 @@
                             text="Standard Deviation"
                           />
                         </th>
+                        <th class="text-center">
+                          <tooltipped-label
+                            tooltip="Estimated Horizontal FOV, in degrees"
+                            text="Horizontal FOV"
+                          />
+                        </th>
+                        <th class="text-center">
+                          <tooltipped-label
+                            tooltip="Estimated Vertical FOV, in degrees"
+                            text="Vertical FOV"
+                          />
+                        </th>
+                        <th class="text-center">
+                          <tooltipped-label
+                            tooltip="Estimated Diagonal FOV, in degrees"
+                            text="Diagonal FOV"
+                          />
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -158,6 +168,9 @@
                           {{ isCalibrated(value) ? value.mean.toFixed(2) + "px" : "—" }}
                         </td>
                         <td> {{ isCalibrated(value) ? value.standardDeviation.toFixed(2) + "px" : "—" }} </td>
+                        <td> {{ isCalibrated(value) ? value.horizontalFOV.toFixed(2) + "°" : "—" }} </td>
+                        <td> {{ isCalibrated(value) ? value.verticalFOV.toFixed(2) + "°" : "—" }} </td>
+                        <td> {{ isCalibrated(value) ? value.diagonalFOV.toFixed(2) + "°" : "—" }} </td>
                       </tr>
                     </tbody>
                   </v-simple-table>
@@ -396,6 +409,9 @@ export default {
                         if (calib != null) {
                             it['standardDeviation'] = calib.standardDeviation;
                             it['mean'] = calib.perViewErrors.reduce((a, b) => a + b) / calib.perViewErrors.length;
+                            it['horizontalFOV'] = 2 * Math.atan2(it.width/2,calib.intrinsics[0]) * (180/Math.PI);
+                            it['verticalFOV'] = 2 * Math.atan2(it.height/2,calib.intrinsics[4]) * (180/Math.PI);
+                            it['diagonalFOV'] = 2 * Math.atan2(Math.sqrt(it.width**2 + (it.height/(calib.intrinsics[4]/calib.intrinsics[0]))**2)/2,calib.intrinsics[0]) * (180/Math.PI);
                         }
                         filtered.push(it);
                     }
@@ -601,8 +617,7 @@ export default {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
                 "settings": this.cameraSettings,
                 "index": this.$store.state.currentCameraIndex
-            }).then(
-                function (response) {
+            }).then(response => {
                     if (response.status === 200) {
                         this.$store.state.saveBar = true;
                     }

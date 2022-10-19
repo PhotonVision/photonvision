@@ -1,6 +1,7 @@
 <template>
   <div>
     <CVslider
+      :disabled="cameraAutoExposure"
       v-model="cameraExposure"
       name="Exposure"
       min="0"
@@ -21,10 +22,27 @@
       @input="handlePipelineData('cameraBrightness')"
       @rollback="e => rollback('cameraBrightness', e)"
     />
+    <CVswitch
+      v-model="cameraAutoExposure"
+      class="pt-2"
+      name="Auto exposure"
+      @input="handlePipelineData('cameraAutoExposure')"
+    />
+    <CVslider
+      v-if="cameraGain >= 0"
+      v-model="cameraGain"
+      name="Camera Gain"
+      min="0"
+      max="100"
+      tooltip="Controls camera gain, similar to brightness"
+      :slider-cols="largeBox"
+      @input="handlePipelineData('cameraGain')"
+      @rollback="e => rollback('cameraGain', e)"
+    />
     <CVslider
       v-if="cameraRedGain !== -1"
       v-model="cameraRedGain"
-      name="Red AWB Gain"
+      name="Red Balance"
       min="0"
       max="100"
       tooltip="Controls red automatic white balance gain, which affects how the camera captures colors in different conditions"
@@ -35,7 +53,7 @@
     <CVslider
       v-if="cameraBlueGain !== -1"
       v-model="cameraBlueGain"
-      name="Blue AWB Gain"
+      name="Blue Balance"
       min="0"
       max="100"
       tooltip="Controls blue automatic white balance gain, which affects how the camera captures colors in different conditions"
@@ -75,6 +93,7 @@
 <script>
     import CVslider from '../../components/common/cv-slider'
     import CVselect from '../../components/common/cv-select'
+    import CVswitch from '../../components/common/cv-switch'
 
     const unfilteredStreamDivisors = [1, 2, 4, 6];
 
@@ -83,6 +102,7 @@
         components: {
             CVslider,
             CVselect,
+            CVswitch,
         },
         // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
@@ -108,12 +128,28 @@
                     this.$store.commit("mutatePipeline", {"cameraExposure": parseFloat(val)});
                 }
             },
+            cameraAutoExposure: {
+                get() {
+                    return this.$store.getters.currentPipelineSettings.cameraAutoExposure;
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"cameraAutoExposure": val});
+                }
+            },
             cameraBrightness: {
                 get() {
                     return parseInt(this.$store.getters.currentPipelineSettings.cameraBrightness)
                 },
                 set(val) {
                     this.$store.commit("mutatePipeline", {"cameraBrightness": parseInt(val)});
+                }
+            },
+            cameraGain: {
+                get() {
+                    return parseInt(this.$store.getters.currentPipelineSettings.cameraGain)
+                },
+                set(val) {
+                    this.$store.commit("mutatePipeline", {"cameraGain": parseInt(val)});
                 }
             },
             cameraRedGain: {

@@ -31,7 +31,8 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 @JsonSubTypes({
     @JsonSubTypes.Type(value = ColoredShapePipelineSettings.class),
     @JsonSubTypes.Type(value = ReflectivePipelineSettings.class),
-    @JsonSubTypes.Type(value = DriverModePipelineSettings.class)
+    @JsonSubTypes.Type(value = DriverModePipelineSettings.class),
+    @JsonSubTypes.Type(value = AprilTagPipelineSettings.class)
 })
 public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;
@@ -39,14 +40,16 @@ public class CVPipelineSettings implements Cloneable {
     public ImageFlipMode inputImageFlipMode = ImageFlipMode.NONE;
     public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
     public String pipelineNickname = "New Pipeline";
-    public double cameraExposure = 50;
+    public boolean cameraAutoExposure = false;
+    // manual exposure only used if cameraAutoExposure if false
+    public double cameraExposure = 100;
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
     // quirk
     public int cameraGain = 50;
     // Currently only used by the zero-copy Pi Camera driver
-    public int cameraRedGain = 50;
-    public int cameraBlueGain = 50;
+    public int cameraRedGain = 18;
+    public int cameraBlueGain = 24;
     public int cameraVideoModeIndex = 0;
     public FrameDivisor streamingFrameDivisor = FrameDivisor.NONE;
     public boolean ledMode = false;

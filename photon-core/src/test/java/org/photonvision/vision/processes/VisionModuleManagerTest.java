@@ -20,7 +20,6 @@ package org.photonvision.vision.processes;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.cscore.VideoMode;
-import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -86,8 +85,7 @@ public class VisionModuleManagerTest {
 
         @Override
         public void setVideoModeInternal(VideoMode videoMode) {
-            this.frameStaticProperties =
-                    new FrameStaticProperties(getCurrentVideoMode(), getFOV(), new Rotation2d(), null);
+            this.frameStaticProperties = new FrameStaticProperties(getCurrentVideoMode(), getFOV(), null);
         }
 
         @Override
@@ -96,6 +94,9 @@ public class VisionModuleManagerTest {
             ret.put(0, getCurrentVideoMode());
             return ret;
         }
+
+        @Override
+        public void setAutoExposure(boolean cameraAutoExposure) {}
     }
 
     private static class TestDataConsumer implements CVPipelineResultConsumer {

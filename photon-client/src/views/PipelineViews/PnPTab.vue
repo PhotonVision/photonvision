@@ -6,7 +6,6 @@
       type="file"
       accept=".csv"
       style="display: none;"
-
       @change="readFile"
     >
 
@@ -32,11 +31,7 @@
       @input="handlePipelineData('cornerDetectionAccuracyPercentage')"
       @rollback="e => rollback('cornerDetectionAccuracyPercentage', e)"
     />
-    <mini-map
-      class="miniMapClass"
-      :targets="targets"
-      :horizontal-f-o-v="horizontalFOV"
-    />
+
     <v-snackbar
       v-model="snack"
       top
@@ -49,14 +44,12 @@
 
 <script>
     import Papa from 'papaparse';
-    import miniMap from '../../components/pipeline/3D/MiniMap';
     import CVslider from '../../components/common/cv-slider'
 
     export default {
         name: "PnP",
         components: {
-            CVslider,
-            miniMap
+            CVslider
         },
         data() {
             return {
@@ -85,21 +78,6 @@
                 },
                 set(val) {
                     this.$store.commit("mutatePipeline", {"cornerDetectionAccuracyPercentage": val});
-                }
-            },
-            targets: {
-                get() {
-                    return this.$store.getters.currentPipelineResults.targets;
-                }
-            },
-            horizontalFOV: {
-                get() {
-                    let index = this.$store.getters.currentPipelineSettings.cameraVideoModeIndex;
-                    let FOV = this.$store.getters.currentCameraSettings.fov;
-                    let resolution = this.$store.getters.videoFormatList[index];
-                    let diagonalView = FOV * (Math.PI / 180);
-                    let diagonalAspect = Math.hypot(resolution.width, resolution.height);
-                    return Math.atan(Math.tan(diagonalView / 2) * (resolution.width / diagonalAspect)) * 2 * (180 / Math.PI)
                 }
             },
         },
