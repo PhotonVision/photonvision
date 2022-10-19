@@ -49,25 +49,52 @@
           <th class="infoElem">
             Disk Usage
           </th>
+          <th class="infoElem">
+            CPU Active Throttling
+          </th>
+          <th class="infoElem">
+            CPU Prev Throttling
+          </th>
+          <th class="infoElem">
+            CPU Uptime
+          </th>
         </tr>
         <tr v-if="metrics.cpuUtil !== 'N/A'">
           <td class="infoElem">
-            {{ metrics.cpuUtil.replace(" ", "") }}%
+            {{ metrics.cpuUtil }}%
           </td>
           <td class="infoElem">
             {{ parseInt(metrics.cpuTemp) }}&deg;&nbsp;C
           </td>
           <td class="infoElem">
-            {{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB
+            {{ metrics.ramUtil }}MB of {{ metrics.cpuMem }}MB
           </td>
           <td class="infoElem">
-            {{ metrics.gpuMemUtil.replace(" ", "") }}MB of {{ metrics.gpuMem }}MB
+            {{ metrics.gpuMemUtil }}MB of {{ metrics.gpuMem }}MB
           </td>
           <td class="infoElem">
-            {{ metrics.diskUtilPct.replace(" ", "") }}
+            {{ metrics.diskUtilPct }}
+          </td>
+          <td class="infoElem">
+            {{ metrics.cpuActiveThr }}
+          </td>
+          <td class="infoElem">
+            {{ metrics.cpuPrevThr }}
+          </td>
+          <td class="infoElem">
+            {{ metrics.cpuUptime }}
           </td>
         </tr>
         <tr v-if="metrics.cpuUtil === 'N/A'">
+          <td class="infoElem">
+            ---
+          </td>
+          <td class="infoElem">
+            ---
+          </td>
+          <td class="infoElem">
+            ---
+          </td>
           <td class="infoElem">
             ---
           </td>
