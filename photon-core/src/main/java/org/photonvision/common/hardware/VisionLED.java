@@ -85,6 +85,8 @@ public class VisionLED {
                 pigpioSocket.generateAndSendWaveform(pulseLengthMillis, blinkCount, ledPins);
             } catch (PigpioException e) {
                 logger.error("Failed to blink!", e);
+            } catch (NullPointerException e) {
+                logger.error("Failed to blink, pigpio internal issue!", e);
             }
         } else {
             for (GPIOBase led : visionLEDs) {
@@ -100,13 +102,19 @@ public class VisionLED {
                 pigpioSocket.waveTxStop();
             } catch (PigpioException e) {
                 logger.error("Failed to stop blink!", e);
+            } catch (NullPointerException e) {
+                logger.error("Failed to blink, pigpio internal issue!", e);
             }
         }
-        // if the user has set an LED brightness other than 100%, use that instead
-        if (mappedBrightnessPercentage == 100 || !state) {
-            visionLEDs.forEach((led) -> led.setState(state));
-        } else {
-            visionLEDs.forEach((led) -> led.setBrightness(mappedBrightnessPercentage));
+        try {
+            // if the user has set an LED brightness other than 100%, use that instead
+            if (mappedBrightnessPercentage == 100 || !state) {
+                visionLEDs.forEach((led) -> led.setState(state));
+            } else {
+                visionLEDs.forEach((led) -> led.setBrightness(mappedBrightnessPercentage));
+            }
+        } catch (NullPointerException e) {
+            logger.error("Failed to blink, pigpio internal issue!", e);
         }
     }
 
