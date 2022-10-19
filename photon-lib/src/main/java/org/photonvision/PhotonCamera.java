@@ -24,10 +24,18 @@
 
 package org.photonvision;
 
+import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
+
+import java.util.Optional;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -46,6 +54,8 @@ public class PhotonCamera {
     private final String path;
 
     private static boolean VERSION_CHECK_ENABLED = true;
+
+    private final ConcurrentLinkedQueue<PhotonPipelineResult> m_queue = new ConcurrentLinkedQueue<>();
 
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
@@ -72,6 +82,30 @@ public class PhotonCamera {
         pipelineIndexEntry = rootTable.getEntry("pipelineIndex");
         ledModeEntry = mainTable.getEntry("ledMode");
         versionEntry = mainTable.getEntry("version");
+
+        rawBytesEntry.addListener(this::consumeRawBytesEntry, EntryListenerFlags.kUpdate);
+    }
+
+    private void consumeRawBytesEntry(EntryNotification notification) {
+        verifyVersion();
+
+        // Clear the packet.
+        packet.clear();
+
+        // Create latest result. FPGA timestamp is in units of wpi::Now() * 1e-6, so seconds, ideally
+        var ret = new PhotonPipelineResult(notification.getEntry().getLastChange() * 1e-6);
+
+        // Populate packet and create result.
+        var bytes = notification.value.getRaw();
+        packet.setData(bytes);
+        if (packet.getSize() > 1) {
+            ret.createFromPacket(packet);
+        }
+
+        synchronized (m_queue) {
+            m_queue.clear();
+            m_queue.add(ret);
+        }
     }
 
     /**
@@ -89,21 +123,13 @@ public class PhotonCamera {
      * @return The latest pipeline result.
      */
     public PhotonPipelineResult getLatestResult() {
-        verifyVersion();
-
-        // Clear the packet.
-        packet.clear();
-
-        // Create latest result.
-        var ret = new PhotonPipelineResult();
-
-        // Populate packet and create result.
-        packet.setData(rawBytesEntry.getRaw(new byte[] {}));
-        if (packet.getSize() < 1) return ret;
-        ret.createFromPacket(packet);
-
-        // Return result.
-        return ret;
+        synchronized (m_queue) {
+            var ret = m_queue.poll();
+            if (ret == null) {
+                ret = new PhotonPipelineResult();
+            }
+            return ret;
+        }
     }
 
     /**

@@ -32,8 +32,14 @@ public class PhotonPipelineResult {
     // Latency in milliseconds.
     private double latencyMillis;
 
+    // Timestamp of reception on robot, in seconds
+    private double fpgaTimestamp;
+
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {}
+
+    /** Constructs an empty pipeline result. */
+    public PhotonPipelineResult(double fpgaTimestamp) { this.fpgaTimestamp = fpgaTimestamp; }
 
     /**
      * Constructs a pipeline result.
@@ -41,8 +47,9 @@ public class PhotonPipelineResult {
      * @param latencyMillis The latency in the pipeline.
      * @param targets The list of targets identified by the pipeline.
      */
-    public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets) {
+    public PhotonPipelineResult(double fpgaTimestamp, double latencyMillis, List<PhotonTrackedTarget> targets) {
         this.latencyMillis = latencyMillis;
+        this.fpgaTimestamp = fpgaTimestamp;
         this.targets.addAll(targets);
     }
 
@@ -90,6 +97,10 @@ public class PhotonPipelineResult {
      */
     public boolean hasTargets() {
         return targets.size() > 0;
+    }
+
+    public double getFPGATimestamp() {
+        return fpgaTimestamp;
     }
 
     /**
