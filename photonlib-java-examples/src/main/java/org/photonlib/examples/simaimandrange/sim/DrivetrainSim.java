@@ -25,9 +25,13 @@
 package org.photonlib.examples.simaimandrange.sim;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N2;
 import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
@@ -73,7 +77,7 @@ public class DrivetrainSim {
     // Configure these to match your PhotonVision Camera,
     // pipeline, and LED setup.
     double camDiagFOV = 170.0; // degrees - assume wide-angle camera
-    double camPitch = Units.radiansToDegrees(Robot.CAMERA_PITCH_RADIANS); // degrees
+    double camPitch = Robot.CAMERA_PITCH_RADIANS; // degrees
     double camHeightOffGround = Robot.CAMERA_HEIGHT_METERS; // meters
     double maxLEDRange = 20; // meters
     int camResolutionWidth = 640; // pixels
@@ -84,9 +88,7 @@ public class DrivetrainSim {
             new SimVisionSystem(
                     "photonvision",
                     camDiagFOV,
-                    camPitch,
-                    new Transform2d(),
-                    camHeightOffGround,
+                    new Transform3d( new Translation3d(0, 0, camHeightOffGround), new Rotation3d(0,camPitch,0)),
                     maxLEDRange,
                     camResolutionWidth,
                     camResolutionHeight,
@@ -105,13 +107,13 @@ public class DrivetrainSim {
     double tgtXPos = Units.feetToMeters(54);
     double tgtYPos =
             Units.feetToMeters(27 / 2) - Units.inchesToMeters(43.75) - Units.inchesToMeters(48.0 / 2.0);
-    Pose2d farTargetPose = new Pose2d(new Translation2d(tgtXPos, tgtYPos), new Rotation2d(0.0));
+    Pose3d farTargetPose = new Pose3d(new Translation3d(tgtXPos, tgtYPos, Robot.TARGET_HEIGHT_METERS), new Rotation3d(0.0, 0.0, 0.0));
 
     Field2d field = new Field2d();
 
     public DrivetrainSim() {
         simVision.addSimVisionTarget(
-                new SimVisionTarget(farTargetPose, Robot.TARGET_HEIGHT_METERS, targetWidth, targetHeight));
+                new SimVisionTarget(farTargetPose, targetWidth, targetHeight, -1));
         SmartDashboard.putData("Field", field);
     }
 
