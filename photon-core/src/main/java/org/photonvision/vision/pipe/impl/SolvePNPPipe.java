@@ -100,8 +100,9 @@ public class SolvePNPPipe
                         Core.norm(rVec));
 
         Pose3d targetPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d(translation, rotation));
-        target.setCameraToTarget3d(
+        target.setBestCameraToTarget3d(
                 new Transform3d(targetPose.getTranslation(), targetPose.getRotation()));
+        target.setAltCameraToTarget3d(new Transform3d());
     }
 
     Mat rotationMatrix = new Mat();

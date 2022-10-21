@@ -45,6 +45,7 @@ class PacketTest {
                         -5.0,
                         -1,
                         new Transform3d(new Translation3d(), new Rotation3d()),
+                        new Transform3d(new Translation3d(), new Rotation3d()),
                         0.25,
                         List.of(
                                 new TargetCorner(1, 2),
@@ -82,6 +83,7 @@ class PacketTest {
                                         4.0,
                                         2,
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
+                                        new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.25,
                                         List.of(
                                                 new TargetCorner(1, 2),
@@ -94,6 +96,7 @@ class PacketTest {
                                         9.1,
                                         6.7,
                                         3,
+                                        new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
                                         List.of(

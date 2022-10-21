@@ -69,7 +69,7 @@ public class AprilTagTest {
         TestUtils.showImage(pipelineResult.inputFrame.image.getMat(), "Pipeline output", 999999);
 
         // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getCameraToTarget3d();
+        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
         Assertions.assertEquals(2, pose.getTranslation().getX(), 0.2);
         Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.2);
         Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.2);
@@ -97,7 +97,7 @@ public class AprilTagTest {
         System.out.println(
                 "Found targets at "
                         + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getCameraToTarget3d)
+                                .map(TrackedTarget::getBestCameraToTarget3d)
                                 .collect(Collectors.toList()));
     }
 }

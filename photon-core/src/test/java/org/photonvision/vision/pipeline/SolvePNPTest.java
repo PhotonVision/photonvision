@@ -111,7 +111,7 @@ public class SolvePNPTest {
         printTestResults(pipelineResult);
 
         // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getCameraToTarget3d();
+        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
         Assertions.assertEquals(1.1, pose.getTranslation().getX(), 0.05);
         Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.05);
 
@@ -159,7 +159,7 @@ public class SolvePNPTest {
                 pipelineResult.targets);
 
         // these numbers are not *accurate*, but they are known and expected
-        var pose = pipelineResult.targets.get(0).getCameraToTarget3d();
+        var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
         Assertions.assertEquals(Units.inchesToMeters(240.26), pose.getTranslation().getX(), 0.05);
         Assertions.assertEquals(Units.inchesToMeters(35), pose.getTranslation().getY(), 0.05);
         // Z rotation should be mostly facing us
@@ -211,7 +211,7 @@ public class SolvePNPTest {
         System.out.println(
                 "Found targets at "
                         + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getCameraToTarget3d)
+                                .map(TrackedTarget::getBestCameraToTarget3d)
                                 .collect(Collectors.toList()));
     }
 }
