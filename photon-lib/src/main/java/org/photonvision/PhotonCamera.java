@@ -204,6 +204,10 @@ public class PhotonCamera {
         return getLatestResult().hasTargets();
     }
 
+    public String getName(){
+        return path.substring(path.lastIndexOf('/') + 1);
+    }
+
     private void verifyVersion() {
         if (!VERSION_CHECK_ENABLED) return;
 
