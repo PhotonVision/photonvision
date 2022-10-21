@@ -24,13 +24,9 @@
 
 package org.photonlib.examples.simposeest.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import org.photonvision.SimVisionTarget;
@@ -101,10 +97,11 @@ public class Constants {
     public static final double kFarTgtZPos =
             (Units.inchesToMeters(98.19) - targetHeight) / 2 + targetHeight;
 
-    public static final Pose3d kFarTargetPose = new Pose3d(
-            new Translation3d(kFarTgtXPos, kFarTgtYPos, kFarTgtZPos),
-            new Rotation3d(0.0, 0.0, 0.0));
+    public static final Pose3d kFarTargetPose =
+            new Pose3d(
+                    new Translation3d(kFarTgtXPos, kFarTgtYPos, kFarTgtZPos), new Rotation3d(0.0, 0.0, 0.0));
 
     public static final SimVisionTarget kFarTarget =
-            new SimVisionTarget(kFarTargetPose.toPose2d(), targetHeightAboveGround, targetWidth, targetHeight);
+            new SimVisionTarget(
+                    kFarTargetPose.toPose2d(), targetHeightAboveGround, targetWidth, targetHeight);
 }
