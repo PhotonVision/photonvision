@@ -50,10 +50,36 @@
             Disk Usage
           </th>
           <th class="infoElem">
-            CPU Active Throttling
+            <v-tooltip top>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  v-bind="attrs"
+                  v-on="on"
+                >CPU Active Throttling</span>
+              </template>
+              <span>
+                    LV: Low Supply Voltage <br>
+                    FRQ: ARM Core Frequency is Capped<br>
+                    THR: CPU Throttling Active<br>
+                    TEMP: CPU Over-Temperature<br>
+              </span>
+            </v-tooltip>
           </th>
           <th class="infoElem">
-            CPU Prev Throttling
+            <v-tooltip top>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  v-bind="attrs"
+                  v-on="on"
+                >CPU Prev Throttling</span>
+              </template>
+              <span>
+                    LV: Low Supply Voltage <br>
+                    FRQ: ARM Core Frequency is Capped<br>
+                    THR: CPU Throttling Active<br>
+                    TEMP: CPU Over-Temperature<br>
+              </span>
+            </v-tooltip>
           </th>
           <th class="infoElem">
             CPU Uptime
