@@ -192,14 +192,7 @@
                 cols="12"
                 class="pt-0"
               >
-                <CVslider
-                  v-model="$store.getters.currentPipelineSettings.cameraExposure"
-                  name="Exposure"
-                  :min="0"
-                  :max="100"
-                  slider-cols="8"
-                  @input="e => handlePipelineUpdate('cameraExposure', e)"
-                />
+                <!-- Exposure should be set to auto for all pipelines in this tab, no control needed. -->
                 <CVslider
                   v-model="$store.getters.currentPipelineSettings.cameraBrightness"
                   name="Brightness"
