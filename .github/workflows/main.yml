@@ -35,10 +35,9 @@ jobs:
         node-version: 16
 
     # Run npm
-    - run: |
-        npm install -g npm
-        npm ci
-        npm run build --if-present
+    - run: npm update -g npm
+    - run: npm ci
+    - run: npm run build --if-present
 
     # Upload client artifact.
     - uses: actions/upload-artifact@master
