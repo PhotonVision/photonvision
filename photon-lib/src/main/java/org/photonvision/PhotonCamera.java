@@ -204,6 +204,11 @@ public class PhotonCamera {
         return getLatestResult().hasTargets();
     }
 
+    /**
+     * Returns the hostname of the camera.
+     * This will return the same value that was given to the constructor as cameraName.
+     * @return The hostname of the camera.
+     */
     public String getName(){
         return path.substring(path.lastIndexOf('/') + 1);
     }
