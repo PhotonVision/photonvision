@@ -305,7 +305,8 @@ jobs:
         with:
           name: jar
           path: photon-server/build/libs
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v3
+        if: github.event_name != 'pull_request'
         with:
           name: image
           path: photonvision*.zip
