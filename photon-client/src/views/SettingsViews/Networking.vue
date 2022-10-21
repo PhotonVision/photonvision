@@ -67,6 +67,7 @@
       Save
     </v-btn>
     <v-divider class="mt-4 mb-4" />
+    <!-- TEMP - RIO finder is not currently enabled
     <v-row>
       <v-col
         cols="12"
@@ -125,6 +126,7 @@
         </v-simple-table>
       </v-col>
     </v-row>
+    -->
   </div>
 </template>
 
