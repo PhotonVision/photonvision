@@ -25,9 +25,13 @@
 package org.photonlib.examples.simposeest.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import org.photonvision.SimVisionTarget;
 
@@ -71,10 +75,10 @@ public class Constants {
 
     // Physical location of the camera on the robot, relative to the center of the
     // robot.
-    public static final Transform2d kCameraToRobot =
-            new Transform2d(
-                    new Translation2d(-0.25, 0), // in meters
-                    new Rotation2d());
+    public static final Transform3d kCameraToRobot =
+            new Transform3d(
+                    new Translation3d(-0.25, 0, -.25), // in meters
+                    new Rotation3d());
 
     // See
     // https://firstfrc.blob.core.windows.net/frc2020/PlayingField/2020FieldDrawing-SeasonSpecific.pdf
@@ -94,9 +98,13 @@ public class Constants {
     public static final double kFarTgtXPos = Units.feetToMeters(54);
     public static final double kFarTgtYPos =
             Units.feetToMeters(27 / 2) - Units.inchesToMeters(43.75) - Units.inchesToMeters(48.0 / 2.0);
-    public static final Pose2d kFarTargetPose =
-            new Pose2d(new Translation2d(kFarTgtXPos, kFarTgtYPos), new Rotation2d(0.0));
+    public static final double kFarTgtZPos =
+            (Units.inchesToMeters(98.19) - targetHeight) / 2 + targetHeight;
+
+    public static final Pose3d kFarTargetPose = new Pose3d(
+            new Translation3d(kFarTgtXPos, kFarTgtYPos, kFarTgtZPos),
+            new Rotation3d(0.0, 0.0, 0.0));
 
     public static final SimVisionTarget kFarTarget =
-            new SimVisionTarget(kFarTargetPose, targetHeightAboveGround, targetWidth, targetHeight);
+            new SimVisionTarget(kFarTargetPose.toPose2d(), targetHeightAboveGround, targetWidth, targetHeight);
 }

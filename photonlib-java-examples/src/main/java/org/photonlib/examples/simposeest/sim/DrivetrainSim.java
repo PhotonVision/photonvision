@@ -90,7 +90,9 @@ public class DrivetrainSim {
                     Constants.kCamName,
                     camDiagFOV,
                     camPitch,
-                    Constants.kCameraToRobot,
+                    new Transform2d(
+                        Constants.kCameraToRobot.getTranslation().toTranslation2d(), 
+                        Constants.kCameraToRobot.getRotation().toRotation2d()),
                     camHeightOffGround,
                     maxLEDRange,
                     camResolutionWidth,
