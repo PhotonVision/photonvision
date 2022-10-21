@@ -55,7 +55,9 @@
                 <span
                   v-bind="attrs"
                   v-on="on"
-                >CPU Active Throttling</span>
+                > 
+                ⓘ CPU Active Throttling 
+                </span>
               </template>
               <span>
                     LV: Low Supply Voltage <br>
@@ -71,7 +73,9 @@
                 <span
                   v-bind="attrs"
                   v-on="on"
-                >CPU Prev Throttling</span>
+                >
+                ⓘ CPU Prev Throttling 
+                </span>
               </template>
               <span>
                     LV: Low Supply Voltage <br>
