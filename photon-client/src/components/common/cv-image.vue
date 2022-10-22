@@ -49,10 +49,11 @@
         },
         mounted() {
             var wsvs = require('../../plugins/WebsocketVideoStream');
-            this.wsStream = new wsvs.WebsocketVideoStream(this.port, this.id);
+            this.wsStream = new wsvs.WebsocketVideoStream(this.id);
         },
         methods: {
             reload() {
+              console.log("Reloading " + this.id + " with port " + String(this.port));
               this.wsStream.setPort(this.port);
             }
         },

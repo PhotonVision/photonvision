@@ -35,8 +35,8 @@ export default new Vuex.Store({
                 tiltDegrees: 0.0,
                 currentPipelineIndex: 0,
                 pipelineNicknames: ["Unknown"],
-                outputStreamPort: 1181,
-                inputStreamPort: 1182,
+                outputStreamPort: 1182,
+                inputStreamPort: 1181,
                 nickname: "Unknown",
                 videoFormatList: [
                     {

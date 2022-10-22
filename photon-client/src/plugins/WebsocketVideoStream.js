@@ -3,34 +3,54 @@
 export class WebsocketVideoStream{
 
 
-    constructor(streamPort, drawDiv) {
+    constructor(drawDiv) {
 
         this.image = document.getElementById(drawDiv);
-        this.streamPort = streamPort
+        this.streamPort = null;
         this.serverAddr = "ws://" + window.location.host + "/websocket_cameras";
         this.setNoStream();
         this.ws_connect();
+        this.imgData = null;
+        this.imgDataTime = -1;
+        requestAnimationFrame(()=>this.animationLoop());
+        this.frameRxCount = 0;
+    }
+
+    animationLoop(){
+        var now = window.performance.now();
+        if(this.streamPort == null || this.imgData == null || (now - this.imgDataTime) > 1000){
+            this.image.setAttribute('src', require("../assets/noStream.jpg"));
+        } else {
+            this.image.setAttribute(
+                'src', `data:image/jpeg;base64,${this.imgData}`
+            );
+        }
+        //console.log("Stream " + String(this.streamPort) + " RX: " + String(this.frameRxCount));
+
+        requestAnimationFrame(()=>this.animationLoop());
+
     }
 
     setNoStream() {
-        this.image.setAttribute('src', require("../assets/noStream.jpg"));
+        this.setPort(null);
     }
 
     startStream() {
-        if(this.serverConnectionActive == true){
+        if(this.serverConnectionActive == true && this.streamPort != null){
             this.ws.send(JSON.stringify({"cmd": "subscribe", "port":this.streamPort}));
         }
     }
 
     stopStream() {
-        if(this.serverConnectionActive == true){
+        if(this.serverConnectionActive == true && this.streamPort != null){
             this.ws.send(JSON.stringify({"cmd": "unsubscribe", "port":this.streamPort}));
         }
     }
 
     setPort(streamPort){
         this.stopStream();
-        this.streamPort = streamPort
+        this.frameRxCount = 0;
+        this.streamPort = streamPort;
         this.startStream();
     }
 
@@ -38,8 +58,6 @@ export class WebsocketVideoStream{
         // Set the flag allowing general server communication
         this.serverConnectionActive = true;
         console.log("Connected!");
-
-        this.startStream();
     }
 
     ws_onClose(e) {
@@ -69,9 +87,9 @@ export class WebsocketVideoStream{
 
         for(var img of images){
             if(img['port'] == this.streamPort){
-                this.image.setAttribute(
-                    'src', `data:image/jpeg;base64,${img['data']}`
-                );
+                this.imgData = img['data'];
+                this.imgDataTime = window.performance.now();
+                this.frameRxCount++;
             }
         }
     }
@@ -87,9 +105,6 @@ export class WebsocketVideoStream{
     }
 
 }
-
-
-
 
 
 export default {WebsocketVideoStream}

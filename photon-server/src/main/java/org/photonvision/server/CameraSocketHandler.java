@@ -160,7 +160,7 @@ public class CameraSocketHandler {
             svsManager.allStreamConvertNextFrame();
 
             try {
-                Thread.sleep(5);
+                Thread.sleep(20);
             } catch (InterruptedException e) {
                 logger.error("Exception waiting for camera stream broadcast semaphore", e);
             }

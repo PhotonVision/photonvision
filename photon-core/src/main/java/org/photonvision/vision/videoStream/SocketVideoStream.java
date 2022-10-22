@@ -8,6 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
 import org.opencv.core.MatOfByte;
+import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.vision.frame.Frame;
 
@@ -43,7 +44,7 @@ public class SocketVideoStream implements Consumer<Frame> {
                     if(frame != null && !frame.image.getMat().empty() && jpegBytes == null) {
                         frameWasConsumed = false;
                         jpegBytes = new MatOfByte();
-                        Imgcodecs.imencode(".jpg", frame.image.getMat(), jpegBytes);
+                        Imgcodecs.imencode(".jpg", frame.image.getMat(), jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 50));
                     } 
                 } finally {
                     jpegBytesLock.unlock();

@@ -211,21 +211,21 @@ public class VisionModule {
         fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
 
         rawResultConsumers.add((in, out, tgts) -> inputVideoStreamer.accept(in));
-        fpsLimitedResultConsumers.add(result -> outputVideoStreamer.accept(result.outputFrame));
+        rawResultConsumers.add((in, out, tgts) -> outputVideoStreamer.accept(out));
 
-        fpsLimitedResultConsumers.add(
-                result -> {
-                    if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
-                        dashboardInputStreamer.accept(result.inputFrame);
-                    else dashboardInputStreamer.disabledTick();
-                });
-        fpsLimitedResultConsumers.add(
-                result -> {
-                    if (this.pipelineManager.getCurrentPipelineSettings().outputShouldShow)
-                        dashboardOutputStreamer.accept(result.outputFrame);
-                    else dashboardInputStreamer.disabledTick();
-                    ;
-                });
+        //fpsLimitedResultConsumers.add(
+        //        result -> {
+        //            if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
+        //                dashboardInputStreamer.accept(result.inputFrame);
+        //            else dashboardInputStreamer.disabledTick();
+        //        });
+        //fpsLimitedResultConsumers.add(
+        //        result -> {
+        //            if (this.pipelineManager.getCurrentPipelineSettings().outputShouldShow)
+        //                dashboardOutputStreamer.accept(result.outputFrame);
+        //            else dashboardOutputStreamer.disabledTick();
+        //            ;
+        //        });
     }
 
     private class StreamRunnable extends Thread {
