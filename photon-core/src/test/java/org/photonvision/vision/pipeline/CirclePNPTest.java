@@ -161,7 +161,7 @@ public class CirclePNPTest {
         System.out.println(
                 "Found targets at "
                         + pipelineResult.targets.stream()
-                                .map(TrackedTarget::getCameraToTarget3d)
+                                .map(TrackedTarget::getBestCameraToTarget3d)
                                 .collect(Collectors.toList()));
     }
 }

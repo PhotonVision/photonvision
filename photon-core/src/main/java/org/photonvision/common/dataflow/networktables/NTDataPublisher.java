@@ -189,7 +189,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             targetAreaEntry.forceSetDouble(bestTarget.getArea());
             targetSkewEntry.forceSetDouble(bestTarget.getSkew());
 
-            var pose = bestTarget.getCameraToTarget3d();
+            var pose = bestTarget.getBestCameraToTarget3d();
             targetPoseEntry.forceSetDoubleArray(
                     new double[] {
                         pose.getTranslation().getX(),
@@ -232,7 +232,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                             t.getArea(),
                             t.getSkew(),
                             t.getFiducialId(),
-                            t.getCameraToTarget3d(),
+                            t.getBestCameraToTarget3d(),
+                            t.getAltCameraToTarget3d(),
                             t.getPoseAmbiguity(),
                             cornerList));
         }

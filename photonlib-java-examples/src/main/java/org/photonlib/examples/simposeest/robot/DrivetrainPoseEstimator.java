@@ -87,7 +87,7 @@ public class DrivetrainPoseEstimator {
         var res = cam.getLatestResult();
         if (res.hasTargets()) {
             double imageCaptureTime = Timer.getFPGATimestamp() - res.getLatencyMillis() / 1000.0;
-            Transform3d camToTargetTrans = res.getBestTarget().getCameraToTarget();
+            Transform3d camToTargetTrans = res.getBestTarget().getBestCameraToTarget();
             var transform =
                     new Transform2d(
                             camToTargetTrans.getTranslation().toTranslation2d(),
