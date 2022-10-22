@@ -192,7 +192,17 @@
                 cols="12"
                 class="pt-0"
               >
-                <!-- Exposure should be set to auto for all pipelines in this tab, no control needed. -->
+                <CVslider
+                  :disabled="cameraAutoExposure"
+                  v-model="$store.getters.currentPipelineSettings.cameraExposure"
+                  name="Exposure"
+                  :min="0"
+                  :max="100"
+                  slider-cols="8"
+                  step="0.1"
+                  tooltip="Directly controls how much light is allowed to fall onto the sensor, which affects apparent brightness"
+                  @input="e => handlePipelineUpdate('cameraExposure', e)"
+                />
                 <CVslider
                   v-model="$store.getters.currentPipelineSettings.cameraBrightness"
                   name="Brightness"
@@ -200,6 +210,13 @@
                   :max="100"
                   slider-cols="8"
                   @input="e => handlePipelineUpdate('cameraBrightness', e)"
+                />
+                <CVswitch
+                  v-model="$store.getters.currentPipelineSettings.cameraAutoExposure"
+                  class="pt-2"
+                  name="Auto exposure"
+                  tooltip="Enables or Disables camera automatic adjustment for current lighting conditions".
+                  @input="handlePipelineData('cameraAutoExposure')"
                 />
                 <CVslider
                   v-if="$store.getters.currentPipelineSettings.cameraRedGain !== -1"
