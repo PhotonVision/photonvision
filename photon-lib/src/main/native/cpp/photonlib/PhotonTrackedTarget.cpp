@@ -92,19 +92,19 @@ Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
 
   // First transform is the "best" pose
   packet >> x >> y >> z;
-  const auto translation = frc::Translation3d(
+  const auto bestTranslation = frc::Translation3d(
       units::meter_t(x), units::meter_t(y), units::meter_t(z));
   packet >> w >> x >> y >> z;
-  const auto rotation = frc::Rotation3d(frc::Quaternion(w, x, y, z));
-  target.bestCameraToTarget = frc::Transform3d(translation, rotation);
+  const auto bestRotation = frc::Rotation3d(frc::Quaternion(w, x, y, z));
+  target.bestCameraToTarget = frc::Transform3d(bestTranslation, bestRotation);
 
   // Second transform is the "alternate" pose
   packet >> x >> y >> z;
-  const auto translation = frc::Translation3d(
+  const auto altTranslation = frc::Translation3d(
       units::meter_t(x), units::meter_t(y), units::meter_t(z));
   packet >> w >> x >> y >> z;
-  const auto rotation = frc::Rotation3d(frc::Quaternion(w, x, y, z));
-  target.altCameraToTarget = frc::Transform3d(translation, rotation);
+  const auto altRotation = frc::Rotation3d(frc::Quaternion(w, x, y, z));
+  target.altCameraToTarget = frc::Transform3d(altTranslation, altRotation);
 
   packet >> target.poseAmbiguity;
 
