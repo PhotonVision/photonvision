@@ -97,16 +97,22 @@ class PhotonTrackedTarget {
   double GetPoseAmbiguity() const { return poseAmbiguity; }
 
   /**
-   * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag space (X forward, Y left, Z up) with the lowest reprojection error. The ratio between this and the alternate target's reprojection error is the ambiguity, which is between 0 and 1.
+   * Get the transform that maps camera space (X = forward, Y = left, Z = up) to
+   * object/fiducial tag space (X forward, Y left, Z up) with the lowest
+   * reprojection error. The ratio between this and the alternate target's
+   * reprojection error is the ambiguity, which is between 0 and 1.
    * @return The pose of the target relative to the robot.
    */
   frc::Transform3d GetBestCameraToTarget() const { return bestCameraToTarget; }
 
   /**
-   * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
-   * space (X forward, Y left, Z up) with the highest reprojection error
+   * Get the transform that maps camera space (X = forward, Y = left, Z = up) to
+   * object/fiducial tag space (X forward, Y left, Z up) with the highest
+   * reprojection error
    */
-  frc::Transform3d GetAlternateCameraToTarget() const { return altCameraToTarget; }
+  frc::Transform3d GetAlternateCameraToTarget() const {
+    return altCameraToTarget;
+  }
 
   bool operator==(const PhotonTrackedTarget& other) const;
   bool operator!=(const PhotonTrackedTarget& other) const;

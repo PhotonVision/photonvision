@@ -56,7 +56,7 @@ bool PhotonTrackedTarget::operator!=(const PhotonTrackedTarget& other) const {
 
 Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
   packet << target.yaw << target.pitch << target.area << target.skew
-         << target.fiducialId 
+         << target.fiducialId
          << target.bestCameraToTarget.Translation().X().value()
          << target.bestCameraToTarget.Translation().Y().value()
          << target.bestCameraToTarget.Translation().Z().value()
