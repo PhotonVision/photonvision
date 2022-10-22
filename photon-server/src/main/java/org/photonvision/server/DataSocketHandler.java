@@ -24,6 +24,7 @@ import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -84,19 +85,6 @@ public class DataSocketHandler {
         var reason = context.reason() != null ? context.reason() : "Connection closed by client";
         logger.info("Closing websocket connection from " + host + " for reason: " + reason);
         users.remove(context);
-
-        if (users.size() == 0) {
-            logger.info("All websocket connections are closed. Setting inputShouldShow to false.");
-
-            // cameraIndex -1 means the event is received by all cameras
-            dcService.publishEvent(
-                    new IncomingWebSocketEvent<>(
-                            DataChangeDestination.DCD_ACTIVEPIPELINESETTINGS,
-                            "inputShouldShow",
-                            false,
-                            -1,
-                            null));
-        }
     }
 
     @SuppressWarnings({"unchecked"})

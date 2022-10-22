@@ -48,6 +48,8 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
+import org.photonvision.vision.videoStream.SocketVideoStream;
+import org.photonvision.vision.videoStream.SocketVideoStreamManager;
 
 /**
  * This is the God Class
@@ -81,6 +83,9 @@ public class VisionModule {
 
     FileSaveFrameConsumer inputFrameSaver;
     FileSaveFrameConsumer outputFrameSaver;
+
+    SocketVideoStream inputVideoStreamer;
+    SocketVideoStream outputVideoStreamer;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
@@ -168,6 +173,8 @@ public class VisionModule {
     private void destroyStreams() {
         dashboardInputStreamer.close();
         dashboardOutputStreamer.close();
+        SocketVideoStreamManager.getInstance().removeStream(inputVideoStreamer);
+        SocketVideoStreamManager.getInstance().removeStream(outputVideoStreamer);
     }
 
     private void createStreams() {
@@ -188,6 +195,13 @@ public class VisionModule {
         outputFrameSaver =
                 new FileSaveFrameConsumer(
                         visionSource.getSettables().getConfiguration().nickname, "output");
+
+        inputVideoStreamer = new SocketVideoStream(inputStreamPort);
+        outputVideoStreamer = new SocketVideoStream(outputStreamPort);
+        SocketVideoStreamManager.getInstance().addStream(inputVideoStreamer);
+        SocketVideoStreamManager.getInstance().addStream(outputVideoStreamer);
+
+
     }
 
     private void recreateFpsLimitedResultConsumers() {
@@ -195,6 +209,9 @@ public class VisionModule {
         // consumers release the frame
         rawResultConsumers.add((in, out, tgts) -> inputFrameSaver.accept(in));
         fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
+
+        rawResultConsumers.add((in, out, tgts) -> inputVideoStreamer.accept(in));
+        fpsLimitedResultConsumers.add(result -> outputVideoStreamer.accept(result.outputFrame));
 
         fpsLimitedResultConsumers.add(
                 result -> {

@@ -79,6 +79,7 @@ public class Server {
                     ws.onConnect(camDsHandler::onConnect);
                     ws.onClose(camDsHandler::onClose);
                     ws.onBinaryMessage(camDsHandler::onBinaryMessage);
+                    ws.onMessage(camDsHandler::onMessage);
                 });
         /*API Events*/
         app.post("/api/settings/import", RequestHandler::onSettingUpload);

@@ -23,8 +23,8 @@ import java.util.Map;
 
 @SuppressWarnings("unused")
 public enum CameraSocketMessageType {
-    CSMT_DRIVERMODE("todo_1"),
-    CSMT_CHANGEPIPELINETYPE("todo_1");
+    CSMT_SUBSCRIBE("subscribe"),
+    CSMT_UNSUBSCRIBE("unsubscribe");
 
     public final String entryKey;
 

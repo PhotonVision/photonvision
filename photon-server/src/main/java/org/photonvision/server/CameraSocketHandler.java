@@ -19,33 +19,32 @@ package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
+import io.javalin.websocket.WsMessageContext;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.apache.commons.lang3.tuple.Pair;
 import org.msgpack.jackson.dataformat.MessagePackFactory;
-import org.photonvision.common.dataflow.DataChangeDestination;
-import org.photonvision.common.dataflow.DataChangeService;
-import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
-import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.vision.pipeline.PipelineType;
+import org.photonvision.vision.videoStream.SocketVideoStreamManager;
 
-@SuppressWarnings("rawtypes")
 public class CameraSocketHandler {
     private final Logger logger = new Logger(CameraSocketHandler.class, LogGroup.WebServer);
     private final List<WsContext> users = new CopyOnWriteArrayList<>();
-    private final ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
+    private final SocketVideoStreamManager svsManager = SocketVideoStreamManager.getInstance();
+
+    private Thread cameraBroadcastThread;
+
 
     public static class UIMap extends HashMap<String, Object> {}
 
@@ -58,14 +57,15 @@ public class CameraSocketHandler {
     }
 
     private CameraSocketHandler() {
-
+        cameraBroadcastThread = new Thread(this::broadcastFramesTask);
+        cameraBroadcastThread.start();
     }
 
     public void onConnect(WsConnectContext context) {
         context.session.setIdleTimeout(Long.MAX_VALUE); // TODO: determine better value
         var insa = context.session.getRemote().getInetSocketAddress();
         var host = insa.getAddress().toString() + ":" + insa.getPort();
-        logger.info("New websocket connection from " + host);
+        logger.info("New camera websocket connection from " + host);
         users.add(context);
     }
 
@@ -73,37 +73,27 @@ public class CameraSocketHandler {
         var insa = context.session.getRemote().getInetSocketAddress();
         var host = insa.getAddress().toString() + ":" + insa.getPort();
         var reason = context.reason() != null ? context.reason() : "Connection closed by client";
-        logger.info("Closing websocket connection from " + host + " for reason: " + reason);
+        logger.info("Closing camera websocket connection from " + host + " for reason: " + reason);
+        svsManager.removeAllSubscriptions(context);
         users.remove(context);
-
-        if (users.size() == 0) {
-            logger.info("All websocket connections are closed. Setting inputShouldShow to false.");
-        }
     }
-
+    
     @SuppressWarnings({"unchecked"})
-    public void onBinaryMessage(WsBinaryMessageContext context) {
+    public void onMessage(WsMessageContext context) {
+        var messageStr = context.message();
+        ObjectMapper mapper = new ObjectMapper();
         try {
-            Map<String, Object> deserializedData =
-                    objectMapper.readValue(context.data(), new TypeReference<>() {});
+            JsonNode actualObj = mapper.readTree(messageStr);
 
-            // Special case the current camera index
-            var camIndexValue = deserializedData.get("cameraIndex");
-            Integer cameraIndex = null;
-            if (camIndexValue instanceof Integer) {
-                cameraIndex = (Integer) camIndexValue;
-                deserializedData.remove("cameraIndex");
-            }
-
-            for (Map.Entry<String, Object> entry : deserializedData.entrySet()) {
+            for (var entry : actualObj) {
                 try {
-                    var entryKey = entry.getKey();
-                    var entryValue = entry.getValue();
+                    var entryKey = entry.textValue();
+                    var entryValue = entry.elements();
                     var socketMessageType = CameraSocketMessageType.fromEntryKey(entryKey);
 
                     logger.trace(
                             () ->
-                                    "Got WS message: ["
+                                    "Got Camera WS message: ["
                                             + socketMessageType
                                             + "] ==> ["
                                             + entryKey
@@ -117,11 +107,22 @@ public class CameraSocketHandler {
                     }
 
                     switch (socketMessageType) {
-                        case CSMT_CHANGEPIPELINETYPE:
+                        case CSMT_SUBSCRIBE:
                             {
-                                // TODO: what is this event?
-                                var data = (HashMap<String, Object>) entryValue;
-
+                                while(entryValue.hasNext()){
+                                    var portSpec = entryValue.next();
+                                    int portId = portSpec.get("port").asInt();
+                                    svsManager.addSubscription(context, portId);
+                                }
+                                break;
+                            }
+                        case CSMT_UNSUBSCRIBE:
+                            {
+                                while(entryValue.hasNext()){
+                                    var portSpec = entryValue.next();
+                                    int portId = portSpec.get("port").asInt();
+                                    svsManager.removeSubscription(context, portId);
+                                }
                                 break;
                             }
                     }
@@ -129,29 +130,34 @@ public class CameraSocketHandler {
                     logger.error("Failed to parse message!", e);
                 }
             }
-        } catch (IOException e) {
-            logger.error("Failed to deserialize message!", e);
+        } catch (JsonProcessingException e) {
+            logger.warn("Could not parse message \"" + messageStr + "\"");
+            e.printStackTrace();
+            return;
         }
+    
     }
 
-    private void sendMessage(Object message, WsContext user) throws JsonProcessingException {
-        ByteBuffer b = ByteBuffer.wrap(objectMapper.writeValueAsBytes(message));
-        user.send(b);
+
+    @SuppressWarnings({"unchecked"})
+    public void onBinaryMessage(WsBinaryMessageContext context) {
+        return; // ignoring binary messages for now
     }
 
-    public void broadcastMessage(Object message, WsContext userToSkip)
-            throws JsonProcessingException {
-        if (userToSkip == null) {
-            for (WsContext user : users) {
-                sendMessage(message, user);
+    private void broadcastFramesTask() {
+        // Background camera image broadcasting thread
+        while (!Thread.currentThread().isInterrupted()) {
+            
+            for(var user : users){
+                var frames = svsManager.getSendFrames(user);
             }
-        } else {
-            var skipUserPort = userToSkip.session.getRemote().getInetSocketAddress().getPort();
-            for (WsContext user : users) {
-                var userPort = user.session.getRemote().getInetSocketAddress().getPort();
-                if (userPort != skipUserPort) {
-                    sendMessage(message, user);
-                }
+
+            svsManager.allStreamConvertNextFrame();
+
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                logger.error("Exception waiting for camera stream broadcast semaphor", e);
             }
         }
     }
