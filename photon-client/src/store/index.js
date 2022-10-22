@@ -259,6 +259,9 @@ export default new Vuex.Store({
         streamAddress: state =>
             ["http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].inputStreamPort + "/stream.mjpg",
                 "http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].outputStreamPort + "/stream.mjpg"],
+        streamPort: state =>
+                [state.cameraSettings[state.currentCameraIndex].inputStreamPort,
+                 state.cameraSettings[state.currentCameraIndex].outputStreamPort],
         currentPipelineResults: state => {
             return state.pipelineResults;
         },

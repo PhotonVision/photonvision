@@ -61,13 +61,14 @@
                     :id="idx === 0 ? 'raw-stream' : 'processed-stream'"
                     ref="streams"
                     :address="$store.getters.streamAddress[idx]"
+                    :port="$store.getters.streamPort[idx]"
                     :disconnected="!$store.state.backendConnected"
                     scale="100"
                     :max-height="$store.getters.isDriverMode ? '40vh' : '300px'"
                     :max-height-md="$store.getters.isDriverMode ? '50vh' : '380px'"
                     :max-height-lg="$store.getters.isDriverMode ? '55vh' : '390px'"
                     :max-height-xl="$store.getters.isDriverMode ? '60vh' : '450px'"
-                    :alt="'Stream' + idx"
+                    :alt="'Stream ' + idx"
                     :color-picking="$store.state.colorPicking && idx === 0"
                     @click="onImageClick"
                   />
@@ -464,14 +465,6 @@ export default {
             return (!this.$store.state.ntConnectionInfo.connected || this.$store.state.settings.networkSettings.runNTServer) && this.$store.state.settings.networkSettings.teamNumber > 0 && this.$store.state.backendConnected && !this.hideNTWarning;
           }
         },
-    },
-    mounted: function () {
-      const self = this;
-      this.streamer = require('../plugins/WebsocketVideoStream').default;
-      this.$nextTick(() => {
-        self.streamer.initVideoStream(1181, "raw-stream");
-        //self.streamer.initVideoStream(1182, "processed-stream");
-      });
     },
     created() {
         this.$store.state.connectedCallbacks.push(this.reloadStreams)

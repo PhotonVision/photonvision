@@ -13,7 +13,7 @@
     export default {
         name: "CvImage",
         // eslint-disable-next-line vue/require-prop-types
-        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightLg', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
+        props: ['address', 'port', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightLg', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
         data() {
             return {
                 seed: 1.0,
@@ -46,18 +46,14 @@
                     return ret;
                 }
             },
-            src: {
-              get() {
-                return this.disconnected ? require("../../assets/noStream.jpg") : this.address + "?" + this.seed // This prevents caching
-              },
-            },
         },
         mounted() {
-            this.reload(); // Force reload image on creation
+            var wsvs = require('../../plugins/WebsocketVideoStream');
+            this.wsStream = new wsvs.WebsocketVideoStream(this.port, this.id);
         },
         methods: {
             reload() {
-                this.seed = new Date().getTime();
+              this.wsStream.setPort(this.port);
             }
         },
     }
