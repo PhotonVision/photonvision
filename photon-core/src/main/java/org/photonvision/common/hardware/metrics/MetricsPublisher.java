@@ -60,8 +60,7 @@ public class MetricsPublisher {
         metrics.put("cpuTemp", cpuMetrics.getTemp());
         metrics.put("cpuUtil", cpuMetrics.getUtilization());
         metrics.put("cpuMem", cpuMetrics.getMemory());
-        metrics.put("cpuActiveThr", cpuMetrics.getActiveThrottling());
-        metrics.put("cpuPrevThr", cpuMetrics.getPrevThrottling());
+        metrics.put("cpuThr", cpuMetrics.getThrottleReason());
         metrics.put("cpuUptime", cpuMetrics.getUptime());
         metrics.put("gpuMem", gpuMetrics.getGPUMemorySplit());
         metrics.put("ramUtil", ramMetrics.getUsedRam());

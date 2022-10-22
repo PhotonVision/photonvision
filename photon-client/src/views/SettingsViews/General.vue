@@ -56,32 +56,11 @@
                   v-bind="attrs"
                   v-on="on"
                 > 
-                ⓘ CPU Active Throttling 
+                ⓘ CPU Throttling 
                 </span>
               </template>
               <span>
-                    LV: Low Supply Voltage <br>
-                    FRQ: ARM Core Frequency is Capped<br>
-                    THR: CPU Throttling Active<br>
-                    TEMP: CPU Over-Temperature<br>
-              </span>
-            </v-tooltip>
-          </th>
-          <th class="infoElem">
-            <v-tooltip top>
-              <template v-slot:activator="{ on, attrs }">
-                <span
-                  v-bind="attrs"
-                  v-on="on"
-                >
-                ⓘ CPU Prev Throttling 
-                </span>
-              </template>
-              <span>
-                    LV: Low Supply Voltage <br>
-                    FRQ: ARM Core Frequency is Capped<br>
-                    THR: CPU Throttling Active<br>
-                    TEMP: CPU Over-Temperature<br>
+                    Current or Previous Reason for the cpu being held back from maximum performance.
               </span>
             </v-tooltip>
           </th>
@@ -106,19 +85,13 @@
             {{ metrics.diskUtilPct }}
           </td>
           <td class="infoElem">
-            {{ metrics.cpuActiveThr }}
-          </td>
-          <td class="infoElem">
-            {{ metrics.cpuPrevThr }}
+            {{ metrics.cpuThr }}
           </td>
           <td class="infoElem">
             {{ metrics.cpuUptime }}
           </td>
         </tr>
         <tr v-if="metrics.cpuUtil === 'N/A'">
-          <td class="infoElem">
-            ---
-          </td>
           <td class="infoElem">
             ---
           </td>
