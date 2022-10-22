@@ -56,7 +56,7 @@
                   v-bind="attrs"
                   v-on="on"
                 > 
-                ⓘ CPU Throttling 
+                ⓘ CPU Throttling
                 </span>
               </template>
               <span>
