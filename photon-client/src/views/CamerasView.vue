@@ -193,8 +193,8 @@
                 class="pt-0"
               >
                 <CVslider
-                  :disabled="cameraAutoExposure"
                   v-model="$store.getters.currentPipelineSettings.cameraExposure"
+                  :disabled="$store.getters.currentPipelineSettings.cameraAutoExposure"
                   name="Exposure"
                   :min="0"
                   :max="100"
@@ -214,9 +214,9 @@
                 <CVswitch
                   v-model="$store.getters.currentPipelineSettings.cameraAutoExposure"
                   class="pt-2"
-                  name="Auto exposure"
-                  tooltip="Enables or Disables camera automatic adjustment for current lighting conditions".
-                  @input="handlePipelineData('cameraAutoExposure')"
+                  name="Auto Exposure"
+                  tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
+                  @input="e => handlePipelineUpdate('cameraAutoExposure', e)"
                 />
                 <CVslider
                   v-if="$store.getters.currentPipelineSettings.cameraRedGain !== -1"
@@ -362,6 +362,7 @@
 import CVselect from '../components/common/cv-select';
 import CVnumberinput from '../components/common/cv-number-input';
 import CVslider from '../components/common/cv-slider';
+import CVswitch from '../components/common/cv-switch';
 import CVimage from "../components/common/cv-image";
 import TooltippedLabel from "../components/common/cv-tooltipped-label";
 import jsPDF from "jspdf";
@@ -374,6 +375,7 @@ export default {
         CVselect,
         CVnumberinput,
         CVslider,
+        CVswitch,
         CVimage
     },
     data() {
