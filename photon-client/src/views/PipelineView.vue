@@ -58,7 +58,7 @@
               >
                 <div style="position: relative; width: 100%; height: 100%;">
                   <cv-image
-                    :id="idx === 0 ? 'normal-stream' : ''"
+                    :id="idx === 0 ? 'raw-stream' : 'processed-stream'"
                     ref="streams"
                     :address="$store.getters.streamAddress[idx]"
                     :disconnected="!$store.state.backendConnected"
@@ -464,6 +464,14 @@ export default {
             return (!this.$store.state.ntConnectionInfo.connected || this.$store.state.settings.networkSettings.runNTServer) && this.$store.state.settings.networkSettings.teamNumber > 0 && this.$store.state.backendConnected && !this.hideNTWarning;
           }
         },
+    },
+    mounted: function () {
+      const self = this;
+      this.streamer = require('../plugins/WebsocketVideoStream').default;
+      this.$nextTick(() => {
+        self.streamer.initVideoStream(1181, "raw-stream");
+        //self.streamer.initVideoStream(1182, "processed-stream");
+      });
     },
     created() {
         this.$store.state.connectedCallbacks.push(this.reloadStreams)

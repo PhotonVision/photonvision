@@ -5,8 +5,6 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import org.opencv.core.MatOfByte;
-
 import edu.wpi.first.math.Pair;
 import io.javalin.websocket.WsContext;
 
@@ -56,12 +54,12 @@ public class SocketVideoStreamManager {
     }
 
     // For a given user, return a list of ports and jpeg byte mats to transmit
-    public List<Pair<Integer, MatOfByte>> getSendFrames(WsContext user){
-        var retList = new ArrayList<Pair<Integer, MatOfByte>>();
+    public List<Pair<Integer, String>> getSendFrames(WsContext user){
+        var retList = new ArrayList<Pair<Integer, String>>();
 
         for (SocketVideoStream stream : streams.values()){
             if(stream.userIsSubscribed(user)){
-                retList.add(new Pair<Integer, MatOfByte>(stream.portID, stream.getJPEGBytes()));
+                retList.add(new Pair<Integer, String>(stream.portID, stream.getJPEGBase64EncodedStr()));
             }
         }
 
@@ -69,7 +67,7 @@ public class SocketVideoStreamManager {
     }
 
     // Causes all streams to "re-trigger" and recieve and convert their next mjpeg frame
-    // Only invoke this after all returned jpeg MatOfBytes have been used.
+    // Only invoke this after all returned jpeg Strings have been used.
     public void allStreamConvertNextFrame(){
         for (SocketVideoStream stream : streams.values()){
             stream.convertNextFrame();

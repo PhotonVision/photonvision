@@ -29,6 +29,7 @@ import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -83,51 +84,38 @@ public class CameraSocketHandler {
         try {
             JsonNode actualObj = mapper.readTree(messageStr);
 
-            for (var entry : actualObj) {
-                try {
-                    var entryKey = entry.textValue();
-                    var entryValue = entry.elements();
-                    var socketMessageType = CameraSocketMessageType.fromEntryKey(entryKey);
+            try {
+                var entryCmd = actualObj.get("cmd").asText();
+                var socketMessageType = CameraSocketMessageType.fromEntryKey(entryCmd);
 
-                    logger.trace(
-                            () ->
-                                    "Got Camera WS message: ["
-                                            + socketMessageType
-                                            + "] ==> ["
-                                            + entryKey
-                                            + "], ["
-                                            + entryValue
-                                            + "]");
+                logger.trace(
+                        () ->
+                                "Got Camera WS message: ["
+                                        + socketMessageType
+                                        + "]");
 
-                    if (socketMessageType == null) {
-                        logger.warn("Got unknown socket message type: " + entryKey);
-                        continue;
-                    }
-
-                    switch (socketMessageType) {
-                        case CSMT_SUBSCRIBE:
-                            {
-                                while(entryValue.hasNext()){
-                                    var portSpec = entryValue.next();
-                                    int portId = portSpec.get("port").asInt();
-                                    svsManager.addSubscription(context, portId);
-                                }
-                                break;
-                            }
-                        case CSMT_UNSUBSCRIBE:
-                            {
-                                while(entryValue.hasNext()){
-                                    var portSpec = entryValue.next();
-                                    int portId = portSpec.get("port").asInt();
-                                    svsManager.removeSubscription(context, portId);
-                                }
-                                break;
-                            }
-                    }
-                } catch (Exception e) {
-                    logger.error("Failed to parse message!", e);
+                if (socketMessageType == null) {
+                    logger.warn("Got unknown socket message command: " + entryCmd);
                 }
+
+                switch (socketMessageType) {
+                    case CSMT_SUBSCRIBE:
+                        {
+                            int portId = actualObj.get("port").asInt();
+                            svsManager.addSubscription(context, portId);
+                            break;
+                        }
+                    case CSMT_UNSUBSCRIBE:
+                        {
+                            int portId = actualObj.get("port").asInt();
+                            svsManager.removeSubscription(context, portId);
+                            break;
+                        }
+                }
+            } catch (Exception e) {
+                logger.error("Failed to parse message!", e);
             }
+            
         } catch (JsonProcessingException e) {
             logger.warn("Could not parse message \"" + messageStr + "\"");
             e.printStackTrace();
@@ -155,11 +143,12 @@ public class CameraSocketHandler {
                 var frameSendList = sendData.putArray("frameData");
                 for(var frame : frames){
                     var port = frame.getFirst();
-                    var bytes = frame.getSecond();
-                    if(bytes != null){
+                    var sendStr = frame.getSecond();
+                    if(sendStr != null){
                         ObjectNode frameData = mapper.createObjectNode();
                         frameData.put("port", port);
-                        frameData.put("data", bytes.toArray()); //todo actual encoding?
+
+                        frameData.put("data", sendStr); //todo actual encoding?
                         frameSendList.add(frameData);
                     }
                 }

@@ -1,8 +1,7 @@
 package org.photonvision.vision.videoStream;
 
+import java.util.Base64;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -37,7 +36,7 @@ public class SocketVideoStream implements Consumer<Frame> {
     @Override
     public void accept(Frame frame) {
         if (subscribedUsers.size() > 0){
-            if(jpegBytesLock.tryLock()){
+            if(jpegBytesLock.tryLock()){ //we assume frames are coming in frequently. Just skip this frame if we're locked doing something else.
                 try{
                     //Does a single-shot frame recieve and convert to JPEG for efficency
                     // Will not capture/convert again until convertNextFrame() is called
@@ -53,20 +52,23 @@ public class SocketVideoStream implements Consumer<Frame> {
         } 
     }
 
-    public MatOfByte getJPEGBytes(){
-        frameWasConsumed = true;
-        return jpegBytes;
+    public String getJPEGBase64EncodedStr(){
+        String sendStr = null;
+        jpegBytesLock.lock();
+        if(jpegBytes != null){
+            sendStr = Base64.getEncoder().encodeToString(jpegBytes.toArray());
+        }
+        jpegBytesLock.unlock();
+        return sendStr;
     }
 
     public void convertNextFrame(){
-        if(frameWasConsumed){
-            jpegBytesLock.lock();
-            if(jpegBytes != null){
-                jpegBytes.release();
-                jpegBytes = null;
-            }
-            jpegBytesLock.unlock();
+        jpegBytesLock.lock();
+        if(jpegBytes != null){
+            jpegBytes.release();
+            jpegBytes = null;
         }
+        jpegBytesLock.unlock();
     }
 
     public void subscribeUser(WsContext user){
