@@ -42,8 +42,8 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.PipelineType;
 
 @SuppressWarnings("rawtypes")
-public class SocketHandler {
-    private final Logger logger = new Logger(SocketHandler.class, LogGroup.WebServer);
+public class DataSocketHandler {
+    private final Logger logger = new Logger(DataSocketHandler.class, LogGroup.WebServer);
     private final List<WsContext> users = new CopyOnWriteArrayList<>();
     private final ObjectMapper objectMapper = new ObjectMapper(new MessagePackFactory());
     private final DataChangeService dcService = DataChangeService.getInstance();
@@ -54,14 +54,14 @@ public class SocketHandler {
     public static class UIMap extends HashMap<String, Object> {}
 
     private static class ThreadSafeSingleton {
-        private static final SocketHandler INSTANCE = new SocketHandler();
+        private static final DataSocketHandler INSTANCE = new DataSocketHandler();
     }
 
-    public static SocketHandler getInstance() {
-        return SocketHandler.ThreadSafeSingleton.INSTANCE;
+    public static DataSocketHandler getInstance() {
+        return DataSocketHandler.ThreadSafeSingleton.INSTANCE;
     }
 
-    private SocketHandler() {
+    private DataSocketHandler() {
         dcService.addSubscribers(
                 uiOutboundSubscriber,
                 new UIInboundSubscriber()); // Subscribe outgoing messages to the data change service
@@ -117,7 +117,7 @@ public class SocketHandler {
                 try {
                     var entryKey = entry.getKey();
                     var entryValue = entry.getValue();
-                    var socketMessageType = SocketMessageType.fromEntryKey(entryKey);
+                    var socketMessageType = DataSocketMessageType.fromEntryKey(entryKey);
 
                     logger.trace(
                             () ->

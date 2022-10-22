@@ -15,11 +15,12 @@ if (process.env.NODE_ENV === "production") {
     Vue.prototype.$address = location.hostname + ":5800";
 }
 
-const wsURL = '//' + Vue.prototype.$address + '/websocket';
+const wsDataURL = '//' + Vue.prototype.$address + '/websocket_data';
+const wsCamerasURL = '//' + Vue.prototype.$address + '/websocket_cameras';
 
 import VueNativeSock from 'vue-native-websocket';
 
-Vue.use(VueNativeSock, wsURL, {
+Vue.use(VueNativeSock, wsDataURL, {
     reconnection: true,
     reconnectionDelay: 100,
     connectManually: true,

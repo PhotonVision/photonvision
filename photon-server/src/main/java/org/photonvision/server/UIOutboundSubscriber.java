@@ -35,9 +35,9 @@ import org.photonvision.common.logging.Logger;
 class UIOutboundSubscriber extends DataChangeSubscriber {
     Logger logger = new Logger(UIOutboundSubscriber.class, LogGroup.WebServer);
 
-    private final SocketHandler socketHandler;
+    private final DataSocketHandler socketHandler;
 
-    public UIOutboundSubscriber(SocketHandler socketHandler) {
+    public UIOutboundSubscriber(DataSocketHandler socketHandler) {
         super(DataChangeSource.AllSources, Collections.singletonList(DataChangeDestination.DCD_UI));
         this.socketHandler = socketHandler;
     }
