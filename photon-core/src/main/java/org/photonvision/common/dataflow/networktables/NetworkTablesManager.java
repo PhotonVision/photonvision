@@ -38,6 +38,8 @@ public class NetworkTablesManager {
     private final String kRootTableName = "/photonvision";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
 
+    private boolean isRetryingConnection = false;
+
     private NetworkTablesManager() {
         ntInstance.addLogger(new NTLogger(), 0, 255); // to hide error messages
         TimedTaskManager.getInstance().addTask("NTManager", this::ntTick, 5000);
@@ -111,14 +113,16 @@ public class NetworkTablesManager {
     }
 
     private void setClientMode(int teamNumber) {
-        logger.info("Starting NT Client");
+        if(!isRetryingConnection) logger.info("Starting NT Client");
         ntInstance.stopServer();
 
         ntInstance.startClientTeam(teamNumber);
         ntInstance.startDSClient();
         if (ntInstance.isConnected()) {
             logger.info("[NetworkTablesManager] Connected to the robot!");
-        } else {
+            isRetryingConnection = false;
+        } else if(!isRetryingConnection) {
+            isRetryingConnection = true;
             logger.error(
                     "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
         }
