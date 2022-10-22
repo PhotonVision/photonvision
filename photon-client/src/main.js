@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 const wsDataURL = '//' + Vue.prototype.$address + '/websocket_data';
-const wsCamerasURL = '//' + Vue.prototype.$address + '/websocket_cameras';
+//const wsCamerasURL = '//' + Vue.prototype.$address + '/websocket_cameras';
 
 import VueNativeSock from 'vue-native-websocket';
 

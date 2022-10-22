@@ -438,7 +438,7 @@ public class ConfigManager {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
-                logger.error("Exception waiting for settings semaphor", e);
+                logger.error("Exception waiting for settings semaphore", e);
             }
         }
     }

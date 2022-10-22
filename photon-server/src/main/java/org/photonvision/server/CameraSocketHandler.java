@@ -18,22 +18,20 @@
 package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.msgpack.jackson.dataformat.MessagePackFactory;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.videoStream.SocketVideoStreamManager;
@@ -149,7 +147,25 @@ public class CameraSocketHandler {
         while (!Thread.currentThread().isInterrupted()) {
             
             for(var user : users){
+                ObjectMapper mapper = new ObjectMapper();
+
+                ObjectNode sendData = mapper.createObjectNode();
+                
                 var frames = svsManager.getSendFrames(user);
+                var frameSendList = sendData.putArray("frameData");
+                for(var frame : frames){
+                    var port = frame.getFirst();
+                    var bytes = frame.getSecond();
+                    if(bytes != null){
+                        ObjectNode frameData = mapper.createObjectNode();
+                        frameData.put("port", port);
+                        frameData.put("data", bytes.toArray()); //todo actual encoding?
+                        frameSendList.add(frameData);
+                    }
+                }
+                //TODO - string encoding needed??
+                user.send(sendData);
+
             }
 
             svsManager.allStreamConvertNextFrame();
@@ -157,7 +173,7 @@ public class CameraSocketHandler {
             try {
                 Thread.sleep(5);
             } catch (InterruptedException e) {
-                logger.error("Exception waiting for camera stream broadcast semaphor", e);
+                logger.error("Exception waiting for camera stream broadcast semaphore", e);
             }
         }
     }
