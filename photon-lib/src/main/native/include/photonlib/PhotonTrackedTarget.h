@@ -97,10 +97,16 @@ class PhotonTrackedTarget {
   double GetPoseAmbiguity() const { return poseAmbiguity; }
 
   /**
-   * Returns the pose of the target relative to the robot.
+   * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag space (X forward, Y left, Z up) with the lowest reprojection error. The ratio between this and the alternate target's reprojection error is the ambiguity, which is between 0 and 1.
    * @return The pose of the target relative to the robot.
    */
-  frc::Transform3d GetCameraToTarget() const { return cameraToTarget; }
+  frc::Transform3d GetBestCameraToTarget() const { return bestCameraToTarget; }
+
+  /**
+   * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
+   * space (X forward, Y left, Z up) with the highest reprojection error
+   */
+  frc::Transform3d GetAlternateCameraToTarget() const { return altCameraToTarget; }
 
   bool operator==(const PhotonTrackedTarget& other) const;
   bool operator!=(const PhotonTrackedTarget& other) const;
@@ -114,7 +120,8 @@ class PhotonTrackedTarget {
   double area = 0;
   double skew = 0;
   int fiducialId;
-  frc::Transform3d cameraToTarget;
+  frc::Transform3d bestCameraToTarget;
+  frc::Transform3d altCameraToTarget;
   double poseAmbiguity;
   wpi::SmallVector<std::pair<double, double>, 4> corners;
 };
