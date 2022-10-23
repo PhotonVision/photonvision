@@ -3,10 +3,11 @@
 export class WebsocketVideoStream{
 
 
-    constructor(drawDiv) {
+    constructor(drawDiv, streamPort) {
 
-        this.image = document.getElementById(drawDiv);
-        this.streamPort = null;
+        this.drawDiv = drawDiv;
+        this.image = document.getElementById(this.drawDiv);
+        this.streamPort = streamPort;
         this.serverAddr = "ws://" + window.location.host + "/websocket_cameras";
         this.setNoStream();
         this.ws_connect();
@@ -14,36 +15,46 @@ export class WebsocketVideoStream{
         this.imgDataTime = -1;
         requestAnimationFrame(()=>this.animationLoop());
         this.frameRxCount = 0;
+        this.noStream = true;
     }
 
     animationLoop(){
         var now = window.performance.now();
-        if(this.streamPort == null || this.imgData == null || (now - this.imgDataTime) > 1000){
-            this.image.setAttribute('src', require("../assets/noStream.jpg"));
+
+        if((now - this.imgDataTime) > 500 ){
+            //Handle websocket send timeouts by restarting?
+            this.stopStream();
+            this.startStream();
         } else {
-            this.image.setAttribute(
-                'src', `data:image/jpeg;base64,${this.imgData}`
-            );
+            if(this.streamPort == null || this.imgData == null || this.noStream){
+                this.image.setAttribute('src', require("../assets/noStream.jpg"));
+            } else {
+                this.image.setAttribute(
+                    'src', `data:image/jpeg;base64,${this.imgData}`
+                );
+            }
+    
         }
-        //console.log("Stream " + String(this.streamPort) + " RX: " + String(this.frameRxCount));
+
 
         requestAnimationFrame(()=>this.animationLoop());
-
     }
 
     setNoStream() {
-        this.setPort(null);
+        this.noStream = true;
     }
 
     startStream() {
-        if(this.serverConnectionActive == true && this.streamPort != null){
+        if(this.serverConnectionActive == true && this.streamPort > 0){
             this.ws.send(JSON.stringify({"cmd": "subscribe", "port":this.streamPort}));
+            this.noStream = false;
         }
     }
 
     stopStream() {
-        if(this.serverConnectionActive == true && this.streamPort != null){
+        if(this.serverConnectionActive == true && this.streamPort > 0){
             this.ws.send(JSON.stringify({"cmd": "unsubscribe", "port":this.streamPort}));
+            this.noStream = true;
         }
     }
 
@@ -58,6 +69,7 @@ export class WebsocketVideoStream{
         // Set the flag allowing general server communication
         this.serverConnectionActive = true;
         console.log("Connected!");
+        this.startStream();
     }
 
     ws_onClose(e) {
@@ -102,6 +114,10 @@ export class WebsocketVideoStream{
         this.ws.onclose = this.ws_onClose.bind(this);
         this.ws.onerror = this.ws_onError.bind(this);
         console.log("Connecting to server " + this.serverAddr);
+    }
+
+    ws_close(){
+        this.ws.close();
     }
 
 }

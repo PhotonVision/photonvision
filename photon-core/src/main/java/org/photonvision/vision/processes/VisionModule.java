@@ -40,7 +40,6 @@ import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.camera.ZeroCopyPicamSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
-import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
@@ -78,8 +77,8 @@ public class VisionModule {
     private long lastFrameConsumeMillis;
     protected TrackedTarget lastPipelineResultBestTarget;
 
-    MJPGFrameConsumer dashboardInputStreamer;
-    MJPGFrameConsumer dashboardOutputStreamer;
+    private int inputStreamPort  = -1;
+    private int outputStreamPort = -1;
 
     FileSaveFrameConsumer inputFrameSaver;
     FileSaveFrameConsumer outputFrameSaver;
@@ -171,8 +170,6 @@ public class VisionModule {
     }
 
     private void destroyStreams() {
-        dashboardInputStreamer.close();
-        dashboardOutputStreamer.close();
         SocketVideoStreamManager.getInstance().removeStream(inputVideoStreamer);
         SocketVideoStreamManager.getInstance().removeStream(outputVideoStreamer);
     }
@@ -180,15 +177,8 @@ public class VisionModule {
     private void createStreams() {
         var camStreamIdx = visionSource.getSettables().getConfiguration().streamIndex;
         // If idx = 0, we want (1181, 1182)
-        var inputStreamPort = 1181 + (camStreamIdx * 2);
-        var outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
-
-        dashboardOutputStreamer =
-                new MJPGFrameConsumer(
-                        visionSource.getSettables().getConfiguration().nickname + "-output", outputStreamPort);
-        dashboardInputStreamer =
-                new MJPGFrameConsumer(
-                        visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
+        this.inputStreamPort  = 1181 + (camStreamIdx * 2);
+        this.outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
 
         inputFrameSaver =
                 new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
@@ -196,11 +186,10 @@ public class VisionModule {
                 new FileSaveFrameConsumer(
                         visionSource.getSettables().getConfiguration().nickname, "output");
 
-        inputVideoStreamer = new SocketVideoStream(inputStreamPort);
-        outputVideoStreamer = new SocketVideoStream(outputStreamPort);
+        inputVideoStreamer = new SocketVideoStream(this.inputStreamPort);
+        outputVideoStreamer = new SocketVideoStream(this.outputStreamPort);
         SocketVideoStreamManager.getInstance().addStream(inputVideoStreamer);
         SocketVideoStreamManager.getInstance().addStream(outputVideoStreamer);
-
 
     }
 
@@ -211,21 +200,8 @@ public class VisionModule {
         fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
 
         rawResultConsumers.add((in, out, tgts) -> inputVideoStreamer.accept(in));
-        rawResultConsumers.add((in, out, tgts) -> outputVideoStreamer.accept(out));
+        fpsLimitedResultConsumers.add(result -> outputVideoStreamer.accept(result.outputFrame));
 
-        //fpsLimitedResultConsumers.add(
-        //        result -> {
-        //            if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
-        //                dashboardInputStreamer.accept(result.inputFrame);
-        //            else dashboardInputStreamer.disabledTick();
-        //        });
-        //fpsLimitedResultConsumers.add(
-        //        result -> {
-        //            if (this.pipelineManager.getCurrentPipelineSettings().outputShouldShow)
-        //                dashboardOutputStreamer.accept(result.outputFrame);
-        //            else dashboardOutputStreamer.disabledTick();
-        //            ;
-        //        });
     }
 
     private class StreamRunnable extends Thread {
@@ -532,8 +508,8 @@ public class VisionModule {
             temp.put(k, internalMap);
         }
         ret.videoFormatList = temp;
-        ret.outputStreamPort = dashboardOutputStreamer.getCurrentStreamPort();
-        ret.inputStreamPort = dashboardInputStreamer.getCurrentStreamPort();
+        ret.outputStreamPort = this.outputStreamPort;
+        ret.inputStreamPort = this.inputStreamPort;
 
         var calList = new ArrayList<HashMap<String, Object>>();
         for (var c : visionSource.getSettables().getConfiguration().calibrations) {

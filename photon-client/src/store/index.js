@@ -35,8 +35,8 @@ export default new Vuex.Store({
                 tiltDegrees: 0.0,
                 currentPipelineIndex: 0,
                 pipelineNicknames: ["Unknown"],
-                outputStreamPort: 1182,
-                inputStreamPort: 1181,
+                outputStreamPort: 0,
+                inputStreamPort: 0,
                 nickname: "Unknown",
                 videoFormatList: [
                     {
@@ -259,9 +259,6 @@ export default new Vuex.Store({
         streamAddress: state =>
             ["http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].inputStreamPort + "/stream.mjpg",
                 "http://" + location.hostname + ":" + state.cameraSettings[state.currentCameraIndex].outputStreamPort + "/stream.mjpg"],
-        streamPort: state =>
-                [state.cameraSettings[state.currentCameraIndex].inputStreamPort,
-                 state.cameraSettings[state.currentCameraIndex].outputStreamPort],
         currentPipelineResults: state => {
             return state.pipelineResults;
         },

@@ -60,8 +60,7 @@
                   <cv-image
                     :id="idx === 0 ? 'raw-stream' : 'processed-stream'"
                     ref="streams"
-                    :address="$store.getters.streamAddress[idx]"
-                    :port="$store.getters.streamPort[idx]"
+                    :idx=idx
                     :disconnected="!$store.state.backendConnected"
                     scale="100"
                     :max-height="$store.getters.isDriverMode ? '40vh' : '300px'"
@@ -86,7 +85,7 @@
           <v-card
             color="primary"
           >
-            <camera-and-pipeline-select @camera-name-changed="reloadStreams" />
+            <camera-and-pipeline-select />
           </v-card>
           <v-card
             :disabled="$store.getters.isDriverMode || $store.state.colorPicking"

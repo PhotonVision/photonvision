@@ -57,6 +57,7 @@ public class CameraSocketHandler {
 
     private CameraSocketHandler() {
         cameraBroadcastThread = new Thread(this::broadcastFramesTask);
+        cameraBroadcastThread.setPriority(2); //fairly low priority
         cameraBroadcastThread.start();
     }
 
@@ -133,7 +134,15 @@ public class CameraSocketHandler {
     private void broadcastFramesTask() {
         // Background camera image broadcasting thread
         while (!Thread.currentThread().isInterrupted()) {
-            
+
+            svsManager.allStreamConvertNextFrame();
+
+            try {
+                Thread.sleep(5);
+            } catch (InterruptedException e) {
+                logger.error("Exception waiting for camera stream broadcast semaphore", e);
+            }
+
             for(var user : users){
                 ObjectMapper mapper = new ObjectMapper();
 
@@ -148,22 +157,15 @@ public class CameraSocketHandler {
                         ObjectNode frameData = mapper.createObjectNode();
                         frameData.put("port", port);
 
-                        frameData.put("data", sendStr); //todo actual encoding?
+                        frameData.put("data", sendStr); 
                         frameSendList.add(frameData);
                     }
                 }
-                //TODO - string encoding needed??
+
                 user.send(sendData);
 
             }
 
-            svsManager.allStreamConvertNextFrame();
-
-            try {
-                Thread.sleep(20);
-            } catch (InterruptedException e) {
-                logger.error("Exception waiting for camera stream broadcast semaphore", e);
-            }
         }
     }
 }

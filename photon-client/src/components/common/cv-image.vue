@@ -13,7 +13,7 @@
     export default {
         name: "CvImage",
         // eslint-disable-next-line vue/require-prop-types
-        props: ['address', 'port', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightLg', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
+        props: ['idx', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightLg', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
         data() {
             return {
                 seed: 1.0,
@@ -46,10 +46,38 @@
                     return ret;
                 }
             },
+            port: {
+              get() {
+                if(this.idx == 0){
+                  return this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].inputStreamPort;
+                } else {
+                  return this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].outputStreamPort;
+                }
+              }
+            }
+        },
+        watch : {
+          port(newPort, oldPort){
+            newPort;
+            oldPort;
+            this.reload();
+          },
+          disconnected(newVal, oldVal){
+            oldVal;
+            if(newVal){
+              this.wsStream.stopStream();
+            } else {
+              this.wsStream.startStream();
+            }
+          }
         },
         mounted() {
-            var wsvs = require('../../plugins/WebsocketVideoStream');
-            this.wsStream = new wsvs.WebsocketVideoStream(this.id);
+          var wsvs = require('../../plugins/WebsocketVideoStream');
+          this.wsStream = new wsvs.WebsocketVideoStream(this.id, this.port);
+        },
+        unmounted() {
+          this.wsStream.stopStream();
+          this.wsStream.ws_close();
         },
         methods: {
             reload() {

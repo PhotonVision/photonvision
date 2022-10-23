@@ -292,8 +292,7 @@
         <template>
           <CVimage
             :id="cameras-cal"
-            :address="$store.getters.streamAddress[1]"
-            :port="$store.getters.streamPort[1]"
+            :idx=1
             :disconnected="!$store.state.backendConnected"
             scale="100"
             style="border-radius: 5px;"
