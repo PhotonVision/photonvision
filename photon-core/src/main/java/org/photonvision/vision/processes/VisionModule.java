@@ -77,7 +77,7 @@ public class VisionModule {
     private long lastFrameConsumeMillis;
     protected TrackedTarget lastPipelineResultBestTarget;
 
-    private int inputStreamPort  = -1;
+    private int inputStreamPort = -1;
     private int outputStreamPort = -1;
 
     FileSaveFrameConsumer inputFrameSaver;
@@ -177,7 +177,7 @@ public class VisionModule {
     private void createStreams() {
         var camStreamIdx = visionSource.getSettables().getConfiguration().streamIndex;
         // If idx = 0, we want (1181, 1182)
-        this.inputStreamPort  = 1181 + (camStreamIdx * 2);
+        this.inputStreamPort = 1181 + (camStreamIdx * 2);
         this.outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
 
         inputFrameSaver =
@@ -190,7 +190,6 @@ public class VisionModule {
         outputVideoStreamer = new SocketVideoStream(this.outputStreamPort);
         SocketVideoStreamManager.getInstance().addStream(inputVideoStreamer);
         SocketVideoStreamManager.getInstance().addStream(outputVideoStreamer);
-
     }
 
     private void recreateFpsLimitedResultConsumers() {
@@ -201,7 +200,6 @@ public class VisionModule {
 
         rawResultConsumers.add((in, out, tgts) -> inputVideoStreamer.accept(in));
         fpsLimitedResultConsumers.add(result -> outputVideoStreamer.accept(result.outputFrame));
-
     }
 
     private class StreamRunnable extends Thread {

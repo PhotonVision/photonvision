@@ -24,7 +24,6 @@ import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

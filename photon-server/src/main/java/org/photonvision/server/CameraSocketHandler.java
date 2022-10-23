@@ -21,15 +21,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import io.javalin.websocket.WsBinaryMessageContext;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsContext;
 import io.javalin.websocket.WsMessageContext;
-
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -44,7 +40,6 @@ public class CameraSocketHandler {
 
     private Thread cameraBroadcastThread;
 
-
     public static class UIMap extends HashMap<String, Object> {}
 
     private static class ThreadSafeSingleton {
@@ -57,7 +52,7 @@ public class CameraSocketHandler {
 
     private CameraSocketHandler() {
         cameraBroadcastThread = new Thread(this::broadcastFramesTask);
-        cameraBroadcastThread.setPriority(2); //fairly low priority
+        cameraBroadcastThread.setPriority(2); // fairly low priority
         cameraBroadcastThread.start();
     }
 
@@ -77,7 +72,7 @@ public class CameraSocketHandler {
         svsManager.removeAllSubscriptions(context);
         users.remove(context);
     }
-    
+
     @SuppressWarnings({"unchecked"})
     public void onMessage(WsMessageContext context) {
         var messageStr = context.message();
@@ -89,11 +84,7 @@ public class CameraSocketHandler {
                 var entryCmd = actualObj.get("cmd").asText();
                 var socketMessageType = CameraSocketMessageType.fromEntryKey(entryCmd);
 
-                logger.trace(
-                        () ->
-                                "Got Camera WS message: ["
-                                        + socketMessageType
-                                        + "]");
+                logger.trace(() -> "Got Camera WS message: [" + socketMessageType + "]");
 
                 if (socketMessageType == null) {
                     logger.warn("Got unknown socket message command: " + entryCmd);
@@ -116,15 +107,13 @@ public class CameraSocketHandler {
             } catch (Exception e) {
                 logger.error("Failed to parse message!", e);
             }
-            
+
         } catch (JsonProcessingException e) {
             logger.warn("Could not parse message \"" + messageStr + "\"");
             e.printStackTrace();
             return;
         }
-    
     }
-
 
     @SuppressWarnings({"unchecked"})
     public void onBinaryMessage(WsBinaryMessageContext context) {
@@ -143,29 +132,27 @@ public class CameraSocketHandler {
                 logger.error("Exception waiting for camera stream broadcast semaphore", e);
             }
 
-            for(var user : users){
+            for (var user : users) {
                 ObjectMapper mapper = new ObjectMapper();
 
                 ObjectNode sendData = mapper.createObjectNode();
-                
+
                 var frames = svsManager.getSendFrames(user);
                 var frameSendList = sendData.putArray("frameData");
-                for(var frame : frames){
+                for (var frame : frames) {
                     var port = frame.getFirst();
                     var sendStr = frame.getSecond();
-                    if(sendStr != null){
+                    if (sendStr != null) {
                         ObjectNode frameData = mapper.createObjectNode();
                         frameData.put("port", port);
 
-                        frameData.put("data", sendStr); 
+                        frameData.put("data", sendStr);
                         frameSendList.add(frameData);
                     }
                 }
 
                 user.send(sendData);
-
             }
-
         }
     }
 }

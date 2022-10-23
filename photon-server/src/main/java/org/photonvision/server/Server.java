@@ -61,7 +61,6 @@ public class Server {
                                                                     })));
                         });
 
-
         /*Web Socket Events for Data Exchage */
         var dsHandler = DataSocketHandler.getInstance();
         app.ws(
