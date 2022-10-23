@@ -44,6 +44,7 @@ public class PhotonCamera {
     final NetworkTableEntry versionEntry;
 
     private final String path;
+    private final String name;
 
     private static boolean VERSION_CHECK_ENABLED = true;
 
@@ -62,6 +63,7 @@ public class PhotonCamera {
      * @param cameraName The name of the camera, as seen in the UI.
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
+        name = cameraName;
         var mainTable = instance.getTable("photonvision");
         this.rootTable = mainTable.getSubTable(cameraName);
         path = rootTable.getPath();
@@ -205,12 +207,12 @@ public class PhotonCamera {
     }
 
     /**
-     * Returns the hostname of the camera.
+     * Returns the name of the camera.
      * This will return the same value that was given to the constructor as cameraName.
-     * @return The hostname of the camera.
+     * @return The name of the camera.
      */
     public String getName(){
-        return path.substring(path.lastIndexOf('/') + 1);
+        return name;
     }
 
     private void verifyVersion() {
