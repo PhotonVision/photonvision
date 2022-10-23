@@ -34,7 +34,6 @@ export class WebsocketVideoStream{
                     'src', `data:image/jpeg;base64,${this.imgData}`
                 );
             }
-    
         }
 
 
