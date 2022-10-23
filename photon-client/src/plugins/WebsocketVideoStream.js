@@ -21,10 +21,11 @@ export class WebsocketVideoStream{
     animationLoop(){
         var now = window.performance.now();
 
-        if((now - this.imgDataTime) > 500 ){
+        if((now - this.imgDataTime) > 2500 && this.imgData != null){
             //Handle websocket send timeouts by restarting?
             this.stopStream();
             this.startStream();
+            this.image.setAttribute('src', require("../assets/noStream.jpg"));
         } else {
             if(this.streamPort == null || this.imgData == null || this.noStream){
                 this.image.setAttribute('src', require("../assets/noStream.jpg"));
