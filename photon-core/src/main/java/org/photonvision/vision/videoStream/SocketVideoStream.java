@@ -44,7 +44,7 @@ public class SocketVideoStream implements Consumer<Frame> {
                     if(frame != null && !frame.image.getMat().empty() && jpegBytes == null) {
                         frameWasConsumed = false;
                         jpegBytes = new MatOfByte();
-                        Imgcodecs.imencode(".jpg", frame.image.getMat(), jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 25));
+                        Imgcodecs.imencode(".jpg", frame.image.getMat(), jpegBytes, new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 40));
                     } 
                 } finally {
                     jpegBytesLock.unlock();
