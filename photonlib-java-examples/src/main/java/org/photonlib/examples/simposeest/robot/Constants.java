@@ -99,7 +99,8 @@ public class Constants {
 
     public static final Pose3d kFarTargetPose =
             new Pose3d(
-                    new Translation3d(kFarTgtXPos, kFarTgtYPos, kFarTgtZPos), new Rotation3d(0.0, 0.0, 0.0));
+                    new Translation3d(kFarTgtXPos, kFarTgtYPos, kFarTgtZPos),
+                    new Rotation3d(0.0, 0.0, Units.degreesToRadians(180)));
 
     public static final SimVisionTarget kFarTarget =
             new SimVisionTarget(
