@@ -303,7 +303,7 @@ public class TrackedTarget implements Releasable {
         ret.put("qy", transform.getRotation().getQuaternion().getY());
         ret.put("qz", transform.getRotation().getQuaternion().getZ());
 
-        ret.put("angle_z", transform.getRotation().getZ() + Math.PI / 2.0);
+        ret.put("angle_z", transform.getRotation().getZ());
         return ret;
     }
 
