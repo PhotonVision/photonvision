@@ -27,14 +27,15 @@ import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class PhotonTrackedTarget {
-    public static final int PACK_SIZE_BYTES = Double.BYTES * (5 + 7 + 2 * 4 + 1);
+    public static final int PACK_SIZE_BYTES = Double.BYTES * (5 + 7 + 2 * 4 + 1 + 7);
 
     private double yaw;
     private double pitch;
     private double area;
     private double skew;
     private int fiducialId;
-    private Transform3d cameraToTarget = new Transform3d();
+    private Transform3d bestCameraToTarget = new Transform3d();
+    private Transform3d altCameraToTarget = new Transform3d();
     private double poseAmbiguity;
     private List<TargetCorner> targetCorners;
 
@@ -48,6 +49,7 @@ public class PhotonTrackedTarget {
             double skew,
             int id,
             Transform3d pose,
+            Transform3d altPose,
             double ambiguity,
             List<TargetCorner> corners) {
         assert corners.size() == 4;
@@ -56,7 +58,8 @@ public class PhotonTrackedTarget {
         this.area = area;
         this.skew = skew;
         this.fiducialId = id;
-        this.cameraToTarget = pose;
+        this.bestCameraToTarget = pose;
+        this.altCameraToTarget = altPose;
         this.targetCorners = corners;
         this.poseAmbiguity = ambiguity;
     }
@@ -100,10 +103,18 @@ public class PhotonTrackedTarget {
 
     /**
      * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
-     * space (X right, Y up, Z towards the camera/out of the wall)
+     * space (X forward, Y left, Z up) with the lowest reprojection error
      */
-    public Transform3d getCameraToTarget() {
-        return cameraToTarget;
+    public Transform3d getBestCameraToTarget() {
+        return bestCameraToTarget;
+    }
+
+    /**
+     * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
+     * space (X forward, Y left, Z up) with the highest reprojection error
+     */
+    public Transform3d getAlternateCameraToTarget() {
+        return altCameraToTarget;
     }
 
     @Override
@@ -114,13 +125,37 @@ public class PhotonTrackedTarget {
         return Double.compare(that.yaw, yaw) == 0
                 && Double.compare(that.pitch, pitch) == 0
                 && Double.compare(that.area, area) == 0
-                && Objects.equals(cameraToTarget, that.cameraToTarget)
+                && Objects.equals(bestCameraToTarget, that.bestCameraToTarget)
+                && Objects.equals(altCameraToTarget, that.altCameraToTarget)
                 && Objects.equals(targetCorners, that.targetCorners);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(yaw, pitch, area, cameraToTarget);
+        return Objects.hash(yaw, pitch, area, bestCameraToTarget, altCameraToTarget);
+    }
+
+    private static Transform3d decodeTransform(Packet packet) {
+        double x = packet.decodeDouble();
+        double y = packet.decodeDouble();
+        double z = packet.decodeDouble();
+        var translation = new Translation3d(x, y, z);
+        double w = packet.decodeDouble();
+        x = packet.decodeDouble();
+        y = packet.decodeDouble();
+        z = packet.decodeDouble();
+        var rotation = new Rotation3d(new Quaternion(w, x, y, z));
+        return new Transform3d(translation, rotation);
+    }
+
+    private static void encodeTransform(Packet packet, Transform3d transform) {
+        packet.encode(transform.getTranslation().getX());
+        packet.encode(transform.getTranslation().getY());
+        packet.encode(transform.getTranslation().getZ());
+        packet.encode(transform.getRotation().getQuaternion().getW());
+        packet.encode(transform.getRotation().getQuaternion().getX());
+        packet.encode(transform.getRotation().getQuaternion().getY());
+        packet.encode(transform.getRotation().getQuaternion().getZ());
     }
 
     /**
@@ -136,16 +171,9 @@ public class PhotonTrackedTarget {
         this.skew = packet.decodeDouble();
         this.fiducialId = packet.decodeInt();
 
-        double x = packet.decodeDouble();
-        double y = packet.decodeDouble();
-        double z = packet.decodeDouble();
-        var translation = new Translation3d(x, y, z);
-        double w = packet.decodeDouble();
-        x = packet.decodeDouble();
-        y = packet.decodeDouble();
-        z = packet.decodeDouble();
-        var rotation = new Rotation3d(new Quaternion(w, x, y, z));
-        this.cameraToTarget = new Transform3d(translation, rotation);
+        this.bestCameraToTarget = decodeTransform(packet);
+        this.altCameraToTarget = decodeTransform(packet);
+
         this.poseAmbiguity = packet.decodeDouble();
 
         this.targetCorners = new ArrayList<>(4);
@@ -170,13 +198,8 @@ public class PhotonTrackedTarget {
         packet.encode(area);
         packet.encode(skew);
         packet.encode(fiducialId);
-        packet.encode(cameraToTarget.getTranslation().getX());
-        packet.encode(cameraToTarget.getTranslation().getY());
-        packet.encode(cameraToTarget.getTranslation().getZ());
-        packet.encode(cameraToTarget.getRotation().getQuaternion().getW());
-        packet.encode(cameraToTarget.getRotation().getQuaternion().getX());
-        packet.encode(cameraToTarget.getRotation().getQuaternion().getY());
-        packet.encode(cameraToTarget.getRotation().getQuaternion().getZ());
+        encodeTransform(packet, bestCameraToTarget);
+        encodeTransform(packet, altCameraToTarget);
         packet.encode(poseAmbiguity);
 
         for (int i = 0; i < 4; i++) {
@@ -201,7 +224,7 @@ public class PhotonTrackedTarget {
                 + ", fiducialId="
                 + fiducialId
                 + ", cameraToTarget="
-                + cameraToTarget
+                + bestCameraToTarget
                 + ", targetCorners="
                 + targetCorners
                 + '}';

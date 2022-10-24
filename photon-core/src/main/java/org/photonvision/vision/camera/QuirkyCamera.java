@@ -29,6 +29,12 @@ public class QuirkyCamera {
                             0x5A3,
                             CameraQuirk.CompletelyBroken), // Chris's older generic "Logitec HD Webcam"
                     new QuirkyCamera(0x825, 0x46D, CameraQuirk.CompletelyBroken), // Logitec C270
+                    new QuirkyCamera(
+                            0x0bda,
+                            0x5510,
+                            CameraQuirk.CompletelyBroken), // A laptop internal camera someone found broken
+                    new QuirkyCamera(
+                            -1, -1, "Snap Camera", CameraQuirk.CompletelyBroken), // SnapCamera on Windows
                     new QuirkyCamera(0x2000, 0x1415, CameraQuirk.Gain, CameraQuirk.FPSCap100), // PS3Eye
                     new QuirkyCamera(
                             -1, -1, "mmal service 16.1", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
