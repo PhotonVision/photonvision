@@ -298,7 +298,7 @@ jobs:
       # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@v3
         with:
-          name: jar
+          name: jars
           path: photon-server/build/libs
       - uses: actions/upload-artifact@v3
         if: github.event_name != 'pull_request'
@@ -324,7 +324,7 @@ jobs:
       # This *should* pull in fat and pi-only jars
       - uses: actions/download-artifact@v2
         with:
-          name: jar
+          name: jars
 
       # And the image we made previously
       - uses: actions/download-artifact@v2
