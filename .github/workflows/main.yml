@@ -284,9 +284,6 @@ jobs:
           name: built-docs
           path: photon-server/src/main/resources/web/docs
 
-      - name: Describe tags
-        run: git describe --tags --match=v*
-
       # Build fat jar for both pi and everything
       - run: |
           chmod +x gradlew
