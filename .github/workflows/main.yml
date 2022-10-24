@@ -53,6 +53,8 @@ jobs:
       # Checkout code.
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # Fetch tags.
       - name: Fetch tags
@@ -133,6 +135,8 @@ jobs:
     steps:
       # Checkout code.
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # Install Java 11.
       - uses: actions/setup-java@v3
@@ -258,6 +262,8 @@ jobs:
     steps:
       # Checkout code.
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       # Install Java 11.
       - uses: actions/setup-java@v3
