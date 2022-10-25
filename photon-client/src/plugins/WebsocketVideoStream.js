@@ -25,14 +25,45 @@ export class WebsocketVideoStream{
             //Handle websocket send timeouts by restarting?
             this.stopStream();
             this.startStream();
-            this.image.setAttribute('src', require("../assets/noStream.jpg"));
+            this.image.src = require("../assets/noStream.jpg");
         } else {
             if(this.streamPort == null || this.noStream){
-                this.image.setAttribute('src', require("../assets/noStream.jpg"));
+                this.image.src = require("../assets/noStream.jpg");
             } else if (this.imgData != null) {
-                this.image.setAttribute(
-                    'src', `data:image/jpeg;base64,${this.imgData}`
-                );
+                //From https://stackoverflow.com/a/28498608
+                var a = new Uint8Array(this.imgData);
+                var nb = a.length;
+
+                //Confirm we have enough byes coming in
+                if (nb < 4){
+                    // Case - not enough bytes recieved
+                    this.image.src = require("../assets/noStream.jpg");
+                    return;
+                }
+
+                //Look up MIME type
+                var mime;
+                if (a[0] == 0x89 && a[1] == 0x50 && a[2] == 0x4E && a[3] == 0x47) {
+                    mime = 'image/png';
+                } else if (a[0] == 0xff && a[1] == 0xd8) {
+                    mime = 'image/jpeg';
+                } else if (a[0] == 0x47 && a[1] == 0x49 && a[2] == 0x46) {
+                    mime = 'image/gif';
+                } else {
+                    // Case - unknown mime type
+                    this.image.src = require("../assets/noStream.jpg");
+                    return;
+                }
+
+                // Convert bytes to base64 representation
+                var binary = "";
+                for (var i = 0; i < nb; i++)
+                    binary += String.fromCharCode(a[i]);
+                var base64 = window.btoa(binary);
+
+                //Update the image with the new mimetype and image
+                this.image.src = 'data:' + mime + ';base64,' + base64;
+                
             } else {
                 //Nothing, hold previous image while waiting for next frame
             }
@@ -96,8 +127,13 @@ export class WebsocketVideoStream{
     }
 
     ws_onMessage(e){
-        const msg = JSON.parse(e.data);
-        this.imgData = msg['data'];
+        if(typeof e.data === 'string'){
+            //string data from host
+            //TODO - anything to recieve info here? Maybe "avaialble streams?"
+        } else {
+            //binary data - a frame
+            this.imgData = new Uint8Array(e.data);
+        }
         this.imgDataTime = window.performance.now();
         this.frameRxCount++;
     }

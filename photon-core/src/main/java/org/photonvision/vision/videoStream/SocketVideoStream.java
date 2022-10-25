@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.videoStream;
 
+import java.nio.ByteBuffer;
 import java.util.Base64;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -61,7 +62,7 @@ public class SocketVideoStream implements Consumer<Frame> {
                                 ".jpg",
                                 frame.image.getMat(),
                                 jpegBytes,
-                                new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 40));
+                                new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 75));
                     }
                 } finally {
                     jpegBytesLock.unlock();
@@ -75,6 +76,16 @@ public class SocketVideoStream implements Consumer<Frame> {
         jpegBytesLock.lock();
         if (jpegBytes != null) {
             sendStr = Base64.getEncoder().encodeToString(jpegBytes.toArray());
+        }
+        jpegBytesLock.unlock();
+        return sendStr;
+    }
+
+    public ByteBuffer getJPEGByteBuffer() {
+        ByteBuffer sendStr = null;
+        jpegBytesLock.lock();
+        if (jpegBytes != null) {
+            sendStr = ByteBuffer.wrap(jpegBytes.toArray());
         }
         jpegBytesLock.unlock();
         return sendStr;

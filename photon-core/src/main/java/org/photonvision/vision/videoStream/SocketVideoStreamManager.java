@@ -18,12 +18,17 @@
 package org.photonvision.vision.videoStream;
 
 import io.javalin.websocket.WsContext;
+
+import java.nio.ByteBuffer;
 import java.util.Hashtable;
 import java.util.Map;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class SocketVideoStreamManager {
+
+    private static final int NO_STREAM_PORT = -1;
+
     private final Logger logger = new Logger(SocketVideoStreamManager.class, LogGroup.Camera);
 
     private Map<Integer, SocketVideoStream> streams = new Hashtable<Integer, SocketVideoStream>();
@@ -68,17 +73,17 @@ public class SocketVideoStreamManager {
         var port = userSubscriptions.get(user);
         if (port != null) {
             var stream = streams.get(port);
-            userSubscriptions.put(user, null);
+            userSubscriptions.put(user, NO_STREAM_PORT);
             stream.removeUser();
         }
     }
 
     // For a given user, return the jpeg bytes (or null) for the most recent frame
-    public String getSendFrame(WsContext user) {
+    public ByteBuffer getSendFrame(WsContext user) {
         var port = userSubscriptions.get(user);
-        if (port != null) {
+        if (port != null && port != NO_STREAM_PORT) {
             var stream = streams.get(port);
-            return stream.getJPEGBase64EncodedStr();
+            return stream.getJPEGByteBuffer();
         } else {
             return null;
         }

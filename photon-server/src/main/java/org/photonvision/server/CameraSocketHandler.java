@@ -125,20 +125,15 @@ public class CameraSocketHandler {
             svsManager.allStreamConvertNextFrame();
 
             try {
-                Thread.sleep(5);
+                Thread.sleep(1);
             } catch (InterruptedException e) {
                 logger.error("Exception waiting for camera stream broadcast semaphore", e);
             }
 
             for (var user : users) {
-                ObjectMapper mapper = new ObjectMapper();
-
-                ObjectNode sendData = mapper.createObjectNode();
-
-                var sendStr = svsManager.getSendFrame(user);
-                if (sendStr != null) {
-                    sendData.put("data", sendStr);
-                    user.send(sendData);
+                var sendBytes = svsManager.getSendFrame(user);
+                if (sendBytes != null) {
+                    user.send(sendBytes);
                 }
             }
         }
