@@ -26,6 +26,9 @@ import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
+
+import edu.wpi.first.cscore.MjpegServer;
 
 public class SocketVideoStream implements Consumer<Frame> {
     int portID = 0; // Align with cscore's port for unique identification of stream
@@ -40,10 +43,13 @@ public class SocketVideoStream implements Consumer<Frame> {
     // Synclock around manipulating the jpeg bytes from multiple threads
     Lock jpegBytesLock = new ReentrantLock();
 
+    MJPGFrameConsumer oldSchoolServer;
+
     private int userCount = 0;
 
     public SocketVideoStream(int portID) {
         this.portID = portID;
+        oldSchoolServer = new MJPGFrameConsumer("Port_" + Integer.toString(portID) + "_MJPEG_Server", portID);
     }
 
     @Override
@@ -69,6 +75,7 @@ public class SocketVideoStream implements Consumer<Frame> {
                 }
             }
         }
+        oldSchoolServer.accept(frame);
     }
 
     public String getJPEGBase64EncodedStr() {
