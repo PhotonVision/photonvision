@@ -25,7 +25,6 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class SocketVideoStreamManager {
-
     private static final int NO_STREAM_PORT = -1;
 
     private final Logger logger = new Logger(SocketVideoStreamManager.class, LogGroup.Camera);

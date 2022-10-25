@@ -63,7 +63,7 @@ export class WebsocketVideoStream{
 
                 //Update the image with the new mimetype and image
                 this.image.src = 'data:' + mime + ';base64,' + base64;
-               
+
             } else {
                 //Nothing, hold previous image while waiting for next frame
             }

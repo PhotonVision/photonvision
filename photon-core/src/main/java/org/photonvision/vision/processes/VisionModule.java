@@ -57,7 +57,6 @@ import org.photonvision.vision.videoStream.SocketVideoStreamManager;
  * provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
  */
 public class VisionModule {
-
     private final Logger logger;
     protected final PipelineManager pipelineManager;
     protected final VisionSource visionSource;
