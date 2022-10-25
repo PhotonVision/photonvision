@@ -5,7 +5,7 @@
     :style="styleObject"
     :src="src"
     alt=""
-    @click="e => $emit('click', e)"
+    @click="e => {this.openThinclientStream(e)}"
   >
 </template>
 
@@ -83,6 +83,11 @@
             reload() {
               console.log("Reloading " + this.id + " with port " + String(this.port));
               this.wsStream.setPort(this.port);
+            },
+            openThinclientStream(e){
+              e;
+              var URL = "/thinclient.html?port=" + String(this.port) + "&host=" + window.location.hostname;
+              window.open(URL, '_blank');
             }
         },
     }

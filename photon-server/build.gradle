@@ -43,9 +43,16 @@ task copyClientUIToResources(type: Copy) {
     into "${projectDir}/src/main/resources/web/"
 }
 
+task copyThinclientToResources(type: Copy) {
+    from "${projectDir}/../photon-thinclient/"
+    into "${projectDir}/src/main/resources/web/"
+}
+
+
 task buildAndCopyUI {}
 
 buildAndCopyUI.dependsOn copyClientUIToResources
+buildAndCopyUI.dependsOn copyThinclientToResources
 copyClientUIToResources.dependsOn runNpmOnClient
 copyClientUIToResources.shouldRunAfter runNpmOnClient
 

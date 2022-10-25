@@ -24,18 +24,18 @@
 </head>
 
 <body>
+    <hr>
+        <div class="imgbox">
+            <img id="streamImg" class="center-fit" src=''>
+        </div>
+    <hr>
+
     <form id="frm1">
-        Host <input type="text" id="host" value="photonvision.local:5800"><br>
+        Host <input type="text" id="host" value="photonvision.local"><br>
         Port <input type="text" id="port" value="1181"><br>
     </form>
 
     <button>Start Stream</button>
-
-    <hr>
-        <div class="imgbox">
-            <img id="streamImg" class="center-fit" src='noStream.jpg'>
-        </div>
-    <hr>
 
     <script type="module">
         class WebsocketVideoStream{
@@ -64,10 +64,10 @@
 
                     this.stopStream();
                     this.startStream();
-                    this.image.setAttribute('src', "./noStream.jpg");
+                    this.image.setAttribute('src', "./loading.gif");
                 } else {
                     if(this.streamPort == null || this.noStream){
-                        this.image.setAttribute('src', "../assets/noStream.jpg");
+                        this.image.setAttribute('src', "../loading.gif");
                     } else if (this.imgData != null) {
                         //From https://stackoverflow.com/a/28498608
                         var a = new Uint8Array(this.imgData);
@@ -76,7 +76,7 @@
                         //Confirm we have enough byes coming in
                         if (nb < 4){
                             // Case - not enough bytes recieved
-                            this.image.src = "../assets/noStream.jpg";
+                            this.image.src = "../assets/loading.gif";
                             return;
                         }
 
@@ -90,7 +90,7 @@
                             mime = 'image/gif';
                         } else {
                             // Case - unknown mime type
-                            this.image.src = "../assets/noStream.jpg";
+                            this.image.src = "../assets/loading.gif";
                             return;
                         }
 
@@ -197,7 +197,7 @@
         var stream = null;
 
         function streamStartRequest() {
-            var host = document.getElementById("host").value;
+            var host = document.getElementById("host").value + ":5800";
             var port = document.getElementById("port").value;
             if(stream == null){
                 stream = new WebsocketVideoStream("streamImg",port,host);
@@ -208,7 +208,27 @@
 
         }
 
+        // Attach listener
         document.querySelector('button').addEventListener('click', streamStartRequest);
+
+        // Deal with URLParams, validating inputs
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const port_in = urlParams.get('port')
+        const host_in = urlParams.get('host')
+        if(port_in != ""){
+            document.getElementById("port").value = port_in;
+        } 
+
+        if(host_in != ""){
+            document.getElementById("host").value = host_in;
+        }
+
+        if(port_in != "" & host_in != ""){
+            streamStartRequest(); //we got valid inputs, auto-start the stream
+        }
+
+
     </script>
 
 </body>
