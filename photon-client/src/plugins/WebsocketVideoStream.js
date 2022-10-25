@@ -9,13 +9,15 @@ export class WebsocketVideoStream{
         this.image = document.getElementById(this.drawDiv);
         this.streamPort = streamPort;
         this.serverAddr = "ws://" + window.location.host + "/websocket_cameras";
+        this.noStream = false;
+        this.noStreamPrev = false;
         this.setNoStream();
         this.ws_connect();
         this.imgData = null;
         this.imgDataTime = -1;
         requestAnimationFrame(()=>this.animationLoop());
         this.frameRxCount = 0;
-        this.noStream = true;
+
     }
 
     animationLoop(){
@@ -23,12 +25,12 @@ export class WebsocketVideoStream{
 
         if((now - this.imgDataTime) > 2500 && this.imgData != null){
             //Handle websocket send timeouts by restarting?
+            this.setNoStream();
             this.stopStream();
-            this.startStream();
-            this.image.src = require("../assets/noStream.jpg");
+            setTimeout(this.startStream.bind(this), 1000); //restart stream one second later
         } else {
-            if(this.streamPort == null || this.noStream){
-                this.image.src = require("../assets/noStream.jpg");
+            if(this.streamPort == null){
+                this.setNoStream();
             } else if (this.imgData != null) {
                 //From https://stackoverflow.com/a/28498608
                 var a = new Uint8Array(this.imgData);
@@ -37,7 +39,6 @@ export class WebsocketVideoStream{
                 //Confirm we have enough byes coming in
                 if (nb < 4){
                     // Case - not enough bytes recieved
-                    this.image.src = require("../assets/noStream.jpg");
                     return;
                 }
 
@@ -51,7 +52,7 @@ export class WebsocketVideoStream{
                     mime = 'image/gif';
                 } else {
                     // Case - unknown mime type
-                    this.image.src = require("../assets/noStream.jpg");
+                    this.setNoStream();
                     return;
                 }
 
@@ -63,6 +64,7 @@ export class WebsocketVideoStream{
 
                 //Update the image with the new mimetype and image
                 this.image.src = 'data:' + mime + ';base64,' + base64;
+                this.noStream = false;
 
             } else {
                 //Nothing, hold previous image while waiting for next frame
@@ -74,7 +76,12 @@ export class WebsocketVideoStream{
     }
 
     setNoStream() {
+        this.noStreamPrev = this.noStream;
         this.noStream = true;
+        if(this.noStreamPrev == false && this.noStream == true){
+            //One-shot background change to preserve animation
+            this.image.src = require("../assets/loading.gif");
+        }
     }
 
     startStream() {
