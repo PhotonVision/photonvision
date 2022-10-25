@@ -13,6 +13,7 @@ modifiableFileExclude {
   \.jpg$
   \.jpeg$
   \.png$
+  \.gif$
   \.so$
   \.dll$
 }
