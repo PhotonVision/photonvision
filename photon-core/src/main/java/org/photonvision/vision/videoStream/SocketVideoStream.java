@@ -28,8 +28,6 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 
-import edu.wpi.first.cscore.MjpegServer;
-
 public class SocketVideoStream implements Consumer<Frame> {
     int portID = 0; // Align with cscore's port for unique identification of stream
     MatOfByte jpegBytes = null;
@@ -49,7 +47,8 @@ public class SocketVideoStream implements Consumer<Frame> {
 
     public SocketVideoStream(int portID) {
         this.portID = portID;
-        oldSchoolServer = new MJPGFrameConsumer("Port_" + Integer.toString(portID) + "_MJPEG_Server", portID);
+        oldSchoolServer =
+                new MJPGFrameConsumer("Port_" + Integer.toString(portID) + "_MJPEG_Server", portID);
     }
 
     @Override
