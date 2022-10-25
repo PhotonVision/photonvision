@@ -27,12 +27,14 @@ export class WebsocketVideoStream{
             this.startStream();
             this.image.setAttribute('src', require("../assets/noStream.jpg"));
         } else {
-            if(this.streamPort == null || this.imgData == null || this.noStream){
+            if(this.streamPort == null || this.noStream){
                 this.image.setAttribute('src', require("../assets/noStream.jpg"));
-            } else {
+            } else if (this.imgData != null) {
                 this.image.setAttribute(
                     'src', `data:image/jpeg;base64,${this.imgData}`
                 );
+            } else {
+                //Nothing, hold previous image while waiting for next frame
             }
         }
 
@@ -53,7 +55,7 @@ export class WebsocketVideoStream{
 
     stopStream() {
         if(this.serverConnectionActive == true && this.streamPort > 0){
-            this.ws.send(JSON.stringify({"cmd": "unsubscribe", "port":this.streamPort}));
+            this.ws.send(JSON.stringify({"cmd": "unsubscribe"}));
             this.noStream = true;
         }
     }
@@ -95,15 +97,9 @@ export class WebsocketVideoStream{
 
     ws_onMessage(e){
         const msg = JSON.parse(e.data);
-        var images = msg["frameData"];
-
-        for(var img of images){
-            if(img['port'] == this.streamPort){
-                this.imgData = img['data'];
-                this.imgDataTime = window.performance.now();
-                this.frameRxCount++;
-            }
-        }
+        this.imgData = msg['data'];
+        this.imgDataTime = window.performance.now();
+        this.frameRxCount++;
     }
 
     ws_connect() {

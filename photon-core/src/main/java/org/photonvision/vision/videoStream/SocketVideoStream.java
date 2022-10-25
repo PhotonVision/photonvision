@@ -17,10 +17,7 @@
 
 package org.photonvision.vision.videoStream;
 
-import io.javalin.websocket.WsContext;
 import java.util.Base64;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -42,7 +39,7 @@ public class SocketVideoStream implements Consumer<Frame> {
     // Synclock around manipulating the jpeg bytes from multiple threads
     Lock jpegBytesLock = new ReentrantLock();
 
-    Set<WsContext> subscribedUsers = new HashSet<WsContext>();
+    private int userCount = 0;
 
     public SocketVideoStream(int portID) {
         this.portID = portID;
@@ -50,7 +47,7 @@ public class SocketVideoStream implements Consumer<Frame> {
 
     @Override
     public void accept(Frame frame) {
-        if (subscribedUsers.size() > 0) {
+        if (userCount > 0) {
             if (jpegBytesLock
                     .tryLock()) { // we assume frames are coming in frequently. Just skip this frame if we're
                 // locked doing something else.
@@ -92,15 +89,11 @@ public class SocketVideoStream implements Consumer<Frame> {
         jpegBytesLock.unlock();
     }
 
-    public void subscribeUser(WsContext user) {
-        subscribedUsers.add(user);
+    public void addUser() {
+        userCount++;
     }
 
-    public void unsubscribeUser(WsContext user) {
-        subscribedUsers.remove(user);
-    }
-
-    public boolean userIsSubscribed(WsContext user) {
-        return subscribedUsers.contains(user);
+    public void removeUser() {
+        userCount--;
     }
 }

@@ -66,12 +66,14 @@
                     this.startStream();
                     this.image.setAttribute('src', "./noStream.jpg");
                 } else {
-                    if(this.streamPort == null || this.imgData == null || this.noStream){
-                        this.image.setAttribute('src', "./noStream.jpg");
-                    } else {
+                    if(this.streamPort == null || this.noStream){
+                        this.image.setAttribute('src', require("../assets/noStream.jpg"));
+                    } else if (this.imgData != null) {
                         this.image.setAttribute(
                             'src', `data:image/jpeg;base64,${this.imgData}`
                         );
+                    } else {
+                        //Nothing, hold previous image while waiting for next frame
                     }
                 }
 

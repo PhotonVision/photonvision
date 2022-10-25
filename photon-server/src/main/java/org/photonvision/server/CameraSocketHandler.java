@@ -69,7 +69,7 @@ public class CameraSocketHandler {
         var host = insa.getAddress().toString() + ":" + insa.getPort();
         var reason = context.reason() != null ? context.reason() : "Connection closed by client";
         logger.info("Closing camera websocket connection from " + host + " for reason: " + reason);
-        svsManager.removeAllSubscriptions(context);
+        svsManager.removeSubscription(context);
         users.remove(context);
     }
 
@@ -99,8 +99,7 @@ public class CameraSocketHandler {
                         }
                     case CSMT_UNSUBSCRIBE:
                         {
-                            int portId = actualObj.get("port").asInt();
-                            svsManager.removeSubscription(context, portId);
+                            svsManager.removeSubscription(context);
                             break;
                         }
                 }
@@ -136,21 +135,11 @@ public class CameraSocketHandler {
 
                 ObjectNode sendData = mapper.createObjectNode();
 
-                var frames = svsManager.getSendFrames(user);
-                var frameSendList = sendData.putArray("frameData");
-                for (var frame : frames) {
-                    var port = frame.getFirst();
-                    var sendStr = frame.getSecond();
-                    if (sendStr != null) {
-                        ObjectNode frameData = mapper.createObjectNode();
-                        frameData.put("port", port);
-
-                        frameData.put("data", sendStr);
-                        frameSendList.add(frameData);
-                    }
+                var sendStr = svsManager.getSendFrame(user);
+                if (sendStr != null) {
+                    sendData.put("data", sendStr);
+                    user.send(sendData);
                 }
-
-                user.send(sendData);
             }
         }
     }
