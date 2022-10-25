@@ -18,7 +18,6 @@
 package org.photonvision.vision.videoStream;
 
 import io.javalin.websocket.WsContext;
-
 import java.nio.ByteBuffer;
 import java.util.Hashtable;
 import java.util.Map;

@@ -563,7 +563,7 @@ public class VisionModule {
         }
     }
 
-    /** Consume stream/target results, no rate limiting applied*/
+    /** Consume stream/target results, no rate limiting applied */
     private void consumeResults(Frame inputFrame, Frame outputFrame, List<TrackedTarget> targets) {
         for (var c : streamResultConsumers) {
             c.accept(inputFrame, outputFrame, targets);
