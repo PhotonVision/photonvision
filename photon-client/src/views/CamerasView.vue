@@ -432,13 +432,11 @@ export default {
                 return filtered
             }
         },
-
         stringResolutionList: {
             get() {
                 return this.filteredResolutionList.map(res => `${res['width']} X ${res['height']}`);
             }
         },
-
         cameraSettings: {
             get() {
                 return this.$store.getters.currentCameraSettings;
@@ -447,7 +445,6 @@ export default {
                 this.$store.commit('cameraSettings', value);
             }
         },
-
         boardType: {
             get() {
                 return this.calibrationData.boardType
@@ -503,6 +500,17 @@ export default {
         isCalibrating: {
             get() {
                 return this.$store.getters.currentPipelineIndex === -2;
+            }
+        },
+        resolutionList: {
+            get() {
+                let temp_dict = {};
+                let videoFormatList = this.$store.getters.videoFormatList;
+                for(let i = 0; i < videoFormatList.length; i++) {
+                  let videoFormat = videoFormatList[i];
+                  temp_dict[videoFormat["width"]+" X "+videoFormat["height"]] = i;
+                }
+                return temp_dict;
             }
         },
         selectedFilteredResIndex: {
@@ -647,17 +655,15 @@ export default {
                 ['cameraIndex']: this.$store.state.currentCameraIndex
             };
 
-            this.$store.commit('currentPipelineIndex', -2);
             if (this.isCalibrating === true) {
                 data['takeCalibrationSnapshot'] = true
             } else {
                 const calData = this.calibrationData;
                 calData.isCalibrating = true;
                 data['startPnpCalibration'] = calData;
-
                 console.log("starting calibration with index " + calData.videoModeIndex);
             }
-
+            this.$store.commit('currentPipelineIndex', -2);
             this.$socket.send(this.$msgPack.encode(data));
         },
         sendCalibrationFinish() {
