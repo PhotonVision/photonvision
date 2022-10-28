@@ -118,22 +118,6 @@ public class Draw3dTargetsPipe
                             ColorHelper.colorToScalar(Color.green),
                             3);
                 }
-                for (int i = 0; i < bottomPoints.size(); i++) {
-                    Imgproc.line(
-                            in.getLeft(),
-                            bottomPoints.get(i),
-                            topPoints.get(i),
-                            ColorHelper.colorToScalar(Color.blue),
-                            3);
-                }
-                for (int i = 0; i < topPoints.size(); i++) {
-                    Imgproc.line(
-                            in.getLeft(),
-                            topPoints.get(i),
-                            topPoints.get((i + 1) % (bottomPoints.size())),
-                            ColorHelper.colorToScalar(Color.orange),
-                            3);
-                }
 
                 // Draw X, Y and Z axis
                 MatOfPoint3f pointMat = new MatOfPoint3f();
@@ -166,12 +150,6 @@ public class Draw3dTargetsPipe
                 Imgproc.line(
                         in.getLeft(),
                         axisPoints.get(0),
-                        axisPoints.get(1),
-                        ColorHelper.colorToScalar(Color.RED),
-                        3);
-                Imgproc.line(
-                        in.getLeft(),
-                        axisPoints.get(0),
                         axisPoints.get(2),
                         ColorHelper.colorToScalar(Color.GREEN),
                         3);
@@ -181,6 +159,29 @@ public class Draw3dTargetsPipe
                         axisPoints.get(3),
                         ColorHelper.colorToScalar(Color.BLUE),
                         3);
+                Imgproc.line(
+                        in.getLeft(),
+                        axisPoints.get(0),
+                        axisPoints.get(1),
+                        ColorHelper.colorToScalar(Color.RED),
+                        3);
+
+                for (int i = 0; i < bottomPoints.size(); i++) {
+                    Imgproc.line(
+                            in.getLeft(),
+                            bottomPoints.get(i),
+                            topPoints.get(i),
+                            ColorHelper.colorToScalar(Color.blue),
+                            3);
+                }
+                for (int i = 0; i < topPoints.size(); i++) {
+                    Imgproc.line(
+                            in.getLeft(),
+                            topPoints.get(i),
+                            topPoints.get((i + 1) % (bottomPoints.size())),
+                            ColorHelper.colorToScalar(Color.orange),
+                            3);
+                }
 
                 tempMat.release();
                 jac.release();
