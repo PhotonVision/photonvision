@@ -647,6 +647,7 @@ export default {
                 ['cameraIndex']: this.$store.state.currentCameraIndex
             };
 
+            this.$store.commit('currentPipelineIndex', -2);
             if (this.isCalibrating === true) {
                 data['takeCalibrationSnapshot'] = true
             } else {
