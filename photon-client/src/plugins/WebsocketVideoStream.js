@@ -15,6 +15,7 @@ export class WebsocketVideoStream{
         this.ws_connect();
         this.imgData = null;
         this.imgDataTime = -1;
+        this.imgObjURL = null;
         requestAnimationFrame(()=>this.animationLoop());
         this.frameRxCount = 0;
 
@@ -32,38 +33,14 @@ export class WebsocketVideoStream{
             if(this.streamPort == null){
                 this.setNoStream();
             } else if (this.imgData != null) {
-                //From https://stackoverflow.com/a/28498608
-                var a = new Uint8Array(this.imgData);
-                var nb = a.length;
-
-                //Confirm we have enough byes coming in
-                if (nb < 4){
-                    // Case - not enough bytes recieved
-                    return;
+                //From https://stackoverflow.com/questions/67507616/set-image-src-from-image-blob/67507685#67507685
+                if(this.imgObjURL != null){
+                    URL.revokeObjectURL(this.imgObjURL)
                 }
-
-                //Look up MIME type
-                var mime;
-                if (a[0] == 0x89 && a[1] == 0x50 && a[2] == 0x4E && a[3] == 0x47) {
-                    mime = 'image/png';
-                } else if (a[0] == 0xff && a[1] == 0xd8) {
-                    mime = 'image/jpeg';
-                } else if (a[0] == 0x47 && a[1] == 0x49 && a[2] == 0x46) {
-                    mime = 'image/gif';
-                } else {
-                    // Case - unknown mime type
-                    this.setNoStream();
-                    return;
-                }
-
-                // Convert bytes to base64 representation
-                var binary = "";
-                for (var i = 0; i < nb; i++)
-                    binary += String.fromCharCode(a[i]);
-                var base64 = window.btoa(binary);
+                this.imgObjURL = URL.createObjectURL(this.imgData);
 
                 //Update the image with the new mimetype and image
-                this.image.src = 'data:' + mime + ';base64,' + base64;
+                this.image.src = this.imgObjURL;
                 this.noStream = false;
 
             } else {
@@ -139,7 +116,7 @@ export class WebsocketVideoStream{
             //TODO - anything to recieve info here? Maybe "avaialble streams?"
         } else {
             //binary data - a frame
-            this.imgData = new Uint8Array(e.data);
+            this.imgData = e.data;
         }
         this.imgDataTime = window.performance.now();
         this.frameRxCount++;
@@ -147,7 +124,7 @@ export class WebsocketVideoStream{
 
     ws_connect() {
         this.ws = new WebSocket(this.serverAddr);
-        this.ws.binaryType = "arraybuffer";
+        this.ws.binaryType = "blob";
         this.ws.onopen = this.ws_onOpen.bind(this);
         this.ws.onmessage = this.ws_onMessage.bind(this);
         this.ws.onclose = this.ws_onClose.bind(this);
