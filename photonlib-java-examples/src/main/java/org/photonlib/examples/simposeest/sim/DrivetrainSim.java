@@ -85,7 +85,6 @@ public class DrivetrainSim {
     int camResolutionHeight = 480; // pixels
     double minTargetArea = 10; // square pixels
 
-
     SimVisionSystem simVision =
             new SimVisionSystem(
                     Constants.kCamName,

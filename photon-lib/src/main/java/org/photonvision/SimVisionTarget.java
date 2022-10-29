@@ -27,7 +27,7 @@ package org.photonvision;
 import edu.wpi.first.math.geometry.Pose3d;
 
 public class SimVisionTarget {
-    Pose3d targetPos;
+    Pose3d targetPose;
     double targetWidthMeters;
     double targetHeightMeters;
     double tgtAreaMeters2;
@@ -41,11 +41,8 @@ public class SimVisionTarget {
      * @param targetHeightMeters Pair Height of the outer bounding box of the target in meters.
      */
     public SimVisionTarget(
-            Pose3d targetPos,
-            double targetWidthMeters,
-            double targetHeightMeters,
-            int targetID) {
-        this.targetPos = targetPos;
+            Pose3d targetPos, double targetWidthMeters, double targetHeightMeters, int targetID) {
+        this.targetPose = targetPos;
         this.targetWidthMeters = targetWidthMeters;
         this.targetHeightMeters = targetHeightMeters;
         this.tgtAreaMeters2 = targetWidthMeters * targetHeightMeters;

@@ -103,6 +103,5 @@ public class Constants {
                     new Rotation3d(0.0, 0.0, Units.degreesToRadians(180)));
 
     public static final SimVisionTarget kFarTarget =
-            new SimVisionTarget(
-                    kFarTargetPose, targetWidth, targetHeight, 42);
+            new SimVisionTarget(kFarTargetPose, targetWidth, targetHeight, 42);
 }
