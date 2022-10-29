@@ -65,7 +65,12 @@ public class USBCameraSource extends VisionSource {
             disableAutoFocus();
 
             usbCameraSettables = new USBCameraSettables(config);
-            usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
+            if (usbCameraSettables.getAllVideoModes().isEmpty()) {
+                logger.info("Camera " + camera.getPath() + " has no video modes supported by PhotonVision");
+                usbFrameProvider = null;
+            } else {
+                usbFrameProvider = new USBFrameProvider(cvSink, usbCameraSettables);
+            }
         }
     }
 
