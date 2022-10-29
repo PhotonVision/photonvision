@@ -230,17 +230,20 @@ class SimVisionSystemTest {
     @ValueSource(doubles = {-10, -5, -0, -1, -2, 5, 7, 10.23, 20.21, -19.999})
     public void testCameraPitch(double testPitch) {
         final var targetPose =
-                new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, 3 * Math.PI / 4));
+                new Pose3d(new Translation3d(15.98, 0, 0), new Rotation3d(0, 0, 3 * Math.PI / 4));
         final var robotPose = new Pose2d(new Translation2d(10, 0), new Rotation2d(0));
         var sysUnderTest = new SimVisionSystem("Test", 120.0, new Transform3d(), 99999, 640, 480, 0);
         sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.5, 0.5, 23));
 
-        sysUnderTest.moveCamera(new Transform3d(new Translation3d(), new Rotation3d(0, Units.degreesToRadians(-testPitch), 0)));
+        //Here, passing in a positive testPitch points the camera downward (since moveCamera takes the camera->robot transform)
+        sysUnderTest.moveCamera(new Transform3d(new Translation3d(), new Rotation3d(0, Units.degreesToRadians(testPitch), 0)));
         sysUnderTest.processFrame(robotPose);
         var res = sysUnderTest.cam.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
 
+        //Since the camera is level with the target, a downward point will mean the target is in the upper half of the image
+        // which should produce positive pitch.
         assertEquals(testPitch, tgt.getPitch(), 0.0001);
     }
 
@@ -263,9 +266,7 @@ class SimVisionSystemTest {
                 Arguments.of(6, 55, 0),
                 Arguments.of(10, 54, 2.2),
                 Arguments.of(15, 53, 0),
-                Arguments.of(19.52, 15.98, 1.1),
-                Arguments.of(20, 51, 2.87),
-                Arguments.of(20, 55, 3));
+                Arguments.of(19.52, 15.98, 1.1));
     }
 
     @ParameterizedTest
@@ -277,13 +278,15 @@ class SimVisionSystemTest {
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI * 0.98));
         final var robotPose =
                 new Pose3d(new Translation3d(15.98 - Units.feetToMeters(testDist), 0, 0), new Rotation3d());
+        final var robotToCamera = new Transform3d(
+            new Translation3d(0, 0, Units.feetToMeters(testHeight)),
+            new Rotation3d(0, Units.degreesToRadians(testPitch), 0));
+
         var sysUnderTest =
                 new SimVisionSystem(
                         "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysohowsyourdaygoingihopegoodhaveagreatrestofyourlife!",
                         160.0,
-                        new Transform3d(
-                                new Translation3d(0, 0, Units.feetToMeters(testHeight)),
-                                new Rotation3d(0, -1.0 * Units.degreesToRadians(testPitch), 0)),
+                        robotToCamera.inverse(),
                         99999,
                         640,
                         480,
@@ -297,7 +300,7 @@ class SimVisionSystemTest {
         assertEquals(tgt.getYaw(), 0.0, 0.0001);
         double distMeas =
                 PhotonUtils.calculateDistanceToTargetMeters(
-                        Units.feetToMeters(testHeight),
+                        robotToCamera.getZ(),
                         targetPose.getZ(),
                         Units.degreesToRadians(testPitch),
                         Units.degreesToRadians(tgt.getPitch()));
