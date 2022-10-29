@@ -502,17 +502,6 @@ export default {
                 return this.$store.getters.currentPipelineIndex === -2;
             }
         },
-        resolutionList: {
-            get() {
-                let temp_dict = {};
-                let videoFormatList = this.$store.getters.videoFormatList;
-                for(let i = 0; i < videoFormatList.length; i++) {
-                  let videoFormat = videoFormatList[i];
-                  temp_dict[videoFormat["width"]+" X "+videoFormat["height"]] = i;
-                }
-                return temp_dict;
-            }
-        },
         selectedFilteredResIndex: {
             get() {
                 return this.filteredVideomodeIndex
@@ -658,6 +647,8 @@ export default {
             if (this.isCalibrating === true) {
                 data['takeCalibrationSnapshot'] = true
             } else {
+                // This store prevents an edge case of a user not selecting a different resolution, which causes the set logic to not be called
+                this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[this.selectedFilteredResIndex].index});
                 const calData = this.calibrationData;
                 calData.isCalibrating = true;
                 data['startPnpCalibration'] = calData;
