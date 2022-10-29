@@ -218,7 +218,7 @@ class SimVisionSystemTest {
         var sysUnderTest = new SimVisionSystem("Test", 80.0, new Transform3d(), 99999, 640, 480, 0);
         sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.5, 0.5, 3));
 
-        var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(-1.0*testYaw));
+        var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(-1.0 * testYaw));
         sysUnderTest.processFrame(robotPose);
         var res = sysUnderTest.cam.getLatestResult();
         assertTrue(res.hasTargets());
@@ -235,14 +235,18 @@ class SimVisionSystemTest {
         var sysUnderTest = new SimVisionSystem("Test", 120.0, new Transform3d(), 99999, 640, 480, 0);
         sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.5, 0.5, 23));
 
-        //Here, passing in a positive testPitch points the camera downward (since moveCamera takes the camera->robot transform)
-        sysUnderTest.moveCamera(new Transform3d(new Translation3d(), new Rotation3d(0, Units.degreesToRadians(testPitch), 0)));
+        // Here, passing in a positive testPitch points the camera downward (since moveCamera takes the
+        // camera->robot transform)
+        sysUnderTest.moveCamera(
+                new Transform3d(
+                        new Translation3d(), new Rotation3d(0, Units.degreesToRadians(testPitch), 0)));
         sysUnderTest.processFrame(robotPose);
         var res = sysUnderTest.cam.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
 
-        //Since the camera is level with the target, a downward point will mean the target is in the upper half of the image
+        // Since the camera is level with the target, a downward point will mean the target is in the
+        // upper half of the image
         // which should produce positive pitch.
         assertEquals(testPitch, tgt.getPitch(), 0.0001);
     }
@@ -278,9 +282,10 @@ class SimVisionSystemTest {
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, Math.PI * 0.98));
         final var robotPose =
                 new Pose3d(new Translation3d(15.98 - Units.feetToMeters(testDist), 0, 0), new Rotation3d());
-        final var robotToCamera = new Transform3d(
-            new Translation3d(0, 0, Units.feetToMeters(testHeight)),
-            new Rotation3d(0, Units.degreesToRadians(testPitch), 0));
+        final var robotToCamera =
+                new Transform3d(
+                        new Translation3d(0, 0, Units.feetToMeters(testHeight)),
+                        new Rotation3d(0, Units.degreesToRadians(testPitch), 0));
 
         var sysUnderTest =
                 new SimVisionSystem(
