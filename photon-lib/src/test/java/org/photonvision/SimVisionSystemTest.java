@@ -56,7 +56,7 @@ class SimVisionSystemTest {
                 () -> {
                     var sysUnderTest =
                             new SimVisionSystem("Test", 80.0, new Transform3d(), 99999, 320, 240, 0);
-                    sysUnderTest.addSimVisionTarget(new SimVisionTarget(new Pose3d(), 0.0, 1.0, 42));
+                    sysUnderTest.addSimVisionTarget(new SimVisionTarget(new Pose3d(), 1.0, 1.0, 42));
                     for (int loopIdx = 0; loopIdx < 100; loopIdx++) {
                         sysUnderTest.processFrame(new Pose2d());
                     }
@@ -216,9 +216,9 @@ class SimVisionSystemTest {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, 3 * Math.PI / 4));
         var sysUnderTest = new SimVisionSystem("Test", 80.0, new Transform3d(), 99999, 640, 480, 0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.0, 0.5, 3));
+        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.5, 0.5, 3));
 
-        var robotPose = new Pose2d(new Translation2d(14, 0), Rotation2d.fromDegrees(testYaw));
+        var robotPose = new Pose2d(new Translation2d(10, 0), Rotation2d.fromDegrees(-1.0*testYaw));
         sysUnderTest.processFrame(robotPose);
         var res = sysUnderTest.cam.getLatestResult();
         assertTrue(res.hasTargets());
@@ -231,19 +231,17 @@ class SimVisionSystemTest {
     public void testCameraPitch(double testPitch) {
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 1), new Rotation3d(0, 0, 3 * Math.PI / 4));
-        final var robotPose = new Pose2d(new Translation2d(12, 0), new Rotation2d(0));
-        var sysUnderTest = new SimVisionSystem("Test", 80.0, new Transform3d(), 99999, 640, 480, 0);
-        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.0, 0.5, 23));
+        final var robotPose = new Pose2d(new Translation2d(10, 0), new Rotation2d(0));
+        var sysUnderTest = new SimVisionSystem("Test", 120.0, new Transform3d(), 99999, 640, 480, 0);
+        sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.5, 0.5, 23));
 
-        sysUnderTest.moveCamera(new Transform3d(new Translation3d(), new Rotation3d(0, testPitch, 0)));
+        sysUnderTest.moveCamera(new Transform3d(new Translation3d(), new Rotation3d(0, Units.degreesToRadians(-testPitch), 0)));
         sysUnderTest.processFrame(robotPose);
         var res = sysUnderTest.cam.getLatestResult();
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
-        // If the camera is pitched down by 10 degrees, the target should appear
-        // in the upper part of the image (ie, pitch positive). Therefor,
-        // pass/fail involves -1.0.
-        assertEquals(tgt.getPitch(), -testPitch, 0.0001);
+
+        assertEquals(testPitch, tgt.getPitch(), 0.0001);
     }
 
     private static Stream<Arguments> distCalCParamProvider() {
