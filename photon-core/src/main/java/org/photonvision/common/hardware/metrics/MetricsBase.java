@@ -26,13 +26,22 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
 
 public abstract class MetricsBase {
-    private static final Logger logger = new Logger(MetricsBase.class, LogGroup.General);
+    static final Logger logger = new Logger(MetricsBase.class, LogGroup.General);
     // CPU
     public static String cpuMemoryCommand = "vcgencmd get_mem arm | grep -Eo '[0-9]+'";
     public static String cpuTemperatureCommand =
             "sed 's/.\\{3\\}$/.&/' <<< cat /sys/class/thermal/thermal_zone0/temp";
     public static String cpuUtilizationCommand =
             "top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'";
+
+    public static String cpuThrottleReasonCmd =
+            "if ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x01 )) != 0x00 )); then echo \"LOW VOLTAGE\"; "
+                    + "elif ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x08 )) != 0x00 )); then echo \"HIGH TEMP\"; "
+                    + "elif ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x10000 )) != 0x00 )); then echo \"Prev. Low Voltage\"; "
+                    + "elif ((  $(( $(vcgencmd get_throttled | grep -Eo 0x[0-9a-fA-F]*) & 0x80000 )) != 0x00 )); then echo \"Prev. High Temp\"; "
+                    + " else echo \"None\"; fi";
+
+    public static String cpuUptimeCommand = "uptime -p | cut -c 4-";
 
     // GPU
     public static String gpuMemoryCommand = "vcgencmd get_mem gpu | grep -Eo '[0-9]+'";
@@ -51,6 +60,8 @@ public abstract class MetricsBase {
         cpuMemoryCommand = config.cpuMemoryCommand;
         cpuTemperatureCommand = config.cpuTempCommand;
         cpuUtilizationCommand = config.cpuUtilCommand;
+        cpuThrottleReasonCmd = config.cpuThrottleReasonCmd;
+        cpuUptimeCommand = config.cpuUptimeCommand;
 
         gpuMemoryCommand = config.gpuMemoryCommand;
         gpuMemUsageCommand = config.gpuMemUsageCommand;
