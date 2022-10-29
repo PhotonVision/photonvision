@@ -66,6 +66,14 @@
     >
       Save
     </v-btn>
+    <v-snackbar
+      v-model="snack"
+      top
+      :color="snackbar.color"
+      timeout="5000"
+    >
+      <span>{{ snackbar.text }}</span>
+    </v-snackbar>
     <v-divider class="mt-4 mb-4" />
     <!-- TEMP - RIO finder is not currently enabled
     <v-row>
@@ -239,7 +247,7 @@ export default {
         },
         sendGeneralSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
-                function (response) {
+                response => {
                     if (response.status === 200) {
                         this.snackbar = {
                             color: "success",
@@ -248,7 +256,7 @@ export default {
                         this.snack = true;
                     }
                 },
-                function (error) {
+                error => {
                     this.snackbar = {
                         color: "error",
                         text: (error.response || {data: "Couldn't save settings"}).data
