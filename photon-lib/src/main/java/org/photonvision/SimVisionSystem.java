@@ -28,6 +28,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
@@ -143,12 +144,19 @@ public class SimVisionSystem {
                 (tgt) -> {
                     var camToTargetTrans = new Transform3d(cameraPos, tgt.targetPos);
 
+                    // Rough approximation of the alternate solution, which is (so far) always incorrect.
+                    var t = camToTargetTrans.getTranslation();
+                    var altTrans = new Translation3d(t.getX(), -1.0*t.getY(), t.getZ()); //mirrored across camera axis in Y direction
+                    var altRot = camToTargetTrans.getRotation().times(-1.0); //flipped
+                    var camToTargetTransAlt = new Transform3d(altTrans, altRot);
+
                     double distMeters = camToTargetTrans.getTranslation().getNorm();
 
                     double area_px = tgt.tgtAreaMeters2 / getM2PerPx(distMeters);
 
                     double yawDegrees = camToTargetTrans.getRotation().getZ(); //total guess again                    
                     double pitchDegrees = camToTargetTrans.getRotation().getY(); // Total guess
+
 
                     if (camCanSeeTarget(distMeters, yawDegrees, pitchDegrees, area_px)) {
                         // TODO simulate target corners
@@ -160,6 +168,7 @@ public class SimVisionSystem {
                                         0.0,
                                         tgt.targetID, 
                                         camToTargetTrans,
+                                        camToTargetTransAlt,
                                         0.0, //TODO - simulate ambiguity when straight on?
                                         List.of(
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0),

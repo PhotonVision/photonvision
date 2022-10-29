@@ -104,5 +104,5 @@ public class Constants {
 
     public static final SimVisionTarget kFarTarget =
             new SimVisionTarget(
-                    kFarTargetPose.toPose2d(), targetHeightAboveGround, targetWidth, targetHeight);
+                    kFarTargetPose, targetWidth, targetHeight, 42);
 }

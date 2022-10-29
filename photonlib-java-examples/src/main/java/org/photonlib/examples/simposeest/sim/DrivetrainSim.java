@@ -85,15 +85,12 @@ public class DrivetrainSim {
     int camResolutionHeight = 480; // pixels
     double minTargetArea = 10; // square pixels
 
+
     SimVisionSystem simVision =
             new SimVisionSystem(
                     Constants.kCamName,
                     camDiagFOV,
-                    camPitch,
-                    new Transform2d(
-                            Constants.kCameraToRobot.getTranslation().toTranslation2d(),
-                            Constants.kCameraToRobot.getRotation().toRotation2d()),
-                    camHeightOffGround,
+                    Constants.kCameraToRobot,
                     maxLEDRange,
                     camResolutionWidth,
                     camResolutionHeight,
