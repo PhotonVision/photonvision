@@ -87,8 +87,6 @@ public class Constants {
     // page 197
     public static final double targetHeight =
             Units.inchesToMeters(98.19) - Units.inchesToMeters(81.19); // meters
-    public static final double targetHeightAboveGround =
-            Units.inchesToMeters(81.19) + targetHeight / 2; // meters
 
     // See https://firstfrc.blob.core.windows.net/frc2020/PlayingField/LayoutandMarkingDiagram.pdf
     // pages 4 and 5
