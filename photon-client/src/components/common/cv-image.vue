@@ -73,7 +73,7 @@
         },
         mounted() {
           var wsvs = require('../../plugins/WebsocketVideoStream');
-          this.wsStream = new wsvs.WebsocketVideoStream(this.id, this.port);
+          this.wsStream = new wsvs.WebsocketVideoStream(this.id, this.port, window.location.host);
         },
         unmounted() {
           this.wsStream.stopStream();

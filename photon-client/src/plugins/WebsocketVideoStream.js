@@ -3,12 +3,12 @@
 export class WebsocketVideoStream{
 
 
-    constructor(drawDiv, streamPort) {
+    constructor(drawDiv, streamPort, host) {
 
         this.drawDiv = drawDiv;
         this.image = document.getElementById(this.drawDiv);
         this.streamPort = streamPort;
-        this.serverAddr = "ws://" + window.location.host + "/websocket_cameras";
+        this.serverAddr = "ws://" + host + "/websocket_cameras";
         this.noStream = false;
         this.noStreamPrev = false;
         this.setNoStream();
@@ -16,8 +16,9 @@ export class WebsocketVideoStream{
         this.imgData = null;
         this.imgDataTime = -1;
         this.imgObjURL = null;
-        requestAnimationFrame(()=>this.animationLoop());
         this.frameRxCount = 0;
+
+        requestAnimationFrame(()=>this.animationLoop());
 
     }
 
@@ -25,7 +26,7 @@ export class WebsocketVideoStream{
         var now = window.performance.now();
 
         if((now - this.imgDataTime) > 2500 && this.imgData != null){
-            //Handle websocket send timeouts by restarting?
+            //Handle websocket send timeouts by restarting
             this.setNoStream();
             this.stopStream();
             setTimeout(this.startStream.bind(this), 1000); //restart stream one second later
@@ -113,13 +114,18 @@ export class WebsocketVideoStream{
     ws_onMessage(e){
         if(typeof e.data === 'string'){
             //string data from host
-            //TODO - anything to recieve info here? Maybe "avaialble streams?"
+            //TODO - anything to receive info here? Maybe "available streams?"
         } else {
-            //binary data - a frame
-            this.imgData = e.data;
+            if(e.data.size > 0){
+                //binary data - a frame
+                this.imgData = e.data;
+                this.imgDataTime = window.performance.now();
+                this.frameRxCount++;
+            } else {
+                //TODO - server is sending empty frames?
+            }
         }
-        this.imgDataTime = window.performance.now();
-        this.frameRxCount++;
+
     }
 
     ws_connect() {
