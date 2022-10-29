@@ -70,7 +70,7 @@
       v-model="snack"
       top
       :color="snackbar.color"
-      timeout="0"
+      timeout="5000"
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
