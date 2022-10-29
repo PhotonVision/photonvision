@@ -35,6 +35,11 @@ public class QuirkyCamera {
                             CameraQuirk.CompletelyBroken), // A laptop internal camera someone found broken
                     new QuirkyCamera(
                             -1, -1, "Snap Camera", CameraQuirk.CompletelyBroken), // SnapCamera on Windows
+                    new QuirkyCamera(
+                            -1,
+                            -1,
+                            "FaceTime HD Camera",
+                            CameraQuirk.CompletelyBroken), // Mac Facetime Camera shared into Windows in Bootcamp
                     new QuirkyCamera(0x2000, 0x1415, CameraQuirk.Gain, CameraQuirk.FPSCap100), // PS3Eye
                     new QuirkyCamera(
                             -1, -1, "mmal service 16.1", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
