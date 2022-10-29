@@ -432,13 +432,11 @@ export default {
                 return filtered
             }
         },
-
         stringResolutionList: {
             get() {
                 return this.filteredResolutionList.map(res => `${res['width']} X ${res['height']}`);
             }
         },
-
         cameraSettings: {
             get() {
                 return this.$store.getters.currentCameraSettings;
@@ -447,7 +445,6 @@ export default {
                 this.$store.commit('cameraSettings', value);
             }
         },
-
         boardType: {
             get() {
                 return this.calibrationData.boardType
@@ -650,13 +647,14 @@ export default {
             if (this.isCalibrating === true) {
                 data['takeCalibrationSnapshot'] = true
             } else {
+                // This store prevents an edge case of a user not selecting a different resolution, which causes the set logic to not be called
+                this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[this.selectedFilteredResIndex].index});
                 const calData = this.calibrationData;
                 calData.isCalibrating = true;
                 data['startPnpCalibration'] = calData;
-
                 console.log("starting calibration with index " + calData.videoModeIndex);
             }
-
+            this.$store.commit('currentPipelineIndex', -2);
             this.$socket.send(this.$msgPack.encode(data));
         },
         sendCalibrationFinish() {
