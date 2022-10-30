@@ -46,7 +46,7 @@ public class CameraConfiguration {
     public String path = "";
 
     public CameraType cameraType = CameraType.UsbCamera;
-    public double FOV = 70;
+    public double FOV = 70; // field of view
     public final List<CameraCalibrationCoefficients> calibrations;
     public int currentPipelineIndex = 0;
 
