@@ -61,15 +61,24 @@ public class Server {
                                                                     })));
                         });
 
-        var socketHandler = SocketHandler.getInstance();
-
-        /*Web Socket Events */
+        /*Web Socket Events for Data Exchage */
+        var dsHandler = DataSocketHandler.getInstance();
         app.ws(
-                "/websocket",
+                "/websocket_data",
                 ws -> {
-                    ws.onConnect(socketHandler::onConnect);
-                    ws.onClose(socketHandler::onClose);
-                    ws.onBinaryMessage(socketHandler::onBinaryMessage);
+                    ws.onConnect(dsHandler::onConnect);
+                    ws.onClose(dsHandler::onClose);
+                    ws.onBinaryMessage(dsHandler::onBinaryMessage);
+                });
+        /*Web Socket Events for Camera Streaming */
+        var camDsHandler = CameraSocketHandler.getInstance();
+        app.ws(
+                "/websocket_cameras",
+                ws -> {
+                    ws.onConnect(camDsHandler::onConnect);
+                    ws.onClose(camDsHandler::onClose);
+                    ws.onBinaryMessage(camDsHandler::onBinaryMessage);
+                    ws.onMessage(camDsHandler::onMessage);
                 });
         /*API Events*/
         app.post("/api/settings/import", RequestHandler::onSettingUpload);
