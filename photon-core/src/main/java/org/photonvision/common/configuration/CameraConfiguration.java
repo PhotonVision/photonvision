@@ -72,6 +72,7 @@ public class CameraConfiguration {
         logger.debug(
                 "Creating USB camera configuration for "
                         + cameraType
+                        + " "
                         + baseName
                         + " (AKA "
                         + nickname
@@ -101,6 +102,7 @@ public class CameraConfiguration {
         logger.debug(
                 "Creating camera configuration for "
                         + cameraType
+                        + " "
                         + baseName
                         + " (AKA "
                         + nickname
