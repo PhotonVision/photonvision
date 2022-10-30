@@ -11,7 +11,7 @@ plugins {
 
 allprojects {
     repositories {
-        jcenter()
+        mavenCentral()
         maven { url = "https://maven.photonvision.org/repository/internal/" }
     }
     wpilibRepositories.addAllReleaseRepositories(it)
