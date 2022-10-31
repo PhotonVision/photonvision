@@ -30,6 +30,7 @@ backend/settings/
 *.nar
 *.ear
 *.zip
+*.xz
 *.tar.gz
 *.rar
 
