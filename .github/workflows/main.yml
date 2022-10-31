@@ -282,6 +282,9 @@ jobs:
           name: built-client
           path: photon-server/src/main/resources/web/
 
+      # Copy thinclient in as well
+      - run: cp -r photon-thinclient/* photon-server/src/main/resources/web/
+
       # Download docs artifact to resources folder.
       - uses: actions/download-artifact@v3
         with:
