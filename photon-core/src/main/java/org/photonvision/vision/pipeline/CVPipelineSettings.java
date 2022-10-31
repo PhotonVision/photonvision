@@ -107,4 +107,41 @@ public class CVPipelineSettings implements Cloneable {
             return null;
         }
     }
+
+    @Override
+    public String toString() {
+        return "CVPipelineSettings{"
+                + "pipelineIndex="
+                + pipelineIndex
+                + ", pipelineType="
+                + pipelineType
+                + ", inputImageFlipMode="
+                + inputImageFlipMode
+                + ", inputImageRotationMode="
+                + inputImageRotationMode
+                + ", pipelineNickname='"
+                + pipelineNickname
+                + '\''
+                + ", cameraExposure="
+                + cameraExposure
+                + ", cameraBrightness="
+                + cameraBrightness
+                + ", cameraGain="
+                + cameraGain
+                + ", cameraRedGain="
+                + cameraRedGain
+                + ", cameraBlueGain="
+                + cameraBlueGain
+                + ", cameraVideoModeIndex="
+                + cameraVideoModeIndex
+                + ", streamingFrameDivisor="
+                + streamingFrameDivisor
+                + ", ledMode="
+                + ledMode
+                + ", inputShouldShow="
+                + inputShouldShow
+                + ", outputShouldShow="
+                + outputShouldShow
+                + '}';
+    }
 }
