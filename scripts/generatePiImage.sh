@@ -7,7 +7,7 @@ curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v
 ls
 FILE_NAME=$(ls | grep image_*.xz)
 echo "Downloaded " $FILE_NAME
-xz -v --decompress $FILE_NAME
+xz -T0 -v --decompress $FILE_NAME
 IMAGE_FILE=$(ls | grep *.img)
 ls
 echo "Unziped image: " $IMAGE_FILE
@@ -23,5 +23,5 @@ sudo umount ${TMP}
 sudo rmdir ${TMP}
 NEW_IMAGE=$(basename "${NEW_JAR/jar/img}")
 mv $IMAGE_FILE $NEW_IMAGE
-xz -v -z $NEW_IMAGE
+xz -T0 -v -z $NEW_IMAGE
 mv $NEW_IMAGE.xz $(basename "${NEW_JAR/.jar/-image.zip}")
