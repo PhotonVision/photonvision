@@ -41,6 +41,8 @@ public class HardwareConfig {
     public final String cpuTempCommand;
     public final String cpuMemoryCommand;
     public final String cpuUtilCommand;
+    public final String cpuThrottleReasonCmd;
+    public final String cpuUptimeCommand;
     public final String gpuMemoryCommand;
     public final String ramUtilCommand;
     public final String gpuMemUsageCommand;
@@ -65,6 +67,8 @@ public class HardwareConfig {
         cpuTempCommand = "";
         cpuMemoryCommand = "";
         cpuUtilCommand = "";
+        cpuThrottleReasonCmd = "";
+        cpuUptimeCommand = "";
         gpuMemoryCommand = "";
         ramUtilCommand = "";
         ledBlinkCommand = "";
@@ -91,6 +95,8 @@ public class HardwareConfig {
             String cpuTempCommand,
             String cpuMemoryCommand,
             String cpuUtilCommand,
+            String cpuThrottleReasonCmd,
+            String cpuUptimeCommand,
             String gpuMemoryCommand,
             String ramUtilCommand,
             String gpuMemUsageCommand,
@@ -111,6 +117,8 @@ public class HardwareConfig {
         this.cpuTempCommand = cpuTempCommand;
         this.cpuMemoryCommand = cpuMemoryCommand;
         this.cpuUtilCommand = cpuUtilCommand;
+        this.cpuThrottleReasonCmd = cpuThrottleReasonCmd;
+        this.cpuUptimeCommand = cpuUptimeCommand;
         this.gpuMemoryCommand = gpuMemoryCommand;
         this.ramUtilCommand = ramUtilCommand;
         this.gpuMemUsageCommand = gpuMemUsageCommand;

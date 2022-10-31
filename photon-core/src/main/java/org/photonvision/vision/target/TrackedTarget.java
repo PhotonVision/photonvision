@@ -46,7 +46,8 @@ public class TrackedTarget implements Releasable {
     private double m_area;
     private double m_skew;
 
-    private Transform3d m_cameraToTarget3d = new Transform3d();
+    private Transform3d m_bestCameraToTarget3d = new Transform3d();
+    private Transform3d m_altCameraToTarget3d = new Transform3d();
 
     private CVShape m_shape;
 
@@ -74,15 +75,20 @@ public class TrackedTarget implements Releasable {
                 TargetCalculations.calculateYaw(
                         result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
         var bestPose = new Transform3d();
+        var altPose = new Transform3d();
         if (result.getError1() <= result.getError2()) {
             bestPose = result.getPoseResult1();
+            altPose = result.getPoseResult2();
         } else {
             bestPose = result.getPoseResult2();
+            altPose = result.getPoseResult1();
         }
 
         bestPose = MathUtils.convertApriltagtoOpenCV(bestPose);
+        altPose = MathUtils.convertApriltagtoOpenCV(altPose);
 
-        m_cameraToTarget3d = bestPose;
+        m_bestCameraToTarget3d = bestPose;
+        m_altCameraToTarget3d = altPose;
 
         double[] corners = result.getCorners();
         Point[] cornerPoints =
@@ -231,12 +237,20 @@ public class TrackedTarget implements Releasable {
         return !m_subContours.isEmpty();
     }
 
-    public Transform3d getCameraToTarget3d() {
-        return m_cameraToTarget3d;
+    public Transform3d getBestCameraToTarget3d() {
+        return m_bestCameraToTarget3d;
     }
 
-    public void setCameraToTarget3d(Transform3d pose) {
-        this.m_cameraToTarget3d = pose;
+    public Transform3d getAltCameraToTarget3d() {
+        return m_altCameraToTarget3d;
+    }
+
+    public void setBestCameraToTarget3d(Transform3d pose) {
+        this.m_bestCameraToTarget3d = pose;
+    }
+
+    public void setAltCameraToTarget3d(Transform3d pose) {
+        this.m_altCameraToTarget3d = pose;
     }
 
     public Mat getCameraRelativeTvec() {
@@ -272,8 +286,8 @@ public class TrackedTarget implements Releasable {
         ret.put("skew", getSkew());
         ret.put("area", getArea());
         ret.put("ambiguity", getPoseAmbiguity());
-        if (getCameraToTarget3d() != null) {
-            ret.put("pose", transformToMap(getCameraToTarget3d()));
+        if (getBestCameraToTarget3d() != null) {
+            ret.put("pose", transformToMap(getBestCameraToTarget3d()));
         }
         ret.put("fiducialId", getFiducialId());
         return ret;
@@ -289,7 +303,7 @@ public class TrackedTarget implements Releasable {
         ret.put("qy", transform.getRotation().getQuaternion().getY());
         ret.put("qz", transform.getRotation().getQuaternion().getZ());
 
-        ret.put("angle_z", transform.getRotation().getZ() + Math.PI / 2.0);
+        ret.put("angle_z", transform.getRotation().getZ());
         return ret;
     }
 

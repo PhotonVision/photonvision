@@ -58,16 +58,16 @@
               >
                 <div style="position: relative; width: 100%; height: 100%;">
                   <cv-image
-                    :id="idx === 0 ? 'normal-stream' : ''"
+                    :id="idx === 0 ? 'raw-stream' : 'processed-stream'"
                     ref="streams"
-                    :address="$store.getters.streamAddress[idx]"
+                    :idx=idx
                     :disconnected="!$store.state.backendConnected"
                     scale="100"
                     :max-height="$store.getters.isDriverMode ? '40vh' : '300px'"
                     :max-height-md="$store.getters.isDriverMode ? '50vh' : '380px'"
                     :max-height-lg="$store.getters.isDriverMode ? '55vh' : '390px'"
                     :max-height-xl="$store.getters.isDriverMode ? '60vh' : '450px'"
-                    :alt="'Stream' + idx"
+                    :alt="'Stream ' + idx"
                     :color-picking="$store.state.colorPicking && idx === 0"
                     @click="onImageClick"
                   />
@@ -85,7 +85,7 @@
           <v-card
             color="primary"
           >
-            <camera-and-pipeline-select @camera-name-changed="reloadStreams" />
+            <camera-and-pipeline-select />
           </v-card>
           <v-card
             :disabled="$store.getters.isDriverMode || $store.state.colorPicking"

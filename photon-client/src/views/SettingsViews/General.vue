@@ -49,25 +49,55 @@
           <th class="infoElem">
             Disk Usage
           </th>
+          <th class="infoElem">
+            <v-tooltip top>
+              <template v-slot:activator="{ on, attrs }">
+                <span
+                  v-bind="attrs"
+                  v-on="on"
+                >
+                ⓘ CPU Throttling
+                </span>
+              </template>
+              <span>
+                    Current or Previous Reason for the cpu being held back from maximum performance.
+              </span>
+            </v-tooltip>
+          </th>
+          <th class="infoElem">
+            CPU Uptime
+          </th>
         </tr>
         <tr v-if="metrics.cpuUtil !== 'N/A'">
           <td class="infoElem">
-            {{ metrics.cpuUtil.replace(" ", "") }}%
+            {{ metrics.cpuUtil }}%
           </td>
           <td class="infoElem">
             {{ parseInt(metrics.cpuTemp) }}&deg;&nbsp;C
           </td>
           <td class="infoElem">
-            {{ metrics.ramUtil.replace(" ", "") }}MB of {{ metrics.cpuMem }}MB
+            {{ metrics.ramUtil }}MB of {{ metrics.cpuMem }}MB
           </td>
           <td class="infoElem">
-            {{ metrics.gpuMemUtil.replace(" ", "") }}MB of {{ metrics.gpuMem }}MB
+            {{ metrics.gpuMemUtil }}MB of {{ metrics.gpuMem }}MB
           </td>
           <td class="infoElem">
-            {{ metrics.diskUtilPct.replace(" ", "") }}
+            {{ metrics.diskUtilPct }}
+          </td>
+          <td class="infoElem">
+            {{ metrics.cpuThr }}
+          </td>
+          <td class="infoElem">
+            {{ metrics.cpuUptime }}
           </td>
         </tr>
         <tr v-if="metrics.cpuUtil === 'N/A'">
+          <td class="infoElem">
+            ---
+          </td>
+          <td class="infoElem">
+            ---
+          </td>
           <td class="infoElem">
             ---
           </td>

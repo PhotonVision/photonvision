@@ -28,8 +28,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -86,15 +84,11 @@ public class DrivetrainPoseEstimator {
 
         var res = cam.getLatestResult();
         if (res.hasTargets()) {
-            double imageCaptureTime = Timer.getFPGATimestamp() - res.getLatencyMillis() / 1000.0;
-            Transform3d camToTargetTrans = res.getBestTarget().getCameraToTarget();
-            var transform =
-                    new Transform2d(
-                            camToTargetTrans.getTranslation().toTranslation2d(),
-                            camToTargetTrans.getRotation().toRotation2d());
-            Pose2d camPose = Constants.kFarTargetPose.transformBy(transform.inverse());
+            var imageCaptureTime = Timer.getFPGATimestamp() - res.getLatencyMillis() / 1000.0;
+            var camToTargetTrans = res.getBestTarget().getBestCameraToTarget();
+            var camPose = Constants.kFarTargetPose.transformBy(camToTargetTrans.inverse());
             m_poseEstimator.addVisionMeasurement(
-                    camPose.transformBy(Constants.kCameraToRobot), imageCaptureTime);
+                    camPose.transformBy(Constants.kCameraToRobot).toPose2d(), imageCaptureTime);
         }
     }
 

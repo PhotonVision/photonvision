@@ -1,13 +1,13 @@
 <template>
   <div>
     <CVslider
-      :disabled="cameraAutoExposure"
       v-model="cameraExposure"
+      :disabled="cameraAutoExposure"
       name="Exposure"
       min="0"
       max="100"
       step="0.1"
-      tooltip="Directly controls how much light is allowed to fall onto the sensor, which affects brightness"
+      tooltip="Directly controls how much light is allowed to fall onto the sensor, which affects apparent brightness"
       :slider-cols="largeBox"
       @input="handlePipelineData('cameraExposure')"
       @rollback="e => rollback('cameraExposure', e)"
@@ -25,7 +25,8 @@
     <CVswitch
       v-model="cameraAutoExposure"
       class="pt-2"
-      name="Auto exposure"
+      name="Auto Exposure"
+      tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
       @input="handlePipelineData('cameraAutoExposure')"
     />
     <CVslider

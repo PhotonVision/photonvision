@@ -40,4 +40,12 @@ public class CPUMetrics extends MetricsBase {
     public String getUtilization() {
         return execute(cpuUtilizationCommand);
     }
+
+    public String getUptime() {
+        return execute(cpuUptimeCommand);
+    }
+
+    public String getThrottleReason() {
+        return execute(cpuThrottleReasonCmd);
+    }
 }

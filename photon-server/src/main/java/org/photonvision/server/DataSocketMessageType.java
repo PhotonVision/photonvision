@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings("unused")
-public enum SocketMessageType {
+public enum DataSocketMessageType {
     SMT_DRIVERMODE("driverMode"),
     SMT_CHANGECAMERANAME("changeCameraName"),
     SMT_CHANGEPIPELINENAME("changePipelineName"),
@@ -40,19 +40,19 @@ public enum SocketMessageType {
 
     public final String entryKey;
 
-    SocketMessageType(String entryKey) {
+    DataSocketMessageType(String entryKey) {
         this.entryKey = entryKey;
     }
 
-    private static final Map<String, SocketMessageType> entryKeyToValueMap = new HashMap<>();
+    private static final Map<String, DataSocketMessageType> entryKeyToValueMap = new HashMap<>();
 
     static {
-        for (var value : EnumSet.allOf(SocketMessageType.class)) {
+        for (var value : EnumSet.allOf(DataSocketMessageType.class)) {
             entryKeyToValueMap.put(value.entryKey, value);
         }
     }
 
-    public static SocketMessageType fromEntryKey(String entryKey) {
+    public static DataSocketMessageType fromEntryKey(String entryKey) {
         return entryKeyToValueMap.get(entryKey);
     }
 }

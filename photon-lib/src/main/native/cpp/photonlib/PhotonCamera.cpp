@@ -25,11 +25,15 @@
 #include "photonlib/PhotonCamera.h"
 
 #include <frc/Errors.h>
+#include <frc/Timer.h>
 
 #include "PhotonVersion.h"
 #include "photonlib/Packet.h"
 
 namespace photonlib {
+
+constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
+
 PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
                            const std::string& cameraName)
     : mainTable(instance->GetTable("photonvision")),
@@ -48,7 +52,7 @@ PhotonCamera::PhotonCamera(const std::string& cameraName)
                        nt::NetworkTableInstance::GetDefault()),
                    cameraName) {}
 
-PhotonPipelineResult PhotonCamera::GetLatestResult() const {
+PhotonPipelineResult PhotonCamera::GetLatestResult() {
   // Prints warning if not connected
   VerifyVersion();
 
@@ -99,8 +103,13 @@ void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModeEntry.SetDouble(static_cast<double>(static_cast<int>(mode)));
 }
 
-void PhotonCamera::VerifyVersion() const {
+void PhotonCamera::VerifyVersion() {
   if (!PhotonCamera::VERSION_CHECK_ENABLED) return;
+
+  if ((frc::Timer::GetFPGATimestamp() - lastVersionCheckTime) <
+      VERSION_CHECK_INTERVAL)
+    return;
+  this->lastVersionCheckTime = frc::Timer::GetFPGATimestamp();
 
   const std::string& versionString = versionEntry.GetString("");
   if (versionString.empty()) {

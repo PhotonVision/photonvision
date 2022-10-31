@@ -5,7 +5,7 @@ function initColorPicker() {
     if (!canvas)
         canvas = document.createElement('canvas');
 
-    image = document.querySelector('#normal-stream');
+    image = document.querySelector('#raw-stream');
     if (image !== null) {
       canvas.width = image.width;
       canvas.height = image.height;

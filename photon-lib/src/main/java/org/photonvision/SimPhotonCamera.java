@@ -144,7 +144,7 @@ public class SimPhotonCamera extends PhotonCamera {
             targetAreaEntry.setDouble(bestTarget.getArea());
             targetSkewEntry.setDouble(bestTarget.getSkew());
 
-            var transform = bestTarget.getCameraToTarget();
+            var transform = bestTarget.getBestCameraToTarget();
             double[] poseData = {
                 transform.getX(), transform.getY(), transform.getRotation().toRotation2d().getDegrees()
             };

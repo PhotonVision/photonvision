@@ -194,10 +194,13 @@
               >
                 <CVslider
                   v-model="$store.getters.currentPipelineSettings.cameraExposure"
+                  :disabled="$store.getters.currentPipelineSettings.cameraAutoExposure"
                   name="Exposure"
                   :min="0"
                   :max="100"
                   slider-cols="8"
+                  step="0.1"
+                  tooltip="Directly controls how much light is allowed to fall onto the sensor, which affects apparent brightness"
                   @input="e => handlePipelineUpdate('cameraExposure', e)"
                 />
                 <CVslider
@@ -207,6 +210,13 @@
                   :max="100"
                   slider-cols="8"
                   @input="e => handlePipelineUpdate('cameraBrightness', e)"
+                />
+                <CVswitch
+                  v-model="$store.getters.currentPipelineSettings.cameraAutoExposure"
+                  class="pt-2"
+                  name="Auto Exposure"
+                  tooltip="Enables or Disables camera automatic adjustment for current lighting conditions"
+                  @input="e => handlePipelineUpdate('cameraAutoExposure', e)"
                 />
                 <CVslider
                   v-if="$store.getters.currentPipelineSettings.cameraRedGain !== -1"
@@ -281,7 +291,8 @@
       >
         <template>
           <CVimage
-            :address="$store.getters.streamAddress[1]"
+            :id="cameras-cal"
+            :idx=1
             :disconnected="!$store.state.backendConnected"
             scale="100"
             style="border-radius: 5px;"
@@ -352,6 +363,7 @@
 import CVselect from '../components/common/cv-select';
 import CVnumberinput from '../components/common/cv-number-input';
 import CVslider from '../components/common/cv-slider';
+import CVswitch from '../components/common/cv-switch';
 import CVimage from "../components/common/cv-image";
 import TooltippedLabel from "../components/common/cv-tooltipped-label";
 import jsPDF from "jspdf";
@@ -364,6 +376,7 @@ export default {
         CVselect,
         CVnumberinput,
         CVslider,
+        CVswitch,
         CVimage
     },
     data() {
@@ -420,13 +433,11 @@ export default {
                 return filtered
             }
         },
-
         stringResolutionList: {
             get() {
                 return this.filteredResolutionList.map(res => `${res['width']} X ${res['height']}`);
             }
         },
-
         cameraSettings: {
             get() {
                 return this.$store.getters.currentCameraSettings;
@@ -435,7 +446,6 @@ export default {
                 this.$store.commit('cameraSettings', value);
             }
         },
-
         boardType: {
             get() {
                 return this.calibrationData.boardType
@@ -638,13 +648,14 @@ export default {
             if (this.isCalibrating === true) {
                 data['takeCalibrationSnapshot'] = true
             } else {
+                // This store prevents an edge case of a user not selecting a different resolution, which causes the set logic to not be called
+                this.$store.commit('mutateCalibrationState', {['videoModeIndex']: this.filteredResolutionList[this.selectedFilteredResIndex].index});
                 const calData = this.calibrationData;
                 calData.isCalibrating = true;
                 data['startPnpCalibration'] = calData;
-
                 console.log("starting calibration with index " + calData.videoModeIndex);
             }
-
+            this.$store.commit('currentPipelineIndex', -2);
             this.$socket.send(this.$msgPack.encode(data));
         },
         sendCalibrationFinish() {

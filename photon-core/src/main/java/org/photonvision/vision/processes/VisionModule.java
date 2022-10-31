@@ -40,7 +40,6 @@ import org.photonvision.vision.camera.USBCameraSource;
 import org.photonvision.vision.camera.ZeroCopyPicamSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
-import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.OutputStreamPipeline;
 import org.photonvision.vision.pipeline.ReflectivePipelineSettings;
@@ -48,6 +47,8 @@ import org.photonvision.vision.pipeline.UICalibrationData;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
+import org.photonvision.vision.videoStream.SocketVideoStream;
+import org.photonvision.vision.videoStream.SocketVideoStreamManager;
 
 /**
  * This is the God Class
@@ -56,31 +57,30 @@ import org.photonvision.vision.target.TrackedTarget;
  * provide info on settings changes. VisionModuleManager holds a list of all current vision modules.
  */
 public class VisionModule {
-    private static final int streamFPSCap = 30;
-
     private final Logger logger;
     protected final PipelineManager pipelineManager;
     protected final VisionSource visionSource;
     private final VisionRunner visionRunner;
     private final StreamRunnable streamRunnable;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
-    private final LinkedList<CVPipelineResultConsumer> fpsLimitedResultConsumers = new LinkedList<>();
     // Raw result consumers run before any drawing has been done by the OutputStreamPipeline
-    private final LinkedList<TriConsumer<Frame, Frame, List<TrackedTarget>>> rawResultConsumers =
+    private final LinkedList<TriConsumer<Frame, Frame, List<TrackedTarget>>> streamResultConsumers =
             new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
     protected final int moduleIndex;
     protected final QuirkyCamera cameraQuirks;
 
-    private long lastFrameConsumeMillis;
     protected TrackedTarget lastPipelineResultBestTarget;
 
-    MJPGFrameConsumer dashboardInputStreamer;
-    MJPGFrameConsumer dashboardOutputStreamer;
+    private int inputStreamPort = -1;
+    private int outputStreamPort = -1;
 
     FileSaveFrameConsumer inputFrameSaver;
     FileSaveFrameConsumer outputFrameSaver;
+
+    SocketVideoStream inputVideoStreamer;
+    SocketVideoStream outputVideoStreamer;
 
     public VisionModule(PipelineManager pipelineManager, VisionSource visionSource, int index) {
         logger =
@@ -129,7 +129,7 @@ public class VisionModule {
 
         createStreams();
 
-        recreateFpsLimitedResultConsumers();
+        recreateStreamResultConsumers();
 
         ntConsumer =
                 new NTDataPublisher(
@@ -166,49 +166,33 @@ public class VisionModule {
     }
 
     private void destroyStreams() {
-        dashboardInputStreamer.close();
-        dashboardOutputStreamer.close();
+        SocketVideoStreamManager.getInstance().removeStream(inputVideoStreamer);
+        SocketVideoStreamManager.getInstance().removeStream(outputVideoStreamer);
     }
 
     private void createStreams() {
         var camStreamIdx = visionSource.getSettables().getConfiguration().streamIndex;
         // If idx = 0, we want (1181, 1182)
-        var inputStreamPort = 1181 + (camStreamIdx * 2);
-        var outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
-
-        dashboardOutputStreamer =
-                new MJPGFrameConsumer(
-                        visionSource.getSettables().getConfiguration().nickname + "-output", outputStreamPort);
-        dashboardInputStreamer =
-                new MJPGFrameConsumer(
-                        visionSource.getSettables().getConfiguration().uniqueName + "-input", inputStreamPort);
+        this.inputStreamPort = 1181 + (camStreamIdx * 2);
+        this.outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
 
         inputFrameSaver =
                 new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
         outputFrameSaver =
                 new FileSaveFrameConsumer(
                         visionSource.getSettables().getConfiguration().nickname, "output");
+
+        inputVideoStreamer = new SocketVideoStream(this.inputStreamPort);
+        outputVideoStreamer = new SocketVideoStream(this.outputStreamPort);
+        SocketVideoStreamManager.getInstance().addStream(inputVideoStreamer);
+        SocketVideoStreamManager.getInstance().addStream(outputVideoStreamer);
     }
 
-    private void recreateFpsLimitedResultConsumers() {
-        // Important! These must come before the stream result consumers because the stream result
-        // consumers release the frame
-        rawResultConsumers.add((in, out, tgts) -> inputFrameSaver.accept(in));
-        fpsLimitedResultConsumers.add(result -> outputFrameSaver.accept(result.outputFrame));
-
-        fpsLimitedResultConsumers.add(
-                result -> {
-                    if (this.pipelineManager.getCurrentPipelineSettings().inputShouldShow)
-                        dashboardInputStreamer.accept(result.inputFrame);
-                    else dashboardInputStreamer.disabledTick();
-                });
-        fpsLimitedResultConsumers.add(
-                result -> {
-                    if (this.pipelineManager.getCurrentPipelineSettings().outputShouldShow)
-                        dashboardOutputStreamer.accept(result.outputFrame);
-                    else dashboardInputStreamer.disabledTick();
-                    ;
-                });
+    private void recreateStreamResultConsumers() {
+        streamResultConsumers.add((in, out, tgts) -> inputFrameSaver.accept(in));
+        streamResultConsumers.add((in, out, tgts) -> outputFrameSaver.accept(out));
+        streamResultConsumers.add((in, out, tgts) -> inputVideoStreamer.accept(in));
+        streamResultConsumers.add((in, out, tgts) -> outputVideoStreamer.accept(out));
     }
 
     private class StreamRunnable extends Thread {
@@ -270,12 +254,11 @@ public class VisionModule {
                     this.shouldRun = false;
                 }
                 if (shouldRun) {
-                    consumeRawResults(inputFrame, outputFrame, targets);
                     try {
                         CVPipelineResult osr =
                                 outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
+                        consumeResults(inputFrame, osr.outputFrame, targets);
 
-                        consumeFpsLimitedResult(osr);
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
@@ -473,14 +456,14 @@ public class VisionModule {
         outputFrameSaver.updateCameraNickname(newName);
 
         // Rename streams
-        fpsLimitedResultConsumers.clear();
+        streamResultConsumers.clear();
 
         // Teardown and recreate streams
         destroyStreams();
         createStreams();
 
         // Rebuild streamers
-        recreateFpsLimitedResultConsumers();
+        recreateStreamResultConsumers();
 
         // Push new data to the UI
         saveAndBroadcastAll();
@@ -515,8 +498,8 @@ public class VisionModule {
             temp.put(k, internalMap);
         }
         ret.videoFormatList = temp;
-        ret.outputStreamPort = dashboardOutputStreamer.getCurrentStreamPort();
-        ret.inputStreamPort = dashboardInputStreamer.getCurrentStreamPort();
+        ret.outputStreamPort = this.outputStreamPort;
+        ret.inputStreamPort = this.inputStreamPort;
 
         var calList = new ArrayList<HashMap<String, Object>>();
         for (var c : visionSource.getSettables().getConfiguration().calibrations) {
@@ -566,7 +549,7 @@ public class VisionModule {
                     result.targets);
             // The streamRunnable manages releasing in this case
         } else {
-            consumeFpsLimitedResult(result);
+            consumeResults(result.inputFrame, result.outputFrame, result.targets);
 
             result.release();
             // In this case we don't bother with a separate streaming thread and we release
@@ -579,19 +562,9 @@ public class VisionModule {
         }
     }
 
-    private void consumeFpsLimitedResult(CVPipelineResult result) {
-        long dt = System.currentTimeMillis() - lastFrameConsumeMillis;
-        if (dt > 1000 / streamFPSCap) {
-            for (var c : fpsLimitedResultConsumers) {
-                c.accept(result);
-            }
-            lastFrameConsumeMillis = System.currentTimeMillis();
-        }
-    }
-
-    /** Consume results prior to drawing on them. */
-    private void consumeRawResults(Frame inputFrame, Frame outputFrame, List<TrackedTarget> targets) {
-        for (var c : rawResultConsumers) {
+    /** Consume stream/target results, no rate limiting applied */
+    private void consumeResults(Frame inputFrame, Frame outputFrame, List<TrackedTarget> targets) {
+        for (var c : streamResultConsumers) {
             c.accept(inputFrame, outputFrame, targets);
         }
     }
