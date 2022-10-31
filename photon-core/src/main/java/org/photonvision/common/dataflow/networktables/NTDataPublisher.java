@@ -26,6 +26,8 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.opencv.core.Point;
+import org.photonvision.common.logging.Logger;
+import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.targeting.PhotonPipelineResult;
@@ -36,6 +38,7 @@ import org.photonvision.vision.target.TrackedTarget;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
+    private final Logger logger = new Logger(NTDataPublisher.class, LogGroup.Data);
     private NetworkTable subTable;
     private NetworkTableEntry rawBytesEntry;
 
@@ -87,7 +90,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         }
 
         if (newIndex == originalIndex) {
-            // TODO: Log
+            logger.debug("Pipeline index is already " + newIndex);
             return;
         }
 
@@ -95,9 +98,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         var setIndex = pipelineIndexSupplier.get();
         if (newIndex != setIndex) { // set failed
             pipelineIndexEntry.forceSetNumber(setIndex);
-            // TODO: Log
+            logger.warn("Failed to set pipeline index to " + newIndex);
         }
-        // TODO: Log
+        logger.debug("Successfully set pipeline index to " + newIndex);
     }
 
     private void onDriverModeChange(EntryNotification entryNotification) {
@@ -105,12 +108,12 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         var originalDriverMode = driverModeSupplier.getAsBoolean();
 
         if (newDriverMode == originalDriverMode) {
-            // TODO: Log
+            logger.debug("Driver mode is already " + newDriverMode);
             return;
         }
 
         driverModeConsumer.accept(newDriverMode);
-        // TODO: Log
+        logger.debug("Successfully set driver mode to " + newDriverMode);
     }
 
     @SuppressWarnings("DuplicatedCode")
