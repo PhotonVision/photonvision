@@ -24,4 +24,4 @@ sudo rmdir ${TMP}
 NEW_IMAGE=$(basename "${NEW_JAR/jar/img}")
 mv $IMAGE_FILE $NEW_IMAGE
 xz -T0 -v -z $NEW_IMAGE
-mv $NEW_IMAGE.xz $(basename "${NEW_JAR/.jar/-image.zip}")
+mv $NEW_IMAGE.xz $(basename "${NEW_JAR/.jar/-image.xz}")

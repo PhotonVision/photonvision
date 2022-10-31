@@ -310,7 +310,7 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           name: image
-          path: photonvision*.zip
+          path: photonvision*.xz
 
       - uses: pyTooling/Actions/releaser@r0
         with:
@@ -319,7 +319,7 @@ jobs:
           rm: true
           files: |
             photon-server/build/libs/*.jar
-            photonvision*.zip
+            photonvision*.xz
         if: github.event_name == 'push'
 
   photon-release:
