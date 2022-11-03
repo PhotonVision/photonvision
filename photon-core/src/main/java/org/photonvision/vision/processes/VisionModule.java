@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.processes;
 
+import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.*;
@@ -388,8 +389,12 @@ public class VisionModule {
         }
 
         visionSource.getSettables().setExposure(pipelineSettings.cameraExposure);
-        visionSource.getSettables().setAutoExposure(pipelineSettings.cameraAutoExposure);
-
+        try {
+            visionSource.getSettables().setAutoExposure(pipelineSettings.cameraAutoExposure);
+        } catch (VideoException e) {
+            logger.error("Unable to set camera auto exposure!");
+            logger.error(e.toString());
+        }
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             // If the gain is disabled for some reason, re-enable it
             if (pipelineSettings.cameraGain == -1) pipelineSettings.cameraGain = 20;

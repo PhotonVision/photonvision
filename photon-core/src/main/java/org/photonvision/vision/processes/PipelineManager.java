@@ -181,17 +181,17 @@ public class PipelineManager {
             var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
             switch (desiredPipelineSettings.pipelineType) {
                 case Reflective:
-                    logger.debug("Creatig Reflective pipeline");
+                    logger.debug("Creating Reflective pipeline");
                     currentUserPipeline =
                             new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
                     break;
                 case ColoredShape:
-                    logger.debug("Creatig ColoredShape pipeline");
+                    logger.debug("Creating ColoredShape pipeline");
                     currentUserPipeline =
                             new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
                     break;
                 case AprilTag:
-                    logger.debug("Creatig AprilTag pipeline");
+                    logger.debug("Creating AprilTag pipeline");
                     currentUserPipeline =
                             new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
                     break;
