@@ -24,6 +24,9 @@
 
 package org.photonvision;
 
+import edu.wpi.first.hal.HAL;
+import edu.wpi.first.hal.FRCNetComm.tInstances;
+import edu.wpi.first.hal.FRCNetComm.tResourceType;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -45,6 +48,9 @@ public class PhotonCamera {
     final NetworkTableEntry versionEntry;
 
     private final String path;
+
+    private static final int PHOTON_RESOURCE_TYPE = 256;
+    private static int instance_counter = 0;
 
     private static boolean VERSION_CHECK_ENABLED = true;
     private static long VERSION_CHECK_INTERVAL = 1;
@@ -75,6 +81,8 @@ public class PhotonCamera {
         pipelineIndexEntry = rootTable.getEntry("pipelineIndex");
         ledModeEntry = mainTable.getEntry("ledMode");
         versionEntry = mainTable.getEntry("version");
+
+        HAL.report(PHOTON_RESOURCE_TYPE, instance_counter++);
     }
 
     /**
