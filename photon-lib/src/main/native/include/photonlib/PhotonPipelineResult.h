@@ -82,21 +82,24 @@ class PhotonPipelineResult {
   /**
    * Returns the estimated time the frame was taken,
    * This is much more accurate than using GetLatency()
-   * @return The timestamp in seconds or -1 if this result was not initiated with a timestamp.
+   * @return The timestamp in seconds or -1 if this result was not initiated
+   * with a timestamp.
    */
   units::second_t GetTimestamp() const { return timestamp; }
 
   /**
    * Sets the timestamp in seconds
    * @param timestamp The timestamp in seconds
-  */
-  void SetTimestamp(units::second_t ptimestamp) { this->timestamp = ptimestamp; }
+   */
+  void SetTimestamp(units::second_t ptimestamp) {
+    this->timestamp = ptimestamp;
+  }
 
   /**
    * Returns whether the pipeline has targets.
    * @return Whether the pipeline has targets.
    */
-  bool HasTargets() const { return targets.size() > 0;}
+  bool HasTargets() const { return targets.size() > 0; }
 
   /**
    * Returns a reference to the vector of targets.
