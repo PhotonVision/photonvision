@@ -11,9 +11,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class RobotPoseEstimator {
 
-    /**
-     *
-     *
+    /***
      * <ul>
      *   <li><strong>LOWEST_AMBIGUITY</strong>: Choose the Pose with the lowest ambiguity
      *   <li><strong>CLOSEST_TO_CAMERA_HEIGHT</strong>: Choose the Pose which is closest to the camera
@@ -63,32 +61,42 @@ public class RobotPoseEstimator {
         lastPose = new Pose3d();
     }
 
-    public Pose3d update() {
+    /**
+     * Update the estimated pose using the selected strategy.
+     *
+     * @return The updated estimated pose and the latency in milliseconds
+     */
+    public Pair<Pose3d, Double> update() {
         if (cameras.isEmpty()) {
             DriverStation.reportError("[RobotPoseEstimator] Missing any camera!", false);
-            return lastPose;
+            return Pair.of(lastPose, 0.);
         }
+        Pair<Pose3d, Double> pair;
         switch (strategy) {
             case LOWEST_AMBIGUITY:
-                lastPose = lowestAmbiguityStrategy();
-                return lastPose;
+                pair = lowestAmbiguityStrategy();
+                lastPose = pair.getFirst();
+                return pair;
             case CLOSEST_TO_CAMERA_HEIGHT:
-                lastPose = closestToCameraHeightStrategy();
-                return lastPose;
+                pair = closestToCameraHeightStrategy();
+                lastPose = pair.getFirst();
+                return pair;
             case CLOSEST_TO_REFERENCE_POSE:
-                lastPose = closestToReferencePoseStrategy();
-                return lastPose;
+                pair = closestToReferencePoseStrategy();
+                lastPose = pair.getFirst();
+                return pair;
             case CLOSEST_TO_LAST_POSE:
                 referencePose = lastPose;
-                lastPose = closestToReferencePoseStrategy();
-                return lastPose;
+                pair = closestToReferencePoseStrategy();
+                lastPose = pair.getFirst();
+                return pair;
             default:
                 DriverStation.reportError("[RobotPoseEstimator] Invalid pose strategy!", false);
-                return lastPose;
+                return Pair.of(lastPose, 0.);
         }
     }
 
-    private Pose3d lowestAmbiguityStrategy() {
+    private Pair<Pose3d, Double> lowestAmbiguityStrategy() {
         // Loop over each ambiguity of all the cameras
         int lowestAI = -1;
         int lowestAJ = -1;
@@ -107,7 +115,7 @@ public class RobotPoseEstimator {
 
         // No targets, return the last pose
         if (lowestAI == -1 || lowestAJ == -1) {
-            return lastPose;
+            return Pair.of(lastPose, 0.);
         }
 
         // Pick the lowest and do the heavy calculations
@@ -120,18 +128,21 @@ public class RobotPoseEstimator {
                     "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
                             + bestTarget.getFiducialId(),
                     false);
-            return lastPose;
+            return Pair.of(lastPose, 0.);
         }
 
-        return aprilTags
-                .get(bestTarget.getFiducialId())
-                .transformBy(bestTarget.getBestCameraToTarget().inverse())
-                .transformBy(cameras.get(lowestAI).getSecond().inverse());
+        return Pair.of(
+                aprilTags
+                        .get(bestTarget.getFiducialId())
+                        .transformBy(bestTarget.getBestCameraToTarget().inverse())
+                        .transformBy(cameras.get(lowestAI).getSecond().inverse()),
+                cameras.get(lowestAI).getFirst().getLatestResult().getLatencyMillis());
     }
 
-    private Pose3d closestToCameraHeightStrategy() {
+    private Pair<Pose3d, Double> closestToCameraHeightStrategy() {
         // Loop over each ambiguity of all the cameras
         double smallestHeightDifference = 10e9;
+        double mili = 0;
         Pose3d pose = lastPose;
 
         for (int i = 0; i < cameras.size(); i++) {
@@ -159,24 +170,27 @@ public class RobotPoseEstimator {
                 if (alternativeDifference < smallestHeightDifference) {
                     smallestHeightDifference = alternativeDifference;
                     pose = targetPose.transformBy(target.getAlternateCameraToTarget().inverse());
+                    mili = p.getFirst().getLatestResult().getLatencyMillis();
                 }
                 if (bestDifference < smallestHeightDifference) {
                     smallestHeightDifference = bestDifference;
                     pose = targetPose.transformBy(target.getBestCameraToTarget().inverse());
+                    mili = p.getFirst().getLatestResult().getLatencyMillis();
                 }
             }
         }
-        return pose;
+        return Pair.of(pose, mili);
     }
 
-    private Pose3d closestToReferencePoseStrategy() {
+    private Pair<Pose3d, Double> closestToReferencePoseStrategy() {
         if (referencePose == null) {
             DriverStation.reportError(
                     "[RobotPoseEstimator] Tried to use reference pose strategy without setting the reference!",
                     false);
-            return lastPose;
+            return Pair.of(lastPose, 0.);
         }
         double smallestDifference = 10e9;
+        double mili = 0;
         Pose3d pose = lastPose;
         for (int i = 0; i < cameras.size(); i++) {
             Pair<PhotonCamera, Transform3d> p = cameras.get(i);
@@ -205,14 +219,16 @@ public class RobotPoseEstimator {
                 if (alternativeDifference < smallestDifference) {
                     smallestDifference = alternativeDifference;
                     pose = targetPose.transformBy(target.getAlternateCameraToTarget().inverse());
+                    mili = p.getFirst().getLatestResult().getLatencyMillis();
                 }
                 if (bestDifference < smallestDifference) {
                     smallestDifference = bestDifference;
                     pose = targetPose.transformBy(target.getBestCameraToTarget().inverse());
+                    mili = p.getFirst().getLatestResult().getLatencyMillis();
                 }
             }
         }
-        return pose;
+        return Pair.of(pose, mili);
     }
 
     /**
