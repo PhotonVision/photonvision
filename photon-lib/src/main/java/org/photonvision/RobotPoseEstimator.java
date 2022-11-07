@@ -16,45 +16,51 @@ public class RobotPoseEstimator {
 
     /**
      * <ul>
-     * <li><strong>LOWEST_AMBIGUITY</strong>: Choose the Pose with the lowest ambiguity</li>
-     * <li><strong>CLOSEST_TO_CAMERA_HEIGHT</strong>: Choose the Pose which is closest to the camera height</li>
-     * <li><strong>CLOSEST_TO_REFERENCE_POSE</strong>: Choose the Pose which is closest to the pose from setReferencePose()</li>
+     * <li><strong>LOWEST_AMBIGUITY</strong>: Choose the Pose with the lowest
+     * ambiguity</li>
+     * <li><strong>CLOSEST_TO_CAMERA_HEIGHT</strong>: Choose the Pose which is
+     * closest to the camera height</li>
+     * <li><strong>CLOSEST_TO_REFERENCE_POSE</strong>: Choose the Pose which is
+     * closest to the pose from setReferencePose()</li>
      * </ul>
      */
     enum PoseStrategy {
         LOWEST_AMBIGUITY, // TODO: Test
-        CLOSEST_TO_CAMERA_HEIGHT, // TODO: Implement
-        CLOSEST_TO_REFERENCE_POSE // TODO: Implement
-    
+        CLOSEST_TO_CAMERA_HEIGHT, // TODO: Test
+        CLOSEST_TO_REFERENCE_POSE, // TODO: Implement
+        CLOSEST_TO_LAST_POSE, // TODO: Implement
     }
-    
-    
+
     private Map<Integer, Pose3d> aprilTags;
     private PoseStrategy strategy;
     private ArrayList<Pair<PhotonCamera, Transform3d>> cameras;
     private Pose3d lastPose;
-    
+
+    private Pose3d referencePose;
+
     /**
-     * Create a new RobotPoseEstimator. 
+     * Create a new RobotPoseEstimator.
      * <p>
-     * Example: 
-     *  <code>
+     * Example:
+     * <code>
      *  <p>
      *  Map<Integer, Pose3d> map = new HashMap<>();
      *  <p>
      *  map.put(1, new Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is at (1.0,2.0,3.0)
      *  </code>
      * 
-     * @param aprilTags A Map linking AprilTag IDs to Pose3ds with respect to the FIRST field.
-     * @param strategy The strategy it should use to determine the best pose.
-     * @param cameras An ArrayList of Pairs of PhotonCameras and their respective Transform3ds from the center of the robot to the cameras. 
+     * @param aprilTags A Map linking AprilTag IDs to Pose3ds with respect to the
+     *                  FIRST field.
+     * @param strategy  The strategy it should use to determine the best pose.
+     * @param cameras   An ArrayList of Pairs of PhotonCameras and their respective
+     *                  Transform3ds from the center of the robot to the cameras.
      */
-    public RobotPoseEstimator(Map<Integer, Pose3d> aprilTags, PoseStrategy strategy, ArrayList<Pair<PhotonCamera, Transform3d>> cameras) {
+    public RobotPoseEstimator(Map<Integer, Pose3d> aprilTags, PoseStrategy strategy,
+            ArrayList<Pair<PhotonCamera, Transform3d>> cameras) {
         this.aprilTags = aprilTags;
         this.strategy = strategy;
         this.cameras = cameras;
     }
-
 
     public Pose3d update() {
         if (cameras.isEmpty()) {
@@ -66,6 +72,9 @@ public class RobotPoseEstimator {
                 lastPose = lowestAmbiguityStrategy();
                 return lastPose;
             case CLOSEST_TO_CAMERA_HEIGHT:
+                lastPose = closestToCameraHeightStrategy();
+                return lastPose;
+            case CLOSEST_TO_REFERENCE_POSE:
 
                 return lastPose;
             default:
@@ -112,10 +121,46 @@ public class RobotPoseEstimator {
                 .transformBy(cameras.get(lowestAI).getSecond().inverse());
     }
 
+    private Pose3d closestToCameraHeightStrategy() {
+        // Loop over each ambiguity of all the cameras
+        double smallestHeightDifference = 10e9;
+        Pose3d pose = lastPose;
+
+        for (int i = 0; i < cameras.size(); i++) {
+            Pair<PhotonCamera, Transform3d> p = cameras.get(i);
+            List<PhotonTrackedTarget> targets = p.getFirst().getLatestResult().targets;
+            for (int j = 0; j < targets.size(); j++) {
+                PhotonTrackedTarget target = targets.get(j);
+                // If the map doesn't contain the ID fail
+                if (!aprilTags.containsKey(target.getFiducialId())) {
+                    DriverStation.reportWarning(
+                            "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                                    + target.getFiducialId(),
+                            false);
+                    continue;
+                }
+                Pose3d targetPose = aprilTags.get(target.getFiducialId());
+                double alternativeDifference = Math.abs(p.getSecond().getY()
+                        - targetPose.transformBy(target.getAlternateCameraToTarget().inverse()).getY());
+                double bestDifference = Math.abs(
+                        p.getSecond().getY() - targetPose.transformBy(target.getBestCameraToTarget().inverse()).getY());
+                if (alternativeDifference < smallestHeightDifference) {
+                    smallestHeightDifference = alternativeDifference;
+                    pose = targetPose.transformBy(target.getAlternateCameraToTarget().inverse());
+                }
+                if (bestDifference < smallestHeightDifference) {
+                    smallestHeightDifference = bestDifference;
+                    pose = targetPose.transformBy(target.getBestCameraToTarget().inverse());
+                }
+            }
+        }
+        return pose;
+    }
 
     /**
      * Difference is defined as the vector magnitude between the two poses
-     * @return The absolute "difference" (>=0) between two Pose3ds. 
+     * 
+     * @return The absolute "difference" (>=0) between two Pose3ds.
      */
     private double calculateDifference(Pose3d x, Pose3d y) {
         return x.getTranslation().getDistance(y.getTranslation());
@@ -135,5 +180,4 @@ public class RobotPoseEstimator {
         return aprilTags;
     }
 
-    
 }
