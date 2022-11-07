@@ -2,7 +2,9 @@ package org.photonvision;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,7 @@ public class RobotPoseEstimator {
         CLOSEST_TO_CAMERA_HEIGHT, // TODO: Test
         CLOSEST_TO_REFERENCE_POSE, // TODO: Test
         CLOSEST_TO_LAST_POSE, // TODO: Test
+        AVERAGE_BEST_TARGETS // TODO: Test
     }
 
     private Map<Integer, Pose3d> aprilTags;
@@ -40,11 +43,11 @@ public class RobotPoseEstimator {
      * Create a new RobotPoseEstimator.
      *
      * <p>Example: <code>
-     *  <p>
-     *  Map<Integer, Pose3d> map = new HashMap<>();
-     *  <p>
-     *  map.put(1, new Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is at (1.0,2.0,3.0)
-     *  </code>
+     * <p>
+     * Map<Integer, Pose3d> map = new HashMap<>();
+     * <p>
+     * map.put(1, new Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is at (1.0,2.0,3.0)
+     * </code>
      *
      * @param aprilTags A Map linking AprilTag IDs to Pose3ds with respect to the FIRST field.
      * @param strategy The strategy it should use to determine the best pose.
@@ -88,6 +91,10 @@ public class RobotPoseEstimator {
             case CLOSEST_TO_LAST_POSE:
                 referencePose = lastPose;
                 pair = closestToReferencePoseStrategy();
+                lastPose = pair.getFirst();
+                return pair;
+            case AVERAGE_BEST_TARGETS:
+                pair = averageBestTargetsStrategy();
                 lastPose = pair.getFirst();
                 return pair;
             default:
@@ -229,6 +236,53 @@ public class RobotPoseEstimator {
             }
         }
         return Pair.of(pose, mili);
+    }
+
+    /** Return the average of the best target poses using ambiguity as weight */
+    private Pair<Pose3d, Double> averageBestTargetsStrategy() {
+        //                  Pair of Double, Double = Ambiguity, Mili
+        List<Pair<Pose3d, Pair<Double, Double>>> tempPoses = new ArrayList<>();
+        double totalAmbiguity = 0;
+        for (int i = 0; i < cameras.size(); i++) {
+            Pair<PhotonCamera, Transform3d> p = cameras.get(i);
+            List<PhotonTrackedTarget> targets = p.getFirst().getLatestResult().targets;
+            for (int j = 0; j < targets.size(); j++) {
+                PhotonTrackedTarget target = targets.get(j);
+                // If the map doesn't contain the ID fail
+                if (!aprilTags.containsKey(target.getFiducialId())) {
+                    DriverStation.reportWarning(
+                            "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                                    + target.getFiducialId(),
+                            false);
+                    continue;
+                }
+                Pose3d targetPose = aprilTags.get(target.getFiducialId());
+                totalAmbiguity += target.getPoseAmbiguity();
+                tempPoses.add(
+                        Pair.of(
+                                targetPose.transformBy(target.getBestCameraToTarget().inverse()),
+                                Pair.of(
+                                        target.getPoseAmbiguity(), p.getFirst().getLatestResult().getLatencyMillis())));
+            }
+        }
+
+        Translation3d transform = new Translation3d();
+        Rotation3d rotation = new Rotation3d();
+        double latency = 0;
+        for (Pair<Pose3d, Pair<Double, Double>> pair : tempPoses) {
+            try {
+                double weight = (totalAmbiguity - pair.getSecond().getFirst()) / totalAmbiguity;
+                transform = transform.plus(pair.getFirst().getTranslation().times(weight));
+                rotation = rotation.plus(pair.getFirst().getRotation().times(weight));
+                latency += pair.getSecond().getSecond() * weight; // NOTE: Average latency may not work well
+            } catch (ArithmeticException e) {
+                DriverStation.reportWarning(
+                        "[RobotPoseEstimator] A total ambiguity of zero exists, using that pose instead!",
+                        false);
+                return Pair.of(pair.getFirst(), pair.getSecond().getSecond());
+            }
+        }
+        return Pair.of(new Pose3d(transform, rotation), latency);
     }
 
     /**
