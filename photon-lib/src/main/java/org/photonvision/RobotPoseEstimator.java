@@ -1,29 +1,27 @@
 package org.photonvision;
 
+import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.DriverStation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
 import org.photonvision.targeting.PhotonTrackedTarget;
-
-import edu.wpi.first.math.Pair;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.DriverStation;
 
 public class RobotPoseEstimator {
 
     /**
+     *
+     *
      * <ul>
-     * <li><strong>LOWEST_AMBIGUITY</strong>: Choose the Pose with the lowest
-     * ambiguity</li>
-     * <li><strong>CLOSEST_TO_CAMERA_HEIGHT</strong>: Choose the Pose which is
-     * closest to the camera height</li>
-     * <li><strong>CLOSEST_TO_REFERENCE_POSE</strong>: Choose the Pose which is
-     * closest to the pose from setReferencePose()</li>
-     * <li><strong>CLOSEST_TO_LAST_POSE</strong>: Choose the Pose which is
-     * closest to the last pose calculated</li>
+     *   <li><strong>LOWEST_AMBIGUITY</strong>: Choose the Pose with the lowest ambiguity
+     *   <li><strong>CLOSEST_TO_CAMERA_HEIGHT</strong>: Choose the Pose which is closest to the camera
+     *       height
+     *   <li><strong>CLOSEST_TO_REFERENCE_POSE</strong>: Choose the Pose which is closest to the pose
+     *       from setReferencePose()
+     *   <li><strong>CLOSEST_TO_LAST_POSE</strong>: Choose the Pose which is closest to the last pose
+     *       calculated
      * </ul>
      */
     enum PoseStrategy {
@@ -42,22 +40,22 @@ public class RobotPoseEstimator {
 
     /**
      * Create a new RobotPoseEstimator.
-     * <p>
-     * Example:
-     * <code>
+     *
+     * <p>Example: <code>
      *  <p>
      *  Map<Integer, Pose3d> map = new HashMap<>();
      *  <p>
      *  map.put(1, new Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is at (1.0,2.0,3.0)
      *  </code>
-     * 
-     * @param aprilTags A Map linking AprilTag IDs to Pose3ds with respect to the
-     *                  FIRST field.
-     * @param strategy  The strategy it should use to determine the best pose.
-     * @param cameras   An ArrayList of Pairs of PhotonCameras and their respective
-     *                  Transform3ds from the center of the robot to the cameras.
+     *
+     * @param aprilTags A Map linking AprilTag IDs to Pose3ds with respect to the FIRST field.
+     * @param strategy The strategy it should use to determine the best pose.
+     * @param cameras An ArrayList of Pairs of PhotonCameras and their respective Transform3ds from
+     *     the center of the robot to the cameras.
      */
-    public RobotPoseEstimator(Map<Integer, Pose3d> aprilTags, PoseStrategy strategy,
+    public RobotPoseEstimator(
+            Map<Integer, Pose3d> aprilTags,
+            PoseStrategy strategy,
             ArrayList<Pair<PhotonCamera, Transform3d>> cameras) {
         this.aprilTags = aprilTags;
         this.strategy = strategy;
@@ -113,17 +111,20 @@ public class RobotPoseEstimator {
         }
 
         // Pick the lowest and do the heavy calculations
-        PhotonTrackedTarget bestTarget = cameras.get(lowestAI).getFirst().getLatestResult().targets.get(lowestAJ);
+        PhotonTrackedTarget bestTarget =
+                cameras.get(lowestAI).getFirst().getLatestResult().targets.get(lowestAJ);
 
         // If the map doesn't contain the ID fail
         if (!aprilTags.containsKey(bestTarget.getFiducialId())) {
             DriverStation.reportError(
-                    "[RobotPoseEstimator] Tried to get pose of unknown April Tag: " + bestTarget.getFiducialId(),
+                    "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                            + bestTarget.getFiducialId(),
                     false);
             return lastPose;
         }
 
-        return aprilTags.get(bestTarget.getFiducialId())
+        return aprilTags
+                .get(bestTarget.getFiducialId())
                 .transformBy(bestTarget.getBestCameraToTarget().inverse())
                 .transformBy(cameras.get(lowestAI).getSecond().inverse());
     }
@@ -147,10 +148,14 @@ public class RobotPoseEstimator {
                     continue;
                 }
                 Pose3d targetPose = aprilTags.get(target.getFiducialId());
-                double alternativeDifference = Math.abs(p.getSecond().getY()
-                        - targetPose.transformBy(target.getAlternateCameraToTarget().inverse()).getY());
-                double bestDifference = Math.abs(
-                        p.getSecond().getY() - targetPose.transformBy(target.getBestCameraToTarget().inverse()).getY());
+                double alternativeDifference =
+                        Math.abs(
+                                p.getSecond().getY()
+                                        - targetPose.transformBy(target.getAlternateCameraToTarget().inverse()).getY());
+                double bestDifference =
+                        Math.abs(
+                                p.getSecond().getY()
+                                        - targetPose.transformBy(target.getBestCameraToTarget().inverse()).getY());
                 if (alternativeDifference < smallestHeightDifference) {
                     smallestHeightDifference = alternativeDifference;
                     pose = targetPose.transformBy(target.getAlternateCameraToTarget().inverse());
@@ -187,10 +192,16 @@ public class RobotPoseEstimator {
                     continue;
                 }
                 Pose3d targetPose = aprilTags.get(target.getFiducialId());
-                double alternativeDifference = Math.abs(calculateDifference(referencePose,
-                        targetPose.transformBy(target.getAlternateCameraToTarget().inverse())));
-                double bestDifference = Math.abs(calculateDifference(referencePose,
-                        targetPose.transformBy(target.getBestCameraToTarget().inverse())));
+                double alternativeDifference =
+                        Math.abs(
+                                calculateDifference(
+                                        referencePose,
+                                        targetPose.transformBy(target.getAlternateCameraToTarget().inverse())));
+                double bestDifference =
+                        Math.abs(
+                                calculateDifference(
+                                        referencePose,
+                                        targetPose.transformBy(target.getBestCameraToTarget().inverse())));
                 if (alternativeDifference < smallestDifference) {
                     smallestDifference = alternativeDifference;
                     pose = targetPose.transformBy(target.getAlternateCameraToTarget().inverse());
@@ -206,55 +217,44 @@ public class RobotPoseEstimator {
 
     /**
      * Difference is defined as the vector magnitude between the two poses
-     * 
+     *
      * @return The absolute "difference" (>=0) between two Pose3ds.
      */
     private double calculateDifference(Pose3d x, Pose3d y) {
         return x.getTranslation().getDistance(y.getTranslation());
     }
 
-    /**
-     * @param aprilTags the aprilTags to set
-     */
+    /** @param aprilTags the aprilTags to set */
     public void setAprilTags(Map<Integer, Pose3d> aprilTags) {
         this.aprilTags = aprilTags;
     }
 
-    /**
-     * @return the aprilTags
-     */
+    /** @return the aprilTags */
     public Map<Integer, Pose3d> getAprilTags() {
         return aprilTags;
     }
 
-    /**
-     * @return the strategy
-     */
+    /** @return the strategy */
     public PoseStrategy getStrategy() {
         return strategy;
     }
 
-    /**
-     * @param strategy the strategy to set
-     */
+    /** @param strategy the strategy to set */
     public void setStrategy(PoseStrategy strategy) {
         this.strategy = strategy;
     }
 
-    /**
-     * @return the referencePose
-     */
+    /** @return the referencePose */
     public Pose3d getReferencePose() {
         return referencePose;
     }
 
     /**
      * Update the stored reference pose for use with CLOSEST_TO_REFERENCE_POSE
-     * 
+     *
      * @param referencePose the referencePose to set
      */
     public void setReferencePose(Pose3d referencePose) {
         this.referencePose = referencePose;
     }
-
 }
