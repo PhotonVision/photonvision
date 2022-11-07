@@ -25,9 +25,15 @@
 package org.photonvision;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -40,11 +46,14 @@ public class SimVisionSystem {
     double camVertFOVDegrees;
     double cameraHeightOffGroundMeters;
     double maxLEDRangeMeters;
-    double camPitchDegrees;
     int cameraResWidth;
     int cameraResHeight;
     double minTargetArea;
-    Transform2d cameraToRobot;
+    Transform3d cameraToRobot;
+
+    Field2d dbgField;
+    FieldObject2d dbgRobot;
+    FieldObject2d dbgCamera;
 
     ArrayList<SimVisionTarget> tgtList;
 
@@ -58,11 +67,7 @@ public class SimVisionSystem {
      * @param camDiagFOVDegrees Diagonal Field of View of the camera used. Align it with the
      *     manufacturer specifications, and/or whatever is configured in the PhotonVision Setting
      *     page.
-     * @param camPitchDegrees pitch of the camera's view axis back from horizontal. Make this the same
-     *     as whatever is configured in the PhotonVision Setting page.
-     * @param cameraToRobot Pose Transform to move from the camera's mount position to the robot's
-     *     position
-     * @param cameraHeightOffGroundMeters Height of the camera off the ground in meters
+     * @param cameraToRobot Transform to move from the camera's mount position to the robot's position
      * @param maxLEDRangeMeters Maximum distance at which your camera can illuminate the target and
      *     make it visible. Set to 9000 or more if your vision system does not rely on LED's.
      * @param cameraResWidth Width of your camera's image sensor in pixels
@@ -74,16 +79,12 @@ public class SimVisionSystem {
     public SimVisionSystem(
             String camName,
             double camDiagFOVDegrees,
-            double camPitchDegrees,
-            Transform2d cameraToRobot,
-            double cameraHeightOffGroundMeters,
+            Transform3d cameraToRobot,
             double maxLEDRangeMeters,
             int cameraResWidth,
             int cameraResHeight,
             double minTargetArea) {
-        this.camPitchDegrees = camPitchDegrees;
         this.cameraToRobot = cameraToRobot;
-        this.cameraHeightOffGroundMeters = cameraHeightOffGroundMeters;
         this.maxLEDRangeMeters = maxLEDRangeMeters;
         this.cameraResWidth = cameraResWidth;
         this.cameraResHeight = cameraResHeight;
@@ -96,6 +97,11 @@ public class SimVisionSystem {
 
         cam = new SimPhotonCamera(camName);
         tgtList = new ArrayList<>();
+
+        dbgField = new Field2d();
+        dbgRobot = dbgField.getRobotObject();
+        dbgCamera = dbgField.getObject(camName + " Camera");
+        SmartDashboard.putData(camName + " Sim Field", dbgField);
     }
 
     /**
@@ -107,6 +113,10 @@ public class SimVisionSystem {
      */
     public void addSimVisionTarget(SimVisionTarget target) {
         tgtList.add(target);
+        dbgField
+                .getObject("Target " + Integer.toString(target.targetID))
+                .setPose(target.targetPose.toPose2d());
+        ;
     }
 
     /**
@@ -114,14 +124,9 @@ public class SimVisionSystem {
      * turret or some other mobile platform.
      *
      * @param newCameraToRobot New Transform from the robot to the camera
-     * @param newCamHeightMeters New height of the camera off the floor
-     * @param newCamPitchDegrees New pitch of the camera axis back from horizontal
      */
-    public void moveCamera(
-            Transform2d newCameraToRobot, double newCamHeightMeters, double newCamPitchDegrees) {
+    public void moveCamera(Transform3d newCameraToRobot) {
         this.cameraToRobot = newCameraToRobot;
-        this.cameraHeightOffGroundMeters = newCamHeightMeters;
-        this.camPitchDegrees = newCamPitchDegrees;
     }
 
     /**
@@ -133,46 +138,76 @@ public class SimVisionSystem {
      *     PhotonVision parameters.
      */
     public void processFrame(Pose2d robotPoseMeters) {
-        Pose2d cameraPos = robotPoseMeters.transformBy(cameraToRobot.inverse());
+        var robotPose3d =
+                new Pose3d(
+                        robotPoseMeters.getX(),
+                        robotPoseMeters.getY(),
+                        0.0,
+                        new Rotation3d(0, 0, robotPoseMeters.getRotation().getRadians()));
+        processFrame(robotPose3d);
+    }
+
+    /**
+     * Periodic update. Call this once per frame of image data you wish to process and send to
+     * NetworkTables
+     *
+     * @param robotPoseMeters current pose of the robot in space. Will be used to calculate which
+     *     targets are actually in view, where they are at relative to the robot, and relevant
+     *     PhotonVision parameters.
+     */
+    public void processFrame(Pose3d robotPoseMeters) {
+        Pose3d cameraPose = robotPoseMeters.transformBy(cameraToRobot.inverse());
+
+        dbgRobot.setPose(robotPoseMeters.toPose2d());
+        dbgCamera.setPose(cameraPose.toPose2d());
 
         ArrayList<PhotonTrackedTarget> visibleTgtList = new ArrayList<>(tgtList.size());
 
         tgtList.forEach(
                 (tgt) -> {
-                    var camToTargetTrans = new Transform2d(cameraPos, tgt.targetPos);
+                    var camToTargetTrans = new Transform3d(cameraPose, tgt.targetPose);
+                    var t = camToTargetTrans.getTranslation();
 
-                    double distAlongGroundMeters = camToTargetTrans.getTranslation().getNorm();
-                    double distVerticalMeters =
-                            tgt.targetHeightAboveGroundMeters - this.cameraHeightOffGroundMeters;
-                    double distMeters = Math.hypot(distAlongGroundMeters, distVerticalMeters);
+                    // Rough approximation of the alternate solution, which is (so far) always incorrect.
+                    var altTrans =
+                            new Translation3d(
+                                    t.getX(),
+                                    -1.0 * t.getY(),
+                                    t.getZ()); // mirrored across camera axis in Y direction
+                    var altRot = camToTargetTrans.getRotation().times(-1.0); // flipped
+                    var camToTargetTransAlt = new Transform3d(altTrans, altRot);
 
-                    double area = tgt.tgtAreaMeters2 / getM2PerPx(distAlongGroundMeters);
+                    double distMeters = t.getNorm();
 
-                    // 2D yaw mode considers the target as a point, and should ignore target rotation.
-                    // Photon reports it in the correct robot reference frame.
-                    // IE: targets to the left of the image should report negative yaw.
-                    double yawDegrees =
-                            -1.0
-                                    * Units.radiansToDegrees(
-                                            Math.atan2(
-                                                    camToTargetTrans.getTranslation().getY(),
-                                                    camToTargetTrans.getTranslation().getX()));
+                    double area_px = tgt.tgtAreaMeters2 / getM2PerPx(distMeters);
+
+                    double yawDegrees = Units.radiansToDegrees(Math.atan2(t.getY(), t.getX()));
+
+                    double camHeightAboveGround = cameraPose.getZ();
+                    double tgtHeightAboveGround = tgt.targetPose.getZ();
+                    double camPitchDegrees = Units.radiansToDegrees(cameraPose.getRotation().getY());
+
+                    var transformAlongGround =
+                            new Transform2d(cameraPose.toPose2d(), tgt.targetPose.toPose2d());
+                    double distAlongGround = transformAlongGround.getTranslation().getNorm();
+
                     double pitchDegrees =
-                            Units.radiansToDegrees(Math.atan2(distVerticalMeters, distAlongGroundMeters))
-                                    - this.camPitchDegrees;
+                            Units.radiansToDegrees(
+                                            Math.atan2((tgtHeightAboveGround - camHeightAboveGround), distAlongGround))
+                                    - camPitchDegrees;
 
-                    if (camCanSeeTarget(distMeters, yawDegrees, pitchDegrees, area)) {
+                    if (camCanSeeTarget(distMeters, yawDegrees, pitchDegrees, area_px)) {
                         // TODO simulate target corners
                         visibleTgtList.add(
                                 new PhotonTrackedTarget(
                                         yawDegrees,
                                         pitchDegrees,
-                                        area,
+                                        area_px,
                                         0.0,
-                                        -1, // TODO fiducial ID
-                                        new Transform3d(),
-                                        new Transform3d(),
-                                        0.25,
+                                        tgt.targetID,
+                                        camToTargetTrans,
+                                        camToTargetTransAlt,
+                                        0.0, // TODO - simulate ambiguity when straight on?
                                         List.of(
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0),
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0))));
