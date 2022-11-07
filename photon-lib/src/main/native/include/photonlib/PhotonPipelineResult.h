@@ -80,10 +80,23 @@ class PhotonPipelineResult {
   units::second_t GetLatency() const { return latency; }
 
   /**
+   * Returns the estimated time the frame was taken,
+   * This is much more accurate than using GetLatency()
+   * @return The timestamp in seconds or -1 if this result was not initiated with a timestamp.
+   */
+  units::second_t GetTimestamp() const { return timestamp; }
+
+  /**
+   * Sets the timestamp in seconds
+   * @param timestamp The timestamp in seconds
+  */
+  void SetTimestamp(units::second_t ptimestamp) { this->timestamp = ptimestamp; }
+
+  /**
    * Returns whether the pipeline has targets.
    * @return Whether the pipeline has targets.
    */
-  bool HasTargets() const { return targets.size() > 0; }
+  bool HasTargets() const { return targets.size() > 0;}
 
   /**
    * Returns a reference to the vector of targets.
@@ -101,6 +114,7 @@ class PhotonPipelineResult {
 
  private:
   units::second_t latency = 0_s;
+  units::second_t timestamp = -1_s;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
   inline static bool HAS_WARNED = false;
 };

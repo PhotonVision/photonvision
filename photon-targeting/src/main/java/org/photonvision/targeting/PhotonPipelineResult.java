@@ -87,10 +87,10 @@ public class PhotonPipelineResult {
     }
 
     /**
-     * Returns the estimated time the frame was taken,
-     * This is much more accurate than using <code>getLatencyMillis()</code> 
+     * Returns the estimated time the frame was taken, This is much more accurate than using <code>
+     * getLatencyMillis()</code>
      *
-     * @return The timestamp in seconds or -1 if this result was not initiated with a timestamp.
+     * @return The timestamp in milliseconds or -1 if this result was not initiated with a timestamp.
      */
     public double getTimestampMillis() {
         return timestampMillis;
@@ -98,7 +98,7 @@ public class PhotonPipelineResult {
 
     /**
      * Sets the timestamp of this result in milliseconds.
-     * 
+     *
      * @param timestampMillis The timestamp in milliseconds.
      */
     public void setTimestampMillis(double timestampMillis) {

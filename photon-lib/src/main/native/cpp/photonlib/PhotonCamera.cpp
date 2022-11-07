@@ -72,6 +72,9 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   photonlib::Packet packet{bytes};
 
   packet >> result;
+
+  result.SetTimestamp(units::microsecond_t(rawBytesEntry.GetLastChange()) - result.GetLatency());
+
   return result;
 }
 
