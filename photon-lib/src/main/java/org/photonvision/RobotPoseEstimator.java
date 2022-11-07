@@ -22,13 +22,15 @@ public class RobotPoseEstimator {
      * closest to the camera height</li>
      * <li><strong>CLOSEST_TO_REFERENCE_POSE</strong>: Choose the Pose which is
      * closest to the pose from setReferencePose()</li>
+     * <li><strong>CLOSEST_TO_LAST_POSE</strong>: Choose the Pose which is
+     * closest to the last pose calculated</li>
      * </ul>
      */
     enum PoseStrategy {
         LOWEST_AMBIGUITY, // TODO: Test
         CLOSEST_TO_CAMERA_HEIGHT, // TODO: Test
-        CLOSEST_TO_REFERENCE_POSE, // TODO: Implement
-        CLOSEST_TO_LAST_POSE, // TODO: Implement
+        CLOSEST_TO_REFERENCE_POSE, // TODO: Test
+        CLOSEST_TO_LAST_POSE, // TODO: Test
     }
 
     private Map<Integer, Pose3d> aprilTags;
@@ -60,6 +62,7 @@ public class RobotPoseEstimator {
         this.aprilTags = aprilTags;
         this.strategy = strategy;
         this.cameras = cameras;
+        lastPose = new Pose3d();
     }
 
     public Pose3d update() {
@@ -75,7 +78,11 @@ public class RobotPoseEstimator {
                 lastPose = closestToCameraHeightStrategy();
                 return lastPose;
             case CLOSEST_TO_REFERENCE_POSE:
-
+                lastPose = closestToReferencePoseStrategy();
+                return lastPose;
+            case CLOSEST_TO_LAST_POSE:
+                referencePose = lastPose;
+                lastPose = closestToReferencePoseStrategy();
                 return lastPose;
             default:
                 DriverStation.reportError("[RobotPoseEstimator] Invalid pose strategy!", false);
@@ -157,6 +164,46 @@ public class RobotPoseEstimator {
         return pose;
     }
 
+    private Pose3d closestToReferencePoseStrategy() {
+        if (referencePose == null) {
+            DriverStation.reportError(
+                    "[RobotPoseEstimator] Tried to use reference pose strategy without setting the reference!",
+                    false);
+            return lastPose;
+        }
+        double smallestDifference = 10e9;
+        Pose3d pose = lastPose;
+        for (int i = 0; i < cameras.size(); i++) {
+            Pair<PhotonCamera, Transform3d> p = cameras.get(i);
+            List<PhotonTrackedTarget> targets = p.getFirst().getLatestResult().targets;
+            for (int j = 0; j < targets.size(); j++) {
+                PhotonTrackedTarget target = targets.get(j);
+                // If the map doesn't contain the ID fail
+                if (!aprilTags.containsKey(target.getFiducialId())) {
+                    DriverStation.reportWarning(
+                            "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                                    + target.getFiducialId(),
+                            false);
+                    continue;
+                }
+                Pose3d targetPose = aprilTags.get(target.getFiducialId());
+                double alternativeDifference = Math.abs(calculateDifference(referencePose,
+                        targetPose.transformBy(target.getAlternateCameraToTarget().inverse())));
+                double bestDifference = Math.abs(calculateDifference(referencePose,
+                        targetPose.transformBy(target.getBestCameraToTarget().inverse())));
+                if (alternativeDifference < smallestDifference) {
+                    smallestDifference = alternativeDifference;
+                    pose = targetPose.transformBy(target.getAlternateCameraToTarget().inverse());
+                }
+                if (bestDifference < smallestDifference) {
+                    smallestDifference = bestDifference;
+                    pose = targetPose.transformBy(target.getBestCameraToTarget().inverse());
+                }
+            }
+        }
+        return pose;
+    }
+
     /**
      * Difference is defined as the vector magnitude between the two poses
      * 
@@ -178,6 +225,36 @@ public class RobotPoseEstimator {
      */
     public Map<Integer, Pose3d> getAprilTags() {
         return aprilTags;
+    }
+
+    /**
+     * @return the strategy
+     */
+    public PoseStrategy getStrategy() {
+        return strategy;
+    }
+
+    /**
+     * @param strategy the strategy to set
+     */
+    public void setStrategy(PoseStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    /**
+     * @return the referencePose
+     */
+    public Pose3d getReferencePose() {
+        return referencePose;
+    }
+
+    /**
+     * Update the stored reference pose for use with CLOSEST_TO_REFERENCE_POSE
+     * 
+     * @param referencePose the referencePose to set
+     */
+    public void setReferencePose(Pose3d referencePose) {
+        this.referencePose = referencePose;
     }
 
 }
