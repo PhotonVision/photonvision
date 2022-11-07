@@ -107,8 +107,8 @@ public class PhotonCamera {
         ret.createFromPacket(packet);
 
         // Set the timestamp of the result.
-        // getLatestChange returns in micro seconds so we devide by 1000 to convert to milli seconds.
-        ret.setTimestampMillis((rawBytesEntry.getLastChange() / 1000.0) - ret.getLatencyMillis());
+        // getLatestChange returns in microseconds so we divide by 1e6 to convert to seconds.
+        ret.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
 
         // Return result.
         return ret;

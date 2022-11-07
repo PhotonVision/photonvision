@@ -91,8 +91,8 @@ class PhotonPipelineResult {
    * Sets the timestamp in seconds
    * @param timestamp The timestamp in seconds
    */
-  void SetTimestamp(units::second_t ptimestamp) {
-    this->timestamp = ptimestamp;
+  void SetTimestamp(const units::second_t timestamp) {
+    this->timestamp = timestamp;
   }
 
   /**

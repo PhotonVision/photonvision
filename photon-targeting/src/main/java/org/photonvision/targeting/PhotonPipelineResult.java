@@ -33,7 +33,7 @@ public class PhotonPipelineResult {
     private double latencyMillis;
 
     // Timestamp in milliseconds.
-    private double timestampMillis = -1;
+    private double timestampSeconds = -1;
 
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {}
@@ -87,22 +87,22 @@ public class PhotonPipelineResult {
     }
 
     /**
-     * Returns the estimated time the frame was taken, This is much more accurate than using <code>
+     * Returns the estimated time the frame was taken, This is more accurate than using <code>
      * getLatencyMillis()</code>
      *
-     * @return The timestamp in milliseconds or -1 if this result was not initiated with a timestamp.
+     * @return The timestamp in seconds, or -1 if this result has no timestamp set.
      */
-    public double getTimestampMillis() {
-        return timestampMillis;
+    public double getTimestampSeconds() {
+        return timestampSeconds;
     }
 
     /**
-     * Sets the timestamp of this result in milliseconds.
+     * Sets the FPGA timestamp of this result in seconds.
      *
-     * @param timestampMillis The timestamp in milliseconds.
+     * @param timestampMillis The timestamp in seconds.
      */
-    public void setTimestampMillis(double timestampMillis) {
-        this.timestampMillis = timestampMillis;
+    public void setTimestampSeconds(double timestampSeconds) {
+        this.timestampSeconds = timestampSeconds;
     }
 
     /**
