@@ -99,7 +99,7 @@ public class PhotonPipelineResult {
     /**
      * Sets the FPGA timestamp of this result in seconds.
      *
-     * @param timestampMillis The timestamp in seconds.
+     * @param timestampSeconds The timestamp in seconds.
      */
     public void setTimestampSeconds(double timestampSeconds) {
         this.timestampSeconds = timestampSeconds;
