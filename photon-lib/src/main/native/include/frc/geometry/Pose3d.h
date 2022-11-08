@@ -4,9 +4,9 @@
 
 #pragma once
 
+#include <frc/geometry/Pose2d.h>
 #include <wpi/SymbolExports.h>
 
-#include "Pose2d.h"
 #include "Transform3d.h"
 #include "Translation3d.h"
 #include "Twist3d.h"

@@ -2,18 +2,17 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-#include "frc/geometry/Rotation3d.h"
-
-#include <cmath>
-#include <numbers>
-
 #include <wpi/json.h>
+#include <cmath>
 
-#include "Eigen/Core"
-#include "Eigen/LU"
-#include "Eigen/QR"
-#include "frc/fmt/Eigen.h"
-#include "units/math.h"
+#include <Eigen/Core>
+#include <Eigen/LU>
+#include <Eigen/QR>
+#include <frc/fmt/Eigen.h>
+#include <frc/geometry/Rotation3d.h>
+#include <units/math.h>
+#include <wpi/numbers>
+
 #include "wpimath/MathShared.h"
 
 using namespace frc;
