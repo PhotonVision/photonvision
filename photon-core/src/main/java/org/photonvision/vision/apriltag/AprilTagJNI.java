@@ -40,76 +40,89 @@ public class AprilTagJNI {
     static RuntimeLoader<AprilTagJNI> s_loader = null;
     private static Logger logger = new Logger(AprilTagJNI.class, LogGroup.VisionModule);
 
-    public static synchronized void forceLoad() throws IOException {
-        if (s_libraryLoaded) return;
-
-        try {
-            // Ensure the lib directory has been created to receive the unpacked shared object
-            File libDirectory = Path.of("lib/").toFile();
-            if (!libDirectory.exists()) {
-                Files.createDirectory(libDirectory.toPath()).toFile();
-            }
-
-            // Pick the proper library based on development flags
-            String libBaseName = USE_DEBUG ? NATIVE_DEBUG_LIBRARY_NAME : NATIVE_RELEASE_LIBRARY_NAME;
-            String libFileName = System.mapLibraryName(libBaseName);
-            File libFile = Path.of("lib/" + libFileName).toFile();
-
-            // Always extract the library fresh
-            // Yes, technically, a hashing strategy should speed this up, but it's only a
-            // one-time, at-startup time hit. And not very big.
-            URL resourceURL;
-
-            String subfolder;
-            // TODO 64-bit Pi support
-            if (RuntimeDetector.isAthena()) {
-                subfolder = "athena";
-            } else if (RuntimeDetector.isAarch64()) {
-                subfolder = "aarch64";
-            } else if (RuntimeDetector.isRaspbian()) {
-                subfolder = "raspbian";
-            } else if (RuntimeDetector.isWindows()) {
-                subfolder = "win64";
-            } else if (RuntimeDetector.isLinux()) {
-                subfolder = "linux64";
-            } else if (RuntimeDetector.isMac()) {
-                subfolder = "mac";
-            } // NOT m1, afaict, lol
-            else {
-                logger.error("Could not determine platform! Cannot load Apriltag JNI");
-                return;
-            }
-
-            resourceURL =
-                    AprilTagJNI.class.getResource(
-                            "/nativelibraries/apriltag/" + subfolder + "/" + libFileName);
-
-            try (InputStream in = resourceURL.openStream()) {
-                // Remove the file if it already exists
-                if (libFile.exists()) Files.delete(libFile.toPath());
-                // Copy in a fresh resource
-                Files.copy(in, libFile.toPath());
-            }
-
-            // Actually load the library
-            System.load(libFile.getAbsolutePath());
-
-            s_libraryLoaded = true;
-
-        } catch (UnsatisfiedLinkError e) {
-            logger.error("Couldn't load apriltag shared object");
-            e.printStackTrace();
-        } catch (IOException ioe) {
-            logger.error("IO exception copying apriltag shared object");
-            ioe.printStackTrace();
-        }
-
-        if (!s_libraryLoaded) {
-            logger.error("Failed to load AprilTag Native Library!");
-        } else {
-            logger.info("AprilTag Native Library loaded successfully");
-        }
+  static boolean libraryLoaded = false;
+  static RuntimeLoader<AprilTagJNI> loader = null;
+  public static synchronized void forceLoad() throws IOException {
+    if (libraryLoaded) {
+      return;
     }
+    loader =
+        new RuntimeLoader<>(
+            "apriltag", RuntimeLoader.getDefaultExtractionRoot(), AprilTagJNI.class);
+    loader.loadLibrary();
+    libraryLoaded = true;
+  }
+
+    // public static synchronized void forceLoad() throws IOException {
+    //     if (s_libraryLoaded) return;
+
+    //     try {
+    //         // Ensure the lib directory has been created to receive the unpacked shared object
+    //         File libDirectory = Path.of("lib/").toFile();
+    //         if (!libDirectory.exists()) {
+    //             Files.createDirectory(libDirectory.toPath()).toFile();
+    //         }
+
+    //         // Pick the proper library based on development flags
+    //         String libBaseName = USE_DEBUG ? NATIVE_DEBUG_LIBRARY_NAME : NATIVE_RELEASE_LIBRARY_NAME;
+    //         String libFileName = System.mapLibraryName(libBaseName);
+    //         File libFile = Path.of("lib/" + libFileName).toFile();
+
+    //         // Always extract the library fresh
+    //         // Yes, technically, a hashing strategy should speed this up, but it's only a
+    //         // one-time, at-startup time hit. And not very big.
+    //         URL resourceURL;
+
+    //         String subfolder;
+    //         // TODO 64-bit Pi support
+    //         if (RuntimeDetector.isAthena()) {
+    //             subfolder = "athena";
+    //         } else if (RuntimeDetector.isAarch64()) {
+    //             subfolder = "aarch64";
+    //         } else if (RuntimeDetector.isRaspbian()) {
+    //             subfolder = "raspbian";
+    //         } else if (RuntimeDetector.isWindows()) {
+    //             subfolder = "win64";
+    //         } else if (RuntimeDetector.isLinux()) {
+    //             subfolder = "linux64";
+    //         } else if (RuntimeDetector.isMac()) {
+    //             subfolder = "mac";
+    //         } // NOT m1, afaict, lol
+    //         else {
+    //             logger.error("Could not determine platform! Cannot load Apriltag JNI");
+    //             return;
+    //         }
+
+    //         resourceURL =
+    //                 AprilTagJNI.class.getResource(
+    //                         "/nativelibraries/apriltag/" + subfolder + "/" + libFileName);
+
+    //         try (InputStream in = resourceURL.openStream()) {
+    //             // Remove the file if it already exists
+    //             if (libFile.exists()) Files.delete(libFile.toPath());
+    //             // Copy in a fresh resource
+    //             Files.copy(in, libFile.toPath());
+    //         }
+
+    //         // Actually load the library
+    //         System.load(libFile.getAbsolutePath());
+
+    //         s_libraryLoaded = true;
+
+    //     } catch (UnsatisfiedLinkError e) {
+    //         logger.error("Couldn't load apriltag shared object");
+    //         e.printStackTrace();
+    //     } catch (IOException ioe) {
+    //         logger.error("IO exception copying apriltag shared object");
+    //         ioe.printStackTrace();
+    //     }
+
+    //     if (!s_libraryLoaded) {
+    //         logger.error("Failed to load AprilTag Native Library!");
+    //     } else {
+    //         logger.info("AprilTag Native Library loaded successfully");
+    //     }
+    // }
 
     // Returns a pointer to a apriltag_detector_t
     public static native long AprilTag_Create(

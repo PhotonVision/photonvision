@@ -290,20 +290,22 @@ public class Main {
     public static void main(String[] args) {
         try {
             CameraServerCvJNI.forceLoad();
-            logger.info("Native libraries loaded.");
         } catch (Exception e) {
-            logger.error("Failed to load native libraries!", e);
+            logger.error("Failed to load CameraServerJNI!", e);
         }
         try {
             AprilTagJNI.forceLoad();
         } catch (IOException e) {
-            logger.error("Failed to load native libraries!", e);
+            logger.error("Failed to load AprilTagJNI!", e);
+            System.exit(1);
         }
         try {
             PicamJNI.forceLoad();
         } catch (IOException e) {
-            logger.error("Failed to load native libraries!", e);
+            logger.error("Failed to load PicamJNI!", e);
         }
+
+        logger.info("Native libraries loaded.");
 
         try {
             if (!handleArgs(args)) {

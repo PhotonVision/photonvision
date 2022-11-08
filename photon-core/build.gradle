@@ -13,6 +13,9 @@ dependencies {
     // wpiutil
     jniPlatforms.each { implementation "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:$it" }
 
+    // implementation "edu.wpi.first.thirdparty.frc2023:apriltag:1.11.0-1"
+    implementation "edu.wpi.first.thirdparty.frc2023:apriltag:1.11.0-1:windowsx86-64"
+
     // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
     implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion"
     implementation "org.jogamp.jogl:jogl-all:$joglVersion"

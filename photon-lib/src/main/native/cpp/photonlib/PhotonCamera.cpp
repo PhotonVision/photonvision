@@ -32,7 +32,7 @@
 
 namespace photonlib {
 
-constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
+constexpr const units::second_t VERSION_CHECK_INTERVAL = units::millisecond_t(5 + 1 + 5);
 
 PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
                            const std::string& cameraName)
