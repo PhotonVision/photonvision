@@ -17,36 +17,45 @@
 
 package edu.wpi.first.math.geometry;
 
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.numbers.N1;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.numbers.N3;
-import java.util.Arrays;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Quaternion {
     private final double m_r;
-    private final Matrix<N3, N1> m_v;
+    private final Vector<N3> m_v;
 
     /** Constructs a quaternion with a default angle of 0 degrees. */
     public Quaternion() {
         m_r = 1.0;
-        m_v = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.0, 0.0, 0.0);
+        m_v = VecBuilder.fill(0.0, 0.0, 0.0);
     }
 
     /**
-     * Constructs a quaternion with the given components.
-     *
-     * @param w W component of the quaternion.
-     * @param x X component of the quaternion.
-     * @param y Y component of the quaternion.
-     * @param z Z component of the quaternion.
-     */
-    public Quaternion(double w, double x, double y, double z) {
+    * Constructs a quaternion with the given components.
+    *
+    * @param w W component of the quaternion.
+    * @param x X component of the quaternion.
+    * @param y Y component of the quaternion.
+    * @param z Z component of the quaternion.
+    */
+    @JsonCreator
+    public Quaternion(
+        @JsonProperty(required = true, value = "W") double w,
+        @JsonProperty(required = true, value = "X") double x,
+        @JsonProperty(required = true, value = "Y") double y,
+        @JsonProperty(required = true, value = "Z") double z) {
         m_r = w;
-        m_v = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(x, y, z);
+        m_v = VecBuilder.fill(x, y, z);
     }
+
 
     /**
      * Multiply with another quaternion.
@@ -140,6 +149,7 @@ public class Quaternion {
      *
      * @return W component of the quaternion.
      */
+    @JsonProperty(value = "W")
     public double getW() {
         return m_r;
     }
@@ -149,6 +159,7 @@ public class Quaternion {
      *
      * @return X component of the quaternion.
      */
+    @JsonProperty(value = "X")
     public double getX() {
         return m_v.get(0, 0);
     }
@@ -158,6 +169,7 @@ public class Quaternion {
      *
      * @return Y component of the quaternion.
      */
+    @JsonProperty(value = "Y")
     public double getY() {
         return m_v.get(1, 0);
     }
@@ -167,6 +179,7 @@ public class Quaternion {
      *
      * @return Z component of the quaternion.
      */
+    @JsonProperty(value = "Z")
     public double getZ() {
         return m_v.get(2, 0);
     }

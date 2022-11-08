@@ -17,15 +17,25 @@
 
 package edu.wpi.first.math.geometry;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.MathSharedStore;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.numbers.N3;
 import java.util.Objects;
+import org.ejml.dense.row.factory.DecompositionFactory_DDRM;
 
-/** A rotation in a 3D coordinate. */
+/** A rotation in a 3D coordinate frame represented by a quaternion. */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Rotation3d implements Interpolatable<Rotation3d> {
     private Quaternion m_q = new Quaternion();
 
@@ -33,13 +43,15 @@ public class Rotation3d implements Interpolatable<Rotation3d> {
     public Rotation3d() {}
 
     /**
-     * Constructs a Rotation3d from a quaternion.
-     *
-     * @param q The quaternion.
-     */
-    public Rotation3d(Quaternion q) {
+    * Constructs a Rotation3d from a quaternion.
+    *
+    * @param q The quaternion.
+    */
+    @JsonCreator
+    public Rotation3d(@JsonProperty(required = true, value = "quaternion") Quaternion q) {
         m_q = q.normalize();
     }
+
 
     /**
      * Constructs a Rotation3d from extrinsic roll, pitch, and yaw.
@@ -174,6 +186,7 @@ public class Rotation3d implements Interpolatable<Rotation3d> {
      *
      * @return The quaternion representation of the Rotation3d.
      */
+    @JsonProperty(value = "quaternion")
     public Quaternion getQuaternion() {
         return m_q;
     }

@@ -17,6 +17,10 @@
 
 package edu.wpi.first.math.geometry;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.interpolation.Interpolatable;
 import java.util.Objects;
@@ -28,7 +32,8 @@ import java.util.Objects;
  * origin facing in the positive X direction, forward is positive X, left is positive Y, and up is
  * positive Z.
  */
-@SuppressWarnings({"ParameterName", "MemberName"})
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Translation3d implements Interpolatable<Translation3d> {
     private final double m_x;
     private final double m_y;
@@ -40,13 +45,17 @@ public class Translation3d implements Interpolatable<Translation3d> {
     }
 
     /**
-     * Constructs a Translation3d with the X, Y, and Z components equal to the provided values.
-     *
-     * @param x The x component of the translation.
-     * @param y The y component of the translation.
-     * @param z The z component of the translation.
-     */
-    public Translation3d(double x, double y, double z) {
+    * Constructs a Translation3d with the X, Y, and Z components equal to the provided values.
+    *
+    * @param x The x component of the translation.
+    * @param y The y component of the translation.
+    * @param z The z component of the translation.
+    */
+    @JsonCreator
+    public Translation3d(
+        @JsonProperty(required = true, value = "x") double x,
+        @JsonProperty(required = true, value = "y") double y,
+        @JsonProperty(required = true, value = "z") double z) {
         m_x = x;
         m_y = y;
         m_z = z;
@@ -84,6 +93,7 @@ public class Translation3d implements Interpolatable<Translation3d> {
      *
      * @return The X component of the translation.
      */
+    @JsonProperty
     public double getX() {
         return m_x;
     }
@@ -93,6 +103,7 @@ public class Translation3d implements Interpolatable<Translation3d> {
      *
      * @return The Y component of the translation.
      */
+    @JsonProperty
     public double getY() {
         return m_y;
     }
@@ -102,6 +113,7 @@ public class Translation3d implements Interpolatable<Translation3d> {
      *
      * @return The Z component of the translation.
      */
+    @JsonProperty
     public double getZ() {
         return m_z;
     }
