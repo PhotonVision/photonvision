@@ -112,7 +112,7 @@ public class RobotPoseEstimator {
             Pair<PhotonCamera, Transform3d> p = cameras.get(i);
             List<PhotonTrackedTarget> targets = p.getFirst().getLatestResult().targets;
             for (int j = 0; j < targets.size(); j++) {
-                if (targets.get(j).getPoseAmbiguity() > lowestAmbiguityScore) {
+                if (targets.get(j).getPoseAmbiguity() < lowestAmbiguityScore) {
                     lowestAI = i;
                     lowestAJ = j;
                     lowestAmbiguityScore = targets.get(j).getPoseAmbiguity();
