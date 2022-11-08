@@ -1,28 +1,10 @@
-/*
- * MIT License
- *
- * Copyright (c) 2022 PhotonVision
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
-#include <frc/geometry/Quaternion.h>
+#include "frc/geometry/Quaternion.h"
+
+#include <wpi/json.h>
 
 using namespace frc;
 
@@ -68,13 +50,21 @@ Quaternion Quaternion::Normalize() const {
   }
 }
 
-double Quaternion::W() const { return m_r; }
+double Quaternion::W() const {
+  return m_r;
+}
 
-double Quaternion::X() const { return m_v(0); }
+double Quaternion::X() const {
+  return m_v(0);
+}
 
-double Quaternion::Y() const { return m_v(1); }
+double Quaternion::Y() const {
+  return m_v(1);
+}
 
-double Quaternion::Z() const { return m_v(2); }
+double Quaternion::Z() const {
+  return m_v(2);
+}
 
 Eigen::Vector3d Quaternion::ToRotationVector() const {
   // See equation (31) in "Integrating Generic Sensor Fusion Algorithms with
@@ -92,4 +82,17 @@ Eigen::Vector3d Quaternion::ToRotationVector() const {
       return 2.0 * std::atan2(norm, W()) / norm * m_v;
     }
   }
+}
+
+void frc::to_json(wpi::json& json, const Quaternion& quaternion) {
+  json = wpi::json{{"W", quaternion.W()},
+                   {"X", quaternion.X()},
+                   {"Y", quaternion.Y()},
+                   {"Z", quaternion.Z()}};
+}
+
+void frc::from_json(const wpi::json& json, Quaternion& quaternion) {
+  quaternion =
+      Quaternion{json.at("W").get<double>(), json.at("X").get<double>(),
+                 json.at("Y").get<double>(), json.at("Z").get<double>()};
 }

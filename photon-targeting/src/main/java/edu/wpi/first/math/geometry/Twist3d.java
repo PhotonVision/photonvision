@@ -1,19 +1,6 @@
-/*
- * Copyright (C) Photon Vision.
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
 package edu.wpi.first.math.geometry;
 
@@ -25,75 +12,74 @@ import java.util.Objects;
  *
  * <p>A Twist can be used to represent a difference between two poses.
  */
-@SuppressWarnings("MemberName")
 public class Twist3d {
-    /** Linear "dx" component. */
-    public double dx;
+  /** Linear "dx" component. */
+  public double dx;
 
-    /** Linear "dy" component. */
-    public double dy;
+  /** Linear "dy" component. */
+  public double dy;
 
-    /** Linear "dz" component. */
-    public double dz;
+  /** Linear "dz" component. */
+  public double dz;
 
-    /** Angular "droll" component (radians). */
-    public double droll;
+  /** Rotation vector x component (radians). */
+  public double rx;
 
-    /** Angular "dpitch" component (radians). */
-    public double dpitch;
+  /** Rotation vector y component (radians). */
+  public double ry;
 
-    /** Angular "dyaw" component (radians). */
-    public double dyaw;
+  /** Rotation vector z component (radians). */
+  public double rz;
 
-    public Twist3d() {}
+  public Twist3d() {}
 
-    /**
-     * Constructs a Twist3d with the given values.
-     *
-     * @param dx Change in x direction relative to robot.
-     * @param dy Change in y direction relative to robot.
-     * @param dz Change in z direction relative to robot.
-     * @param droll Change in roll relative to the robot.
-     * @param dpitch Change in pitch relative to the robot.
-     * @param dyaw Change in yaw relative to the robot.
-     */
-    public Twist3d(double dx, double dy, double dz, double droll, double dpitch, double dyaw) {
-        this.dx = dx;
-        this.dy = dy;
-        this.dz = dz;
-        this.droll = droll;
-        this.dpitch = dpitch;
-        this.dyaw = dyaw;
+  /**
+   * Constructs a Twist3d with the given values.
+   *
+   * @param dx Change in x direction relative to robot.
+   * @param dy Change in y direction relative to robot.
+   * @param dz Change in z direction relative to robot.
+   * @param rx Rotation vector x component.
+   * @param ry Rotation vector y component.
+   * @param rz Rotation vector z component.
+   */
+  public Twist3d(double dx, double dy, double dz, double rx, double ry, double rz) {
+    this.dx = dx;
+    this.dy = dy;
+    this.dz = dz;
+    this.rx = rx;
+    this.ry = ry;
+    this.rz = rz;
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "Twist3d(dX: %.2f, dY: %.2f, dZ: %.2f, rX: %.2f, rY: %.2f, rZ: %.2f)",
+        dx, dy, dz, rx, ry, rz);
+  }
+
+  /**
+   * Checks equality between this Twist3d and another object.
+   *
+   * @param obj The other object.
+   * @return Whether the two objects are equal or not.
+   */
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof Twist3d) {
+      return Math.abs(((Twist3d) obj).dx - dx) < 1E-9
+          && Math.abs(((Twist3d) obj).dy - dy) < 1E-9
+          && Math.abs(((Twist3d) obj).dz - dz) < 1E-9
+          && Math.abs(((Twist3d) obj).rx - rx) < 1E-9
+          && Math.abs(((Twist3d) obj).ry - ry) < 1E-9
+          && Math.abs(((Twist3d) obj).rz - rz) < 1E-9;
     }
+    return false;
+  }
 
-    @Override
-    public String toString() {
-        return String.format(
-                "Twist3d(dX: %.2f, dY: %.2f, dZ: %.2f, dRoll: %.2f, dPitch: %.2f, dYaw: %.2f)",
-                dx, dy, dz, droll, dpitch, dyaw);
-    }
-
-    /**
-     * Checks equality between this Twist3d and another object.
-     *
-     * @param obj The other object.
-     * @return Whether the two objects are equal or not.
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Twist3d) {
-            return Math.abs(((Twist3d) obj).dx - dx) < 1E-9
-                    && Math.abs(((Twist3d) obj).dy - dy) < 1E-9
-                    && Math.abs(((Twist3d) obj).dz - dz) < 1E-9
-                    && Math.abs(((Twist3d) obj).droll - droll) < 1E-9
-                    && Math.abs(((Twist3d) obj).dpitch - dpitch) < 1E-9
-                    && Math.abs(((Twist3d) obj).dyaw - dyaw) < 1E-9;
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(dx, dy, dz, droll, dpitch, dyaw);
-    }
+  @Override
+  public int hashCode() {
+    return Objects.hash(dx, dy, dz, rx, ry, rz);
+  }
 }
