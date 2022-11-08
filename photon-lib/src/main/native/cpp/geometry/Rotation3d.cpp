@@ -1,8 +1,27 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/*
+ * MIT License
+ *
+ * Copyright (c) 2022 PhotonVision
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-#include <wpi/json.h>
 #include <cmath>
 
 #include <Eigen/Core>
@@ -18,9 +37,7 @@
 
 using namespace frc;
 
-Rotation3d::Rotation3d(const Quaternion& q) {
-  m_q = q.Normalize();
-}
+Rotation3d::Rotation3d(const Quaternion& q) { m_q = q.Normalize(); }
 
 Rotation3d::Rotation3d(units::radian_t roll, units::radian_t pitch,
                        units::radian_t yaw) {
@@ -151,9 +168,7 @@ Rotation3d Rotation3d::operator-(const Rotation3d& other) const {
   return *this + -other;
 }
 
-Rotation3d Rotation3d::operator-() const {
-  return Rotation3d{m_q.Inverse()};
-}
+Rotation3d Rotation3d::operator-() const { return Rotation3d{m_q.Inverse()}; }
 
 Rotation3d Rotation3d::operator*(double scalar) const {
   // https://en.wikipedia.org/wiki/Slerp#Quaternion_Slerp
@@ -164,10 +179,6 @@ Rotation3d Rotation3d::operator*(double scalar) const {
     return Rotation3d{{-m_q.X(), -m_q.Y(), -m_q.Z()},
                       2.0 * units::radian_t{scalar * std::acos(-m_q.W())}};
   }
-}
-
-Rotation3d Rotation3d::operator/(double scalar) const {
-  return *this * (1.0 / scalar);
 }
 
 bool Rotation3d::operator==(const Rotation3d& other) const {
@@ -182,9 +193,7 @@ Rotation3d Rotation3d::RotateBy(const Rotation3d& other) const {
   return Rotation3d{other.m_q * m_q};
 }
 
-const Quaternion& Rotation3d::GetQuaternion() const {
-  return m_q;
-}
+const Quaternion& Rotation3d::GetQuaternion() const { return m_q; }
 
 units::radian_t Rotation3d::X() const {
   double w = m_q.W();
@@ -206,7 +215,7 @@ units::radian_t Rotation3d::Y() const {
   // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles#Quaternion_to_Euler_angles_conversion
   double ratio = 2.0 * (w * y - z * x);
   if (std::abs(ratio) >= 1.0) {
-    return units::radian_t{std::copysign(std::numbers::pi / 2.0, ratio)};
+    return units::radian_t{std::copysign(wpi::numbers::pi / 2.0, ratio)};
   } else {
     return units::radian_t{std::asin(ratio)};
   }
@@ -237,14 +246,4 @@ units::radian_t Rotation3d::Angle() const {
   return units::radian_t{2.0 * std::atan2(norm, m_q.W())};
 }
 
-Rotation2d Rotation3d::ToRotation2d() const {
-  return Rotation2d{Z()};
-}
-
-void frc::to_json(wpi::json& json, const Rotation3d& rotation) {
-  json = wpi::json{{"quaternion", rotation.GetQuaternion()}};
-}
-
-void frc::from_json(const wpi::json& json, Rotation3d& rotation) {
-  rotation = Rotation3d{json.at("quaternion").get<Quaternion>()};
-}
+Rotation2d Rotation3d::ToRotation2d() const { return Rotation2d{Z()}; }

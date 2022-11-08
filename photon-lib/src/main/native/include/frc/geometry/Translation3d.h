@@ -1,6 +1,26 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
+/*
+ * MIT License
+ *
+ * Copyright (c) 2022 PhotonVision
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 #pragma once
 
@@ -9,11 +29,6 @@
 #include <wpi/SymbolExports.h>
 
 #include "Rotation3d.h"
-
-
-namespace wpi {
-class json;
-}  // namespace wpi
 
 namespace frc {
 
@@ -40,7 +55,7 @@ class WPILIB_DLLEXPORT Translation3d {
    * @param y The y component of the translation.
    * @param z The z component of the translation.
    */
-  constexpr Translation3d(units::meter_t x, units::meter_t y, units::meter_t z);
+  Translation3d(units::meter_t x, units::meter_t y, units::meter_t z);
 
   /**
    * Constructs a Translation3d with the provided distance and angle. This is
@@ -68,21 +83,21 @@ class WPILIB_DLLEXPORT Translation3d {
    *
    * @return The Z component of the translation.
    */
-  constexpr units::meter_t X() const { return m_x; }
+  units::meter_t X() const { return m_x; }
 
   /**
    * Returns the Y component of the translation.
    *
    * @return The Y component of the translation.
    */
-  constexpr units::meter_t Y() const { return m_y; }
+  units::meter_t Y() const { return m_y; }
 
   /**
    * Returns the Z component of the translation.
    *
    * @return The Z component of the translation.
    */
-  constexpr units::meter_t Z() const { return m_z; }
+  units::meter_t Z() const { return m_z; }
 
   /**
    * Returns the norm, or distance from the origin to the translation.
@@ -107,7 +122,7 @@ class WPILIB_DLLEXPORT Translation3d {
    * Returns a Translation2d representing this Translation3d projected into the
    * X-Y plane.
    */
-  constexpr Translation2d ToTranslation2d() const;
+  Translation2d ToTranslation2d() const;
 
   /**
    * Returns the sum of two translations in 3D space.
@@ -119,7 +134,7 @@ class WPILIB_DLLEXPORT Translation3d {
    *
    * @return The sum of the translations.
    */
-  constexpr Translation3d operator+(const Translation3d& other) const;
+  Translation3d operator+(const Translation3d& other) const;
 
   /**
    * Returns the difference between two translations.
@@ -131,7 +146,7 @@ class WPILIB_DLLEXPORT Translation3d {
    *
    * @return The difference between the two translations.
    */
-  constexpr Translation3d operator-(const Translation3d& other) const;
+  Translation3d operator-(const Translation3d& other) const;
 
   /**
    * Returns the inverse of the current translation. This is equivalent to
@@ -139,7 +154,7 @@ class WPILIB_DLLEXPORT Translation3d {
    *
    * @return The inverse of the current translation.
    */
-  constexpr Translation3d operator-() const;
+  Translation3d operator-() const;
 
   /**
    * Returns the translation multiplied by a scalar.
@@ -151,7 +166,7 @@ class WPILIB_DLLEXPORT Translation3d {
    *
    * @return The scaled translation.
    */
-  constexpr Translation3d operator*(double scalar) const;
+  Translation3d operator*(double scalar) const;
 
   /**
    * Returns the translation divided by a scalar.
@@ -163,7 +178,7 @@ class WPILIB_DLLEXPORT Translation3d {
    *
    * @return The scaled translation.
    */
-  constexpr Translation3d operator/(double scalar) const;
+  Translation3d operator/(double scalar) const;
 
   /**
    * Checks equality between this Translation3d and another object.
@@ -187,12 +202,4 @@ class WPILIB_DLLEXPORT Translation3d {
   units::meter_t m_z = 0_m;
 };
 
-WPILIB_DLLEXPORT
-void to_json(wpi::json& json, const Translation3d& state);
-
-WPILIB_DLLEXPORT
-void from_json(const wpi::json& json, Translation3d& state);
-
 }  // namespace frc
-
-#include "Translation3d.inc"
