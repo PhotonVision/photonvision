@@ -7,7 +7,7 @@
       item-color="secondary"
       label="Select target family"
       :items="familyList"
-      @input="handlePipelineUpdate('tagFamily', targetList.indexOf(selectedModel))"
+      @input="handlePipelineUpdate('tagFamily', familyList.indexOf(selectedFamily))"
     />
     <CVslider
       v-model="decimate"
@@ -76,7 +76,7 @@
         },
         data() {
             return {
-              familyList: ["tag36h11"],
+              familyList: ["tag36h11", "tag16h5"],
             }
         },
         computed: {
