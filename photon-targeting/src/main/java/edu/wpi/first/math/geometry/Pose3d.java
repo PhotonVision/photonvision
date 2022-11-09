@@ -51,8 +51,8 @@ public class Pose3d implements Interpolatable<Pose3d> {
      */
     @JsonCreator
     public Pose3d(
-        @JsonProperty(required = true, value = "translation") Translation3d translation,
-        @JsonProperty(required = true, value = "rotation") Rotation3d rotation) {
+            @JsonProperty(required = true, value = "translation") Translation3d translation,
+            @JsonProperty(required = true, value = "rotation") Rotation3d rotation) {
         m_translation = translation;
         m_rotation = rotation;
     }
