@@ -45,17 +45,17 @@ public class Translation3d implements Interpolatable<Translation3d> {
     }
 
     /**
-    * Constructs a Translation3d with the X, Y, and Z components equal to the provided values.
-    *
-    * @param x The x component of the translation.
-    * @param y The y component of the translation.
-    * @param z The z component of the translation.
-    */
+     * Constructs a Translation3d with the X, Y, and Z components equal to the provided values.
+     *
+     * @param x The x component of the translation.
+     * @param y The y component of the translation.
+     * @param z The z component of the translation.
+     */
     @JsonCreator
     public Translation3d(
-        @JsonProperty(required = true, value = "x") double x,
-        @JsonProperty(required = true, value = "y") double y,
-        @JsonProperty(required = true, value = "z") double z) {
+            @JsonProperty(required = true, value = "x") double x,
+            @JsonProperty(required = true, value = "y") double y,
+            @JsonProperty(required = true, value = "z") double z) {
         m_x = x;
         m_y = y;
         m_z = z;
