@@ -168,12 +168,12 @@ public class RobotPoseEstimator {
                 Pose3d targetPose = aprilTags.get(target.getFiducialId());
                 double alternativeDifference =
                         Math.abs(
-                                p.getSecond().getY()
-                                        - targetPose.transformBy(target.getAlternateCameraToTarget().inverse()).getY());
+                                p.getSecond().getZ()
+                                        - targetPose.transformBy(target.getAlternateCameraToTarget().inverse()).getZ());
                 double bestDifference =
                         Math.abs(
-                                p.getSecond().getY()
-                                        - targetPose.transformBy(target.getBestCameraToTarget().inverse()).getY());
+                                p.getSecond().getZ()
+                                        - targetPose.transformBy(target.getBestCameraToTarget().inverse()).getZ());
                 if (alternativeDifference < smallestHeightDifference) {
                     smallestHeightDifference = alternativeDifference;
                     pose = targetPose.transformBy(target.getAlternateCameraToTarget().inverse());
