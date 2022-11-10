@@ -51,6 +51,28 @@
       @input="handlePipelineData('refineEdges')"
     />
     <CVslider
+      v-model="hammingDist"
+      class="pt-2 pb-4"
+      slider-cols="8"
+      name="Max error bits"
+      min="0"
+      max="10"
+      step="1"
+      tooltip="Maximum number of error bits to correct; potential tags with more will be thrown out. For smaller tags (like 16h5), set this as low as possible."
+      @input="handlePipelineData('hammingDist')"
+    />
+    <CVslider
+      v-model="decisionMargin"
+      class="pt-2 pb-4"
+      slider-cols="8"
+      name="Decision Margin Cutoff"
+      min="0"
+      max="250"
+      step="1"
+      tooltip="Tags with a 'margin' (decoding quality score) less than this wil be rejected. Increase this to reduce the number of false positive detections"
+      @input="handlePipelineData('decisionMargin')"
+    />
+    <CVslider
       v-model="numIterations"
       class="pt-2 pb-4"
       slider-cols="8"
@@ -95,6 +117,22 @@
             },
             set(val) {
                 this.$store.commit("mutatePipeline", {"decimate": val});
+            }
+          },
+          hammingDist: {
+            get() {
+                return this.$store.getters.currentPipelineSettings.hammingDist
+            },
+            set(val) {
+                this.$store.commit("mutatePipeline", {"hammingDist": val});
+            }
+          },
+          decisionMargin: {
+            get() {
+                return this.$store.getters.currentPipelineSettings.decisionMargin
+            },
+            set(val) {
+                this.$store.commit("mutatePipeline", {"decisionMargin": val});
             }
           },
           numIterations: {

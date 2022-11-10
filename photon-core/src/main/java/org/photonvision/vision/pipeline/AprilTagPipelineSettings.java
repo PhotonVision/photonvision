@@ -31,6 +31,10 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public boolean debug = false;
     public boolean refineEdges = true;
     public int numIterations = 200;
+    
+    // TODO is this a legit, reasonable default?
+    public int hammingDist = 3;
+    public int decisionMargin = 0;
 
     // 3d settings
 
