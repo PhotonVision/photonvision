@@ -1,5 +1,7 @@
 apply plugin: "java"
 
+apply from: "${rootDir}/shared/common.gradle"
+
 sourceCompatibility = 11
 targetCompatibility = 11
 
