@@ -34,7 +34,6 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N5;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.AnalogGyro;
-import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.PhotonCamera;
 
 /**
@@ -84,7 +83,7 @@ public class DrivetrainPoseEstimator {
 
         var res = cam.getLatestResult();
         if (res.hasTargets()) {
-            var imageCaptureTime = Timer.getFPGATimestamp() - res.getLatencyMillis() / 1000.0;
+            var imageCaptureTime = res.getTimestampSeconds();
             var camToTargetTrans = res.getBestTarget().getBestCameraToTarget();
             var camPose = Constants.kFarTargetPose.transformBy(camToTargetTrans.inverse());
             m_poseEstimator.addVisionMeasurement(

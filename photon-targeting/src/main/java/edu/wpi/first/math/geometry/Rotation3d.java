@@ -17,6 +17,10 @@
 
 package edu.wpi.first.math.geometry;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
@@ -25,7 +29,9 @@ import edu.wpi.first.math.interpolation.Interpolatable;
 import edu.wpi.first.math.numbers.N3;
 import java.util.Objects;
 
-/** A rotation in a 3D coordinate. */
+/** A rotation in a 3D coordinate frame represented by a quaternion. */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Rotation3d implements Interpolatable<Rotation3d> {
     private Quaternion m_q = new Quaternion();
 
@@ -37,7 +43,8 @@ public class Rotation3d implements Interpolatable<Rotation3d> {
      *
      * @param q The quaternion.
      */
-    public Rotation3d(Quaternion q) {
+    @JsonCreator
+    public Rotation3d(@JsonProperty(required = true, value = "quaternion") Quaternion q) {
         m_q = q.normalize();
     }
 
@@ -174,6 +181,7 @@ public class Rotation3d implements Interpolatable<Rotation3d> {
      *
      * @return The quaternion representation of the Rotation3d.
      */
+    @JsonProperty(value = "quaternion")
     public Quaternion getQuaternion() {
         return m_q;
     }
