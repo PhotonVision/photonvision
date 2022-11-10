@@ -379,6 +379,82 @@ class RobotPoseEstimatorTest {
         assertEquals(1, pose.getZ(), .01);
     }
 
+    @Test
+    void averageBestPoses() {
+        Map<Integer, Pose3d> aprilTags = new HashMap<>();
+        aprilTags.put(0, new Pose3d(3, 3, 3, new Rotation3d()));
+        aprilTags.put(1, new Pose3d(5, 5, 5, new Rotation3d()));
+
+        ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
+
+        PhotonCameraInjector cameraOne = new PhotonCameraInjector();
+        cameraOne.result =
+                new PhotonPipelineResult(
+                        2,
+                        List.of(
+                                new PhotonTrackedTarget(
+                                        3.0,
+                                        -4.0,
+                                        9.0,
+                                        4.0,
+                                        0,
+                                        new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
+                                        new Transform3d(new Translation3d(1, 1, 1), new Rotation3d()),
+                                        0.7,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8))), // 1 1 1 ambig: .7
+                                new PhotonTrackedTarget(
+                                        3.0,
+                                        -4.0,
+                                        9.1,
+                                        6.7,
+                                        1,
+                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                                        new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
+                                        0.3,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8))))); // 2 2 2 ambig .3
+        PhotonCameraInjector cameraTwo = new PhotonCameraInjector();
+        cameraTwo.result =
+                new PhotonPipelineResult(
+                        4,
+                        List.of(
+                                new PhotonTrackedTarget(
+                                        9.0,
+                                        -2.0,
+                                        19.0,
+                                        3.0,
+                                        0,
+                                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
+                                        new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
+                                        0.4,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8))))); // 3 3 3 ambig .4
+
+        cameras.add(Pair.of(cameraOne, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
+        cameras.add(Pair.of(cameraTwo, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
+
+        RobotPoseEstimator estimator =
+                new RobotPoseEstimator(aprilTags, PoseStrategy.AVERAGE_BEST_TARGETS, cameras);
+
+        Pair<Pose3d, Double> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.getFirst();
+        System.out.println(pose.toString());
+        assertEquals(2.6885245901639347, estimatedPose.getSecond(), .01);
+        assertEquals(2.15, pose.getX(), .01);
+        assertEquals(2.15, pose.getY(), .01);
+        assertEquals(2.15, pose.getZ(), .01);
+    }
+
     private class PhotonCameraInjector extends PhotonCamera {
         public PhotonCameraInjector() {
             super("Test");

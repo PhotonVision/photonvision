@@ -25,11 +25,11 @@ public class RobotPoseEstimator {
      * </ul>
      */
     enum PoseStrategy {
-        LOWEST_AMBIGUITY, // TODO: Test
-        CLOSEST_TO_CAMERA_HEIGHT, // TODO: Test
-        CLOSEST_TO_REFERENCE_POSE, // TODO: Test
-        CLOSEST_TO_LAST_POSE, // TODO: Test
-        AVERAGE_BEST_TARGETS // TODO: Test
+        LOWEST_AMBIGUITY,
+        CLOSEST_TO_CAMERA_HEIGHT,
+        CLOSEST_TO_REFERENCE_POSE,
+        CLOSEST_TO_LAST_POSE,
+        AVERAGE_BEST_TARGETS
     }
 
     private Map<Integer, Pose3d> aprilTags;
@@ -257,7 +257,16 @@ public class RobotPoseEstimator {
                     continue;
                 }
                 Pose3d targetPose = aprilTags.get(target.getFiducialId());
-                totalAmbiguity += target.getPoseAmbiguity();
+                try {
+                    totalAmbiguity += 1. / target.getPoseAmbiguity();
+                } catch (ArithmeticException e) {
+                    DriverStation.reportWarning(
+                            "[RobotPoseEstimator] A total ambiguity of zero exists, using that pose instead!",
+                            false);
+                    return Pair.of(
+                            targetPose.transformBy(target.getBestCameraToTarget().inverse()),
+                            p.getFirst().getLatestResult().getLatencyMillis());
+                }
                 tempPoses.add(
                         Pair.of(
                                 targetPose.transformBy(target.getBestCameraToTarget().inverse()),
@@ -269,9 +278,10 @@ public class RobotPoseEstimator {
         Translation3d transform = new Translation3d();
         Rotation3d rotation = new Rotation3d();
         double latency = 0;
+
         for (Pair<Pose3d, Pair<Double, Double>> pair : tempPoses) {
             try {
-                double weight = (totalAmbiguity - pair.getSecond().getFirst()) / totalAmbiguity;
+                double weight = (1. / pair.getSecond().getFirst()) / totalAmbiguity;
                 transform = transform.plus(pair.getFirst().getTranslation().times(weight));
                 rotation = rotation.plus(pair.getFirst().getRotation().times(weight));
                 latency += pair.getSecond().getSecond() * weight; // NOTE: Average latency may not work well
