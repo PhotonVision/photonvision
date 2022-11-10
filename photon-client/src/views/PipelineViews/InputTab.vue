@@ -107,11 +107,6 @@
         },
         // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
-        data() {
-            return {
-              rawStreamDivisorIndex: 0,
-            }
-        },
         computed: {
             largeBox: {
               get() {
@@ -185,15 +180,15 @@
                     this.$store.commit("mutatePipeline", {"cameraVideoModeIndex": val});
 
                     this.handlePipelineUpdate("streamingFrameDivisor", this.getNumSkippedStreamDivisors());
-                    this.rawStreamDivisorIndex = 0;
+                    this.$store.commit("mutatePipeline", {"streamingFrameDivisor": 0});
                 }
             },
             streamingFrameDivisor: {
                 get() {
-                    return this.rawStreamDivisorIndex;
+                    return this.$store.getters.currentPipelineSettings.streamingFrameDivisor;
                 },
                 set(val) {
-                    this.rawStreamDivisorIndex = val;
+                    this.$store.commit("mutatePipeline", {"streamingFrameDivisor": val});
                     this.handlePipelineUpdate("streamingFrameDivisor", this.getNumSkippedStreamDivisors() + val);
                 }
             },
