@@ -98,7 +98,7 @@
         },
         data() {
             return {
-              familyList: ["tag36h11", "tag16h5"],
+              familyList: ["tag36h11", "tag25h9", "tag16h5"],
             }
         },
         computed: {
