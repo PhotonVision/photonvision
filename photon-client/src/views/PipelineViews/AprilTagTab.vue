@@ -14,9 +14,9 @@
       class="pt-2"
       slider-cols="8"
       name="Decimate"
-      min="0"
-      max="3"
-      step=".5"
+      min="1"
+      max="8"
+      step="1.0"
       tooltip="Increases FPS at the expense of range by reducing image resolution initially"
       @input="handlePipelineData('decimate')"
     />
