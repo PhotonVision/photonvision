@@ -181,6 +181,13 @@
 
                     this.handlePipelineUpdate("streamingFrameDivisor", this.getNumSkippedStreamDivisors());
                     this.$store.commit("mutatePipeline", {"streamingFrameDivisor": 0});
+
+                    // If we don't have 3d mode calibrated at the new resolution either, we should disable it here
+                    // (TODO) This probably belongs in the backend (Matt)
+                    if (!this.$store.getters.isCalibrated) {
+                        this.handlePipelineUpdate("solvePNPEnabled", false);
+                        this.$store.commit("mutatePipeline", {"solvePNPEnabled": false});
+                    }
                 }
             },
             streamingFrameDivisor: {
