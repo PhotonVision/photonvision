@@ -13,7 +13,9 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class RobotPoseEstimator {
 
-    /***
+    /**
+     *
+     *
      * <ul>
      *   <li><strong>LOWEST_AMBIGUITY</strong>: Choose the Pose with the lowest ambiguity
      *   <li><strong>CLOSEST_TO_CAMERA_HEIGHT</strong>: Choose the Pose which is closest to the camera
@@ -39,15 +41,11 @@ public class RobotPoseEstimator {
 
     private Pose3d referencePose;
 
-    /***
+    /**
      * Create a new RobotPoseEstimator.
      *
-     * <p>Example: <code>
-     * <p>
-     * Map<Integer, Pose3d> map = new HashMap<>();
-     * <p>
-     * map.put(1, new Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is at (1.0,2.0,3.0)
-     * </code>
+     * <p>Example: {@code <code> <p> Map<Integer, Pose3d> map = new HashMap<>(); <p> map.put(1, new
+     * Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is at (1.0,2.0,3.0) </code> }
      *
      * @param aprilTags A Map linking AprilTag IDs to Pose3ds with respect to the FIRST field.
      * @param strategy The strategy it should use to determine the best pose.
