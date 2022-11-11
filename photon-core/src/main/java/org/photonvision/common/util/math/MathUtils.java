@@ -209,11 +209,10 @@ public class MathUtils {
 
     /**
      * Orthogonalize an input matrix using a QR decomposition. QR decompositions decompose a
-     * rectangular matrix 'A' such that 'A=QR'. The output matrix Q is the orthogonal matrix. R is
-     * used to ensure we don't flip signs.
+     * rectangular matrix 'A' such that 'A=QR', where Q is the closest orthogonal matrix to the input,
+     * and R is an upper triangular matrix.
      */
     public static Matrix<N3, N3> orthogonalizeRotationMatrix(Matrix<N3, N3> input) {
-
         var a = DecompositionFactory_DDRM.qr(3, 3);
         if (!a.decompose(input.getStorage().getDDRM())) {
             // best we can do is return the input
@@ -227,6 +226,7 @@ public class MathUtils {
         a.getR(R, false);
 
         // Fix signs in R if they're < 0 so it's close to an identity matrix
+        // (our QR decomposition implementation sometimes flips the signs of columns)
         for (int colR = 0; colR < 3; ++colR) {
             if (R.get(colR, colR) < 0) {
                 for (int rowQ = 0; rowQ < 3; ++rowQ) {
