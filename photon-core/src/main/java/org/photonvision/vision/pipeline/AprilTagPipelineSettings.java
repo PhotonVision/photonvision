@@ -33,8 +33,8 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int numIterations = 200;
 
     // TODO is this a legit, reasonable default?
-    public int hammingDist = 3;
-    public int decisionMargin = 0;
+    public int hammingDist = 1;
+    public int decisionMargin = 30;
 
     // 3d settings
 

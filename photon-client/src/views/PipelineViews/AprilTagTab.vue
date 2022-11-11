@@ -9,6 +9,17 @@
       :items="familyList"
       @input="handlePipelineUpdate('tagFamily', familyList.indexOf(selectedFamily))"
     />
+    <v-select
+      v-model="selectedModel"
+      dark
+      color="accent"
+      item-color="secondary"
+      label="Select a target model"
+      :items="targetList"
+      item-text="name"
+      item-value="data"
+      @input="handlePipelineUpdate('targetModel', targetList.indexOf(selectedModel) + 6)"
+    />
     <CVslider
       v-model="decimate"
       class="pt-2"
@@ -99,9 +110,20 @@
         data() {
             return {
               familyList: ["tag36h11", "tag25h9", "tag16h5"],
+              // Selected model is offset (ew) by 6 from the photon ordinal, as we only wanna show the 36h11 and 16h5 options
+              targetList: ['6.5in (36h11) AprilTag', '6in (16h5) AprilTag'], //Keep in sync with TargetModel.java
             }
         },
         computed: {
+          selectedModel: {
+              get() {
+                  let ret = this.$store.getters.currentPipelineSettings.targetModel - 6
+                  return this.targetList[ret];
+              },
+              set(val) {
+                  this.$store.commit("mutatePipeline", {"targetModel": this.targetList.indexOf(val) + 6})
+              }
+          },
           selectedFamily: {
             get() {
                 let ret = this.$store.getters.currentPipelineSettings.tagFamily
