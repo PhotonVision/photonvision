@@ -202,4 +202,53 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
   }
   return std::make_pair(pose, milli);
 }
+std::pair<frc::Pose3d, units::millisecond_t>
+RobotPoseEstimator::AverageBestTargetsStrategy() {
+  std::vector<std::pair<frc::Pose3d, std::pair<double, units::millisecond_t>>>
+      tempPoses;
+  double totalAmbiguity = 0;
+
+  for (std::string::size_type i = 0; i < cameras.size(); ++i) {
+    std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
+    wpi::span<const PhotonTrackedTarget> targets =
+        p.first.GetLatestResult().GetTargets();
+    for (std::string::size_type j = 0; j < targets.size(); ++j) {
+      PhotonTrackedTarget target = targets[j];
+      if (aprilTags.count(target.GetFiducialId()) == 0) {
+        FRC_ReportError(frc::warn::Warning,
+                        "Tried to get pose of unknown April Tag: {}",
+                        target.GetFiducialId());
+        continue;
+      }
+
+      frc::Pose3d targetPose = aprilTags[target.GetFiducialId()];
+      if (target.GetPoseAmbiguity() == 0) {
+        FRC_ReportError(frc::warn::Warning,
+                        "Pose ambiguity of zero exists, using that instead!",
+                        "");
+        return std::make_pair(
+            targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()),
+            p.first.GetLatestResult().GetLatency() / 1000.);
+      }
+      totalAmbiguity += 1. / target.GetPoseAmbiguity();
+
+      tempPoses.push_back(std::make_pair(
+          targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()),
+          std::make_pair(target.GetPoseAmbiguity(),
+                         p.first.GetLatestResult().GetLatency() / 1000.)));
+    }
+  }
+  frc::Translation3d transform = frc::Translation3d();
+  frc::Rotation3d rotation = frc::Rotation3d();
+  units::millisecond_t latency = units::millisecond_t(0);
+
+  for (std::pair<frc::Pose3d, std::pair<double, units::millisecond_t>>& pair :
+       tempPoses) {
+    double weight = (1. / pair.second.first) / totalAmbiguity;
+    transform = transform + pair.first.Translation() * weight;
+    rotation = rotation + pair.first.Rotation() * weight;
+    latency += pair.second.second * weight;
+  }
+  return std::make_pair(frc::Pose3d(transform, rotation), latency);
+}
 }  // namespace photonlib

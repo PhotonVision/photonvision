@@ -72,6 +72,8 @@ class RobotPoseEstimator {
   std::pair<frc::Pose3d, units::millisecond_t> ClosestToCameraHeightStrategy();
 
   std::pair<frc::Pose3d, units::millisecond_t> ClosestToReferencePoseStrategy();
+
+  std::pair<frc::Pose3d, units::millisecond_t> AverageBestTargetsStrategy();
 };
 
 }  // namespace photonlib
