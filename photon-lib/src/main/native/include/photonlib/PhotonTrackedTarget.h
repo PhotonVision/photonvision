@@ -117,9 +117,7 @@ class PhotonTrackedTarget {
   /**
    * @return The detected fiducial ID
    */
-  int GetFiducialId() const {
-    return fiducialId;
-  }
+  int GetFiducialId() const { return fiducialId; }
 
   bool operator==(const PhotonTrackedTarget& other) const;
   bool operator!=(const PhotonTrackedTarget& other) const;
