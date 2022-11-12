@@ -104,4 +104,45 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
           .TransformBy(cameras[lowestAI].second.Inverse()),
       cameras[lowestAI].first.GetLatestResult().GetLatency() / 1000.);
 }
+std::pair<frc::Pose3d, units::millisecond_t>
+RobotPoseEstimator::ClosestToCameraHeightStrategy() {
+  units::meter_t smallestHeightDifference = units::meter_t(10e9);
+  units::millisecond_t milli = units::millisecond_t(0);
+  frc::Pose3d pose = lastPose;
+
+  for (std::string::size_type i = 0; i < cameras.size(); ++i) {
+    std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
+    wpi::span<const PhotonTrackedTarget> targets =
+        p.first.GetLatestResult().GetTargets();
+    for (std::string::size_type j = 0; j < targets.size(); ++j) {
+      PhotonTrackedTarget target = targets[j];
+      if (aprilTags.count(target.GetFiducialId()) == 0) {
+        FRC_ReportError(frc::warn::Warning,
+                        "Tried to get pose of unknown April Tag: {}",
+                        target.GetFiducialId());
+        continue;
+      }
+      frc::Pose3d targetPose = aprilTags[target.GetFiducialId()];
+      units::meter_t alternativeDifference = units::math::abs(
+          p.second.Z() -
+          targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
+              .Z());
+      units::meter_t bestDifference = units::math::abs(
+          p.second.Z() -
+          targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()).Z());
+      if (alternativeDifference < smallestHeightDifference) {
+        smallestHeightDifference = alternativeDifference;
+        pose = targetPose.TransformBy(
+            target.GetAlternateCameraToTarget().Inverse());
+        milli = p.first.GetLatestResult().GetLatency() / 1000.;
+      }
+      if (bestDifference < smallestHeightDifference) {
+        smallestHeightDifference = bestDifference;
+        pose = targetPose.TransformBy(target.GetBestCameraToTarget().Inverse());
+        milli = p.first.GetLatestResult().GetLatency() / 1000.;
+      }
+    }
+  }
+  return std::make_pair(pose, units::millisecond_t(milli));
+}
 }  // namespace photonlib

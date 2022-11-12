@@ -68,6 +68,8 @@ class RobotPoseEstimator {
   frc::Pose3d referencePose;
 
   std::pair<frc::Pose3d, units::millisecond_t> LowestAmbiguityStrategy();
+
+  std::pair<frc::Pose3d, units::millisecond_t> ClosestToCameraHeightStrategy();
 };
 
 }  // namespace photonlib
