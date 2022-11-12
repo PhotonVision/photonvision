@@ -114,6 +114,13 @@ class PhotonTrackedTarget {
     return altCameraToTarget;
   }
 
+  /**
+   * @return The detected fiducial ID
+   */
+  int GetFiducialId() const {
+    return fiducialId;
+  }
+
   bool operator==(const PhotonTrackedTarget& other) const;
   bool operator!=(const PhotonTrackedTarget& other) const;
 
