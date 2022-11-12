@@ -47,6 +47,7 @@ RobotPoseEstimator::RobotPoseEstimator(
   this->strategy = strategy;
   this->cameras = cameras;
   this->lastPose = frc::Pose3d();
+  this->referencePose = frc::Pose3d();
 }
 
 std::pair<frc::Pose3d, units::millisecond_t> RobotPoseEstimator::update() {
@@ -57,6 +58,19 @@ std::pair<frc::Pose3d, units::millisecond_t> RobotPoseEstimator::update() {
   switch (strategy) {
     case LOWEST_AMBIGUITY:
       pair = LowestAmbiguityStrategy();
+      lastPose = pair.first;
+      return pair;
+    case CLOSEST_TO_CAMERA_HEIGHT:
+      pair = ClosestToCameraHeightStrategy();
+      lastPose = pair.first;
+      return pair;
+    case CLOSEST_TO_REFERENCE_POSE:
+      pair = ClosestToReferencePoseStrategy();
+      lastPose = pair.first;
+      return pair;
+    case CLOSEST_TO_LAST_POSE:
+      referencePose = lastPose;
+      pair = ClosestToReferencePoseStrategy();
       lastPose = pair.first;
       return pair;
     default:
@@ -143,6 +157,49 @@ RobotPoseEstimator::ClosestToCameraHeightStrategy() {
       }
     }
   }
-  return std::make_pair(pose, units::millisecond_t(milli));
+  return std::make_pair(pose, milli);
+}
+std::pair<frc::Pose3d, units::millisecond_t>
+RobotPoseEstimator::ClosestToReferencePoseStrategy() {
+  units::meter_t smallestDifference = units::meter_t(10e9);
+  units::millisecond_t milli = units::millisecond_t(0);
+  frc::Pose3d pose = lastPose;
+
+  for (std::string::size_type i = 0; i < cameras.size(); ++i) {
+    std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
+    wpi::span<const PhotonTrackedTarget> targets =
+        p.first.GetLatestResult().GetTargets();
+    for (std::string::size_type j = 0; j < targets.size(); ++j) {
+      PhotonTrackedTarget target = targets[j];
+      if (aprilTags.count(target.GetFiducialId()) == 0) {
+        FRC_ReportError(frc::warn::Warning,
+                        "Tried to get pose of unknown April Tag: {}",
+                        target.GetFiducialId());
+        continue;
+      }
+      frc::Pose3d targetPose = aprilTags[target.GetFiducialId()];
+      units::meter_t alternativeDifference =
+          units::math::abs(p.second.Translation().Distance(
+              targetPose
+                  .TransformBy(target.GetAlternateCameraToTarget().Inverse())
+                  .Translation()));
+      units::meter_t bestDifference =
+          units::math::abs(p.second.Translation().Distance(
+              targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
+                  .Translation()));
+      if (alternativeDifference < smallestDifference) {
+        smallestDifference = alternativeDifference;
+        pose = targetPose.TransformBy(
+            target.GetAlternateCameraToTarget().Inverse());
+        milli = p.first.GetLatestResult().GetLatency() / 1000.;
+      }
+      if (bestDifference < smallestDifference) {
+        smallestDifference = bestDifference;
+        pose = targetPose.TransformBy(target.GetBestCameraToTarget().Inverse());
+        milli = p.first.GetLatestResult().GetLatency() / 1000.;
+      }
+    }
+  }
+  return std::make_pair(pose, milli);
 }
 }  // namespace photonlib
