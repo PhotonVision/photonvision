@@ -4,6 +4,7 @@ export class WebsocketVideoStream{
 
 
     constructor(drawDiv, streamPort, host) {
+        console.log("host " + host + " port " + streamPort)
 
         this.drawDiv = drawDiv;
         this.image = document.getElementById(this.drawDiv);
@@ -205,6 +206,7 @@ export class WebsocketVideoStream{
     }
 
     ws_onMessage(e){
+        console.log("Got message from " + this.serverAddr)
         if(typeof e.data === 'string'){
             //string data from host
             //TODO - anything to receive info here? Maybe "available streams?"
