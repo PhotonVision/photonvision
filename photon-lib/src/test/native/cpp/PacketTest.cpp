@@ -39,6 +39,8 @@ TEST(PacketTest, PhotonTrackedTarget) {
       -1,
       frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                        frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+      frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                       frc::Rotation3d(1_rad, 2_rad, 3_rad)),
       {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}};
 
   photonlib::Packet p;
@@ -73,6 +75,8 @@ TEST(PacketTest, PhotonPipelineResult) {
           1,
           frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                            frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}},
       photonlib::PhotonTrackedTarget{
           3.0,
@@ -80,6 +84,8 @@ TEST(PacketTest, PhotonPipelineResult) {
           9.1,
           6.7,
           -1,
+          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
           frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                            frc::Rotation3d(1_rad, 2_rad, 3_rad)),
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},

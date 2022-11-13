@@ -52,11 +52,12 @@ class PhotonTrackedTarget {
    * @param area The area of the target.
    * @param skew The skew of the target.
    * @param pose The camera-relative pose of the target.
+   * @param alternatePose The alternate camera-relative pose of the target.
    * @Param corners The corners of the bounding rectangle.
    */
   PhotonTrackedTarget(
       double yaw, double pitch, double area, double skew, int fiducialID,
-      const frc::Transform3d& pose,
+      const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
       const wpi::SmallVector<std::pair<double, double>, 4> corners);
 
   /**

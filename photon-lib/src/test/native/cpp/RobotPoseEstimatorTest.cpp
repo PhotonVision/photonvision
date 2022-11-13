@@ -22,8 +22,6 @@
  * SOFTWARE.
  */
 
-#include "photonlib/RobotPoseEstimator.h"
-
 #include <map>
 #include <utility>
 #include <vector>
@@ -31,11 +29,20 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
+#include <units/angle.h>
+#include <wpi/SmallVector.h>
 
 #include "gtest/gtest.h"
 #include "photonlib/PhotonCamera.h"
 #include "photonlib/PhotonPipelineResult.h"
 #include "photonlib/PhotonTrackedTarget.h"
+#include "photonlib/RobotPoseEstimator.h"
+
+class PhotonCameraInjector : private photonlib::PhotonCamera {
+ public:
+  photonlib::PhotonPipelineResult result;
+  photonlib::PhotonPipelineResult GetLatestResult() { return result; }
+};
 
 TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
   std::map<int, frc::Pose3d> aprilTags;
@@ -45,5 +52,33 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
                                    units::meter_t(5), frc::Rotation3d())});
 
   std::vector<std::pair<photonlib::PhotonCamera, frc::Transform3d>> cameras;
+
+  wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
+      photonlib::PhotonTrackedTarget{
+          3.0,
+          -4.0,
+          9.0,
+          4.0,
+          0,
+          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}},
+      photonlib::PhotonTrackedTarget{
+          3.0,
+          -4.0,
+          9.1,
+          6.7,
+          1,
+          frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
+                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
+                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
+           std::pair{7, 8}}}};
+
+  photonlib::PhotonPipelineResult result2{2_s, targets};
+
   EXPECT_EQ(0, 1);
 }
