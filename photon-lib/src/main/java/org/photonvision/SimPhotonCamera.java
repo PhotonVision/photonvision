@@ -61,7 +61,9 @@ public class SimPhotonCamera extends PhotonCamera {
         targetAreaEntry = rootTable.getEntry("targetAreaEntry");
         targetSkewEntry = rootTable.getEntry("targetSkewEntry");
         targetPoseEntry = rootTable.getEntry("targetPoseEntry");
-        versionEntry = rootTable.getEntry("versionEntry");
+
+        // The versionEntry is stored under the main table of <instance>/photonvision
+        versionEntry = instance.getTable("photonvision").getEntry("version");
 
         // Sets the version string so that it will always match the current version
         versionEntry.setString(PhotonVersion.versionString);
