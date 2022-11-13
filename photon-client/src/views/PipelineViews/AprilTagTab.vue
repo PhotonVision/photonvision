@@ -7,7 +7,18 @@
       item-color="secondary"
       label="Select target family"
       :items="familyList"
-      @input="handlePipelineUpdate('tagFamily', targetList.indexOf(selectedModel))"
+      @input="handlePipelineUpdate('tagFamily', familyList.indexOf(selectedFamily))"
+    />
+    <v-select
+      v-model="selectedModel"
+      dark
+      color="accent"
+      item-color="secondary"
+      label="Select a target model"
+      :items="targetList"
+      item-text="name"
+      item-value="data"
+      @input="handlePipelineUpdate('targetModel', targetList.indexOf(selectedModel) + 6)"
     />
     <CVslider
       v-model="decimate"
@@ -51,6 +62,28 @@
       @input="handlePipelineData('refineEdges')"
     />
     <CVslider
+      v-model="hammingDist"
+      class="pt-2 pb-4"
+      slider-cols="8"
+      name="Max error bits"
+      min="0"
+      max="10"
+      step="1"
+      tooltip="Maximum number of error bits to correct; potential tags with more will be thrown out. For smaller tags (like 16h5), set this as low as possible."
+      @input="handlePipelineData('hammingDist')"
+    />
+    <CVslider
+      v-model="decisionMargin"
+      class="pt-2 pb-4"
+      slider-cols="8"
+      name="Decision Margin Cutoff"
+      min="0"
+      max="250"
+      step="1"
+      tooltip="Tags with a 'margin' (decoding quality score) less than this wil be rejected. Increase this to reduce the number of false positive detections"
+      @input="handlePipelineData('decisionMargin')"
+    />
+    <CVslider
       v-model="numIterations"
       class="pt-2 pb-4"
       slider-cols="8"
@@ -76,10 +109,21 @@
         },
         data() {
             return {
-              familyList: ["tag36h11"],
+              familyList: ["tag36h11", "tag25h9", "tag16h5"],
+              // Selected model is offset (ew) by 6 from the photon ordinal, as we only wanna show the 36h11 and 16h5 options
+              targetList: ['6.5in (36h11) AprilTag', '6in (16h5) AprilTag'], //Keep in sync with TargetModel.java
             }
         },
         computed: {
+          selectedModel: {
+              get() {
+                  let ret = this.$store.getters.currentPipelineSettings.targetModel - 6
+                  return this.targetList[ret];
+              },
+              set(val) {
+                  this.$store.commit("mutatePipeline", {"targetModel": this.targetList.indexOf(val) + 6})
+              }
+          },
           selectedFamily: {
             get() {
                 let ret = this.$store.getters.currentPipelineSettings.tagFamily
@@ -95,6 +139,22 @@
             },
             set(val) {
                 this.$store.commit("mutatePipeline", {"decimate": val});
+            }
+          },
+          hammingDist: {
+            get() {
+                return this.$store.getters.currentPipelineSettings.hammingDist
+            },
+            set(val) {
+                this.$store.commit("mutatePipeline", {"hammingDist": val});
+            }
+          },
+          decisionMargin: {
+            get() {
+                return this.$store.getters.currentPipelineSettings.decisionMargin
+            },
+            set(val) {
+                this.$store.commit("mutatePipeline", {"decisionMargin": val});
             }
           },
           numIterations: {
