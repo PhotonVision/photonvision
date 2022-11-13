@@ -103,6 +103,8 @@ task generateVendorJson() {
         def read = photonlibFileInput.text.replace('${photon_version}', pubVersion)
         photonlibFileOutput.write(read)
     }
+
+    outputs.upToDateWhen { false }
 }
 
 build.dependsOn generateVendorJson
