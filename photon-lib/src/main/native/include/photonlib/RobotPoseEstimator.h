@@ -54,6 +54,17 @@ class RobotPoseEstimator {
 
   void SetPoseStrategy(PoseStrategy strategy);
 
+  void SetReferencePose(frc::Pose3d referencePose) {
+    this->referencePose = referencePose;
+  }
+
+  void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
+
+  void SetCameras(
+      std::vector<std::pair<PhotonCamera, frc::Transform3d>> cameras) {
+    this->cameras = cameras;
+  }
+
   PoseStrategy GetPoseStrategy() const { return strategy; }
 
   frc::Pose3d GetLastPose() const { return lastPose; }

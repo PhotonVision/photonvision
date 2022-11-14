@@ -472,7 +472,6 @@ class RobotPoseEstimatorTest {
 
         Pair<Pose3d, Double> estimatedPose = estimator.update();
         Pose3d pose = estimatedPose.getFirst();
-        System.out.println(pose.toString());
         assertEquals(2.6885245901639347, estimatedPose.getSecond(), .01);
         assertEquals(2.15, pose.getX(), .01);
         assertEquals(2.15, pose.getY(), .01);

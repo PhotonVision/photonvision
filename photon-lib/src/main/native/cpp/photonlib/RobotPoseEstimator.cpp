@@ -75,6 +75,10 @@ std::pair<frc::Pose3d, units::millisecond_t> RobotPoseEstimator::Update() {
       pair = ClosestToReferencePoseStrategy();
       lastPose = pair.first;
       return pair;
+    case AVERAGE_BEST_TARGETS:
+      pair = AverageBestTargetsStrategy();
+      lastPose = pair.first;
+      return pair;
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
                       "");
@@ -181,12 +185,12 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
       }
       frc::Pose3d targetPose = aprilTags[target.GetFiducialId()];
       units::meter_t alternativeDifference =
-          units::math::abs(p.second.Translation().Distance(
+          units::math::abs(referencePose.Translation().Distance(
               targetPose
                   .TransformBy(target.GetAlternateCameraToTarget().Inverse())
                   .Translation()));
       units::meter_t bestDifference =
-          units::math::abs(p.second.Translation().Distance(
+          units::math::abs(referencePose.Translation().Distance(
               targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
                   .Translation()));
       if (alternativeDifference < smallestDifference) {
@@ -195,6 +199,7 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
             target.GetAlternateCameraToTarget().Inverse());
         milli = p.first.GetLatestResult().GetLatency() / 1000.;
       }
+
       if (bestDifference < smallestDifference) {
         smallestDifference = bestDifference;
         pose = targetPose.TransformBy(target.GetBestCameraToTarget().Inverse());
@@ -204,6 +209,7 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
   }
   return std::make_pair(pose, milli);
 }
+
 std::pair<frc::Pose3d, units::millisecond_t>
 RobotPoseEstimator::AverageBestTargetsStrategy() {
   std::vector<std::pair<frc::Pose3d, std::pair<double, units::millisecond_t>>>
