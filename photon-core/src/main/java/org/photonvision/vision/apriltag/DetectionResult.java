@@ -33,6 +33,8 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.Arrays;
 
+import org.photonvision.common.util.math.MathUtils;
+
 public class DetectionResult {
     public int getId() {
         return id;
@@ -136,12 +138,12 @@ public class DetectionResult {
         this.poseResult1 =
                 new Transform3d(
                         new Translation3d(pose1TransArr[0], pose1TransArr[1], pose1TransArr[2]),
-                        new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose1RotArr)));
+                        new Rotation3d(MathUtils.orthogonalizeRotationMatrix(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose1RotArr))));
         this.error2 = err2;
         this.poseResult2 =
                 new Transform3d(
                         new Translation3d(pose2TransArr[0], pose2TransArr[1], pose2TransArr[2]),
-                        new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose2RotArr)));
+                        new Rotation3d(MathUtils.orthogonalizeRotationMatrix(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(pose2RotArr))));
     }
 
     /**

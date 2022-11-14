@@ -17,6 +17,7 @@
         data() {
             return {
                 seed: 1.0,
+                src: ""
             }
         },
         computed: {
@@ -73,7 +74,7 @@
         },
         mounted() {
           var wsvs = require('../../plugins/WebsocketVideoStream');
-          this.wsStream = new wsvs.WebsocketVideoStream(this.id, this.port, window.location.host);
+          this.wsStream = new wsvs.WebsocketVideoStream(this.id, this.port, this.$address);
         },
         unmounted() {
           this.wsStream.setPort(0);
