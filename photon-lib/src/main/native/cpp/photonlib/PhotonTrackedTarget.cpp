@@ -35,6 +35,7 @@ namespace photonlib {
 PhotonTrackedTarget::PhotonTrackedTarget(
     double yaw, double pitch, double area, double skew, int id,
     const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
+    double ambiguity,
     const wpi::SmallVector<std::pair<double, double>, 4> corners)
     : yaw(yaw),
       pitch(pitch),
@@ -43,6 +44,7 @@ PhotonTrackedTarget::PhotonTrackedTarget(
       fiducialId(id),
       bestCameraToTarget(pose),
       altCameraToTarget(alternatePose),
+      poseAmbiguity(ambiguity),
       corners(corners) {}
 
 bool PhotonTrackedTarget::operator==(const PhotonTrackedTarget& other) const {

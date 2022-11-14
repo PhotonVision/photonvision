@@ -45,12 +45,12 @@ enum PoseStrategy : int {
  * A managing class to determine how an estimated pose should be chosen.
  */
 class RobotPoseEstimator {
+ public:
   explicit RobotPoseEstimator(
       std::map<int, frc::Pose3d> aprilTags, PoseStrategy strategy,
       std::vector<std::pair<PhotonCamera, frc::Transform3d>>);
 
- public:
-  std::pair<frc::Pose3d, units::millisecond_t> update();
+  std::pair<frc::Pose3d, units::millisecond_t> Update();
 
   void SetPoseStrategy(PoseStrategy strategy);
 

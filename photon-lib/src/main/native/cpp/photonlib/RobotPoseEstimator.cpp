@@ -24,6 +24,7 @@
 
 #include "photonlib/RobotPoseEstimator.h"
 
+#include <iostream>
 #include <map>
 #include <string>
 #include <utility>
@@ -51,7 +52,7 @@ RobotPoseEstimator::RobotPoseEstimator(
   this->referencePose = frc::Pose3d();
 }
 
-std::pair<frc::Pose3d, units::millisecond_t> RobotPoseEstimator::update() {
+std::pair<frc::Pose3d, units::millisecond_t> RobotPoseEstimator::Update() {
   if (cameras.empty()) {
     return std::make_pair(lastPose, units::millisecond_t(0));
   }

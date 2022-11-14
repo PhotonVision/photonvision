@@ -58,6 +58,7 @@ class PhotonTrackedTarget {
   PhotonTrackedTarget(
       double yaw, double pitch, double area, double skew, int fiducialID,
       const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
+      double ambiguity,
       const wpi::SmallVector<std::pair<double, double>, 4> corners);
 
   /**

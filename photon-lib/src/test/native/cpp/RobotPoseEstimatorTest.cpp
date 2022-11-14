@@ -30,6 +30,7 @@
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
 #include <units/angle.h>
+#include <units/length.h>
 #include <wpi/SmallVector.h>
 
 #include "gtest/gtest.h"
@@ -37,12 +38,6 @@
 #include "photonlib/PhotonPipelineResult.h"
 #include "photonlib/PhotonTrackedTarget.h"
 #include "photonlib/RobotPoseEstimator.h"
-
-class PhotonCameraInjector : private photonlib::PhotonCamera {
- public:
-  photonlib::PhotonPipelineResult result;
-  photonlib::PhotonPipelineResult GetLatestResult() { return result; }
-};
 
 TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
   std::map<int, frc::Pose3d> aprilTags;
@@ -53,6 +48,8 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
 
   std::vector<std::pair<photonlib::PhotonCamera, frc::Transform3d>> cameras;
 
+  photonlib::PhotonCamera cameraOne("test");
+  photonlib::PhotonCamera cameraTwo("test");
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
       photonlib::PhotonTrackedTarget{
           3.0,
@@ -64,6 +61,7 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
                            frc::Rotation3d(1_rad, 2_rad, 3_rad)),
           frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
                            frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          0.7,
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6}, std::pair{7, 8}}},
       photonlib::PhotonTrackedTarget{
           3.0,
@@ -75,10 +73,45 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           frc::Transform3d(frc::Translation3d(4_m, 2_m, 3_m),
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          0.3,
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  photonlib::PhotonPipelineResult result2{2_s, targets};
+  cameraOne.test = true;
+  cameraOne.testResult = {2_s, targets};
 
-  EXPECT_EQ(0, 1);
+  wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsTwo{
+      photonlib::PhotonTrackedTarget{
+          9.0,
+          -2.0,
+          19.0,
+          3.0,
+          0,
+          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          frc::Transform3d(frc::Translation3d(1_m, 2_m, 3_m),
+                           frc::Rotation3d(1_rad, 2_rad, 3_rad)),
+          0.4,
+          {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
+           std::pair{7, 8}}}};
+
+  cameraTwo.test = true;
+  cameraTwo.testResult = {4_s, targetsTwo};
+
+  cameras.push_back(std::make_pair(
+      cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
+                                  frc::Rotation3d(0_rad, 0_rad, 0_rad))));
+  cameras.push_back(std::make_pair(
+      cameraTwo, frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
+                                  frc::Rotation3d(0_rad, 0_rad, 0_rad))));
+  photonlib::RobotPoseEstimator estimator(aprilTags,
+                                          photonlib::LOWEST_AMBIGUITY, cameras);
+  std::pair<frc::Pose3d, units::millisecond_t> estimatedPose =
+      estimator.Update();
+  frc::Pose3d pose = estimatedPose.first;
+
+  EXPECT_NEAR(2, units::unit_cast<double>(estimatedPose.second), .01);
+  EXPECT_NEAR(1, units::unit_cast<double>(pose.X()), .01);
+  EXPECT_NEAR(3, units::unit_cast<double>(pose.Y()), .01);
+  EXPECT_NEAR(2, units::unit_cast<double>(pose.Z()), .01);
 }

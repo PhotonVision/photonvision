@@ -67,7 +67,7 @@ class PhotonCamera {
    * Returns the latest pipeline result.
    * @return The latest pipeline result.
    */
-  PhotonPipelineResult GetLatestResult();
+  virtual PhotonPipelineResult GetLatestResult();
 
   /**
    * Toggles driver mode.
@@ -142,6 +142,10 @@ class PhotonCamera {
   inline static void SetVersionCheckEnabled(bool enabled) {
     PhotonCamera::VERSION_CHECK_ENABLED = enabled;
   }
+
+  // For use in tests
+  bool test = false;
+  PhotonPipelineResult testResult;
 
  protected:
   std::shared_ptr<nt::NetworkTable> mainTable;
