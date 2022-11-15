@@ -179,21 +179,20 @@ public class USBCameraSource extends VisionSource {
                 try {
                     int scaledExposure = 1;
                     if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                        //Pi Camera
+                        // Pi Camera
                         scaledExposure =
                                 (int) Math.round(timeToPiCamRawExposure(pctToExposureTimeUs(exposure)));
                         logger.debug("Setting camera raw exposure to " + Integer.toString(scaledExposure));
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
                     } else if (cameraQuirks.hasQuirk(CameraQuirk.LimitedExposure)) {
-                        //"Special" USB cameras that need some love and care to get the exposure range right
-                        scaledExposure = 1 +
-                                (int) Math.round( exposure * 69/100.0 );
+                        // "Special" USB cameras that need some love and care to get the exposure range right
+                        scaledExposure = 1 + (int) Math.round(exposure * 69 / 100.0);
                         logger.debug("Setting camera raw exposure to " + Integer.toString(scaledExposure));
                         camera.getProperty("exposure_absolute").set(scaledExposure);
                         camera.getProperty("exposure_absolute").set(scaledExposure);
                     } else {
-                        //Normal cameras
+                        // Normal cameras
                         scaledExposure = (int) Math.round(exposure);
                         logger.debug("Setting camera exposure to " + Integer.toString(scaledExposure));
                         camera.setExposureManual(scaledExposure);
