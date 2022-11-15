@@ -30,4 +30,6 @@ public enum CameraQuirk {
     CompletelyBroken,
     /** Has adjustable focus and autofocus switch */
     AdjustableFocus,
+    /** Limits useful exposure to the first ~2% of the range, so we scale our UI slider differently.*/
+    LimitedExposure,
 }
