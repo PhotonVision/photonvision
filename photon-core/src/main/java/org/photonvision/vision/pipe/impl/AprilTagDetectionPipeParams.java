@@ -19,7 +19,6 @@ package org.photonvision.vision.pipe.impl;
 
 import java.util.Objects;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
-import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class AprilTagDetectionPipeParams {

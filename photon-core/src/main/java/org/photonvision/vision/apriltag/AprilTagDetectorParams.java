@@ -29,7 +29,6 @@ package org.photonvision.vision.apriltag;
 import java.util.Objects;
 
 public class AprilTagDetectorParams {
-
     public final AprilTagFamily tagFamily;
     public final double decimate;
     public final double blur;
