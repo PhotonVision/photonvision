@@ -33,15 +33,15 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class AprilTagDetector {
     private static final Logger logger = new Logger(AprilTagDetector.class, LogGroup.VisionModule);
-    private long m_detectorPtr = 0;
+    private long m_detectorPtr = -1;
     private AprilTagDetectorParams m_lastParams = null;
 
     public void updateParams(AprilTagDetectorParams newParams) {
         if (!newParams.equals(m_lastParams)) {
-            if (m_detectorPtr != 0) {
+            if (m_detectorPtr < 0) {
                 // TODO: in JNI
                 AprilTagJNI.AprilTag_Destroy(m_detectorPtr);
-                m_detectorPtr = 0;
+                m_detectorPtr = -1;
             }
 
             logger.debug("Creating detector with params " + newParams);
@@ -67,7 +67,7 @@ public class AprilTagDetector {
             boolean useNativePoseEst,
             int numIterations,
             double tagWidthMeters) {
-        if (m_detectorPtr == 0) {
+        if (m_detectorPtr < 0) {
             // Detector not set up (JNI issue? or similar?)
             // No detection is possible.
             return new DetectionResult[] {};
