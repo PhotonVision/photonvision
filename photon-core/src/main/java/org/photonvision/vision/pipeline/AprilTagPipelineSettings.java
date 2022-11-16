@@ -35,6 +35,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     // TODO is this a legit, reasonable default?
     public int hammingDist = 1;
     public int decisionMargin = 30;
+    public int minClusterPixels = 5;
 
     // 3d settings
 

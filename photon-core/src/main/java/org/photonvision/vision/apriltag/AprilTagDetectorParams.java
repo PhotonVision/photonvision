@@ -29,8 +29,6 @@ package org.photonvision.vision.apriltag;
 import java.util.Objects;
 
 public class AprilTagDetectorParams {
-    public static AprilTagDetectorParams DEFAULT_36H11 =
-            new AprilTagDetectorParams(AprilTagFamily.kTag36h11, 1.0, 0.0, 4, false, false);
 
     public final AprilTagFamily tagFamily;
     public final double decimate;
@@ -39,19 +37,32 @@ public class AprilTagDetectorParams {
     public final boolean debug;
     public final boolean refineEdges;
 
+    public final int minClusterPixels;
+    // Max # of error bits
+    public final int maxHamming;
+    // Extra decision margin
+    public final int extraDecisionMargin;
+
     public AprilTagDetectorParams(
             AprilTagFamily tagFamily,
             double decimate,
             double blur,
             int threads,
             boolean debug,
-            boolean refineEdges) {
+            boolean refineEdges,
+            int minClusterPixels,
+            int maxHamming,
+            int extraDecisionMargin) {
         this.tagFamily = tagFamily;
         this.decimate = decimate;
         this.blur = blur;
         this.threads = threads;
         this.debug = debug;
         this.refineEdges = refineEdges;
+
+        this.minClusterPixels = minClusterPixels;
+        this.maxHamming = maxHamming;
+        this.extraDecisionMargin = extraDecisionMargin;
     }
 
     @Override
@@ -64,24 +75,16 @@ public class AprilTagDetectorParams {
                 && Double.compare(blur, that.blur) == 0
                 && threads == that.threads
                 && debug == that.debug
-                && refineEdges == that.refineEdges;
+                && refineEdges == that.refineEdges
+                && minClusterPixels == that.minClusterPixels
+                && maxHamming == that.maxHamming
+                && extraDecisionMargin == that.extraDecisionMargin;
     }
 
     @Override
     public String toString() {
-        return "AprilTagDetectorParams{"
-                + "tagFamily="
-                + tagFamily.getNativeName()
-                + ", decimate="
-                + decimate
-                + ", blur="
-                + blur
-                + ", threads="
-                + threads
-                + ", debug="
-                + debug
-                + ", refineEdges="
-                + refineEdges
-                + '}';
+      return "AprilTagDetectorParams [tagFamily=" + tagFamily + ", decimate=" + decimate + ", blur=" + blur
+          + ", threads=" + threads + ", debug=" + debug + ", refineEdges=" + refineEdges + ", minClusterPixels="
+          + minClusterPixels + ", maxHamming=" + maxHamming + ", extra_decision_margin=" + extraDecisionMargin + "]";
     }
 }

@@ -28,22 +28,22 @@ public class AprilTagDetectionPipeParams {
     public final int numIterations;
     public final double tagWidthMeters;
 
-    public AprilTagDetectionPipeParams(
-            AprilTagFamily tagFamily,
-            double decimate,
-            double blur,
-            int threads,
-            boolean debug,
-            boolean refineEdges,
-            int numIters,
-            double tagWidthMeters,
-            CameraCalibrationCoefficients cameraCalibrationCoefficients) {
-        detectorParams =
-                new AprilTagDetectorParams(tagFamily, decimate, blur, threads, debug, refineEdges);
-        this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
-        this.numIterations = numIters;
-        this.tagWidthMeters = tagWidthMeters;
-    }
+    // public AprilTagDetectionPipeParams(
+    //         AprilTagFamily tagFamily,
+    //         double decimate,
+    //         double blur,
+    //         int threads,
+    //         boolean debug,
+    //         boolean refineEdges,
+    //         int numIters,
+    //         double tagWidthMeters,
+    //         CameraCalibrationCoefficients cameraCalibrationCoefficients) {
+    //     detectorParams =
+    //             new AprilTagDetectorParams(tagFamily, decimate, blur, threads, debug, refineEdges);
+    //     this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
+    //     this.numIterations = numIters;
+    //     this.tagWidthMeters = tagWidthMeters;
+    // }
 
     public AprilTagDetectionPipeParams(
             AprilTagDetectorParams detectorParams,

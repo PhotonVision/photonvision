@@ -34,34 +34,30 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 public class AprilTagDetector {
     private static final Logger logger = new Logger(AprilTagDetector.class, LogGroup.VisionModule);
     private long m_detectorPtr = 0;
-    private AprilTagDetectorParams m_detectorParams = AprilTagDetectorParams.DEFAULT_36H11;
-
-    public AprilTagDetector() {
-        updateDetector();
-    }
-
-    private void updateDetector() {
-        if (m_detectorPtr != 0) {
-            // TODO: in JNI
-            AprilTagJNI.AprilTag_Destroy(m_detectorPtr);
-            m_detectorPtr = 0;
-        }
-
-        logger.debug("Creating detector with params " + m_detectorParams);
-        m_detectorPtr =
-                AprilTagJNI.AprilTag_Create(
-                        m_detectorParams.tagFamily.getNativeName(),
-                        m_detectorParams.decimate,
-                        m_detectorParams.blur,
-                        m_detectorParams.threads,
-                        m_detectorParams.debug,
-                        m_detectorParams.refineEdges);
-    }
+    private AprilTagDetectorParams m_lastParams = null;
 
     public void updateParams(AprilTagDetectorParams newParams) {
-        if (!m_detectorParams.equals(newParams)) {
-            m_detectorParams = newParams;
-            updateDetector();
+        if (!newParams.equals(m_lastParams)) {
+            if (m_detectorPtr != 0) {
+                // TODO: in JNI
+                AprilTagJNI.AprilTag_Destroy(m_detectorPtr);
+                m_detectorPtr = 0;
+            }
+
+            logger.debug("Creating detector with params " + newParams);
+            m_detectorPtr =
+                    AprilTagJNI.AprilTag_Create(
+                            newParams.tagFamily.getNativeName(),
+                            newParams.decimate,
+                            newParams.blur,
+                            newParams.threads,
+                            newParams.debug,
+                            newParams.refineEdges,
+                            newParams.minClusterPixels,
+                            newParams.maxHamming,
+                            newParams.extraDecisionMargin);
+
+            m_lastParams = newParams;
         }
     }
 

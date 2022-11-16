@@ -72,7 +72,10 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         settings.blur,
                         settings.threads,
                         settings.debug,
-                        settings.refineEdges);
+                        settings.refineEdges,
+                        settings.minClusterPixels,
+                        settings.hammingDist,
+                        settings.decisionMargin);
 
         // TODO (HACK): tag width is Fun because it really belongs in the "target model"
         // We need the tag width for the JNI to figure out target pose, but we need a
@@ -145,9 +148,9 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         targetList = new ArrayList<>();
         for (DetectionResult detection : tagDetectionPipeResult.output) {
-            // TODO this should be in a pipe, not in the top level here (Matt)
-            if (detection.getDecisionMargin() < settings.decisionMargin) continue;
-            if (detection.getHamming() > settings.hammingDist) continue;
+            // // TODO this should be in a pipe, not in the top level here (Matt)
+            // if (detection.getDecisionMargin() < settings.decisionMargin) continue;
+            // if (detection.getHamming() > settings.hammingDist) continue;
 
             // populate the target list
             // Challenge here is that TrackedTarget functions with OpenCV Contour

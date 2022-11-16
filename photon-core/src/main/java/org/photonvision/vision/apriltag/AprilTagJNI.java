@@ -34,6 +34,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.eclipse.jetty.util.thread.ExecutorSizedThreadPool;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -122,7 +124,8 @@ public class AprilTagJNI {
 
     // Returns a pointer to a apriltag_detector_t
     public static native long AprilTag_Create(
-            String fam, double decimate, double blur, int threads, boolean debug, boolean refine_edges);
+            String fam, double decimate, double blur, int threads, boolean debug, boolean refine_edges,
+            int min_cluster_pixels, int maxErrorBits, int extraDecisionMargin);
 
     // Destroy and free a previously created detector.
     public static native long AprilTag_Destroy(long detector);
@@ -164,28 +167,5 @@ public class AprilTagJNI {
                         cx,
                         cy,
                         nIters);
-    }
-
-    public static void main(String[] args) {
-        // System.loadLibrary("apriltag");
-
-        long detector = AprilTag_Create("tag36h11", 2, 2, 1, false, true);
-
-        // var buff = ByteBuffer.allocateDirect(1280 * 720);
-
-        // // try {
-        // //     CameraServerCvJNI.forceLoad();
-        // // } catch (IOException e) {
-        // //     // TODO Auto-generated catch block
-        // //     e.printStackTrace();
-        // // }
-        // // PicamJNI.forceLoad();
-        // // TestUtils.loadLibraries();
-        // var img = Imgcodecs.imread("~/Downloads/TagFams.jpg");
-
-        // var ret = AprilTag_Detect(detector, 0, 720, 1280);
-        // System.out.println(detector);
-        // System.out.println(ret);
-        // System.out.println(List.of(ret));
     }
 }
