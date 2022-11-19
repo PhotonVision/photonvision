@@ -115,10 +115,10 @@ public class QuirkyCamera {
 
     public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid, String baseName) {
 
-        logger.debug("Checking camera for quirks:" + 
-                     "VID=" + Integer.toHexString(usbVid) +
-                     "PID=" + Integer.toHexString(usbPid) +
-                     "baseName=" + baseName
+        logger.debug("Checking camera for quirks: " + 
+                     "VID=0x" + Integer.toHexString(usbVid) + " " +
+                     "PID=0x" + Integer.toHexString(usbPid) + " "  +
+                     "baseName=\"" + baseName + "\""
                      );
 
         for (var qc : quirkyCameras) {
