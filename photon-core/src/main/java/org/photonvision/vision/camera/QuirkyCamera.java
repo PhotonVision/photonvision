@@ -21,6 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
+
 public class QuirkyCamera {
     private static final List<QuirkyCamera> quirkyCameras =
             List.of(
@@ -66,6 +69,9 @@ public class QuirkyCamera {
     public final int usbPid;
     public final HashMap<CameraQuirk, Boolean> quirks;
 
+    public static Logger logger = new Logger(QuirkyCamera.class, "quirks", LogGroup.Camera);
+
+
     /**
      * Creates a QuirkyCamera that matches by USB VID/PID
      *
@@ -108,6 +114,13 @@ public class QuirkyCamera {
     }
 
     public static QuirkyCamera getQuirkyCamera(int usbVid, int usbPid, String baseName) {
+
+        logger.debug("Checking camera for quirks:" + 
+                     "VID=" + Integer.toHexString(usbVid) +
+                     "PID=" + Integer.toHexString(usbPid) +
+                     "baseName=" + baseName
+                     );
+
         for (var qc : quirkyCameras) {
             boolean hasBaseName = !qc.baseName.equals("");
             boolean matchesBaseName = qc.baseName.equals(baseName) || !hasBaseName;
