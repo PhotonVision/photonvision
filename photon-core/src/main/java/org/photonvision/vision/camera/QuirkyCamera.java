@@ -47,8 +47,8 @@ public class QuirkyCamera {
                             -1, -1, "mmal service 16.1", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus), // Logitech C925-e
                     new QuirkyCamera(
-                            0x0,
-                            0x0,
+                            0x0c45,
+                            0x6366,
                             "Arducam OV9281 USB Camera",
                             CameraQuirk.LimitedExposure) // OV9281 global shutter
                     );
