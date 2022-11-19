@@ -1,3 +1,44 @@
+// Circular buffer storage. Externally-apparent 'length' increases indefinitely
+// while any items with indexes below length-n will be forgotten (undefined
+// will be returned if you try to get them, trying to set is an exception).
+// n represents the initial length of the array, not a maximum
+class StatsHistoryBuffer{
+    constructor (){ 
+        this.windowLen = 15; //eeh guess
+        this._array= new Array(this.windowLen);
+        this.headPtr = 0;
+        this.frameCount = 0;
+        this.bitAvgAccum = 0;
+        
+        //calculated vals
+        this.bitRate_mbps = 0;
+        this.framerate_fps = 0;
+    }
+
+    putAndPop(v){
+        this.headPtr++;
+        var idx = (this.headPtr)%this._array.length;
+        var poppedVal = this._array[idx];
+        this._array[idx] = v;
+        return poppedVal;
+    }
+
+    addSample(time, frameSize_bits, dispFrame_count) {
+        var oldVal = this.putAndPop([time, frameSize_bits, dispFrame_count]);
+        var oldTime = oldVal[0];
+        var oldFrameSize = oldVal[1];
+        var oldFrameCount = oldVal[2];
+
+        var deltaTime_s = (time - oldTime);
+
+        this.bitAvgAccum += frameSize_bits;
+        this.bitAvgAccum -= oldFrameSize;
+
+        this.bitRate_mbps = (this.bitAvgAccum / deltaTime_s) * (1.0/1048576.0);
+        this.framerate_fps = (dispFrame_count - oldFrameCount) / deltaTime_s;
+    }
+
+}
 
 
 export class WebsocketVideoStream{
@@ -17,6 +58,12 @@ export class WebsocketVideoStream{
         this.imgDataTime = -1;
         this.imgObjURL = null;
         this.frameRxCount = 0;
+        this.dispFrameCount = 0;
+        this.stats = null;
+
+        //Set up div for stats overlay
+        this.statsTextDiv = this.image.parentNode.appendChild(document.createElement("div"));
+
 
         //Display state machine
         this.DSM_DISCONNECTED = "DISCONNECTED";
@@ -44,6 +91,8 @@ export class WebsocketVideoStream{
 
         //Update the image with the new mimetype and image
         this.image.src = this.imgObjURL;
+
+        this.dispFrameCount++;
     }
 
     dispNoStream() {
@@ -184,6 +233,11 @@ export class WebsocketVideoStream{
         // Set the flag allowing general server communication
         this.serverConnectionActive = true;
         console.log("Camera Websockets Connected!");
+
+        // New websocket connection, reset stats
+        this.frameRxCount = 0;
+        this.dispFrameCount = 0;
+        this.stats = new StatsHistoryBuffer();
     }
 
     ws_onClose(e) {
@@ -206,18 +260,26 @@ export class WebsocketVideoStream{
     }
 
     ws_onMessage(e){
-        console.log("Got message from " + this.serverAddr)
+        //console.log("Got message from " + this.serverAddr)
+        var msgTime = window.performance.now();
         if(typeof e.data === 'string'){
             //string data from host
             //TODO - anything to receive info here? Maybe "available streams?"
         } else {
             if(e.data.size > 0){
-                //binary data - a frame
+                //binary data - a frame!
+                //Save frame data for display in the next animation thread
                 this.imgData = e.data;
-                this.imgDataTime = window.performance.now();
+                this.imgDataTime = msgTime;
+
+                //Count the incoming frame
                 this.frameRxCount++;
+
+                //keep the stats up to date
+                this.stats.addSample(msgTime,this.imgData.size(),this.dispFrameCount);
             } else {
                 //TODO - server is sending empty frames?
+                console.log("WS Stream Error: Server sent empty frame!");
             }
         }
 

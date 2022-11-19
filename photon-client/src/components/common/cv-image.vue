@@ -1,12 +1,14 @@
 <template>
-  <img
-    :id="id"
-    crossOrigin="anonymous"
-    :style="styleObject"
-    :src="src"
-    alt=""
-    @click="e => {this.openThinclientStream(e)}"
-  >
+  <div class="container">
+    <img
+      :id="id"
+      crossOrigin="anonymous"
+      :style="styleObject"
+      :src="src"
+      alt=""
+      @click="e => {this.openThinclientStream(e)}"
+    >
+  </div>
 </template>
 
 <script>
