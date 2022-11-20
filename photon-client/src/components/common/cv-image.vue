@@ -1,25 +1,13 @@
 <template>
-  <div class="img_container">
-    <img
-      :id="id"
-      crossOrigin="anonymous"
-      :style="styleObject"
-      :src="src"
-      alt=""
-      @click="e => {this.openThinclientStream(e)}"
-    >
-  </div>
+  <img
+    :id="id"
+    crossOrigin="anonymous"
+    :style="styleObject"
+    :src="src"
+    alt=""
+    @click="e => {this.openThinclientStream(e)}"
+  >
 </template>
-
-<style scoped>
-.img_container {
-  position: relative;
-  text-align: center;
-  width: 100%;
-  height: 100%;
-}
-
-</style>
 
 
 <script>

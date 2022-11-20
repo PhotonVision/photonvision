@@ -11,7 +11,7 @@ class StatsHistoryBuffer{
         this.bitAvgAccum = 0;
         
         //calculated vals
-        this.bitRate_kbps = 0;
+        this.bitRate_Mbps = 0;
         this.framerate_fps = 0;
     }
 
@@ -37,7 +37,11 @@ class StatsHistoryBuffer{
     
             this.bitAvgAccum -= oldFrameSize;
     
-            this.bitRate_kbps = ( (this.bitAvgAccum/this.windowLen) / deltaTime_s ) * (1.0/1024.0);
+            //bitrate - total bits transferred over the time period, divided by the period length
+            // converted to mbps
+            this.bitRate_Mbps = ( this.bitAvgAccum / deltaTime_s ) * (1.0/1048576.0);
+
+            //framerate - total frames displayed over the time period, divided by the period length
             this.framerate_fps = (dispFrame_count - oldFrameCount) / deltaTime_s;
         }
 
@@ -45,7 +49,7 @@ class StatsHistoryBuffer{
     }
 
     getText(){
-        return "Streaming at " + this.framerate_fps.toFixed(1) + "FPS  " + this.bitRate_kbps.toFixed(2) + "kbps";
+        return "Streaming @ " + this.framerate_fps.toFixed(1) + "FPS  " + this.bitRate_Mbps.toFixed(1) + "Mbps";
     }
 
 }
@@ -71,23 +75,36 @@ export class WebsocketVideoStream{
 
         //Set up div for stream stats info provided for users
         this.statsTextDiv = this.image.parentNode.appendChild(document.createElement("div"));
+
+        //Centered over the image
         this.statsTextDiv.style.position = "absolute";
         this.statsTextDiv.style.left = "50%";
-        this.statsTextDiv.style.top = "0%";
-        this.statsTextDiv.style.position = "absolute";
-        this.statsTextDiv.style.opacity = "0.7";
-        this.statsTextDiv.style.transform = "translate(-50%, 0%)";
-        this.statsTextDiv.style.color = "#9E9E9E";
-        this.statsTextDiv.style.height = "1.4em";
-        this.statsTextDiv.style.width = "90%";
-        this.statsTextDiv.style.backgroundColor = "black";
-        this.statsTextDiv.style.whiteSpace = "nowwrap";
-        this.statsTextDiv.style.overflow = "hidden";
+        this.statsTextDiv.style.top = "50%";
+        this.statsTextDiv.style.transform = "translate(-50%, -50%)";
 
+        // Big enough for a line or two of text, with centered text
+        this.statsTextDiv.style.padding = "0.5em"
+        this.statsTextDiv.style.overflow = "hidden";
+        this.statsTextDiv.style.textAlign = "center";
+        this.statsTextDiv.style.verticalAlign = "middle";
+
+        // Styled to be black with grey text
+        this.statsTextDiv.style.backgroundColor = "black";
+        this.statsTextDiv.style.color = "#9E9E9E";
+        this.statsTextDiv.style.borderRadius = "3px";
+
+        //Default no text
         this.statsTextDiv.innerHTML = "";
 
+        // Only show on mouseover, with opacity fade-in/fade-out
+        this.statsTextDiv.style.opacity = "0.0";
+        this.statsTextDiv.style.transition = "opacity 0.25s ease 0.25s";
+        this.statsTextDiv.style.transitionDelay = "opacity 0.5s";
+        this.image.addEventListener('mouseover', () => {this.statsTextDiv.style.opacity = "0.6";});
+        this.statsTextDiv.addEventListener('mouseover', () => {this.statsTextDiv.style.opacity = "0.6";});
+        this.image.addEventListener('mouseout', () => {this.statsTextDiv.style.opacity = "0.0";});
 
-        //Display state machine
+        //Display state machine descriptions
         this.DSM_DISCONNECTED = "Disconnected";
         this.DSM_WAIT_FOR_VALID_PORT = "Waiting for valid port ID";
         this.DSM_SUBSCRIBE = "Subscribing";
@@ -110,10 +127,12 @@ export class WebsocketVideoStream{
     dispImageData(){
         if(this.prevImgDataTime != this.imgDataTime){
             //From https://stackoverflow.com/questions/67507616/set-image-src-from-image-blob/67507685#67507685
-            if(this.imgObjURL != null){
-                URL.revokeObjectURL(this.imgObjURL)
-            }
+            //Ensure uniqueness by making the new one before revoking the old one.
+            var oldURL = this.imgObjURL
             this.imgObjURL = URL.createObjectURL(this.imgData);
+            if(oldURL != null){
+                URL.revokeObjectURL(oldURL)
+            }
 
             //Update the image with the new mimetype and image
             this.image.src = this.imgObjURL;
