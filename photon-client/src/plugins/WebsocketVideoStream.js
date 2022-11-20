@@ -3,13 +3,13 @@
 // will be returned if you try to get them, trying to set is an exception).
 // n represents the initial length of the array, not a maximum
 class StatsHistoryBuffer{
-    constructor (){ 
+    constructor (){
         this.windowLen = 10;
         this._array= new Array(this.windowLen);
         this.headPtr = 0;
         this.frameCount = 0;
         this.bitAvgAccum = 0;
-        
+
         //calculated vals
         this.bitRate_Mbps = 0;
         this.framerate_fps = 0;
@@ -32,11 +32,11 @@ class StatsHistoryBuffer{
             var oldTime = oldVal[0];
             var oldFrameSize = oldVal[1];
             var oldFrameCount = oldVal[2];
-    
+
             var deltaTime_s = (time - oldTime);
-    
+
             this.bitAvgAccum -= oldFrameSize;
-    
+
             //bitrate - total bits transferred over the time period, divided by the period length
             // converted to mbps
             this.bitRate_Mbps = ( this.bitAvgAccum / deltaTime_s ) * (1.0/1048576.0);
