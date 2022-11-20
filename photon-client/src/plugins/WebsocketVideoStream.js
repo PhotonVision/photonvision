@@ -11,7 +11,7 @@ class StatsHistoryBuffer{
         this.bitAvgAccum = 0;
         
         //calculated vals
-        this.bitRate_mbps = 0;
+        this.bitRate_kbps = 0;
         this.framerate_fps = 0;
     }
 
@@ -37,7 +37,7 @@ class StatsHistoryBuffer{
     
             this.bitAvgAccum -= oldFrameSize;
     
-            this.bitRate_mbps = ( (this.bitAvgAccum/this.windowLen) / deltaTime_s ) * (1.0/1048576.0);
+            this.bitRate_kbps = ( (this.bitAvgAccum/this.windowLen) / deltaTime_s ) * (1.0/1024.0);
             this.framerate_fps = (dispFrame_count - oldFrameCount) / deltaTime_s;
         }
 
@@ -45,7 +45,7 @@ class StatsHistoryBuffer{
     }
 
     getText(){
-        return "Streaming at " + this.framerate_fps.toFixed(1) + "FPS  " + this.bitRate_mbps.toFixed(2) + "Mbps";
+        return "Streaming at " + this.framerate_fps.toFixed(1) + "FPS  " + this.bitRate_kbps.toFixed(2) + "kbps";
     }
 
 }
@@ -311,7 +311,7 @@ export class WebsocketVideoStream{
                 this.frameRxCount++;
 
                 //keep the stats up to date
-                this.stats.addSample(msgTime_s,this.imgData.size,this.dispFrameCount);
+                this.stats.addSample(msgTime_s,this.imgData.size * 8,this.dispFrameCount);
             } else {
                 console.log("WS Stream Error: Server sent empty frame!");
             }
