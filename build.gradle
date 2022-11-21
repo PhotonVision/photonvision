@@ -33,7 +33,7 @@ ext {
     } else if(project.hasProperty('winonly')) {
         jniPlatforms = ['windowsx86-64']
     } else {
-        jniPlatforms = ['linuxarm64', 'linuxarm32', 'linuxx86-64', 'osxx86-64', 'osxx86-64', 'windowsx86-64']
+        jniPlatforms = ['linuxarm64', 'linuxarm32', 'linuxx86-64', 'osxuniversal', 'windowsx86-64']
 
     }
 
