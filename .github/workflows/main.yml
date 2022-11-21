@@ -191,11 +191,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - container: wpilib/roborio-cross-ubuntu:2022-18.04
+          - container: wpilib/roborio-cross-ubuntu:2023-22.04
             artifact-name: Athena
-          - container: wpilib/raspbian-cross-ubuntu:10-18.04
+          - container: wpilib/raspbian-cross-ubuntu:bullseye-22.04
             artifact-name: Raspbian
-          - container: wpilib/aarch64-cross-ubuntu:bionic-18.04
+          - container: wpilib/aarch64-cross-ubuntu:bullseye-22.04
             artifact-name: Aarch64
 
     runs-on: ubuntu-latest
@@ -209,10 +209,12 @@ jobs:
         with:
           java-version: 11
           distribution: temurin
-      - run: |
+      - name: Build PhotonLib
+        run: |
           chmod +x gradlew
           ./gradlew photon-lib:build --max-workers 1
-      - run: |
+      - name: Publish
+        run: |
           chmod +x gradlew
           ./gradlew photon-lib:publish
         env:
