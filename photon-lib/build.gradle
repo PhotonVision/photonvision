@@ -22,7 +22,7 @@ dependencies {
     implementation "edu.wpi.first.wpilibj:wpilibj-java:$wpilibVersion"
     implementation "edu.wpi.first.wpiutil:wpiutil-java:$wpilibVersion"
     implementation "edu.wpi.first.wpimath:wpimath-java:$wpilibVersion"
-    implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-java:$opencvVersion"
+    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
 
     implementation "org.ejml:ejml-simple:0.41"
 

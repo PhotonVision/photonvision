@@ -4,7 +4,7 @@ plugins {
     id "com.github.node-gradle.node" version "3.1.1" apply false
     id "edu.wpi.first.GradleJni" version "1.0.0"
     id "edu.wpi.first.GradleVsCode" version "1.1.0"
-    id "edu.wpi.first.NativeUtils" version "2022.8.1" apply false
+    id "edu.wpi.first.NativeUtils" version "2023.8.2" apply false
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
     id "org.hidetake.ssh" version "2.10.1"
 }
@@ -22,18 +22,18 @@ allprojects {
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2022.1.1"
-    opencvVersion = "4.5.2-1"
+    wpilibVersion = "2023.1.1-beta-3"
+    opencvVersion = "4.6.0-3"
     joglVersion = "2.4.0-rc-20200307"
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
 
     if(project.hasProperty('pionly')) {
-        jniPlatforms = ['linuxraspbian']
+        jniPlatforms = ['linuxarm32']
     } else if(project.hasProperty('winonly')) {
         jniPlatforms = ['windowsx86-64']
     } else {
-        jniPlatforms = ['linuxaarch64bionic', 'linuxraspbian', 'linuxx86-64', 'osxx86-64', 'windowsx86-64']
+        jniPlatforms = ['linuxarm64', 'linuxarm32', 'linuxx86-64', 'osxx86-64', 'osxx86-64', 'windowsx86-64']
 
     }
 

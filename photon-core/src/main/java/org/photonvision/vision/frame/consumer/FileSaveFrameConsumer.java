@@ -59,7 +59,7 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
         updateCameraNickname(camNickname);
         entry = subTable.getEntry(ntEntryName);
-        entry.forceSetBoolean(false);
+        entry.setBoolean(false);
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
     }
 
@@ -88,7 +88,7 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
                 } else if (!curCommand) {
                     // If the entry is currently false, set it again. This will make sure it shows up on the
                     // dashboard.
-                    entry.forceSetBoolean(false);
+                    entry.setBoolean(false);
                 }
 
                 prevCommand = curCommand;
@@ -106,7 +106,7 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
     private void removeEntries() {
         if (this.subTable != null) {
             if (this.subTable.containsKey(ntEntryName)) {
-                this.subTable.delete(ntEntryName);
+                this.subTable.getEntry(ntEntryName).close();
             }
         }
     }

@@ -44,7 +44,7 @@ public class USBCameraSource extends VisionSource {
 
         logger = new Logger(USBCameraSource.class, config.nickname, LogGroup.Camera);
         camera = new UsbCamera(config.nickname, config.path);
-        cvSink = CameraServer.getInstance().getVideo(this.camera);
+        cvSink = CameraServer.getVideo(this.camera);
 
         cameraQuirks =
                 QuirkyCamera.getQuirkyCamera(

@@ -177,7 +177,7 @@ public class MathUtils {
         // CameraToTarget _should_ be in opencv-land EDN
         var nwu =
                 CoordinateSystem.convert(
-                        new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
+                        new Pose3d().transformBy(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
         return new Pose3d(nwu.getTranslation(), WPILIB_BASE_ROTATION.rotateBy(nwu.getRotation()));
     }
 
