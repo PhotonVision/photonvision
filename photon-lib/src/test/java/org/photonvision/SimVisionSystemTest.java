@@ -36,7 +36,12 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
@@ -65,6 +70,15 @@ class SimVisionSystemTest {
 
     @BeforeAll
     public static void setUp() {
+        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        try {
+        CombinedRuntimeLoader.loadLibraries(SimVisionSystem.class, "ntcorejni");
+        } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        } 
+
+
         // NT live for debug purposes
         NetworkTableInstance.getDefault().startServer();
 

@@ -60,15 +60,18 @@ public class DrivetrainPoseEstimator {
     Matrix<N3, N1> visionMeasurementStdDevs =
             VecBuilder.fill(0.01, 0.01, Units.degreesToRadians(0.1));
 
-    private final DifferentialDrivePoseEstimator m_poseEstimator =
+    private final DifferentialDrivePoseEstimator m_poseEstimator;
+
+    public DrivetrainPoseEstimator(double leftDist, double rightDist) {
+        m_poseEstimator =
             new DifferentialDrivePoseEstimator(
                     gyro.getRotation2d(),
+                    leftDist, rightDist,
                     new Pose2d(),
                     stateStdDevs,
                     localMeasurementStdDevs,
                     visionMeasurementStdDevs);
-
-    public DrivetrainPoseEstimator() {}
+    }
 
     /**
      * Perform all periodic pose estimation tasks.
@@ -95,11 +98,9 @@ public class DrivetrainPoseEstimator {
      * Force the pose estimator to a particular pose. This is useful for indicating to the software
      * when you have manually moved your robot in a particular position on the field (EX: when you
      * place it on the field at the start of the match).
-     *
-     * @param pose
      */
-    public void resetToPose(Pose2d pose) {
-        m_poseEstimator.resetPosition(pose, gyro.getRotation2d());
+    public void resetToPose(Pose2d pose, double leftDist, double rightDist) {
+        m_poseEstimator.resetPosition(gyro.getRotation2d(), leftDist, rightDist, pose);
     }
 
     /** @return The current best-guess at drivetrain position on the field. */

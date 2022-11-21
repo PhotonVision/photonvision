@@ -1,5 +1,9 @@
 import java.nio.file.Path
 
+plugins {
+    id 'edu.wpi.first.WpilibTools' version '1.0.0'
+}
+
 apply plugin: "cpp"
 apply plugin: "java"
 apply plugin: "google-test-test-suite"
@@ -11,6 +15,23 @@ apply from: "${rootDir}/versioningHelper.gradle"
 test {
     useJUnitPlatform()
 }
+
+wpilibTools.deps.wpilibVersion = wpilibVersion
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
+nativeTasks.addToSourceSetResources(sourceSets.test)
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+
 
 // Apply Java configuration
 dependencies {
@@ -29,6 +50,8 @@ dependencies {
     // NTCore
     implementation "edu.wpi.first.ntcore:ntcore-java:$wpilibVersion"
     jniPlatforms.each { implementation "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:$it" }
+
+    implementation wpilibTools.deps.wpilibJava("wpinet")
 
     // HAL
     implementation "edu.wpi.first.hal:hal-java:$wpilibVersion"

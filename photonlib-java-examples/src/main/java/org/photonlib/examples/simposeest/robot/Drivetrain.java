@@ -55,7 +55,7 @@ public class Drivetrain {
     Encoder rightEncoder = new Encoder(Constants.kDtRightEncoderPinA, Constants.kDtRightEncoderPinB);
 
     // Drivetrain Pose Estimation
-    DrivetrainPoseEstimator poseEst = new DrivetrainPoseEstimator();
+    final DrivetrainPoseEstimator poseEst;
 
     // Kinematics - defines the physical size and shape of the drivetrain, which is
     // required to convert from
@@ -82,6 +82,8 @@ public class Drivetrain {
         rightEncoder.reset();
 
         rightGroup.setInverted(true);
+
+        poseEst = new DrivetrainPoseEstimator(leftEncoder.getDistance(), rightEncoder.getDistance());
     }
 
     /**
@@ -128,7 +130,7 @@ public class Drivetrain {
     public void resetOdometry(Pose2d pose) {
         leftEncoder.reset();
         rightEncoder.reset();
-        poseEst.resetToPose(pose);
+        poseEst.resetToPose(pose, leftEncoder.getDistance(), rightEncoder.getDistance());
     }
 
     /** @return The current best-guess at drivetrain Pose on the field. */
