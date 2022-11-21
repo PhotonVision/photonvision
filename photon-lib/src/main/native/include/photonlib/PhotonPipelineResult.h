@@ -106,7 +106,7 @@ class PhotonPipelineResult {
    * Returns a reference to the vector of targets.
    * @return A reference to the vector of targets.
    */
-  const wpi::span<const PhotonTrackedTarget> GetTargets() const {
+  const std::span<const PhotonTrackedTarget> GetTargets() const {
     return targets;
   }
 
