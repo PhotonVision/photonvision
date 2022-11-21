@@ -63,8 +63,6 @@ public class DrivetrainPoseEstimator {
     private final DifferentialDrivePoseEstimator m_poseEstimator =
             new DifferentialDrivePoseEstimator(
                 gyro.getRotation2d(),
-                 0,
-                  0,
                   new Pose2d(), stateStdDevs, localMeasurementStdDevs, visionMeasurementStdDevs);
 
 
@@ -98,8 +96,8 @@ public class DrivetrainPoseEstimator {
      *
      * @param pose
      */
-    public void resetToPose(Pose2d pose, double leftDist, double rightDist) {
-        m_poseEstimator.resetPosition(gyro.getRotation2d(), leftDist, rightDist, pose);
+    public void resetToPose(Pose2d pose) {
+        m_poseEstimator.resetPosition(pose, gyro.getRotation2d());
     }
 
     /** @return The current best-guess at drivetrain position on the field. */

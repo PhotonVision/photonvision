@@ -142,7 +142,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (driverModePublisher != null) driverModePublisher.close();
         if (driverModeSubscriber != null) driverModeSubscriber.close();
 
-        
         if (latencyMillisEntry != null) latencyMillisEntry.close();
         if (hasTargetEntry != null) hasTargetEntry.close();
         if (targetPitchEntry != null) targetPitchEntry.close();
@@ -152,7 +151,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (targetSkewEntry != null) targetSkewEntry.close();
         if (bestTargetPosX != null) bestTargetPosX.close();
         if (bestTargetPosY != null) bestTargetPosY.close();
-        
     }
 
     private void updateEntries() {

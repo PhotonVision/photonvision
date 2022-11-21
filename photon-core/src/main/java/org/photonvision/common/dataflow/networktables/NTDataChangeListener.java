@@ -30,7 +30,7 @@ public class NTDataChangeListener {
     private final Subscriber watchedEntry;
     private final int listenerID;
 
-    public NTDataChangeListener( NetworkTableInstance instance, 
+    public NTDataChangeListener( NetworkTableInstance instance,
             Subscriber watchedSubscriber, Consumer<NetworkTableEvent> dataChangeConsumer) {
         this.watchedEntry = watchedSubscriber;
         this.instance = instance;
