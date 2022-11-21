@@ -18,12 +18,10 @@
 package org.photonvision.common.hardware;
 
 import edu.wpi.first.util.RuntimeDetector;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import org.photonvision.common.util.ShellExec;
 
 @SuppressWarnings("unused")
@@ -142,16 +140,16 @@ public enum Platform {
 
         return "";
     }
-    
+
     private static boolean isRaspbian() {
         try (BufferedReader reader = Files.newBufferedReader(Paths.get("/etc/os-release"))) {
-          String value = reader.readLine();
-          if (value == null) {
-            return false;
-          }
-          return value.contains("Raspbian");
+            String value = reader.readLine();
+            if (value == null) {
+                return false;
+            }
+            return value.contains("Raspbian");
         } catch (IOException ex) {
-          return false;
+            return false;
         }
-      }
+    }
 }

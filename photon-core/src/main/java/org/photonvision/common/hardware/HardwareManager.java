@@ -18,7 +18,6 @@
 package org.photonvision.common.hardware;
 
 import edu.wpi.first.networktables.IntegerEntry;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import java.io.IOException;
 import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
@@ -90,12 +89,16 @@ public class HardwareManager {
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
                                 pigpioSocket);
 
-        ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledMode").getEntry(0);
+        ledModeEntry =
+                NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledMode").getEntry(0);
         ledModeEntry.set(VisionLEDMode.kDefault.value);
         ledModeListener =
                 visionLED == null
                         ? null
-                        : new NTDataChangeListener(NetworkTablesManager.getInstance().kRootTable.getInstance(), ledModeEntry, visionLED::onLedModeChange);
+                        : new NTDataChangeListener(
+                                NetworkTablesManager.getInstance().kRootTable.getInstance(),
+                                ledModeEntry,
+                                visionLED::onLedModeChange);
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 

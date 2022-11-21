@@ -17,11 +17,9 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.Subscriber;
-
 import java.util.EnumSet;
 import java.util.function.Consumer;
 
@@ -30,11 +28,15 @@ public class NTDataChangeListener {
     private final Subscriber watchedEntry;
     private final int listenerID;
 
-    public NTDataChangeListener( NetworkTableInstance instance,
-            Subscriber watchedSubscriber, Consumer<NetworkTableEvent> dataChangeConsumer) {
+    public NTDataChangeListener(
+            NetworkTableInstance instance,
+            Subscriber watchedSubscriber,
+            Consumer<NetworkTableEvent> dataChangeConsumer) {
         this.watchedEntry = watchedSubscriber;
         this.instance = instance;
-        listenerID = this.instance.addListener(watchedEntry, EnumSet.of(NetworkTableEvent.Kind.kValueAll), dataChangeConsumer);
+        listenerID =
+                this.instance.addListener(
+                        watchedEntry, EnumSet.of(NetworkTableEvent.Kind.kValueAll), dataChangeConsumer);
     }
 
     public void remove() {

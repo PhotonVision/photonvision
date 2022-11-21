@@ -17,21 +17,6 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
-
-import org.opencv.core.Point;
-import org.photonvision.common.dataflow.CVPipelineResultConsumer;
-import org.photonvision.common.dataflow.structures.Packet;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
-import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.target.TrackedTarget;
-
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.BooleanTopic;
@@ -44,6 +29,19 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.RawPublisher;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
+import org.opencv.core.Point;
+import org.photonvision.common.dataflow.CVPipelineResultConsumer;
+import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.targeting.TargetCorner;
+import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TrackedTarget;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
@@ -76,8 +74,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     // The raw position of the best target, in pixels.
     private DoublePublisher bestTargetPosX;
     private DoublePublisher bestTargetPosY;
-
-
 
     public NTDataPublisher(
             String cameraNickname,
@@ -154,7 +150,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     }
 
     private void updateEntries() {
-        rawBytesEntry = subTable.getRawTopic("rawBytes").getEntry("", new byte[0], new PubSubOption[0]);
+        rawBytesEntry =
+                subTable.getRawTopic("rawBytes").getEntry("rawBytes", new byte[0], new PubSubOption[0]);
 
         if (pipelineIndexListener != null) {
             pipelineIndexListener.remove();
@@ -164,7 +161,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         pipelineIndexPublisher = pipelineIndexTopic.publish();
         pipelineIndexSubscriber = pipelineIndexTopic.subscribe(0);
         pipelineIndexListener =
-                new NTDataChangeListener(subTable.getInstance(), pipelineIndexSubscriber, this::onPipelineIndexChange);
+                new NTDataChangeListener(
+                        subTable.getInstance(), pipelineIndexSubscriber, this::onPipelineIndexChange);
 
         if (driverModeListener != null) {
             driverModeListener.remove();
@@ -172,7 +170,9 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         driverModeEntry = subTable.getBooleanTopic("driverMode");
         driverModePublisher = driverModeEntry.publish();
         driverModeSubscriber = driverModeEntry.subscribe(false);
-        driverModeListener = new NTDataChangeListener(subTable.getInstance(), driverModeSubscriber, this::onDriverModeChange);
+        driverModeListener =
+                new NTDataChangeListener(
+                        subTable.getInstance(), driverModeSubscriber, this::onDriverModeChange);
 
         latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();
         hasTargetEntry = subTable.getBooleanTopic("hasTarget").publish();

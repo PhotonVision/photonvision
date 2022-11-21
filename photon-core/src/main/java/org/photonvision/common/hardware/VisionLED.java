@@ -18,7 +18,6 @@
 package org.photonvision.common.hardware;
 
 import edu.wpi.first.networktables.NetworkTableEvent;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;

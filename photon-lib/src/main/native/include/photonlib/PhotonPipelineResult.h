@@ -24,13 +24,12 @@
 
 #pragma once
 
-#include <string>
 #include <span>
+#include <string>
 
 #include <frc/Errors.h>
 #include <units/time.h>
 #include <wpi/SmallVector.h>
-
 
 #include "photonlib/Packet.h"
 #include "photonlib/PhotonTrackedTarget.h"
