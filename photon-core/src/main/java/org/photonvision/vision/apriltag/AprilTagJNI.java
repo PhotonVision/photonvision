@@ -19,12 +19,16 @@ package org.photonvision.vision.apriltag;
 
 import edu.wpi.first.util.RuntimeDetector;
 import edu.wpi.first.util.RuntimeLoader;
+
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -64,9 +68,9 @@ public class AprilTagJNI {
             // TODO 64-bit Pi support
             if (RuntimeDetector.isAthena()) {
                 subfolder = "athena";
-            } else if (RuntimeDetector.isAarch64()) {
+            } else if (RuntimeDetector.isArm64()) {
                 subfolder = "aarch64";
-            } else if (RuntimeDetector.isRaspbian()) {
+            } else if (AprilTagJNI.isRaspbian()) {
                 subfolder = "raspbian";
             } else if (RuntimeDetector.isWindows()) {
                 subfolder = "win64";
@@ -179,4 +183,16 @@ public class AprilTagJNI {
         // System.out.println(ret);
         // System.out.println(List.of(ret));
     }
+
+    private static boolean isRaspbian() {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("/etc/os-release"))) {
+          String value = reader.readLine();
+          if (value == null) {
+            return false;
+          }
+          return value.contains("Raspbian");
+        } catch (IOException ex) {
+          return false;
+        }
+      }
 }

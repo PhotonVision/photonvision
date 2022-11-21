@@ -128,7 +128,7 @@ public class Drivetrain {
     public void resetOdometry(Pose2d pose) {
         leftEncoder.reset();
         rightEncoder.reset();
-        poseEst.resetToPose(pose);
+        poseEst.resetToPose(pose, leftEncoder.getDistance(), rightEncoder.getDistance());
     }
 
     /** @return The current best-guess at drivetrain Pose on the field. */

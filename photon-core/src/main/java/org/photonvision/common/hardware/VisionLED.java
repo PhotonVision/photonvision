@@ -17,7 +17,8 @@
 
 package org.photonvision.common.hardware;
 
-import edu.wpi.first.networktables.EntryNotification;
+import edu.wpi.first.networktables.NetworkTableEvent;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -122,8 +123,8 @@ public class VisionLED {
         setInternal(on ? VisionLEDMode.kOn : VisionLEDMode.kOff, false);
     }
 
-    void onLedModeChange(EntryNotification entryNotification) {
-        var newLedModeRaw = (int) entryNotification.value.getDouble();
+    void onLedModeChange(NetworkTableEvent entryNotification) {
+        var newLedModeRaw = (int) entryNotification.valueData.value.getDouble();
         if (newLedModeRaw != currentLedMode.value) {
             VisionLEDMode newLedMode;
             switch (newLedModeRaw) {
@@ -184,6 +185,9 @@ public class VisionLED {
                         break;
                     case kOn:
                         setStateImpl(true);
+                        break;
+                    case kBlink:
+                        blinkImpl(85, -1);
                         break;
                 }
             }
