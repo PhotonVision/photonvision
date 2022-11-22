@@ -40,6 +40,7 @@ import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
 
 import java.io.IOException;
 import java.util.List;
@@ -70,8 +71,10 @@ class SimVisionSystemTest {
 
     @BeforeAll
     public static void setUp() {
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         try {
+        CombinedRuntimeLoader.loadLibraries(SimVisionSystem.class, "wpiutiljni");
         CombinedRuntimeLoader.loadLibraries(SimVisionSystem.class, "ntcorejni");
         } catch (Exception e) {
         // TODO Auto-generated catch block
