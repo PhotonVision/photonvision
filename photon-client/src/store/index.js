@@ -97,6 +97,8 @@ export default new Vuex.Store({
                     debug: false,
                     refineEdges: true,
                     numIterations: 1,
+                    decisionMargin: 0,
+                    hammingDist: 0,
                 }
             }
         ],

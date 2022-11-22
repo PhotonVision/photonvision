@@ -6,7 +6,7 @@ PhotonVision is the free, fast, and easy-to-use computer vision solution for the
 
 A copy of the latest Raspberry Pi image is available [here](https://github.com/PhotonVision/photon-pi-gen/releases). A copy of the latest standalone JAR is available [here](https://github.com/PhotonVision/photonvision/releases). If you are a Gloworm user you can find the latest Gloworm image [here](https://github.com/gloworm-vision/pi-gen/releases).
 
-If you are interested in contributing code or documentation to the project, please [read our getting started page for contributors](https://docs.photonvision.org/en/latest/docs/other/contributing/index.html) and **[join the Discord](https://discord.gg/wYxTwym) to introduce yourself!** We hope to provide a welcoming community to anyone who is interested in helping.
+If you are interested in contributing code or documentation to the project, please [read our getting started page for contributors](https://docs.photonvision.org/en/latest/docs/contributing/index.html) and **[join the Discord](https://discord.gg/wYxTwym) to introduce yourself!** We hope to provide a welcoming community to anyone who is interested in helping.
 
 ## Authors
 

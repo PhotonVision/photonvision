@@ -105,7 +105,7 @@ jobs:
       # Install Python.
       - uses: actions/setup-python@v4
         with:
-          python-version: '3.6'
+          python-version: '3.9'
 
       - name: Install dependencies
         run: |
@@ -281,9 +281,6 @@ jobs:
         with:
           name: built-client
           path: photon-server/src/main/resources/web/
-
-      # Copy thinclient in as well
-      - run: cp -r photon-thinclient/* photon-server/src/main/resources/web/
 
       # Download docs artifact to resources folder.
       - uses: actions/download-artifact@v3

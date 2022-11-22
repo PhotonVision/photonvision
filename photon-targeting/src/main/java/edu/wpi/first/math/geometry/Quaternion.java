@@ -17,22 +17,25 @@
 
 package edu.wpi.first.math.geometry;
 
-import edu.wpi.first.math.MatBuilder;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
-import edu.wpi.first.math.numbers.N1;
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.numbers.N3;
-import java.util.Arrays;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonAutoDetect(getterVisibility = JsonAutoDetect.Visibility.NONE)
 public class Quaternion {
     private final double m_r;
-    private final Matrix<N3, N1> m_v;
+    private final Vector<N3> m_v;
 
     /** Constructs a quaternion with a default angle of 0 degrees. */
     public Quaternion() {
         m_r = 1.0;
-        m_v = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(0.0, 0.0, 0.0);
+        m_v = VecBuilder.fill(0.0, 0.0, 0.0);
     }
 
     /**
@@ -43,9 +46,14 @@ public class Quaternion {
      * @param y Y component of the quaternion.
      * @param z Z component of the quaternion.
      */
-    public Quaternion(double w, double x, double y, double z) {
+    @JsonCreator
+    public Quaternion(
+            @JsonProperty(required = true, value = "W") double w,
+            @JsonProperty(required = true, value = "X") double x,
+            @JsonProperty(required = true, value = "Y") double y,
+            @JsonProperty(required = true, value = "Z") double z) {
         m_r = w;
-        m_v = new MatBuilder<>(Nat.N3(), Nat.N1()).fill(x, y, z);
+        m_v = VecBuilder.fill(x, y, z);
     }
 
     /**
@@ -61,21 +69,23 @@ public class Quaternion {
         final var r2 = other.m_r;
         final var v2 = other.m_v;
 
-        final var v1x = v1.get(0, 0);
-        final var v1y = v1.get(1, 0);
-        final var v1z = v1.get(2, 0);
-
-        final var v2x = v2.get(0, 0);
-        final var v2y = v2.get(1, 0);
-        final var v2z = v2.get(2, 0);
-
+        // v₁ x v₂
         var cross =
-                new MatBuilder<>(Nat.N3(), Nat.N1())
-                        .fill(v1y * v2z - v2y * v1z, v2x * v1z - v1x * v2z, v1x * v2y - v2x * v1y);
-        double dot = v1x * v2x + v1y * v2y + v1z * v2z;
+                VecBuilder.fill(
+                        v1.get(1, 0) * v2.get(2, 0) - v2.get(1, 0) * v1.get(2, 0),
+                        v2.get(0, 0) * v1.get(2, 0) - v1.get(0, 0) * v2.get(2, 0),
+                        v1.get(0, 0) * v2.get(1, 0) - v2.get(0, 0) * v1.get(1, 0));
 
+        // v = r₁v₂ + r₂v₁ + v₁ x v₂
         final var v = v2.times(r1).plus(v1.times(r2)).plus(cross);
-        return new Quaternion(r1 * r2 - dot, v.get(0, 0), v.get(1, 0), v.get(2, 0));
+
+        return new Quaternion(r1 * r2 - v1.dot(v2), v.get(0, 0), v.get(1, 0), v.get(2, 0));
+    }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "Quaternion(%s, %s, %s, %s)", m_r, m_v.get(0, 0), m_v.get(1, 0), m_v.get(2, 0));
     }
 
     /**
@@ -89,20 +99,7 @@ public class Quaternion {
         if (obj instanceof Quaternion) {
             var other = (Quaternion) obj;
 
-            final var r1 = m_r;
-            final var v1 = m_v;
-            final var r2 = other.m_r;
-            final var v2 = other.m_v;
-
-            final var v1x = v1.get(0, 0);
-            final var v1y = v1.get(1, 0);
-            final var v1z = v1.get(2, 0);
-
-            final var v2x = v2.get(0, 0);
-            final var v2y = v2.get(1, 0);
-            final var v2z = v2.get(2, 0);
-
-            return Math.abs(r1 * r2 + v1x * v2x + v1y * v2y + v1z * v2z) > 1.0 - 1E-9;
+            return Math.abs(m_r * other.m_r + m_v.dot(other.m_v)) > 1.0 - 1E-9;
         }
         return false;
     }
@@ -140,6 +137,7 @@ public class Quaternion {
      *
      * @return W component of the quaternion.
      */
+    @JsonProperty(value = "W")
     public double getW() {
         return m_r;
     }
@@ -149,6 +147,7 @@ public class Quaternion {
      *
      * @return X component of the quaternion.
      */
+    @JsonProperty(value = "X")
     public double getX() {
         return m_v.get(0, 0);
     }
@@ -158,6 +157,7 @@ public class Quaternion {
      *
      * @return Y component of the quaternion.
      */
+    @JsonProperty(value = "Y")
     public double getY() {
         return m_v.get(1, 0);
     }
@@ -167,12 +167,33 @@ public class Quaternion {
      *
      * @return Z component of the quaternion.
      */
+    @JsonProperty(value = "Z")
     public double getZ() {
         return m_v.get(2, 0);
     }
 
-    @Override
-    public String toString() {
-        return "Quaternion{" + "m_r=" + m_r + ", m_v=" + Arrays.toString(m_v.getData()) + '}';
+    /**
+     * Returns the rotation vector representation of this quaternion.
+     *
+     * <p>This is also the log operator of SO(3).
+     *
+     * @return The rotation vector representation of this quaternion.
+     */
+    public Vector<N3> toRotationVector() {
+        // See equation (31) in "Integrating Generic Sensor Fusion Algorithms with
+        // Sound State Representation through Encapsulation of Manifolds"
+        //
+        // https://arxiv.org/pdf/1107.1119.pdf
+        double norm = m_v.norm();
+
+        if (norm < 1e-9) {
+            return m_v.times(2.0 / getW() - 2.0 / 3.0 * norm * norm / (getW() * getW() * getW()));
+        } else {
+            if (getW() < 0.0) {
+                return m_v.times(2.0 * Math.atan2(-norm, -getW()) / norm);
+            } else {
+                return m_v.times(2.0 * Math.atan2(norm, getW()) / norm);
+            }
+        }
     }
 }
