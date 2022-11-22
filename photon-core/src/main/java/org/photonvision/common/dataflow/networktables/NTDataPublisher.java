@@ -26,7 +26,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.opencv.core.Point;
-import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
@@ -35,7 +34,6 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
-import org.photonvision.vision.processes.PipelineManager;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
@@ -66,9 +64,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Supplier<Integer> pipelineIndexSupplier;
     private final BooleanSupplier driverModeSupplier;
 
-    private final PipelineManager pipelineManager =
-            new PipelineManager(new CameraConfiguration(null, null));
-
     public NTDataPublisher(
             String cameraNickname,
             Supplier<Integer> pipelineIndexSupplier,
@@ -95,12 +90,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         }
 
         if (newIndex == originalIndex) {
-            logger.debug(
-                    "Pipeline index is already "
-                            + newIndex
-                            + " ("
-                            + this.pipelineManager.getPipelineNickname(newIndex)
-                            + ")");
+            logger.debug("Pipeline index is already " + newIndex);
             return;
         }
 
@@ -109,15 +99,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         if (newIndex != setIndex) { // set failed
             pipelineIndexEntry.forceSetNumber(setIndex);
             logger.warn("Failed to set pipeline index to " + newIndex);
-            logger.debug(
-                    "Attempted pipeline nickname is " + this.pipelineManager.getPipelineNickname(newIndex));
         }
-        logger.debug(
-                "Successfully set pipeline index to "
-                        + newIndex
-                        + " ("
-                        + this.pipelineManager.getPipelineNickname(newIndex)
-                        + ")");
+        logger.debug("Successfully set pipeline index to " + newIndex);
     }
 
     private void onDriverModeChange(EntryNotification entryNotification) {
