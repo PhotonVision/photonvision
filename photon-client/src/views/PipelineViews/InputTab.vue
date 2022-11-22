@@ -107,11 +107,6 @@
         },
         // eslint-disable-next-line vue/require-prop-types
         props: ['value'],
-        data() {
-            return {
-              rawStreamDivisorIndex: 0,
-            }
-        },
         computed: {
             largeBox: {
               get() {
@@ -185,15 +180,22 @@
                     this.$store.commit("mutatePipeline", {"cameraVideoModeIndex": val});
 
                     this.handlePipelineUpdate("streamingFrameDivisor", this.getNumSkippedStreamDivisors());
-                    this.rawStreamDivisorIndex = 0;
+                    this.$store.commit("mutatePipeline", {"streamingFrameDivisor": 0});
+
+                    // If we don't have 3d mode calibrated at the new resolution either, we should disable it here
+                    // (TODO) This probably belongs in the backend (Matt)
+                    if (!this.$store.getters.isCalibrated) {
+                        this.handlePipelineUpdate("solvePNPEnabled", false);
+                        this.$store.commit("mutatePipeline", {"solvePNPEnabled": false});
+                    }
                 }
             },
             streamingFrameDivisor: {
                 get() {
-                    return this.rawStreamDivisorIndex;
+                    return this.$store.getters.currentPipelineSettings.streamingFrameDivisor;
                 },
                 set(val) {
-                    this.rawStreamDivisorIndex = val;
+                    this.$store.commit("mutatePipeline", {"streamingFrameDivisor": val});
                     this.handlePipelineUpdate("streamingFrameDivisor", this.getNumSkippedStreamDivisors() + val);
                 }
             },

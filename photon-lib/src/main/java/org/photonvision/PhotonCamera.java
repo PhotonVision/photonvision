@@ -102,8 +102,13 @@ public class PhotonCamera {
 
         // Populate packet and create result.
         packet.setData(rawBytesEntry.getRaw(new byte[] {}));
+
         if (packet.getSize() < 1) return ret;
         ret.createFromPacket(packet);
+
+        // Set the timestamp of the result.
+        // getLatestChange returns in microseconds so we divide by 1e6 to convert to seconds.
+        ret.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
 
         // Return result.
         return ret;
