@@ -75,7 +75,7 @@ jobs:
 
       # Run Gradle Tests.
       - name: Gradle Tests
-        run: ./gradlew testHeadless -i --max-workers 1
+        run: ./gradlew testHeadless -i --max-workers 1 --stacktrace
 
       # Generate Coverage Report.
       - name: Gradle Coverage
