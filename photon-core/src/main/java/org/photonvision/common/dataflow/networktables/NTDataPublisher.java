@@ -91,7 +91,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     }
 
     private void onPipelineIndexChange(NetworkTableEvent entryNotification) {
-        var newIndex = (int) entryNotification.valueData.value.getDouble();
+        var newIndex = (int) entryNotification.valueData.value.getInteger();
         var originalIndex = pipelineIndexSupplier.get();
 
         // ignore indexes below 0
