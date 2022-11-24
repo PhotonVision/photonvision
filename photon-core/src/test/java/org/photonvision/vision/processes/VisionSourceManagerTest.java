@@ -21,6 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.cscore.UsbCameraInfo;
+import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
+
 import java.util.ArrayList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +35,15 @@ import org.photonvision.common.util.TestUtils;
 public class VisionSourceManagerTest {
     @BeforeEach
     public void init() {
-        TestUtils.loadLibraries();
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        try {
+        CombinedRuntimeLoader.loadLibraries(VisionSourceManager.class, "wpiutiljni");
+        CombinedRuntimeLoader.loadLibraries(VisionSourceManager.class, "ntcorejni");
+        } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+        } 
     }
 
     @Test
