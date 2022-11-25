@@ -515,7 +515,7 @@ public class VisionModule {
             internalMap.put("width", c.resolution.width);
             internalMap.put("height", c.resolution.height);
             internalMap.put("intrinsics", c.cameraIntrinsics.data);
-            internalMap.put("extrinsics", c.cameraExtrinsics.data);
+            internalMap.put("distCoeffs", c.distCoeffs.data);
 
             calList.add(internalMap);
         }

@@ -134,8 +134,8 @@ public class Calibrate3dPipeTest {
         assertNotNull(cal);
         assertNotNull(cal.perViewErrors);
         System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
-        System.out.println("Camera Intrinsics : " + cal.cameraIntrinsics.toString());
-        System.out.println("Camera Extrinsics : " + cal.cameraExtrinsics.toString());
+        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
+        System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
         System.out.println("Standard Deviation: " + cal.standardDeviation);
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
@@ -300,8 +300,8 @@ public class Calibrate3dPipeTest {
         assertTrue(centerYErrPct < 10.0);
 
         System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
-        System.out.println("Camera Intrinsics : " + cal.cameraIntrinsics.toString());
-        System.out.println("Camera Extrinsics : " + cal.cameraExtrinsics.toString());
+        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
+        System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
         System.out.println("Standard Deviation: " + cal.standardDeviation);
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
@@ -330,7 +330,7 @@ public class Calibrate3dPipeTest {
                 Mat raw = Imgcodecs.imread(file.getAbsolutePath());
                 Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
                 Calib3d.undistort(
-                        raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.cameraExtrinsics.getAsMat());
+                        raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.distCoeffs.getAsMat());
                 TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1);
                 raw.release();
                 undistorted.release();
