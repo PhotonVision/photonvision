@@ -15,22 +15,21 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.vision.pipe.impl;
 
-@SuppressWarnings("rawtypes")
-public enum PipelineType {
-    Calib3d(-2, Calibrate3dPipeline.class),
-    DriverMode(-1, DriverModePipeline.class),
-    Reflective(0, ReflectivePipeline.class),
-    ColoredShape(1, ColoredShapePipeline.class),
-    AprilTag(2, AprilTagPipeline.class),
-    Aruco(3, ArucoPipeline.class);
+import org.photonvision.vision.frame.FrameDivisor;
 
-    public final int baseIndex;
-    public final Class clazz;
+import java.awt.*;
 
-    PipelineType(int baseIndex, Class clazz) {
-        this.baseIndex = baseIndex;
-        this.clazz = clazz;
+public class Draw2dArucoPipe extends Draw2dTargetsPipe {
+    public static class Draw2dArucoParams extends Draw2dTargetsParams {
+        public Draw2dArucoParams(
+                boolean shouldDraw, boolean showMultipleTargets, FrameDivisor divisor) {
+            super(shouldDraw, showMultipleTargets, divisor);
+            // We want to show the polygon, not the rotated box
+            this.showRotatedBox = false;
+            this.showMaximumBox = false;
+            this.rotatedBoxColor = Color.RED;
+        }
     }
 }

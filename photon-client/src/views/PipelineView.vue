@@ -264,6 +264,7 @@ import TargetsTab from "./PipelineViews/TargetsTab";
 import Map3DTab from './PipelineViews/Map3DTab';
 import PnPTab from './PipelineViews/PnPTab';
 import AprilTagTab from './PipelineViews/AprilTagTab';
+import ArucoTab from './PipelineViews/ArucoTab';
 
 export default {
     name: 'Pipeline',
@@ -278,6 +279,7 @@ export default {
         Map3DTab,
         PnPTab,
         AprilTagTab,
+        ArucoTab,
     },
     data() {
         return {
@@ -316,6 +318,10 @@ export default {
                         name: "AprilTag",
                         component: "AprilTagTab",
                     },
+                 aruco: {
+                    name: "Aruco",
+                    component: "ArucoTab",
+                  },
                     output: {
                         name: "Output",
                         component: "OutputTab",
@@ -338,6 +344,7 @@ export default {
                 const allow3d = this.$store.getters.currentPipelineSettings.solvePNPEnabled;
                 // If in apriltag, "Threshold" and "Contours" are illegal -- otherwise "AprilTag" is
                 const isAprilTag = (this.$store.getters.currentPipelineSettings.pipelineType - 2) === 2;
+              const isAruco = (this.$store.getters.currentPipelineSettings.pipelineType - 2) === 3;
 
                 // 2D array of tab names and component names; each sub-array is a separate tab group
                 let ret = [];
@@ -346,12 +353,12 @@ export default {
                     ret[0] = Object.values(tabs);
                 } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
                     // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
-                    ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.apriltag, tabs.output];
+                    ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.apriltag, tabs.aruco,tabs.output];
                     ret[1] = [tabs.targets, tabs.pnp, tabs.map3d];
                 } else if (this.$vuetify.breakpoint.lgAndDown) {
                     // Three tab groups, one with "input", one with "threshold, contours, output", and the other with "target info, 3D"
                     ret[0] = [tabs.input];
-                    ret[1] = [tabs.threshold, tabs.contours, tabs.apriltag, tabs.output];
+                    ret[1] = [tabs.threshold, tabs.contours, tabs.apriltag, tabs.aruco, tabs.output];
                     ret[2] = [tabs.targets, tabs.pnp, tabs.map3d];
                 } else if (this.$vuetify.breakpoint.xl) {
                     // Three tab groups, one with "input", one with "threshold, contours", and the other with "output, target info, 3D"
@@ -367,10 +374,11 @@ export default {
                   // All the tabs we allow
                   const filteredGroup = group.filter(it =>
                           !(!allow3d && it.name === "3D") //Filter out 3D tab any time 3D isn't calibrated
-                       && !((!allow3d || isAprilTag) && it.name === "PnP") //Filter out the PnP config tab if 3D isn't available, or we're doing Apriltags
-                       && !(isAprilTag && (it.name === "Threshold")) //Filter out threshold tab if we're doing apriltags
-                       && !(isAprilTag && (it.name === "Contours")) //Filter out contours if we're doing Apriltag
+                       && !((!allow3d || isAprilTag || isAruco) && it.name === "PnP") //Filter out the PnP config tab if 3D isn't available, or we're doing Apriltags
+                       && !((isAprilTag || isAruco) && (it.name === "Threshold")) //Filter out threshold tab if we're doing apriltags
+                       && !((isAprilTag || isAruco) && (it.name === "Contours")) //Filter out contours if we're doing Apriltag
                        && !(!isAprilTag && it.name === "AprilTag") //Filter out apriltag unless we actually are doing Apriltags
+                       && !(!isAruco&& it.name === "Aruco") //Filter out apriltag unless we actually are doing Apriltags
                       );
                   ret[i] = filteredGroup;
                 }

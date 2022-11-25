@@ -25,6 +25,9 @@ dependencies {
     implementation "edu.wpi.first.wpiutil:wpiutil-java:$wpilibVersion"
     implementation "edu.wpi.first.cameraserver:cameraserver-java:$wpilibVersion"
 
+    //cv
+    implementation group: 'org.bytedeco', name: 'javacv-platform', version: '1.5.8'
+
     implementation "edu.wpi.first.cscore:cscore-java:$wpilibVersion"
     jniPlatforms.each { implementation "edu.wpi.first.cscore:cscore-jni:$wpilibVersion:$it" }
 

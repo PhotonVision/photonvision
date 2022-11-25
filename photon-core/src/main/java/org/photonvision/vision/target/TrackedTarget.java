@@ -27,6 +27,7 @@ import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.apriltag.DetectionResult;
+import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.*;
 
@@ -126,6 +127,61 @@ public class TrackedTarget implements Releasable {
         setCameraRelativeRvec(rvec);
 
         m_poseAmbiguity = result.getPoseAmbiguity();
+    }
+    public TrackedTarget(ArucoDetectionResult result, TargetCalculationParameters params) {
+        m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
+        m_robotOffsetPoint = new Point();
+
+        m_pitch =
+                TargetCalculations.calculatePitch(
+                        result.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
+        m_yaw =
+                TargetCalculations.calculateYaw(
+                        result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
+        var bestPose = new Transform3d(result.getPose().getTranslation(), result.getPose().getRotation());
+
+
+        bestPose = MathUtils.convertApriltagtoOpenCV(bestPose);
+
+        m_bestCameraToTarget3d = bestPose;
+
+        double[] xCorners = result.getxCorners();
+        double[] yCorners = result.getyCorners();
+
+        Point[] cornerPoints =
+                new Point[] {
+                        new Point(xCorners[0], yCorners[0]),
+                        new Point(xCorners[1], yCorners[1]),
+                        new Point(xCorners[2], yCorners[2]),
+                        new Point(xCorners[3], yCorners[3])
+                };
+        m_targetCorners = List.of(cornerPoints);
+        MatOfPoint contourMat = new MatOfPoint(cornerPoints);
+        m_approximateBoundingPolygon = new MatOfPoint2f(cornerPoints);
+        m_mainContour = new Contour(contourMat);
+        m_area = m_mainContour.getArea() / params.imageArea * 100;
+        m_fiducialId = result.getId();
+        m_shape = null;
+
+        // TODO implement skew? or just yeet
+        m_skew = 0;
+
+        var tvec = new Mat(3, 1, CvType.CV_64FC1);
+        tvec.put(
+                0,
+                0,
+                new double[] {
+                        bestPose.getTranslation().getX(),
+                        bestPose.getTranslation().getY(),
+                        bestPose.getTranslation().getZ()
+                });
+        setCameraRelativeTvec(tvec);
+
+        // Opencv expects a 3d vector with norm = angle and direction = axis
+        var rvec = new Mat(3, 1, CvType.CV_64FC1);
+        MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
+        setCameraRelativeRvec(rvec);
+
     }
 
     public void setFiducialId(int id) {

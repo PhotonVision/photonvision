@@ -130,21 +130,6 @@ public class PipelineManager {
         }
 
         var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
-        //        if (currentPipeline.getSettings().pipelineIndex !=
-        // desiredPipelineSettings.pipelineIndex) {
-        //            switch (desiredPipelineSettings.pipelineType) {
-        //                case Reflective:
-        //                    currentPipeline =
-        //                            new ReflectivePipeline((ReflectivePipelineSettings)
-        // desiredPipelineSettings);
-        //                    break;
-        //                case ColoredShape:
-        //                    currentPipeline =
-        //                            new ColoredShapePipeline((ColoredShapePipelineSettings)
-        // desiredPipelineSettings);
-        //                    break;
-        //            }
-        //        }
 
         return currentUserPipeline;
     }
@@ -195,6 +180,10 @@ public class PipelineManager {
                     currentUserPipeline =
                             new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
                     break;
+
+                case Aruco:
+                    logger.debug("Creating Aruco pipeline");
+                    currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;
@@ -285,6 +274,12 @@ public class PipelineManager {
                     added.pipelineNickname = nickname;
                     return added;
                 }
+            case Aruco:
+            {
+                var added = new ArucoPipelineSettings();
+                added.pipelineNickname = nickname;
+                return added;
+            }
             default:
                 {
                     logger.error("Got invalid pipeline type: " + type.toString());

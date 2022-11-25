@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ThinClient</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        .imgbox {
+            display: grid;
+            height: 100%;
+            width: 100%;
+        }
+        .center-fit {
+
+            width: 90vw;
+            margin: auto;
+        }
+    </style>
+
+</head>
+
+<body>
+    <hr>
+        <div class="imgbox">
+            <img id="streamImg" class="center-fit" src=''>
+        </div>
+    <hr>
+
+    <form id="frm1">
+        Host <input type="text" id="host" value="photonvision.local"><br>
+        Port <input type="text" id="port" value="1181"><br>
+    </form>
+
+    <button>Start Stream</button>
+
+    <script type="module">
+        class WebsocketVideoStream{
+
+            constructor(drawDiv, streamPort, host) {
+
+                this.drawDiv = drawDiv;
+                this.image = document.getElementById(this.drawDiv);
+                this.streamPort = streamPort;
+                this.serverAddr = "ws://" + host + "/websocket_cameras";
+<<<<<<< HEAD
+=======
+                this.noStream = false;
+                this.noStreamPrev = false;
+>>>>>>> 9d03566c09647195a559414d383e85766e0574b0
+                this.setNoStream();
+                this.ws_connect();
+                this.imgData = null;
+                this.imgDataTime = -1;
+<<<<<<< HEAD
+                requestAnimationFrame(()=>this.animationLoop());
+                this.frameRxCount = 0;
+                this.noStream = true;
+=======
+                this.imgObjURL = null;
+                this.frameRxCount = 0;
+
+                requestAnimationFrame(()=>this.animationLoop());
+>>>>>>> 9d03566c09647195a559414d383e85766e0574b0
+            }
+
+            animationLoop(){
+                var now = window.performance.now();
+
+                if((now - this.imgDataTime) > 2500 && this.imgData != null){
+<<<<<<< HEAD
+                    //Handle websocket send timeouts by restarting?
+                    console.log("Timeout, reconnecting...");
+
+                    this.stopStream();
+                    this.startStream();
+                    this.image.setAttribute('src', "./loading.gif");
+                } else {
+                    if(this.streamPort == null || this.noStream){
+                        this.image.setAttribute('src', "../loading.gif");
+                    } else if (this.imgData != null) {
+                        //From https://stackoverflow.com/a/28498608
+                        var a = new Uint8Array(this.imgData);
+                        var nb = a.length;
+
+                        //Confirm we have enough byes coming in
+                        if (nb < 4){
+                            // Case - not enough bytes recieved
+                            this.image.src = "../assets/loading.gif";
+                            return;
+                        }
+
+                        //Look up MIME type
+                        var mime;
+                        if (a[0] == 0x89 && a[1] == 0x50 && a[2] == 0x4E && a[3] == 0x47) {
+                            mime = 'image/png';
+                        } else if (a[0] == 0xff && a[1] == 0xd8) {
+                            mime = 'image/jpeg';
+                        } else if (a[0] == 0x47 && a[1] == 0x49 && a[2] == 0x46) {
+                            mime = 'image/gif';
+                        } else {
+                            // Case - unknown mime type
+                            this.image.src = "../assets/loading.gif";
+                            return;
+                        }
+
+                        // Convert bytes to base64 representation
+                        var binary = "";
+                        for (var i = 0; i < nb; i++)
+                            binary += String.fromCharCode(a[i]);
+                        var base64 = window.btoa(binary);
+
+                        //Update the image with the new mimetype and image
+                        this.image.src = 'data:' + mime + ';base64,' + base64;
+
+                        console.log("Image Updated");
+=======
+                    //Handle websocket send timeouts by restarting
+                    this.setNoStream();
+                    this.stopStream();
+                    setTimeout(this.startStream.bind(this), 1000); //restart stream one second later
+                } else {
+                    if(this.streamPort == null){
+                        this.setNoStream();
+                    } else if (this.imgData != null) {
+                        //From https://stackoverflow.com/questions/67507616/set-image-src-from-image-blob/67507685#67507685
+                        if(this.imgObjURL != null){
+                            URL.revokeObjectURL(this.imgObjURL)
+                        }
+                        this.imgObjURL = URL.createObjectURL(this.imgData);
+
+                        //Update the image with the new mimetype and image
+                        this.image.src = this.imgObjURL;
+                        this.noStream = false;
+>>>>>>> 9d03566c09647195a559414d383e85766e0574b0
+
+                    } else {
+                        //Nothing, hold previous image while waiting for next frame
+                    }
+                }
+
+                requestAnimationFrame(()=>this.animationLoop());
+            }
+
+            setNoStream() {
+<<<<<<< HEAD
+                this.noStream = true;
+=======
+                this.noStreamPrev = this.noStream;
+                this.noStream = true;
+                if(this.noStreamPrev == false && this.noStream == true){
+                    //One-shot background change to preserve animation
+                    this.image.src = "loading.gif";
+                }
+>>>>>>> 9d03566c09647195a559414d383e85766e0574b0
+            }
+
+            startStream() {
+                if(this.serverConnectionActive == true && this.streamPort > 0){
+                    this.ws.send(JSON.stringify({"cmd": "subscribe", "port":this.streamPort}));
+                    this.noStream = false;
+                }
+            }
+
+            stopStream() {
+                if(this.serverConnectionActive == true && this.streamPort > 0){
+                    this.ws.send(JSON.stringify({"cmd": "unsubscribe"}));
+                    this.noStream = true;
+                }
+            }
+
+            setPort(streamPort){
+                this.stopStream();
+                this.frameRxCount = 0;
+                this.streamPort = streamPort;
+                this.startStream();
+            }
+
+            ws_onOpen() {
+                // Set the flag allowing general server communication
+                this.serverConnectionActive = true;
+                console.log("Connected!");
+                this.startStream();
+            }
+
+            ws_onClose(e) {
+                this.setNoStream();
+
+                //Clear flags to stop server communication
+                this.ws = null;
+                this.serverConnectionActive = false;
+
+                console.log('Camera Socket is closed. Reconnect will be attempted in 0.5 second.', e.reason);
+                setTimeout(this.ws_connect.bind(this), 500);
+
+                if(!e.wasClean){
+                    console.error('Socket encountered error!');
+                }
+
+            }
+
+            ws_onError(e){
+                e; //prevent unused failure
+                this.ws.close();
+            }
+
+            ws_onMessage(e){
+                if(typeof e.data === 'string'){
+                    //string data from host
+                    //TODO - anything to recieve info here? Maybe "avaialble streams?"
+                } else {
+<<<<<<< HEAD
+                    //binary data - a frame
+                    this.imgData = new Uint8Array(e.data);
+                }
+                this.imgDataTime = window.performance.now();
+                this.frameRxCount++;
+=======
+                    if(e.data.size > 0){
+                        //binary data - a frame
+                        this.imgData = e.data;
+                        this.imgDataTime = window.performance.now();
+                        this.frameRxCount++;
+                    } else {
+                        //TODO - server is sending empty frames?
+                    }
+
+                }
+
+>>>>>>> 9d03566c09647195a559414d383e85766e0574b0
+            }
+
+            ws_connect() {
+                this.ws = new WebSocket(this.serverAddr);
+<<<<<<< HEAD
+                this.ws.binaryType = "arraybuffer";
+=======
+                this.ws.binaryType = "blob";
+>>>>>>> 9d03566c09647195a559414d383e85766e0574b0
+                this.ws.onopen = this.ws_onOpen.bind(this);
+                this.ws.onmessage = this.ws_onMessage.bind(this);
+                this.ws.onclose = this.ws_onClose.bind(this);
+                this.ws.onerror = this.ws_onError.bind(this);
+                console.log("Connecting to server " + this.serverAddr);
+            }
+
+            ws_close(){
+                this.ws.close();
+            }
+
+        }
+
+        var stream = null;
+
+        function streamStartRequest() {
+            var host = document.getElementById("host").value + ":5800";
+            var port = document.getElementById("port").value;
+            if(stream == null){
+                stream = new WebsocketVideoStream("streamImg",port,host);
+                stream.startStream();
+            } else {
+                stream.setPort(port);
+            }
+
+        }
+
+        // Attach listener
+        document.querySelector('button').addEventListener('click', streamStartRequest);
+
+        // Deal with URLParams, validating inputs
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const port_in = urlParams.get('port')
+        const host_in = urlParams.get('host')
+        if(port_in != ""){
+            document.getElementById("port").value = port_in;
+        }
+
+        if(host_in != ""){
+            document.getElementById("host").value = host_in;
+        }
+
+        if(port_in != "" & host_in != ""){
+            streamStartRequest(); //we got valid inputs, auto-start the stream
+        }
+
+
+    </script>
+
+</body>
+
+
+</html>
