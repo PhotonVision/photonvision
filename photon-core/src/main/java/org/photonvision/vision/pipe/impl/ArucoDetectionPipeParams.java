@@ -52,12 +52,12 @@ public class ArucoDetectionPipeParams {
     }
 
     @Override
-    public String toString() {
-        return "AprilTagDetectionPipeParams{"
-                + "detectorParams="
-                + detectorParams
-                + ", cameraCalibrationCoefficients="
-                + cameraCalibrationCoefficients
-                + '}';
+    public String
+
+    toString() {
+        return "ArucoDetectionPipeParams{" +
+                "detectorParams=" + detectorParams +
+                ", cameraCalibrationCoefficients=" + cameraCalibrationCoefficients +
+                '}';
     }
 }

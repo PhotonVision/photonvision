@@ -28,7 +28,7 @@ public class ArucoDetectionResult {
         this.centerY = centerY;
         this.id = id;
         this.pose = pose;
-        logger.debug("Creating a new detection result: " + this.toString());
+        //logger.debug("Creating a new detection result: " + this.toString());
     }
 
     public Pose3d getPose() {

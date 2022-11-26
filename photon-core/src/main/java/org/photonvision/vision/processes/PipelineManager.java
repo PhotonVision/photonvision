@@ -186,7 +186,6 @@ public class PipelineManager {
                 case Aruco:
                     logger.debug("Creating Aruco Pipeline");
                     currentUserPipeline =
-                            //new AprilTagPipeline(new AprilTagPipelineSettings());
                             new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
                     break;
                 default:

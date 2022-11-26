@@ -31,24 +31,14 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
-import org.bytedeco.javacpp.Loader;
-import org.bytedeco.opencv.opencv_java;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.DetectorParameters;
 import org.opencv.aruco.Dictionary;
 import org.opencv.core.Core;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfPoint2f;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
-import static org.bytedeco.opencv.global.opencv_imgcodecs.imread;
-import static org.bytedeco.opencv.global.opencv_aruco.detectMarkers;
-import static org.bytedeco.opencv.global.opencv_aruco.getPredefinedDictionary;
-import org.photonvision.vision.apriltag.AprilTagDetectorParams;
-import org.photonvision.vision.apriltag.AprilTagJNI;
-import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 import java.util.ArrayList;
@@ -56,17 +46,20 @@ import java.util.ArrayList;
 public class ArucoDetector {
     private static final Logger logger = new Logger(ArucoDetector.class, LogGroup.VisionModule);
 
+    Mat ids;
+
+    Mat tvecs;
+    Mat rvecs;
     public ArucoDetector() {
 
         logger.debug("New Aruco Detector");
+        ids = new Mat();
+        tvecs = new Mat();
+        rvecs = new Mat();
     }
     public ArucoDetectionResult[] detect(Mat grayscaleImg, CameraCalibrationCoefficients coeffs, DetectorParameters params) {
         ArrayList<Mat> corners = new ArrayList();
         Pose3d tagPose = new Pose3d();
-        Mat ids = new Mat();
-
-        var tvecs = new Mat();
-        var rvecs = new Mat();
         Aruco.detectMarkers(grayscaleImg, Dictionary.get(Aruco.DICT_APRILTAG_16h5), corners, ids, params);
         if(coeffs!=null) Aruco.estimatePoseSingleMarkers(corners,(float).1524,coeffs.getCameraIntrinsicsMat(), coeffs.getCameraExtrinsicsMat(),rvecs,tvecs);
         ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
