@@ -31,14 +31,20 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import org.bytedeco.javacpp.Loader;
+import org.bytedeco.opencv.opencv_java;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.Dictionary;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint2f;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
+import static org.bytedeco.opencv.global.opencv_imgcodecs.imread;
+import static org.bytedeco.opencv.global.opencv_aruco.detectMarkers;
+import static org.bytedeco.opencv.global.opencv_aruco.getPredefinedDictionary;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.apriltag.AprilTagJNI;
 import org.photonvision.vision.apriltag.DetectionResult;
@@ -49,8 +55,11 @@ import java.util.ArrayList;
 public class ArucoDetector {
     private static final Logger logger = new Logger(ArucoDetector.class, LogGroup.VisionModule);
 
+    public ArucoDetector() {
+        Loader.load(opencv_java.class);
+        logger.debug("New Aruco Detector");
+    }
     public ArucoDetectionResult[] detect(Mat grayscaleImg, CameraCalibrationCoefficients coeffs) {
-
         var cx = 0.0;
         var cy = 0.0;
         var fx = 0.0;
@@ -59,41 +68,33 @@ public class ArucoDetector {
         ArrayList<Mat> corners = new ArrayList();
         Pose3d tagPose = new Pose3d();
         Mat ids = new Mat();
-        ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
-        var tvec = new Mat(3, 1, CvType.CV_64FC1);
-        var rvec = new Mat(3,1,CvType.CV_64FC1);
+
+        var tvecs = new Mat();
+        var rvecs = new Mat();
         Aruco.detectMarkers(grayscaleImg, Dictionary.get(Aruco.DICT_APRILTAG_16h5), corners, ids);
-
-        if (coeffs != null) {
-            final Mat cameraMatrix = coeffs.getCameraIntrinsicsMat();
-            if (cameraMatrix != null) {
-                // Camera calibration has been done, we should be able to do pose estimation
-                cx = cameraMatrix.get(0, 2)[0];
-                cy = cameraMatrix.get(1, 2)[0];
-                fx = cameraMatrix.get(0, 0)[0];
-                fy = cameraMatrix.get(1, 1)[0];
-                calibrationSet = true;
-            }
-        }
-
+        if(coeffs!=null) Aruco.estimatePoseSingleMarkers(corners,(float).1524,coeffs.getCameraIntrinsicsMat(), coeffs.getCameraExtrinsicsMat(),rvecs,tvecs);
+        ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
         for (int i = 0; i < corners.size(); i++) {
             Mat cornerMat = corners.get(i);
-            if(calibrationSet) {
-                Aruco.estimatePoseSingleMarkers(corners, (float) 0.1524, coeffs.getCameraIntrinsicsMat(), coeffs.getCameraExtrinsicsMat(), tvec, rvec);
+
+            if(coeffs!=null) {
                 Translation3d translation =
-                        new Translation3d(tvec.get(0, 0)[0], tvec.get(1, 0)[0], tvec.get(2, 0)[0]);
+                        new Translation3d(tvecs.get(0, 0)[i], tvecs.get(1, 0)[i], tvecs.get(2, 0)[i]);
                 Rotation3d rotation =
                         new Rotation3d(
-                                VecBuilder.fill(rvec.get(0, 0)[0], rvec.get(1, 0)[0], rvec.get(2, 0)[0]),
-                                Core.norm(rvec));
-                tagPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d(translation, rotation));
+                                VecBuilder.fill(rvecs.get(0, 0)[i], rvecs.get(1, 0)[i], rvecs.get(2, 0)[i]),
+                                Core.norm(rvecs));
+                tagPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d(translation,rotation));
+            }else{
+                tagPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d());
             }
-            toReturn[i] = new ArucoDetectionResult(
-                    new double[]{cornerMat.get(0, 0)[0], cornerMat.get(1, 0)[0], cornerMat.get(2, 0)[0], cornerMat.get(3, 0)[0]},
-                    new double[]{cornerMat.get(0, 1)[0], cornerMat.get(1, 1)[0], cornerMat.get(2, 1)[0], cornerMat.get(3, 1)[0]},
+            ArucoDetectionResult result = new ArucoDetectionResult(
+                    new double[]{cornerMat.get(0, 0)[0], cornerMat.get(0, 1)[0], cornerMat.get(0, 2)[0], cornerMat.get(0, 3)[0]},
+                    new double[]{cornerMat.get(0, 0)[1], cornerMat.get(0, 1)[1], cornerMat.get(0, 2)[1], cornerMat.get(0, 3)[1]},
                     (int) ids.get(i, 0)[0],
                     tagPose);
 
+            toReturn[i] = result;
 
         }
         return toReturn;

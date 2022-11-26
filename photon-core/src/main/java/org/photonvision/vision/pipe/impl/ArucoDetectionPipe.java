@@ -28,13 +28,11 @@ import java.util.List;
 
 public class ArucoDetectionPipe
         extends CVPipe<Mat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
-    private final ArucoDetector m_detector = new ArucoDetector();
 
-    boolean useNativePoseEst;
-
+    ArucoDetector detector = new ArucoDetector();
     @Override
     protected List<ArucoDetectionResult> process(Mat in) {
-        return List.of(m_detector.detect(in, params.cameraCalibrationCoefficients));
+        return List.of(detector.detect(in, params.cameraCalibrationCoefficients));
     }
 
     @Override
