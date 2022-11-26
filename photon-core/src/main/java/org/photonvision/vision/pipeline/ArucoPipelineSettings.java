@@ -23,7 +23,7 @@ import org.photonvision.vision.target.TargetModel;
 
 import java.util.Objects;
 
-@JsonTypeName("AprilTagPipelineSettings")
+@JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public double decimate = 1.0;
     public int threads = 1;

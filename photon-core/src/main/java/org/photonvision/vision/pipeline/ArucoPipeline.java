@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
+import org.opencv.aruco.DetectorParameters;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
@@ -69,7 +70,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         }
 
 
-        ArucoDetectorParams arucoDetectionParams = new ArucoDetectorParams(settings.decimate, settings.numIterations, settings.useAruco3);
+        DetectorParameters arucoDetectionParams = ArucoDetectorParams.getDetectorParams(settings.decimate, settings.numIterations, settings.useAruco3);
 
 
 

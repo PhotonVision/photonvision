@@ -31,8 +31,8 @@ public class ArucoDetectionPipe
 
     ArucoDetector detector = new ArucoDetector();
     @Override
-    protected List<ArucoDetectionResult> process(Mat in) {
-        return List.of(detector.detect(in, params.cameraCalibrationCoefficients));
+    protected List<ArucoDetectionResult> process(Mat in){
+        return List.of(detector.detect(in, params.cameraCalibrationCoefficients, params.detectorParams));
     }
 
     @Override

@@ -188,6 +188,7 @@ public class PipelineManager {
                     currentUserPipeline =
                             //new AprilTagPipeline(new AprilTagPipelineSettings());
                             new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
+                    break;
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;
@@ -284,6 +285,7 @@ public class PipelineManager {
                         new ArucoPipelineSettings();
                 added.pipelineNickname = nickname;
                 return added;
+
             }
             default:
                 {

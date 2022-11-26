@@ -34,6 +34,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.opencv.opencv_java;
 import org.opencv.aruco.Aruco;
+import org.opencv.aruco.DetectorParameters;
 import org.opencv.aruco.Dictionary;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
@@ -56,22 +57,17 @@ public class ArucoDetector {
     private static final Logger logger = new Logger(ArucoDetector.class, LogGroup.VisionModule);
 
     public ArucoDetector() {
-        Loader.load(opencv_java.class);
+
         logger.debug("New Aruco Detector");
     }
-    public ArucoDetectionResult[] detect(Mat grayscaleImg, CameraCalibrationCoefficients coeffs) {
-        var cx = 0.0;
-        var cy = 0.0;
-        var fx = 0.0;
-        var fy = 0.0;
-        boolean calibrationSet = false;
+    public ArucoDetectionResult[] detect(Mat grayscaleImg, CameraCalibrationCoefficients coeffs, DetectorParameters params) {
         ArrayList<Mat> corners = new ArrayList();
         Pose3d tagPose = new Pose3d();
         Mat ids = new Mat();
 
         var tvecs = new Mat();
         var rvecs = new Mat();
-        Aruco.detectMarkers(grayscaleImg, Dictionary.get(Aruco.DICT_APRILTAG_16h5), corners, ids);
+        Aruco.detectMarkers(grayscaleImg, Dictionary.get(Aruco.DICT_APRILTAG_16h5), corners, ids, params);
         if(coeffs!=null) Aruco.estimatePoseSingleMarkers(corners,(float).1524,coeffs.getCameraIntrinsicsMat(), coeffs.getCameraExtrinsicsMat(),rvecs,tvecs);
         ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
         for (int i = 0; i < corners.size(); i++) {
@@ -95,8 +91,12 @@ public class ArucoDetector {
                     tagPose);
 
             toReturn[i] = result;
+            cornerMat.release();
 
         }
+        rvecs.release();
+        tvecs.release();
+        ids.release();
         return toReturn;
     }
 

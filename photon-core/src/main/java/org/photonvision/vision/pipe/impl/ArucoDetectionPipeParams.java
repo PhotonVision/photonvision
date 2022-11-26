@@ -21,24 +21,17 @@ import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.aruco.ArucoDetectorParams;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.opencv.aruco.DetectorParameters;
 
 import java.util.Objects;
 
 public class ArucoDetectionPipeParams {
-    public final ArucoDetectorParams detectorParams;
+    public final DetectorParameters detectorParams;
     public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
 
 
     public ArucoDetectionPipeParams(
-            double decimate, int cornerIterations, boolean useAruco3,
-            CameraCalibrationCoefficients cameraCalibrationCoefficients) {
-        detectorParams = new ArucoDetectorParams(decimate, cornerIterations, useAruco3);
-        this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
-
-    }
-
-    public ArucoDetectionPipeParams(
-            ArucoDetectorParams detectorParams,
+            DetectorParameters detectorParams,
             CameraCalibrationCoefficients cameraCalibrationCoefficients
             ) {
         this.detectorParams = detectorParams;
@@ -50,8 +43,12 @@ public class ArucoDetectionPipeParams {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ArucoDetectionPipeParams that = (ArucoDetectionPipeParams) o;
-        return Objects.equals(detectorParams, that.detectorParams)
-                && Objects.equals(cameraCalibrationCoefficients, that.cameraCalibrationCoefficients);
+        return Objects.equals(detectorParams, that.detectorParams) && Objects.equals(cameraCalibrationCoefficients, that.cameraCalibrationCoefficients);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(detectorParams, cameraCalibrationCoefficients);
     }
 
     @Override
