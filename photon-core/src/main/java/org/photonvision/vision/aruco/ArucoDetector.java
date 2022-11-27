@@ -61,19 +61,20 @@ public class ArucoDetector {
         ArrayList<Mat> corners = new ArrayList();
         Pose3d tagPose = new Pose3d();
         Aruco.detectMarkers(grayscaleImg, Dictionary.get(Aruco.DICT_APRILTAG_16h5), corners, ids, params);
-        if(coeffs!=null) Aruco.estimatePoseSingleMarkers(corners,(float).1524,coeffs.getCameraIntrinsicsMat(), coeffs.getCameraExtrinsicsMat(),rvecs,tvecs);
+        if(coeffs!=null) Aruco.estimatePoseSingleMarkers(corners,(float)0.0762,coeffs.getCameraIntrinsicsMat(), coeffs.getCameraExtrinsicsMat(),rvecs,tvecs);
         ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
         for (int i = 0; i < corners.size(); i++) {
             Mat cornerMat = corners.get(i);
 
             if(coeffs!=null) {
+                //logger.debug(""+tvecs.get(0, 0)[1]);
                 Translation3d translation =
-                        new Translation3d(tvecs.get(0, 0)[i], tvecs.get(1, 0)[i], tvecs.get(2, 0)[i]);
+                        new Translation3d(tvecs.get(0, 0)[0], tvecs.get(0, 0)[1], tvecs.get(0, 0)[2]);
                 Rotation3d rotation =
                         new Rotation3d(
-                                VecBuilder.fill(rvecs.get(0, 0)[i], rvecs.get(1, 0)[i], rvecs.get(2, 0)[i]),
+                                VecBuilder.fill(rvecs.get(0, 0)[0], rvecs.get(0, 0)[1], rvecs.get(0, 0)[2]),
                                 Core.norm(rvecs));
-                tagPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d(translation,rotation));
+                tagPose = new Pose3d(translation, rotation);
             }else{
                 tagPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d());
             }
