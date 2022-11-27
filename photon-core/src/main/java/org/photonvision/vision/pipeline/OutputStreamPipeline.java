@@ -26,6 +26,7 @@ import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 /**
@@ -107,7 +108,7 @@ public class OutputStreamPipeline {
                 new Draw3dArucoPipe.Draw3dArucoParams(
                         settings.outputShouldDraw,
                         frameStaticProperties.cameraCalibration,
-                        settings.targetModel,
+                        TargetModel.k3in16h5AprilTag,
                         settings.streamingFrameDivisor);
         draw3dArucoPipe.setParams(draw3dArucoParams);
 

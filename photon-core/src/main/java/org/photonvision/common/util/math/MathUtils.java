@@ -200,6 +200,10 @@ public class MathUtils {
         var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(pose.getRotation());
         return new Transform3d(pose.getTranslation(), ocvRotation);
     }
+    public static Pose3d convertArucotoOpenCV(Transform3d pose) {
+        var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(pose.getRotation());
+        return new Pose3d(pose.getTranslation(), ocvRotation);
+    }
 
     public static void rotationToOpencvRvec(Rotation3d rotation, Mat rvecOutput) {
         var angle = rotation.getAngle();

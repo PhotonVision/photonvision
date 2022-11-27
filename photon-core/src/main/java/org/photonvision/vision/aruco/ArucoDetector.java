@@ -69,12 +69,12 @@ public class ArucoDetector {
             if(coeffs!=null) {
                 //logger.debug(""+tvecs.get(0, 0)[1]);
                 Translation3d translation =
-                        new Translation3d(tvecs.get(0, 0)[0], tvecs.get(0, 0)[1], tvecs.get(0, 0)[2]);
+                        new Translation3d(tvecs.get(i, 0)[0], tvecs.get(i, 0)[1], tvecs.get(i, 0)[2]);
                 Rotation3d rotation =
                         new Rotation3d(
-                                VecBuilder.fill(rvecs.get(0, 0)[0], rvecs.get(0, 0)[1], rvecs.get(0, 0)[2]),
+                                VecBuilder.fill(rvecs.get(i, 0)[0], rvecs.get(i, 0)[1], rvecs.get(i, 0)[2]),
                                 Core.norm(rvecs));
-                tagPose = new Pose3d(translation, rotation);
+                tagPose =MathUtils.convertArucotoOpenCV(new Transform3d(translation, rotation));
             }else{
                 tagPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d());
             }

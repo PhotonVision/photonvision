@@ -12,9 +12,9 @@ public class ArucoDetectorParams {
        DetectorParameters parameters = DetectorParameters.create();
 
       parameters.set_aprilTagQuadDecimate((float) decimate);
-       parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
-       parameters.set_cornerRefinementMaxIterations(cornerIterations); // 200
-       parameters.set_cornerRefinementMinAccuracy(.025); // .025
+       parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_APRILTAG);
+       parameters.set_cornerRefinementMaxIterations(800); // 200
+       parameters.set_cornerRefinementMinAccuracy(.0025); // .025
        parameters.set_useAruco3Detection(useAruco3);
        return parameters;
    }
