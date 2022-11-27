@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
 import org.bytedeco.javacpp.Loader;
 import org.bytedeco.opencv.opencv_java;
+import org.opencv.core.Core;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -290,6 +291,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
         Loader.load(opencv_java.class);
         try {
             CameraServerCvJNI.forceLoad();

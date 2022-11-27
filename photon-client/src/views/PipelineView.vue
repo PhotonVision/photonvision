@@ -264,6 +264,7 @@ import TargetsTab from "./PipelineViews/TargetsTab";
 import Map3DTab from './PipelineViews/Map3DTab';
 import PnPTab from './PipelineViews/PnPTab';
 import AprilTagTab from './PipelineViews/AprilTagTab';
+import ArucoTab from './PipelineViews/ArucoTab';
 
 export default {
   name: 'Pipeline',
@@ -278,6 +279,7 @@ export default {
     Map3DTab,
     PnPTab,
     AprilTagTab,
+    ArucoTab,
   },
   data() {
     return {
@@ -316,6 +318,10 @@ export default {
             name: "AprilTag",
             component: "AprilTagTab",
           },
+          aruco: {
+            name: "Aruco",
+            component: "ArucoTab",
+          },
           output: {
             name: "Output",
             component: "OutputTab",
@@ -337,7 +343,7 @@ export default {
         // If not in 3d, name "3D" is illegal
         const allow3d = this.$store.getters.currentPipelineSettings.solvePNPEnabled;
         // If in apriltag, "Threshold" and "Contours" are illegal -- otherwise "AprilTag" is
-        const isAprilTag = (this.$store.getters.currentPipelineSettings.pipelineType - 2) === 2;
+        const isAprilTag = (this.$store.getters.currentPipelineSettings.pipelineType - 2) === 3;
 
         // 2D array of tab names and component names; each sub-array is a separate tab group
         let ret = [];
@@ -346,18 +352,18 @@ export default {
           ret[0] = Object.values(tabs);
         } else if (this.$vuetify.breakpoint.mdAndDown || !this.$store.state.compactMode) {
           // Two tab groups, one with "input, threshold, contours, output" and the other with "target info, 3D"
-          ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.apriltag, tabs.output];
+          ret[0] = [tabs.input, tabs.threshold, tabs.contours, tabs.apriltag, tabs.aruco, tabs.output];
           ret[1] = [tabs.targets, tabs.pnp, tabs.map3d];
         } else if (this.$vuetify.breakpoint.lgAndDown) {
           // Three tab groups, one with "input", one with "threshold, contours, output", and the other with "target info, 3D"
           ret[0] = [tabs.input];
-          ret[1] = [tabs.threshold, tabs.contours, tabs.apriltag, tabs.output];
+          ret[1] = [tabs.threshold, tabs.contours, tabs.apriltag,tabs.aruco, tabs.output];
           ret[2] = [tabs.targets, tabs.pnp, tabs.map3d];
         } else if (this.$vuetify.breakpoint.xl) {
           // Three tab groups, one with "input", one with "threshold, contours", and the other with "output, target info, 3D"
           ret[0] = [tabs.input];
           ret[1] = [tabs.threshold];
-          ret[2] = [tabs.contours, tabs.apriltag, tabs.output];
+          ret[2] = [tabs.contours, tabs.apriltag, tabs.aruco,tabs.output];
           ret[3] = [tabs.targets, tabs.pnp, tabs.map3d];
         }
 

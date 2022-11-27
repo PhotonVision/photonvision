@@ -27,7 +27,7 @@
       class="pt-2"
       slider-cols="8"
       name="Use Aruco3 Detection"
-      tooltip="make that stuff fast asf"
+      tooltip="make that stuff fast asf but also a little sus"
       @input="handlePipelineData('useAruco3')"
   />
   </div>
@@ -38,7 +38,7 @@
     import CVswitch from '../../components/common/cv-switch'
 
     export default {
-        name: "AprilTag",
+        name: "Aruco",
         components: {
           CVslider,
           CVswitch,
