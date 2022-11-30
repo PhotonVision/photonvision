@@ -104,7 +104,7 @@ public class MathUtils {
             return list.get(0); // always return single value for n = 1
         }
 
-        // Sort array.  We avoid a third copy here by just creating the
+        // Sort array. We avoid a third copy here by just creating the
         // list directly.
         double[] sorted = new double[list.size()];
         for (int i = 0; i < list.size(); i++) {
@@ -182,11 +182,16 @@ public class MathUtils {
     }
 
     /*
-     * The AprilTag pose rotation outputs are X left, Y down, Z away from the tag with the tag facing
-     * the camera upright and the camera facing the target parallel to the floor. But our OpenCV
-     * solvePNP code would have X left, Y up, Z towards the camera with the target facing the camera
-     * and both parallel to the floor. So we apply a base rotation to the rotation component of the
-     * apriltag pose to make it consistent with the EDN system that OpenCV uses, internally a 180
+     * The AprilTag pose rotation outputs are X left, Y down, Z away from the tag
+     * with the tag facing
+     * the camera upright and the camera facing the target parallel to the floor.
+     * But our OpenCV
+     * solvePNP code would have X left, Y up, Z towards the camera with the target
+     * facing the camera
+     * and both parallel to the floor. So we apply a base rotation to the rotation
+     * component of the
+     * apriltag pose to make it consistent with the EDN system that OpenCV uses,
+     * internally a 180
      * rotation about the X axis
      */
     private static final Rotation3d APRILTAG_BASE_ROTATION =
@@ -211,6 +216,9 @@ public class MathUtils {
      * Orthogonalize an input matrix using a QR decomposition. QR decompositions decompose a
      * rectangular matrix 'A' such that 'A=QR', where Q is the closest orthogonal matrix to the input,
      * and R is an upper triangular matrix.
+     *
+     * <p>The following function is released under the BSD license avaliable in
+     * LICENSE_MathUtils_orthogonalizeRotationMatrix.txt.
      */
     public static Matrix<N3, N3> orthogonalizeRotationMatrix(Matrix<N3, N3> input) {
         var a = DecompositionFactory_DDRM.qr(3, 3);
