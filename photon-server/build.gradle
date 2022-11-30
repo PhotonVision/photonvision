@@ -21,8 +21,6 @@ dependencies {
     implementation "org.msgpack:jackson-dataformat-msgpack:0.9.0"
 
     implementation "org.slf4j:slf4j-simple:1.8.0-beta4"
-
-    jniPlatforms.each { implementation "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:$it" }
 }
 
 shadowJar {
