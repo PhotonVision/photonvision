@@ -16,23 +16,6 @@ test {
     useJUnitPlatform()
 }
 
-wpilibTools.deps.wpilibVersion = wpilibVersion
-
-def nativeConfigName = 'wpilibNatives'
-def nativeConfig = configurations.create(nativeConfigName)
-
-def nativeTasks = wpilibTools.createExtractionTasks {
-    configurationName = nativeConfigName
-}
-
-nativeTasks.addToSourceSetResources(sourceSets.main)
-nativeTasks.addToSourceSetResources(sourceSets.test)
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-
-
 // Apply Java configuration
 dependencies {
     implementation project(":photon-targeting")

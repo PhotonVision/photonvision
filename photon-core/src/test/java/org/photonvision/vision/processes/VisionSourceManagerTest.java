@@ -26,15 +26,15 @@ import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 
 import java.util.ArrayList;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.TestUtils;
 
 public class VisionSourceManagerTest {
-    @BeforeEach
-    public void init() {
+    @BeforeAll
+    public static void init() {
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         try {
@@ -42,7 +42,13 @@ public class VisionSourceManagerTest {
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            // System.exit(1);
         }
+    }
+
+    @Test
+    public void testFoo() {
+        System.out.println(WPIUtilJNI.now());
     }
 
     @Test
