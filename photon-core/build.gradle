@@ -12,6 +12,8 @@ dependencies {
 
     // wpiutil
     jniPlatforms.each { implementation "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:$it" }
+    jniPlatforms.each { implementation "edu.wpi.first.apriltag:apriltag-java:$wpilibVersion" }
+    jniPlatforms.each { implementation "edu.wpi.first.apriltag:apriltag-jni:$wpilibVersion:$it" }
 
     // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
     implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion"

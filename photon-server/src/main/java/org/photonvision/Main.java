@@ -18,6 +18,8 @@
 package org.photonvision;
 
 import edu.wpi.first.cscore.CameraServerCvJNI;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,7 +41,6 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.server.Server;
-import org.photonvision.vision.apriltag.AprilTagJNI;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
@@ -295,9 +296,9 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
         }
         try {
-            AprilTagJNI.forceLoad();
+            CombinedRuntimeLoader.loadLibraries(VisionSourceManager.class, "apriltagjni");
         } catch (IOException e) {
-            logger.error("Failed to load native libraries!", e);
+            logger.error("Failed to load apriltag!", e);
         }
         try {
             PicamJNI.forceLoad();

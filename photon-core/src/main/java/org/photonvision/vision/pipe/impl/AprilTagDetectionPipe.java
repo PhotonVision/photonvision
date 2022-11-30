@@ -20,8 +20,9 @@ package org.photonvision.vision.pipe.impl;
 import java.util.List;
 import org.opencv.core.Mat;
 import org.photonvision.vision.apriltag.AprilTagDetector;
-import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.pipe.CVPipe;
+
+import edu.wpi.first.apriltag.jni.DetectionResult;
 
 public class AprilTagDetectionPipe
         extends CVPipe<Mat, List<DetectionResult>, AprilTagDetectionPipeParams> {

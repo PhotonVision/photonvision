@@ -20,6 +20,7 @@ package org.photonvision.common.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.awt.*;
 import java.io.File;
@@ -34,6 +35,7 @@ public class TestUtils {
         try {
             CameraServerCvJNI.forceLoad();
             WPIUtilJNI.forceLoad();
+            NetworkTablesJNI.forceLoad();
             //        PicamJNI.forceLoad();
         } catch (IOException ex) {
             // ignored
