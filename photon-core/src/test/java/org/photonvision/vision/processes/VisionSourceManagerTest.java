@@ -38,12 +38,11 @@ public class VisionSourceManagerTest {
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         try {
-        CombinedRuntimeLoader.loadLibraries(VisionSourceManager.class, "wpiutiljni");
-        CombinedRuntimeLoader.loadLibraries(VisionSourceManager.class, "ntcorejni");
+            CombinedRuntimeLoader.loadLibraries(VisionSourceManager.class, "wpiutiljni", "ntcorejni");
         } catch (Exception e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-        } 
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     @Test
@@ -64,8 +63,7 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownUsbCameras.contains(info1));
         assertEquals(1, inst.unmatchedLoadedConfigs.size());
 
-        UsbCameraInfo info2 =
-                new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
+        UsbCameraInfo info2 = new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
         infoList.add(info2);
         inst.tryMatchUSBCamImpl(false);
 
