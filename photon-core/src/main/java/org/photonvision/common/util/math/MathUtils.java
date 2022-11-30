@@ -237,6 +237,17 @@ public class MathUtils {
             }
         }
 
+        var ret = new SimpleMatrix(Q);
+        var v1 = ret.cols(0, 1);
+        var v2 = ret.cols(1, 2);
+        var v3 = ret.cols(2, 3);
+
+        System.out.printf("og %s v1 %s v2 %s v3 %s \n", input.getStorage().toString(), v1.toString(), v2.toString(), v3.toString());
+        System.out.printf("V12 %f V23 %f V13 %s\n", v1.dot(v2), v2.dot(v3), v1.dot(v3));
+        System.out.printf("in * in^T %s\n", input.times(input.transpose()));
+        System.out.printf("q * q^T %s\n", ret.mult(ret.transpose()));
+
+
         return new Matrix<>(new SimpleMatrix(Q));
     }
 }
