@@ -21,10 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.cscore.UsbCameraInfo;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.WPIUtilJNI;
-
 import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
@@ -49,7 +45,8 @@ public class VisionSourceManagerTest {
         assertTrue(inst.knownUsbCameras.contains(info1));
         assertEquals(1, inst.unmatchedLoadedConfigs.size());
 
-        UsbCameraInfo info2 = new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
+        UsbCameraInfo info2 =
+                new UsbCameraInfo(0, "dev/video1", "secondTestVideo", new String[0], 2, 1);
         infoList.add(info2);
         inst.tryMatchUSBCamImpl(false);
 

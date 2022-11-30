@@ -21,7 +21,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.util.WPIUtilJNI;
-
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
@@ -185,11 +184,17 @@ public class TestUtils {
 
     private static Path getResourcesFolderPath(boolean testMode) {
         System.out.println("CWD: " + Path.of("").toAbsolutePath().toString());
-        
+
         // VSCode likes to make this path relative to the wrong root directory, so a fun hack to tell
         // if it's wrong
         Path ret = Path.of("test-resources").toAbsolutePath();
-        if (Path.of("test-resources").toAbsolutePath().toString().replace("/", "").replace("\\", "").toLowerCase().matches(".*photon-[a-z]*test-resources")) {
+        if (Path.of("test-resources")
+                .toAbsolutePath()
+                .toString()
+                .replace("/", "")
+                .replace("\\", "")
+                .toLowerCase()
+                .matches(".*photon-[a-z]*test-resources")) {
             ret = Path.of("../test-resources").toAbsolutePath();
         }
         return ret;

@@ -64,13 +64,14 @@ public class DrivetrainPoseEstimator {
 
     public DrivetrainPoseEstimator(double leftDist, double rightDist) {
         m_poseEstimator =
-            new DifferentialDrivePoseEstimator(
-                    gyro.getRotation2d(),
-                    leftDist, rightDist,
-                    new Pose2d(),
-                    stateStdDevs,
-                    localMeasurementStdDevs,
-                    visionMeasurementStdDevs);
+                new DifferentialDrivePoseEstimator(
+                        gyro.getRotation2d(),
+                        leftDist,
+                        rightDist,
+                        new Pose2d(),
+                        stateStdDevs,
+                        localMeasurementStdDevs,
+                        visionMeasurementStdDevs);
     }
 
     /**
