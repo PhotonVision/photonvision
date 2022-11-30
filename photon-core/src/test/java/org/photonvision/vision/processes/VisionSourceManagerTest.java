@@ -26,31 +26,11 @@ import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 
 import java.util.ArrayList;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.util.TestUtils;
 
 public class VisionSourceManagerTest {
-    @BeforeAll
-    public static void init() {
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        try {
-            CombinedRuntimeLoader.loadLibraries(VisionSourceManager.class, "wpiutiljni", "ntcorejni");
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            // System.exit(1);
-        }
-    }
-
-    @Test
-    public void testFoo() {
-        System.out.println(WPIUtilJNI.now());
-    }
-
     @Test
     public void visionSourceTest() {
         var inst = new VisionSourceManager();
