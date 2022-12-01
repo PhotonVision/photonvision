@@ -81,7 +81,7 @@ public class NetworkConfig {
 
     @JsonGetter("shouldManage")
     public boolean shouldManage() {
-        return this.shouldManage || Platform.isRaspberryPi();
+        return this.shouldManage || Platform.isRaspberryPi() || Platform.isLinux() || Platform.isWindows();
     }
 
     @JsonSetter("shouldManage")
