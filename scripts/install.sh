@@ -7,7 +7,7 @@ fi
 
 echo "This is the installation script for PhotonVision."
 
-echo "Installing the curl..."
+echo "Installing curl..."
 apt-get install curl
 echo "curl installation complete."
 
