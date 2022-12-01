@@ -170,4 +170,18 @@ public final class PhotonUtils {
         var targetToCamera = cameraToTarget.inverse();
         return fieldToTarget.transformBy(targetToCamera);
     }
+    
+      /**
+     * Estimates the pose of the robot in the field coordinate system, given the pose of the fiducial tag, the robot relative to the
+     * camera, and the target relative to the camera.
+     *
+     * @param tagPose Pose3D the field relative pose of the target
+     * @param robotToCamera Transform3D of the robot relative to the camera. Origin of the robot is defined as the center.
+     * @param cameraToTarget Transform3D of the target relative to the camera, returned by PhotonVision
+     * @return Transform3d Robot position relative to the field
+     */
+    public static Transform3d estimateFieldToRobotAprilTag(Pose3D tagPose, Transform3d robotToCamera, Transform3d cameraToTarget) {
+            return tagPose.plus(cameraToTarget.inverse()).plus(robotToCamera.inverse());
+    }
+
 }
