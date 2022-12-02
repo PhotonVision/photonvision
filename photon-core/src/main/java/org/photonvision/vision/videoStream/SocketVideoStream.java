@@ -61,7 +61,6 @@ public class SocketVideoStream implements Consumer<Frame> {
      * @return
      */
     public ByteBuffer getJPEGByteBuffer() {
-
         Frame mostRecentFrame = null;
 
         // Empty the queue, releasing and discarding
@@ -81,7 +80,6 @@ public class SocketVideoStream implements Consumer<Frame> {
         // If there was a non-null frame, convert it to a jpeg ByteBuffer
         ByteBuffer sendBuff = null;
         if (mostRecentFrame != null) {
-
             MatOfByte jpegBytes = new MatOfByte();
             Imgcodecs.imencode(
                     ".jpg",
