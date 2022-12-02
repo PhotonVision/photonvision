@@ -62,6 +62,16 @@ public abstract class VisionSourceSettables {
     }
 
     public void setVideoMode(VideoMode mode) {
+        logger.info(
+                "Setting video mode to "
+                        + "FPS: "
+                        + mode.fps
+                        + " Width: "
+                        + mode.width
+                        + " Height: "
+                        + mode.height
+                        + " Pixel Format: "
+                        + mode.pixelFormat);
         setVideoModeInternal(mode);
         calculateFrameStaticProps();
     }
@@ -80,6 +90,7 @@ public abstract class VisionSourceSettables {
     }
 
     public void setFOV(double fov) {
+        logger.info("Setting FOV to " + fov);
         configuration.FOV = fov;
         calculateFrameStaticProps();
     }
