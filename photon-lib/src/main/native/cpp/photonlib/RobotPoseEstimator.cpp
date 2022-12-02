@@ -25,6 +25,7 @@
 #include "photonlib/RobotPoseEstimator.h"
 
 #include <iostream>
+#include <limits>
 #include <map>
 #include <string>
 #include <utility>
@@ -90,7 +91,7 @@ std::pair<frc::Pose3d, units::millisecond_t>
 RobotPoseEstimator::LowestAmbiguityStrategy() {
   int lowestAI = -1;
   int lowestAJ = -1;
-  double lowestAmbiguityScore = 10;
+  double lowestAmbiguityScore = std::numeric_limits<double>::infinity();
   for (std::string::size_type i = 0; i < cameras.size(); ++i) {
     std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
     wpi::span<const PhotonTrackedTarget> targets =
@@ -126,7 +127,8 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
 }
 std::pair<frc::Pose3d, units::millisecond_t>
 RobotPoseEstimator::ClosestToCameraHeightStrategy() {
-  units::meter_t smallestHeightDifference = units::meter_t(10e9);
+  units::meter_t smallestHeightDifference =
+      units::meter_t(std::numeric_limits<double>::infinity());
   units::millisecond_t milli = units::millisecond_t(0);
   frc::Pose3d pose = lastPose;
 
@@ -167,7 +169,8 @@ RobotPoseEstimator::ClosestToCameraHeightStrategy() {
 }
 std::pair<frc::Pose3d, units::millisecond_t>
 RobotPoseEstimator::ClosestToReferencePoseStrategy() {
-  units::meter_t smallestDifference = units::meter_t(10e9);
+  units::meter_t smallestDifference =
+      units::meter_t(std::numeric_limits<double>::infinity());
   units::millisecond_t milli = units::millisecond_t(0);
   frc::Pose3d pose = lastPose;
 

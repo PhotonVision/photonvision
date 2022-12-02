@@ -31,6 +31,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -63,6 +64,7 @@ public class RobotPoseEstimator {
     private Pose3d lastPose;
 
     private Pose3d referencePose;
+    private HashSet<Integer> reportedErrors;
 
     /**
      * Create a new RobotPoseEstimator.
@@ -83,6 +85,7 @@ public class RobotPoseEstimator {
         this.strategy = strategy;
         this.cameras = cameras;
         lastPose = new Pose3d();
+        reportedErrors = new HashSet<>();
     }
 
     /**
@@ -152,10 +155,13 @@ public class RobotPoseEstimator {
 
         // If the map doesn't contain the ID fail
         if (!aprilTags.containsKey(bestTarget.getFiducialId())) {
-            DriverStation.reportError(
-                    "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
-                            + bestTarget.getFiducialId(),
-                    false);
+            if (!reportedErrors.contains(bestTarget.getFiducialId())) {
+                DriverStation.reportError(
+                        "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                                + bestTarget.getFiducialId(),
+                        false);
+                reportedErrors.add(bestTarget.getFiducialId());
+            }
             return Pair.of(lastPose, 0.);
         }
 
@@ -168,7 +174,6 @@ public class RobotPoseEstimator {
     }
 
     private Pair<Pose3d, Double> closestToCameraHeightStrategy() {
-        // Loop over each ambiguity of all the cameras
         double smallestHeightDifference = 10e9;
         double mili = 0;
         Pose3d pose = lastPose;
@@ -180,10 +185,13 @@ public class RobotPoseEstimator {
                 PhotonTrackedTarget target = targets.get(j);
                 // If the map doesn't contain the ID fail
                 if (!aprilTags.containsKey(target.getFiducialId())) {
-                    DriverStation.reportWarning(
-                            "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
-                                    + target.getFiducialId(),
-                            false);
+                    if (!reportedErrors.contains(target.getFiducialId())) {
+                        DriverStation.reportWarning(
+                                "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                                        + target.getFiducialId(),
+                                false);
+                        reportedErrors.add(target.getFiducialId());
+                    }
                     continue;
                 }
                 Pose3d targetPose = aprilTags.get(target.getFiducialId());
@@ -227,10 +235,13 @@ public class RobotPoseEstimator {
                 PhotonTrackedTarget target = targets.get(j);
                 // If the map doesn't contain the ID fail
                 if (!aprilTags.containsKey(target.getFiducialId())) {
-                    DriverStation.reportWarning(
-                            "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
-                                    + target.getFiducialId(),
-                            false);
+                    if (!reportedErrors.contains(target.getFiducialId())) {
+                        DriverStation.reportWarning(
+                                "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                                        + target.getFiducialId(),
+                                false);
+                        reportedErrors.add(target.getFiducialId());
+                    }
                     continue;
                 }
                 Pose3d targetPose = aprilTags.get(target.getFiducialId());
@@ -271,19 +282,20 @@ public class RobotPoseEstimator {
                 PhotonTrackedTarget target = targets.get(j);
                 // If the map doesn't contain the ID fail
                 if (!aprilTags.containsKey(target.getFiducialId())) {
-                    DriverStation.reportWarning(
-                            "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
-                                    + target.getFiducialId(),
-                            false);
+                    if (!reportedErrors.contains(target.getFiducialId())) {
+                        DriverStation.reportWarning(
+                                "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                                        + target.getFiducialId(),
+                                false);
+                        reportedErrors.add(target.getFiducialId());
+                    }
                     continue;
                 }
                 Pose3d targetPose = aprilTags.get(target.getFiducialId());
                 try {
                     totalAmbiguity += 1. / target.getPoseAmbiguity();
                 } catch (ArithmeticException e) {
-                    DriverStation.reportWarning(
-                            "[RobotPoseEstimator] A total ambiguity of zero exists, using that pose instead!",
-                            false);
+                    // A total ambiguity of zero exists, using that pose instead!",
                     return Pair.of(
                             targetPose.transformBy(target.getBestCameraToTarget().inverse()),
                             p.getFirst().getLatestResult().getLatencyMillis());
