@@ -49,7 +49,7 @@ Description=Service that runs PhotonVision
 
 [Service]
 WorkingDirectory=/opt/photonvision
-ExecStart=/usr/bin/java -jar /opt/photonvision/photonvision.jar
+ExecStart=/usr/bin/java -jar /opt/photonvision/photonvision.jar -Xmx512m
 ExecStop=/bin/systemctl kill photonvision
 Type=simple
 Restart=on-failure
