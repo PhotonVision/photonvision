@@ -121,14 +121,6 @@ public class CameraSocketHandler {
     private void broadcastFramesTask() {
         // Background camera image broadcasting thread
         while (!Thread.currentThread().isInterrupted()) {
-            svsManager.allStreamConvertNextFrame();
-
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                logger.error("Exception waiting for camera stream broadcast semaphore", e);
-            }
-
             for (var user : users) {
                 var sendBytes = svsManager.getSendFrame(user);
                 if (sendBytes != null) {

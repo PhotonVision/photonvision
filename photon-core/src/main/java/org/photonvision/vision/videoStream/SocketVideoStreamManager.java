@@ -91,12 +91,4 @@ public class SocketVideoStreamManager {
             return null;
         }
     }
-
-    // Causes all streams to "re-trigger" and recieve and convert their next mjpeg frame
-    // Only invoke this after all returned jpeg Strings have been used.
-    public void allStreamConvertNextFrame() {
-        for (SocketVideoStream stream : streams.values()) {
-            stream.convertNextFrame();
-        }
-    }
 }

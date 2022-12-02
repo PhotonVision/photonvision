@@ -18,8 +18,7 @@
 package org.photonvision.vision.videoStream;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Consumer;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
@@ -29,16 +28,8 @@ import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 
 public class SocketVideoStream implements Consumer<Frame> {
     int portID = 0; // Align with cscore's port for unique identification of stream
-    MatOfByte jpegBytes = null;
 
-    // Gets set to true when another class reads out valid jpeg bytes at least once
-    // Set back to false when another frame is freshly converted
-    // Should eliminate synchronization issues of differeing rates of putting frames in
-    // and taking them back out
-    boolean frameWasConsumed = false;
-
-    // Synclock around manipulating the jpeg bytes from multiple threads
-    Lock jpegBytesLock = new ReentrantLock();
+    ConcurrentLinkedQueue<Frame> frameQueue = new ConcurrentLinkedQueue<Frame>();
 
     MJPGFrameConsumer oldSchoolServer;
 
@@ -53,46 +44,57 @@ public class SocketVideoStream implements Consumer<Frame> {
     @Override
     public void accept(Frame frame) {
         if (userCount > 0) {
-            if (jpegBytesLock
-                    .tryLock()) { // we assume frames are coming in frequently. Just skip this frame if we're
-                // locked doing something else.
-                try {
-                    // Does a single-shot frame recieve and convert to JPEG for efficency
-                    // Will not capture/convert again until convertNextFrame() is called
-                    if (frame != null && !frame.image.getMat().empty() && jpegBytes == null) {
-                        frameWasConsumed = false;
-                        jpegBytes = new MatOfByte();
-                        Imgcodecs.imencode(
-                                ".jpg",
-                                frame.image.getMat(),
-                                jpegBytes,
-                                new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 75));
-                    }
-                } finally {
-                    jpegBytesLock.unlock();
-                }
+            // if we have a valid frame and at least one user, put it in the queue
+            if (frame != null && !frame.image.getMat().empty()) {
+                var inFrameCopy = new Frame();
+                frame.copyTo(inFrameCopy);
+                frameQueue.add(inFrameCopy);
             }
         }
         oldSchoolServer.accept(frame);
     }
 
+    /**
+     * Empties the queue of frames to find the most recent then converts it to a jpeg and returns a
+     * bytebuffer of the data
+     *
+     * @return
+     */
     public ByteBuffer getJPEGByteBuffer() {
-        ByteBuffer sendStr = null;
-        jpegBytesLock.lock();
-        if (jpegBytes != null) {
-            sendStr = ByteBuffer.wrap(jpegBytes.toArray());
-        }
-        jpegBytesLock.unlock();
-        return sendStr;
-    }
 
-    public void convertNextFrame() {
-        jpegBytesLock.lock();
-        if (jpegBytes != null) {
-            jpegBytes.release();
-            jpegBytes = null;
+        Frame mostRecentFrame = null;
+
+        // Empty the queue, releasing and discarding
+        // any frame which is not the most recent
+        while (true) {
+            var tmp = frameQueue.poll();
+            if (tmp == null) {
+                break;
+            } else {
+                if (mostRecentFrame != null) {
+                    mostRecentFrame.release();
+                }
+                mostRecentFrame = tmp;
+            }
         }
-        jpegBytesLock.unlock();
+
+        // If there was a non-null frame, convert it to a jpeg ByteBuffer
+        ByteBuffer sendBuff = null;
+        if (mostRecentFrame != null) {
+
+            MatOfByte jpegBytes = new MatOfByte();
+            Imgcodecs.imencode(
+                    ".jpg",
+                    mostRecentFrame.image.getMat(),
+                    jpegBytes,
+                    new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 75));
+
+            sendBuff = ByteBuffer.wrap(jpegBytes.toArray());
+            mostRecentFrame.release();
+            jpegBytes.release();
+        }
+
+        return sendBuff;
     }
 
     public void addUser() {
