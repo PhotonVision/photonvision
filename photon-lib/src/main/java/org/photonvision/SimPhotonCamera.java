@@ -26,6 +26,9 @@ package org.photonvision;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.RawPublisher;
+import edu.wpi.first.networktables.RawSubscriber;
+
 import java.util.Arrays;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
@@ -42,6 +45,7 @@ public class SimPhotonCamera extends PhotonCamera {
     private final NetworkTableEntry targetSkewEntry;
     private final NetworkTableEntry targetPoseEntry;
     private final NetworkTableEntry versionEntry;
+    private final RawPublisher rawBytesPublisher;
 
     /**
      * Constructs a Simulated PhotonCamera from a root table.
@@ -61,6 +65,8 @@ public class SimPhotonCamera extends PhotonCamera {
         targetAreaEntry = rootTable.getEntry("targetAreaEntry");
         targetSkewEntry = rootTable.getEntry("targetSkewEntry");
         targetPoseEntry = rootTable.getEntry("targetPoseEntry");
+
+        rawBytesPublisher = rootTable.getRawTopic("rawBytes").publish("rawBytes");
 
         // The versionEntry is stored under the main table of <instance>/photonvision
         versionEntry = instance.getTable("photonvision").getEntry("version");
@@ -128,7 +134,7 @@ public class SimPhotonCamera extends PhotonCamera {
         PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
         var newPacket = new Packet(newResult.getPacketSize());
         newResult.populatePacket(newPacket);
-        rawBytesEntry.setRaw(newPacket.getData());
+        rawBytesPublisher.set(newPacket.getData());
 
         boolean hasTargets = newResult.hasTargets();
         hasTargetEntry.setBoolean(hasTargets);
@@ -152,5 +158,20 @@ public class SimPhotonCamera extends PhotonCamera {
             };
             targetPoseEntry.setDoubleArray(poseData);
         }
+    }
+
+    @Override
+    public void close () {
+        super.close();
+
+        rawBytesPublisher.close();
+    latencyMillisEntry.close();
+    hasTargetEntry.close();
+    targetPitchEntry.close();
+    targetYawEntry.close();
+    targetAreaEntry.close();
+    targetSkewEntry.close();
+    targetPoseEntry.close();
+    versionEntry.close();
     }
 }

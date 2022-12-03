@@ -36,10 +36,14 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
@@ -51,6 +55,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import edu.wpi.first.hal.JNIWrapper;
 
 class SimVisionSystemTest {
     @Test
@@ -68,11 +73,13 @@ class SimVisionSystemTest {
 
     @BeforeAll
     public static void setUp() {
+        JNIWrapper.Helper.setExtractOnStaticLoad(false);
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+
         try {
-            CombinedRuntimeLoader.loadLibraries(SimVisionSystem.class, "wpiutiljni");
-            CombinedRuntimeLoader.loadLibraries(SimVisionSystem.class, "ntcorejni");
+            CombinedRuntimeLoader.loadLibraries(SimVisionSystem.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

@@ -24,9 +24,20 @@
 
 package org.photonvision;
 
+import edu.wpi.first.networktables.BooleanEntry;
+import edu.wpi.first.networktables.BooleanPublisher;
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.BooleanTopic;
+import edu.wpi.first.networktables.DoubleArrayPublisher;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.RawEntry;
+import edu.wpi.first.networktables.RawSubscriber;
+import edu.wpi.first.networktables.StringPublisher;
+import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import org.photonvision.common.dataflow.structures.Packet;
@@ -36,13 +47,39 @@ import org.photonvision.targeting.PhotonPipelineResult;
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera {
     protected final NetworkTable rootTable;
-    final NetworkTableEntry rawBytesEntry;
-    final NetworkTableEntry driverModeEntry;
-    final NetworkTableEntry inputSaveImgEntry;
-    final NetworkTableEntry outputSaveImgEntry;
-    final NetworkTableEntry pipelineIndexEntry;
-    final NetworkTableEntry ledModeEntry;
-    final NetworkTableEntry versionEntry;
+    RawSubscriber rawBytesEntry;
+    BooleanEntry driverModeEntry;
+    BooleanPublisher driverModePublisher;
+    BooleanSubscriber driverModeSubscriber;
+    DoublePublisher latencyMillisEntry;
+    BooleanPublisher hasTargetEntry;
+    DoublePublisher targetPitchEntry;
+    DoublePublisher targetYawEntry;
+    DoublePublisher targetAreaEntry;
+    DoubleArrayPublisher targetPoseEntry;
+    DoublePublisher targetSkewEntry;
+    StringSubscriber versionEntry;
+    BooleanPublisher inputSaveImgEntry, outputSaveImgEntry;
+    IntegerEntry pipelineIndexEntry, ledModeEntry;
+
+    public void close() {
+    rawBytesEntry.close();
+    driverModeEntry.close();
+    driverModePublisher.close();
+    driverModeSubscriber.close();
+    latencyMillisEntry.close();
+    hasTargetEntry.close();
+    targetPitchEntry.close();
+    targetYawEntry.close();
+    targetAreaEntry.close();
+    targetPoseEntry.close();
+    targetSkewEntry.close();
+    versionEntry.close();
+    inputSaveImgEntry.close();
+    outputSaveImgEntry.close();
+    pipelineIndexEntry.close();
+    ledModeEntry.close();
+    }
 
     private final String path;
 
@@ -68,13 +105,13 @@ public class PhotonCamera {
         var mainTable = instance.getTable("photonvision");
         this.rootTable = mainTable.getSubTable(cameraName);
         path = rootTable.getPath();
-        rawBytesEntry = rootTable.getEntry("rawBytes");
-        driverModeEntry = rootTable.getEntry("driverMode");
-        inputSaveImgEntry = rootTable.getEntry("inputSaveImgCmd");
-        outputSaveImgEntry = rootTable.getEntry("outputSaveImgCmd");
-        pipelineIndexEntry = rootTable.getEntry("pipelineIndex");
-        ledModeEntry = mainTable.getEntry("ledMode");
-        versionEntry = mainTable.getEntry("version");
+        rawBytesEntry = rootTable.getRawTopic("rawBytes").subscribe("rawBytes", new byte[] {});
+        driverModeEntry = rootTable.getBooleanTopic("driverMode").getEntry(false);
+        inputSaveImgEntry = rootTable.getBooleanTopic("inputSaveImgCmd").getEntry(false);
+        outputSaveImgEntry = rootTable.getBooleanTopic("outputSaveImgCmd").getEntry(false);
+        pipelineIndexEntry = rootTable.getIntegerTopic("pipelineIndex").getEntry(0);
+        ledModeEntry = mainTable.getIntegerTopic("ledMode").getEntry(-1);
+        versionEntry = mainTable.getStringTopic("version").subscribe("");
     }
 
     /**
@@ -101,7 +138,7 @@ public class PhotonCamera {
         var ret = new PhotonPipelineResult();
 
         // Populate packet and create result.
-        packet.setData(rawBytesEntry.getRaw(new byte[] {}));
+        packet.setData(rawBytesEntry.get(new byte[] {}));
 
         if (packet.getSize() < 1) return ret;
         ret.createFromPacket(packet);
@@ -120,7 +157,7 @@ public class PhotonCamera {
      * @return Whether the camera is in driver mode.
      */
     public boolean getDriverMode() {
-        return driverModeEntry.getBoolean(false);
+        return driverModeEntry.get(false);
     }
 
     /**
@@ -129,7 +166,7 @@ public class PhotonCamera {
      * @param driverMode Whether to set driver mode.
      */
     public void setDriverMode(boolean driverMode) {
-        driverModeEntry.setBoolean(driverMode);
+        driverModeEntry.set(driverMode);
     }
 
     /**
@@ -139,7 +176,7 @@ public class PhotonCamera {
      * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
      */
     public void takeInputSnapshot() {
-        inputSaveImgEntry.setBoolean(true);
+        inputSaveImgEntry.set(true);
     }
 
     /**
@@ -149,7 +186,7 @@ public class PhotonCamera {
      * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
      */
     public void takeOutputSnapshot() {
-        outputSaveImgEntry.setBoolean(true);
+        outputSaveImgEntry.set(true);
     }
 
     /**
@@ -158,7 +195,7 @@ public class PhotonCamera {
      * @return The active pipeline index.
      */
     public int getPipelineIndex() {
-        return pipelineIndexEntry.getNumber(0).intValue();
+        return (int) pipelineIndexEntry.get(0);
     }
 
     /**
@@ -167,7 +204,7 @@ public class PhotonCamera {
      * @param index The active pipeline index.
      */
     public void setPipelineIndex(int index) {
-        pipelineIndexEntry.setNumber(index);
+        pipelineIndexEntry.set(index);
     }
 
     /**
@@ -176,7 +213,7 @@ public class PhotonCamera {
      * @return The current LED mode.
      */
     public VisionLEDMode getLEDMode() {
-        int value = ledModeEntry.getNumber(-1).intValue();
+        int value = (int) ledModeEntry.get(-1);
         switch (value) {
             case 0:
                 return VisionLEDMode.kOff;
@@ -196,7 +233,7 @@ public class PhotonCamera {
      * @param led The mode to set to.
      */
     public void setLED(VisionLEDMode led) {
-        ledModeEntry.setNumber(led.value);
+        ledModeEntry.set(led.value);
     }
 
     /**
@@ -218,7 +255,7 @@ public class PhotonCamera {
         if ((Timer.getFPGATimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
         lastVersionCheckTime = Timer.getFPGATimestamp();
 
-        String versionString = versionEntry.getString("");
+        String versionString = versionEntry.get("");
         if (versionString.equals("")) {
             DriverStation.reportError(
                     "PhotonVision coprocessor at path " + path + " not found on NetworkTables!", true);

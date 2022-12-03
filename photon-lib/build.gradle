@@ -16,29 +16,35 @@ test {
     useJUnitPlatform()
 }
 
+wpilibTools.deps.wpilibVersion = wpilibVersion
+
+def nativeConfigName = 'photonlib-wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
+nativeTasks.addToSourceSetResources(sourceSets.test)
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+
 // Apply Java configuration
 dependencies {
     implementation project(":photon-targeting")
 
-    // WPILib non-JNI dependencies
-    implementation "edu.wpi.first.cscore:cscore-java:$wpilibVersion"
-    implementation "edu.wpi.first.cameraserver:cameraserver-java:$wpilibVersion"
-    implementation "edu.wpi.first.wpilibj:wpilibj-java:$wpilibVersion"
-    implementation "edu.wpi.first.wpiutil:wpiutil-java:$wpilibVersion"
-    implementation "edu.wpi.first.wpimath:wpimath-java:$wpilibVersion"
-    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
-
-    implementation "org.ejml:ejml-simple:0.41"
-
-    // NTCore
-    implementation "edu.wpi.first.ntcore:ntcore-java:$wpilibVersion"
-    jniPlatforms.each { implementation "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:$it" }
-
+    implementation wpilibTools.deps.wpilibJava("wpiutil")
+    implementation wpilibTools.deps.wpilibJava("wpimath")
     implementation wpilibTools.deps.wpilibJava("wpinet")
+    implementation wpilibTools.deps.wpilibJava("hal")
+    implementation wpilibTools.deps.wpilibJava("ntcore")
+    implementation wpilibTools.deps.wpilibJava("wpilibj")
 
-    // HAL
-    implementation "edu.wpi.first.hal:hal-java:$wpilibVersion"
-    jniPlatforms.each { implementation "edu.wpi.first.hal:hal-jni:$wpilibVersion:$it"}
+    testImplementation wpilibTools.deps.wpilibJava("wpilibj")
 
     // Junit
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")

@@ -151,7 +151,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
     private void updateEntries() {
         rawBytesEntry =
-                subTable.getRawTopic("rawBytes").getEntry("rawBytes", new byte[0], new PubSubOption[0]);
+                subTable.getRawTopic("rawBytes").publish("rawBytes");
 
         if (pipelineIndexListener != null) {
             pipelineIndexListener.remove();

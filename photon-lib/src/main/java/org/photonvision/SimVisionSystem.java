@@ -102,6 +102,7 @@ public class SimVisionSystem {
         dbgRobot = dbgField.getRobotObject();
         dbgCamera = dbgField.getObject(camName + " Camera");
         SmartDashboard.putData(camName + " Sim Field", dbgField);
+        System.out.println('i');
     }
 
     /**

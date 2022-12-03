@@ -17,6 +17,9 @@
 
 package org.photonvision.vision.frame.consumer;
 
+import edu.wpi.first.networktables.BooleanEntry;
+import edu.wpi.first.networktables.BooleanSubscriber;
+import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import java.io.File;
@@ -48,7 +51,7 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
     private String camNickname;
     private String fnamePrefix;
     private final long CMD_RESET_TIME_MS = 500;
-    private final NetworkTableEntry entry;
+    private final BooleanEntry entry;
     // Helps prevent race conditions between user set & auto-reset logic
     private ReentrantLock lock;
 
@@ -58,15 +61,14 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
         this.ntEntryName = streamPrefix + NT_SUFFIX;
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
         updateCameraNickname(camNickname);
-        entry = subTable.getEntry(ntEntryName);
-        entry.setBoolean(false);
+        entry = subTable.getBooleanTopic(ntEntryName).getEntry(false);
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
     }
 
     public void accept(Frame frame) {
         if (frame != null && !frame.image.getMat().empty()) {
             if (lock.tryLock()) {
-                boolean curCommand = entry.getBoolean(false);
+                boolean curCommand = entry.get(false);
                 if (curCommand && !prevCommand) {
                     Date now = new Date();
                     String savefile =
@@ -88,7 +90,7 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
                 } else if (!curCommand) {
                     // If the entry is currently false, set it again. This will make sure it shows up on the
                     // dashboard.
-                    entry.setBoolean(false);
+                    entry.set(false);
                 }
 
                 prevCommand = curCommand;
