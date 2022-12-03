@@ -21,9 +21,10 @@ def nativeTasks = wpilibTools.createExtractionTasks {
 }
 
 nativeTasks.addToSourceSetResources(sourceSets.main)
+nativeTasks.addToSourceSetResources(sourceSets.test)
 
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 
 dependencies {
     implementation project(':photon-core')
