@@ -29,16 +29,23 @@ import java.nio.file.Path;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import edu.wpi.first.hal.JNIWrapper;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.net.WPINetJNI;
 
 public class TestUtils {
-    public static void loadLibraries() {
+    public static boolean loadLibraries() {
+        JNIWrapper.Helper.setExtractOnStaticLoad(false);
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+
         try {
-            CameraServerCvJNI.forceLoad();
-            WPIUtilJNI.forceLoad();
-            NetworkTablesJNI.forceLoad();
-            //        PicamJNI.forceLoad();
-        } catch (IOException ex) {
-            // ignored
+            CombinedRuntimeLoader.loadLibraries(TestUtils.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 

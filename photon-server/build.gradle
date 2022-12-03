@@ -11,6 +11,20 @@ version versionString + (project.hasProperty('pionly') ? "-raspi" : "")
 
 apply from: "${rootDir}/shared/common.gradle"
 
+wpilibTools.deps.wpilibVersion = wpilibVersion
+
+def nativeConfigName = 'wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
+
+// nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+// nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+
 dependencies {
     implementation project(':photon-core')
     implementation project(':photon-targeting')

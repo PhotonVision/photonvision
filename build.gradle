@@ -7,6 +7,7 @@ plugins {
     id "edu.wpi.first.NativeUtils" version "2023.8.2" apply false
     id "edu.wpi.first.wpilib.repositories.WPILibRepositoriesPlugin" version "2020.2"
     id "org.hidetake.ssh" version "2.10.1"
+    id 'edu.wpi.first.WpilibTools' version '1.0.0'
 }
 
 allprojects {

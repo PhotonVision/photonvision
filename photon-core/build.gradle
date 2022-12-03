@@ -2,6 +2,8 @@ import java.nio.file.Path
 
 apply from: "${rootDir}/shared/common.gradle"
 
+wpilibTools.deps.wpilibVersion = wpilibVersion
+
 dependencies {
     implementation project(':photon-targeting')
 
@@ -10,10 +12,7 @@ dependencies {
     implementation 'org.msgpack:msgpack-core:0.9.0'
     implementation 'org.msgpack:jackson-dataformat-msgpack:0.9.0'
 
-    // wpiutil
-    jniPlatforms.each { implementation "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:$it" }
-    jniPlatforms.each { implementation "edu.wpi.first.apriltag:apriltag-java:$wpilibVersion" }
-    jniPlatforms.each { implementation "edu.wpi.first.apriltag:apriltag-jni:$wpilibVersion:$it" }
+    implementation wpilibTools.deps.wpilibJava("apriltag")
 
     // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
     implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion"
