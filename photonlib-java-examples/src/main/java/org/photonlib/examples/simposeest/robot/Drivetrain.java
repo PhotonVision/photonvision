@@ -114,10 +114,7 @@ public class Drivetrain {
         rightGroup.setVoltage(rightOutput + rightFeedforward);
 
         // Update the pose estimator with the most recent sensor readings.
-        poseEst.update(
-                new DifferentialDriveWheelSpeeds(leftEncoder.getRate(), rightEncoder.getRate()),
-                leftEncoder.getDistance(),
-                rightEncoder.getDistance());
+        poseEst.update(leftEncoder.getDistance(), rightEncoder.getDistance());
     }
 
     /**

@@ -31,6 +31,7 @@ import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerEntry;
+import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -61,6 +62,7 @@ public class PhotonCamera {
     StringSubscriber versionEntry;
     BooleanPublisher inputSaveImgEntry, outputSaveImgEntry;
     IntegerEntry pipelineIndexEntry, ledModeEntry;
+    IntegerSubscriber heartbeatEntry;
 
     public void close() {
     rawBytesEntry.close();
@@ -84,8 +86,12 @@ public class PhotonCamera {
     private final String path;
 
     private static boolean VERSION_CHECK_ENABLED = true;
-    private static long VERSION_CHECK_INTERVAL = 1;
+    private static long VERSION_CHECK_INTERVAL = 5;
     private double lastVersionCheckTime = 0;
+
+    private long prevHeartbeatValue = -1;
+    private double prevHeartbeatChangeTime = 0;
+    private static final double HEARBEAT_DEBOUNCE_SEC = 0.5;
 
     public static void setVersionCheckEnabled(boolean enabled) {
         VERSION_CHECK_ENABLED = enabled;
@@ -110,6 +116,7 @@ public class PhotonCamera {
         inputSaveImgEntry = rootTable.getBooleanTopic("inputSaveImgCmd").getEntry(false);
         outputSaveImgEntry = rootTable.getBooleanTopic("outputSaveImgCmd").getEntry(false);
         pipelineIndexEntry = rootTable.getIntegerTopic("pipelineIndex").getEntry(0);
+        heartbeatEntry = rootTable.getIntegerTopic("heartbeat").subscribe(-1);
         ledModeEntry = mainTable.getIntegerTopic("ledMode").getEntry(-1);
         versionEntry = mainTable.getStringTopic("version").subscribe("");
     }
@@ -249,18 +256,50 @@ public class PhotonCamera {
         return getLatestResult().hasTargets();
     }
 
+    /** 
+     * Returns whether the camera is connected and actively returning
+     * new data. Connection status is debounced.
+     * 
+     * @return True if the camera is actively sending frame data, false otherwise.
+     */
+    public boolean isConnected() {
+        var curHeartbeat = heartbeatEntry.get();
+        var now = Timer.getFPGATimestamp();
+
+        if(curHeartbeat != prevHeartbeatValue){
+            //New heartbeat value from the coprocessor
+            prevHeartbeatChangeTime = now;
+            prevHeartbeatValue = curHeartbeat;
+        }
+
+        return ((now - prevHeartbeatChangeTime) > HEARBEAT_DEBOUNCE_SEC);
+    }
+
     private void verifyVersion() {
         if (!VERSION_CHECK_ENABLED) return;
 
         if ((Timer.getFPGATimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
         lastVersionCheckTime = Timer.getFPGATimestamp();
 
-        String versionString = versionEntry.get("");
-        if (versionString.equals("")) {
+
+        // Heartbeat entry is assumed to always be present. If it's not present, we 
+        // assume that a camera with that name was never connected in the first place.
+        if (!heartbeatEntry.exists()) {
             DriverStation.reportError(
                     "PhotonVision coprocessor at path " + path + " not found on NetworkTables!", true);
-        } else if (!PhotonVersion.versionMatches(versionString)) {
-            DriverStation.reportError(
+        } 
+
+        // Check for connection status. Warn if disconnected.
+        if (!isConnected()){
+            DriverStation.reportWarning("PhotonVision coprocessor at path " + path + " is not sending new data.", true);
+        }
+        
+        //Check for version. Warn if the versions aren't aligned.
+        String versionString = versionEntry.get("");
+        if (!versionString.equals("") && !PhotonVersion.versionMatches(versionString)) {
+            //Error on a verified version mismatch
+            // But stay silent otherwise
+            DriverStation.reportWarning(
                     "Photon version "
                             + PhotonVersion.versionString
                             + " does not match coprocessor version "
