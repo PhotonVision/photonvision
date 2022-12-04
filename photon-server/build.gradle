@@ -1,3 +1,7 @@
+plugins {
+    id 'edu.wpi.first.WpilibTools' version '1.0.0'
+}
+
 apply plugin: "application"
 apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: "org.hidetake.ssh"
@@ -17,11 +21,37 @@ dependencies {
 
     implementation "io.javalin:javalin:4.2.0"
 
+    implementation wpilibTools.deps.wpilibJava("wpiutil")
+    implementation wpilibTools.deps.wpilibJava("wpimath")
+    implementation wpilibTools.deps.wpilibJava("wpinet")
+    implementation wpilibTools.deps.wpilibJava("hal")
+    implementation wpilibTools.deps.wpilibJava("ntcore")
+    implementation wpilibTools.deps.wpilibJava("wpilibj")
+    implementation wpilibTools.deps.wpilibJava("apriltag")
+
     implementation "org.msgpack:msgpack-core:0.9.0"
     implementation "org.msgpack:jackson-dataformat-msgpack:0.9.0"
 
     implementation "org.slf4j:slf4j-simple:1.8.0-beta4"
 }
+
+wpilibTools.deps.wpilibVersion = wpilibVersion
+
+def nativeConfigName = 'photonlib-wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
+
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
+
+nativeTasks.addToSourceSetResources(sourceSets.main)
+nativeTasks.addToSourceSetResources(sourceSets.test)
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
 
 shadowJar {
     configurations = [project.configurations.runtimeClasspath]

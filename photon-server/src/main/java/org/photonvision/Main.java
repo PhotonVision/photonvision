@@ -17,8 +17,13 @@
 
 package org.photonvision;
 
+import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
+import edu.wpi.first.hal.JNIWrapper;
+import edu.wpi.first.net.WPINetJNI;
+import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,6 +33,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
+import org.opencv.core.Core;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -289,17 +295,33 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        JNIWrapper.Helper.setExtractOnStaticLoad(false);
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
+        // CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+
         try {
+            CombinedRuntimeLoader.loadLibraries(Main.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni", Core.NATIVE_LIBRARY_NAME);
             CameraServerCvJNI.forceLoad();
-            logger.info("Native libraries loaded.");
         } catch (Exception e) {
-            logger.error("Failed to load native libraries!", e);
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-        try {
-            CombinedRuntimeLoader.loadLibraries(VisionSourceManager.class, "apriltagjni");
-        } catch (IOException e) {
-            logger.error("Failed to load apriltag!", e);
-        }
+
+        // try {
+        //     CameraServerCvJNI.forceLoad();
+        //     logger.info("Native libraries loaded.");
+        // } catch (Exception e) {
+        //     logger.error("Failed to load native libraries!", e);
+        // }
+        // try {
+        //     CombinedRuntimeLoader.loadLibraries(VisionSourceManager.class, "apriltagjni");
+        // } catch (IOException e) {
+        //     logger.error("Failed to load apriltag!", e);
+        // }
+
         try {
             PicamJNI.forceLoad();
         } catch (IOException e) {
@@ -333,9 +355,7 @@ public class Main {
                         + (Platform.isRaspberryPi() ? (" (Pi " + Platform.currentPiVersion.name() + ")") : ""));
 
         try {
-            CameraServerCvJNI.forceLoad();
             PicamJNI.forceLoad();
-            // TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
