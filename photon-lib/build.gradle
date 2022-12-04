@@ -18,20 +18,20 @@ test {
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
 
-// def nativeConfigName = 'photonlib-wpilibNatives'
-// def nativeConfig = configurations.create(nativeConfigName)
+def nativeConfigName = 'photonlib-wpilibNatives'
+def nativeConfig = configurations.create(nativeConfigName)
 
-// def nativeTasks = wpilibTools.createExtractionTasks {
-//     configurationName = nativeConfigName
-// }
+def nativeTasks = wpilibTools.createExtractionTasks {
+    configurationName = nativeConfigName
+}
 
-// nativeTasks.addToSourceSetResources(sourceSets.main)
-// nativeTasks.addToSourceSetResources(sourceSets.test)
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeTasks.addToSourceSetResources(sourceSets.main)
+nativeTasks.addToSourceSetResources(sourceSets.test)
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 
 // Apply Java configuration
 dependencies {
@@ -135,21 +135,20 @@ build.dependsOn writeCurrentVersion
 
 apply from: "publish.gradle"
 
-def testNativeConfigName = 'wpilibTestNatives'
-def testNativeConfig = configurations.create(testNativeConfigName)
+// def testNativeConfigName = 'wpilibTestNatives'
+// def testNativeConfig = configurations.create(testNativeConfigName)
 
-def folder = project.layout.buildDirectory.dir('NativeTest')
+// def folder = project.layout.buildDirectory.dir('NativeTest')
 
-def testNativeTasks = wpilibTools.createExtractionTasks {
-    taskPostfix = "Test"
-    configurationName = testNativeConfigName
-    rootTaskFolder.set(folder)
-}
+// def testNativeTasks = wpilibTools.createExtractionTasks {
+//     taskPostfix = "Test"
+//     configurationName = testNativeConfigName
+//     rootTaskFolder.set(folder)
+// }
 
-testNativeTasks.addToSourceSetResources(sourceSets.test)
+// testNativeTasks.addToSourceSetResources(sourceSets.test)
 
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiHal")
+// testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+// testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+// testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+// testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
