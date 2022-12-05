@@ -24,10 +24,7 @@
 
 package org.photonvision;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.*;
 
 public final class PhotonUtils {
     private PhotonUtils() {
@@ -170,4 +167,8 @@ public final class PhotonUtils {
         var targetToCamera = cameraToTarget.inverse();
         return fieldToTarget.transformBy(targetToCamera);
     }
+    public Pose3d getFieldToRobot(Pose3d tagPose, Transform3d robotToCamera, Transform3d cameraToTarget) {
+        return tagPose.plus(cameraToTarget.inverse()).plus(robotToCamera.inverse());
+    }
+
 }

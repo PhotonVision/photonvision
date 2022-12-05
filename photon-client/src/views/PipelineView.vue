@@ -343,7 +343,8 @@ export default {
         // If not in 3d, name "3D" is illegal
         const allow3d = this.$store.getters.currentPipelineSettings.solvePNPEnabled;
         // If in apriltag, "Threshold" and "Contours" are illegal -- otherwise "AprilTag" is
-        const isAprilTag = (this.$store.getters.currentPipelineSettings.pipelineType - 2) === 3;
+        const isAprilTag = (this.$store.getters.currentPipelineSettings.pipelineType - 2) === 2;
+        const isAruco = (this.$store.getters.currentPipelineSettings.pipelineType - 2) === 3;
 
         // 2D array of tab names and component names; each sub-array is a separate tab group
         let ret = [];
@@ -373,10 +374,11 @@ export default {
           // All the tabs we allow
           const filteredGroup = group.filter(it =>
               !(!allow3d && it.name === "3D") //Filter out 3D tab any time 3D isn't calibrated
-              && !((!allow3d || isAprilTag) && it.name === "PnP") //Filter out the PnP config tab if 3D isn't available, or we're doing Apriltags
-              && !(isAprilTag && (it.name === "Threshold")) //Filter out threshold tab if we're doing apriltags
-              && !(isAprilTag && (it.name === "Contours")) //Filter out contours if we're doing Apriltag
+              && !((!allow3d || isAprilTag || isAruco) && it.name === "PnP") //Filter out the PnP config tab if 3D isn't available, or we're doing Apriltags
+              && !((isAprilTag || isAruco) && (it.name === "Threshold")) //Filter out threshold tab if we're doing apriltags
+              && !((isAprilTag || isAruco)&& (it.name === "Contours")) //Filter out contours if we're doing Apriltag
               && !(!isAprilTag && it.name === "AprilTag") //Filter out apriltag unless we actually are doing Apriltags
+              && !(!isAruco && it.name === "Aruco")
           );
           ret[i] = filteredGroup;
         }

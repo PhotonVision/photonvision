@@ -1,26 +1,27 @@
 <template>
   <div>
     <CVslider
-      v-model="decimate"
-      class="pt-2"
-      slider-cols="8"
-      name="Decimate"
-      min="1"
-      max="5"
-      step="1.0"
-      tooltip="Increases FPS at the expense of range by reducing image resolution initially"
-      @input="handlePipelineData('decimate')"
+        v-model="decimate"
+        class="pt-2"
+        slider-cols="8"
+        name="Decimate"
+        min="1"
+        max="8"
+        step="1.0"
+        tooltip="Increases FPS at the expense of range by reducing image resolution initially"
+        @input="handlePipelineData('decimate')"
     />
     <CVslider
       v-model="cornerIterations"
       class="pt-2"
       slider-cols="8"
       name="cornerIterations"
-      min="1"
-      max="100"
+      min="50"
+      value = "60"
+      max="500"
       step="1"
       tooltip="Corner iterations lmao"
-      @input="handlePipelineData('threads')"
+      @input="handlePipelineData('cornerIterations')"
     />
     <CVswitch
       v-model="useAruco3"
@@ -30,6 +31,17 @@
       tooltip="make that stuff fast asf but also a little sus"
       @input="handlePipelineData('useAruco3')"
   />
+    <CVslider
+        v-model="threads"
+        class="pt-2"
+        slider-cols="8"
+        name="Threads"
+        min="1"
+        max="8"
+        step="1"
+        tooltip="Number of threads spawned by the Aruco detector"
+        @input="handlePipelineData('threads')"
+    />
   </div>
 </template>
 

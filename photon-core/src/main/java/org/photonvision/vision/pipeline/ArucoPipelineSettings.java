@@ -25,9 +25,10 @@ import java.util.Objects;
 
 @JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
-    public double decimate = 1.0;
-    public int threads = 1;
-    public int numIterations = 10;
+    public float decimate = 1;
+    public int threads = 2;
+    public int numIterations = 100;
+    public float cornerAccuracy = (float) 0.0025;
     public boolean useAruco3 = true;
 
 

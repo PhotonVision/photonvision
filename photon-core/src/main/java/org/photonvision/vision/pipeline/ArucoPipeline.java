@@ -45,7 +45,8 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
-
+    DetectorParameters arucoDetectionParams = null;
+    Mat rawInputMat;
     public ArucoPipeline() {
         settings = new ArucoPipelineSettings();
     }
@@ -66,11 +67,11 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
             // TODO: Picam grayscale
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
-            PicamJNI.setShouldCopyColor(true); // need the color image to grayscale
+            PicamJNI.setShouldCopyColor(false); // need the color image to grayscale
         }
 
 
-        DetectorParameters arucoDetectionParams = ArucoDetectorParams.getDetectorParams(settings.decimate, settings.numIterations, settings.useAruco3);
+        arucoDetectionParams = ArucoDetectorParams.getDetectorParams(arucoDetectionParams, settings.decimate, settings.numIterations, settings.cornerAccuracy, settings.useAruco3);
 
 
 
@@ -81,40 +82,26 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     @Override
     protected CVPipelineResult process(Frame frame, ArucoPipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
-
-        CVPipeResult<Mat> grayscalePipeResult;
-        Mat rawInputMat;
         boolean inputSingleChannel = frame.image.getMat().channels() == 1;
+        TrackedTarget target;
 
         if (inputSingleChannel) {
-            rawInputMat = new Mat(PicamJNI.grabFrame(true));
+            rawInputMat = new Mat(PicamJNI.grabFrame(false));
             frame.image.getMat().release(); // release the 8bit frame ASAP.
         } else {
             rawInputMat = frame.image.getMat();
             var rotateImageResult = rotateImagePipe.run(rawInputMat);
             sumPipeNanosElapsed += rotateImageResult.nanosElapsed;
         }
-
-        var inputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
-
-        grayscalePipeResult = grayscalePipe.run(rawInputMat);
-        sumPipeNanosElapsed += grayscalePipeResult.nanosElapsed;
-
-        var outputFrame = new Frame(new CVMat(grayscalePipeResult.output), frameStaticProperties);
-
         List<TrackedTarget> targetList;
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
 
-        tagDetectionPipeResult = arucoDetectionPipe.run(grayscalePipeResult.output);
+        tagDetectionPipeResult = arucoDetectionPipe.run(rawInputMat);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
-            // TODO this should be in a pipe, not in the top level here (Matt)
-
-            // populate the target list
-            // Challenge here is that TrackedTarget functions with OpenCV Contour
-            TrackedTarget target =
+            target =
                     new TrackedTarget(
                             detection,
                             new TargetCalculationParameters(
@@ -131,6 +118,6 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, outputFrame, inputFrame);
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
     }
 }

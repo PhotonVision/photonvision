@@ -19,6 +19,7 @@ package org.photonvision;
 
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -291,8 +292,12 @@ public class Main {
     }
 
     public static void main(String[] args) {
+
         //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+
         Loader.load(opencv_java.class);
+        Core.setNumThreads(8);
         try {
             CameraServerCvJNI.forceLoad();
             logger.info("Native libraries loaded.");
