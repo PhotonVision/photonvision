@@ -27,10 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package org.photonvision.vision.aruco;
 
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.DetectorParameters;
@@ -79,18 +76,18 @@ public class ArucoDetector {
         ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
         for (int i = 0; i < corners.size(); i++) {
             cornerMat = corners.get(i);
-            xCorners = new double[]{cornerMat.get(i, 0)[0], cornerMat.get(i, 1)[0], cornerMat.get(i, 2)[0], cornerMat.get(i, 3)[0]};
-            yCorners = new double[]{cornerMat.get(i, 0)[1], cornerMat.get(i, 1)[1], cornerMat.get(i, 2)[1], cornerMat.get(i, 3)[1]};
+            //logger.debug(cornerMat.dump());
+            xCorners = new double[]{cornerMat.get(0, 0)[0], cornerMat.get(0, 1)[0], cornerMat.get(0, 2)[0], cornerMat.get(0, 3)[0]};
+            yCorners = new double[]{cornerMat.get(0, 0)[1], cornerMat.get(0, 1)[1], cornerMat.get(0, 2)[1], cornerMat.get(0, 3)[1]};
             cornerMat.release();
             //todo: only do pose est when 3d is enabled
             if(coeffs!=null && xCorners[0] != 0) {
                 logger.debug(rvecs.dump());
                 translation =
                         new Translation3d(tvecs.get(i, 0)[0], tvecs.get(i, 0)[1], tvecs.get(i, 0)[2]);
-                rotation =
-                        new Rotation3d(VecBuilder.fill(rvecs.get(i, 0)[1], rvecs.get(i, 0)[2], rvecs.get(i, 0)[3]),
-                                Core.norm(rvecs.col(i)));
-                tagPose =MathUtils.convertOpenCVtoPhotonPose(new Transform3d(translation, rotation));
+                final var axis = VecBuilder.fill(rvecs.get(i, 0)[0], rvecs.get(i, 0)[1], rvecs.get(i, 0)[2]);
+                rotation = CoordinateSystem.convert(new Rotation3d(axis, axis.normF()), CoordinateSystem.EDN(), CoordinateSystem.NWU());
+                tagPose = new Pose3d(translation, rotation);
             }else{
                 tagPose = MathUtils.convertOpenCVtoPhotonPose(new Transform3d());
             }

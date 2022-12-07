@@ -131,4 +131,16 @@ public class CoordinateSystem {
     public static Pose3d convert(Pose3d pose, CoordinateSystem from, CoordinateSystem to) {
         return pose.relativeTo(new Pose3d(new Translation3d(), to.m_rotation.minus(from.m_rotation)));
     }
+    /**
+     * Converts the given rotation from one coordinate system to another.
+     *
+     * @param rotation The rotation to convert.
+     * @param from The coordinate system the rotation starts in.
+     * @param to The coordinate system to which to convert.
+     * @return The given rotation in the desired coordinate system.
+     */
+    public static Rotation3d convert(
+            Rotation3d rotation, CoordinateSystem from, CoordinateSystem to) {
+        return rotation.rotateBy(from.m_rotation.minus(to.m_rotation));
+    }
 }
