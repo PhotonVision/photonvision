@@ -23,7 +23,7 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public double decimate = 1;
     public int threads = 2;
     public int numIterations = 100;
-    public double cornerAccuracy =  0.0025;
+    public double cornerAccuracy =  25.0;
     public boolean useAruco3 = true;
 
 

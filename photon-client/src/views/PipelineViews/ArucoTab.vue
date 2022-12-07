@@ -19,18 +19,18 @@
         min="30"
         max="500"
         step="5"
-        tooltip="Corner Iterations"
+        tooltip="How many iterations are going to be used in order to refine corners. Higher values are lead to more accuracy at the cost of performance"
         @input="handlePipelineData('numIterations')"
     />
     <CVslider
         v-model="cornerAccuracy"
         class="pt-2"
         slider-cols="8"
-        name="Corner Accuracy"
-        min=".00025"
-        max=".1"
-        step=".001"
-        tooltip="Corner Accuracy"
+        name="LOL"
+        min="2.5"
+        max="100"
+        step="1"
+        tooltip="Minimum accuracy for the corners, lower is better but more performance intensive "
         @input="handlePipelineData('cornerAccuracy')"
     />
     <CVswitch
