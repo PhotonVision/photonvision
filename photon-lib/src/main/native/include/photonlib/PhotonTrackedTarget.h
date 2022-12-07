@@ -55,7 +55,7 @@ class PhotonTrackedTarget {
    * @Param corners The corners of the bounding rectangle.
    */
   PhotonTrackedTarget(
-      double yaw, double pitch, double area, double skew, int fiducialID,
+      double yaw, double pitch, double area, double skew, int fiducialId,
       const frc::Transform3d& pose,
       const wpi::SmallVector<std::pair<double, double>, 4> corners);
 
@@ -82,6 +82,12 @@ class PhotonTrackedTarget {
    * @return The target skew.
    */
   double GetSkew() const { return skew; }
+  
+   /**
+   * Returns the fiducial id.
+   * @return The fiducial id.
+   */
+  int GetFiducialId() const { return fiducialId; }
 
   /**
    * Returns the corners of the minimum area rectangle bounding this target.
