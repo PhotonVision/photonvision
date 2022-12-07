@@ -18,17 +18,12 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import org.photonvision.vision.apriltag.AprilTagFamily;
-import org.photonvision.vision.target.TargetModel;
-
-import java.util.Objects;
-
 @JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
-    public float decimate = 1;
+    public double decimate = 1;
     public int threads = 2;
     public int numIterations = 100;
-    public float cornerAccuracy = (float) 0.0025;
+    public double cornerAccuracy =  0.0025;
     public boolean useAruco3 = true;
 
 
