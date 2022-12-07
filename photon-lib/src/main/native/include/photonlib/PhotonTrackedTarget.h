@@ -82,6 +82,12 @@ class PhotonTrackedTarget {
    * @return The target skew.
    */
   double GetSkew() const { return skew; }
+ 
+ /**
+   * Returns the id of the fiducial tag.
+   * @return The id of the fiducial tag.
+   */
+  double GetFiducialID() const { return fiducialID; }
 
   /**
    * Returns the corners of the minimum area rectangle bounding this target.
