@@ -23,9 +23,8 @@
  */
 
 #include "gtest/gtest.h"
-
-#include "photonlib/SimVisionSystem.h"
 #include "photonlib/PhotonUtils.h"
+#include "photonlib/SimVisionSystem.h"
 
 class SimVisionSystemTest : public ::testing::Test {
   void SetUp() override {
@@ -178,7 +177,7 @@ TEST_F(SimVisionSystemTest, TestNotVisibleTooFarForLEDs) {
   ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
 }
 
-TEST_P(SimVisionSystemTestWithParams, YawAngles) {
+TEST_P(SimVisionSystemTestWithParamsTest, YawAngles) {
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 0_m},
       frc::Rotation3d{0_deg, 0_deg,
@@ -200,7 +199,7 @@ TEST_P(SimVisionSystemTestWithParams, YawAngles) {
   ASSERT_NEAR(GetParam().to<double>(), target.GetYaw(), 0.0001);
 }
 
-TEST_P(SimVisionSystemTestWithParams, PitchAngles) {
+TEST_P(SimVisionSystemTestWithParamsTest, PitchAngles) {
   const frc::Pose3d targetPose{
       {15.98_m, 0_m, 0_m},
       frc::Rotation3d{0_deg, 0_deg,
@@ -224,12 +223,12 @@ TEST_P(SimVisionSystemTestWithParams, PitchAngles) {
   ASSERT_NEAR(GetParam().to<double>(), target.GetPitch(), 0.0001);
 }
 
-INSTANTIATE_TEST_SUITE_P(Angles, SimVisionSystemTestWithParams,
+INSTANTIATE_TEST_SUITE_P(AnglesTests, SimVisionSystemTestWithParamsTest,
                          testing::Values(-10_deg, -5_deg, -0_deg, -1_deg,
                                          -2_deg, 5_deg, 7_deg, 10.23_deg,
                                          20.21_deg, -19.999_deg));
 
-TEST_P(SimVisionSystemTestDistanceParams, DistanceCalc) {
+TEST_P(SimVisionSystemTestDistanceParamsTest, DistanceCalc) {
   units::foot_t distParam;
   units::degree_t pitchParam;
   units::foot_t heightParam;
@@ -271,7 +270,7 @@ TEST_P(SimVisionSystemTestDistanceParams, DistanceCalc) {
 }
 
 INSTANTIATE_TEST_SUITE_P(
-    DistanceParams, SimVisionSystemTestDistanceParams,
+    DistanceParamsTests, SimVisionSystemTestDistanceParamsTest,
     testing::Values(std::make_tuple(5_ft, 15.98_deg, 0_ft),
                     std::make_tuple(6_ft, 15.98_deg, 1_ft),
                     std::make_tuple(10_ft, 15.98_deg, 0_ft),

@@ -24,8 +24,9 @@
 
 #pragma once
 
-#include "photonlib/PhotonTrackedTarget.h"
 #include <cmath>
+
+#include "photonlib/PhotonTrackedTarget.h"
 
 namespace photonlib {
 

@@ -24,13 +24,15 @@
 
 #pragma once
 
-#include "SimPhotonCamera.h"
-#include "units/angle.h"
-#include <frc/smartdashboard/Field2d.h>
-#include "SimVisionTarget.h"
-#include <frc/smartdashboard/SmartDashboard.h>
 #include <vector>
+
+#include <frc/smartdashboard/Field2d.h>
+#include <frc/smartdashboard/SmartDashboard.h>
+#include <units/angle.h>
 #include <units/area.h>
+
+#include "SimPhotonCamera.h"
+#include "SimVisionTarget.h"
 
 namespace photonlib {
 class SimVisionSystem {

@@ -24,10 +24,12 @@
 
 #pragma once
 
+#include <algorithm>
+
+#include <networktables/NetworkTableInstance.h>
+
 #include "photonlib/PhotonCamera.h"
 #include "photonlib/PhotonTargetSortMode.h"
-#include <algorithm>
-#include "networktables/NetworkTableInstance.h"
 
 namespace photonlib {
 class SimPhotonCamera : public PhotonCamera {

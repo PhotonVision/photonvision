@@ -129,7 +129,7 @@ public class Packet {
      * @return A decoded byte from the packet.
      */
     public byte decodeByte() {
-        if(packetData.length < readPos) {
+        if (packetData.length < readPos) {
             return '\0';
         }
         return packetData[readPos++];
@@ -141,7 +141,7 @@ public class Packet {
      * @return A decoded int from the packet.
      */
     public int decodeInt() {
-        if(packetData.length < readPos + 3) {
+        if (packetData.length < readPos + 3) {
             return 0;
         }
         return (0xff & packetData[readPos++]) << 24
@@ -156,7 +156,7 @@ public class Packet {
      * @return A decoded double from the packet.
      */
     public double decodeDouble() {
-        if(packetData.length < (readPos + 7)) {
+        if (packetData.length < (readPos + 7)) {
             return 0;
         }
         long data =
@@ -177,7 +177,7 @@ public class Packet {
      * @return A decoded boolean from the packet.
      */
     public boolean decodeBoolean() {
-        if(packetData.length < readPos) {
+        if (packetData.length < readPos) {
             return false;
         }
         return packetData[readPos++] == 1;
