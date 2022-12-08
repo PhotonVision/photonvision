@@ -35,10 +35,10 @@ class SimVisionSystemTest : public ::testing::Test {
   void TearDown() override {}
 };
 
-class SimVisionSystemTestWithParams
+class SimVisionSystemTestWithParamsTest
     : public SimVisionSystemTest,
       public testing::WithParamInterface<units::degree_t> {};
-class SimVisionSystemTestDistanceParams
+class SimVisionSystemTestDistanceParamsTest
     : public SimVisionSystemTest,
       public testing::WithParamInterface<
           std::tuple<units::foot_t, units::degree_t, units::foot_t>> {};
