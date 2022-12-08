@@ -25,6 +25,9 @@
 #pragma once
 
 #include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include <networktables/NetworkTableInstance.h>
 
@@ -46,14 +49,12 @@ class SimPhotonCamera : public PhotonCamera {
     targetPoseEntry = rootTable->GetEntry("targetPoseEntry");
     versionEntry = instance->GetTable("photonvision")->GetEntry("version");
     // versionEntry.SetString(PhotonVersion.versionString);
-  };
+  }
 
-  SimPhotonCamera(const std::string& cameraName)
+  explicit SimPhotonCamera(const std::string& cameraName)
       : SimPhotonCamera(std::make_shared<nt::NetworkTableInstance>(
                             nt::NetworkTableInstance::GetDefault()),
-                        cameraName){
-
-        };
+                        cameraName) {}
 
   /**
    * Simulate one processed frame of vision data, putting one result to NT.
