@@ -48,7 +48,7 @@ class SimVisionTarget {
         targetWidth(targetWidth),
         targetHeight(targetHeight),
         targetArea(targetHeight * targetWidth),
-        targetId(targetId){};
+        targetId(targetId) {}
 
   frc::Pose3d targetPose;
   units::meter_t targetWidth;

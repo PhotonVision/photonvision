@@ -24,6 +24,7 @@
 
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include <frc/smartdashboard/Field2d.h>
@@ -91,7 +92,7 @@ class SimVisionSystem {
         dbgRobot(dbgField.GetRobotObject()),
         dbgCamera(dbgField.GetObject(camName + " Camera")) {
     frc::SmartDashboard::PutData(camName + " Sim Field", &dbgField);
-  };
+  }
 
   /**
    * Add a target on the field which your vision system is designed to detect.
@@ -185,7 +186,7 @@ class SimVisionSystem {
 
       cam.SubmitProcessedFrame(0_s, visibleTargetList);
     }
-  };
+  }
 
   units::square_meter_t GetM2PerPx(units::meter_t dist) {
     units::meter_t widthMPerPx =
@@ -193,7 +194,7 @@ class SimVisionSystem {
     units::meter_t heightMPerPx =
         2 * dist * units::math::tan(camVertFOV / 2) / cameraResHeight;
     return widthMPerPx * heightMPerPx;
-  };
+  }
 
   bool CamCamSeeTarget(units::meter_t dist, units::radian_t yaw,
                        units::radian_t pitch, double area) {
@@ -202,6 +203,6 @@ class SimVisionSystem {
     bool inVertAngle = units::math::abs(pitch) < camVertFOV / 2;
     bool targetBigEnough = area > minTargetArea;
     return (inRange && inHorizAngle && inVertAngle && targetBigEnough);
-  };
+  }
 };
 }  // namespace photonlib
