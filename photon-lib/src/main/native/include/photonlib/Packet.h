@@ -99,13 +99,15 @@ class Packet {
    */
   template <typename T>
   Packet& operator>>(T& value) {
-    std::memcpy(&value, packetData.data() + readPos, sizeof(T));
+    if (!packetData.empty()) {
+        std::memcpy(&value, packetData.data() + readPos, sizeof(T));
 
-    if constexpr (wpi::support::endian::system_endianness() ==
-                  wpi::support::endianness::little) {
-      // Reverse to little endian for host.
-      uint8_t& raw = reinterpret_cast<uint8_t&>(value);
-      std::reverse(&raw, &raw + sizeof(T));
+        if constexpr (wpi::support::endian::system_endianness() ==
+                      wpi::support::endianness::little) {
+          // Reverse to little endian for host.
+          uint8_t& raw = reinterpret_cast<uint8_t&>(value);
+          std::reverse(&raw, &raw + sizeof(T));
+      }
     }
 
     readPos += sizeof(T);

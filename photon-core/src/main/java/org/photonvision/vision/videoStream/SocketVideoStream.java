@@ -18,7 +18,6 @@
 package org.photonvision.vision.videoStream;
 
 import java.nio.ByteBuffer;
-import java.util.Base64;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
@@ -75,16 +74,6 @@ public class SocketVideoStream implements Consumer<Frame> {
             }
         }
         oldSchoolServer.accept(frame);
-    }
-
-    public String getJPEGBase64EncodedStr() {
-        String sendStr = null;
-        jpegBytesLock.lock();
-        if (jpegBytes != null) {
-            sendStr = Base64.getEncoder().encodeToString(jpegBytes.toArray());
-        }
-        jpegBytesLock.unlock();
-        return sendStr;
     }
 
     public ByteBuffer getJPEGByteBuffer() {
