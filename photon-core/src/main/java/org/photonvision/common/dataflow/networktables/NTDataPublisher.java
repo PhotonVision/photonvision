@@ -27,7 +27,6 @@ import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.IntegerTopic;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
-import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.RawPublisher;
 import java.util.ArrayList;
 import java.util.List;
@@ -153,8 +152,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     }
 
     private void updateEntries() {
-        rawBytesEntry =
-                subTable.getRawTopic("rawBytes").publish("rawBytes");
+        rawBytesEntry = subTable.getRawTopic("rawBytes").publish("rawBytes");
 
         if (pipelineIndexListener != null) {
             pipelineIndexListener.remove();

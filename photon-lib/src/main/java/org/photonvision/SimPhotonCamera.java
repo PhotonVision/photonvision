@@ -27,8 +27,6 @@ package org.photonvision;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.RawPublisher;
-import edu.wpi.first.networktables.RawSubscriber;
-
 import java.util.Arrays;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
@@ -161,17 +159,17 @@ public class SimPhotonCamera extends PhotonCamera {
     }
 
     @Override
-    public void close () {
+    public void close() {
         super.close();
 
         rawBytesPublisher.close();
-    latencyMillisEntry.close();
-    hasTargetEntry.close();
-    targetPitchEntry.close();
-    targetYawEntry.close();
-    targetAreaEntry.close();
-    targetSkewEntry.close();
-    targetPoseEntry.close();
-    versionEntry.close();
+        latencyMillisEntry.close();
+        hasTargetEntry.close();
+        targetPitchEntry.close();
+        targetYawEntry.close();
+        targetAreaEntry.close();
+        targetSkewEntry.close();
+        targetPoseEntry.close();
+        versionEntry.close();
     }
 }

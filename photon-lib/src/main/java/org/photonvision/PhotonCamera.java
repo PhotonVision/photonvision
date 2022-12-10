@@ -27,16 +27,12 @@ package org.photonvision;
 import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.RawEntry;
 import edu.wpi.first.networktables.RawSubscriber;
-import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -63,22 +59,22 @@ public class PhotonCamera {
     IntegerEntry pipelineIndexEntry, ledModeEntry;
 
     public void close() {
-    rawBytesEntry.close();
-    driverModeEntry.close();
-    driverModePublisher.close();
-    driverModeSubscriber.close();
-    latencyMillisEntry.close();
-    hasTargetEntry.close();
-    targetPitchEntry.close();
-    targetYawEntry.close();
-    targetAreaEntry.close();
-    targetPoseEntry.close();
-    targetSkewEntry.close();
-    versionEntry.close();
-    inputSaveImgEntry.close();
-    outputSaveImgEntry.close();
-    pipelineIndexEntry.close();
-    ledModeEntry.close();
+        rawBytesEntry.close();
+        driverModeEntry.close();
+        driverModePublisher.close();
+        driverModeSubscriber.close();
+        latencyMillisEntry.close();
+        hasTargetEntry.close();
+        targetPitchEntry.close();
+        targetYawEntry.close();
+        targetAreaEntry.close();
+        targetPoseEntry.close();
+        targetSkewEntry.close();
+        versionEntry.close();
+        inputSaveImgEntry.close();
+        outputSaveImgEntry.close();
+        pipelineIndexEntry.close();
+        ledModeEntry.close();
     }
 
     private final String path;

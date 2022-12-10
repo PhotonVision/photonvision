@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import edu.wpi.first.apriltag.jni.DetectionResult;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
@@ -25,7 +26,6 @@ import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
-import edu.wpi.first.apriltag.jni.DetectionResult;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.CVMat;

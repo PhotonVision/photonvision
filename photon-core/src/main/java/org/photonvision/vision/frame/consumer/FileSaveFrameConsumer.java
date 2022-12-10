@@ -18,10 +18,7 @@
 package org.photonvision.vision.frame.consumer;
 
 import edu.wpi.first.networktables.BooleanEntry;
-import edu.wpi.first.networktables.BooleanSubscriber;
-import edu.wpi.first.networktables.BooleanTopic;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
