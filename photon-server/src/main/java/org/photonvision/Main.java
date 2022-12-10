@@ -19,7 +19,6 @@ package org.photonvision;
 
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,7 +27,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
-import org.opencv.core.Core;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;

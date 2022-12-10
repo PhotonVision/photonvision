@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.common.networktables;
 
 import edu.wpi.first.networktables.BooleanPublisher;
@@ -13,14 +30,13 @@ import edu.wpi.first.networktables.RawPublisher;
 
 /**
  * This class is a wrapper around all per-pipeline NT topics that PhotonVision should be publishing
- * It's split here so the sim and real-camera implementations can share a common implementation
- * of the naming and registration of the NT content.
- * 
- * However, we do expect that the actual logic which fills out values in the entries
- * will be different for sim vs. real camera
+ * It's split here so the sim and real-camera implementations can share a common implementation of
+ * the naming and registration of the NT content.
+ *
+ * <p>However, we do expect that the actual logic which fills out values in the entries will be
+ * different for sim vs. real camera
  */
 public class NTTopicSet {
-
     public NetworkTable subTable;
     public RawPublisher rawBytesEntry;
 
@@ -47,11 +63,9 @@ public class NTTopicSet {
     // Heartbeat
     public IntegerTopic heartbeatTopic;
     public IntegerPublisher heartbeatPublisher;
-    
 
-    public void updateEntries(){
-        rawBytesEntry =
-        subTable.getRawTopic("rawBytes").publish("rawBytes");
+    public void updateEntries() {
+        rawBytesEntry = subTable.getRawTopic("rawBytes").publish("rawBytes");
 
         pipelineIndexTopic = subTable.getIntegerTopic("pipelineIndex");
         pipelineIndexPublisher = pipelineIndexTopic.publish();
@@ -78,7 +92,7 @@ public class NTTopicSet {
     }
 
     @SuppressWarnings("DuplicatedCode")
-    public void removeEntries(){
+    public void removeEntries() {
         if (rawBytesEntry != null) rawBytesEntry.close();
         if (pipelineIndexPublisher != null) pipelineIndexPublisher.close();
         if (pipelineIndexSubscriber != null) pipelineIndexSubscriber.close();
@@ -96,5 +110,4 @@ public class NTTopicSet {
         if (bestTargetPosX != null) bestTargetPosX.close();
         if (bestTargetPosY != null) bestTargetPosY.close();
     }
-    
 }

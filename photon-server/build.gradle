@@ -56,24 +56,6 @@ dependencies {
     implementation "org.slf4j:slf4j-simple:1.8.0-beta4"
 }
 
-wpilibTools.deps.wpilibVersion = wpilibVersion
-
-def nativeConfigName = 'photonlib-wpilibNatives'
-def nativeConfig = configurations.create(nativeConfigName)
-
-def nativeTasks = wpilibTools.createExtractionTasks {
-    configurationName = nativeConfigName
-}
-
-nativeTasks.addToSourceSetResources(sourceSets.main)
-nativeTasks.addToSourceSetResources(sourceSets.test)
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
-
 shadowJar {
     configurations = [project.configurations.runtimeClasspath]
     String name = "photonvision-${project.version}"

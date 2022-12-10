@@ -28,7 +28,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -170,7 +169,7 @@ public class SimVisionSystem {
                 (tgt) -> {
                     var camToTargetTrans = new Transform3d(cameraPose, tgt.targetPose);
 
-                    // Generate a transformation from camera to target, 
+                    // Generate a transformation from camera to target,
                     // ignoring rotation.
                     var t = camToTargetTrans.getTranslation();
 
@@ -188,17 +187,18 @@ public class SimVisionSystem {
                     double area_px = tgt.tgtAreaMeters2 / getM2PerPx(distMeters);
 
                     var translationAlongGround =
-                            new Translation2d(tgt.targetPose.toPose2d().getX() - cameraPose.toPose2d().getX(), 
-                                              tgt.targetPose.toPose2d().getY() - cameraPose.toPose2d().getY());
+                            new Translation2d(
+                                    tgt.targetPose.toPose2d().getX() - cameraPose.toPose2d().getX(),
+                                    tgt.targetPose.toPose2d().getY() - cameraPose.toPose2d().getY());
 
                     var camAngle = cameraPose.getRotation().toRotation2d();
-                    var camToTgtRotation = new Rotation2d(translationAlongGround.getX(), translationAlongGround.getY());
-                    double yawDegrees =  camToTgtRotation.minus(camAngle).getDegrees();
+                    var camToTgtRotation =
+                            new Rotation2d(translationAlongGround.getX(), translationAlongGround.getY());
+                    double yawDegrees = camToTgtRotation.minus(camAngle).getDegrees();
 
                     double camHeightAboveGround = cameraPose.getZ();
                     double tgtHeightAboveGround = tgt.targetPose.getZ();
                     double camPitchDegrees = Units.radiansToDegrees(cameraPose.getRotation().getY());
-
 
                     double distAlongGround = translationAlongGround.getNorm();
 

@@ -49,7 +49,8 @@ public class Constants {
     public static final double kWheelRadius = 0.0508;
     public static final int kEncoderResolution = 4096;
 
-    public static final DifferentialDriveKinematics kDtKinematics = new DifferentialDriveKinematics(kTrackWidth);
+    public static final DifferentialDriveKinematics kDtKinematics =
+            new DifferentialDriveKinematics(kTrackWidth);
 
     //////////////////////////////////////////////////////////////////
     // Electrical IO

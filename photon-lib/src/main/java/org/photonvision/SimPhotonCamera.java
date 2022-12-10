@@ -24,9 +24,7 @@
 
 package org.photonvision;
 
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.RawPublisher;
 import java.util.Arrays;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
@@ -139,8 +137,7 @@ public class SimPhotonCamera {
         latestResult = newResult;
     }
 
-    PhotonPipelineResult getLatestResult(){
+    PhotonPipelineResult getLatestResult() {
         return latestResult;
     }
-
 }

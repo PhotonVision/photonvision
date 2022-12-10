@@ -17,7 +17,6 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.ArrayList;
@@ -49,7 +48,6 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Consumer<Boolean> driverModeConsumer;
 
     private long heartbeatCounter = 0;
-
 
     public NTDataPublisher(
             String cameraNickname,
@@ -112,17 +110,16 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private void updateEntries() {
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
         if (driverModeListener != null) driverModeListener.remove();
-        
+
         ts.updateEntries();
 
         pipelineIndexListener =
-        new NTDataChangeListener(
-                ts.subTable.getInstance(), ts.pipelineIndexSubscriber, this::onPipelineIndexChange);
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.pipelineIndexSubscriber, this::onPipelineIndexChange);
 
         driverModeListener =
-        new NTDataChangeListener(
-                ts.subTable.getInstance(), ts.driverModeSubscriber, this::onDriverModeChange);
-
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.driverModeSubscriber, this::onDriverModeChange);
     }
 
     public void updateCameraNickname(String newCameraNickname) {
@@ -181,7 +178,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         ts.heartbeatPublisher.set(heartbeatCounter++);
 
-        //TODO...nt4... is this needed?
+        // TODO...nt4... is this needed?
         rootTable.getInstance().flush();
     }
 

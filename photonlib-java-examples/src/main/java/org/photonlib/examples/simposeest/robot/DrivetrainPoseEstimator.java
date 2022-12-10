@@ -24,13 +24,10 @@
 
 package org.photonlib.examples.simposeest.robot;
 
-import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N5;
@@ -65,13 +62,13 @@ public class DrivetrainPoseEstimator {
     private final DifferentialDrivePoseEstimator m_poseEstimator;
 
     public DrivetrainPoseEstimator(double leftDist, double rightDist) {
-
-    m_poseEstimator = new DifferentialDrivePoseEstimator(
-                            Constants.kDtKinematics,
-                            gyro.getRotation2d(),
-                            0, //Assume zero encoder counts at start
-                            0,
-                            new Pose2d()); //Default - start at origin. This will get reset by the autonomous init 
+        m_poseEstimator =
+                new DifferentialDrivePoseEstimator(
+                        Constants.kDtKinematics,
+                        gyro.getRotation2d(),
+                        0, // Assume zero encoder counts at start
+                        0,
+                        new Pose2d()); // Default - start at origin. This will get reset by the autonomous init
     }
 
     /**

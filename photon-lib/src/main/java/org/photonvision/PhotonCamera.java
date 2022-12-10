@@ -252,18 +252,18 @@ public class PhotonCamera {
         return getLatestResult().hasTargets();
     }
 
-    /** 
-     * Returns whether the camera is connected and actively returning
-     * new data. Connection status is debounced.
-     * 
+    /**
+     * Returns whether the camera is connected and actively returning new data. Connection status is
+     * debounced.
+     *
      * @return True if the camera is actively sending frame data, false otherwise.
      */
     public boolean isConnected() {
         var curHeartbeat = heartbeatEntry.get();
         var now = Timer.getFPGATimestamp();
 
-        if(curHeartbeat != prevHeartbeatValue){
-            //New heartbeat value from the coprocessor
+        if (curHeartbeat != prevHeartbeatValue) {
+            // New heartbeat value from the coprocessor
             prevHeartbeatChangeTime = now;
             prevHeartbeatValue = curHeartbeat;
         }
@@ -277,23 +277,23 @@ public class PhotonCamera {
         if ((Timer.getFPGATimestamp() - lastVersionCheckTime) < VERSION_CHECK_INTERVAL) return;
         lastVersionCheckTime = Timer.getFPGATimestamp();
 
-
-        // Heartbeat entry is assumed to always be present. If it's not present, we 
+        // Heartbeat entry is assumed to always be present. If it's not present, we
         // assume that a camera with that name was never connected in the first place.
         if (!heartbeatEntry.exists()) {
             DriverStation.reportError(
                     "PhotonVision coprocessor at path " + path + " not found on NetworkTables!", true);
-        } 
+        }
 
         // Check for connection status. Warn if disconnected.
-        if (!isConnected()){
-            DriverStation.reportWarning("PhotonVision coprocessor at path " + path + " is not sending new data.", true);
+        if (!isConnected()) {
+            DriverStation.reportWarning(
+                    "PhotonVision coprocessor at path " + path + " is not sending new data.", true);
         }
-        
-        //Check for version. Warn if the versions aren't aligned.
+
+        // Check for version. Warn if the versions aren't aligned.
         String versionString = versionEntry.get("");
         if (!versionString.equals("") && !PhotonVersion.versionMatches(versionString)) {
-            //Error on a verified version mismatch
+            // Error on a verified version mismatch
             // But stay silent otherwise
             DriverStation.reportWarning(
                     "Photon version "
