@@ -27,6 +27,8 @@ import java.util.function.Supplier;
 import org.opencv.core.Point;
 import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -35,6 +37,8 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
+    private final Logger logger = new Logger(NTDataPublisher.class, LogGroup.General);
+
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
 
     private NTTopicSet ts = new NTTopicSet();
