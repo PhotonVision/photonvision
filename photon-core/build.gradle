@@ -4,6 +4,8 @@ apply from: "${rootDir}/shared/common.gradle"
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
 
+nativeTasks.addToSourceSetResources(sourceSets.test)
+
 dependencies {
     implementation project(':photon-targeting')
 

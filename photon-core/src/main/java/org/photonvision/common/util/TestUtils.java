@@ -19,6 +19,7 @@ package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.cscore.CameraServerCvJNI;
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.WPIUtilJNI;
@@ -39,9 +40,12 @@ public class TestUtils {
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
 
         try {
-            CombinedRuntimeLoader.loadLibraries(TestUtils.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
+
+            CombinedRuntimeLoader.loadLibraries(TestUtils.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni", "cscorejni", "cscorejnicvstatic");
             return true;
         } catch (IOException e) {
             e.printStackTrace();

@@ -291,13 +291,13 @@ public class Main {
     public static void main(String[] args) {
         if (!TestUtils.loadLibraries()) {
             logger.error("Could not load native libraries!");
-            return;
+            System.exit(-1);
         }
 
         try {
             PicamJNI.forceLoad();
         } catch (IOException e) {
-            logger.error("Failed to load native libraries!", e);
+            logger.error("Failed to load Picam JNI!", e);
         }
 
         try {
@@ -327,9 +327,9 @@ public class Main {
                         + (Platform.isRaspberryPi() ? (" (Pi " + Platform.currentPiVersion.name() + ")") : ""));
 
         try {
-            CameraServerCvJNI.forceLoad();
-            PicamJNI.forceLoad();
-            // TestUtils.loadLibraries();
+            // CameraServerCvJNI.forceLoad();
+            // PicamJNI.forceLoad();
+            TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
