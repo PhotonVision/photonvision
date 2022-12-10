@@ -31,11 +31,7 @@ import org.photonvision.vision.frame.Frame;
 public class FileFrameProviderTest {
     @BeforeAll
     public static void initPath() {
-        try {
-            CameraServerCvJNI.forceLoad();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        TestUtils.loadLibraries();
     }
 
     @Test

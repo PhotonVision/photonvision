@@ -35,7 +35,7 @@ task writeCurrentVersionJava {
 
 build.dependsOn writeCurrentVersionJava
 
-def testNativeConfigName = 'wpilibTestNatives'
+def testNativeConfigName = 'wpilibTestNative'
 def testNativeConfig = configurations.create(testNativeConfigName)
 
 def folder = project.layout.buildDirectory.dir('NativeTest')
@@ -54,3 +54,4 @@ testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")

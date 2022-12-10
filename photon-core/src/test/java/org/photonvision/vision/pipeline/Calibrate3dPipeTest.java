@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.opencv.calib3d.Calib3d;
@@ -43,8 +44,8 @@ import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
 
 public class Calibrate3dPipeTest {
-    @BeforeEach
-    public void init() {
+    @BeforeAll
+    public static void init() {
         TestUtils.loadLibraries();
     }
 

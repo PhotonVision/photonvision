@@ -1,3 +1,7 @@
+plugins {
+    id 'edu.wpi.first.WpilibTools' version '1.0.0'
+}
+
 apply plugin: "application"
 apply plugin: "com.github.johnrengelman.shadow"
 apply plugin: "org.hidetake.ssh"
@@ -11,11 +15,26 @@ version versionString + (project.hasProperty('pionly') ? "-raspi" : "")
 
 apply from: "${rootDir}/shared/common.gradle"
 
-wpilibTools.deps.wpilibVersion = wpilibVersion
+def nativeConfigName = 'wpilibTestNatives'
+def nativeConfig = configurations.create(nativeConfigName)
 
+def folder = project.layout.buildDirectory.dir('NativeTest')
 
-// nativeTasks.addToSourceSetResources(sourceSets.main)
-// nativeTasks.addToSourceSetResources(sourceSets.test)
+def testNativeTasks = wpilibTools.createExtractionTasks {
+    taskPostfix = "Test"
+    configurationName = nativeConfigName
+    rootTaskFolder.set(folder)
+}
+
+testNativeTasks.addToSourceSetResources(sourceSets.main)
+
+nativeConfig.dependencies.add wpilibTools.deps.cscore()
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
+
 
 
 dependencies {

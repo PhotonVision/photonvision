@@ -34,7 +34,6 @@ public class AprilTagTest {
     @BeforeEach
     public void Init() throws IOException {
         TestUtils.loadLibraries();
-        // AprilTagJNI.forceLoad();
     }
 
     @Test
