@@ -15,18 +15,18 @@ version versionString + (project.hasProperty('pionly') ? "-raspi" : "")
 
 apply from: "${rootDir}/shared/common.gradle"
 
-def nativeConfigName = 'wpilibTestNatives'
+def nativeConfigName = 'wpilibTestNative'
 def nativeConfig = configurations.create(nativeConfigName)
 
 def folder = project.layout.buildDirectory.dir('NativeTest')
 
-def testNativeTasks = wpilibTools.createExtractionTasks {
+def nativeTasks = wpilibTools.createExtractionTasks {
     taskPostfix = "Test"
     configurationName = nativeConfigName
     rootTaskFolder.set(folder)
 }
 
-testNativeTasks.addToSourceSetResources(sourceSets.main)
+nativeTasks.addToSourceSetResources(sourceSets.main)
 
 nativeConfig.dependencies.add wpilibTools.deps.cscore()
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
@@ -34,8 +34,7 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
-
-
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
 
 dependencies {
     implementation project(':photon-core')

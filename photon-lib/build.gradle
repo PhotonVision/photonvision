@@ -1,3 +1,7 @@
+plugins {
+    id 'edu.wpi.first.WpilibTools' version '1.0.0'
+}
+
 import java.nio.file.Path
 
 apply plugin: "cpp"
@@ -114,20 +118,20 @@ build.dependsOn writeCurrentVersion
 
 apply from: "publish.gradle"
 
-// def testNativeConfigName = 'wpilibTestNatives'
-// def testNativeConfig = configurations.create(testNativeConfigName)
+def testNativeConfigName = 'wpilibTestNatives'
+def testNativeConfig = configurations.create(testNativeConfigName)
 
-// def folder = project.layout.buildDirectory.dir('NativeTest')
+def folder = project.layout.buildDirectory.dir('NativeTest')
 
-// def testNativeTasks = wpilibTools.createExtractionTasks {
-//     taskPostfix = "Test"
-//     configurationName = testNativeConfigName
-//     rootTaskFolder.set(folder)
-// }
+def testNativeTasks = wpilibTools.createExtractionTasks {
+    taskPostfix = "Test"
+    configurationName = testNativeConfigName
+    rootTaskFolder.set(folder)
+}
 
-// testNativeTasks.addToSourceSetResources(sourceSets.test)
+testNativeTasks.addToSourceSetResources(sourceSets.test)
 
-// testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-// testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-// testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-// testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
