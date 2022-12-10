@@ -24,7 +24,9 @@
 
 package org.photonlib.examples.simposeest.robot;
 
+import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -63,15 +65,13 @@ public class DrivetrainPoseEstimator {
     private final DifferentialDrivePoseEstimator m_poseEstimator;
 
     public DrivetrainPoseEstimator(double leftDist, double rightDist) {
-        m_poseEstimator =
-                new DifferentialDrivePoseEstimator(
-                        gyro.getRotation2d(),
-                        leftDist,
-                        rightDist,
-                        new Pose2d(),
-                        stateStdDevs,
-                        localMeasurementStdDevs,
-                        visionMeasurementStdDevs);
+
+    m_poseEstimator = new DifferentialDrivePoseEstimator(
+                            Constants.kDtKinematics,
+                            gyro.getRotation2d(),
+                            0, //Assume zero encoder counts at start
+                            0,
+                            new Pose2d()); //Default - start at origin. This will get reset by the autonomous init 
     }
 
     /**
@@ -81,9 +81,8 @@ public class DrivetrainPoseEstimator {
      * @param leftDist Distance (in m) the left wheel has traveled
      * @param rightDist Distance (in m) the right wheel has traveled
      */
-    public void update(
-            DifferentialDriveWheelSpeeds actWheelSpeeds, double leftDist, double rightDist) {
-        m_poseEstimator.update(gyro.getRotation2d(), actWheelSpeeds, leftDist, rightDist);
+    public void update(double leftDist, double rightDist) {
+        m_poseEstimator.update(gyro.getRotation2d(), leftDist, rightDist);
 
         var res = cam.getLatestResult();
         if (res.hasTargets()) {

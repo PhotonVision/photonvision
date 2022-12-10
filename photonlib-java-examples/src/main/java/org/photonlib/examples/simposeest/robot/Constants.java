@@ -28,6 +28,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.util.Units;
 import org.photonvision.SimVisionTarget;
 
@@ -47,6 +48,8 @@ public class Constants {
     public static final double kTrackWidth = 0.381 * 2;
     public static final double kWheelRadius = 0.0508;
     public static final int kEncoderResolution = 4096;
+
+    public static final DifferentialDriveKinematics kDtKinematics = new DifferentialDriveKinematics(kTrackWidth);
 
     //////////////////////////////////////////////////////////////////
     // Electrical IO
