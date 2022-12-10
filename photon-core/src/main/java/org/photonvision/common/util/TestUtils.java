@@ -27,11 +27,14 @@ import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.net.WPINetJNI;
 
 public class TestUtils {
@@ -41,9 +44,12 @@ public class TestUtils {
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPINetJNI.Helper.setExtractOnStaticLoad(false);
         CameraServerJNI.Helper.setExtractOnStaticLoad(false);
-        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+
 
         try {
+            var loader = new RuntimeLoader<>(
+                Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
+            loader.loadLibrary();
 
             CombinedRuntimeLoader.loadLibraries(TestUtils.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni", "cscorejni", "cscorejnicvstatic");
             return true;

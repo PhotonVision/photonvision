@@ -1,10 +1,10 @@
+plugins {
+    id 'edu.wpi.first.WpilibTools' version '1.0.0'
+}
+
 import java.nio.file.Path
 
 apply from: "${rootDir}/shared/common.gradle"
-
-wpilibTools.deps.wpilibVersion = wpilibVersion
-
-// nativeTasks.addToSourceSetResources(sourceSets.test)
 
 dependencies {
     implementation project(':photon-targeting')
