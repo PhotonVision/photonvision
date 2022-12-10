@@ -18,13 +18,7 @@ apply from: "${rootDir}/shared/common.gradle"
 def nativeConfigName = 'wpilibTestNative'
 def nativeConfig = configurations.create(nativeConfigName)
 
-def folder = project.layout.buildDirectory.dir('NativeTest')
-
-def nativeTasks = wpilibTools.createExtractionTasks {
-    taskPostfix = "Test"
-    configurationName = nativeConfigName
-    rootTaskFolder.set(folder)
-}
+def nativeTasks = wpilibTools.createExtractionTasks { configurationName = nativeConfigName }
 
 nativeTasks.addToSourceSetResources(sourceSets.main)
 
