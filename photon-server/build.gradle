@@ -14,8 +14,8 @@ apply from: "${rootDir}/shared/common.gradle"
 wpilibTools.deps.wpilibVersion = wpilibVersion
 
 
-nativeTasks.addToSourceSetResources(sourceSets.main)
-nativeTasks.addToSourceSetResources(sourceSets.test)
+// nativeTasks.addToSourceSetResources(sourceSets.main)
+// nativeTasks.addToSourceSetResources(sourceSets.test)
 
 
 dependencies {

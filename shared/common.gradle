@@ -8,6 +8,7 @@ apply plugin: "java"
 
 sourceCompatibility = 11
 
+wpilibTools.deps.wpilibVersion = wpilibVersion
 
 dependencies {
     // Jackson

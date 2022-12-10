@@ -4,7 +4,7 @@ apply from: "${rootDir}/shared/common.gradle"
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
 
-nativeTasks.addToSourceSetResources(sourceSets.test)
+// nativeTasks.addToSourceSetResources(sourceSets.test)
 
 dependencies {
     implementation project(':photon-targeting')
@@ -34,3 +34,23 @@ task writeCurrentVersionJava {
 }
 
 build.dependsOn writeCurrentVersionJava
+
+def testNativeConfigName = 'wpilibTestNatives'
+def testNativeConfig = configurations.create(testNativeConfigName)
+
+def folder = project.layout.buildDirectory.dir('NativeTest')
+
+def testNativeTasks = wpilibTools.createExtractionTasks {
+    taskPostfix = "Test"
+    configurationName = testNativeConfigName
+    rootTaskFolder.set(folder)
+}
+
+testNativeTasks.addToSourceSetResources(sourceSets.test)
+
+testNativeConfig.dependencies.add wpilibTools.deps.cscore()
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
