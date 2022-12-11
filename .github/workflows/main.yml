@@ -255,7 +255,7 @@ jobs:
         if: ${{ failure() }}
 
   photon-build-package:
-    needs: [photonclient-build, photon-build-all, photonserver-build-offline-docs, photonlib-build-host, photonlib-build-docker]
+    needs: [photonclient-build, photon-build-all, photonserver-build-offline-docs]
 
     strategy:
         fail-fast: false
@@ -288,7 +288,7 @@ jobs:
 
     # The type of runner that the job will run on.
     runs-on: ${{ matrix.os }}
-    name: "Built fat JAR - ${{ matrix.artifact-name }}"
+    name: "Build fat JAR - ${{ matrix.artifact-name }}"
 
     steps:
       # Checkout code.
