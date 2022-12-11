@@ -257,34 +257,34 @@ jobs:
   photon-build-package:
     needs: [photonclient-build, photon-build-all, photonserver-build-offline-docs, photonlib-build-host, photonlib-build-docker]
 
-  strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: windows-latest
-            artifact-name: Win64
-            architecture: x64
-            arch-override: none
-          - os: macos-latest
-            artifact-name: macOS
-            architecture: x64
-            arch-override: none
-          - os: ubuntu-latest
-            artifact-name: Linux
-            architecture: x64
-            arch-override: none
-          - os: macos-latest
-            artifact-name: macOSArm
-            architecture: x64
-            arch-override: macarm64
-          - os: ubuntu-latest
-            artifact-name: LinuxArm32
-            architecture: x64
-            arch-override: linuxarm32
-          - os: ubuntu-latest
-            artifact-name: LinuxArm64
-            architecture: x64
-            arch-override: linuxarm64
+    strategy:
+        fail-fast: false
+        matrix:
+          include:
+            - os: windows-latest
+              artifact-name: Win64
+              architecture: x64
+              arch-override: none
+            - os: macos-latest
+              artifact-name: macOS
+              architecture: x64
+              arch-override: none
+            - os: ubuntu-latest
+              artifact-name: Linux
+              architecture: x64
+              arch-override: none
+            - os: macos-latest
+              artifact-name: macOSArm
+              architecture: x64
+              arch-override: macarm64
+            - os: ubuntu-latest
+              artifact-name: LinuxArm32
+              architecture: x64
+              arch-override: linuxarm32
+            - os: ubuntu-latest
+              artifact-name: LinuxArm64
+              architecture: x64
+              arch-override: linuxarm64
 
     # The type of runner that the job will run on.
     runs-on: ${{ matrix.os }}
