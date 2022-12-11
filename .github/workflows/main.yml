@@ -306,11 +306,11 @@ jobs:
       - run: |
           rm -rf photon-server/src/main/resources/web/*
           mkdir -p photon-server/src/main/resources/web/docs
-        if: ${{ matrix.os }} != "windows-latest"
+        if: ${{ (matrix.os) != 'windows-latest' }}
       - run: |
           del /S photon-server/src/main/resources/web/*
           mkdir photon-server/src/main/resources/web/docs
-        if: ${{ matrix.os }} == "windows-latest"
+        if: ${{ (matrix.os) == 'windows-latest' }}
 
       # Download client artifact to resources folder.
       - uses: actions/download-artifact@v3
@@ -331,7 +331,7 @@ jobs:
 
       # The image will only pull the Pi JAR in
       - name: Generate image
-        if: github.event_name != 'pull_request' && ${{ matrix.os }} == "ubuntu-latest"
+        if: github.event_name != 'pull_request' && ${{ matrix.os }} == ubuntu-latest
         run: |
           chmod +x scripts/generatePiImage.sh
           ./scripts/generatePiImage.sh
@@ -343,7 +343,7 @@ jobs:
           path: photon-server/build/libs
 
       - uses: actions/upload-artifact@v3
-        if: github.event_name != 'pull_request' && ${{ matrix.os }} == "ubuntu-latest"
+        if: ${{ github.event_name != 'pull_request' && (matrix.os) == 'ubuntu-latest' }}
         with:
           name: image
           path: photonvision*.xz
