@@ -18,7 +18,6 @@
 package org.photonvision;
 
 import edu.wpi.first.cscore.CameraServerCvJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
