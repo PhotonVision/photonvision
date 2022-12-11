@@ -308,8 +308,8 @@ jobs:
           mkdir -p photon-server/src/main/resources/web/docs
         if: ${{ (matrix.os) != 'windows-latest' }}
       - run: |
-          del /S photon-server/src/main/resources/web/*
-          mkdir photon-server/src/main/resources/web/docs
+          del /S photon-server\src\main\resources\web\*
+          mkdir photon-server\src\main\resources\web\docs
         if: ${{ (matrix.os) == 'windows-latest' }}
 
       # Download client artifact to resources folder.
