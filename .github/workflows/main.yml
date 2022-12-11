@@ -328,10 +328,15 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew photon-server:shadowJar --max-workers 2 -PArchOverride=${{ matrix.arch-override }}
+        if: ${{ (matrix.arch-override != 'none') }}
+      - run: |
+          chmod +x gradlew
+          ./gradlew photon-server:shadowJar --max-workers 2
+        if: ${{ (matrix.arch-override == 'none') }}
 
       # The image will only pull the Pi JAR in
       - name: Generate image
-        if: ${{ github.event_name != 'pull_request' && (matrix.os) == 'ubuntu-latest' }}
+        if: ${{ github.event_name != 'pull_request' && (matrix.artifact-name) == 'LinuxArm32' }}
         run: |
           chmod +x scripts/generatePiImage.sh
           ./scripts/generatePiImage.sh
@@ -343,7 +348,7 @@ jobs:
           path: photon-server/build/libs
 
       - uses: actions/upload-artifact@v3
-        if: ${{ github.event_name != 'pull_request' && (matrix.os) == 'ubuntu-latest' }}
+        if: ${{ github.event_name != 'pull_request' && (matrix.artifact-name) == 'LinuxArm32' }}
         with:
           name: image
           path: photonvision*.xz
