@@ -17,7 +17,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.cscore.CameraServerCvJNI;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -325,15 +324,6 @@ public class Main {
                         + " on "
                         + Platform.currentPlatform.toString()
                         + (Platform.isRaspberryPi() ? (" (Pi " + Platform.currentPiVersion.name() + ")") : ""));
-
-        try {
-            CameraServerCvJNI.forceLoad();
-            PicamJNI.forceLoad();
-            // TestUtils.loadLibraries();
-            logger.info("Native libraries loaded.");
-        } catch (Exception e) {
-            logger.error("Failed to load native libraries!", e);
-        }
 
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();

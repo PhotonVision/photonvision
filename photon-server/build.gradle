@@ -42,7 +42,6 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("hal")
     implementation wpilibTools.deps.wpilibJava("ntcore")
     implementation wpilibTools.deps.wpilibJava("wpilibj")
-    implementation wpilibTools.deps.wpilibJava("apriltag")
 
     implementation "org.msgpack:msgpack-core:0.9.0"
     implementation "org.msgpack:jackson-dataformat-msgpack:0.9.0"
