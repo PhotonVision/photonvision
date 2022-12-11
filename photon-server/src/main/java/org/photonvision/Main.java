@@ -289,16 +289,12 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            CameraServerCvJNI.forceLoad();
+            TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
         }
-        try {
-            CombinedRuntimeLoader.loadLibraries(VisionSourceManager.class, "apriltagjni");
-        } catch (IOException e) {
-            logger.error("Failed to load apriltag!", e);
-        }
+
         try {
             PicamJNI.forceLoad();
         } catch (IOException e) {

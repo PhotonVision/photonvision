@@ -88,7 +88,7 @@ public class NTTopicSet {
         bestTargetPosY = subTable.getDoubleTopic("targetPixelsY").publish();
 
         heartbeatTopic = subTable.getIntegerTopic("heartbeat");
-        heartbeatPublisher = pipelineIndexTopic.publish();
+        heartbeatPublisher = heartbeatTopic.publish();
     }
 
     @SuppressWarnings("DuplicatedCode")

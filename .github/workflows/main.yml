@@ -327,7 +327,7 @@ jobs:
       # Build fat jar for both pi and everything
       - run: |
           chmod +x gradlew
-          ./gradlew photon-server:shadowJar --max-workers 2
+          ./gradlew photon-server:shadowJar --max-workers 2 -PArchOverride=${{ matrix.arch-override }}
 
       # The image will only pull the Pi JAR in
       - name: Generate image
