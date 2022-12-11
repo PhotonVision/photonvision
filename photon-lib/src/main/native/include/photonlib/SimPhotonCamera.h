@@ -47,6 +47,7 @@ class SimPhotonCamera : public PhotonCamera {
     targetAreaEntry = rootTable->GetEntry("targetAreaEntry");
     targetSkewEntry = rootTable->GetEntry("targetSkewEntry");
     targetPoseEntry = rootTable->GetEntry("targetPoseEntry");
+    rawBytesPublisher = rootTable->GetRawTopic("rawBytes").Publish("raw");
     versionEntry = instance->GetTable("photonvision")->GetEntry("version");
     // versionEntry.SetString(PhotonVersion.versionString);
   }
@@ -86,10 +87,9 @@ class SimPhotonCamera : public PhotonCamera {
     PhotonPipelineResult newResult{latency, targetList};
     Packet packet{};
     packet << newResult;
-    rawBytesEntry.SetRaw(
-        std::string_view{packet.GetData().data(), packet.GetDataSize()});
 
-    std::string rawBytesGet = rawBytesEntry.GetRaw("ohono");
+    rawBytesPublisher.Set(
+        std::span{packet.GetData().data(), packet.GetDataSize()});
 
     bool hasTargets = newResult.HasTargets();
     hasTargetEntry.SetBoolean(hasTargets);
@@ -97,7 +97,8 @@ class SimPhotonCamera : public PhotonCamera {
       targetPitchEntry.SetDouble(0.0);
       targetYawEntry.SetDouble(0.0);
       targetAreaEntry.SetDouble(0.0);
-      targetPoseEntry.SetDoubleArray({0.0, 0.0, 0.0});
+      targetPoseEntry.SetDoubleArray(
+          std::vector<double>{0.0, 0.0, 0.0, 0, 0, 0, 0});
       targetSkewEntry.SetDouble(0.0);
     } else {
       PhotonTrackedTarget bestTarget = newResult.GetBestTarget();
@@ -107,9 +108,12 @@ class SimPhotonCamera : public PhotonCamera {
       targetSkewEntry.SetDouble(bestTarget.GetSkew());
 
       frc::Transform3d transform = bestTarget.GetBestCameraToTarget();
-      targetPoseEntry.SetDoubleArray(
-          {transform.X().to<double>(), transform.Y().to<double>(),
-           transform.Rotation().ToRotation2d().Degrees().to<double>()});
+      targetPoseEntry.SetDoubleArray(std::vector<double>{
+          transform.X().to<double>(), transform.Y().to<double>(),
+          transform.Z().to<double>(), transform.Rotation().GetQuaternion().W(),
+          transform.Rotation().GetQuaternion().X(),
+          transform.Rotation().GetQuaternion().Y(),
+          transform.Rotation().GetQuaternion().Z()});
     }
   }
 
@@ -122,5 +126,6 @@ class SimPhotonCamera : public PhotonCamera {
   nt::NetworkTableEntry targetSkewEntry;
   nt::NetworkTableEntry targetPoseEntry;
   nt::NetworkTableEntry versionEntry;
+  nt::RawPublisher rawBytesPublisher;
 };
 }  // namespace photonlib
