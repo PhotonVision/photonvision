@@ -257,8 +257,36 @@ jobs:
   photon-build-package:
     needs: [photonclient-build, photon-build-all, photonserver-build-offline-docs, photonlib-build-host, photonlib-build-docker]
 
+    matrix:
+      include:
+        - os: windows-latest
+          artifact-name: Win64
+          architecture: x64
+          arch-override: none
+        - os: macos-latest
+          artifact-name: macOS
+          architecture: x64
+          arch-override: none
+        - os: ubuntu-latest
+          artifact-name: Linux
+          architecture: x64
+          arch-override: none
+        - os: macos-latest
+          artifact-name: macOSArm
+          architecture: x64
+          arch-override: macarm64
+        - os: ubuntu-latest
+          artifact-name: LinuxArm32
+          architecture: x64
+          arch-override: linuxarm32
+        - os: ubuntu-latest
+          artifact-name: LinuxArm64
+          architecture: x64
+          arch-override: linuxarm64
+
     # The type of runner that the job will run on.
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.os }}
+    name: "Built fat JAR - ${{ matrix.artifact-name }}"
 
     steps:
       # Checkout code.
@@ -292,12 +320,11 @@ jobs:
       # Build fat jar for both pi and everything
       - run: |
           chmod +x gradlew
-          ./gradlew photon-server:shadowJar --max-workers 1
-          ./gradlew photon-server:shadowJar --max-workers 1 -Ppionly
+          ./gradlew photon-server:shadowJar --max-workers 2
 
       # The image will only pull the Pi JAR in
       - name: Generate image
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && ${{ matrix.os }} == "ubuntu-latest"
         run: |
           chmod +x scripts/generatePiImage.sh
           ./scripts/generatePiImage.sh
@@ -305,10 +332,11 @@ jobs:
       # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@v3
         with:
-          name: jars
+          name: ${{ matrix.artifact-name }}-jar
           path: photon-server/build/libs
+
       - uses: actions/upload-artifact@v3
-        if: github.event_name != 'pull_request'
+        if: github.event_name != 'pull_request' && ${{ matrix.os }} == "ubuntu-latest"
         with:
           name: image
           path: photonvision*.xz
