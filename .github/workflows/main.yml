@@ -331,7 +331,7 @@ jobs:
 
       # The image will only pull the Pi JAR in
       - name: Generate image
-        if: ${{ github.event_name != 'pull_request' && (matrix.os) == ubuntu-latest }}
+        if: ${{ github.event_name != 'pull_request' && (matrix.os) == 'ubuntu-latest' }}
         run: |
           chmod +x scripts/generatePiImage.sh
           ./scripts/generatePiImage.sh
