@@ -18,23 +18,54 @@
 package org.photonvision.common.util;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.net.WPINetJNI;
+import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.RuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.highgui.HighGui;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class TestUtils {
-    public static void loadLibraries() {
+    public static boolean loadLibraries() {
+        JNIWrapper.Helper.setExtractOnStaticLoad(false);
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
+
         try {
-            CameraServerCvJNI.forceLoad();
-            //        PicamJNI.forceLoad();
-        } catch (IOException ex) {
-            // ignored
+            var loader =
+                    new RuntimeLoader<>(
+                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
+            loader.loadLibrary();
+
+            CombinedRuntimeLoader.loadLibraries(
+                    TestUtils.class,
+                    "wpiutiljni",
+                    "ntcorejni",
+                    "wpinetjni",
+                    "wpiHaljni",
+                    "cscorejni",
+                    "cscorejnicvstatic",
+                    "apriltagjni");
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 
@@ -182,7 +213,20 @@ public class TestUtils {
 
     private static Path getResourcesFolderPath(boolean testMode) {
         System.out.println("CWD: " + Path.of("").toAbsolutePath().toString());
-        return Path.of("test-resources").toAbsolutePath();
+
+        // VSCode likes to make this path relative to the wrong root directory, so a fun hack to tell
+        // if it's wrong
+        Path ret = Path.of("test-resources").toAbsolutePath();
+        if (Path.of("test-resources")
+                .toAbsolutePath()
+                .toString()
+                .replace("/", "")
+                .replace("\\", "")
+                .toLowerCase()
+                .matches(".*photon-[a-z]*test-resources")) {
+            ret = Path.of("../test-resources").toAbsolutePath();
+        }
+        return ret;
     }
 
     public static Path getTestMode2019ImagePath() {

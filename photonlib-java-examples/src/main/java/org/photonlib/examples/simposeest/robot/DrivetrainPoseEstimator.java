@@ -28,7 +28,6 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.numbers.N5;
@@ -60,15 +59,17 @@ public class DrivetrainPoseEstimator {
     Matrix<N3, N1> visionMeasurementStdDevs =
             VecBuilder.fill(0.01, 0.01, Units.degreesToRadians(0.1));
 
-    private final DifferentialDrivePoseEstimator m_poseEstimator =
-            new DifferentialDrivePoseEstimator(
-                    gyro.getRotation2d(),
-                    new Pose2d(),
-                    stateStdDevs,
-                    localMeasurementStdDevs,
-                    visionMeasurementStdDevs);
+    private final DifferentialDrivePoseEstimator m_poseEstimator;
 
-    public DrivetrainPoseEstimator() {}
+    public DrivetrainPoseEstimator(double leftDist, double rightDist) {
+        m_poseEstimator =
+                new DifferentialDrivePoseEstimator(
+                        Constants.kDtKinematics,
+                        gyro.getRotation2d(),
+                        0, // Assume zero encoder counts at start
+                        0,
+                        new Pose2d()); // Default - start at origin. This will get reset by the autonomous init
+    }
 
     /**
      * Perform all periodic pose estimation tasks.
@@ -77,9 +78,8 @@ public class DrivetrainPoseEstimator {
      * @param leftDist Distance (in m) the left wheel has traveled
      * @param rightDist Distance (in m) the right wheel has traveled
      */
-    public void update(
-            DifferentialDriveWheelSpeeds actWheelSpeeds, double leftDist, double rightDist) {
-        m_poseEstimator.update(gyro.getRotation2d(), actWheelSpeeds, leftDist, rightDist);
+    public void update(double leftDist, double rightDist) {
+        m_poseEstimator.update(gyro.getRotation2d(), leftDist, rightDist);
 
         var res = cam.getLatestResult();
         if (res.hasTargets()) {
@@ -95,11 +95,9 @@ public class DrivetrainPoseEstimator {
      * Force the pose estimator to a particular pose. This is useful for indicating to the software
      * when you have manually moved your robot in a particular position on the field (EX: when you
      * place it on the field at the start of the match).
-     *
-     * @param pose
      */
-    public void resetToPose(Pose2d pose) {
-        m_poseEstimator.resetPosition(pose, gyro.getRotation2d());
+    public void resetToPose(Pose2d pose, double leftDist, double rightDist) {
+        m_poseEstimator.resetPosition(gyro.getRotation2d(), leftDist, rightDist, pose);
     }
 
     /** @return The current best-guess at drivetrain position on the field. */

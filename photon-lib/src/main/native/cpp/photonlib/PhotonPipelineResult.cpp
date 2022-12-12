@@ -26,7 +26,7 @@
 
 namespace photonlib {
 PhotonPipelineResult::PhotonPipelineResult(
-    units::second_t latency, wpi::span<const PhotonTrackedTarget> targets)
+    units::second_t latency, std::span<const PhotonTrackedTarget> targets)
     : latency(latency),
       targets(targets.data(), targets.data() + targets.size()) {}
 

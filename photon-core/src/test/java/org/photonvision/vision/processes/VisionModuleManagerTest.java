@@ -35,8 +35,8 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
 public class VisionModuleManagerTest {
-    @BeforeEach
-    public void init() {
+    @BeforeAll
+    public static void init() {
         TestUtils.loadLibraries();
     }
 

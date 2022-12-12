@@ -1,3 +1,7 @@
+plugins {
+    id 'edu.wpi.first.WpilibTools' version '1.0.0'
+}
+
 import java.nio.file.Path
 
 apply plugin: "cpp"
@@ -12,27 +16,18 @@ test {
     useJUnitPlatform()
 }
 
+wpilibTools.deps.wpilibVersion = wpilibVersion
+
 // Apply Java configuration
 dependencies {
     implementation project(":photon-targeting")
 
-    // WPILib non-JNI dependencies
-    implementation "edu.wpi.first.cscore:cscore-java:$wpilibVersion"
-    implementation "edu.wpi.first.cameraserver:cameraserver-java:$wpilibVersion"
-    implementation "edu.wpi.first.wpilibj:wpilibj-java:$wpilibVersion"
-    implementation "edu.wpi.first.wpiutil:wpiutil-java:$wpilibVersion"
-    implementation "edu.wpi.first.wpimath:wpimath-java:$wpilibVersion"
-    implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-java:$opencvVersion"
-
-    implementation "org.ejml:ejml-simple:0.41"
-
-    // NTCore
-    implementation "edu.wpi.first.ntcore:ntcore-java:$wpilibVersion"
-    jniPlatforms.each { implementation "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:$it" }
-
-    // HAL
-    implementation "edu.wpi.first.hal:hal-java:$wpilibVersion"
-    jniPlatforms.each { implementation "edu.wpi.first.hal:hal-jni:$wpilibVersion:$it"}
+    implementation wpilibTools.deps.wpilibJava("wpiutil")
+    implementation wpilibTools.deps.wpilibJava("wpimath")
+    implementation wpilibTools.deps.wpilibJava("wpinet")
+    implementation wpilibTools.deps.wpilibJava("hal")
+    implementation wpilibTools.deps.wpilibJava("ntcore")
+    implementation wpilibTools.deps.wpilibJava("wpilibj")
 
     // Junit
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
@@ -122,3 +117,21 @@ task writeCurrentVersion {
 build.dependsOn writeCurrentVersion
 
 apply from: "publish.gradle"
+
+def testNativeConfigName = 'wpilibTestNatives'
+def testNativeConfig = configurations.create(testNativeConfigName)
+
+def folder = project.layout.buildDirectory.dir('NativeTest')
+
+def testNativeTasks = wpilibTools.createExtractionTasks {
+    taskPostfix = "Test"
+    configurationName = testNativeConfigName
+    rootTaskFolder.set(folder)
+}
+
+testNativeTasks.addToSourceSetResources(sourceSets.test)
+
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
