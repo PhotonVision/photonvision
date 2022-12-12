@@ -348,6 +348,7 @@ jobs:
           path: photon-server/build/libs
 
       # Upload image as well
+
       - uses: actions/upload-artifact@v3
         if: ${{ github.event_name != 'pull_request' && (matrix.artifact-name) == 'LinuxArm32' }}
         with:
