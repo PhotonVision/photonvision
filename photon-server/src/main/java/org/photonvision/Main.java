@@ -293,11 +293,11 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
         }
 
-        try {
-            PicamJNI.forceLoad();
-        } catch (IOException e) {
-            logger.error("Failed to load Picam JNI!", e);
-        }
+        //try {
+        //    PicamJNI.forceLoad();
+        //} catch (IOException e) {
+        //    logger.error("Failed to load Picam JNI!", e);
+        //}
 
         try {
             if (!handleArgs(args)) {

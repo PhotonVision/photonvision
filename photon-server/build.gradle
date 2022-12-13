@@ -27,8 +27,8 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 
 dependencies {
     implementation project(':photon-core')
@@ -153,11 +153,22 @@ run {
   environment "PATH_PREFIX", "../"
 }
 
+task overrideToPi {
+    doLast {
+        project.setProperty('ArchOverride', 'linuxarm32')
+    }
+}
+
+
+
 task deploy {
+    //dependsOn overrideToPi
     dependsOn assemble
     dependsOn findDeployTarget
-    doLast {
+
+        doLast {
         println 'Starting deployment to ' + findDeployTarget.rmt.host
+        println 'targetArch = ' + wpilibTools.platformMapper.currentPlatform.platformName
         ssh.run{
             session(findDeployTarget.rmt) {
                 //Stop photonvision before manipulating its files
@@ -165,7 +176,7 @@ task deploy {
                 // gerth2 - I was having issues with the .jar being in use still - waiting a tiny bit here seems to get rid of it on a pi4
                 execute 'sleep 3'
                 // Copy into a folder owned by PI. Mostly because, as far as I can tell, the put command doesn't support sudo.
-                put from: "${projectDir}/build/libs/photonvision-${project.version}.jar", into: "/tmp/photonvision.jar"
+                put from: "${projectDir}/build/libs/photonvision-${project.version}-${wpilibTools.platformMapper.currentPlatform.platformName}.jar", into: "/tmp/photonvision.jar"
                  //belt-and-suspenders. Make sure the old jar is gone first.
                 execute 'sudo rm -f /opt/photonvision/photonvision.jar'
                 //Copy in the new .jar and make sure it's executable
