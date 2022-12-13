@@ -42,18 +42,7 @@ ext {
 
     println("Building for archs " + jniPlatforms)
 
-    // nativeConfigName = 'wpilibNative'
-    // nativeConfig = configurations.create(nativeConfigName)
-    // nativeTasks = wpilibTools.createExtractionTasks {
-    //     configurationName = nativeConfigName
-    // }
 }
-
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-// nativeConfig.dependencies.add wpilibTools.deps.wpilib("cscore")
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
 
