@@ -1,5 +1,7 @@
 import org.gradle.internal.os.OperatingSystem
 
+rootProject.name = 'aimandrange'
+
 pluginManagement {
     repositories {
         mavenLocal()
