@@ -173,6 +173,10 @@ public class VisionModule {
 
     private void createStreams() {
         var camStreamIdx = visionSource.getSettables().getConfiguration().streamIndex;
+        // to ensure we dont exceed the FMS camera ports, cap idx at 4
+        if (camStreamIdx > 4) {
+            camStreamIdx = 0;
+        }
         // If idx = 0, we want (1181, 1182)
         this.inputStreamPort = 1181 + (camStreamIdx * 2);
         this.outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
