@@ -97,3 +97,24 @@ model {
         }
     }
 }
+
+
+task copy_photonlib() {
+    // dependsOn ':photon-lib:build'
+    // dependsOn ':photon-lib:publishToMavenLocal'
+
+    doFirst {
+        def vendorJsonSrc = new File(project(':photon-lib').projectDir ,"/build/generated/vendordeps/");
+        def vendorJsonDst = new File("vendordeps/");
+
+        delete(fileTree(vendorJsonDst) {
+            exclude '.gitignore'
+        })
+
+        copy {
+            from vendorJsonSrc
+            into vendorJsonDst
+        }
+    }
+}
+build.dependsOn(copy_photonlib)
