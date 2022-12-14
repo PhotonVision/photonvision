@@ -63,9 +63,9 @@ spotless {
     }
 }
 
-// Dummy 
+// Task that depends on the build task for every example
 task buildAllExamples { task ->
-    new File('examples.txt').eachLine { line -> 
-        task.dependsOn(line + ":build") 
+    new File('examples.txt').eachLine { line ->
+        task.dependsOn(line + ":build")
     }
 }
