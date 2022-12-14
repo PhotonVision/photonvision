@@ -45,6 +45,36 @@ jobs:
         name: built-client
         path: photon-client/dist/
 
+  photon-build-examples:
+    runs-on: ubuntu-22.04
+    name: "Build Examples"
+
+    steps:
+      # Checkout code.
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      # Fetch tags.
+      - name: Fetch tags
+        run: git fetch --tags --force
+
+      # Install Java 11.
+      - name: Install Java 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      # Need to publish to maven local first, so that C++ sim can pick it up
+      # Still haven't figure out how to make the vendordep file be copied before trying to build examples
+      - name: Build all examples
+        run: |
+          chmod +x gradlew
+          ./gradlew photon-lib:publishtomavenlocal copyPhotonlib -x check
+          ./gradlew buildAllExamples -x check --max-workers 2
+
   photon-build-all:
     # The type of runner that the job will run on.
     runs-on: ubuntu-22.04
@@ -67,11 +97,11 @@ jobs:
           java-version: 11
           distribution: temurin
 
-      # Run Gradle build.
+      # Run only build tasks, no checks??
       - name: Gradle Build
         run: |
           chmod +x gradlew
-          ./gradlew build -x check --max-workers 1
+          ./gradlew photon-server:build photon-lib:build -x check --max-workers 2
 
       # Run Gradle Tests.
       - name: Gradle Tests
@@ -148,8 +178,6 @@ jobs:
       - run: |
           chmod +x gradlew
           ./gradlew spotlessCheck
-
-
 
   #  Building photonlib
   photonlib-build-host:

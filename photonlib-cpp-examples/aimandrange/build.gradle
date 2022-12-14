@@ -114,7 +114,7 @@ model {
     }
 }
 
-task copy_photonlib() {
+task copyPhotonlib() {
     dependsOn ':photon-lib:generateVendorJson'
     doFirst {
         def vendorJsonSrc = new File(project(':photon-lib').projectDir ,"/build/generated/vendordeps/");
@@ -132,10 +132,12 @@ task copy_photonlib() {
     outputs.upToDateWhen { false }
 }
 
+// TODO the vendordep is picked up when nativeutils loads, so none of this
+// actually happens early enough...
 build.dependsOn ':photon-lib:build'
 build.dependsOn ':photon-lib:publishToMavenLocal'
-build.dependsOn(copy_photonlib)
-build.mustRunAfter copy_photonlib
+build.dependsOn(copyPhotonlib)
+build.mustRunAfter copyPhotonlib
 
-simulateNativeRelease.dependsOn copy_photonlib
-simulateNativeRelease.mustRunAfter copy_photonlib
+simulateNativeRelease.dependsOn copyPhotonlib
+simulateNativeRelease.mustRunAfter copyPhotonlib

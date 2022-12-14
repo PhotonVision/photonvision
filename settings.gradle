@@ -2,6 +2,5 @@ include 'photon-targeting'
 include 'photon-core'
 include 'photon-server'
 include 'photon-lib'
-include 'photonlib-java-examples:aimandrange'
-include 'photonlib-java-examples:simposeest'
-include 'photonlib-cpp-examples:aimandrange'
+
+new File('examples.txt').eachLine { line -> include line }
