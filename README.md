@@ -23,6 +23,26 @@ macx64, macarm64, linuxx64, linuxarm64, linuxarm32, and linuxathena.
 - `-PtgtIp`: deploys (builds and copies the JAR) to the coprocessor at the specified IP
 - `-Pprofile`: enables JVM profiling
 
+## Building
+
+Gradle is used for all C++ and Java code, and NPM is used for the web UI. Instructions to compile PhotonVision yourself can be found [in our docs](https://docs.photonvision.org/en/latest/docs/contributing/photonvision/build-instructions.html?highlight=npm%20install#compiling-instructions).
+
+You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the `photonlib-java-examples` and `photonlib-cpp-examples` subdirectories, respectively. As of writing, the examples can be run with their respective gradle tasks listed below, invoked with `./gradlew <task name>`:
+
+```
+photonlib-java-examples:aimandrange:simulateJava
+photonlib-java-examples:aimattarget:simulateJava
+photonlib-java-examples:getinrange:simulateJava
+photonlib-java-examples:simaimandrange:simulateJava
+photonlib-java-examples:simposeest:simulateJava
+photonlib-cpp-examples:aimandrange:simulateNative
+photonlib-cpp-examples:getinrange:simulateNative
+photonlib-cpp-examples:aimattarget:simulateNative
+photonlib-cpp-examples:aimandrange:simulateNative
+```
+
+As of right now, C++ examples require that you run the following command before trying to simulate them: `./gradlew photon-lib:publishtomavenlocal copyPhotonlib -x check`
+
 ## Acknowledgments
 PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/). Thank you to everyone who worked on the original project.
 
