@@ -4,6 +4,10 @@ plugins {
     id "edu.wpi.first.GradleRIO" version "2023.1.1-beta-6"
 }
 
+repositories {
+    mavenLocal()
+}
+
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
 deploy {
@@ -97,7 +101,6 @@ model {
         }
     }
 }
-
 
 task copy_photonlib() {
     dependsOn ':photon-lib:build'
