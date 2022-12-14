@@ -100,8 +100,8 @@ model {
 
 
 task copy_photonlib() {
-    // dependsOn ':photon-lib:build'
-    // dependsOn ':photon-lib:publishToMavenLocal'
+    dependsOn ':photon-lib:build'
+    dependsOn ':photon-lib:publishToMavenLocal'
 
     doFirst {
         def vendorJsonSrc = new File(project(':photon-lib').projectDir ,"/build/generated/vendordeps/");
