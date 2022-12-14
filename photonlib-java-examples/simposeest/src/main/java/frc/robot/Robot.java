@@ -27,7 +27,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.TimedRobot;
-import org.photonlib.examples.simposeest.sim.DrivetrainSim;
+import frc.robot.DrivetrainSim;
 
 public class Robot extends TimedRobot {
     AutoController autoCtrl = new AutoController();

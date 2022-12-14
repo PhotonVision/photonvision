@@ -24,38 +24,23 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.Robot;
 
-/** Reports our expected, desired, and actual poses to dashboards */
-public class PoseTelemetry {
-    Field2d field = new Field2d();
+/**
+ * Do NOT add any static variables to this class, or any initialization at all. Unless you know what
+ * you are doing, do not modify this file except to change the parameter class to the startRobot
+ * call.
+ */
+public final class Main {
+    private Main() {}
 
-    Pose2d actPose = new Pose2d();
-    Pose2d desPose = new Pose2d();
-    Pose2d estPose = new Pose2d();
-
-    public PoseTelemetry() {
-        SmartDashboard.putData("Field", field);
-        update();
-    }
-
-    public void update() {
-        field.getObject("DesPose").setPose(desPose);
-        field.getObject("ActPose").setPose(actPose);
-        field.getObject("Robot").setPose(estPose);
-    }
-
-    public void setActualPose(Pose2d in) {
-        actPose = in;
-    }
-
-    public void setDesiredPose(Pose2d in) {
-        desPose = in;
-    }
-
-    public void setEstimatedPose(Pose2d in) {
-        estPose = in;
+    /**
+     * Main initialization function. Do not perform any initialization here.
+     *
+     * <p>If you change your main robot class, change the parameter type.
+     */
+    public static void main(String... args) {
+        RobotBase.startRobot(Robot::new);
     }
 }
