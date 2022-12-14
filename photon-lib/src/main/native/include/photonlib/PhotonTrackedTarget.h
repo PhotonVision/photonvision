@@ -85,7 +85,7 @@ class PhotonTrackedTarget {
 
   /**
    * Get the Fiducial ID of the target currently being tracked,
-   * or -1 if not set. 
+   * or -1 if not set.
    */
   double GetFiducialId() const { return fiducialId; }
 
