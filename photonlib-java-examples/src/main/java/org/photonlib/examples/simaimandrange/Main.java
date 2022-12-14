@@ -24,6 +24,19 @@
 
 package org.photonlib.examples.simaimandrange;
 
+import java.io.IOException;
+
+import org.opencv.core.Core;
+
+import edu.wpi.first.cscore.CameraServerCvJNI;
+import edu.wpi.first.cscore.CameraServerJNI;
+import edu.wpi.first.hal.JNIWrapper;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.net.WPINetJNI;
+import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.RuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -40,6 +53,32 @@ public final class Main {
      * <p>If you change your main robot class, change the parameter type.
      */
     public static void main(String... args) {
+        JNIWrapper.Helper.setExtractOnStaticLoad(false);
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+
+        try {
+            var loader =
+                    new RuntimeLoader<>(
+                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
+            loader.loadLibrary();
+
+            CombinedRuntimeLoader.loadLibraries(
+                    Main.class,
+                    "wpiutiljni",
+                    "ntcorejni",
+                    "wpinetjni",
+                    "wpiHaljni",
+                    "cscorejni",
+                    "cscorejnicvstatic");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+
         RobotBase.startRobot(Robot::new);
     }
 }
