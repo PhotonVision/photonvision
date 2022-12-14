@@ -2,11 +2,15 @@ plugins {
     id "cpp"
     id "google-test-test-suite"
     id "edu.wpi.first.GradleRIO" version "2023.1.1-beta-6"
+
+    id "com.dorongold.task-tree" version "2.1.0"
 }
 
 repositories {
     mavenLocal()
+    jcenter()
 }
+
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
@@ -103,9 +107,7 @@ model {
 }
 
 task copy_photonlib() {
-    dependsOn ':photon-lib:build'
-    dependsOn ':photon-lib:publishToMavenLocal'
-
+    dependsOn ':photon-lib:generateVendorJson'
     doFirst {
         def vendorJsonSrc = new File(project(':photon-lib').projectDir ,"/build/generated/vendordeps/");
         def vendorJsonDst = new File("vendordeps/");
@@ -119,5 +121,12 @@ task copy_photonlib() {
             into vendorJsonDst
         }
     }
+    outputs.upToDateWhen { false }
 }
+
+build.dependsOn ':photon-lib:publishToMavenLocal'
 build.dependsOn(copy_photonlib)
+build.mustRunAfter copy_photonlib
+
+simulateNativeRelease.dependsOn copy_photonlib
+simulateNativeRelease.mustRunAfter copy_photonlib

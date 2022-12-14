@@ -5,6 +5,7 @@ rootProject.name = 'aimandrange'
 pluginManagement {
     repositories {
         mavenLocal()
+        jcenter()
         gradlePluginPortal()
         String frcYear = '2023'
         File frcHome
