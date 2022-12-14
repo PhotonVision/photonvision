@@ -1,6 +1,6 @@
 import org.gradle.internal.os.OperatingSystem
 
-rootProject.name = 'NT4-Field3d-main'
+rootProject.name = 'aimandrange'
 
 pluginManagement {
     repositories {
