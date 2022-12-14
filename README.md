@@ -18,7 +18,8 @@ If you are interested in contributing code or documentation to the project, plea
 
 Note that these are case sensitive!
 
-* `-Ppionly`: only builds for `linuxraspbian`, which reduces JAR size. The JAR name will have "-raspi" appended.
+* `-PArchOverride=foobar`: builds for a target system other than your current architecture. Valid overrides are winx32, winx64,
+macx64, macarm64, linuxx64, linuxarm64, linuxarm32, and linuxathena.
 - `-PtgtIp`: deploys (builds and copies the JAR) to the coprocessor at the specified IP
 - `-Pprofile`: enables JVM profiling
 
