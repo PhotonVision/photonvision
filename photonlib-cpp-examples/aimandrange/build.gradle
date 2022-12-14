@@ -57,7 +57,15 @@ wpi.sim.addDriverstation()
 model {
     components {
         frcUserProgram(NativeExecutableSpec) {
-            targetPlatform wpi.platforms.roborio
+            // We don't need to build for roborio -- if we do, we need to install
+            // a roborio toolchain every time we build in CI
+            // Ideally, we'd be able to set the roborio toolchain as optional, but
+            // I can't figure out how to set that environment variable from build.gradle
+            // (see https://github.com/wpilibsuite/native-utils/blob/2917c69fb5094e36d499c465f047dab81c68446c/ToolchainPlugin/src/main/java/edu/wpi/first/toolchain/ToolchainGraphBuildService.java#L71)
+            // for now, commented out
+
+            // targetPlatform wpi.platforms.roborio
+
             if (includeDesktopSupport) {
                 targetPlatform wpi.platforms.desktop
             }
@@ -124,6 +132,7 @@ task copy_photonlib() {
     outputs.upToDateWhen { false }
 }
 
+build.dependsOn ':photon-lib:build'
 build.dependsOn ':photon-lib:publishToMavenLocal'
 build.dependsOn(copy_photonlib)
 build.mustRunAfter copy_photonlib
