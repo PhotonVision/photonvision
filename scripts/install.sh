@@ -58,6 +58,7 @@ Description=Service that runs PhotonVision
 
 [Service]
 WorkingDirectory=/opt/photonvision
+# Run photonvision at "nice" -10, which is higher priority than standard
 Nice=-10
 # for non-uniform CPUs, like big.LITTLE, you want to select the big cores
 # look up the right values for your CPU
