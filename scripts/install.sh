@@ -15,6 +15,13 @@ echo "Installing avahi-daemon..."
 apt-get install avahi-daemon
 echo "avahi-daemon installation complete."
 
+echo "Installing cpufrequtils..."
+apt-get install cpufrequtils
+echo "cpufrequtils installation complete."
+
+echo "Setting cpufrequtils to performance mode"
+sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
+
 echo "Installing the JDK..."
 if [ $(dpkg-query -W -f='${Status}' openjdk-11-jdk-headless 2>/dev/null | grep -c "ok installed") -eq 0 ];
 then
