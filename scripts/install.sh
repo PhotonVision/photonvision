@@ -45,14 +45,17 @@ if service --status-all | grep -Fq 'photonvision'; then
   systemctl reset-failed
 fi
 
-cd /lib/systemd/system/
-touch photonvision.service
-printf \
-"[Unit]
+cat > /lib/systemd/system/photonvision.service <<EOF
+[Unit]
 Description=Service that runs PhotonVision
 
 [Service]
 WorkingDirectory=/opt/photonvision
+Nice=-10
+# for non-uniform CPUs, like big.LITTLE, you want to select the big cores
+# look up the right values for your CPU
+# AllowCPUs=4-7
+
 ExecStart=/usr/bin/java -jar /opt/photonvision/photonvision.jar -Xmx512m
 ExecStop=/bin/systemctl kill photonvision
 Type=simple
@@ -60,8 +63,10 @@ Restart=on-failure
 RestartSec=1
 
 [Install]
-WantedBy=multi-user.target" >> photonvision.service
-cp photonvision.service /etc/systemd/system/photonvision.service
+WantedBy=multi-user.target
+EOF
+
+cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
 systemctl daemon-reload
 systemctl enable photonvision.service
