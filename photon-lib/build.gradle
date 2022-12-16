@@ -17,7 +17,6 @@ test {
 }
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
-println("Buidling for wpilib ${wpilibTools.deps.wpilibVersion}")
 
 // Apply Java configuration
 dependencies {
