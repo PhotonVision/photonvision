@@ -72,7 +72,7 @@ jobs:
       - name: Publish photonlib to maven local
         run: |
           chmod +x gradlew
-          ./gradlew photon-lib:publishtomavenlocal -x check
+          ./gradlew publishtomavenlocal -x check
 
       - name: Build Java examples
         working-directory: photonlib-java-examples
