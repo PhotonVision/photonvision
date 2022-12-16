@@ -27,21 +27,32 @@ macx64, macarm64, linuxx64, linuxarm64, linuxarm32, and linuxathena.
 
 Gradle is used for all C++ and Java code, and NPM is used for the web UI. Instructions to compile PhotonVision yourself can be found [in our docs](https://docs.photonvision.org/en/latest/docs/contributing/photonvision/build-instructions.html?highlight=npm%20install#compiling-instructions).
 
-You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the `photonlib-java-examples` and `photonlib-cpp-examples` subdirectories, respectively. As of writing, the examples can be run with their respective gradle tasks listed below, invoked with `./gradlew <task name>`:
+You can run one of the many built in examples straight from the command line, too! They contain a fully featured robot project, and some include simulation support. The projects can be found inside the `photonlib-java-examples` and `photonlib-cpp-examples` subdirectories, respectively. The projects currently available include:
+
+- photonlib-java-examples:
+  - aimandrange:simulateJava
+  - aimattarget:simulateJava
+  - getinrange:simulateJava
+  - simaimandrange:simulateJava
+  - simposeest:simulateJava
+- photonlib-cpp-examples:
+  - aimandrange:simulateNative
+  - getinrange:simulateNative
+
+To run them, use the commands listed below. Photonlib must first be published to your local maven repository, then the `copyPhotonlib` task will copy the generated vendordep json file into each example. After that, the simulateJava/simulateNative task can be used like a normal robot project. Robot simulation with attached debugger is technically possible by using simulateExternalJava and modifying the launch script it exports, though unsupported.
 
 ```
-photonlib-java-examples:aimandrange:simulateJava
-photonlib-java-examples:aimattarget:simulateJava
-photonlib-java-examples:getinrange:simulateJava
-photonlib-java-examples:simaimandrange:simulateJava
-photonlib-java-examples:simposeest:simulateJava
-photonlib-cpp-examples:aimandrange:simulateNative
-photonlib-cpp-examples:getinrange:simulateNative
-photonlib-cpp-examples:aimattarget:simulateNative
-photonlib-cpp-examples:aimandrange:simulateNative
+~/photonvision$ ./gradlew publishToMavenLocal
+
+~/photonvision$ cd photonlib-java-examples
+~/photonvision/photonlib-java-examples$ ./gradlew copyPhotonlib
+~/photonvision/photonlib-java-examples$ ./gradlew <example-name>:simulateJava
+
+~/photonvision$ cd photonlib-cpp-examples
+~/photonvision/photonlib-cpp-examples$ ./gradlew copyPhotonlib
+~/photonvision/photonlib-cpp-examples$ ./gradlew <example-name>:simulateNative
 ```
 
-As of right now, C++ examples require that you run the following command before trying to simulate them: `./gradlew photon-lib:publishtomavenlocal copyPhotonlib -x check`
 
 ## Acknowledgments
 PhotonVision was forked from [Chameleon Vision](https://github.com/Chameleon-Vision/chameleon-vision/). Thank you to everyone who worked on the original project.

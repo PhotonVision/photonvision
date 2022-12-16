@@ -2,3 +2,5 @@ include 'photon-targeting'
 include 'photon-core'
 include 'photon-server'
 include 'photon-lib'
+
+new File('examples.txt').eachLine { line -> include line }

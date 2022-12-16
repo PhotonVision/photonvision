@@ -11,6 +11,7 @@ repositories {
     jcenter()
 }
 
+apply from: "${rootDir}/../shared/examples_common.gradle"
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
@@ -113,32 +114,3 @@ model {
         }
     }
 }
-
-task copyPhotonlib() {
-    dependsOn ':photon-lib:generateVendorJson'
-    doFirst {
-        def vendorJsonSrc = new File(project(':photon-lib').projectDir ,"/build/generated/vendordeps/");
-        def vendorJsonDst = new File("vendordeps/");
-
-        delete(fileTree(vendorJsonDst) {
-            exclude '.gitignore'
-        })
-
-        copy {
-            from vendorJsonSrc
-            into vendorJsonDst
-        }
-    }
-    outputs.upToDateWhen { false }
-}
-
-// TODO the vendordep is picked up when nativeutils loads, so none of this
-// actually happens early enough...
-
-// build.dependsOn ':photon-lib:build'
-// build.dependsOn ':photon-lib:publishToMavenLocal'
-// build.dependsOn(copyPhotonlib)
-// build.mustRunAfter copyPhotonlib
-
-// simulateNativeRelease.dependsOn copyPhotonlib
-// simulateNativeRelease.mustRunAfter copyPhotonlib

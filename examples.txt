@@ -1,9 +1,0 @@
-photonlib-java-examples:aimandrange
-photonlib-java-examples:aimattarget
-photonlib-java-examples:getinrange
-photonlib-java-examples:simaimandrange
-photonlib-java-examples:simposeest
-photonlib-cpp-examples:aimandrange
-photonlib-cpp-examples:getinrange
-photonlib-cpp-examples:aimattarget
-photonlib-cpp-examples:aimandrange

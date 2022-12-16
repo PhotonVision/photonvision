@@ -6,6 +6,8 @@ plugins {
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
+apply from: "${rootDir}/../shared/examples_common.gradle"
+
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
@@ -66,9 +68,6 @@ dependencies {
     simulationRelease wpi.sim.enableRelease()
 
     testImplementation 'junit:junit:4.13.1'
-
-    implementation project(":photon-lib")
-    implementation project(":photon-targeting")
 }
 
 // Simulation configuration (e.g. environment variables).

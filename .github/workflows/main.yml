@@ -69,10 +69,23 @@ jobs:
 
       # Need to publish to maven local first, so that C++ sim can pick it up
       # Still haven't figure out how to make the vendordep file be copied before trying to build examples
-      - name: Build all examples
+      - name: Publish photonlib to maven local
         run: |
           chmod +x gradlew
-          ./gradlew photon-lib:publishtomavenlocal copyPhotonlib -x check
+          ./gradlew photon-lib:publishtomavenlocal -x check
+
+      - name: Build Java examples
+        working-directory: photonlib-java-examples
+        run: |
+          chmod +x gradlew
+          ./gradlew copyPhotonlib -x check
+          ./gradlew buildAllExamples -x check --max-workers 2
+
+      - name: Build C++ examples
+        working-directory: photonlib-cpp-examples
+        run: |
+          chmod +x gradlew
+          ./gradlew copyPhotonlib -x check
           ./gradlew buildAllExamples -x check --max-workers 2
 
   photon-build-all:
