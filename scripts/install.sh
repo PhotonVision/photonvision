@@ -8,25 +8,29 @@ fi
 echo "This is the installation script for PhotonVision."
 
 echo "Installing curl..."
-apt-get install curl
+apt-get install --yes curl
 echo "curl installation complete."
 
 echo "Installing avahi-daemon..."
-apt-get install avahi-daemon
+apt-get install --yes avahi-daemon
 echo "avahi-daemon installation complete."
 
 echo "Installing cpufrequtils..."
-apt-get install cpufrequtils
+apt-get install --yes cpufrequtils
 echo "cpufrequtils installation complete."
 
 echo "Setting cpufrequtils to performance mode"
-sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
+if [ -f /etc/default/cpufrequtils ]; then
+    sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
+else
+    echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
+fi
 
 echo "Installing the JDK..."
 if [ $(dpkg-query -W -f='${Status}' openjdk-11-jdk-headless 2>/dev/null | grep -c "ok installed") -eq 0 ];
 then
-   apt update
-   apt-get install openjdk-11-jdk-headless;
+   apt-get update
+   apt-get install --yes openjdk-11-jdk-headless
 fi
 echo "JDK installation complete."
 
