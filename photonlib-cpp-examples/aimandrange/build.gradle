@@ -1,7 +1,7 @@
 plugins {
     id "cpp"
     id "google-test-test-suite"
-    id "edu.wpi.first.GradleRIO" version "2023.1.1-beta-6"
+    id "edu.wpi.first.GradleRIO" version "2023.1.1-beta-7"
 
     id "com.dorongold.task-tree" version "2.1.0"
 }
