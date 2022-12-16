@@ -41,7 +41,8 @@ public class QuirkyCamera {
                             "FaceTime HD Camera",
                             CameraQuirk.CompletelyBroken), // Mac Facetime Camera shared into Windows in Bootcamp
                     new QuirkyCamera(0x2000, 0x1415, CameraQuirk.Gain, CameraQuirk.FPSCap100), // PS3Eye
-                    new QuirkyCamera(-1, -1, "mmal service 16.1", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
+                    new QuirkyCamera(
+                            -1, -1, "mmal service 16.1", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
                     new QuirkyCamera(-1, -1, "unicam", CameraQuirk.PiCam), // PiCam (via V4L2, not zerocopy)
                     new QuirkyCamera(0x85B, 0x46D, CameraQuirk.AdjustableFocus) // Logitech C925-e
                     );

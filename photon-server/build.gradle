@@ -153,11 +153,11 @@ run {
   environment "PATH_PREFIX", "../"
 }
 
-task overrideToPi {
-    doLast {
-        project.setProperty('ArchOverride', 'linuxarm32')
-    }
-}
+// task overrideToPi {
+//     doLast {
+//         project.setProperty('ArchOverride', 'linuxarm32')
+//     }
+// }
 
 
 
