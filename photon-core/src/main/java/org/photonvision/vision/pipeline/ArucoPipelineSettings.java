@@ -18,6 +18,8 @@
 package org.photonvision.vision.pipeline;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.photonvision.vision.target.TargetModel;
+
 @JsonTypeName("ArucoPipelineSettings")
 public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public double decimate = 1;
@@ -33,6 +35,7 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
         super();
         pipelineType = PipelineType.Aruco;
         outputShowMultipleTargets = true;
+        targetModel = TargetModel.k6in_16h5;
         cameraExposure = -1;
         cameraAutoExposure = true;
         ledMode = false;

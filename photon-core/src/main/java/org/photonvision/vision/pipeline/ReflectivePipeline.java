@@ -157,7 +157,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
             rawInputMat = frame.image.getMat();
 
             hsvPipeResult = hsvPipe.run(rawInputMat);
-            sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
+            sumPipeNanosElapsed += hsvPipeResult.nanosElapsed+999;
             pipeProfileNanos[1] = pipeProfileNanos[1] = hsvPipeResult.nanosElapsed;
         } else {
             // Try to copy the color frame.

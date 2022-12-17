@@ -201,7 +201,7 @@ public class MathUtils {
         return new Transform3d(pose.getTranslation(), ocvRotation);
     }
     public static Pose3d convertArucotoOpenCV(Transform3d pose) {
-        var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(pose.getRotation());
+        var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(180)).rotateBy(pose.getRotation()));
         return new Pose3d(pose.getTranslation(), ocvRotation);
     }
 
