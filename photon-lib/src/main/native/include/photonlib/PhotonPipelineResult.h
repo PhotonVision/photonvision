@@ -24,12 +24,12 @@
 
 #pragma once
 
+#include <span>
 #include <string>
 
 #include <frc/Errors.h>
 #include <units/time.h>
 #include <wpi/SmallVector.h>
-#include <wpi/span.h>
 
 #include "photonlib/Packet.h"
 #include "photonlib/PhotonTrackedTarget.h"
@@ -51,7 +51,7 @@ class PhotonPipelineResult {
    * @param targets The list of targets identified by the pipeline.
    */
   PhotonPipelineResult(units::second_t latency,
-                       wpi::span<const PhotonTrackedTarget> targets);
+                       std::span<const PhotonTrackedTarget> targets);
 
   /**
    * Returns the best target in this pipeline result. If there are no targets,
@@ -105,7 +105,7 @@ class PhotonPipelineResult {
    * Returns a reference to the vector of targets.
    * @return A reference to the vector of targets.
    */
-  const wpi::span<const PhotonTrackedTarget> GetTargets() const {
+  const std::span<const PhotonTrackedTarget> GetTargets() const {
     return targets;
   }
 

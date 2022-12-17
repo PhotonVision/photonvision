@@ -8,6 +8,8 @@ apply plugin: "java"
 
 sourceCompatibility = 11
 
+wpilibTools.deps.wpilibVersion = wpilibVersion
+
 dependencies {
     // Jackson
     implementation "com.fasterxml.jackson.core:jackson-annotations:2.12.4"
@@ -22,19 +24,18 @@ dependencies {
     implementation "org.apache.commons:commons-exec:1.3"
 
     // WPILib deps
-    implementation "edu.wpi.first.wpiutil:wpiutil-java:$wpilibVersion"
-    implementation "edu.wpi.first.cameraserver:cameraserver-java:$wpilibVersion"
+    implementation wpilibTools.deps.wpilibJava("wpiutil")
+    implementation wpilibTools.deps.wpilibJava("cameraserver")
+    implementation wpilibTools.deps.wpilibJava("cscore")
+    implementation wpilibTools.deps.wpilibJava("wpinet")
+    implementation wpilibTools.deps.wpilibJava("wpimath")
+    implementation wpilibTools.deps.wpilibJava("ntcore")
+    implementation wpilibTools.deps.wpilibJava("hal")
+    implementation wpilibTools.deps.wpilibJava("wpilibj")
 
-    implementation "edu.wpi.first.cscore:cscore-java:$wpilibVersion"
-    jniPlatforms.each { implementation "edu.wpi.first.cscore:cscore-jni:$wpilibVersion:$it" }
+    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
+    jniPlatforms.each { implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-jni:$opencvVersion:$it" }
 
-    implementation "edu.wpi.first.ntcore:ntcore-java:$wpilibVersion"
-    jniPlatforms.each { implementation "edu.wpi.first.ntcore:ntcore-jni:$wpilibVersion:$it" }
-
-    implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-java:$opencvVersion"
-    jniPlatforms.each { implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-jni:$opencvVersion:$it" }
-
-    implementation "edu.wpi.first.wpimath:wpimath-java:2022.1.1"
     implementation "org.ejml:ejml-simple:0.41"
 
     // test stuff

@@ -370,6 +370,7 @@ public class VisionModule {
 
     void setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
+        logger.info("Pipeline name: " + pipelineManager.getPipelineNickname(index));
         pipelineManager.setIndex(index);
         var pipelineSettings = pipelineManager.getPipelineSettings(index);
 

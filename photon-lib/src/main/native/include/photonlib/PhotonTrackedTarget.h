@@ -84,6 +84,12 @@ class PhotonTrackedTarget {
   double GetSkew() const { return skew; }
 
   /**
+   * Get the Fiducial ID of the target currently being tracked,
+   * or -1 if not set.
+   */
+  double GetFiducialId() const { return fiducialId; }
+
+  /**
    * Returns the corners of the minimum area rectangle bounding this target.
    */
   wpi::SmallVector<std::pair<double, double>, 4> GetCorners() const {

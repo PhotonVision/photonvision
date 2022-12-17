@@ -7,6 +7,14 @@ fi
 
 echo "This is the installation script for PhotonVision."
 
+echo "Installing curl..."
+apt-get install curl
+echo "curl installation complete."
+
+echo "Installing avahi-daemon..."
+apt-get install avahi-daemon
+echo "avahi-daemon installation complete."
+
 echo "Installing the JDK..."
 if [ $(dpkg-query -W -f='${Status}' openjdk-11-jdk-headless 2>/dev/null | grep -c "ok installed") -eq 0 ];
 then
@@ -45,7 +53,7 @@ Description=Service that runs PhotonVision
 
 [Service]
 WorkingDirectory=/opt/photonvision
-ExecStart=/usr/bin/java -jar /opt/photonvision/photonvision.jar
+ExecStart=/usr/bin/java -jar /opt/photonvision/photonvision.jar -Xmx512m
 ExecStop=/bin/systemctl kill photonvision
 Type=simple
 Restart=on-failure

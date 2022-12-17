@@ -1,65 +1,35 @@
-apply plugin: "cpp"
-apply plugin: "java"
-apply plugin: "google-test-test-suite"
-apply plugin: "edu.wpi.first.GradleVsCode"
-apply plugin: "edu.wpi.first.NativeUtils"
-
-apply from: "${rootDir}/shared/config.gradle"
-
-ext.examplesMap = [:]
-
-File examplesTree = file("$projectDir/src/main/cpp/examples")
-examplesTree.list(new FilenameFilter() {
-    @Override
-    public boolean accept(File current, String name) {
-        return new File(current, name).isDirectory();
-    }
-}).each {
-    examplesMap.put(it, [])
+plugins {
+    id "com.diffplug.spotless" version "6.1.2"
 }
 
-nativeUtils.platformConfigs.named(nativeUtils.wpi.platforms.roborio).configure {
-    cppCompiler.args.remove('-Wno-error=deprecated-declarations')
-    cppCompiler.args.add('-Werror=deprecated-declarations')
-}
-
-ext {
-    sharedCvConfigs = examplesMap
-    staticCvConfigs = [:]
-    useJava = false
-    useCpp = true
-}
-
-model {
-    components {
-        examplesMap.each { key, value ->
-            "${key}"(NativeExecutableSpec) {
-                targetBuildTypes 'debug'
-                binaries.all { binary ->
-                    lib project: ':photon-lib', library: 'Photon', linkage: 'shared'
-                    if (binary.targetPlatform.name == nativeUtils.wpi.platforms.roborio) {
-                        nativeUtils.useRequiredLibrary(binary, 'ni_link_libraries', 'ni_runtime_libraries')
-                    }
-                }
-                sources {
-                    cpp {
-                        source {
-                            srcDirs 'src/main/cpp/examples/' + "${key}" + "/cpp"
-                            include '**/*.cpp'
-                        }
-                        exportedHeaders {
-                            srcDirs 'src/main/cpp/examples/' + "${key}" + "/include"
-                            include '**/*.h'
-                        }
-                    }
-                }
-                nativeUtils.useRequiredLibrary(it, 'wpilib_executable_shared')
-            }
-        }
+allprojects {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven { url = "https://maven.photonvision.org/repository/internal/" }
     }
 }
 
-ext {
-    exampleDirectory = new File("$projectDir/src/main/java/edu/wpi/first/wpilibj/examples/")
-    exampleFile = new File("$projectDir/src/main/java/edu/wpi/first/wpilibj/examples/examples.json")
+spotless {
+    java {
+        toggleOffOn()
+        googleJavaFormat()
+        indentWithTabs(2)
+        indentWithSpaces(4)
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    java {
+        target "**/*.java"
+        targetExclude("photon-core/src/main/java/org/photonvision/PhotonVersion.java")
+        targetExclude("photon-lib/src/main/java/org/photonvision/PhotonVersion.java")
+    }
+}
+
+// Task that depends on the build task for every example
+task buildAllExamples { task ->
+    new File('examples.txt').eachLine { line ->
+        task.dependsOn(line + ":build")
+    }
 }

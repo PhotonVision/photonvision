@@ -22,18 +22,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import edu.wpi.first.cscore.UsbCameraInfo;
 import java.util.ArrayList;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
-import org.photonvision.common.util.TestUtils;
 
 public class VisionSourceManagerTest {
-    @BeforeEach
-    public void init() {
-        TestUtils.loadLibraries();
-    }
-
     @Test
     public void visionSourceTest() {
         var inst = new VisionSourceManager();

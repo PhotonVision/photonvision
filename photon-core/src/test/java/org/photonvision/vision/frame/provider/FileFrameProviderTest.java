@@ -19,8 +19,6 @@ package org.photonvision.vision.frame.provider;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import edu.wpi.first.cscore.CameraServerCvJNI;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.junit.jupiter.api.BeforeAll;
@@ -31,11 +29,7 @@ import org.photonvision.vision.frame.Frame;
 public class FileFrameProviderTest {
     @BeforeAll
     public static void initPath() {
-        try {
-            CameraServerCvJNI.forceLoad();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        TestUtils.loadLibraries();
     }
 
     @Test

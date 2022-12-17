@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -36,7 +37,11 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.NetworkTablesJNI;
+import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.AfterAll;
@@ -65,6 +70,19 @@ class SimVisionSystemTest {
 
     @BeforeAll
     public static void setUp() {
+        JNIWrapper.Helper.setExtractOnStaticLoad(false);
+        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
+        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
+        WPINetJNI.Helper.setExtractOnStaticLoad(false);
+
+        try {
+            CombinedRuntimeLoader.loadLibraries(
+                    SimVisionSystem.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
         // NT live for debug purposes
         NetworkTableInstance.getDefault().startServer();
 
