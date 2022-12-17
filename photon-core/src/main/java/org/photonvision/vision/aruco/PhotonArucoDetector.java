@@ -18,23 +18,18 @@
 package org.photonvision.vision.aruco;
 
 import edu.wpi.first.math.VecBuilder;
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import java.util.ArrayList;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.ArucoDetector;
-import org.opencv.aruco.DetectorParameters;
-import org.opencv.aruco.Dictionary;
-
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-
-import java.util.ArrayList;
 
 public class PhotonArucoDetector {
     private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
@@ -44,7 +39,6 @@ public class PhotonArucoDetector {
     Mat tvecs;
     Mat rvecs;
     ArrayList<Mat> corners;
-
 
     Mat cornerMat;
     Translation3d translation;
@@ -56,6 +50,7 @@ public class PhotonArucoDetector {
     double timeEndProcess;
     double[] xCorners = new double[4];
     double[] yCorners = new double[4];
+
     public PhotonArucoDetector() {
         logger.debug("New Aruco Detector");
         ids = new Mat();
@@ -65,43 +60,59 @@ public class PhotonArucoDetector {
         tagPose = new Pose3d();
         translation = new Translation3d();
         rotation = new Rotation3d();
-
     }
-    public ArucoDetectionResult[] detect(Mat grayscaleImg, CameraCalibrationCoefficients coeffs, ArucoDetector detector) {
-        timeStartDetect = System.currentTimeMillis();
-        detector.detectMarkers(grayscaleImg, corners, ids);
-        timeEndDetect = System.currentTimeMillis();
-        if(coeffs!=null)
-            Aruco.estimatePoseSingleMarkers(corners,0.1524f,coeffs.getCameraIntrinsicsMat(), coeffs.getCameraExtrinsicsMat(),rvecs,tvecs);
 
-        System.out.println("Detect:"+(timeEndDetect-timeStartDetect));
+    public ArucoDetectionResult[] detect(
+            Mat grayscaleImg, CameraCalibrationCoefficients coeffs, ArucoDetector detector) {
+
+        detector.detectMarkers(grayscaleImg, corners, ids);
+
+        if (coeffs != null)
+            Aruco.estimatePoseSingleMarkers(
+                    corners,
+                    0.1524f,
+                    coeffs.getCameraIntrinsicsMat(),
+                    coeffs.getCameraExtrinsicsMat(),
+                    rvecs,
+                    tvecs);
+
         ArucoDetectionResult[] toReturn = new ArucoDetectionResult[corners.size()];
         timeStartProcess = System.currentTimeMillis();
         for (int i = 0; i < corners.size(); i++) {
             cornerMat = corners.get(i);
-            //logger.debug(cornerMat.dump());
-            xCorners = new double[]{cornerMat.get(0, 0)[0], cornerMat.get(0, 1)[0], cornerMat.get(0, 2)[0], cornerMat.get(0, 3)[0]};
-            yCorners = new double[]{cornerMat.get(0, 0)[1], cornerMat.get(0, 1)[1], cornerMat.get(0, 2)[1], cornerMat.get(0, 3)[1]};
+            // logger.debug(cornerMat.dump());
+            xCorners =
+                    new double[] {
+                        cornerMat.get(0, 0)[0],
+                        cornerMat.get(0, 1)[0],
+                        cornerMat.get(0, 2)[0],
+                        cornerMat.get(0, 3)[0]
+                    };
+            yCorners =
+                    new double[] {
+                        cornerMat.get(0, 0)[1],
+                        cornerMat.get(0, 1)[1],
+                        cornerMat.get(0, 2)[1],
+                        cornerMat.get(0, 3)[1]
+                    };
             cornerMat.release();
-            //todo: only do pose est when 3d is enabled
-            if(coeffs!=null && xCorners[0] != 0) {
-                final var axis = VecBuilder.fill(rvecs.get(i, 0)[0], rvecs.get(i, 0)[1], rvecs.get(i, 0)[2]);
-                tagPose = MathUtils.convertArucotoOpenCV(new Transform3d(new Translation3d(tvecs.get(i, 0)[0], tvecs.get(i, 0)[1], tvecs.get(i, 0)[2]), new Rotation3d(axis, axis.normF())));
+            // todo: only do pose est when 3d is enabled
+            if (coeffs != null && xCorners[0] != 0) {
+                final var axis =
+                        VecBuilder.fill(rvecs.get(i, 0)[0], rvecs.get(i, 0)[1], rvecs.get(i, 0)[2]);
+                tagPose =
+                        MathUtils.convertArucotoOpenCV(
+                                new Transform3d(
+                                        new Translation3d(tvecs.get(i, 0)[0], tvecs.get(i, 0)[1], tvecs.get(i, 0)[2]),
+                                        new Rotation3d(axis, axis.normF())));
             }
 
-
-            toReturn[i] = new ArucoDetectionResult(
-                    xCorners,
-                    yCorners,
-                    (int) ids.get(i, 0)[0],
-                    tagPose);
+            toReturn[i] = new ArucoDetectionResult(xCorners, yCorners, (int) ids.get(i, 0)[0], tagPose);
         }
         rvecs.release();
         tvecs.release();
         ids.release();
-        timeEndProcess = System.currentTimeMillis();
-        System.out.println("Process"+(timeEndProcess-timeStartProcess));
+
         return toReturn;
     }
-
 }

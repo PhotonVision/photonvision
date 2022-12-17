@@ -29,7 +29,7 @@
         name="Corner Accuracy"
         min=".5"
         max="100"
-        step="1"
+        step=".5"
         tooltip="Minimum accuracy for the corners, lower is better but more performance intensive "
         @input="handlePipelineData('cornerAccuracy')"
     />
