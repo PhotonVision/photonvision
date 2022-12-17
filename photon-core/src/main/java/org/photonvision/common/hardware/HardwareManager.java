@@ -17,7 +17,7 @@
 
 package org.photonvision.common.hardware;
 
-import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.IntegerEntry;
 import java.io.IOException;
 import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
@@ -45,7 +45,7 @@ public class HardwareManager {
     private final StatusLED statusLED;
 
     @SuppressWarnings("FieldCanBeLocal")
-    private final NetworkTableEntry ledModeEntry;
+    private final IntegerEntry ledModeEntry;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final NTDataChangeListener ledModeListener;
@@ -89,12 +89,16 @@ public class HardwareManager {
                                 hasBrightnessRange ? hardwareConfig.ledBrightnessRange.get(1) : 100,
                                 pigpioSocket);
 
-        ledModeEntry = NetworkTablesManager.getInstance().kRootTable.getEntry("ledMode");
-        ledModeEntry.setNumber(VisionLEDMode.kDefault.value);
+        ledModeEntry =
+                NetworkTablesManager.getInstance().kRootTable.getIntegerTopic("ledMode").getEntry(0);
+        ledModeEntry.set(VisionLEDMode.kDefault.value);
         ledModeListener =
                 visionLED == null
                         ? null
-                        : new NTDataChangeListener(ledModeEntry, visionLED::onLedModeChange);
+                        : new NTDataChangeListener(
+                                NetworkTablesManager.getInstance().kRootTable.getInstance(),
+                                ledModeEntry,
+                                visionLED::onLedModeChange);
 
         Runtime.getRuntime().addShutdownHook(new Thread(this::onJvmExit));
 

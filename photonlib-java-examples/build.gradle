@@ -1,142 +1,35 @@
-import edu.wpi.first.toolchain.NativePlatforms
-
-apply plugin: "java"
-apply plugin: "cpp"
-apply plugin: "edu.wpi.first.NativeUtils"
-
-apply from: "${rootDir}/shared/config.gradle"
-
-// Configure wpigui, libglass, libglassnt.
-nativeUtils {
-  nativeDependencyContainer {
-    wpigui(getNativeDependencyTypeClass('WPIStaticMavenDependency')) {
-      groupId = "edu.wpi.first.wpigui"
-      artifactId = "wpigui-cpp"
-      headerClassifier = "headers"
-      sourceClassifier = "sources"
-      ext = "zip"
-      version = wpilibVersion
-      targetPlatforms.addAll(nativeUtils.wpi.platforms.desktopPlatforms)
-    }
-    libglass(getNativeDependencyTypeClass('WPIStaticMavenDependency')) {
-      groupId = "edu.wpi.first.glass"
-      artifactId = "libglass"
-      headerClassifier = "headers"
-      sourceClassifier = "sources"
-      ext = "zip"
-      version = wpilibVersion
-      targetPlatforms.addAll(nativeUtils.wpi.platforms.desktopPlatforms)
-    }
-    libglassnt(getNativeDependencyTypeClass('WPIStaticMavenDependency')) {
-      groupId = "edu.wpi.first.glass"
-      artifactId = "libglassnt"
-      headerClassifier = "headers"
-      sourceClassifier = "sources"
-      ext = "zip"
-      version = wpilibVersion
-      targetPlatforms.addAll(nativeUtils.wpi.platforms.desktopPlatforms)
-    }
-
-    // Combined
-    gui(getNativeDependencyTypeClass('AllPlatformsCombinedNativeDependency')) {
-      dependencies = [
-                      "libglassnt", "libglass", "wpigui", "imgui_static",
-                      "wpimath_static", "ntcore_static", "wpiutil_static"]
-    }
-  }
+plugins {
+    id "com.diffplug.spotless" version "6.1.2"
 }
 
-ext {
-    exampleFile = new File("$projectDir/src/main/java/org/photonlib/examples/examples.json")
-}
-
-dependencies {
-    implementation project(":photon-lib")
-    implementation project(":photon-targeting")
-
-    implementation "edu.wpi.first.cscore:cscore-java:$wpilibVersion"
-    implementation "edu.wpi.first.cameraserver:cameraserver-java:$wpilibVersion"
-    implementation "edu.wpi.first.ntcore:ntcore-java:$wpilibVersion"
-    implementation "edu.wpi.first.wpilibj:wpilibj-java:$wpilibVersion"
-    implementation "edu.wpi.first.wpiutil:wpiutil-java:$wpilibVersion"
-    implementation "edu.wpi.first.wpimath:wpimath-java:$wpilibVersion"
-    implementation "edu.wpi.first.hal:hal-java:$wpilibVersion"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.10.0"
-    implementation "com.fasterxml.jackson.core:jackson-core:2.10.0"
-    implementation "com.fasterxml.jackson.core:jackson-databind:2.10.0"
-    implementation "edu.wpi.first.thirdparty.frc2022.opencv:opencv-java:$opencvVersion"
-}
-
-model {
-    components {
-        dev(NativeExecutableSpec) {
-            targetBuildTypes "debug"
-            sources {
-                cpp {
-                    source {
-                        srcDirs "src/dev/native/cpp"
-                        include "**/*.cpp"
-                    }
-                    exportedHeaders {
-                        srcDirs "src/dev/native/include"
-                    }
-                }
-            }
-            binaries.all { binary ->
-                nativeUtils.useRequiredLibrary(binary, "wpilib_executable_shared")
-                nativeUtils.useRequiredLibrary(binary, "opencv_shared")
-            }
-        }
+allprojects {
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven { url = "https://maven.photonvision.org/repository/internal/" }
     }
-    tasks {
-        def found = false
-        $.components.each {
-            if (it in NativeExecutableSpec && it.name == "dev") {
-                it.binaries.each {
-                    if (found)
-                        return
+}
 
-                    def arch = it.targetPlatform.name
-                    if (arch == NativePlatforms.desktop) {
-                        found = true
-                        def filePath = it.tasks.install.installDirectory.get().toString() + File.separatorChar + "lib"
+spotless {
+    java {
+        toggleOffOn()
+        googleJavaFormat()
+        indentWithTabs(2)
+        indentWithSpaces(4)
+        removeUnusedImports()
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+    java {
+        target "**/*.java"
+        targetExclude("photon-core/src/main/java/org/photonvision/PhotonVersion.java")
+        targetExclude("photon-lib/src/main/java/org/photonvision/PhotonVersion.java")
+    }
+}
 
-                        def doFirstTask = { task ->
-                            def extensions = ""
-                            it.tasks.install.installDirectory.get().getAsFile().eachFileRecurse {
-                                def name = it.name
-                                if (!(name.endsWith(".dll") || name.endsWith(".so") || name.endsWith(".dylib"))) {
-                                    return
-                                }
-                                def file = it
-                                if (name.startsWith("halsim_gui") || name.startsWith("libhalsim_gui".toString())) {
-                                    extensions += file.absolutePath + File.pathSeparator
-                                }
-                            }
-                            if (extensions != "") {
-                                task.environment "HALSIM_EXTENSIONS", extensions
-                            }
-                        }
-
-                        new groovy.json.JsonSlurper().parseText(exampleFile.text).each { entry ->
-                            project.tasks.create("run${entry.foldername}", JavaExec) { run ->
-                                main = "org.photonlib.examples." + entry.foldername + ".Main"
-                                classpath = sourceSets.main.runtimeClasspath
-                                run.dependsOn it.tasks.install
-                                run.systemProperty "java.library.path", filePath
-                                run.environment "LD_LIBRARY_PATH", filePath
-                                run.workingDir filePath
-                                doFirst { doFirstTask(run) }
-
-                                if (org.gradle.internal.os.OperatingSystem.current().isMacOsX()) {
-                                    run.jvmArgs = ["-XstartOnFirstThread"]
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
+// Task that depends on the build task for every example
+task buildAllExamples { task ->
+    new File('examples.txt').eachLine { line ->
+        task.dependsOn(line + ":build")
     }
 }

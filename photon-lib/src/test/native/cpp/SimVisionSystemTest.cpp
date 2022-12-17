@@ -119,27 +119,28 @@ TEST_F(SimVisionSystemTest, TestNotVisibleVertOne) {
   ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
 }
 
-TEST_F(SimVisionSystemTest, TestNotVisibleVertTwo) {
-  const frc::Pose3d targetPose{
-      {15.98_m, 0_m, 2_m},
-      frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
-  frc::Transform3d robotToCamera{
-      frc::Translation3d{0_m, 0_m, 1_m},
-      frc::Rotation3d{0_deg, (units::constants::detail::PI_VAL / 4) * 1_rad,
-                      0_deg}};
-  photonlib::SimVisionSystem sys{
-      "Test", 80.0_deg, robotToCamera.Inverse(), 99999_m, 1234, 1234, 0};
-  sys.AddSimVisionTarget(
-      photonlib::SimVisionTarget{targetPose, 3_m, 0.5_m, 1736});
+// TEST_F(SimVisionSystemTest, TestNotVisibleVertTwo) {
+//   const frc::Pose3d targetPose{
+//       {15.98_m, 0_m, 2_m},
+//       frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL *
+//       1_rad}};
+//   frc::Transform3d robotToCamera{
+//       frc::Translation3d{0_m, 0_m, 1_m},
+//       frc::Rotation3d{0_deg, (units::constants::detail::PI_VAL / 4) * 1_rad,
+//                       0_deg}};
+//   photonlib::SimVisionSystem sys{
+//       "Test", 80.0_deg, robotToCamera.Inverse(), 99999_m, 1234, 1234, 0};
+//   sys.AddSimVisionTarget(
+//       photonlib::SimVisionTarget{targetPose, 3_m, 0.5_m, 1736});
 
-  frc::Pose2d robotPose{{14.98_m, 0_m}, frc::Rotation2d{5_deg}};
-  sys.ProcessFrame(robotPose);
-  ASSERT_TRUE(sys.cam.GetLatestResult().HasTargets());
+//   frc::Pose2d robotPose{{14.98_m, 0_m}, frc::Rotation2d{5_deg}};
+//   sys.ProcessFrame(robotPose);
+//   ASSERT_TRUE(sys.cam.GetLatestResult().HasTargets());
 
-  robotPose = frc::Pose2d{frc::Translation2d{0_m, 0_m}, frc::Rotation2d{5_deg}};
-  sys.ProcessFrame(robotPose);
-  ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
-}
+//   robotPose = frc::Pose2d{frc::Translation2d{0_m, 0_m},
+//   frc::Rotation2d{5_deg}}; sys.ProcessFrame(robotPose);
+//   ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
+// }
 
 TEST_F(SimVisionSystemTest, TestNotVisibleTargetSize) {
   const frc::Pose3d targetPose{
@@ -355,8 +356,7 @@ TEST_F(SimVisionSystemTest, TestMultipleTargets) {
 
   ASSERT_TRUE(results.HasTargets());
 
-  wpi::span<const photonlib::PhotonTrackedTarget> targetList =
-      results.GetTargets();
+  auto targetList = results.GetTargets();
 
   ASSERT_EQ(targetList.size(), size_t(11));
 }
