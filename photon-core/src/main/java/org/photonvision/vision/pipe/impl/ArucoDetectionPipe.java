@@ -25,7 +25,6 @@ import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoDetectionPipe
         extends CVPipe<Mat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
-
     PhotonArucoDetector detector = new PhotonArucoDetector();
 
     @Override
