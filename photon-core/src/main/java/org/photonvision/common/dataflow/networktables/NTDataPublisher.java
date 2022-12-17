@@ -17,9 +17,8 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -30,6 +29,7 @@ import org.photonvision.common.dataflow.CVPipelineResultConsumer;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -37,32 +37,21 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 
 public class NTDataPublisher implements CVPipelineResultConsumer {
+    private final Logger logger = new Logger(NTDataPublisher.class, LogGroup.General);
+
     private final NetworkTable rootTable = NetworkTablesManager.getInstance().kRootTable;
-    private final Logger logger = new Logger(NTDataPublisher.class, LogGroup.Data);
-    private NetworkTable subTable;
-    private NetworkTableEntry rawBytesEntry;
 
-    private NetworkTableEntry pipelineIndexEntry;
-    private final Consumer<Integer> pipelineIndexConsumer;
-    private NTDataChangeListener pipelineIndexListener;
-    private NetworkTableEntry driverModeEntry;
-    private final Consumer<Boolean> driverModeConsumer;
-    private NTDataChangeListener driverModeListener;
+    private NTTopicSet ts = new NTTopicSet();
 
-    private NetworkTableEntry latencyMillisEntry;
-    private NetworkTableEntry hasTargetEntry;
-    private NetworkTableEntry targetPitchEntry;
-    private NetworkTableEntry targetYawEntry;
-    private NetworkTableEntry targetAreaEntry;
-    private NetworkTableEntry targetPoseEntry;
-    private NetworkTableEntry targetSkewEntry;
-
-    // The raw position of the best target, in pixels.
-    private NetworkTableEntry bestTargetPosX;
-    private NetworkTableEntry bestTargetPosY;
-
+    NTDataChangeListener pipelineIndexListener;
     private final Supplier<Integer> pipelineIndexSupplier;
+    private final Consumer<Integer> pipelineIndexConsumer;
+
+    NTDataChangeListener driverModeListener;
     private final BooleanSupplier driverModeSupplier;
+    private final Consumer<Boolean> driverModeConsumer;
+
+    private long heartbeatCounter = 0;
 
     public NTDataPublisher(
             String cameraNickname,
@@ -79,13 +68,13 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         updateEntries();
     }
 
-    private void onPipelineIndexChange(EntryNotification entryNotification) {
-        var newIndex = (int) entryNotification.value.getDouble();
+    private void onPipelineIndexChange(NetworkTableEvent entryNotification) {
+        var newIndex = (int) entryNotification.valueData.value.getInteger();
         var originalIndex = pipelineIndexSupplier.get();
 
         // ignore indexes below 0
         if (newIndex < 0) {
-            pipelineIndexEntry.forceSetNumber(originalIndex);
+            ts.pipelineIndexPublisher.set(originalIndex);
             return;
         }
 
@@ -97,14 +86,14 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         pipelineIndexConsumer.accept(newIndex);
         var setIndex = pipelineIndexSupplier.get();
         if (newIndex != setIndex) { // set failed
-            pipelineIndexEntry.forceSetNumber(setIndex);
-            logger.warn("Failed to set pipeline index to " + newIndex);
+            ts.pipelineIndexPublisher.set(setIndex);
+            // TODO: Log
         }
         logger.debug("Successfully set pipeline index to " + newIndex);
     }
 
-    private void onDriverModeChange(EntryNotification entryNotification) {
-        var newDriverMode = entryNotification.value.getBoolean();
+    private void onDriverModeChange(NetworkTableEvent entryNotification) {
+        var newDriverMode = entryNotification.valueData.value.getBoolean();
         var originalDriverMode = driverModeSupplier.getAsBoolean();
 
         if (newDriverMode == originalDriverMode) {
@@ -116,56 +105,30 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         logger.debug("Successfully set driver mode to " + newDriverMode);
     }
 
-    @SuppressWarnings("DuplicatedCode")
     private void removeEntries() {
-        if (rawBytesEntry != null) rawBytesEntry.delete();
         if (pipelineIndexListener != null) pipelineIndexListener.remove();
-        if (pipelineIndexEntry != null) pipelineIndexEntry.delete();
         if (driverModeListener != null) driverModeListener.remove();
-        if (driverModeEntry != null) driverModeEntry.delete();
-        if (latencyMillisEntry != null) latencyMillisEntry.delete();
-        if (hasTargetEntry != null) hasTargetEntry.delete();
-        if (targetPitchEntry != null) targetPitchEntry.delete();
-        if (targetAreaEntry != null) targetAreaEntry.delete();
-        if (targetYawEntry != null) targetYawEntry.delete();
-        if (targetPoseEntry != null) targetPoseEntry.delete();
-        if (targetSkewEntry != null) targetSkewEntry.delete();
-        if (bestTargetPosX != null) bestTargetPosX.delete();
-        if (bestTargetPosY != null) bestTargetPosY.delete();
+        ts.removeEntries();
     }
 
     private void updateEntries() {
-        rawBytesEntry = subTable.getEntry("rawBytes");
+        if (pipelineIndexListener != null) pipelineIndexListener.remove();
+        if (driverModeListener != null) driverModeListener.remove();
 
-        if (pipelineIndexListener != null) {
-            pipelineIndexListener.remove();
-        }
-        pipelineIndexEntry = subTable.getEntry("pipelineIndex");
+        ts.updateEntries();
+
         pipelineIndexListener =
-                new NTDataChangeListener(pipelineIndexEntry, this::onPipelineIndexChange);
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.pipelineIndexSubscriber, this::onPipelineIndexChange);
 
-        if (driverModeListener != null) {
-            driverModeListener.remove();
-        }
-        driverModeEntry = subTable.getEntry("driverMode");
-        driverModeListener = new NTDataChangeListener(driverModeEntry, this::onDriverModeChange);
-
-        latencyMillisEntry = subTable.getEntry("latencyMillis");
-        hasTargetEntry = subTable.getEntry("hasTarget");
-
-        targetPitchEntry = subTable.getEntry("targetPitch");
-        targetAreaEntry = subTable.getEntry("targetArea");
-        targetYawEntry = subTable.getEntry("targetYaw");
-        targetPoseEntry = subTable.getEntry("targetPose");
-        targetSkewEntry = subTable.getEntry("targetSkew");
-
-        bestTargetPosX = subTable.getEntry("targetPixelsX");
-        bestTargetPosY = subTable.getEntry("targetPixelsY");
+        driverModeListener =
+                new NTDataChangeListener(
+                        ts.subTable.getInstance(), ts.driverModeSubscriber, this::onDriverModeChange);
     }
 
     public void updateCameraNickname(String newCameraNickname) {
         removeEntries();
-        subTable = rootTable.getSubTable(newCameraNickname);
+        ts.subTable = rootTable.getSubTable(newCameraNickname);
         updateEntries();
     }
 
@@ -177,23 +140,23 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         Packet packet = new Packet(simplified.getPacketSize());
         simplified.populatePacket(packet);
 
-        rawBytesEntry.forceSetRaw(packet.getData());
+        ts.rawBytesEntry.set(packet.getData());
 
-        pipelineIndexEntry.forceSetNumber(pipelineIndexSupplier.get());
-        driverModeEntry.forceSetBoolean(driverModeSupplier.getAsBoolean());
-        latencyMillisEntry.forceSetDouble(result.getLatencyMillis());
-        hasTargetEntry.forceSetBoolean(result.hasTargets());
+        ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
+        ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
+        ts.latencyMillisEntry.set(result.getLatencyMillis());
+        ts.hasTargetEntry.set(result.hasTargets());
 
         if (result.hasTargets()) {
             var bestTarget = result.targets.get(0);
 
-            targetPitchEntry.forceSetDouble(bestTarget.getPitch());
-            targetYawEntry.forceSetDouble(bestTarget.getYaw());
-            targetAreaEntry.forceSetDouble(bestTarget.getArea());
-            targetSkewEntry.forceSetDouble(bestTarget.getSkew());
+            ts.targetPitchEntry.set(bestTarget.getPitch());
+            ts.targetYawEntry.set(bestTarget.getYaw());
+            ts.targetAreaEntry.set(bestTarget.getArea());
+            ts.targetSkewEntry.set(bestTarget.getSkew());
 
             var pose = bestTarget.getBestCameraToTarget3d();
-            targetPoseEntry.forceSetDoubleArray(
+            ts.targetPoseEntry.set(
                     new double[] {
                         pose.getTranslation().getX(),
                         pose.getTranslation().getY(),
@@ -205,17 +168,21 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                     });
 
             var targetOffsetPoint = bestTarget.getTargetOffsetPoint();
-            bestTargetPosX.forceSetDouble(targetOffsetPoint.x);
-            bestTargetPosY.forceSetDouble(targetOffsetPoint.y);
+            ts.bestTargetPosX.set(targetOffsetPoint.x);
+            ts.bestTargetPosY.set(targetOffsetPoint.y);
         } else {
-            targetPitchEntry.forceSetDouble(0);
-            targetYawEntry.forceSetDouble(0);
-            targetAreaEntry.forceSetDouble(0);
-            targetSkewEntry.forceSetDouble(0);
-            targetPoseEntry.forceSetDoubleArray(new double[] {0, 0, 0});
-            bestTargetPosX.forceSetDouble(0);
-            bestTargetPosY.forceSetDouble(0);
+            ts.targetPitchEntry.set(0);
+            ts.targetYawEntry.set(0);
+            ts.targetAreaEntry.set(0);
+            ts.targetSkewEntry.set(0);
+            ts.targetPoseEntry.set(new double[] {0, 0, 0});
+            ts.bestTargetPosX.set(0);
+            ts.bestTargetPosY.set(0);
         }
+
+        ts.heartbeatPublisher.set(heartbeatCounter++);
+
+        // TODO...nt4... is this needed?
         rootTable.getInstance().flush();
     }
 

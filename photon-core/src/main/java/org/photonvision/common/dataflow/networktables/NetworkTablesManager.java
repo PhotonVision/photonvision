@@ -17,8 +17,8 @@
 
 package org.photonvision.common.dataflow.networktables;
 
-import edu.wpi.first.networktables.LogMessage;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.HashMap;
 import java.util.function.Consumer;
@@ -41,7 +41,7 @@ public class NetworkTablesManager {
     private boolean isRetryingConnection = false;
 
     private NetworkTablesManager() {
-        ntInstance.addLogger(new NTLogger(), 0, 255); // to hide error messages
+        ntInstance.addLogger(0, 255, new NTLogger()); // to hide error messages
         TimedTaskManager.getInstance().addTask("NTManager", this::ntTick, 5000);
     }
 
@@ -54,17 +54,17 @@ public class NetworkTablesManager {
 
     private static final Logger logger = new Logger(NetworkTablesManager.class, LogGroup.General);
 
-    private static class NTLogger implements Consumer<LogMessage> {
+    private static class NTLogger implements Consumer<NetworkTableEvent> {
         private boolean hasReportedConnectionFailure = false;
         private long lastConnectMessageMillis = 0;
 
         @Override
-        public void accept(LogMessage logMessage) {
-            if (!hasReportedConnectionFailure && logMessage.message.contains("timed out")) {
+        public void accept(NetworkTableEvent event) {
+            if (!hasReportedConnectionFailure && event.logMessage.message.contains("timed out")) {
                 logger.error("NT Connection has failed! Will retry in background.");
                 hasReportedConnectionFailure = true;
                 getInstance().broadcastConnectedStatus();
-            } else if (logMessage.message.contains("connected")
+            } else if (event.logMessage.message.contains("connected")
                     && System.currentTimeMillis() - lastConnectMessageMillis > 125) {
                 logger.info("NT Connected!");
                 hasReportedConnectionFailure = false;
@@ -115,8 +115,8 @@ public class NetworkTablesManager {
     private void setClientMode(int teamNumber) {
         if (!isRetryingConnection) logger.info("Starting NT Client");
         ntInstance.stopServer();
-
-        ntInstance.startClientTeam(teamNumber);
+        ntInstance.startClient4("photonvision");
+        ntInstance.setServerTeam(teamNumber);
         ntInstance.startDSClient();
         broadcastVersion();
     }
