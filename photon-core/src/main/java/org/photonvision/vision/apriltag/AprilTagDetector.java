@@ -39,7 +39,7 @@ public class AprilTagDetector {
     private AprilTagDetectorParams m_detectorParams = AprilTagDetectorParams.DEFAULT_36H11;
 
     public AprilTagDetector() {
-        //updateDetector();
+        updateDetector();
     }
 
     private void updateDetector() {
