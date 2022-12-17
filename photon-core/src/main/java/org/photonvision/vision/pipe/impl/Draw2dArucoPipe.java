@@ -17,9 +17,8 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import org.photonvision.vision.frame.FrameDivisor;
-
 import java.awt.*;
+import org.photonvision.vision.frame.FrameDivisor;
 
 public class Draw2dArucoPipe extends Draw2dTargetsPipe {
     public static class Draw2dArucoParams extends Draw2dTargetsParams {

@@ -167,8 +167,9 @@ public final class PhotonUtils {
         var targetToCamera = cameraToTarget.inverse();
         return fieldToTarget.transformBy(targetToCamera);
     }
-    public Pose3d getFieldToRobot(Pose3d tagPose, Transform3d robotToCamera, Transform3d cameraToTarget) {
+
+    public Pose3d getFieldToRobot(
+            Pose3d tagPose, Transform3d robotToCamera, Transform3d cameraToTarget) {
         return tagPose.plus(cameraToTarget.inverse()).plus(robotToCamera.inverse());
     }
-
 }

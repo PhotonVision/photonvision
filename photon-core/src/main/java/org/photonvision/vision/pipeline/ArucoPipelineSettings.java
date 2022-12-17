@@ -25,9 +25,8 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
     public double decimate = 1;
     public int threads = 2;
     public int numIterations = 100;
-    public double cornerAccuracy =  25.0;
+    public double cornerAccuracy = 25.0;
     public boolean useAruco3 = true;
-
 
     // 3d settings
 
@@ -40,5 +39,4 @@ public class ArucoPipelineSettings extends AdvancedPipelineSettings {
         cameraAutoExposure = true;
         ledMode = false;
     }
-
 }
