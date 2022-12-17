@@ -46,7 +46,7 @@ class Packet {
    * Constructs a packet with the given data.
    * @param data The packet data.
    */
-  explicit Packet(std::vector<char> data) : packetData(data) {}
+  explicit Packet(std::vector<uint8_t> data) : packetData(data) {}
 
   /**
    * Clears the packet and resets the read and write positions.
@@ -61,7 +61,7 @@ class Packet {
    * Returns the packet data.
    * @return The packet data.
    */
-  const std::vector<char>& GetData() { return packetData; }
+  const std::vector<uint8_t>& GetData() { return packetData; }
 
   /**
    * Returns the number of bytes in the data.
@@ -105,7 +105,7 @@ class Packet {
       if constexpr (wpi::support::endian::system_endianness() ==
                     wpi::support::endianness::little) {
         // Reverse to little endian for host.
-        char& raw = reinterpret_cast<char&>(value);
+        uint8_t& raw = reinterpret_cast<uint8_t&>(value);
         std::reverse(&raw, &raw + sizeof(T));
       }
     }
@@ -121,7 +121,7 @@ class Packet {
 
  private:
   // Data stored in the packet
-  std::vector<char> packetData;
+  std::vector<uint8_t> packetData;
 
   size_t readPos = 0;
   size_t writePos = 0;

@@ -1,0 +1,17 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo"
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "photonvision": {
+        "open": true,
+        "photonvision": {
+          "open": true
+        }
+      }
+    }
+  }
+}
