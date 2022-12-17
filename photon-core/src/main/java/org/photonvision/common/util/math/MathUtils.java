@@ -177,7 +177,9 @@ public class MathUtils {
         // CameraToTarget _should_ be in opencv-land EDN
         var nwu =
                 CoordinateSystem.convert(
-                        new Pose3d(cameraToTarget3d), CoordinateSystem.EDN(), CoordinateSystem.NWU());
+                        new Pose3d().transformBy(cameraToTarget3d),
+                        CoordinateSystem.EDN(),
+                        CoordinateSystem.NWU());
         return new Pose3d(nwu.getTranslation(), WPILIB_BASE_ROTATION.rotateBy(nwu.getRotation()));
     }
 
@@ -200,8 +202,12 @@ public class MathUtils {
         var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(pose.getRotation());
         return new Transform3d(pose.getTranslation(), ocvRotation);
     }
+
     public static Pose3d convertArucotoOpenCV(Transform3d pose) {
-        var ocvRotation = APRILTAG_BASE_ROTATION.rotateBy(new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(180)).rotateBy(pose.getRotation()));
+        var ocvRotation =
+                APRILTAG_BASE_ROTATION.rotateBy(
+                        new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(180))
+                                .rotateBy(pose.getRotation()));
         return new Pose3d(pose.getTranslation(), ocvRotation);
     }
 

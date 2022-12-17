@@ -34,14 +34,14 @@
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.util.Units;
-import org.bytedeco.javacpp.Loader;
+import java.util.ArrayList;
+import java.util.List;
+import org.opencv.aruco.Aruco;
+import org.opencv.aruco.ArucoDetector;
 import org.opencv.aruco.DetectorParameters;
+import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
-import org.photonvision.vision.apriltag.AprilTagDetectorParams;
-import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.ArucoDetectorParams;
 import org.photonvision.vision.camera.CameraQuirk;
@@ -52,9 +52,6 @@ import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SuppressWarnings("DuplicatedCode")
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
@@ -87,16 +84,18 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
             PicamJNI.setShouldCopyColor(true); // need the color image to grayscale
         }
 
-
-        arucoDetectionParams = ArucoDetectorParams.getDetectorParams(arucoDetectionParams, settings.decimate, settings.numIterations, settings.cornerAccuracy, settings.useAruco3);
-
+        arucoDetectionParams =
+                ArucoDetectorParams.getDetectorParams(
+                        arucoDetectionParams,
+                        settings.decimate,
+                        settings.numIterations,
+                        settings.cornerAccuracy,
+                        settings.useAruco3);
 
         arucoDetectionPipe.setParams(
-                new ArucoDetectionPipeParams(arucoDetectionParams,frameStaticProperties.cameraCalibration));
-
-
-        arucoDetectionPipe.setParams(
-                new ArucoDetectionPipeParams(arucoDetectionParams,frameStaticProperties.cameraCalibration));
+                new ArucoDetectionPipeParams(
+                        new ArucoDetector(Dictionary.get(Aruco.DICT_APRILTAG_16h5), arucoDetectionParams),
+                        frameStaticProperties.cameraCalibration));
     }
 
     @Override
@@ -114,14 +113,13 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         var inputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
 
-
         var outputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
 
         List<TrackedTarget> targetList;
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
 
         tagDetectionPipeResult = arucoDetectionPipe.run(rawInputMat);
-        //sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
+        // sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {

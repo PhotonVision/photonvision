@@ -26,7 +26,7 @@
     </v-row>
   </div>
 </template>
-s
+
 <script>
     import TooltippedLabel from "./cv-tooltipped-label";
 

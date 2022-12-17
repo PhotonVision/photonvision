@@ -17,24 +17,17 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import org.photonvision.vision.apriltag.AprilTagDetectorParams;
-import org.photonvision.vision.apriltag.AprilTagFamily;
-import org.photonvision.vision.aruco.ArucoDetectorParams;
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.opencv.aruco.DetectorParameters;
-
 import java.util.Objects;
+import org.opencv.aruco.ArucoDetector;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class ArucoDetectionPipeParams {
-    public final DetectorParameters detectorParams;
+    public ArucoDetector detectorParams;
     public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
 
-
     public ArucoDetectionPipeParams(
-            DetectorParameters detectorParams,
-            CameraCalibrationCoefficients cameraCalibrationCoefficients
-            ) {
-        this.detectorParams = detectorParams;
+            ArucoDetector detector, CameraCalibrationCoefficients cameraCalibrationCoefficients) {
+        this.detectorParams = detector;
         this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
     }
 
@@ -43,7 +36,8 @@ public class ArucoDetectionPipeParams {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         ArucoDetectionPipeParams that = (ArucoDetectionPipeParams) o;
-        return Objects.equals(detectorParams, that.detectorParams) && Objects.equals(cameraCalibrationCoefficients, that.cameraCalibrationCoefficients);
+        return Objects.equals(detectorParams, that.detectorParams)
+                && Objects.equals(cameraCalibrationCoefficients, that.cameraCalibrationCoefficients);
     }
 
     @Override
@@ -52,12 +46,12 @@ public class ArucoDetectionPipeParams {
     }
 
     @Override
-    public String
-
-    toString() {
-        return "ArucoDetectionPipeParams{" +
-                "detectorParams=" + detectorParams +
-                ", cameraCalibrationCoefficients=" + cameraCalibrationCoefficients +
-                '}';
+    public String toString() {
+        return "ArucoDetectionPipeParams{"
+                + "detectorParams="
+                + detectorParams
+                + ", cameraCalibrationCoefficients="
+                + cameraCalibrationCoefficients
+                + '}';
     }
 }

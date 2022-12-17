@@ -17,27 +17,26 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import org.opencv.core.Mat;
-import org.photonvision.vision.apriltag.AprilTagDetector;
-import org.photonvision.vision.apriltag.DetectionResult;
-import org.photonvision.vision.aruco.ArucoDetectionResult;
-import org.photonvision.vision.aruco.ArucoDetector;
-import org.photonvision.vision.pipe.CVPipe;
-
 import java.util.List;
+import org.opencv.core.Mat;
+import org.photonvision.vision.aruco.ArucoDetectionResult;
+import org.photonvision.vision.aruco.PhotonArucoDetector;
+import org.photonvision.vision.pipe.CVPipe;
 
 public class ArucoDetectionPipe
         extends CVPipe<Mat, List<ArucoDetectionResult>, ArucoDetectionPipeParams> {
 
-    ArucoDetector detector = new ArucoDetector();
+    PhotonArucoDetector detector = new PhotonArucoDetector();
+
     @Override
-    protected List<ArucoDetectionResult> process(Mat in){
-        return List.of(detector.detect(in, params.cameraCalibrationCoefficients, params.detectorParams));
+    protected List<ArucoDetectionResult> process(Mat in) {
+        return List.of(
+                detector.detect(in, params.cameraCalibrationCoefficients, params.detectorParams));
     }
 
     @Override
     public void setParams(ArucoDetectionPipeParams params) {
         super.setParams(params);
-       // m_detector.updateParams(params.detectorParams);
+        // m_detector.updateParams(params.detectorParams);
     }
 }

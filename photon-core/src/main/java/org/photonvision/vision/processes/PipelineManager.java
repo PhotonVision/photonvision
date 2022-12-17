@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-
 import org.opencv.aruco.Aruco;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.logging.LogGroup;
@@ -90,6 +89,28 @@ public class PipelineManager {
 
         for (var setting : userPipelineSettings) {
             if (setting.pipelineIndex == index) return setting;
+        }
+        return null;
+    }
+
+    /**
+     * Get the settings for a pipeline by index.
+     *
+     * @param index Index of pipeline whose nickname needs getting.
+     * @return the nickname of the pipeline whose index was provided.
+     */
+    public String getPipelineNickname(int index) {
+        if (index < 0) {
+            switch (index) {
+                case DRIVERMODE_INDEX:
+                    return driverModePipeline.getSettings().pipelineNickname;
+                case CAL_3D_INDEX:
+                    return calibration3dPipeline.getSettings().pipelineNickname;
+            }
+        }
+
+        for (var setting : userPipelineSettings) {
+            if (setting.pipelineIndex == index) return setting.pipelineNickname;
         }
         return null;
     }
@@ -185,8 +206,7 @@ public class PipelineManager {
 
                 case Aruco:
                     logger.debug("Creating Aruco Pipeline");
-                    currentUserPipeline =
-                            new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
+                    currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
                     break;
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
@@ -279,13 +299,11 @@ public class PipelineManager {
                     return added;
                 }
             case Aruco:
-            {
-                var added =
-                        new ArucoPipelineSettings();
-                added.pipelineNickname = nickname;
-                return added;
-
-            }
+                {
+                    var added = new ArucoPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
             default:
                 {
                     logger.error("Got invalid pipeline type: " + type.toString());

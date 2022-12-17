@@ -17,9 +17,7 @@
 
 package org.photonvision;
 
-import edu.wpi.first.cscore.CameraServerCvJNI;
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -27,9 +25,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
-import org.bytedeco.javacpp.Loader;
-import org.bytedeco.opencv.opencv_java;
-import org.opencv.core.Core;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -41,9 +36,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
-import org.photonvision.raspi.PicamJNI;
 import org.photonvision.server.Server;
-import org.photonvision.vision.apriltag.AprilTagJNI;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
@@ -292,28 +285,18 @@ public class Main {
     }
 
     public static void main(String[] args) {
-
-        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-
-
-        Loader.load(opencv_java.class);
-        Core.setNumThreads(8);
         try {
-            CameraServerCvJNI.forceLoad();
+            TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
         } catch (Exception e) {
             logger.error("Failed to load native libraries!", e);
         }
-        try {
-            AprilTagJNI.forceLoad();
-        } catch (IOException e) {
-            logger.error("Failed to load native libraries!", e);
-        }
-        try {
-            PicamJNI.forceLoad();
-        } catch (IOException e) {
-            logger.error("Failed to load native libraries!", e);
-        }
+
+        // try {
+        //    PicamJNI.forceLoad();
+        // } catch (IOException e) {
+        //    logger.error("Failed to load Picam JNI!", e);
+        // }
 
         try {
             if (!handleArgs(args)) {
@@ -340,15 +323,6 @@ public class Main {
                         + " on "
                         + Platform.currentPlatform.toString()
                         + (Platform.isRaspberryPi() ? (" (Pi " + Platform.currentPiVersion.name() + ")") : ""));
-
-        try {
-            CameraServerCvJNI.forceLoad();
-            PicamJNI.forceLoad();
-            // TestUtils.loadLibraries();
-            logger.info("Native libraries loaded.");
-        } catch (Exception e) {
-            logger.error("Failed to load native libraries!", e);
-        }
 
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();

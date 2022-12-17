@@ -1,3 +1,7 @@
+plugins {
+    id 'edu.wpi.first.WpilibTools' version '1.0.0'
+}
+
 import java.nio.file.Path
 
 apply from: "${rootDir}/shared/common.gradle"
@@ -9,9 +13,6 @@ dependencies {
 
     implementation 'org.msgpack:msgpack-core:0.9.0'
     implementation 'org.msgpack:jackson-dataformat-msgpack:0.9.0'
-
-    // wpiutil
-    jniPlatforms.each { implementation "edu.wpi.first.wpiutil:wpiutil-jni:$wpilibVersion:$it" }
 
     // JOGL stuff (currently we only distribute for aarch64, which is Pi 4)
     implementation "org.jogamp.gluegen:gluegen-rt:$joglVersion"
@@ -31,3 +32,24 @@ task writeCurrentVersionJava {
 }
 
 build.dependsOn writeCurrentVersionJava
+
+def testNativeConfigName = 'wpilibTestNative'
+def testNativeConfig = configurations.create(testNativeConfigName)
+
+def folder = project.layout.buildDirectory.dir('NativeTest')
+
+def testNativeTasks = wpilibTools.createExtractionTasks {
+    taskPostfix = "Test"
+    configurationName = testNativeConfigName
+    rootTaskFolder.set(folder)
+}
+
+testNativeTasks.addToSourceSetResources(sourceSets.test)
+
+testNativeConfig.dependencies.add wpilibTools.deps.cscore()
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")

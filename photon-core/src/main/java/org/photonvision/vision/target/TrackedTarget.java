@@ -16,6 +16,7 @@
  */
 package org.photonvision.vision.target;
 
+import edu.wpi.first.apriltag.jni.DetectionResult;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,6 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.*;
@@ -128,6 +128,7 @@ public class TrackedTarget implements Releasable {
 
         m_poseAmbiguity = result.getPoseAmbiguity();
     }
+
     public TrackedTarget(ArucoDetectionResult result, TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
         m_robotOffsetPoint = new Point();
@@ -138,8 +139,8 @@ public class TrackedTarget implements Releasable {
         m_yaw =
                 TargetCalculations.calculateYaw(
                         result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
-        var bestPose = new Transform3d(result.getPose().getTranslation(), result.getPose().getRotation());
-
+        var bestPose =
+                new Transform3d(result.getPose().getTranslation(), result.getPose().getRotation());
 
         bestPose = MathUtils.convertApriltagtoOpenCV(bestPose);
 
@@ -150,10 +151,10 @@ public class TrackedTarget implements Releasable {
 
         Point[] cornerPoints =
                 new Point[] {
-                        new Point(xCorners[0], yCorners[0]),
-                        new Point(xCorners[1], yCorners[1]),
-                        new Point(xCorners[2], yCorners[2]),
-                        new Point(xCorners[3], yCorners[3])
+                    new Point(xCorners[0], yCorners[0]),
+                    new Point(xCorners[1], yCorners[1]),
+                    new Point(xCorners[2], yCorners[2]),
+                    new Point(xCorners[3], yCorners[3])
                 };
         m_targetCorners = List.of(cornerPoints);
         MatOfPoint contourMat = new MatOfPoint(cornerPoints);
@@ -171,9 +172,9 @@ public class TrackedTarget implements Releasable {
                 0,
                 0,
                 new double[] {
-                        bestPose.getTranslation().getX(),
-                        bestPose.getTranslation().getY(),
-                        bestPose.getTranslation().getZ()
+                    bestPose.getTranslation().getX(),
+                    bestPose.getTranslation().getY(),
+                    bestPose.getTranslation().getZ()
                 });
         setCameraRelativeTvec(tvec);
 
@@ -181,7 +182,6 @@ public class TrackedTarget implements Releasable {
         var rvec = new Mat(3, 1, CvType.CV_64FC1);
         MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
         setCameraRelativeRvec(rvec);
-
     }
 
     public void setFiducialId(int id) {

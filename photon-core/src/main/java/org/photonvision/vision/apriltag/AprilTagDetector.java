@@ -30,6 +30,8 @@ import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import edu.wpi.first.apriltag.jni.AprilTagJNI;
+import edu.wpi.first.apriltag.jni.DetectionResult;
 
 public class AprilTagDetector {
     private static final Logger logger = new Logger(AprilTagDetector.class, LogGroup.VisionModule);
@@ -43,13 +45,13 @@ public class AprilTagDetector {
     private void updateDetector() {
         if (m_detectorPtr != 0) {
             // TODO: in JNI
-            AprilTagJNI.AprilTag_Destroy(m_detectorPtr);
+            AprilTagJNI.aprilTagDestroy(m_detectorPtr);
             m_detectorPtr = 0;
         }
 
         logger.debug("Creating detector with params " + m_detectorParams);
         m_detectorPtr =
-                AprilTagJNI.AprilTag_Create(
+                AprilTagJNI.aprilTagCreate(
                         m_detectorParams.tagFamily.getNativeName(),
                         m_detectorParams.decimate,
                         m_detectorParams.blur,
@@ -95,7 +97,7 @@ public class AprilTagDetector {
             }
         }
 
-        return AprilTagJNI.AprilTag_Detect(
+        return AprilTagJNI.aprilTagDetect(
                 m_detectorPtr, grayscaleImg, doPoseEst, tagWidthMeters, fx, fy, cx, cy, numIterations);
     }
 }
