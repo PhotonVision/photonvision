@@ -106,9 +106,9 @@ public enum Platform {
         }
 
         if (RuntimeDetector.isLinux()) {
+            if (isRaspbian()) return LINUX_RASPBIAN;
             if (RuntimeDetector.is32BitIntel()) return UNSUPPORTED;
             if (RuntimeDetector.is64BitIntel()) return LINUX_64;
-            if (isRaspbian()) return LINUX_RASPBIAN;
         }
 
         System.out.println(UnknownPlatformString);
@@ -141,15 +141,29 @@ public enum Platform {
         return "";
     }
 
+    // Depending on OS release, there's a couple ways we might happen to be on a Pi.
+    // Check multiple files for a best-guess at what hardware we're on.
     private static boolean isRaspbian() {
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get("/etc/os-release"))) {
-            String value = reader.readLine();
-            if (value == null) {
-                return false;
+        return fileHasText("/etc/os-release", "Raspbian") || 
+               fileHasText("/proc/cpuinfo", "Raspberry Pi");
+    }
+
+    private static boolean fileHasText(String filename, String text){
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get(filename))) {
+            while(true){
+                String value = reader.readLine();
+                System.out.println(value);
+                if (value == null) {
+                    return false;
+
+                } else if(value.contains(text)){
+                    return true;
+
+                } //else, next line
             }
-            return value.contains("Raspbian");
         } catch (IOException ex) {
             return false;
         }
+
     }
 }
