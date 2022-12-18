@@ -144,26 +144,24 @@ public enum Platform {
     // Depending on OS release, there's a couple ways we might happen to be on a Pi.
     // Check multiple files for a best-guess at what hardware we're on.
     private static boolean isRaspbian() {
-        return fileHasText("/etc/os-release", "Raspbian") || 
-               fileHasText("/proc/cpuinfo", "Raspberry Pi");
+        return fileHasText("/etc/os-release", "Raspbian")
+                || fileHasText("/proc/cpuinfo", "Raspberry Pi");
     }
 
-    private static boolean fileHasText(String filename, String text){
+    private static boolean fileHasText(String filename, String text) {
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(filename))) {
-            while(true){
+            while (true) {
                 String value = reader.readLine();
                 System.out.println(value);
                 if (value == null) {
                     return false;
 
-                } else if(value.contains(text)){
+                } else if (value.contains(text)) {
                     return true;
-
-                } //else, next line
+                } // else, next line
             }
         } catch (IOException ex) {
             return false;
         }
-
     }
 }
