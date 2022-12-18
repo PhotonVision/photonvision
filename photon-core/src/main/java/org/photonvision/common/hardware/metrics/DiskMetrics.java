@@ -19,7 +19,6 @@ package org.photonvision.common.hardware.metrics;
 
 public class DiskMetrics extends MetricsBase {
     public String getUsedDiskPct() {
-        if (diskUsageCommand.isEmpty()) return "";
-        return execute(diskUsageCommand);
+        return safeExecute(diskUsageCommand);
     }
 }

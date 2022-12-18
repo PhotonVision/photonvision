@@ -22,12 +22,13 @@ public class GPUMetrics extends MetricsBase {
 
     public String getGPUMemorySplit() {
         if (gpuMemSplit == null) {
-            gpuMemSplit = execute(gpuMemoryCommand);
+            //only needs to run once
+            gpuMemSplit = safeExecute(gpuMemoryCommand);
         }
         return gpuMemSplit;
     }
 
     public String getMallocedMemory() {
-        return execute(gpuMemUsageCommand);
+        return safeExecute(gpuMemUsageCommand);
     }
 }
