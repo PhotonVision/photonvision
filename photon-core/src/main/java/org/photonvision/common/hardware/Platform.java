@@ -152,7 +152,6 @@ public enum Platform {
         try (BufferedReader reader = Files.newBufferedReader(Paths.get(filename))) {
             while (true) {
                 String value = reader.readLine();
-                System.out.println(value);
                 if (value == null) {
                     return false;
 
