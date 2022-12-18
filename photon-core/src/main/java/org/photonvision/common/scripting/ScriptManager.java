@@ -128,7 +128,7 @@ public class ScriptManager {
     }
 
     public static void queueEvent(ScriptEventType eventType) {
-        if (!Platform.isWindows()) {
+        if (Platform.unixSupported()) {
             try {
                 queuedEvents.putLast(eventType);
                 logger.info("Queued event: " + eventType.name());

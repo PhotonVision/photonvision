@@ -37,7 +37,7 @@ public class HardwareTest {
 
         if (!Platform.isRaspberryPi()) return;
 
-        System.out.println("Testing on platform: " + Platform.currentPlatform);
+        System.out.println("Testing on platform: " + Platform.getPlatformName());
 
         System.out.println("Printing CPU Info:");
         System.out.println("Memory: " + cpuMetrics.getMemory() + "MB");

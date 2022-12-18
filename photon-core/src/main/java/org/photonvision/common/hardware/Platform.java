@@ -24,57 +24,89 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.photonvision.common.util.ShellExec;
 
+import com.jogamp.common.os.Platform.OSType;
+
 @SuppressWarnings("unused")
 public enum Platform {
+    
     // WPILib Supported (JNI)
-    WINDOWS_32("Windows x32"),
-    WINDOWS_64("Windows x64"),
-    LINUX_64("Linux x64"),
-    LINUX_RASPBIAN("Linux Raspbian"), // Raspberry Pi 3/4
-    LINUX_AARCH64BIONIC("Linux AARCH64 Bionic"), // Jetson Nano, Jetson TX2
-    // PhotonVision Supported (Manual install)
-    LINUX_ARM32("Linux ARM32"), // ODROID XU4, C1+
-    LINUX_ARM64("Linux ARM64"), // ODROID C2, N2
+    WINDOWS_64("Windows x64", false, OSType.WINDOWS, true),
+    LINUX_32("Linux x86", false, OSType.LINUX, true),
+    LINUX_64("Linux x64", false, OSType.LINUX, true),
+    LINUX_RASPBIAN32("Linux Raspbian 32-bit", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 32-bit image
+    LINUX_RASPBIAN64("Linux Raspbian 64-bit", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 64-bit image
+    LINUX_AARCH64BIONIC("Linux AARCH64 Bionic", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
+
+    // PhotonVision Supported (Manual build/install)
+    LINUX_ARM32("Linux ARM32", false, OSType.LINUX, true), // ODROID XU4, C1+
+    LINUX_ARM64("Linux ARM64", false, OSType.LINUX, true), // ODROID C2, N2
 
     // Completely unsupported
-    UNSUPPORTED("Unsupported Platform");
+    WINDOWS_32("Windows x86", false, OSType.WINDOWS, false),
+    MACOS("Mac OS", false, OSType.MACOS, false),
+    UNKNOWN("Unsupported Platform", false, OSType.UNKNOWN, false);
+
+
+    private enum OSType{
+        WINDOWS,
+        LINUX,
+        MACOS,
+        UNKNOWN
+    }
 
     private static final ShellExec shell = new ShellExec(true, false);
-    public final String value;
-    public static final boolean isRoot = checkForRoot();
+    public final String description;
+    public final boolean isPi;
+    public final OSType osType;
+    public final boolean isSupported;
 
-    Platform(String value) {
-        this.value = value;
+    // Set once at init, shouldn't be needed after.
+    private static final Platform currentPlatform = getCurrentPlatform();
+    private static final boolean isRoot = checkForRoot();
+
+    Platform(String description, boolean isPi, OSType osType, boolean isSupported) {
+        this.description = description;
+        this.isPi = isPi;
+        this.osType = osType;
+        this.isSupported = isSupported;
     }
 
-    private static final String OS_NAME = System.getProperty("os.name");
-    private static final String OS_ARCH = System.getProperty("os.arch");
+    //////////////////////////////////////////////////////
+    // Public API
 
-    // These are queried on init and should never change after
-    public static final Platform currentPlatform = getCurrentPlatform();
-    static final String currentPiVersionStr = getPiVersionString();
-    public static final PiVersion currentPiVersion = PiVersion.getPiVersion();
-
-    private static final String UnknownPlatformString =
-            String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
-
-    public static boolean isWindows() {
-        return currentPlatform == WINDOWS_64 || currentPlatform == WINDOWS_32;
-    }
-
-    public static boolean isLinux() {
-        return currentPlatform == LINUX_64
-                || currentPlatform == LINUX_RASPBIAN
-                || currentPlatform == LINUX_ARM64;
+    // Checks specifically if unix shell and API are supported
+    public static boolean unixSupported() {
+        return currentPlatform.osType == OSType.LINUX || currentPlatform.osType == OSType.MACOS;
     }
 
     public static boolean isRaspberryPi() {
-        return currentPlatform.equals(LINUX_RASPBIAN);
+        return currentPlatform.isPi;
     }
+
+    public static String getPlatformName() {
+        if (currentPlatform.equals(UNKNOWN)) {
+            return UnknownPlatformString;
+        } else {
+            return currentPlatform.description;
+        }
+    }
+
+    public static boolean isRoot(){
+        return isRoot;
+    }
+
+    //////////////////////////////////////////////////////
+
+
+    // Debug info related to unknown platforms for debug help
+    private static final String OS_NAME = System.getProperty("os.name");
+    private static final String OS_ARCH = System.getProperty("os.arch");
+    private static final String UnknownPlatformString =
+            String.format("Unknown Platform. OS: %s, Architecture: %s", OS_NAME, OS_ARCH);
 
     @SuppressWarnings("StatementWithEmptyBody")
     private static boolean checkForRoot() {
-        if (isLinux()) {
+        if (unixSupported()) {
             try {
                 shell.executeBashCommand("id -u");
             } catch (IOException e) {
@@ -95,57 +127,76 @@ public enum Platform {
         return false;
     }
 
-    public static Platform getCurrentPlatform() {
+    private static Platform getCurrentPlatform() {
         if (RuntimeDetector.isWindows()) {
-            if (RuntimeDetector.is32BitIntel()) return WINDOWS_32;
-            if (RuntimeDetector.is64BitIntel()) return WINDOWS_64;
+            if (RuntimeDetector.is32BitIntel()) {
+                return WINDOWS_32;
+            } else if (RuntimeDetector.is64BitIntel()) {
+                return WINDOWS_64;
+            } else {
+                // please don't try this
+                return UNKNOWN;
+            }
+
         }
 
         if (RuntimeDetector.isMac()) {
-            if (RuntimeDetector.is32BitIntel()) return UNSUPPORTED;
+            //TODO - once we have real support, this might have to be more granular
+            return MACOS;
         }
 
         if (RuntimeDetector.isLinux()) {
-            if (isRaspbian()) return LINUX_RASPBIAN;
-            if (RuntimeDetector.is32BitIntel()) return UNSUPPORTED;
-            if (RuntimeDetector.is64BitIntel()) return LINUX_64;
+            if (isPiSBC()){
+                if(RuntimeDetector.isArm32()){
+                    return LINUX_RASPBIAN32;
+                } else if(RuntimeDetector.isArm64()){
+                    return LINUX_RASPBIAN64;
+                } else {
+                    // Unknown/exotic installation
+                    return UNKNOWN;
+                }
+            } else if (isJetsonSBC()){
+                if(RuntimeDetector.isArm64()){
+                    //TODO - do we need to check OS version?
+                    return LINUX_AARCH64BIONIC;
+                } else {
+                    // Unknown/exotic installation
+                    return UNKNOWN;
+                }
+            } else if(RuntimeDetector.is64BitIntel()){
+                return LINUX_64;
+            } else if(RuntimeDetector.is32BitIntel()){
+                return LINUX_32;
+            } else if(RuntimeDetector.isArm64()){
+                // TODO - os detection needed?
+                return LINUX_AARCH64BIONIC;                
+            } else {
+                //Unknown or otherwise unsupported platform
+                return Platform.UNKNOWN;
+            }
         }
 
-        System.out.println(UnknownPlatformString);
-        return Platform.UNSUPPORTED;
+        // If we fall through all the way to here, 
+        return Platform.UNKNOWN;
     }
 
-    public String toString() {
-        if (this.equals(UNSUPPORTED)) {
-            return UnknownPlatformString;
-        } else {
-            return this.value;
-        }
+    // Check for various known SBC types
+    private static boolean isPiSBC() {
+        return fileHasText("/proc/cpuinfo", "Raspberry Pi");
+    }
+    private static boolean isJetsonSBC() {
+        // https://forums.developer.nvidia.com/t/how-to-recognize-jetson-nano-device/146624
+        return fileHasText("/proc/device-tree/model", "NVIDIA Jetson");
     }
 
-    // Querry /proc/device-tree/model. This should return the model of the pi
-    // Versions here:
-    // https://github.com/raspberrypi/linux/blob/rpi-5.10.y/arch/arm/boot/dts/bcm2710-rpi-cm3.dts
-    private static String getPiVersionString() {
-        if (!isRaspberryPi()) return "";
-        try {
-            shell.executeBashCommand("cat /proc/device-tree/model");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if (shell.getExitCode() == 0) {
-            // We expect it to be in the format "raspberry pi X model X"
-            return shell.getOutput();
-        }
-
-        return "";
+    // Checks for various names of linux OS 
+    private static boolean isStretch(){
+        //TODO - this is a total guess
+        return fileHasText("/etc/os-release", "Stretch");
     }
-
-    // Depending on OS release, there's a couple ways we might happen to be on a Pi.
-    // Check multiple files for a best-guess at what hardware we're on.
-    private static boolean isRaspbian() {
-        return fileHasText("/etc/os-release", "Raspbian")
-                || fileHasText("/proc/cpuinfo", "Raspberry Pi");
+    private static boolean isBuster(){
+        //TODO - this is a total guess
+        return fileHasText("/etc/os-release", "Buster");
     }
 
     private static boolean fileHasText(String filename, String text) {

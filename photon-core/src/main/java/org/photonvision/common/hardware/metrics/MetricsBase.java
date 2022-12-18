@@ -56,7 +56,7 @@ public abstract class MetricsBase {
     private static ShellExec runCommand = new ShellExec(true, true);
 
     public static void setConfig(HardwareConfig config) {
-        if (Platform.isRaspberryPi()) return;
+        if (Platform.isRaspberryPi()) return; //we use hardcoded commands on pi specifically, rather than requiring a config file.
         cpuMemoryCommand = config.cpuMemoryCommand;
         cpuTemperatureCommand = config.cpuTempCommand;
         cpuUtilizationCommand = config.cpuUtilCommand;
@@ -69,6 +69,15 @@ public abstract class MetricsBase {
         diskUsageCommand = config.diskUsageCommand;
 
         ramUsageCommand = config.ramUtilCommand;
+    }
+
+    public static String safeExecute(String str){
+        if (str.isEmpty()) return "";
+        try {
+            return execute(str);
+        } catch (Exception e) {
+            return "****";
+        } 
     }
 
     public static synchronized String execute(String command) {

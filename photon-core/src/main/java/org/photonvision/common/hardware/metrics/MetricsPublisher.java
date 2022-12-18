@@ -20,10 +20,8 @@ package org.photonvision.common.hardware.metrics;
 import java.util.HashMap;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
-import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.TimedTaskManager;
 
 public class MetricsPublisher {
     private static final Logger logger = new Logger(MetricsPublisher.class, LogGroup.General);
@@ -43,17 +41,7 @@ public class MetricsPublisher {
         diskMetrics = new DiskMetrics();
     }
 
-    public void stopTask() {
-        TimedTaskManager.getInstance().cancelTask("Metrics");
-        logger.info("This device does not support running bash commands. Stopped metrics thread.");
-    }
-
     public void publish() {
-        if (!Platform.isRaspberryPi()) {
-            logger.debug("Ignoring metrics on non-Pi devices");
-            return;
-        }
-
         logger.debug("Publishing Metrics...");
         final var metrics = new HashMap<String, String>();
 

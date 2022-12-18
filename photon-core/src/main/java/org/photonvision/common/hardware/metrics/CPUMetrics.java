@@ -29,23 +29,18 @@ public class CPUMetrics extends MetricsBase {
     }
 
     public String getTemp() {
-        if (cpuTemperatureCommand.isEmpty()) return "";
-        try {
-            return execute(cpuTemperatureCommand);
-        } catch (Exception e) {
-            return "N/A";
-        }
+        return safeExecute(cpuTemperatureCommand);
     }
 
     public String getUtilization() {
-        return execute(cpuUtilizationCommand);
+        return safeExecute(cpuUtilizationCommand);
     }
 
     public String getUptime() {
-        return execute(cpuUptimeCommand);
+        return safeExecute(cpuUptimeCommand);
     }
 
     public String getThrottleReason() {
-        return execute(cpuThrottleReasonCmd);
+        return safeExecute(cpuThrottleReasonCmd);
     }
 }
