@@ -151,10 +151,10 @@ public class TrackedTarget implements Releasable {
 
         Point[] cornerPoints =
                 new Point[] {
-                    new Point(xCorners[3], yCorners[3]),
-                    new Point(xCorners[2], yCorners[2]),
+                    new Point(xCorners[0], yCorners[0]),
                     new Point(xCorners[1], yCorners[1]),
-                    new Point(xCorners[0], yCorners[0])
+                    new Point(xCorners[2], yCorners[2]),
+                    new Point(xCorners[3], yCorners[3])
                 };
         m_targetCorners = List.of(cornerPoints);
         MatOfPoint contourMat = new MatOfPoint(cornerPoints);
@@ -165,16 +165,16 @@ public class TrackedTarget implements Releasable {
         m_shape = null;
 
         // TODO implement skew? or just yeet
-        m_skew = 0;
+
 
         var tvec = new Mat(3, 1, CvType.CV_64FC1);
         tvec.put(
                 0,
                 0,
                 new double[] {
+                    bestPose.getTranslation().getZ(),
                     bestPose.getTranslation().getX(),
-                    bestPose.getTranslation().getY(),
-                    bestPose.getTranslation().getZ()
+                    bestPose.getTranslation().getY()
                 });
         setCameraRelativeTvec(tvec);
 
