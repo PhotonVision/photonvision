@@ -17,6 +17,7 @@
 package org.photonvision.vision.target;
 
 import edu.wpi.first.apriltag.jni.DetectionResult;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashMap;
 import java.util.List;
@@ -142,8 +143,6 @@ public class TrackedTarget implements Releasable {
         var bestPose =
                 new Transform3d(result.getPose().getTranslation(), result.getPose().getRotation());
 
-        bestPose = MathUtils.convertApriltagtoOpenCV(bestPose);
-
         m_bestCameraToTarget3d = bestPose;
 
         double[] xCorners = result.getxCorners();
@@ -172,15 +171,16 @@ public class TrackedTarget implements Releasable {
                 0,
                 0,
                 new double[] {
-                    bestPose.getTranslation().getZ(),
-                    bestPose.getTranslation().getX(),
-                    bestPose.getTranslation().getY()
+                    -bestPose.getTranslation().getY(),
+                    -bestPose.getTranslation().getZ(),
+                    bestPose.getTranslation().getX()
                 });
         setCameraRelativeTvec(tvec);
 
         // Opencv expects a 3d vector with norm = angle and direction = axis
+        Rotation3d newRot = new Rotation3d(bestPose.getRotation().getY(),bestPose.getRotation().getZ(), -bestPose.getRotation().getX());
         var rvec = new Mat(3, 1, CvType.CV_64FC1);
-        MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
+        MathUtils.rotationToOpencvRvec(newRot, rvec);
         setCameraRelativeRvec(rvec);
     }
 
