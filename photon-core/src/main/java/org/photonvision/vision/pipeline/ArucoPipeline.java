@@ -58,6 +58,7 @@ import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSettings> {
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
+
     private final ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     DetectorParameters arucoDetectionParams = null;
@@ -101,6 +102,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
     @Override
     protected CVPipelineResult process(Frame frame, ArucoPipelineSettings settings) {
+        CVPipeResult<Mat> grayscalePipeResult;
         long sumPipeNanosElapsed = 0L;
         Mat rawInputMat;
         boolean inputSingleChannel = frame.image.getMat().channels() == 1;
@@ -114,7 +116,11 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         var inputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
 
-        var outputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
+        grayscalePipeResult = grayscalePipe.run(rawInputMat);
+        sumPipeNanosElapsed += grayscalePipeResult.nanosElapsed;
+
+        var outputFrame = new Frame(new CVMat(grayscalePipeResult.output), frameStaticProperties);
+
 
         List<TrackedTarget> targetList;
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;

@@ -151,10 +151,10 @@ public class TrackedTarget implements Releasable {
 
         Point[] cornerPoints =
                 new Point[] {
-                    new Point(xCorners[0], yCorners[0]),
-                    new Point(xCorners[1], yCorners[1]),
+                    new Point(xCorners[3], yCorners[3]),
                     new Point(xCorners[2], yCorners[2]),
-                    new Point(xCorners[3], yCorners[3])
+                    new Point(xCorners[1], yCorners[1]),
+                    new Point(xCorners[0], yCorners[0])
                 };
         m_targetCorners = List.of(cornerPoints);
         MatOfPoint contourMat = new MatOfPoint(cornerPoints);

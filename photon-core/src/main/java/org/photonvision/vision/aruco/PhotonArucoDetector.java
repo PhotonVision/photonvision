@@ -23,6 +23,8 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.ArrayList;
+
+import edu.wpi.first.math.util.Units;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.ArucoDetector;
 import org.opencv.core.Mat;
@@ -70,7 +72,7 @@ public class PhotonArucoDetector {
         if (coeffs != null)
             Aruco.estimatePoseSingleMarkers(
                     corners,
-                    0.1524f,
+                    (float) Units.inchesToMeters(6),
                     coeffs.getCameraIntrinsicsMat(),
                     coeffs.getCameraExtrinsicsMat(),
                     rvecs,
@@ -100,11 +102,14 @@ public class PhotonArucoDetector {
             if (coeffs != null && xCorners[0] != 0) {
                 final var axis =
                         VecBuilder.fill(rvecs.get(i, 0)[0], rvecs.get(i, 0)[1], rvecs.get(i, 0)[2]);
+                translation =  new Translation3d(tvecs.get(i, 0)[0], tvecs.get(i, 0)[1], tvecs.get(i, 0)[2]);//201
+                System.out.println("X: " + translation.getX() + "\nY: " + translation.getY() + "\nZ: "+translation.getZ());
                 tagPose =
-                        MathUtils.convertArucotoOpenCV(
+                        MathUtils.convertOpenCVtoPhotonPose(
                                 new Transform3d(
-                                        new Translation3d(tvecs.get(i, 0)[0], tvecs.get(i, 0)[1], tvecs.get(i, 0)[2]),
+                                       translation,
                                         new Rotation3d(axis, axis.normF())));
+
             }
 
             toReturn[i] = new ArucoDetectionResult(xCorners, yCorners, (int) ids.get(i, 0)[0], tagPose);

@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.aruco.Aruco;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
@@ -140,13 +141,12 @@ public class OutputStreamPipeline {
         }
 
         // Draw 2D Crosshair on output
-        var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
+       var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
         sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
         if (!(settings instanceof AprilTagPipelineSettings)
                 && !(settings instanceof ArucoPipelineSettings)) {
-            // If we're processing anything other than Apriltags...
-
+            // If we're processing anything other than Apriltags..
             var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
             sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
@@ -194,8 +194,8 @@ public class OutputStreamPipeline {
                 pipeProfileNanos[8] = 0;
             }
 
-        } else {
-            // If we are doing aruco...
+        } else if(settings instanceof ArucoPipelineSettings){
+
             if (settings.solvePNPEnabled) {
                 // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
                 pipeProfileNanos[5] = 0;

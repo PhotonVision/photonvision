@@ -21,7 +21,7 @@ import java.awt.*;
 import org.photonvision.vision.frame.FrameDivisor;
 
 public class Draw2dArucoPipe extends Draw2dTargetsPipe {
-    public static class Draw2dArucoParams extends Draw2dTargetsParams {
+    public static class Draw2dArucoParams extends Draw2dTargetsPipe.Draw2dTargetsParams {
         public Draw2dArucoParams(
                 boolean shouldDraw, boolean showMultipleTargets, FrameDivisor divisor) {
             super(shouldDraw, showMultipleTargets, divisor);
