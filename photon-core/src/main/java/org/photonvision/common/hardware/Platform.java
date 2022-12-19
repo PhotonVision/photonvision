@@ -65,6 +65,8 @@ public enum Platform {
     public static boolean isLinux() {
         return currentPlatform == LINUX_64
                 || currentPlatform == LINUX_RASPBIAN
+                || currentPlatform == LINUX_AARCH64BIONIC
+                || currentPlatform == LINUX_ARM32
                 || currentPlatform == LINUX_ARM64;
     }
 
