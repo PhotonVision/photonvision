@@ -24,9 +24,7 @@
 
 package org.photonvision;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.math.util.Units;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -80,5 +78,14 @@ class PhotonUtilTest {
         Assertions.assertEquals(-3.464, fieldToRobot.getX(), 0.1);
         Assertions.assertEquals(0, fieldToRobot.getY(), 0.1);
         Assertions.assertEquals(0, fieldToRobot.getRotation().getDegrees(), 0.1);
+    }
+    public void testAprilTagUtils() {
+        var cameraToTarget = new Transform3d(new Translation3d(5,5,0),new Rotation3d());
+        var tagPose = new Pose3d();
+        var cameraToRobot = new Transform3d();
+
+        var fieldToRobot =
+                PhotonUtils.estimateFieldToRobotAprilTag(cameraToTarget, tagPose, cameraToRobot);
+
     }
 }
