@@ -42,7 +42,7 @@ public class LibCameraJNI {
             }
 
             // We always extract the shared object (we could hash each so, but that's a lot of work)
-            URL resourceURL = PicamJNI.class.getResource("/nativelibraries/libphotonlibcamera.so");
+            URL resourceURL = LibCameraJNI.class.getResource("/nativelibraries/libphotonlibcamera.so");
             File libFile = Path.of("lib/libphotonlibcamera.so").toFile();
             try (InputStream in = resourceURL.openStream()) {
                 if (libFile.exists()) Files.delete(libFile.toPath());
@@ -60,19 +60,39 @@ public class LibCameraJNI {
         }
     }
 
-    public static PicamJNI.SensorModel getSensorModel() {
-        switch (getSensorModelRaw().toLowerCase()) {
-            case "":
-                return PicamJNI.SensorModel.Disconnected;
-            case "ov5647":
-                return PicamJNI.SensorModel.OV5647;
-            case "imx219":
-                return PicamJNI.SensorModel.IMX219;
-            case "imx477":
-                return PicamJNI.SensorModel.IMX477;
-            default:
-                return PicamJNI.SensorModel.Unknown;
+    public enum SensorModel {
+        Disconnected,
+        OV5647, // Picam v1
+        IMX219, // Picam v2
+        IMX477, // Picam HQ
+        OV9281,
+        OV7251,
+        Unknown;
+
+        public String getFriendlyName() {
+            switch (this) {
+                case Disconnected:
+                    return "Disconnected Camera";
+                case OV5647:
+                    return "Camera Module v1";
+                case IMX219:
+                    return "Camera Module v2";
+                case IMX477:
+                    return "HQ Camera";
+                case OV9281:
+                    return "OV9281";
+                case OV7251:
+                    return "OV7251";
+                case Unknown:
+                default:
+                    return "Unknown Camera";
+            }
         }
+    }
+
+    public static SensorModel getSensorModel() {
+        int model = getSensorModelRaw();
+        return SensorModel.values()[model];
     }
 
     public static boolean isSupported() {
@@ -84,7 +104,7 @@ public class LibCameraJNI {
 
     private static native boolean isLibraryWorking();
 
-    public static native String getSensorModelRaw();
+    public static native int getSensorModelRaw();
 
     // ======================================================== //
 

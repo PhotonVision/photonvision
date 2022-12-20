@@ -21,5 +21,4 @@ public enum FrameThresholdType {
     NONE,
     HSV,
     GREYSCALE,
-    ADAPTIVE_THRESH;
 }

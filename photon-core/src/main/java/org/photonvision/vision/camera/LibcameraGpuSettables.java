@@ -23,7 +23,6 @@ import java.util.HashMap;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
-import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.camera.LibcameraGpuSource.FPSRatedVideoMode;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
@@ -41,9 +40,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         videoModes = new HashMap<>();
 
-        PicamJNI.SensorModel sensorModel = LibCameraJNI.getSensorModel();
+        LibCameraJNI.SensorModel sensorModel = LibCameraJNI.getSensorModel();
 
-        if (sensorModel == PicamJNI.SensorModel.IMX219) {
+        if (sensorModel == LibCameraJNI.SensorModel.IMX219) {
             // Settings for the IMX219 sensor, which is used on the Pi Camera Module v2
             videoModes.put(
                     0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 120, 120, .39));
@@ -60,7 +59,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
                     5, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 3280 / 2, 2464 / 2, 15, 20, 1));
             videoModes.put(
                     6, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 3280 / 4, 2464 / 4, 15, 20, 1));
-        } else if (sensorModel == PicamJNI.SensorModel.OV9281) {
+        } else if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
             videoModes.put(
                     0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 800, 60, 60, 1));
             videoModes.put(
@@ -70,10 +69,10 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             videoModes.put(
                     3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65, 90, .39));
         } else {
-            if (sensorModel == PicamJNI.SensorModel.IMX477) {
+            if (sensorModel == LibCameraJNI.SensorModel.IMX477) {
                 LibcameraGpuSource.logger.warn(
                         "It appears you are using a Pi HQ Camera. This camera is not officially supported. You will have to set your camera FOV differently based on resolution.");
-            } else if (sensorModel == PicamJNI.SensorModel.Unknown) {
+            } else if (sensorModel == LibCameraJNI.SensorModel.Unknown) {
                 LibcameraGpuSource.logger.warn(
                         "You have an unknown sensor connected to your Pi over CSI! This is likely a bug. If it is not, then you will have to set your camera FOV differently based on resolution.");
             }
@@ -195,7 +194,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         setGain(lastGain);
         setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
 
-        LibCameraJNI.setFramesToCopy(true, true);
+        //        LibCameraJNI.setFramesToCopy(true, true);
 
         currentVideoMode = mode;
     }

@@ -256,7 +256,7 @@ public class VisionSourceManager {
             // HACK -- for picams, we want to use the camera model
             String nickname = uniqueName;
             if (isCsiCamera(info)) {
-                nickname = LibCameraJNI.getSensorModelRaw();
+                nickname = LibCameraJNI.getSensorModel().toString();
             }
 
             CameraConfiguration configuration =
