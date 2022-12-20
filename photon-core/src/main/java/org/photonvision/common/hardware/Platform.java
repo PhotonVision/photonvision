@@ -27,7 +27,6 @@ import org.photonvision.common.util.ShellExec;
 
 @SuppressWarnings("unused")
 public enum Platform {
-
     // WPILib Supported (JNI)
     WINDOWS_64("Windows x64", false, OSType.WINDOWS, true),
     LINUX_32("Linux x86", false, OSType.LINUX, true),

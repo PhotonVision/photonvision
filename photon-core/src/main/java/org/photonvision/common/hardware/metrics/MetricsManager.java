@@ -112,7 +112,6 @@ public class MetricsManager {
     }
 
     public void publishMetrics() {
-
         logger.debug("Publishing Metrics...");
         final var metrics = new HashMap<String, String>();
 
