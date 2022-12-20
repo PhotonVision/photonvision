@@ -31,17 +31,16 @@ public class ArucoDetectorParams {
             DetectorParameters curr,
             double decimate,
             int cornerIterations,
-            double minAccuracy,
-            boolean useAruco3) {
+            double minAccuracy) {
         if (curr == null
                 || !(curr.get_aprilTagQuadDecimate() == decimate
                         && curr.get_cornerRefinementMaxIterations() == cornerIterations
-                        && curr.get_useAruco3Detection() == useAruco3
+
                         && minAccuracy == curr.get_cornerRefinementMinAccuracy())) {
             DetectorParameters parameters = DetectorParameters.create();
 
             parameters.set_aprilTagQuadDecimate((float) decimate);
-            parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
+            parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_APRILTAG);
             if (cornerIterations != 0) {
                 parameters.set_cornerRefinementMaxIterations(cornerIterations); // 200
             }
@@ -49,8 +48,6 @@ public class ArucoDetectorParams {
                 parameters.set_cornerRefinementMinAccuracy(
                         minAccuracy / 1000.0); // divides by 1000 because the UI multiplies it by 1000
             }
-
-            parameters.set_useAruco3Detection(useAruco3);
             return parameters;
         }
         return curr;

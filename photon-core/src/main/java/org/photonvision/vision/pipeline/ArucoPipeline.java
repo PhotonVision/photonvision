@@ -91,8 +91,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                         arucoDetectionParams,
                         settings.decimate,
                         settings.numIterations,
-                        settings.cornerAccuracy,
-                        settings.useAruco3);
+                        settings.cornerAccuracy);
 
         arucoDetectionPipe.setParams(
                 new ArucoDetectionPipeParams(

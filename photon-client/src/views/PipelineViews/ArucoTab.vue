@@ -33,14 +33,6 @@
         tooltip="Minimum accuracy for the corners, lower is better but more performance intensive "
         @input="handlePipelineData('cornerAccuracy')"
     />
-    <CVswitch
-        v-model="useAruco3"
-        class="pt-2"
-        slider-cols="8"
-        name="Enable Faster Detection"
-        tooltip="Increases detection speed at the cost of reliability"
-        @input="handlePipelineData('useAruco3')"
-    />
   </div>
 </template>
 
@@ -79,14 +71,6 @@ export default {
             this.$store.commit("mutatePipeline", {"cornerAccuracy": val});
           },
         },
-      useAruco3: {
-        get() {
-          return this.$store.getters.currentPipelineSettings.useAruco3
-        },
-        set(val) {
-          this.$store.commit("mutatePipeline", {"useAruco3": val});
-        }
-      },
     },
     methods: {
     }
