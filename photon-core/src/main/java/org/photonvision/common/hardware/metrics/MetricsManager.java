@@ -45,7 +45,7 @@ public class MetricsManager {
             cmds = new FileCmds();
         } else if (Platform.isRaspberryPi()){
             cmds = new PiCmds(); //Pi's can use a hardcoded command set
-        } else if(Platform.unixSupported()){
+        } else if(Platform.isLinux()){
             cmds = new LinuxCmds(); //Linux/Unix platforms assume a nominal command set
         } else {
             cmds = new CmdBase(); // default - base has no commands

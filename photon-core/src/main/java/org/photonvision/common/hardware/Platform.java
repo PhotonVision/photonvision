@@ -75,8 +75,8 @@ public enum Platform {
     // Public API
 
     // Checks specifically if unix shell and API are supported
-    public static boolean unixSupported() {
-        return currentPlatform.osType == OSType.LINUX || currentPlatform.osType == OSType.MACOS;
+    public static boolean isLinux() {
+        return currentPlatform.osType == OSType.LINUX;
     }
 
     public static boolean isRaspberryPi() {
@@ -106,7 +106,7 @@ public enum Platform {
 
     @SuppressWarnings("StatementWithEmptyBody")
     private static boolean checkForRoot() {
-        if (unixSupported()) {
+        if (isLinux()) {
             try {
                 shell.executeBashCommand("id -u");
             } catch (IOException e) {

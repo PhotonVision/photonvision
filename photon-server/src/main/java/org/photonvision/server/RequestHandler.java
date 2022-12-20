@@ -226,7 +226,7 @@ public class RequestHandler {
      * an equivalent.
      */
     public static void restartProgramInternal() {
-        if (Platform.unixSupported()) {
+        if (Platform.isLinux()) {
             try {
                 new ShellExec().executeBashCommand("systemctl restart photonvision.service");
             } catch (IOException e) {
