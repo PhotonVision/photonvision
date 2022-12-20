@@ -19,6 +19,7 @@ package org.photonvision.common.hardware;
 
 import edu.wpi.first.networktables.IntegerEntry;
 import java.io.IOException;
+
 import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
@@ -27,7 +28,7 @@ import org.photonvision.common.dataflow.networktables.NTDataChangeListener;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.pi.PigpioSocket;
-import org.photonvision.common.hardware.metrics.MetricsBase;
+import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.ShellExec;
@@ -40,6 +41,8 @@ public class HardwareManager {
 
     private final HardwareConfig hardwareConfig;
     private final HardwareSettings hardwareSettings;
+
+    private final MetricsManager metricsManager;
 
     @SuppressWarnings({"FieldCanBeLocal", "unused"})
     private final StatusLED statusLED;
@@ -65,8 +68,12 @@ public class HardwareManager {
     private HardwareManager(HardwareConfig hardwareConfig, HardwareSettings hardwareSettings) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
+
+        this.metricsManager = new MetricsManager();
+        this.metricsManager.setConfig(hardwareConfig);
+
         CustomGPIO.setConfig(hardwareConfig);
-        MetricsBase.setConfig(hardwareConfig);
+       
 
         if (Platform.isRaspberryPi()) {
             pigpioSocket = new PigpioSocket();
@@ -161,5 +168,9 @@ public class HardwareManager {
 
     public HardwareConfig getConfig() {
         return hardwareConfig;
+    }
+
+    public void publishMetrics() {
+        metricsManager.publishMetrics();
     }
 }

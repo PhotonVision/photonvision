@@ -23,32 +23,29 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
+import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.hardware.Platform;
-import org.photonvision.common.hardware.metrics.CPUMetrics;
-import org.photonvision.common.hardware.metrics.GPUMetrics;
-import org.photonvision.common.hardware.metrics.RAMMetrics;
+
 
 public class HardwareTest {
     @Test
     public void testHardware() {
-        CPUMetrics cpuMetrics = new CPUMetrics();
-        RAMMetrics ramMetrics = new RAMMetrics();
-        GPUMetrics gpuMetrics = new GPUMetrics();
+        MetricsManager mm = new MetricsManager();
 
         if (!Platform.isRaspberryPi()) return;
 
         System.out.println("Testing on platform: " + Platform.getPlatformName());
 
         System.out.println("Printing CPU Info:");
-        System.out.println("Memory: " + cpuMetrics.getMemory() + "MB");
-        System.out.println("Temperature: " + cpuMetrics.getTemp() + "C");
-        System.out.println("Utilization: : " + cpuMetrics.getUtilization() + "%");
+        System.out.println("Memory: " + mm.getMemory() + "MB");
+        System.out.println("Temperature: " + mm.getTemp() + "C");
+        System.out.println("Utilization: : " + mm.getUtilization() + "%");
 
         System.out.println("Printing GPU Info:");
-        System.out.println("Memory: " + gpuMetrics.getGPUMemorySplit() + "MB");
+        System.out.println("Memory: " + mm.getGPUMemorySplit() + "MB");
 
         System.out.println("Printing RAM Info: ");
-        System.out.println("Used RAM: : " + ramMetrics.getUsedRam() + "MB");
+        System.out.println("Used RAM: : " + mm.getUsedRam() + "MB");
     }
 
     @Test

@@ -35,7 +35,6 @@ import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
-import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
@@ -268,7 +267,7 @@ public class RequestHandler {
     }
 
     public static void sendMetrics(Context ctx) {
-        MetricsPublisher.getInstance().publish();
+        HardwareManager.getInstance().publishMetrics();
         // TimedTaskManager.getInstance().addOneShotTask(() -> RoborioFinder.getInstance().findRios(),
         // 0);
         ctx.status(200);
