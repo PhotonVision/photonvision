@@ -89,12 +89,11 @@ public class PicamJNI {
     public static boolean isSupported() {
         var piVer = PiVersion.getPiVersion();
 
-        boolean hwSupported = (
-            piVer == PiVersion.PI_3 ||
-            piVer == PiVersion.COMPUTE_MODULE_3 ||
-            piVer == PiVersion.ZERO_2_W
-        );
-        
+        boolean hwSupported =
+                (piVer == PiVersion.PI_3
+                        || piVer == PiVersion.COMPUTE_MODULE_3
+                        || piVer == PiVersion.ZERO_2_W);
+
         return libraryLoaded
                 && enabled
                 && isVCSMSupported()

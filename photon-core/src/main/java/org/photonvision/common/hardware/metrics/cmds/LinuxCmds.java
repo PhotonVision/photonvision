@@ -4,8 +4,5 @@ import org.photonvision.common.configuration.HardwareConfig;
 
 public class LinuxCmds extends CmdBase {
 
-    public void initCmds(HardwareConfig config){
-
-    }
-    
+    public void initCmds(HardwareConfig config) {}
 }

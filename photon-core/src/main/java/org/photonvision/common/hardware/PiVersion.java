@@ -18,7 +18,6 @@
 package org.photonvision.common.hardware;
 
 import java.io.IOException;
-
 import org.photonvision.common.util.ShellExec;
 
 public enum PiVersion {
@@ -39,7 +38,7 @@ public enum PiVersion {
         this.identifier = s.toLowerCase();
     }
 
-    public static PiVersion getPiVersion(){
+    public static PiVersion getPiVersion() {
         return currentPiVersion;
     }
 

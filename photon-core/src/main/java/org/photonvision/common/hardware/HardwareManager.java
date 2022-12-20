@@ -19,7 +19,6 @@ package org.photonvision.common.hardware;
 
 import edu.wpi.first.networktables.IntegerEntry;
 import java.io.IOException;
-
 import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.HardwareConfig;
@@ -73,7 +72,6 @@ public class HardwareManager {
         this.metricsManager.setConfig(hardwareConfig);
 
         CustomGPIO.setConfig(hardwareConfig);
-       
 
         if (Platform.isRaspberryPi()) {
             pigpioSocket = new PigpioSocket();

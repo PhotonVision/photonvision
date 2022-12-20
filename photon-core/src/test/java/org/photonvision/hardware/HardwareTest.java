@@ -23,9 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.pi.PigpioPin;
-import org.photonvision.common.hardware.metrics.MetricsManager;
 import org.photonvision.common.hardware.Platform;
-
+import org.photonvision.common.hardware.metrics.MetricsManager;
 
 public class HardwareTest {
     @Test

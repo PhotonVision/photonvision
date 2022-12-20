@@ -20,7 +20,6 @@ package org.photonvision.common.hardware.metrics;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
-
 import org.photonvision.common.configuration.HardwareConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
@@ -35,33 +34,32 @@ import org.photonvision.common.util.ShellExec;
 
 public class MetricsManager {
     final Logger logger = new Logger(MetricsManager.class, LogGroup.General);
-   
+
     CmdBase cmds;
 
     private ShellExec runCommand = new ShellExec(true, true);
 
     public void setConfig(HardwareConfig config) {
-        if(config.hasCommandsConfigured()){
+        if (config.hasCommandsConfigured()) {
             cmds = new FileCmds();
-        } else if (Platform.isRaspberryPi()){
-            cmds = new PiCmds(); //Pi's can use a hardcoded command set
-        } else if(Platform.isLinux()){
-            cmds = new LinuxCmds(); //Linux/Unix platforms assume a nominal command set
+        } else if (Platform.isRaspberryPi()) {
+            cmds = new PiCmds(); // Pi's can use a hardcoded command set
+        } else if (Platform.isLinux()) {
+            cmds = new LinuxCmds(); // Linux/Unix platforms assume a nominal command set
         } else {
             cmds = new CmdBase(); // default - base has no commands
         }
 
         cmds.initCmds(config);
-
     }
 
-    public String safeExecute(String str){
+    public String safeExecute(String str) {
         if (str.isEmpty()) return "";
         try {
             return execute(str);
         } catch (Exception e) {
             return "****";
-        } 
+        }
     }
 
     private String cpuMemSplit = null;
@@ -94,7 +92,7 @@ public class MetricsManager {
 
     public String getGPUMemorySplit() {
         if (gpuMemSplit == null) {
-            //only needs to run once
+            // only needs to run once
             gpuMemSplit = safeExecute(cmds.gpuMemoryCommand);
         }
         return gpuMemSplit;
@@ -113,8 +111,8 @@ public class MetricsManager {
         return safeExecute(cmds.ramUsageCommand);
     }
 
-    public void publishMetrics(){
-        
+    public void publishMetrics() {
+
         logger.debug("Publishing Metrics...");
         final var metrics = new HashMap<String, String>();
 

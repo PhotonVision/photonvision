@@ -17,6 +17,7 @@
 
 package org.photonvision.common.hardware;
 
+import com.jogamp.common.os.Platform.OSType;
 import edu.wpi.first.util.RuntimeDetector;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -24,17 +25,17 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import org.photonvision.common.util.ShellExec;
 
-import com.jogamp.common.os.Platform.OSType;
-
 @SuppressWarnings("unused")
 public enum Platform {
-    
+
     // WPILib Supported (JNI)
     WINDOWS_64("Windows x64", false, OSType.WINDOWS, true),
     LINUX_32("Linux x86", false, OSType.LINUX, true),
     LINUX_64("Linux x64", false, OSType.LINUX, true),
-    LINUX_RASPBIAN32("Linux Raspbian 32-bit", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 32-bit image
-    LINUX_RASPBIAN64("Linux Raspbian 64-bit", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 64-bit image
+    LINUX_RASPBIAN32(
+            "Linux Raspbian 32-bit", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 32-bit image
+    LINUX_RASPBIAN64(
+            "Linux Raspbian 64-bit", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 64-bit image
     LINUX_AARCH64BIONIC("Linux AARCH64 Bionic", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
@@ -46,8 +47,7 @@ public enum Platform {
     MACOS("Mac OS", false, OSType.MACOS, false),
     UNKNOWN("Unsupported Platform", false, OSType.UNKNOWN, false);
 
-
-    private enum OSType{
+    private enum OSType {
         WINDOWS,
         LINUX,
         MACOS,
@@ -91,12 +91,11 @@ public enum Platform {
         }
     }
 
-    public static boolean isRoot(){
+    public static boolean isRoot() {
         return isRoot;
     }
 
     //////////////////////////////////////////////////////
-
 
     // Debug info related to unknown platforms for debug help
     private static final String OS_NAME = System.getProperty("os.name");
@@ -137,46 +136,45 @@ public enum Platform {
                 // please don't try this
                 return UNKNOWN;
             }
-
         }
 
         if (RuntimeDetector.isMac()) {
-            //TODO - once we have real support, this might have to be more granular
+            // TODO - once we have real support, this might have to be more granular
             return MACOS;
         }
 
         if (RuntimeDetector.isLinux()) {
-            if (isPiSBC()){
-                if(RuntimeDetector.isArm32()){
+            if (isPiSBC()) {
+                if (RuntimeDetector.isArm32()) {
                     return LINUX_RASPBIAN32;
-                } else if(RuntimeDetector.isArm64()){
+                } else if (RuntimeDetector.isArm64()) {
                     return LINUX_RASPBIAN64;
                 } else {
                     // Unknown/exotic installation
                     return UNKNOWN;
                 }
-            } else if (isJetsonSBC()){
-                if(RuntimeDetector.isArm64()){
-                    //TODO - do we need to check OS version?
+            } else if (isJetsonSBC()) {
+                if (RuntimeDetector.isArm64()) {
+                    // TODO - do we need to check OS version?
                     return LINUX_AARCH64BIONIC;
                 } else {
                     // Unknown/exotic installation
                     return UNKNOWN;
                 }
-            } else if(RuntimeDetector.is64BitIntel()){
+            } else if (RuntimeDetector.is64BitIntel()) {
                 return LINUX_64;
-            } else if(RuntimeDetector.is32BitIntel()){
+            } else if (RuntimeDetector.is32BitIntel()) {
                 return LINUX_32;
-            } else if(RuntimeDetector.isArm64()){
+            } else if (RuntimeDetector.isArm64()) {
                 // TODO - os detection needed?
-                return LINUX_AARCH64BIONIC;                
+                return LINUX_AARCH64BIONIC;
             } else {
-                //Unknown or otherwise unsupported platform
+                // Unknown or otherwise unsupported platform
                 return Platform.UNKNOWN;
             }
         }
 
-        // If we fall through all the way to here, 
+        // If we fall through all the way to here,
         return Platform.UNKNOWN;
     }
 
@@ -184,18 +182,20 @@ public enum Platform {
     private static boolean isPiSBC() {
         return fileHasText("/proc/cpuinfo", "Raspberry Pi");
     }
+
     private static boolean isJetsonSBC() {
         // https://forums.developer.nvidia.com/t/how-to-recognize-jetson-nano-device/146624
         return fileHasText("/proc/device-tree/model", "NVIDIA Jetson");
     }
 
-    // Checks for various names of linux OS 
-    private static boolean isStretch(){
-        //TODO - this is a total guess
+    // Checks for various names of linux OS
+    private static boolean isStretch() {
+        // TODO - this is a total guess
         return fileHasText("/etc/os-release", "Stretch");
     }
-    private static boolean isBuster(){
-        //TODO - this is a total guess
+
+    private static boolean isBuster() {
+        // TODO - this is a total guess
         return fileHasText("/etc/os-release", "Buster");
     }
 

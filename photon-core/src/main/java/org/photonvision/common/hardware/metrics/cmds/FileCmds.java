@@ -5,7 +5,7 @@ import org.photonvision.common.configuration.HardwareConfig;
 public class FileCmds extends CmdBase {
 
     @Override
-    public void initCmds(HardwareConfig config){
+    public void initCmds(HardwareConfig config) {
         cpuMemoryCommand = config.cpuMemoryCommand;
         cpuTemperatureCommand = config.cpuTempCommand;
         cpuUtilizationCommand = config.cpuUtilCommand;
@@ -19,5 +19,4 @@ public class FileCmds extends CmdBase {
 
         ramUsageCommand = config.ramUtilCommand;
     }
-    
 }
