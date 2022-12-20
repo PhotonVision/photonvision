@@ -33,7 +33,8 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("cameraIntrinsics")
     public final JsonMat cameraIntrinsics;
 
-    @JsonAlias({"distCoeffs", "cameraExtrinsics"})
+    @JsonProperty("cameraExtrinsics")
+    @JsonAlias({"cameraExtrinsics", "distCoeffs"})
     public final JsonMat distCoeffs;
 
     @JsonProperty("perViewErrors")
@@ -46,7 +47,7 @@ public class CameraCalibrationCoefficients implements Releasable {
     public CameraCalibrationCoefficients(
             @JsonProperty("resolution") Size resolution,
             @JsonProperty("cameraIntrinsics") JsonMat cameraIntrinsics,
-            @JsonProperty("distCoeffs") JsonMat distCoeffs,
+            @JsonProperty("cameraExtrinsics") JsonMat distCoeffs,
             @JsonProperty("perViewErrors") double[] perViewErrors,
             @JsonProperty("standardDeviation") double standardDeviation) {
         this.resolution = resolution;
