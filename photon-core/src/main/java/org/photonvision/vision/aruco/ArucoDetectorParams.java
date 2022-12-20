@@ -40,7 +40,7 @@ public class ArucoDetectorParams {
             DetectorParameters parameters = DetectorParameters.create();
 
             parameters.set_aprilTagQuadDecimate((float) decimate);
-            parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_APRILTAG);
+            parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
             if (cornerIterations != 0) {
                 parameters.set_cornerRefinementMaxIterations(cornerIterations); // 200
             }

@@ -83,7 +83,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
             // TODO: Picam grayscale
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
-            PicamJNI.setShouldCopyColor(true); // need the color image to grayscale
+            PicamJNI.setShouldCopyColor(false); // need the color image to grayscale
         }
 
         arucoDetectionParams =
@@ -125,8 +125,6 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
 
         tagDetectionPipeResult = arucoDetectionPipe.run(rawInputMat);
-        // sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
-
         targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
             // TODO this should be in a pipe, not in the top level here (Matt)
