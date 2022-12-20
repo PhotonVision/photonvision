@@ -19,12 +19,11 @@ package org.photonvision.vision.pipeline;
 
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
-import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.raspi.PicamJNI;
+import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
 import org.photonvision.vision.pipe.impl.Draw2dCrosshairPipe;
 import org.photonvision.vision.pipe.impl.ResizeImagePipe;
@@ -38,8 +37,16 @@ public class DriverModePipeline
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
+    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
+
     public DriverModePipeline() {
+        super(PROCESSING_TYPE);
         settings = new DriverModePipelineSettings();
+    }
+
+    public DriverModePipeline(DriverModePipelineSettings settings) {
+        super(PROCESSING_TYPE);
+        this.settings = settings;
     }
 
     @Override
@@ -56,25 +63,19 @@ public class DriverModePipeline
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
 
-        if (PicamJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-            PicamJNI.setRotation(settings.inputImageRotationMode.value);
-            PicamJNI.setShouldCopyColor(true);
+        if (LibCameraJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
+            LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
+            // LibCameraJNI.setShouldCopyColor(true);
         }
     }
 
     @Override
     public DriverModePipelineResult process(Frame frame, DriverModePipelineSettings settings) {
         long totalNanos = 0;
-        boolean accelerated = PicamJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
+        boolean accelerated = LibCameraJNI.isSupported() && cameraQuirks.hasQuirk(CameraQuirk.PiCam);
 
         // apply pipes
-        var inputMat = frame.image.getMat();
-        if (inputMat.channels() == 1 && accelerated) {
-            long colorMatPtr = PicamJNI.grabFrame(true);
-            if (colorMatPtr == 0) throw new RuntimeException("Got null Mat from GPU Picam driver");
-            frame.image.release();
-            inputMat = new Mat(colorMatPtr);
-        }
+        var inputMat = frame.colorImage.getMat();
 
         totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
 
@@ -91,9 +92,10 @@ public class DriverModePipeline
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
+        // Flip-flop input and output in the Frame
         return new DriverModePipelineResult(
                 MathUtils.nanosToMillis(totalNanos),
                 fps,
-                new Frame(new CVMat(inputMat), frame.frameStaticProperties));
+                new Frame(frame.processedImage, frame.colorImage, frame.type, frame.frameStaticProperties));
     }
 }

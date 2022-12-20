@@ -35,9 +35,10 @@ ext {
         jniPlatforms = ['linuxarm32']
     } else if(project.hasProperty('winonly')) {
         jniPlatforms = ['windowsx86-64']
+    } else if(project.hasProperty('aarch64only')) {
+        jniPlatforms = ['linuxaarch64bionic']
     } else {
         jniPlatforms = ['linuxarm64', 'linuxarm32', 'linuxx86-64', 'osxuniversal', 'windowsx86-64']
-
     }
 
     println("Building for archs " + jniPlatforms)

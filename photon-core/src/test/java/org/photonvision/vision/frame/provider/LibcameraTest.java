@@ -15,21 +15,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.frame;
+package org.photonvision.vision.frame.provider;
 
-import java.util.function.Supplier;
-import org.photonvision.vision.opencv.ImageRotationMode;
-import org.photonvision.vision.pipe.impl.HSVPipe;
+import org.junit.jupiter.api.Test;
+// import org.photonvision.raspi.LibCameraJNI;
 
-public interface FrameProvider extends Supplier<Frame> {
-    String getName();
-
-    /** Ask the camera to produce a certain kind of processed image (eg HSV or greyscale) */
-    public void requestFrameThresholdType(FrameThresholdType type);
-
-    /** Ask the camera to rotate frames it outputs */
-    public void requestFrameRotation(ImageRotationMode rotationMode);
-
-    /** Ask the camera to rotate frames it outputs */
-    public void requestHsvSettings(HSVPipe.HSVParams params);
+public class LibcameraTest {
+    @Test
+    public void testBasic() {
+        // System.load("/home/pi/photon-libcamera-gl-driver/build/libphotonlibcamera.so");
+        // LibCameraJNI.createCamera(1920, 1080, 60);
+        // try {
+        //     Thread.sleep(1000);
+        // } catch (InterruptedException e) {
+        // }
+        // LibCameraJNI.startCamera();
+        // try {
+        //     Thread.sleep(5000);
+        // } catch (InterruptedException e) {
+        // }
+    }
 }

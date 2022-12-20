@@ -111,11 +111,13 @@ public class CirclePNPTest {
                         TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
                         TestUtils.WPI2020Image.FOV,
                         TestUtils.get2020LifeCamCoeffs(true));
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
-        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
+        TestUtils.showImage(
+                pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
     }
 
     private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {

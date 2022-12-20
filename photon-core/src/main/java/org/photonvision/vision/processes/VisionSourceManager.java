@@ -27,14 +27,15 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
-import org.photonvision.raspi.PicamJNI;
+import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.camera.CameraType;
+import org.photonvision.vision.camera.LibcameraGpuSource;
 import org.photonvision.vision.camera.USBCameraSource;
-import org.photonvision.vision.camera.ZeroCopyPicamSource;
 
 public class VisionSourceManager {
     private static final Logger logger = new Logger(VisionSourceManager.class, LogGroup.Camera);
@@ -252,13 +253,24 @@ public class VisionSourceManager {
 
             logger.info("Creating a new camera config for camera " + uniqueName);
 
+            // HACK -- for picams, we want to use the camera model
+            String nickname = uniqueName;
+            if (isCsiCamera(info)) {
+                nickname = LibCameraJNI.getSensorModelRaw();
+            }
+
             CameraConfiguration configuration =
-                    new CameraConfiguration(baseName, uniqueName, uniqueName, info.path);
+                    new CameraConfiguration(baseName, uniqueName, nickname, info.path, info.otherPaths);
             cameraConfigurations.add(configuration);
         }
 
         logger.debug("Matched or created " + cameraConfigurations.size() + " camera configs!");
         return cameraConfigurations;
+    }
+
+    private boolean isCsiCamera(UsbCameraInfo configuration) {
+        return (Arrays.stream(configuration.otherPaths).anyMatch(it -> it.contains("csi-video"))
+                || cameraNameToBaseName(configuration.name).equals("unicam"));
     }
 
     private CameraConfiguration mergeInfoIntoConfig(CameraConfiguration cfg, UsbCameraInfo info) {
@@ -307,20 +319,23 @@ public class VisionSourceManager {
             List<CameraConfiguration> camConfigs) {
         var cameraSources = new ArrayList<VisionSource>();
         for (var configuration : camConfigs) {
-            if (configuration.baseName.startsWith("mmal service") && PicamJNI.isSupported()) {
-                configuration.cameraType = CameraType.ZeroCopyPicam;
-                var piCamSrc = new ZeroCopyPicamSource(configuration);
+            System.out.println("Creating VisionSource for " + configuration);
 
+            // Picams should have csi-video in the path
+            boolean is_picam =
+                    (Arrays.stream(configuration.otherPaths).anyMatch(it -> it.contains("csi-video"))
+                            || configuration.baseName.equals("unicam"));
+            boolean is_pi = Platform.isRaspberryPi();
+            if (is_picam && is_pi) {
                 configuration.cameraType = CameraType.ZeroCopyPicam;
+                var piCamSrc = new LibcameraGpuSource(configuration);
                 cameraSources.add(piCamSrc);
-                continue;
-            }
-
-            var newCam = new USBCameraSource(configuration);
-
-            if (!newCam.cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)
-                    && !newCam.getSettables().videoModes.isEmpty()) {
-                cameraSources.add(newCam);
+            } else {
+                var newCam = new USBCameraSource(configuration);
+                if (!newCam.cameraQuirks.hasQuirk(CameraQuirk.CompletelyBroken)
+                        && !newCam.getSettables().videoModes.isEmpty()) {
+                    cameraSources.add(newCam);
+                }
             }
         }
         return cameraSources;

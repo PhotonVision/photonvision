@@ -19,25 +19,26 @@ package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.apriltag.jni.DetectionResult;
 import java.util.List;
-import org.opencv.core.Mat;
 import org.photonvision.vision.apriltag.AprilTagDetector;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagDetectionPipe
-        extends CVPipe<Mat, List<DetectionResult>, AprilTagDetectionPipeParams> {
+        extends CVPipe<CVMat, List<DetectionResult>, AprilTagDetectionPipeParams> {
     private final AprilTagDetector m_detector = new AprilTagDetector();
 
     boolean useNativePoseEst;
 
     @Override
-    protected List<DetectionResult> process(Mat in) {
-        return List.of(
+    protected List<DetectionResult> process(CVMat in) {
+        var ret =
                 m_detector.detect(
-                        in,
+                        in.getMat(),
                         params.cameraCalibrationCoefficients,
                         useNativePoseEst,
                         params.numIterations,
-                        params.tagWidthMeters));
+                        params.tagWidthMeters);
+        if (ret == null) return List.of();
+        return List.of(ret);
     }
 
     @Override

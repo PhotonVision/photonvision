@@ -34,7 +34,7 @@ public enum PiVersion {
     private static final ShellExec shell = new ShellExec(true, false);
     private static final PiVersion currentPiVersion = calcPiVersion();
 
-    PiVersion(String s) {
+    private PiVersion(String s) {
         this.identifier = s.toLowerCase();
     }
 
@@ -46,7 +46,7 @@ public enum PiVersion {
         if (!Platform.isRaspberryPi()) return PiVersion.UNKNOWN;
         String piString = getPiVersionString();
         for (PiVersion p : PiVersion.values()) {
-            if (piString.toLowerCase().contains(p.identifier)) return p;
+            if (str.toLowerCase().contains(p.identifier)) return p;
         }
         return UNKNOWN;
     }

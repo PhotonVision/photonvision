@@ -29,26 +29,19 @@ public class CVPipelineResult implements Releasable {
     public final double processingNanos;
     public final double fps;
     public final List<TrackedTarget> targets;
-    public final Frame outputFrame;
-    public final Frame inputFrame;
+    public final Frame inputAndOutputFrame;
 
     public CVPipelineResult(
-            double processingNanos,
-            double fps,
-            List<TrackedTarget> targets,
-            Frame outputFrame,
-            Frame inputFrame) {
+            double processingNanos, double fps, List<TrackedTarget> targets, Frame inputFrame) {
         this.processingNanos = processingNanos;
         this.fps = fps;
         this.targets = targets != null ? targets : Collections.emptyList();
 
-        this.outputFrame = outputFrame;
-        this.inputFrame = inputFrame;
+        this.inputAndOutputFrame = inputFrame;
     }
 
-    public CVPipelineResult(
-            double processingNanos, double fps, List<TrackedTarget> targets, Frame outputFrame) {
-        this(processingNanos, fps, targets, outputFrame, null);
+    public CVPipelineResult(double processingNanos, double fps, List<TrackedTarget> targets) {
+        this(processingNanos, fps, targets, null);
     }
 
     public boolean hasTargets() {
@@ -59,8 +52,7 @@ public class CVPipelineResult implements Releasable {
         for (TrackedTarget tt : targets) {
             tt.release();
         }
-        outputFrame.release();
-        if (inputFrame != null) inputFrame.release();
+        if (inputAndOutputFrame != null) inputAndOutputFrame.release();
     }
 
     /**

@@ -34,10 +34,11 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.raspi.PicamJNI;
+import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.CalculateFPSPipe;
@@ -71,11 +72,14 @@ public class Calibrate3dPipeline
     // Path to save images
     private final Path imageDir = ConfigManager.getInstance().getCalibDir();
 
+    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.NONE;
+
     public Calibrate3dPipeline() {
         this(12);
     }
 
     public Calibrate3dPipeline(int minSnapshots) {
+        super(PROCESSING_TYPE);
         this.settings = new Calibration3dPipelineSettings();
         this.foundCornersList = new ArrayList<>();
         this.minSnapshots = minSnapshots;
@@ -93,26 +97,18 @@ public class Calibrate3dPipeline
                         new Size(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight));
         calibrate3dPipe.setParams(calibratePipeParams);
 
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
-            PicamJNI.setRotation(settings.inputImageRotationMode.value);
-            PicamJNI.setShouldCopyColor(true);
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
+            LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
+            // LibCameraJNI.setShouldCopyColor(true);
         }
     }
 
     @Override
     protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
-        Mat inputColorMat = frame.image.getMat();
-        if (inputColorMat.channels() == 1
-                && cameraQuirks.hasQuirk(CameraQuirk.PiCam)
-                && PicamJNI.isSupported()) {
-            long colorMatPtr = PicamJNI.grabFrame(true);
-            if (colorMatPtr == 0) throw new RuntimeException("Got null Mat from GPU Picam driver");
-            inputColorMat = new Mat(colorMatPtr);
-        }
+        Mat inputColorMat = frame.colorImage.getMat();
 
         if (this.calibrating) {
-            return new CVPipelineResult(
-                    0, 0, null, new Frame(new CVMat(inputColorMat), frame.frameStaticProperties));
+            return new CVPipelineResult(0, 0, null, frame);
         }
 
         long sumPipeNanosElapsed = 0L;
@@ -141,14 +137,15 @@ public class Calibrate3dPipeline
             }
         }
 
-        frame.image.release();
+        frame.release();
 
         // Return the drawn chessboard if corners are found, if not, then return the input image.
         return new CVPipelineResult(
                 sumPipeNanosElapsed,
                 fps, // Unused but here in case
                 Collections.emptyList(),
-                new Frame(outputColorCVMat, frame.frameStaticProperties));
+                new Frame(
+                        new CVMat(), outputColorCVMat, FrameThresholdType.NONE, frame.frameStaticProperties));
     }
 
     public void deleteSavedImages() {

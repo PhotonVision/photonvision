@@ -18,12 +18,8 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
-import org.opencv.core.Mat;
-import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.raspi.PicamJNI;
-import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.Contour;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -36,8 +32,6 @@ import org.photonvision.vision.target.TrackedTarget;
 /** Represents a pipeline for tracking retro-reflective targets. */
 @SuppressWarnings({"DuplicatedCode"})
 public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectivePipelineSettings> {
-    private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
-    private final HSVPipe hsvPipe = new HSVPipe();
     private final FindContoursPipe findContoursPipe = new FindContoursPipe();
     private final SpeckleRejectPipe speckleRejectPipe = new SpeckleRejectPipe();
     private final FilterContoursPipe filterContoursPipe = new FilterContoursPipe();
@@ -50,11 +44,15 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
     private final long[] pipeProfileNanos = new long[PipelineProfiler.ReflectivePipeCount];
 
+    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.HSV;
+
     public ReflectivePipeline() {
+        super(PROCESSING_TYPE);
         settings = new ReflectivePipelineSettings();
     }
 
     public ReflectivePipeline(ReflectivePipelineSettings settings) {
+        super(PROCESSING_TYPE);
         this.settings = settings;
     }
 
@@ -67,27 +65,28 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
                         settings.offsetDualPointB,
                         settings.offsetDualPointBArea);
 
-        var rotateImageParams = new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
-        rotateImagePipe.setParams(rotateImageParams);
+        // var rotateImageParams = new
+        // RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
+        // rotateImagePipe.setParams(rotateImageParams);
 
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
-            PicamJNI.setThresholds(
-                    settings.hsvHue.getFirst() / 180d,
-                    settings.hsvSaturation.getFirst() / 255d,
-                    settings.hsvValue.getFirst() / 255d,
-                    settings.hsvHue.getSecond() / 180d,
-                    settings.hsvSaturation.getSecond() / 255d,
-                    settings.hsvValue.getSecond() / 255d);
-            PicamJNI.setInvertHue(settings.hueInverted);
-
-            PicamJNI.setRotation(settings.inputImageRotationMode.value);
-            PicamJNI.setShouldCopyColor(settings.inputShouldShow);
-        } else {
-            var hsvParams =
-                    new HSVPipe.HSVParams(
-                            settings.hsvHue, settings.hsvSaturation, settings.hsvValue, settings.hueInverted);
-            hsvPipe.setParams(hsvParams);
-        }
+        // if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
+        //     LibCameraJNI.setThresholds(
+        //             settings.hsvHue.getFirst() / 180d,
+        //             settings.hsvSaturation.getFirst() / 255d,
+        //             settings.hsvValue.getFirst() / 255d,
+        //             settings.hsvHue.getSecond() / 180d,
+        //             settings.hsvSaturation.getSecond() / 255d,
+        //             settings.hsvValue.getSecond() / 255d);
+        //     //     LibCameraJNI.setInvertHue(settings.hueInverted);
+        //     LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
+        //     //     LibCameraJNI.setShouldCopyColor(settings.inputShouldShow);
+        // } else {
+        //     var hsvParams =
+        //             new HSVPipe.HSVParams(
+        //                     settings.hsvHue, settings.hsvSaturation, settings.hsvValue,
+        // settings.hueInverted);
+        //     hsvPipe.setParams(hsvParams);
+        // }
 
         var findContoursParams = new FindContoursPipe.FindContoursParams();
         findContoursPipe.setParams(findContoursParams);
@@ -148,40 +147,8 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
     public CVPipelineResult process(Frame frame, ReflectivePipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
 
-        CVPipeResult<Mat> hsvPipeResult;
-        Mat rawInputMat;
-        if (frame.image.getMat().channels() != 1) {
-            var rotateImageResult = rotateImagePipe.run(frame.image.getMat());
-            sumPipeNanosElapsed += pipeProfileNanos[0] = rotateImageResult.nanosElapsed;
-
-            rawInputMat = frame.image.getMat();
-
-            hsvPipeResult = hsvPipe.run(rawInputMat);
-            sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
-            pipeProfileNanos[1] = pipeProfileNanos[1] = hsvPipeResult.nanosElapsed;
-        } else {
-            // Try to copy the color frame.
-            long inputMatPtr = PicamJNI.grabFrame(true);
-            if (inputMatPtr != 0) {
-                // If we grabbed it (in color copy mode), make a new Mat of it
-                rawInputMat = new Mat(inputMatPtr);
-            } else {
-                // Otherwise, the input mat is frame we got from the camera
-                rawInputMat = frame.image.getMat();
-                //                // Otherwise, use a blank/empty mat as placeholder
-                //                rawInputMat = new Mat();
-            }
-
-            // We can skip a few steps if the image is single channel because we've already done them on
-            // the GPU
-            hsvPipeResult = new CVPipeResult<>();
-            hsvPipeResult.output = frame.image.getMat();
-            hsvPipeResult.nanosElapsed = MathUtils.wpiNanoTime() - frame.timestampNanos;
-
-            sumPipeNanosElapsed = pipeProfileNanos[1] = hsvPipeResult.nanosElapsed;
-        }
-
-        CVPipeResult<List<Contour>> findContoursResult = findContoursPipe.run(hsvPipeResult.output);
+        CVPipeResult<List<Contour>> findContoursResult =
+                findContoursPipe.run(frame.processedImage.getMat());
         sumPipeNanosElapsed += pipeProfileNanos[2] = findContoursResult.nanosElapsed;
 
         CVPipeResult<List<Contour>> speckleRejectResult =
@@ -226,11 +193,6 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
         PipelineProfiler.printReflectiveProfile(pipeProfileNanos);
 
-        return new CVPipelineResult(
-                sumPipeNanosElapsed,
-                fps,
-                targetList,
-                new Frame(new CVMat(hsvPipeResult.output), frame.frameStaticProperties),
-                new Frame(new CVMat(rawInputMat), frame.frameStaticProperties));
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
     }
 }

@@ -15,21 +15,23 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.frame;
+package org.photonvision.vision.pipe.impl;
 
-import java.util.function.Supplier;
-import org.photonvision.vision.opencv.ImageRotationMode;
-import org.photonvision.vision.pipe.impl.HSVPipe;
+import org.opencv.core.Mat;
+import org.photonvision.vision.apriltag.AprilTagJNI;
+import org.photonvision.vision.pipe.CVPipe;
 
-public interface FrameProvider extends Supplier<Frame> {
-    String getName();
+public class AdaptiveThresholdPipe
+        extends CVPipe<Mat, Mat, AdaptiveThresholdPipe.AdaptiveThreshParams> {
+    @Override
+    protected Mat process(Mat in) {
+        // Assume stride = 1
+        long pThresholded =
+                AprilTagJNI.AprilTag_AdaptiveThresh(in.dataAddr(), in.width(), in.height(), 1);
+        return new Mat(pThresholded);
+    }
 
-    /** Ask the camera to produce a certain kind of processed image (eg HSV or greyscale) */
-    public void requestFrameThresholdType(FrameThresholdType type);
-
-    /** Ask the camera to rotate frames it outputs */
-    public void requestFrameRotation(ImageRotationMode rotationMode);
-
-    /** Ask the camera to rotate frames it outputs */
-    public void requestHsvSettings(HSVPipe.HSVParams params);
+    public static class AdaptiveThreshParams {
+        public AdaptiveThreshParams() {}
+    }
 }

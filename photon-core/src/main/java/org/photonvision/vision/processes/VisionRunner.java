@@ -22,8 +22,9 @@ import java.util.function.Supplier;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.camera.QuirkyCamera;
-import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.vision.pipe.impl.HSVPipe;
+import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.CVPipeline;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 
@@ -32,7 +33,7 @@ import org.photonvision.vision.pipeline.result.CVPipelineResult;
 public class VisionRunner {
     private final Logger logger;
     private final Thread visionProcessThread;
-    private final Supplier<Frame> frameSupplier;
+    private final FrameProvider frameSupplier;
     private final Supplier<CVPipeline> pipelineSupplier;
     private final Consumer<CVPipelineResult> pipelineResultConsumer;
     private final QuirkyCamera cameraQuirks;
@@ -69,8 +70,30 @@ public class VisionRunner {
     private void update() {
         while (!Thread.interrupted()) {
             var pipeline = pipelineSupplier.get();
+
+            // Tell our camera implementation here what kind of pre-processing we need it to be doing
+            // (pipeline-dependent). I kinda hate how much leak this has...
+            // TODO would a callback object be a better fit?
+            var wantedProcessType = pipeline.getThresholdType();
+            frameSupplier.requestFrameThresholdType(wantedProcessType);
+            var settings = pipeline.getSettings();
+            if (settings instanceof AdvancedPipelineSettings) {
+                var advanced = (AdvancedPipelineSettings) settings;
+                var hsvParams =
+                        new HSVPipe.HSVParams(
+                                advanced.hsvHue, advanced.hsvSaturation, advanced.hsvValue, advanced.hueInverted);
+                // TODO who should deal with preventing this from happening _every single loop_?
+                frameSupplier.requestHsvSettings(hsvParams);
+            }
+            frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
+            //            LibCameraJNI.setFramesToCopy(settings.inputShouldShow,
+            // settings.outputShouldShow);
+
+            // Grab the new camera frame
             var frame = frameSupplier.get();
 
+            // There's no guarantee the processing type change will occur this tick, so pipelines should
+            // check themselves
             try {
                 var pipelineResult = pipeline.run(frame, cameraQuirks);
                 pipelineResultConsumer.accept(pipelineResult);
@@ -78,6 +101,7 @@ public class VisionRunner {
                 logger.error("Exception on loop " + loopCount);
                 ex.printStackTrace();
             }
+
             loopCount++;
         }
     }

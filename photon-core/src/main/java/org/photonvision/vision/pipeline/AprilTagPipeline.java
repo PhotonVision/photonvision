@@ -22,13 +22,12 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
-import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.raspi.PicamJNI;
+import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -37,16 +36,18 @@ import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 
 @SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
-    private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
-    private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
+    private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
+
     public AprilTagPipeline() {
+        super(PROCESSING_TYPE);
         settings = new AprilTagPipelineSettings();
     }
 
     public AprilTagPipeline(AprilTagPipelineSettings settings) {
+        super(PROCESSING_TYPE);
         this.settings = settings;
     }
 
@@ -55,14 +56,10 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         // Sanitize thread count - not supported to have fewer than 1 threads
         settings.threads = Math.max(1, settings.threads);
 
-        RotateImagePipe.RotateImageParams rotateImageParams =
-                new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
-        rotateImagePipe.setParams(rotateImageParams);
-
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
+        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
             // TODO: Picam grayscale
-            PicamJNI.setRotation(settings.inputImageRotationMode.value);
-            PicamJNI.setShouldCopyColor(true); // need the color image to grayscale
+            LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
+            // LibCameraJNI.setShouldCopyColor(true); // need the color image to grayscale
         }
 
         AprilTagDetectorParams aprilTagDetectionParams =
@@ -114,33 +111,18 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     protected CVPipelineResult process(Frame frame, AprilTagPipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
 
-        CVPipeResult<Mat> grayscalePipeResult;
-        Mat rawInputMat;
-        boolean inputSingleChannel = frame.image.getMat().channels() == 1;
-
-        if (inputSingleChannel) {
-            rawInputMat = new Mat(PicamJNI.grabFrame(true));
-            frame.image.getMat().release(); // release the 8bit frame ASAP.
-        } else {
-            rawInputMat = frame.image.getMat();
-            var rotateImageResult = rotateImagePipe.run(rawInputMat);
-            sumPipeNanosElapsed += rotateImageResult.nanosElapsed;
-        }
-
-        var inputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
-
-        grayscalePipeResult = grayscalePipe.run(rawInputMat);
-        sumPipeNanosElapsed += grayscalePipeResult.nanosElapsed;
-
-        var outputFrame = new Frame(new CVMat(grayscalePipeResult.output), frameStaticProperties);
-
         List<TrackedTarget> targetList;
-        CVPipeResult<List<DetectionResult>> tagDetectionPipeResult;
 
         // Use the solvePNP Enabled flag to enable native pose estimation
         aprilTagDetectionPipe.setNativePoseEstimationEnabled(settings.solvePNPEnabled);
 
-        tagDetectionPipeResult = aprilTagDetectionPipe.run(grayscalePipeResult.output);
+        if (frame.type != FrameThresholdType.GREYSCALE) {
+            // TODO so all cameras should give us ADAPTIVE_THRESH -- how should we handle if not?
+            return new CVPipelineResult(0, 0, List.of());
+        }
+
+        CVPipeResult<List<DetectionResult>> tagDetectionPipeResult;
+        tagDetectionPipeResult = aprilTagDetectionPipe.run(frame.processedImage);
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         targetList = new ArrayList<>();
@@ -171,6 +153,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, outputFrame, inputFrame);
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
     }
 }
