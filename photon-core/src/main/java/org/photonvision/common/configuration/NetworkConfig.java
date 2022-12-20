@@ -81,11 +81,11 @@ public class NetworkConfig {
 
     @JsonGetter("shouldManage")
     public boolean shouldManage() {
-        return this.shouldManage || Platform.isRaspberryPi();
+        return this.shouldManage || Platform.isLinux();
     }
 
     @JsonSetter("shouldManage")
     public void setShouldManage(boolean shouldManage) {
-        this.shouldManage = shouldManage || Platform.isRaspberryPi();
+        this.shouldManage = shouldManage || Platform.isLinux();
     }
 }
