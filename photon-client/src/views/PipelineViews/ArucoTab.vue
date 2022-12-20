@@ -38,13 +38,11 @@
 
 <script>
 import CVslider from '../../components/common/cv-slider'
-import CVswitch from '../../components/common/cv-switch'
 
 export default {
   name: "Aruco",
   components: {
-    CVslider,
-    CVswitch
+    CVslider
   },
   computed: {
     decimate: {
