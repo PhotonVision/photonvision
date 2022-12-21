@@ -186,11 +186,21 @@ public final class PhotonUtils {
      *
      * @param robotPose Current pose of the robot
      * @param targetPose Pose of the target on the field
-     * @return Transform3d Robot position relative to the field
+     * @return double Yaw to the target
      */
     public static double getYawToPose(Pose2d robotPose, Pose2d targetPose) {
         Translation2d relativeTrl = targetPose.relativeTo(robotPose).getTranslation();
         return new Rotation2d(relativeTrl.getX(), relativeTrl.getY()).getDegrees();
+    }
+
+    /**
+     * Returns the distance between two poses
+     * @param robotPose Pose of the robot
+     * @param targetPose Pose of the target
+     * @return
+     */
+    public static double getDistanceToPose(Pose2d robotPose, Pose2d targetPose) {
+        return new Translation2d(robotPose.getX(), robotPose.getY()).getDistance(new Translation2d(targetPose.getX(), targetPose.getY()));
     }
 
 }
