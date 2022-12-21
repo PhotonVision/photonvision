@@ -169,15 +169,18 @@ public final class PhotonUtils {
     }
 
     /**
-     * Estimates the pose of the robot in the field coordinate system, given the pose of the fiducial tag, the robot relative to the
-     * camera, and the target relative to the camera.
+     * Estimates the pose of the robot in the field coordinate system, given the pose of the fiducial
+     * tag, the robot relative to the camera, and the target relative to the camera.
      *
      * @param fieldRelativeTagPose Pose3D the field relative pose of the target
-     * @param cameraToRobot Transform3D of the robot relative to the camera. Origin of the robot is defined as the center.
-     * @param cameraToTarget Transform3D of the target relative to the camera, returned by PhotonVision
+     * @param cameraToRobot Transform3D of the robot relative to the camera. Origin of the robot is
+     *     defined as the center.
+     * @param cameraToTarget Transform3D of the target relative to the camera, returned by
+     *     PhotonVision
      * @return Transform3d Robot position relative to the field
      */
-    public static  Pose3d estimateFieldToRobotAprilTag(Transform3d cameraToTarget, Pose3d fieldRelativeTagPose, Transform3d cameraToRobot) {
+    public static Pose3d estimateFieldToRobotAprilTag(
+            Transform3d cameraToTarget, Pose3d fieldRelativeTagPose, Transform3d cameraToRobot) {
         return fieldRelativeTagPose.plus(cameraToTarget.inverse()).plus(cameraToRobot.inverse());
     }
 
@@ -195,12 +198,13 @@ public final class PhotonUtils {
 
     /**
      * Returns the distance between two poses
+     *
      * @param robotPose Pose of the robot
      * @param targetPose Pose of the target
      * @return
      */
     public static double getDistanceToPose(Pose2d robotPose, Pose2d targetPose) {
-        return new Translation2d(robotPose.getX(), robotPose.getY()).getDistance(new Translation2d(targetPose.getX(), targetPose.getY()));
+        return new Translation2d(robotPose.getX(), robotPose.getY())
+                .getDistance(new Translation2d(targetPose.getX(), targetPose.getY()));
     }
-
 }

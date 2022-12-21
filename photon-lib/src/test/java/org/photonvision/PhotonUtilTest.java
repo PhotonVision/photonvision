@@ -79,19 +79,24 @@ class PhotonUtilTest {
         Assertions.assertEquals(0, fieldToRobot.getY(), 0.1);
         Assertions.assertEquals(0, fieldToRobot.getRotation().getDegrees(), 0.1);
     }
+
     @Test
     public void testAprilTagUtils() {
-        var cameraToTarget = new Transform3d(new Translation3d(1,0,0),new Rotation3d());
-        var tagPose = new Pose3d(5,0,0, new Rotation3d());
+        var cameraToTarget = new Transform3d(new Translation3d(1, 0, 0), new Rotation3d());
+        var tagPose = new Pose3d(5, 0, 0, new Rotation3d());
         var cameraToRobot = new Transform3d();
 
         var fieldToRobot =
                 PhotonUtils.estimateFieldToRobotAprilTag(cameraToTarget, tagPose, cameraToRobot);
 
-        var targetPose = new Pose2d(new Translation2d(Units.inchesToMeters(324), Units.inchesToMeters(162)), new Rotation2d());
-        var currentPose = new Pose2d(0,0, Rotation2d.fromDegrees(0));
+        var targetPose =
+                new Pose2d(
+                        new Translation2d(Units.inchesToMeters(324), Units.inchesToMeters(162)),
+                        new Rotation2d());
+        var currentPose = new Pose2d(0, 0, Rotation2d.fromDegrees(0));
         Assertions.assertEquals(4.0, fieldToRobot.getX());
-        Assertions.assertEquals(Math.toDegrees(Math.atan2((Units.inchesToMeters(162)),(Units.inchesToMeters(324)))), PhotonUtils.getYawToPose(currentPose, targetPose));
-
+        Assertions.assertEquals(
+                Math.toDegrees(Math.atan2((Units.inchesToMeters(162)), (Units.inchesToMeters(324)))),
+                PhotonUtils.getYawToPose(currentPose, targetPose));
     }
 }
