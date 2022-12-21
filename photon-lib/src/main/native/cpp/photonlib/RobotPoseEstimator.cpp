@@ -30,13 +30,13 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <span>
 
 #include <frc/Errors.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
 #include <units/time.h>
-#include <wpi/span.h>
 
 #include "photonlib/PhotonCamera.h"
 #include "photonlib/PhotonPipelineResult.h"
@@ -94,7 +94,7 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
   double lowestAmbiguityScore = std::numeric_limits<double>::infinity();
   for (std::string::size_type i = 0; i < cameras.size(); ++i) {
     std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
-    wpi::span<const PhotonTrackedTarget> targets =
+    std::span<const PhotonTrackedTarget> targets =
         p.first.GetLatestResult().GetTargets();
     for (std::string::size_type j = 0; j < targets.size(); ++j) {
       if (targets[j].GetPoseAmbiguity() < lowestAmbiguityScore) {
@@ -134,7 +134,7 @@ RobotPoseEstimator::ClosestToCameraHeightStrategy() {
 
   for (std::string::size_type i = 0; i < cameras.size(); ++i) {
     std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
-    wpi::span<const PhotonTrackedTarget> targets =
+    std::span<const PhotonTrackedTarget> targets =
         p.first.GetLatestResult().GetTargets();
     for (std::string::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
@@ -176,7 +176,7 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
 
   for (std::string::size_type i = 0; i < cameras.size(); ++i) {
     std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
-    wpi::span<const PhotonTrackedTarget> targets =
+    std::span<const PhotonTrackedTarget> targets =
         p.first.GetLatestResult().GetTargets();
     for (std::string::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
@@ -221,7 +221,7 @@ RobotPoseEstimator::AverageBestTargetsStrategy() {
 
   for (std::string::size_type i = 0; i < cameras.size(); ++i) {
     std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
-    wpi::span<const PhotonTrackedTarget> targets =
+    std::span<const PhotonTrackedTarget> targets =
         p.first.GetLatestResult().GetTargets();
     for (std::string::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];

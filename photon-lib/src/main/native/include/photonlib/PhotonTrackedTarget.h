@@ -89,7 +89,7 @@ class PhotonTrackedTarget {
    * Get the Fiducial ID of the target currently being tracked,
    * or -1 if not set.
    */
-  double GetFiducialId() const { return fiducialId; }
+  int GetFiducialId() const { return fiducialId; }
 
   /**
    * Returns the corners of the minimum area rectangle bounding this target.
@@ -121,11 +121,6 @@ class PhotonTrackedTarget {
   frc::Transform3d GetAlternateCameraToTarget() const {
     return altCameraToTarget;
   }
-
-  /**
-   * @return The detected fiducial ID
-   */
-  int GetFiducialId() const { return fiducialId; }
 
   bool operator==(const PhotonTrackedTarget& other) const;
   bool operator!=(const PhotonTrackedTarget& other) const;
