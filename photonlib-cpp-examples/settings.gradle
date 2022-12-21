@@ -1,1 +1,1 @@
-rootproject.name = 'photonlib-cpp-examples'
+new File('examples.txt').eachLine { line -> include line }

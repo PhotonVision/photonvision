@@ -51,7 +51,7 @@ public class CameraSocketHandler {
 
     private CameraSocketHandler() {
         cameraBroadcastThread = new Thread(this::broadcastFramesTask);
-        cameraBroadcastThread.setPriority(2); // fairly low priority
+        cameraBroadcastThread.setPriority(Thread.MAX_PRIORITY - 3); // fairly high priority
         cameraBroadcastThread.start();
     }
 

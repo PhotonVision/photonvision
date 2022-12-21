@@ -27,9 +27,13 @@
 #include <memory>
 #include <string>
 
+#include <networktables/BooleanTopic.h>
+#include <networktables/DoubleTopic.h>
+#include <networktables/IntegerTopic.h>
 #include <networktables/NetworkTable.h>
-#include <networktables/NetworkTableEntry.h>
 #include <networktables/NetworkTableInstance.h>
+#include <networktables/RawTopic.h>
+#include <networktables/StringTopic.h>
 #include <units/time.h>
 #include <wpi/deprecated.h>
 
@@ -150,13 +154,17 @@ class PhotonCamera {
  protected:
   std::shared_ptr<nt::NetworkTable> mainTable;
   std::shared_ptr<nt::NetworkTable> rootTable;
-  nt::NetworkTableEntry rawBytesEntry;
-  nt::NetworkTableEntry driverModeEntry;
-  nt::NetworkTableEntry inputSaveImgEntry;
-  nt::NetworkTableEntry outputSaveImgEntry;
-  nt::NetworkTableEntry pipelineIndexEntry;
-  nt::NetworkTableEntry ledModeEntry;
-  nt::NetworkTableEntry versionEntry;
+  nt::RawSubscriber rawBytesEntry;
+  nt::BooleanPublisher driverModeEntry;
+  nt::BooleanPublisher inputSaveImgEntry;
+  nt::BooleanPublisher outputSaveImgEntry;
+  nt::IntegerPublisher pipelineIndexEntry;
+  nt::IntegerPublisher ledModeEntry;
+  nt::StringSubscriber versionEntry;
+
+  nt::BooleanSubscriber driverModeSubscriber;
+  nt::IntegerSubscriber pipelineIndexSubscriber;
+  nt::IntegerSubscriber ledModeSubscriber;
 
   std::string path;
 
