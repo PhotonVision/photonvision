@@ -77,7 +77,7 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
                     processedMat,
                     type,
                     MathUtils.wpiNanoTime()
-                            - (LibCameraJNI.getLibcameraTimestamp() - LibCameraJNI.getFrameCaptureTime()),
+                            - 1000 * (LibCameraJNI.getLibcameraTimestamp() - LibCameraJNI.getFrameCaptureTime()),
                     settables.getFrameStaticProperties());
         }
     }

@@ -60,6 +60,7 @@ public class CVPipelineResult implements Releasable {
      * the latency is relative to the time at which this method is called. Waiting to call this method
      * will change the latency this method returns.
      */
+    @Deprecated
     public double getLatencyMillis() {
         var now = MathUtils.wpiNanoTime();
         return MathUtils.nanosToMillis(now - imageCaptureTimestampNanos);
