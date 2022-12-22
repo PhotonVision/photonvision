@@ -97,6 +97,6 @@ class PhotonUtilTest {
         Assertions.assertEquals(4.0, fieldToRobot.getX());
         Assertions.assertEquals(
                 Math.toDegrees(Math.atan2((Units.inchesToMeters(162)), (Units.inchesToMeters(324)))),
-                PhotonUtils.getYawToPose(currentPose, targetPose));
+                PhotonUtils.getYawToPose(currentPose, targetPose).getDegrees());
     }
 }

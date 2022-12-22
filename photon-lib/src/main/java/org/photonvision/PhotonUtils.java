@@ -181,7 +181,7 @@ public final class PhotonUtils {
      */
     public static Pose3d estimateFieldToRobotAprilTag(
             Transform3d cameraToTarget, Pose3d fieldRelativeTagPose, Transform3d cameraToRobot) {
-        return fieldRelativeTagPose.plus(cameraToTarget.inverse()).plus(cameraToRobot.inverse());
+        return fieldRelativeTagPose.plus(cameraToTarget.inverse()).plus(cameraToRobot);
     }
 
     /**
@@ -191,9 +191,9 @@ public final class PhotonUtils {
      * @param targetPose Pose of the target on the field
      * @return double Yaw to the target
      */
-    public static double getYawToPose(Pose2d robotPose, Pose2d targetPose) {
+    public static Rotation2d getYawToPose(Pose2d robotPose, Pose2d targetPose) {
         Translation2d relativeTrl = targetPose.relativeTo(robotPose).getTranslation();
-        return new Rotation2d(relativeTrl.getX(), relativeTrl.getY()).getDegrees();
+        return new Rotation2d(relativeTrl.getX(), relativeTrl.getY());
     }
 
     /**
@@ -204,7 +204,6 @@ public final class PhotonUtils {
      * @return
      */
     public static double getDistanceToPose(Pose2d robotPose, Pose2d targetPose) {
-        return new Translation2d(robotPose.getX(), robotPose.getY())
-                .getDistance(new Translation2d(targetPose.getX(), targetPose.getY()));
+        return robotPose.getTranslation().getDistance(targetPose.getTranslation());
     }
 }
