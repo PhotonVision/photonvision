@@ -72,12 +72,15 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
                 type = FrameThresholdType.values()[itype];
             }
 
+            var now = LibCameraJNI.getLibcameraTimestamp();
+            var capture = LibCameraJNI.getFrameCaptureTime();
+            var latency = (now - capture);
+
             return new Frame(
                     colorMat,
                     processedMat,
                     type,
-                    MathUtils.wpiNanoTime()
-                            - 1000 * (LibCameraJNI.getLibcameraTimestamp() - LibCameraJNI.getFrameCaptureTime()),
+                    MathUtils.wpiNanoTime() - latency,
                     settables.getFrameStaticProperties());
         }
     }

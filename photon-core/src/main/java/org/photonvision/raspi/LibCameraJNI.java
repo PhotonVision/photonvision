@@ -150,12 +150,12 @@ public class LibCameraJNI {
     public static native boolean setRotation(int rotation);
 
     /**
-     * Get the time when the first pixel exposure was started, in the same timebase as libcamera gives the frame capture time. Units are microseconds.
+     * Get the time when the first pixel exposure was started, in the same timebase as libcamera gives the frame capture time. Units are nanoseconds.
      */
     public static native long getFrameCaptureTime();
 
     /**
-     * Get the current time, in the same timebase as libcamera gives the frame capture time. Units are microseconds.
+     * Get the current time, in the same timebase as libcamera gives the frame capture time. Units are nanoseconds.
      */
     public static native long getLibcameraTimestamp();
 
