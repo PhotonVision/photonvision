@@ -32,7 +32,6 @@ public class SocketVideoStream implements Consumer<Frame> {
     int portID = 0; // Align with cscore's port for unique identification of stream
     MatOfByte jpegBytes = null;
 
-
     // Gets set to true when another class reads out valid jpeg bytes at least once
     // Set back to false when another frame is freshly converted
     // Should eliminate synchronization issues of differeing rates of putting frames in
@@ -43,10 +42,10 @@ public class SocketVideoStream implements Consumer<Frame> {
     Lock jpegBytesLock = new ReentrantLock();
     private int userCount = 0;
 
-    //FPS-limited MJPEG sender
+    // FPS-limited MJPEG sender
     private final double FPS_MAX = 30.0;
-    private final long minFramePeriodNanos =  Math.round(1000000000.0/FPS_MAX);
-    private long nextFrameSendTime =  MathUtils.wpiNanoTime() + minFramePeriodNanos;
+    private final long minFramePeriodNanos = Math.round(1000000000.0 / FPS_MAX);
+    private long nextFrameSendTime = MathUtils.wpiNanoTime() + minFramePeriodNanos;
     MJPGFrameConsumer oldSchoolServer;
 
     public SocketVideoStream(int portID) {
@@ -81,11 +80,10 @@ public class SocketVideoStream implements Consumer<Frame> {
 
         // Send the frame in an FPS-limited fashion
         var now = MathUtils.wpiNanoTime();
-        if(now > nextFrameSendTime){
+        if (now > nextFrameSendTime) {
             oldSchoolServer.accept(frame);
             nextFrameSendTime = now + minFramePeriodNanos;
         }
-
     }
 
     public ByteBuffer getJPEGByteBuffer() {
