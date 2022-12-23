@@ -5,8 +5,9 @@
     :style="styleObject"
     :src="src"
     alt=""
-    @click="e => $emit('click', e)"
-  >
+    @click="clickHandler"
+    @error="loadErrHandler"
+  />
 </template>
 
 <script>
@@ -26,6 +27,7 @@
                       "border-radius": "3px",
                       "display": "block",
                       "object-fit": "contain",
+                      "background-size:": "contain",
                       "object-position": "50% 50%",
                       "max-width": "100%",
                       "margin-left": "auto",
@@ -65,6 +67,7 @@
                     return require("../../assets/loading.gif");
                   } else {
                     //Valid port, connect
+                    
                     return "http://" + location.hostname + ":" + port + "/stream.mjpg" + "?" + this.seed;
                   }
                 }
@@ -75,6 +78,13 @@
             this.reload(); // Force reload image on creation
         },
         methods: {
+            loadErrHandler() {
+                console.log("Error loading image, attempting to do it again...");
+                this.reload();
+            },
+            clickHandler() {
+                console.log("TODO: open new tab with image contents");
+            },
             reload() {
                 this.seed = new Date().getTime();
             }
