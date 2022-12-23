@@ -17,7 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.apriltag.jni.DetectionResult;
+import edu.wpi.first.apriltag.AprilTagDetection;
+import edu.wpi.first.apriltag.AprilTagPoseEstimate;
+import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
@@ -40,6 +42,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
+    private final AprilTagPoseEstimatorPipe poseEstimatorPipe = new AprilTagPoseEstimatorPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     public AprilTagPipeline() {
@@ -104,10 +107,22 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
         aprilTagDetectionPipe.setParams(
                 new AprilTagDetectionPipeParams(
-                        aprilTagDetectionParams,
+                        // aprilTagDetectionParams,
                         frameStaticProperties.cameraCalibration,
                         settings.numIterations,
                         tagWidth));
+
+        // TODO actually give camera calibration coeffs
+
+        var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
+        if (cameraMatrix != null) {
+            var cx = cameraMatrix.get(0, 2)[0];
+            var cy = cameraMatrix.get(1, 2)[0];
+            var fx = cameraMatrix.get(0, 0)[0];
+            var fy = cameraMatrix.get(1, 1)[0];
+
+            poseEstimatorPipe.setParams(new Config(tagWidth, fx, fy, cx, cy));
+        }
     }
 
     @Override
@@ -135,7 +150,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var outputFrame = new Frame(new CVMat(grayscalePipeResult.output), frameStaticProperties);
 
         List<TrackedTarget> targetList;
-        CVPipeResult<List<DetectionResult>> tagDetectionPipeResult;
+        CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
 
         // Use the solvePNP Enabled flag to enable native pose estimation
         aprilTagDetectionPipe.setNativePoseEstimationEnabled(settings.solvePNPEnabled);
@@ -144,16 +159,22 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         targetList = new ArrayList<>();
-        for (DetectionResult detection : tagDetectionPipeResult.output) {
+        for (AprilTagDetection detection : tagDetectionPipeResult.output) {
             // TODO this should be in a pipe, not in the top level here (Matt)
             if (detection.getDecisionMargin() < settings.decisionMargin) continue;
             if (detection.getHamming() > settings.hammingDist) continue;
+
+            // Do pose estimation for all the tags that make it thru
+            // TODO
+            var poseResult = poseEstimatorPipe.run(detection);
+            sumPipeNanosElapsed += poseResult.nanosElapsed;
 
             // populate the target list
             // Challenge here is that TrackedTarget functions with OpenCV Contour
             TrackedTarget target =
                     new TrackedTarget(
                             detection,
+                            poseResult.output,
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
 

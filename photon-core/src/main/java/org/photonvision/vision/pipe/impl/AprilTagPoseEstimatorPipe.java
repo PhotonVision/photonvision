@@ -17,21 +17,25 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.opencv.core.Mat;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
+import edu.wpi.first.apriltag.AprilTagPoseEstimate;
+import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 
-public class AprilTagDetectionPipe
-        extends CVPipe<Mat, List<AprilTagDetection>, AprilTagDetectionPipeParams> {
+public class AprilTagPoseEstimatorPipe
+        extends CVPipe<AprilTagDetection, AprilTagPoseEstimate, AprilTagPoseEstimator.Config> {
     private final AprilTagDetector m_detector = new AprilTagDetector();
 
     boolean useNativePoseEst;
 
-    public AprilTagDetectionPipe() {
+    public AprilTagPoseEstimatorPipe() {
         super();
 
         m_detector.addFamily("tag16h5");
@@ -39,25 +43,22 @@ public class AprilTagDetectionPipe
     }
 
     @Override
-    protected List<AprilTagDetection> process(Mat in) {
-        var ret =
-                m_detector.detect(
-                        in);
-                        // params.cameraCalibrationCoefficients,
-                        // useNativePoseEst,
-                        // params.numIterations,
-                        // params.tagWidthMeters);
-        if (ret == null) return List.of();
-        return List.of(ret);
+    protected AprilTagPoseEstimate process(AprilTagDetection in) {
+            // TODO don't hardcode # iters
+            return AprilTagPoseEstimator.estimateOrthogonalIteration(in, this.params, 50);
     }
 
     @Override
-    public void setParams(AprilTagDetectionPipeParams params) {
+    public void setParams(AprilTagPoseEstimator.Config params) {
         super.setParams(params);
         // m_detector.updateParams(params.detectorParams);
     }
 
     public void setNativePoseEstimationEnabled(boolean enabled) {
         this.useNativePoseEst = enabled;
+    }
+
+    public static class AprilTagPoseEstimatorPipeParams {
+
     }
 }
