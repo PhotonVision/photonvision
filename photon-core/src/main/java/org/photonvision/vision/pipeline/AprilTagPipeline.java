@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
-import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
@@ -108,9 +107,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         aprilTagDetectionPipe.setParams(
                 new AprilTagDetectionPipeParams(
                         // aprilTagDetectionParams,
-                        frameStaticProperties.cameraCalibration,
-                        settings.numIterations,
-                        tagWidth));
+                        frameStaticProperties.cameraCalibration, settings.numIterations, tagWidth));
 
         // TODO actually give camera calibration coeffs
 

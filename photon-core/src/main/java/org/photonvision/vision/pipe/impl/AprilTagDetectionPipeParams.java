@@ -21,9 +21,6 @@ import java.util.Objects;
 import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
-import edu.wpi.first.apriltag.AprilTagDetector;
-import edu.wpi.first.apriltag.AprilTagPoseEstimator;
-
 public class AprilTagDetectionPipeParams {
     // public final AprilTagDetector.Config detectorParams;
     public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
@@ -41,7 +38,7 @@ public class AprilTagDetectionPipeParams {
             double tagWidthMeters,
             CameraCalibrationCoefficients cameraCalibrationCoefficients) {
         // detectorParams =
-                // new AprilTagDetector.Config(tagFamily, decimate, blur, threads, debug, refineEdges);
+        // new AprilTagDetector.Config(tagFamily, decimate, blur, threads, debug, refineEdges);
         this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
         this.numIterations = numIters;
         this.tagWidthMeters = tagWidthMeters;

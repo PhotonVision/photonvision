@@ -17,17 +17,11 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.opencv.core.Mat;
-import org.photonvision.vision.opencv.CVMat;
-import org.photonvision.vision.pipe.CVPipe;
-
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
+import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagPoseEstimatorPipe
         extends CVPipe<AprilTagDetection, AprilTagPoseEstimate, AprilTagPoseEstimator.Config> {
@@ -44,8 +38,8 @@ public class AprilTagPoseEstimatorPipe
 
     @Override
     protected AprilTagPoseEstimate process(AprilTagDetection in) {
-            // TODO don't hardcode # iters
-            return AprilTagPoseEstimator.estimateOrthogonalIteration(in, this.params, 50);
+        // TODO don't hardcode # iters
+        return AprilTagPoseEstimator.estimateOrthogonalIteration(in, this.params, 50);
     }
 
     @Override
@@ -58,7 +52,5 @@ public class AprilTagPoseEstimatorPipe
         this.useNativePoseEst = enabled;
     }
 
-    public static class AprilTagPoseEstimatorPipeParams {
-
-    }
+    public static class AprilTagPoseEstimatorPipeParams {}
 }

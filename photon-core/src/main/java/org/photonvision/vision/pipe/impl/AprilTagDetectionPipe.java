@@ -17,13 +17,11 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.util.List;
-
-import org.opencv.core.Mat;
-import org.photonvision.vision.pipe.CVPipe;
-
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
+import java.util.List;
+import org.opencv.core.Mat;
+import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagDetectionPipe
         extends CVPipe<Mat, List<AprilTagDetection>, AprilTagDetectionPipeParams> {
@@ -40,13 +38,11 @@ public class AprilTagDetectionPipe
 
     @Override
     protected List<AprilTagDetection> process(Mat in) {
-        var ret =
-                m_detector.detect(
-                        in);
-                        // params.cameraCalibrationCoefficients,
-                        // useNativePoseEst,
-                        // params.numIterations,
-                        // params.tagWidthMeters);
+        var ret = m_detector.detect(in);
+        // params.cameraCalibrationCoefficients,
+        // useNativePoseEst,
+        // params.numIterations,
+        // params.tagWidthMeters);
         if (ret == null) return List.of();
         return List.of(ret);
     }

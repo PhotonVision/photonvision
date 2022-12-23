@@ -16,6 +16,8 @@
  */
 package org.photonvision.vision.target;
 
+import edu.wpi.first.apriltag.AprilTagDetection;
+import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashMap;
 import java.util.List;
@@ -28,8 +30,6 @@ import org.opencv.core.RotatedRect;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.*;
-import edu.wpi.first.apriltag.AprilTagDetection;
-import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 
 public class TrackedTarget implements Releasable {
     public final Contour m_mainContour;
@@ -65,7 +65,10 @@ public class TrackedTarget implements Releasable {
         calculateValues(params);
     }
 
-    public TrackedTarget(AprilTagDetection tagDetection, AprilTagPoseEstimate tagPose, TargetCalculationParameters params) {
+    public TrackedTarget(
+            AprilTagDetection tagDetection,
+            AprilTagPoseEstimate tagPose,
+            TargetCalculationParameters params) {
         m_targetOffsetPoint = new Point(tagDetection.getCenterX(), tagDetection.getCenterY());
         m_robotOffsetPoint = new Point();
 
