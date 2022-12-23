@@ -5,20 +5,18 @@
     :style="styleObject"
     :src="src"
     alt=""
-    @click="e => {this.openThinclientStream(e)}"
+    @click="e => $emit('click', e)"
   >
 </template>
-
 
 <script>
     export default {
         name: "CvImage",
         // eslint-disable-next-line vue/require-prop-types
-        props: ['idx', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightLg', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
+        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightLg', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
         data() {
             return {
                 seed: 1.0,
-                src: ""
             }
         },
         computed: {
@@ -48,47 +46,37 @@
                     return ret;
                 }
             },
-            port: {
+            src: {
               get() {
-                if(this.idx == 0){
-                  return this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].inputStreamPort;
+                if(this.disconnected){
+                  //Disconnected, do spinny gif
+                  return require("../../assets/loading.gif");
                 } else {
-                  return this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].outputStreamPort;
+                  //Connected - get the port
+                  var port = -1;
+                  if(this.id == 'raw-stream'){
+                    port = this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].inputStreamPort
+                  } else {
+                    port = this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].outputStreamPort
+                  }
+
+                  if(port <= 0){
+                    //Invalid port, keep it spinny
+                    return require("../../assets/loading.gif");
+                  } else {
+                    //Valid port, connect
+                    return "http://" + location.hostname + ":" + port + "/stream.mjpg" + "?" + this.seed;
+                  }
                 }
-              }
-            }
-        },
-        watch : {
-          port(newPort, oldPort){
-            newPort;
-            oldPort;
-            this.reload();
-          },
-          disconnected(newVal, oldVal){
-            oldVal;
-            if(newVal){
-              this.wsStream.setPort(0);
-            } else {
-              this.wsStream.setPort(this.port);
-            }
-          }
+              },
+            },
         },
         mounted() {
-          var wsvs = require('../../plugins/WebsocketVideoStream');
-          this.wsStream = new wsvs.WebsocketVideoStream(this.id, this.port, this.$address);
-        },
-        unmounted() {
-          this.wsStream.setPort(0);
+            this.reload(); // Force reload image on creation
         },
         methods: {
             reload() {
-              console.log("Reloading " + this.id + " with port " + String(this.port));
-              this.wsStream.setPort(this.port);
-            },
-            openThinclientStream(e){
-              e;
-              var URL = "/thinclient.html?port=" + String(this.port) + "&host=" + window.location.hostname;
-              window.open(URL, '_blank');
+                this.seed = new Date().getTime();
             }
         },
     }
