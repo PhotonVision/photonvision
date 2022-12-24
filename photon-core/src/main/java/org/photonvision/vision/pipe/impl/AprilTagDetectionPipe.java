@@ -39,18 +39,24 @@ public class AprilTagDetectionPipe
     @Override
     protected List<AprilTagDetection> process(Mat in) {
         var ret = m_detector.detect(in);
-        // params.cameraCalibrationCoefficients,
-        // useNativePoseEst,
-        // params.numIterations,
-        // params.tagWidthMeters);
-        if (ret == null) return List.of();
+
+        if (ret == null) {
+            return List.of();
+        }
+
         return List.of(ret);
     }
 
     @Override
-    public void setParams(AprilTagDetectionPipeParams params) {
+    public void setParams(AprilTagDetectionPipeParams newParams) {
+        if (this.params != newParams) {
+            m_detector.setConfig(newParams.detectorParams);
+
+            m_detector.clearFamilies();
+            m_detector.addFamily(newParams.family.getNativeName());
+        }
+
         super.setParams(params);
-        // m_detector.updateParams(params.detectorParams);
     }
 
     public void setNativePoseEstimationEnabled(boolean enabled) {

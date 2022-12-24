@@ -18,34 +18,34 @@
 package org.photonvision.vision.pipe.impl;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
-import edu.wpi.first.apriltag.AprilTagDetector;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagPoseEstimatorPipe
         extends CVPipe<AprilTagDetection, AprilTagPoseEstimate, AprilTagPoseEstimator.Config> {
-    private final AprilTagDetector m_detector = new AprilTagDetector();
+    private final AprilTagPoseEstimator m_poseEstimator =
+            new AprilTagPoseEstimator(new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
 
     boolean useNativePoseEst;
 
     public AprilTagPoseEstimatorPipe() {
         super();
-
-        m_detector.addFamily("tag16h5");
-        m_detector.addFamily("tag36h11");
     }
 
     @Override
     protected AprilTagPoseEstimate process(AprilTagDetection in) {
         // TODO don't hardcode # iters
-        return AprilTagPoseEstimator.estimateOrthogonalIteration(in, this.params, 50);
+        return m_poseEstimator.estimateOrthogonalIteration(in, 50);
     }
 
     @Override
-    public void setParams(AprilTagPoseEstimator.Config params) {
-        super.setParams(params);
-        // m_detector.updateParams(params.detectorParams);
+    public void setParams(AprilTagPoseEstimator.Config newParams) {
+        if (this.params != newParams) {
+            m_poseEstimator.setConfig(newParams);
+        }
+
+        super.setParams(newParams);
     }
 
     public void setNativePoseEstimationEnabled(boolean enabled) {

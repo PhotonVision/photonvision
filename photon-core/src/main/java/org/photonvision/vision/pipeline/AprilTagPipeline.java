@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
+import edu.wpi.first.apriltag.AprilTagDetector;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
@@ -26,7 +27,6 @@ import java.util.List;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
-import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.CVMat;
@@ -67,15 +67,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             PicamJNI.setShouldCopyColor(true); // need the color image to grayscale
         }
 
-        AprilTagDetectorParams aprilTagDetectionParams =
-                new AprilTagDetectorParams(
-                        settings.tagFamily,
-                        settings.decimate,
-                        settings.blur,
-                        settings.threads,
-                        settings.debug,
-                        settings.refineEdges);
-
         // TODO (HACK): tag width is Fun because it really belongs in the "target model"
         // We need the tag width for the JNI to figure out target pose, but we need a
         // target model for the draw 3d targets pipeline to work...
@@ -104,12 +95,21 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 }
         }
 
-        aprilTagDetectionPipe.setParams(
-                new AprilTagDetectionPipeParams(
-                        // aprilTagDetectionParams,
-                        frameStaticProperties.cameraCalibration, settings.numIterations, tagWidth));
+        // AprilTagDetectorParams aprilTagDetectionParams =
+        //         new AprilTagDetectorParams(
+        //                 settings.tagFamily,
+        //                 settings.decimate,
+        //                 settings.blur,
+        //                 settings.threads,
+        //                 settings.debug,
+        //                 settings.refineEdges);
 
-        // TODO actually give camera calibration coeffs
+        var config = new AprilTagDetector.Config();
+        config.numThreads = settings.threads;
+        config.refineEdges = settings.refineEdges;
+        config.quadSigma = settings.blur;
+        config.quadDecimate = settings.decimate;
+        aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(settings.tagFamily, config));
 
         var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
         if (cameraMatrix != null) {

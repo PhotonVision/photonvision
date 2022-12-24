@@ -25,8 +25,8 @@ import org.photonvision.vision.target.TargetModel;
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
-    public double decimate = 1.0;
-    public double blur = 0;
+    public float decimate = 1.0f;
+    public float blur = 0;
     public int threads = 1;
     public boolean debug = false;
     public boolean refineEdges = true;
