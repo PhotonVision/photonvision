@@ -27,7 +27,7 @@ nativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag", "2023.424242.1.1-beta-7-20221223161658-32-gec015b9")
+nativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag", "2023.424242.1.1-beta-7-20221223171201-32-gec015b9-dirty")
 nativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
 
 dependencies {

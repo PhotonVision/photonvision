@@ -24,7 +24,7 @@ dependencies {
     // Zip
     implementation 'org.zeroturnaround:zt-zip:1.14'
 
-    implementation wpilibTools.deps.wpilibJava("apriltag", "2023.424242.1.1-beta-7-20221223161658-32-gec015b9")
+    implementation wpilibTools.deps.wpilibJava("apriltag", "2023.424242.1.1-beta-7-20221223171201-32-gec015b9-dirty")
 }
 
 task writeCurrentVersionJava {
@@ -53,5 +53,5 @@ testNativeConfig.dependencies.add wpilibTools.deps.wpilib("ntcore")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
-testNativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag", "2023.424242.1.1-beta-7-20221223161658-32-gec015b9")
+testNativeConfig.dependencies.add wpilibTools.deps.wpilib("apriltag", "2023.424242.1.1-beta-7-20221223171201-32-gec015b9-dirty")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
