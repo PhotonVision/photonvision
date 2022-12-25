@@ -54,14 +54,14 @@ class PhotonCamera {
    * over.
    */
   explicit PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
-                        const std::string& cameraName);
+                        const std::string_view cameraName);
 
   /**
    * Constructs a PhotonCamera from the name of the camera.
    * @param cameraName The nickname of the camera (found in the PhotonVision
    * UI).
    */
-  explicit PhotonCamera(const std::string& cameraName);
+  explicit PhotonCamera(const std::string_view cameraName);
 
   /**
    * Returns the latest pipeline result.
@@ -128,6 +128,14 @@ class PhotonCamera {
   void SetLEDMode(LEDMode led);
 
   /**
+   * Returns the name of the camera.
+   * This will return the same value that was given to the constructor as
+   * cameraName.
+   * @return The name of the camera.
+   */
+  const std::string_view GetCameraName() const;
+
+  /**
    * Returns whether the latest target result has targets.
    * This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should
    * be used instead.
@@ -155,6 +163,7 @@ class PhotonCamera {
   nt::NetworkTableEntry versionEntry;
 
   std::string path;
+  std::string m_cameraName;
 
   mutable Packet packet;
 

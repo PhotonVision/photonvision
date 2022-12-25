@@ -210,11 +210,12 @@ public class PhotonCamera {
     }
 
     /**
-     * Returns the name of the camera.
-     * This will return the same value that was given to the constructor as cameraName.
+     * Returns the name of the camera. This will return the same value that was given to the
+     * constructor as cameraName.
+     *
      * @return The name of the camera.
      */
-    public String getName(){
+    public String getName() {
         return name;
     }
 
