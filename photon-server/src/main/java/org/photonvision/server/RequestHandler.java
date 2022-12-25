@@ -113,7 +113,7 @@ public class RequestHandler {
         logger.info("New .jar uploaded successfully.");
 
         if (file != null) {
-            if (Platform.isRaspberryPi() || Platform.isLinux()) {
+            if (Platform.isLinux()) {
                 try {
                     Path filePath =
                             Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
@@ -140,7 +140,7 @@ public class RequestHandler {
                 }
 
             } else {
-                logger.error("Hot .jar replace currently only supported on Raspberry Pi and Linux. Ignoring.");
+                logger.error("Hot .jar replace currently only supported on Linux. Ignoring.");
                 ctx.status(500);
             }
 
@@ -233,7 +233,7 @@ public class RequestHandler {
      * an equivalent.
      */
     public static void restartProgramInternal() {
-        if (Platform.isRaspberryPi() || Platform.isLinux()) {
+        if (Platform.isLinux()) {
             try {
                 new ShellExec().executeBashCommand("systemctl restart photonvision.service");
             } catch (IOException e) {
