@@ -62,14 +62,15 @@ public class MetricsManager {
         }
     }
 
-    private String cpuMemSplit = null;
+    private String cpuMemSave = null;
 
     public String getMemory() {
         if (cmds.cpuMemoryCommand.isEmpty()) return "";
-        if (cpuMemSplit == null) {
-            cpuMemSplit = execute(cmds.cpuMemoryCommand);
+        if (cpuMemSave == null) {
+            // save the value and only run it once
+            cpuMemSave = execute(cmds.cpuMemoryCommand);
         }
-        return cpuMemSplit;
+        return cpuMemSave;
     }
 
     public String getTemp() {
@@ -88,14 +89,14 @@ public class MetricsManager {
         return safeExecute(cmds.cpuThrottleReasonCmd);
     }
 
-    private String gpuMemSplit = null;
+    private String gpuMemSave = null;
 
     public String getGPUMemorySplit() {
-        if (gpuMemSplit == null) {
+        if (gpuMemSave == null) {
             // only needs to run once
-            gpuMemSplit = safeExecute(cmds.gpuMemoryCommand);
+            gpuMemSave = safeExecute(cmds.gpuMemoryCommand);
         }
-        return gpuMemSplit;
+        return gpuMemSave;
     }
 
     public String getMallocedMemory() {

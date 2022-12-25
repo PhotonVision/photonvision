@@ -35,7 +35,7 @@ public enum Platform {
             "Linux Raspbian 32-bit", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 32-bit image
     LINUX_RASPBIAN64(
             "Linux Raspbian 64-bit", true, OSType.LINUX, true), // Raspberry Pi 3/4 with a 64-bit image
-    LINUX_AARCH64BIONIC("Linux AARCH64 Bionic", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
+    LINUX_AARCH64("Linux AARCH64", false, OSType.LINUX, true), // Jetson Nano, Jetson TX2
 
     // PhotonVision Supported (Manual build/install)
     LINUX_ARM32("Linux ARM32", false, OSType.LINUX, true), // ODROID XU4, C1+
@@ -155,7 +155,7 @@ public enum Platform {
             } else if (isJetsonSBC()) {
                 if (RuntimeDetector.isArm64()) {
                     // TODO - do we need to check OS version?
-                    return LINUX_AARCH64BIONIC;
+                    return LINUX_AARCH64;
                 } else {
                     // Unknown/exotic installation
                     return UNKNOWN;
@@ -166,7 +166,7 @@ public enum Platform {
                 return LINUX_32;
             } else if (RuntimeDetector.isArm64()) {
                 // TODO - os detection needed?
-                return LINUX_AARCH64BIONIC;
+                return LINUX_AARCH64;
             } else {
                 // Unknown or otherwise unsupported platform
                 return Platform.UNKNOWN;

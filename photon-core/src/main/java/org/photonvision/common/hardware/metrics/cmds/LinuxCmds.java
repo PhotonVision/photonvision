@@ -16,9 +16,25 @@
  */
 
 package org.photonvision.common.hardware.metrics.cmds;
-
+  
 import org.photonvision.common.configuration.HardwareConfig;
 
 public class LinuxCmds extends CmdBase {
-    public void initCmds(HardwareConfig config) {}
+    public void initCmds(HardwareConfig config) {
+        // CPU
+        cpuMemoryCommand = "awk '/MemTotal:/ {print int($2 / 1000);}' /proc/meminfo";
+
+        // TODO: boards have lots of thermal devices. Hard to pick the CPU
+
+        cpuUtilizationCommand =
+                "top -bn1 | grep \"Cpu(s)\" | sed \"s/.*, *\\([0-9.]*\\)%* id.*/\\1/\" | awk '{print 100 - $1}'";
+
+        cpuUptimeCommand = "uptime -p | cut -c 4-";
+
+        // RAM
+        ramUsageCommand = "awk '/MemFree:/ {print int($2 / 1000);}' /proc/meminfo";
+
+        // Disk
+        diskUsageCommand = "df ./ --output=pcent | tail -n +2";
+    }
 }
