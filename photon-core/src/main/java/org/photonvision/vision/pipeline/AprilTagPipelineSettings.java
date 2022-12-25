@@ -24,7 +24,7 @@ import org.photonvision.vision.target.TargetModel;
 
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
-    public AprilTagFamily tagFamily = AprilTagFamily.kTag36h11;
+    public AprilTagFamily tagFamily = AprilTagFamily.kTag16h5;
     public double decimate = 1.0;
     public double blur = 0;
     public int threads = 1;
@@ -33,8 +33,8 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int numIterations = 200;
 
     // TODO is this a legit, reasonable default?
-    public int hammingDist = 1;
-    public int decisionMargin = 30;
+    public int hammingDist = 0;
+    public int decisionMargin = 35;
 
     // 3d settings
 
@@ -42,7 +42,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         super();
         pipelineType = PipelineType.AprilTag;
         outputShowMultipleTargets = true;
-        targetModel = TargetModel.k200mmAprilTag;
+        targetModel = TargetModel.k6in_16h5;
         cameraExposure = -1;
         cameraAutoExposure = true;
         ledMode = false;
