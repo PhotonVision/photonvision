@@ -24,28 +24,36 @@
 
 #pragma once
 
-#include <frc/geometry/Pose2d.h>
+#include <frc/geometry/Pose3d.h>
 #include <units/area.h>
-#include <units/length.h>
 
 namespace photonlib {
-
-/**
- * Represents a target on the field which the vision processing system could
- * detect.
- */
 class SimVisionTarget {
  public:
-  explicit SimVisionTarget(frc::Pose2d& targetPos,
-                           units::meter_t targetHeightAboveGround,
-                           units::meter_t targetWidth,
-                           units::meter_t targetHeight);
+  SimVisionTarget() = default;
 
-  frc::Pose2d targetPos;
-  units::meter_t targetHeightAboveGround;
+  /**
+   * Describes a vision target located somewhere on the field that your
+   * SimVisionSystem can detect.
+   *
+   * @param targetPose Pose3d of the target in field-relative coordinates
+   * @param targetWidth Width of the outer bounding box of the target.
+   * @param targetHeight Pair Height of the outer bounding box of the
+   * target.
+   * @param targetId Id of the target
+   */
+  SimVisionTarget(frc::Pose3d targetPose, units::meter_t targetWidth,
+                  units::meter_t targetHeight, int targetId)
+      : targetPose(targetPose),
+        targetWidth(targetWidth),
+        targetHeight(targetHeight),
+        targetArea(targetHeight * targetWidth),
+        targetId(targetId) {}
+
+  frc::Pose3d targetPose;
   units::meter_t targetWidth;
   units::meter_t targetHeight;
-  units::square_meter_t tgtArea;
+  units::square_meter_t targetArea;
+  int targetId;
 };
-
 }  // namespace photonlib

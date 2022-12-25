@@ -24,12 +24,12 @@
 
 #pragma once
 
+#include <span>
 #include <string>
 
 #include <frc/Errors.h>
 #include <units/time.h>
 #include <wpi/SmallVector.h>
-#include <wpi/span.h>
 
 #include "photonlib/Packet.h"
 #include "photonlib/PhotonTrackedTarget.h"
@@ -51,7 +51,7 @@ class PhotonPipelineResult {
    * @param targets The list of targets identified by the pipeline.
    */
   PhotonPipelineResult(units::second_t latency,
-                       wpi::span<const PhotonTrackedTarget> targets);
+                       std::span<const PhotonTrackedTarget> targets);
 
   /**
    * Returns the best target in this pipeline result. If there are no targets,
@@ -80,6 +80,22 @@ class PhotonPipelineResult {
   units::second_t GetLatency() const { return latency; }
 
   /**
+   * Returns the estimated time the frame was taken,
+   * This is much more accurate than using GetLatency()
+   * @return The timestamp in seconds or -1 if this result was not initiated
+   * with a timestamp.
+   */
+  units::second_t GetTimestamp() const { return timestamp; }
+
+  /**
+   * Sets the timestamp in seconds
+   * @param timestamp The timestamp in seconds
+   */
+  void SetTimestamp(const units::second_t timestamp) {
+    this->timestamp = timestamp;
+  }
+
+  /**
    * Returns whether the pipeline has targets.
    * @return Whether the pipeline has targets.
    */
@@ -89,7 +105,7 @@ class PhotonPipelineResult {
    * Returns a reference to the vector of targets.
    * @return A reference to the vector of targets.
    */
-  const wpi::span<const PhotonTrackedTarget> GetTargets() const {
+  const std::span<const PhotonTrackedTarget> GetTargets() const {
     return targets;
   }
 
@@ -101,6 +117,7 @@ class PhotonPipelineResult {
 
  private:
   units::second_t latency = 0_s;
+  units::second_t timestamp = -1_s;
   wpi::SmallVector<PhotonTrackedTarget, 10> targets;
   inline static bool HAS_WARNED = false;
 };

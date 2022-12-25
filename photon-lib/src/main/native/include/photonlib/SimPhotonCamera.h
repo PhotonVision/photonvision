@@ -24,52 +24,108 @@
 
 #pragma once
 
+#include <algorithm>
 #include <memory>
 #include <string>
+#include <vector>
 
-#include <units/time.h>
-#include <wpi/SmallVector.h>
-#include <wpi/span.h>
+#include <networktables/NetworkTableInstance.h>
 
-#include "photonlib/Packet.h"
 #include "photonlib/PhotonCamera.h"
+#include "photonlib/PhotonTargetSortMode.h"
 
 namespace photonlib {
-
-/**
- * Represents a camera that is connected to PhotonVision.ß
- */
 class SimPhotonCamera : public PhotonCamera {
  public:
-  /**
-   * Constructs a Simulated PhotonCamera from a root table.
-   *
-   * @param instance The NetworkTableInstance to pull data from. This can be a
-   * custom instance in simulation, but should *usually* be the default
-   * NTInstance from {@link NetworkTableInstance::getDefault}
-   * @param cameraName The name of the camera, as seen in the UI.
-   */
-  explicit SimPhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
-                           const std::string& cameraName);
+  SimPhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
+                  const std::string& cameraName)
+      : PhotonCamera(instance, cameraName) {
+    latencyMillisEntry = rootTable->GetEntry("latencyMillis");
+    hasTargetEntry = rootTable->GetEntry("hasTargetEntry");
+    targetPitchEntry = rootTable->GetEntry("targetPitchEntry");
+    targetYawEntry = rootTable->GetEntry("targetYawEntry");
+    targetAreaEntry = rootTable->GetEntry("targetAreaEntry");
+    targetSkewEntry = rootTable->GetEntry("targetSkewEntry");
+    targetPoseEntry = rootTable->GetEntry("targetPoseEntry");
+    rawBytesPublisher = rootTable->GetRawTopic("rawBytes").Publish("raw");
+    versionEntry = instance->GetTable("photonvision")->GetEntry("version");
+    // versionEntry.SetString(PhotonVersion.versionString);
+  }
 
-  /**
-   * Constructs a Simulated PhotonCamera from the name of the camera.
-   *
-   * @param cameraName The nickname of the camera (found in the PhotonVision
-   *                   UI).
-   */
-  explicit SimPhotonCamera(const std::string& cameraName);
+  explicit SimPhotonCamera(const std::string& cameraName)
+      : SimPhotonCamera(std::make_shared<nt::NetworkTableInstance>(
+                            nt::NetworkTableInstance::GetDefault()),
+                        cameraName) {}
 
   /**
    * Simulate one processed frame of vision data, putting one result to NT.
-   * @param latency Latency of frame processing
-   * @param tgtList Set of targets detected
+   *
+   * @param latency Latency of the provided frame
+   * @param targetList List of targets detected
    */
-  void SubmitProcessedFrame(units::second_t latency,
-                            wpi::span<const PhotonTrackedTarget> tgtList);
+  void SubmitProcessedFrame(units::millisecond_t latency,
+                            std::vector<PhotonTrackedTarget> targetList) {
+    SubmitProcessedFrame(latency, PhotonTargetSortMode::LeftMost(), targetList);
+  }
+
+  /**
+   * Simulate one processed frame of vision data, putting one result to NT.
+   *
+   * @param latency Latency of the provided frame
+   * @param sortMode Order in which to sort targets
+   * @param targetList List of targets detected
+   */
+  void SubmitProcessedFrame(
+      units::millisecond_t latency,
+      std::function<bool(const PhotonTrackedTarget& target1,
+                         const PhotonTrackedTarget& target2)>
+          sortMode,
+      std::vector<PhotonTrackedTarget> targetList) {
+    latencyMillisEntry.SetDouble(latency.to<double>());
+    std::sort(targetList.begin(), targetList.end(),
+              [&](auto lhs, auto rhs) { return sortMode(lhs, rhs); });
+    PhotonPipelineResult newResult{latency, targetList};
+    Packet packet{};
+    packet << newResult;
+
+    rawBytesPublisher.Set(
+        std::span{packet.GetData().data(), packet.GetDataSize()});
+
+    bool hasTargets = newResult.HasTargets();
+    hasTargetEntry.SetBoolean(hasTargets);
+    if (!hasTargets) {
+      targetPitchEntry.SetDouble(0.0);
+      targetYawEntry.SetDouble(0.0);
+      targetAreaEntry.SetDouble(0.0);
+      targetPoseEntry.SetDoubleArray(
+          std::vector<double>{0.0, 0.0, 0.0, 0, 0, 0, 0});
+      targetSkewEntry.SetDouble(0.0);
+    } else {
+      PhotonTrackedTarget bestTarget = newResult.GetBestTarget();
+      targetPitchEntry.SetDouble(bestTarget.GetPitch());
+      targetYawEntry.SetDouble(bestTarget.GetYaw());
+      targetAreaEntry.SetDouble(bestTarget.GetArea());
+      targetSkewEntry.SetDouble(bestTarget.GetSkew());
+
+      frc::Transform3d transform = bestTarget.GetBestCameraToTarget();
+      targetPoseEntry.SetDoubleArray(std::vector<double>{
+          transform.X().to<double>(), transform.Y().to<double>(),
+          transform.Z().to<double>(), transform.Rotation().GetQuaternion().W(),
+          transform.Rotation().GetQuaternion().X(),
+          transform.Rotation().GetQuaternion().Y(),
+          transform.Rotation().GetQuaternion().Z()});
+    }
+  }
 
  private:
-  mutable Packet simPacket;
+  nt::NetworkTableEntry latencyMillisEntry;
+  nt::NetworkTableEntry hasTargetEntry;
+  nt::NetworkTableEntry targetPitchEntry;
+  nt::NetworkTableEntry targetYawEntry;
+  nt::NetworkTableEntry targetAreaEntry;
+  nt::NetworkTableEntry targetSkewEntry;
+  nt::NetworkTableEntry targetPoseEntry;
+  nt::NetworkTableEntry versionEntry;
+  nt::RawPublisher rawBytesPublisher;
 };
-
 }  // namespace photonlib

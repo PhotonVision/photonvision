@@ -308,11 +308,7 @@ export default {
                 } else if (this.$store.state.settings.hasOwnProperty(key)) {
                     this.$store.commit('mutateSettings', {[key]: value});
                 } else {
-                    switch (key) {
-                        default: {
-                            console.error("Unknown message from backend: " + value);
-                        }
-                    }
+                    console.error("Unknown message from backend: " + value);
                 }
             },
             toggleCompactMode() {

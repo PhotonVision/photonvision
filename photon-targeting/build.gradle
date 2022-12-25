@@ -1,10 +1,12 @@
 apply plugin: "java"
 
+apply from: "${rootDir}/shared/common.gradle"
+
 sourceCompatibility = 11
 targetCompatibility = 11
 
 dependencies {
-    implementation "edu.wpi.first.wpimath:wpimath-java:$wpilibVersion"
+    implementation wpilibTools.deps.wpilibJava("wpimath")
     implementation "org.ejml:ejml-simple:0.41"
 }
 

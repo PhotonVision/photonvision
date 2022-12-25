@@ -18,7 +18,10 @@
 package org.photonvision.common.hardware;
 
 import edu.wpi.first.util.RuntimeDetector;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.photonvision.common.util.ShellExec;
 
 @SuppressWarnings("unused")
@@ -62,6 +65,8 @@ public enum Platform {
     public static boolean isLinux() {
         return currentPlatform == LINUX_64
                 || currentPlatform == LINUX_RASPBIAN
+                || currentPlatform == LINUX_AARCH64BIONIC
+                || currentPlatform == LINUX_ARM32
                 || currentPlatform == LINUX_ARM64;
     }
 
@@ -105,7 +110,7 @@ public enum Platform {
         if (RuntimeDetector.isLinux()) {
             if (RuntimeDetector.is32BitIntel()) return UNSUPPORTED;
             if (RuntimeDetector.is64BitIntel()) return LINUX_64;
-            if (RuntimeDetector.isRaspbian()) return LINUX_RASPBIAN;
+            if (isRaspbian()) return LINUX_RASPBIAN;
         }
 
         System.out.println(UnknownPlatformString);
@@ -136,5 +141,17 @@ public enum Platform {
         }
 
         return "";
+    }
+
+    private static boolean isRaspbian() {
+        try (BufferedReader reader = Files.newBufferedReader(Paths.get("/etc/os-release"))) {
+            String value = reader.readLine();
+            if (value == null) {
+                return false;
+            }
+            return value.contains("Raspbian");
+        } catch (IOException ex) {
+            return false;
+        }
     }
 }

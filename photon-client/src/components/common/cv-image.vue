@@ -9,6 +9,7 @@
   >
 </template>
 
+
 <script>
     export default {
         name: "CvImage",
@@ -17,6 +18,7 @@
         data() {
             return {
                 seed: 1.0,
+                src: ""
             }
         },
         computed: {
@@ -65,19 +67,18 @@
           disconnected(newVal, oldVal){
             oldVal;
             if(newVal){
-              this.wsStream.stopStream();
+              this.wsStream.setPort(0);
             } else {
-              this.wsStream.startStream();
+              this.wsStream.setPort(this.port);
             }
           }
         },
         mounted() {
           var wsvs = require('../../plugins/WebsocketVideoStream');
-          this.wsStream = new wsvs.WebsocketVideoStream(this.id, this.port, window.location.host);
+          this.wsStream = new wsvs.WebsocketVideoStream(this.id, this.port, this.$address);
         },
         unmounted() {
-          this.wsStream.stopStream();
-          this.wsStream.ws_close();
+          this.wsStream.setPort(0);
         },
         methods: {
             reload() {

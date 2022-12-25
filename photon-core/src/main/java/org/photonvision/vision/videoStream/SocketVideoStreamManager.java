@@ -69,10 +69,15 @@ public class SocketVideoStreamManager {
     // Indicate a user would like to stop receiving one camera stream
     public void removeSubscription(WsContext user) {
         var port = userSubscriptions.get(user);
-        if (port != null) {
+        if (port != null && port != NO_STREAM_PORT) {
             var stream = streams.get(port);
             userSubscriptions.put(user, NO_STREAM_PORT);
-            stream.removeUser();
+            if (stream != null) {
+                stream.removeUser();
+            }
+        } else {
+            logger.error(
+                    "User attempted to unsubscribe, but had not yet previously subscribed successfully.");
         }
     }
 

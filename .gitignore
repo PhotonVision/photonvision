@@ -150,3 +150,6 @@ lib/*
 photon-server/lib/libapriltag.so
 photon-server/bin/main/nativelibraries/apriltag/*
 photon-server/src/main/resources/nativelibraries/apriltag/*
+
+photonlib-java-examples/*/vendordeps/*
+photonlib-cpp-examples/*/vendordeps/*

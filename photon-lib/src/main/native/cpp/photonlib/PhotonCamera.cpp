@@ -38,13 +38,20 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
                            const std::string_view cameraName)
     : mainTable(instance->GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
-      rawBytesEntry(rootTable->GetEntry("rawBytes")),
-      driverModeEntry(rootTable->GetEntry("driverMode")),
-      inputSaveImgEntry(rootTable->GetEntry("inputSaveImgCmd")),
-      outputSaveImgEntry(rootTable->GetEntry("outputSaveImgCmd")),
-      pipelineIndexEntry(rootTable->GetEntry("pipelineIndex")),
-      ledModeEntry(mainTable->GetEntry("ledMode")),
-      versionEntry(mainTable->GetEntry("version")),
+      rawBytesEntry(rootTable->GetRawTopic("rawBytes").Subscribe("raw", {})),
+      driverModeEntry(rootTable->GetBooleanTopic("driverMode").Publish()),
+      inputSaveImgEntry(
+          rootTable->GetBooleanTopic("inputSaveImgCmd").Publish()),
+      outputSaveImgEntry(
+          rootTable->GetBooleanTopic("outputSaveImgCmd").Publish()),
+      pipelineIndexEntry(rootTable->GetIntegerTopic("pipelineIndex").Publish()),
+      ledModeEntry(mainTable->GetIntegerTopic("ledMode").Publish()),
+      versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
+      driverModeSubscriber(
+          rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
+      pipelineIndexSubscriber(
+          rootTable->GetIntegerTopic("pipelineIndex").Subscribe(-1)),
+      ledModeSubscriber(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
       path(rootTable->GetPath()),
       m_cameraName(cameraName) {}
 
@@ -64,44 +71,43 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
   PhotonPipelineResult result;
 
   // Fill the packet with latest data and populate result.
-  std::shared_ptr<nt::Value> ntvalue = rawBytesEntry.GetValue();
-  if (!ntvalue) return result;
+  const auto value = rawBytesEntry.Get();
+  if (!value.size()) return result;
 
-  std::string value{ntvalue->GetRaw()};
-  std::vector<char> bytes{value.begin(), value.end()};
-
-  photonlib::Packet packet{bytes};
+  photonlib::Packet packet{value};
 
   packet >> result;
+
+  result.SetTimestamp(units::microsecond_t(rawBytesEntry.GetLastChange()) -
+                      result.GetLatency());
+
   return result;
 }
 
 void PhotonCamera::SetDriverMode(bool driverMode) {
-  driverModeEntry.SetBoolean(driverMode);
+  driverModeEntry.Set(driverMode);
 }
 
-void PhotonCamera::TakeInputSnapshot() { inputSaveImgEntry.SetBoolean(true); }
+void PhotonCamera::TakeInputSnapshot() { inputSaveImgEntry.Set(true); }
 
-void PhotonCamera::TakeOutputSnapshot() { outputSaveImgEntry.SetBoolean(true); }
+void PhotonCamera::TakeOutputSnapshot() { outputSaveImgEntry.Set(true); }
 
-bool PhotonCamera::GetDriverMode() const {
-  return driverModeEntry.GetBoolean(false);
-}
+bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 
 void PhotonCamera::SetPipelineIndex(int index) {
-  pipelineIndexEntry.SetDouble(static_cast<double>(index));
+  pipelineIndexEntry.Set(static_cast<double>(index));
 }
 
 int PhotonCamera::GetPipelineIndex() const {
-  return static_cast<int>(pipelineIndexEntry.GetDouble(0));
+  return static_cast<int>(pipelineIndexSubscriber.Get());
 }
 
 LEDMode PhotonCamera::GetLEDMode() const {
-  return static_cast<LEDMode>(static_cast<int>(ledModeEntry.GetDouble(-1.0)));
+  return static_cast<LEDMode>(static_cast<int>(ledModeSubscriber.Get()));
 }
 
 void PhotonCamera::SetLEDMode(LEDMode mode) {
-  ledModeEntry.SetDouble(static_cast<double>(static_cast<int>(mode)));
+  ledModeEntry.Set(static_cast<double>(static_cast<int>(mode)));
 }
 
 const std::string_view PhotonCamera::GetCameraName() const {
@@ -116,7 +122,7 @@ void PhotonCamera::VerifyVersion() {
     return;
   this->lastVersionCheckTime = frc::Timer::GetFPGATimestamp();
 
-  const std::string& versionString = versionEntry.GetString("");
+  const std::string& versionString = versionEntry.Get("");
   if (versionString.empty()) {
     std::string path_ = path;
     FRC_ReportError(

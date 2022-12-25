@@ -93,6 +93,28 @@ public class PipelineManager {
     }
 
     /**
+     * Get the settings for a pipeline by index.
+     *
+     * @param index Index of pipeline whose nickname needs getting.
+     * @return the nickname of the pipeline whose index was provided.
+     */
+    public String getPipelineNickname(int index) {
+        if (index < 0) {
+            switch (index) {
+                case DRIVERMODE_INDEX:
+                    return driverModePipeline.getSettings().pipelineNickname;
+                case CAL_3D_INDEX:
+                    return calibration3dPipeline.getSettings().pipelineNickname;
+            }
+        }
+
+        for (var setting : userPipelineSettings) {
+            if (setting.pipelineIndex == index) return setting.pipelineNickname;
+        }
+        return null;
+    }
+
+    /**
      * Gets a list of nicknames for all user pipelines
      *
      * @return The list of nicknames for all user pipelines
@@ -181,17 +203,17 @@ public class PipelineManager {
             var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
             switch (desiredPipelineSettings.pipelineType) {
                 case Reflective:
-                    logger.debug("Creatig Reflective pipeline");
+                    logger.debug("Creating Reflective pipeline");
                     currentUserPipeline =
                             new ReflectivePipeline((ReflectivePipelineSettings) desiredPipelineSettings);
                     break;
                 case ColoredShape:
-                    logger.debug("Creatig ColoredShape pipeline");
+                    logger.debug("Creating ColoredShape pipeline");
                     currentUserPipeline =
                             new ColoredShapePipeline((ColoredShapePipelineSettings) desiredPipelineSettings);
                     break;
                 case AprilTag:
-                    logger.debug("Creatig AprilTag pipeline");
+                    logger.debug("Creating AprilTag pipeline");
                     currentUserPipeline =
                             new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
                     break;

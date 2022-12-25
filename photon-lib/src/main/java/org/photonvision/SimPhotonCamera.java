@@ -24,25 +24,18 @@
 
 package org.photonvision;
 
-import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.Arrays;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 @SuppressWarnings("unused")
-public class SimPhotonCamera extends PhotonCamera {
-    private final NetworkTableEntry latencyMillisEntry;
-    private final NetworkTableEntry hasTargetEntry;
-    private final NetworkTableEntry targetPitchEntry;
-    private final NetworkTableEntry targetYawEntry;
-    private final NetworkTableEntry targetAreaEntry;
-    private final NetworkTableEntry targetSkewEntry;
-    private final NetworkTableEntry targetPoseEntry;
-    private final NetworkTableEntry versionEntry;
-
+public class SimPhotonCamera {
+    NTTopicSet ts = new NTTopicSet();
+    PhotonPipelineResult latestResult;
     /**
      * Constructs a Simulated PhotonCamera from a root table.
      *
@@ -52,19 +45,9 @@ public class SimPhotonCamera extends PhotonCamera {
      * @param cameraName The name of the camera, as seen in the UI.
      */
     public SimPhotonCamera(NetworkTableInstance instance, String cameraName) {
-        super(instance, cameraName);
-
-        latencyMillisEntry = rootTable.getEntry("latencyMillis");
-        hasTargetEntry = rootTable.getEntry("hasTargetEntry");
-        targetPitchEntry = rootTable.getEntry("targetPitchEntry");
-        targetYawEntry = rootTable.getEntry("targetYawEntry");
-        targetAreaEntry = rootTable.getEntry("targetAreaEntry");
-        targetSkewEntry = rootTable.getEntry("targetSkewEntry");
-        targetPoseEntry = rootTable.getEntry("targetPoseEntry");
-        versionEntry = rootTable.getEntry("versionEntry");
-
-        // Sets the version string so that it will always match the current version
-        versionEntry.setString(PhotonVersion.versionString);
+        ts.removeEntries();
+        ts.subTable = instance.getTable("/photonvision").getSubTable(cameraName);
+        ts.updateEntries();
     }
 
     /**
@@ -117,7 +100,7 @@ public class SimPhotonCamera extends PhotonCamera {
      */
     public void submitProcessedFrame(
             double latencyMillis, PhotonTargetSortMode sortMode, List<PhotonTrackedTarget> targetList) {
-        latencyMillisEntry.setDouble(latencyMillis);
+        ts.latencyMillisEntry.set(latencyMillis);
 
         if (sortMode != null) {
             targetList.sort(sortMode.getComparator());
@@ -126,29 +109,35 @@ public class SimPhotonCamera extends PhotonCamera {
         PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
         var newPacket = new Packet(newResult.getPacketSize());
         newResult.populatePacket(newPacket);
-        rawBytesEntry.setRaw(newPacket.getData());
+        ts.rawBytesEntry.set(newPacket.getData());
 
         boolean hasTargets = newResult.hasTargets();
-        hasTargetEntry.setBoolean(hasTargets);
+        ts.hasTargetEntry.set(hasTargets);
         if (!hasTargets) {
-            targetPitchEntry.setDouble(0.0);
-            targetYawEntry.setDouble(0.0);
-            targetAreaEntry.setDouble(0.0);
-            targetPoseEntry.setDoubleArray(new double[] {0.0, 0.0, 0.0});
-            targetSkewEntry.setDouble(0.0);
+            ts.targetPitchEntry.set(0.0);
+            ts.targetYawEntry.set(0.0);
+            ts.targetAreaEntry.set(0.0);
+            ts.targetPoseEntry.set(new double[] {0.0, 0.0, 0.0});
+            ts.targetSkewEntry.set(0.0);
         } else {
             var bestTarget = newResult.getBestTarget();
 
-            targetPitchEntry.setDouble(bestTarget.getPitch());
-            targetYawEntry.setDouble(bestTarget.getYaw());
-            targetAreaEntry.setDouble(bestTarget.getArea());
-            targetSkewEntry.setDouble(bestTarget.getSkew());
+            ts.targetPitchEntry.set(bestTarget.getPitch());
+            ts.targetYawEntry.set(bestTarget.getYaw());
+            ts.targetAreaEntry.set(bestTarget.getArea());
+            ts.targetSkewEntry.set(bestTarget.getSkew());
 
             var transform = bestTarget.getBestCameraToTarget();
             double[] poseData = {
                 transform.getX(), transform.getY(), transform.getRotation().toRotation2d().getDegrees()
             };
-            targetPoseEntry.setDoubleArray(poseData);
+            ts.targetPoseEntry.set(poseData);
         }
+
+        latestResult = newResult;
+    }
+
+    PhotonPipelineResult getLatestResult() {
+        return latestResult;
     }
 }

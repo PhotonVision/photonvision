@@ -22,395 +22,341 @@
  * SOFTWARE.
  */
 
-// So for now, with the new apriltag stuff, this is totally broken
-// For now, commented out
-
-/*
-#include <networktables/NetworkTable.h>
-#include <networktables/NetworkTableEntry.h>
-#include <networktables/NetworkTableInstance.h>
-#include <units/angle.h>
-#include <units/length.h>
-
 #include "gtest/gtest.h"
-#include "photonlib/PhotonCamera.h"
 #include "photonlib/PhotonUtils.h"
 #include "photonlib/SimVisionSystem.h"
 
-TEST(SimVisionSystemTest, Empty) {
-  photonlib::SimVisionSystem sysUnderTest("Test", 80.0_deg,
-                                          frc::Transform2d(), 1.0_m, 99999.0_m,
-                                          320, 240, 0.0);
-
-  for (int loopIdx = 0; loopIdx < 100; loopIdx++) {
-    sysUnderTest.ProcessFrame(frc::Pose2d());
+class SimVisionSystemTest : public ::testing::Test {
+  void SetUp() override {
+    nt::NetworkTableInstance::GetDefault().StartServer();
+    photonlib::PhotonCamera::SetVersionCheckEnabled(false);
   }
+
+  void TearDown() override {}
+};
+
+class SimVisionSystemTestWithParamsTest
+    : public SimVisionSystemTest,
+      public testing::WithParamInterface<units::degree_t> {};
+class SimVisionSystemTestDistanceParamsTest
+    : public SimVisionSystemTest,
+      public testing::WithParamInterface<
+          std::tuple<units::foot_t, units::degree_t, units::foot_t>> {};
+
+TEST_F(SimVisionSystemTest, TestEmpty) {
+  photonlib::SimVisionSystem sys{
+      "Test", 80.0_deg, frc::Transform3d{}, 99999_m, 320, 240, 0};
+  SUCCEED();
 }
 
-class SimVisionSystemDistParamTest : public testing::TestWithParam<double> {};
-INSTANTIATE_TEST_SUITE_P(SimVisionSystemDistParamTests,
-                         SimVisionSystemDistParamTest,
-                         testing::Values(5, 10, 15, 20, 25, 30));
-
-TEST_P(SimVisionSystemDistParamTest, DistanceAligned) {
-  double dist = GetParam();
-
-  auto targetPose =
-      frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
-
-  photonlib::SimVisionSystem sysUnderTest("Test", 80.0_deg,
-                                          frc::Transform2d(), 1.0_m, 99999.0_m,
-                                          320, 240, 0.0);
-
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPose, 0.0_m, 1.0_m, 1.0_m));
-
-  auto robotPose = frc::Pose2d(
-      frc::Translation2d(units::meter_t(35.0 - dist), 0_m), frc::Rotation2d());
-
-  sysUnderTest.ProcessFrame(robotPose);
-  auto result = sysUnderTest.cam.GetLatestResult();
-  ASSERT_TRUE(result.HasTargets());
-  std::cout << "Best target pitch " <<
-result.GetBestTarget().GetCameraToTarget().Translation().X().value();
-
-  ASSERT_EQ(result.GetBestTarget()
-                .GetCameraToTarget()
-                .Translation()
-                .Norm()
-                .value(),
-            dist);
-}
-
-TEST(SimVisionSystemTest, VisibilityCupidShuffle) {
-  auto targetPose =
-      frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
-
-  photonlib::SimVisionSystem sysUnderTest("Test", 80.0_deg,
-                                          frc::Transform2d(), 1.0_m, 99999.0_m,
-                                          320, 240, 0.0);
-
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPose, 0.0_m, 3.0_m, 3.0_m));
+TEST_F(SimVisionSystemTest, TestVisibilityCupidShuffle) {
+  const frc::Pose3d targetPose{
+      {15.98_m, 0_m, 2_m},
+      frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
+  photonlib::SimVisionSystem sys{
+      "Test", 80.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 0};
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{targetPose, 1_m, 3_m, 3});
 
   // To the right, to the right
-  auto robotPose =
-      frc::Pose2d(frc::Translation2d(5.0_m, 0.0_m), frc::Rotation2d(-70.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  auto result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_FALSE(result.HasTargets());
+  frc::Pose2d robotPose{{5_m, 0_m}, frc::Rotation2d{-70_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
 
   // To the right, to the right
-  robotPose =
-      frc::Pose2d(frc::Translation2d(5.0_m, 0.0_m), frc::Rotation2d(-95.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_FALSE(result.HasTargets());
+  robotPose = frc::Pose2d{{5_m, 0_m}, frc::Rotation2d{-95_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
 
   // To the left, to the left
-  robotPose =
-      frc::Pose2d(frc::Translation2d(5.0_m, 0.0_m), frc::Rotation2d(90.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_FALSE(result.HasTargets());
+  robotPose = frc::Pose2d{{5_m, 0_m}, frc::Rotation2d{90_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
 
   // To the left, to the left
-  robotPose =
-      frc::Pose2d(frc::Translation2d(5.0_m, 0.0_m), frc::Rotation2d(65.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_FALSE(result.HasTargets());
+  robotPose = frc::Pose2d{{5_m, 0_m}, frc::Rotation2d{65_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
 
   // now kick, now kick
-  robotPose =
-      frc::Pose2d(frc::Translation2d(2.0_m, 0.0_m), frc::Rotation2d(5.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_TRUE(result.HasTargets());
+  robotPose = frc::Pose2d{{2_m, 0_m}, frc::Rotation2d{5_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_TRUE(sys.cam.GetLatestResult().HasTargets());
 
   // now kick, now kick
-  robotPose =
-      frc::Pose2d(frc::Translation2d(2.0_m, 0.0_m), frc::Rotation2d(-5.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_TRUE(result.HasTargets());
+  robotPose = frc::Pose2d{{2_m, 0_m}, frc::Rotation2d{-5_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_TRUE(sys.cam.GetLatestResult().HasTargets());
 
   // now walk it by yourself
-  robotPose = frc::Pose2d(frc::Translation2d(2.0_m, 0.0_m),
-                          frc::Rotation2d(-179.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_FALSE(result.HasTargets());
+  robotPose = frc::Pose2d{{2_m, 0_m}, frc::Rotation2d{-179_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
 
   // now walk it by yourself
-  sysUnderTest.MoveCamera(
-      frc::Transform2d(frc::Translation2d(), frc::Rotation2d(180_deg)), 0.0_m);
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_TRUE(result.HasTargets());
+  sys.MoveCamera(frc::Transform3d{
+      frc::Translation3d{},
+      frc::Rotation3d{0_rad, 0_rad, units::constants::detail::PI_VAL * 1_rad}});
+  sys.ProcessFrame(robotPose);
+  ASSERT_TRUE(sys.cam.GetLatestResult().HasTargets());
 }
 
-TEST(SimVisionSystemTest, NotVisibleVert1) {
-  auto targetPose =
-      frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
+TEST_F(SimVisionSystemTest, TestNotVisibleVertOne) {
+  const frc::Pose3d targetPose{
+      {15.98_m, 0_m, 1_m},
+      frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
+  photonlib::SimVisionSystem sys{
+      "Test", 80.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 0};
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{targetPose, 1_m, 3_m, 3});
 
-  photonlib::SimVisionSystem sysUnderTest("Test", 80.0_deg,
-                                          frc::Transform2d(), 1.0_m, 99999.0_m,
-                                          640, 480, 0.0);
+  frc::Pose2d robotPose{{5_m, 0_m}, frc::Rotation2d{5_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_TRUE(sys.cam.GetLatestResult().HasTargets());
 
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPose, 1.0_m, 3.0_m, 2.0_m));
-
-  auto robotPose =
-      frc::Pose2d(frc::Translation2d(5.0_m, 0.0_m), frc::Rotation2d(5.0_deg));
-
-  sysUnderTest.ProcessFrame(robotPose);
-  auto result = sysUnderTest.cam.GetLatestResult();
-  ASSERT_TRUE(result.HasTargets());
-
-  sysUnderTest.MoveCamera(
-      frc::Transform2d(frc::Translation2d(), frc::Rotation2d(0_deg)), 5000.0_m);
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_FALSE(result.HasTargets());
+  sys.MoveCamera(frc::Transform3d{
+      frc::Translation3d{0_m, 0_m, 5000_m},
+      frc::Rotation3d{0_rad, 0_rad, units::constants::detail::PI_VAL * 1_rad}});
+  sys.ProcessFrame(robotPose);
+  ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
 }
 
-TEST(SimVisionSystemTest, NotVisibleVert2) {
-  auto targetPose =
-      frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
+// TEST_F(SimVisionSystemTest, TestNotVisibleVertTwo) {
+//   const frc::Pose3d targetPose{
+//       {15.98_m, 0_m, 2_m},
+//       frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL *
+//       1_rad}};
+//   frc::Transform3d robotToCamera{
+//       frc::Translation3d{0_m, 0_m, 1_m},
+//       frc::Rotation3d{0_deg, (units::constants::detail::PI_VAL / 4) * 1_rad,
+//                       0_deg}};
+//   photonlib::SimVisionSystem sys{
+//       "Test", 80.0_deg, robotToCamera.Inverse(), 99999_m, 1234, 1234, 0};
+//   sys.AddSimVisionTarget(
+//       photonlib::SimVisionTarget{targetPose, 3_m, 0.5_m, 1736});
 
-  photonlib::SimVisionSystem sysUnderTest("Test", 80.0_deg,
-                                          frc::Transform2d(), 1.0_m, 99999.0_m,
-                                          1234, 1234, 0.5);
+//   frc::Pose2d robotPose{{14.98_m, 0_m}, frc::Rotation2d{5_deg}};
+//   sys.ProcessFrame(robotPose);
+//   ASSERT_TRUE(sys.cam.GetLatestResult().HasTargets());
 
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPose, 3.0_m, 0.5_m, 0.5_m));
-
-  auto robotPose =
-      frc::Pose2d(frc::Translation2d(32.0_m, 0.0_m), frc::Rotation2d(5.0_deg));
-
-  sysUnderTest.ProcessFrame(robotPose);
-  auto result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_TRUE(result.HasTargets());
-
-  robotPose =
-      frc::Pose2d(frc::Translation2d(0.0_m, 0.0_m), frc::Rotation2d(5.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_FALSE(result.HasTargets());
-}
-
-TEST(SimVisionSystemTest, NotVisibleTgtSize) {
-  auto targetPose =
-      frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
-
-  photonlib::SimVisionSystem sysUnderTest("Test", 80.0_deg,
-                                          frc::Transform2d(), 1.0_m, 99999.0_m,
-                                          640, 480, 20.0);
-
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPose, 1.10_m, 0.25_m, 0.1_m));
-
-  auto robotPose =
-      frc::Pose2d(frc::Translation2d(32.0_m, 0.0_m), frc::Rotation2d(5.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  auto result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_TRUE(result.HasTargets());
-
-  robotPose =
-      frc::Pose2d(frc::Translation2d(0.0_m, 0.0_m), frc::Rotation2d(5.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_FALSE(result.HasTargets());
-}
-
-TEST(SimVisionSystemTest, NotVisibleTooFarForLEDs) {
-  auto targetPose =
-      frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
-
-  photonlib::SimVisionSystem sysUnderTest("Test", 80.0_deg,
-                                          frc::Transform2d(), 1.0_m, 10.0_m,
-                                          640, 480, 1.0);
-
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPose, 1.10_m, 0.25_m, 0.1_m));
-
-  auto robotPose =
-      frc::Pose2d(frc::Translation2d(28.0_m, 0.0_m), frc::Rotation2d(5.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  auto result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_TRUE(result.HasTargets());
-
-  robotPose =
-      frc::Pose2d(frc::Translation2d(0.0_m, 0.0_m), frc::Rotation2d(5.0_deg));
-  sysUnderTest.ProcessFrame(robotPose);
-  result = sysUnderTest.cam.GetLatestResult();
-  EXPECT_FALSE(result.HasTargets());
-}
-
-class SimVisionSystemYawParamTest : public testing::TestWithParam<double> {};
-INSTANTIATE_TEST_SUITE_P(SimVisionSystemYawParamTests,
-                         SimVisionSystemYawParamTest,
-                         testing::Values(-10, -5, -0, -1, -2, 5, 7, 10.23));
-TEST_P(SimVisionSystemYawParamTest, YawAngles) {
-  double testYaw = GetParam();  // Nope, Chuck testYaw
-  auto targetPose =
-      frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d(45_deg));
-
-  photonlib::SimVisionSystem sysUnderTest("Test", 80.0_deg,
-                                          frc::Transform2d(), 1.0_m, 99999.0_m,
-                                          640, 480, 0.0);
-
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPose, 0.0_m, 0.5_m, 0.5_m));
-
-  auto robotPose = frc::Pose2d(frc::Translation2d(32_m, 0.0_m),
-                               frc::Rotation2d(units::degree_t(testYaw)));
-
-  sysUnderTest.ProcessFrame(robotPose);
-  auto result = sysUnderTest.cam.GetLatestResult();
-  ASSERT_TRUE(result.HasTargets());
-  auto tgt = result.GetBestTarget();
-  EXPECT_DOUBLE_EQ(tgt.GetYaw(), testYaw);
-}
-
-// class SimVisionSystemCameraPitchParamTest
-//     : public testing::TestWithParam<double> {};
-// INSTANTIATE_TEST_SUITE_P(SimVisionSystemCameraPitchParamTests,
-//                          SimVisionSystemCameraPitchParamTest,
-//                          testing::Values(-10, -5, -0, -1, -2, 5, 7, 10.23,
-//                                          20.21, -19.999));
-// TEST_P(SimVisionSystemCameraPitchParamTest, CameraPitch) {
-//   double testPitch = GetParam();
-//   auto targetPose =
-//       frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d(45_deg));
-
-//   auto robotPose =
-//       frc::Pose2d(frc::Translation2d(30_m, 0.0_m), frc::Rotation2d(0.0_deg));
-
-//   photonlib::SimVisionSystem sysUnderTest("Test", 80.0_deg,
-//                                           frc::Transform2d(), 1.0_m,
-99999.0_m,
-//                                           640, 480, 0.0);
-
-//   sysUnderTest.AddSimVisionTarget(
-//       photonlib::SimVisionTarget(targetPose, 0.0_m, 0.5_m, 0.5_m));
-
-//   sysUnderTest.MoveCamera(
-//       frc::Transform2d(frc::Translation2d(), frc::Rotation2d()), 0.0_m));
-
-//   photonlib::PhotonCamera::SetVersionCheckEnabled(false);
-//   sysUnderTest.ProcessFrame(robotPose);
-//   auto result = sysUnderTest.cam.GetLatestResult();
-//   ASSERT_TRUE(result.HasTargets());
-//   auto tgt = result.GetBestTarget();
-//   // If the camera is pitched down by 10 degrees, the target should appear
-//   // in the upper part of the image (ie, pitch positive). Therefor,
-//   // pass/fail involves -1.0.
-//   EXPECT_DOUBLE_EQ(tgt.GetPitch(), -testPitch);
+//   robotPose = frc::Pose2d{frc::Translation2d{0_m, 0_m},
+//   frc::Rotation2d{5_deg}}; sys.ProcessFrame(robotPose);
+//   ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
 // }
 
-class SimVisionSystemDistCalcParamTest
-    : public testing::TestWithParam<std::tuple<double, double, double>> {};
+TEST_F(SimVisionSystemTest, TestNotVisibleTargetSize) {
+  const frc::Pose3d targetPose{
+      {15.98_m, 0_m, 1_m},
+      frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
+  photonlib::SimVisionSystem sys{
+      "Test", 80.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 20.0};
+  sys.AddSimVisionTarget(
+      photonlib::SimVisionTarget{targetPose, 0.1_m, 0.025_m, 24});
+
+  frc::Pose2d robotPose{{12_m, 0_m}, frc::Rotation2d{5_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_TRUE(sys.cam.GetLatestResult().HasTargets());
+
+  robotPose = frc::Pose2d{frc::Translation2d{0_m, 0_m}, frc::Rotation2d{5_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
+}
+
+TEST_F(SimVisionSystemTest, TestNotVisibleTooFarForLEDs) {
+  const frc::Pose3d targetPose{
+      {15.98_m, 0_m, 1_m},
+      frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
+  photonlib::SimVisionSystem sys{
+      "Test", 80.0_deg, frc::Transform3d{}, 10_m, 640, 480, 1.0};
+  sys.AddSimVisionTarget(
+      photonlib::SimVisionTarget{targetPose, 1_m, 0.25_m, 78});
+
+  frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{5_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_TRUE(sys.cam.GetLatestResult().HasTargets());
+
+  robotPose = frc::Pose2d{frc::Translation2d{0_m, 0_m}, frc::Rotation2d{5_deg}};
+  sys.ProcessFrame(robotPose);
+  ASSERT_FALSE(sys.cam.GetLatestResult().HasTargets());
+}
+
+TEST_P(SimVisionSystemTestWithParamsTest, YawAngles) {
+  const frc::Pose3d targetPose{
+      {15.98_m, 0_m, 0_m},
+      frc::Rotation3d{0_deg, 0_deg,
+                      (3 * units::constants::detail::PI_VAL / 4) * 1_rad}};
+  frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{GetParam() * -1.0}};
+  photonlib::SimVisionSystem sys{
+      "Test", 120.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 0};
+  sys.AddSimVisionTarget(
+      photonlib::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 23});
+
+  sys.ProcessFrame(robotPose);
+
+  auto results = sys.cam.GetLatestResult();
+
+  ASSERT_TRUE(results.HasTargets());
+
+  photonlib::PhotonTrackedTarget target = results.GetBestTarget();
+
+  ASSERT_NEAR(GetParam().to<double>(), target.GetYaw(), 0.0001);
+}
+
+TEST_P(SimVisionSystemTestWithParamsTest, PitchAngles) {
+  const frc::Pose3d targetPose{
+      {15.98_m, 0_m, 0_m},
+      frc::Rotation3d{0_deg, 0_deg,
+                      (3 * units::constants::detail::PI_VAL / 4) * 1_rad}};
+  frc::Pose2d robotPose{{10_m, 0_m}, frc::Rotation2d{0_deg}};
+  photonlib::SimVisionSystem sys{
+      "Test", 120.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 0};
+  sys.AddSimVisionTarget(
+      photonlib::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 23});
+
+  sys.MoveCamera(frc::Transform3d{frc::Translation3d{},
+                                  frc::Rotation3d{0_deg, GetParam(), 0_deg}});
+  sys.ProcessFrame(robotPose);
+
+  auto results = sys.cam.GetLatestResult();
+
+  ASSERT_TRUE(results.HasTargets());
+
+  photonlib::PhotonTrackedTarget target = results.GetBestTarget();
+
+  ASSERT_NEAR(GetParam().to<double>(), target.GetPitch(), 0.0001);
+}
+
+INSTANTIATE_TEST_SUITE_P(AnglesTests, SimVisionSystemTestWithParamsTest,
+                         testing::Values(-10_deg, -5_deg, -0_deg, -1_deg,
+                                         -2_deg, 5_deg, 7_deg, 10.23_deg,
+                                         20.21_deg, -19.999_deg));
+
+TEST_P(SimVisionSystemTestDistanceParamsTest, DistanceCalc) {
+  units::foot_t distParam;
+  units::degree_t pitchParam;
+  units::foot_t heightParam;
+  std::tie(distParam, pitchParam, heightParam) = GetParam();
+
+  const frc::Pose3d targetPose{
+      {15.98_m, 0_m, 1_m},
+      frc::Rotation3d{0_deg, 0_deg,
+                      (units::constants::detail::PI_VAL * 0.98) * 1_rad}};
+  frc::Pose3d robotPose{{15.98_m - distParam, 0_m, 0_m}, frc::Rotation3d{}};
+  frc::Transform3d robotToCamera{frc::Translation3d{0_m, 0_m, heightParam},
+                                 frc::Rotation3d{0_deg, pitchParam, 0_deg}};
+  photonlib::SimVisionSystem sys{
+      "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysoho"
+      "wsyourdaygoingihopegoodhaveagreatrestofyourlife",
+      160.0_deg,
+      robotToCamera.Inverse(),
+      99999_m,
+      640,
+      480,
+      0};
+  sys.AddSimVisionTarget(
+      photonlib::SimVisionTarget{targetPose, 0.5_m, 0.5_m, 0});
+  sys.ProcessFrame(robotPose);
+
+  auto results = sys.cam.GetLatestResult();
+
+  ASSERT_TRUE(results.HasTargets());
+
+  photonlib::PhotonTrackedTarget target = results.GetBestTarget();
+
+  ASSERT_NEAR(target.GetYaw(), 0.0, 0.0001);
+
+  units::meter_t dist = photonlib::PhotonUtils::CalculateDistanceToTarget(
+      robotToCamera.Z(), targetPose.Z(), pitchParam,
+      units::degree_t{target.GetPitch()});
+  ASSERT_NEAR(dist.to<double>(),
+              distParam.convert<units::meters>().to<double>(), 0.001);
+}
+
 INSTANTIATE_TEST_SUITE_P(
-    SimVisionSystemDistCalcParamTests, SimVisionSystemDistCalcParamTest,
-    testing::Values(std::tuple<double, double, double>(5, 35, 0),
-                    std::tuple<double, double, double>(6, 35, 1),
-                    std::tuple<double, double, double>(10, 35, 0),
-                    std::tuple<double, double, double>(15, 35, 2),
-                    std::tuple<double, double, double>(19.95, 35, 0),
-                    std::tuple<double, double, double>(20, 35, 0),
-                    std::tuple<double, double, double>(5, 42, 1),
-                    std::tuple<double, double, double>(6, 42, 0),
-                    std::tuple<double, double, double>(10, 42, 2),
-                    std::tuple<double, double, double>(15, 42, 0.5),
-                    std::tuple<double, double, double>(19.42, 35, 0),
-                    std::tuple<double, double, double>(20, 42, 0),
-                    std::tuple<double, double, double>(5, 55, 2),
-                    std::tuple<double, double, double>(6, 55, 0),
-                    std::tuple<double, double, double>(10, 54, 2.2),
-                    std::tuple<double, double, double>(15, 53, 0),
-                    std::tuple<double, double, double>(19.52, 35, 1.1),
-                    std::tuple<double, double, double>(20, 51, 2.87),
-                    std::tuple<double, double, double>(20, 55, 3)));
-// TEST_P(SimVisionSystemDistCalcParamTest, DistanceCalc) {
-//   std::tuple<double, double, double> testArgs = GetParam();
-//   double testDist = std::get<0>(testArgs);
-//   double testPitch = std::get<1>(testArgs);
-//   double testHeight = std::get<2>(testArgs);
+    DistanceParamsTests, SimVisionSystemTestDistanceParamsTest,
+    testing::Values(std::make_tuple(5_ft, 15.98_deg, 0_ft),
+                    std::make_tuple(6_ft, 15.98_deg, 1_ft),
+                    std::make_tuple(10_ft, 15.98_deg, 0_ft),
+                    std::make_tuple(15_ft, 15.98_deg, 2_ft),
+                    std::make_tuple(19.95_ft, 15.98_deg, 0_ft),
+                    std::make_tuple(20_ft, 15.98_deg, 0_ft),
+                    std::make_tuple(5_ft, 42_deg, 1_ft),
+                    std::make_tuple(6_ft, 42_deg, 0_ft),
+                    std::make_tuple(10_ft, 42_deg, 2_ft),
+                    std::make_tuple(15_ft, 42_deg, 0.5_ft),
+                    std::make_tuple(19.42_ft, 15.98_deg, 0_ft),
+                    std::make_tuple(20_ft, 42_deg, 0_ft),
+                    std::make_tuple(5_ft, 55_deg, 2_ft),
+                    std::make_tuple(6_ft, 55_deg, 0_ft),
+                    std::make_tuple(10_ft, 54_deg, 2.2_ft),
+                    std::make_tuple(15_ft, 53_deg, 0_ft),
+                    std::make_tuple(19.52_ft, 15.98_deg, 1.1_ft)));
 
-//   auto targetPose = frc::Pose2d(frc::Translation2d(35_m, 0_m),
-//                                 frc::Rotation2d(units::radian_t(3.14159 /
-//                                                                      42)));
+TEST_F(SimVisionSystemTest, TestMultipleTargets) {
+  const frc::Pose3d targetPoseL{
+      {15.98_m, 2_m, 0_m},
+      frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
+  const frc::Pose3d targetPoseC{
+      {15.98_m, 0_m, 0_m},
+      frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
+  const frc::Pose3d targetPoseR{
+      {15.98_m, -2_m, 0_m},
+      frc::Rotation3d{0_deg, 0_deg, units::constants::detail::PI_VAL * 1_rad}};
+  photonlib::SimVisionSystem sys{
+      "Test", 160.0_deg, frc::Transform3d{}, 99999_m, 640, 480, 20.0};
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseL.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 0_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 1});
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseC.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 0_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 2});
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseR.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 0_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 3});
 
-//   auto robotPose =
-//       frc::Pose2d(frc::Translation2d(units::meter_t(35 - testDist), 0.0_m),
-//                   frc::Rotation2d(0.0_deg));
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseL.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 1_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 4});
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseC.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 1_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 5});
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseR.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 1_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 6});
 
-//   photonlib::SimVisionSystem sysUnderTest(
-// "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysoho"
-//       "wsyourdaygoingihopegoodhaveagreatrestofyourlife",
-//       160.0_deg, units::degree_t(testPitch), frc::Transform2d(),
-//       units::meter_t(testHeight), 99999.0_m, 640, 480, 0.0);
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseL.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 0.5_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 7});
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseC.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 0.5_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 8});
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseL.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 0.75_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 9});
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseR.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 0.75_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 10});
+  sys.AddSimVisionTarget(photonlib::SimVisionTarget{
+      targetPoseL.TransformBy(frc::Transform3d{
+          frc::Translation3d{0_m, 0_m, 0.25_m}, frc::Rotation3d{}}),
+      0.25_m, 0.25_m, 11});
 
-//   sysUnderTest.AddSimVisionTarget(photonlib::SimVisionTarget(
-//       targetPose, units::meter_t(testDist), 0.5_m, 0.5_m));
+  frc::Pose2d robotPose{{6_m, 0_m}, frc::Rotation2d{.25_deg}};
+  sys.ProcessFrame(robotPose);
 
-//   sysUnderTest.ProcessFrame(robotPose);
-//   auto result = sysUnderTest.cam.GetLatestResult();
-//   ASSERT_TRUE(result.HasTargets());
-//   auto tgt = result.GetBestTarget();
-//   EXPECT_DOUBLE_EQ(tgt.GetYaw(), 0.0);
-//   units::meter_t distMeas =
-//   photonlib::PhotonUtils::CalculateDistanceToTarget(
-//       units::meter_t(testHeight), units::meter_t(testDist),
-//       units::degree_t(testPitch), units::degree_t(tgt.GetPitch()));
-//   EXPECT_DOUBLE_EQ(distMeas.value(), testDist);
-// }
+  auto results = sys.cam.GetLatestResult();
 
-TEST(SimVisionSystemTest, MultipleTargets) {
-  auto targetPoseL =
-      frc::Pose2d(frc::Translation2d(35_m, 2_m), frc::Rotation2d());
-  auto targetPoseC =
-      frc::Pose2d(frc::Translation2d(35_m, 0_m), frc::Rotation2d());
-  auto targetPoseR =
-      frc::Pose2d(frc::Translation2d(35_m, -2_m), frc::Rotation2d());
+  ASSERT_TRUE(results.HasTargets());
 
-  photonlib::SimVisionSystem sysUnderTest("test", 160.0_deg,
-                                          frc::Transform2d(), 5.0_m, 99999.0_m,
-                                          640, 480, 20.0);
+  auto targetList = results.GetTargets();
 
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseL, 0.0_m, 0.25_m, 0.1_m));
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseC, 1.0_m, 0.25_m, 0.1_m));
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseR, 2.0_m, 0.25_m, 0.1_m));
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseL, 3.0_m, 0.25_m, 0.1_m));
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseC, 4.0_m, 0.25_m, 0.1_m));
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseR, 5.0_m, 0.25_m, 0.1_m));
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseL, 6.0_m, 0.25_m, 0.1_m));
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseC, 7.0_m, 0.25_m, 0.1_m));
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseL, 8.0_m, 0.25_m, 0.1_m));
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseR, 9.0_m, 0.25_m, 0.1_m));
-  sysUnderTest.AddSimVisionTarget(
-      photonlib::SimVisionTarget(targetPoseL, 10.0_m, 0.25_m, 0.1_m));
-
-  auto robotPose =
-      frc::Pose2d(frc::Translation2d(30_m, 0.0_m), frc::Rotation2d(5.0_deg));
-
-  sysUnderTest.ProcessFrame(robotPose);
-  auto result = sysUnderTest.cam.GetLatestResult();
-  ASSERT_TRUE(result.HasTargets());
-
-  auto tgtList = result.GetTargets();
-  EXPECT_EQ(11ul, tgtList.size());
+  ASSERT_EQ(targetList.size(), size_t(11));
 }
-*/

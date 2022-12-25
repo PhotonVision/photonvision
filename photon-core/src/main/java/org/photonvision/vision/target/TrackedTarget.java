@@ -16,6 +16,7 @@
  */
 package org.photonvision.vision.target;
 
+import edu.wpi.first.apriltag.jni.DetectionResult;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +27,6 @@ import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
 import org.opencv.core.RotatedRect;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.vision.apriltag.DetectionResult;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.*;
 
