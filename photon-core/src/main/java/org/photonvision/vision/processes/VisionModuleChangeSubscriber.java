@@ -148,8 +148,12 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                                                     curAdvSettings.offsetDualPointB = newPoint;
                                                     curAdvSettings.offsetDualPointBArea = latestTarget.getArea();
                                                     break;
+                                                default:
+                                                    break;
                                             }
                                         }
+                                        break;
+                                    default:
                                         break;
                                 }
                             }
