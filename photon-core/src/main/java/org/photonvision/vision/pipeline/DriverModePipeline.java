@@ -50,7 +50,7 @@ public class DriverModePipeline
 
         Draw2dCrosshairPipe.Draw2dCrosshairParams draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
-                        frameStaticProperties, settings.streamingFrameDivisor);
+                        frameStaticProperties, settings.streamingFrameDivisor, settings.inputImageRotationMode);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         resizeImagePipe.setParams(
