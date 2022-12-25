@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.calibration;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -33,7 +34,8 @@ public class CameraCalibrationCoefficients implements Releasable {
     public final JsonMat cameraIntrinsics;
 
     @JsonProperty("cameraExtrinsics")
-    public final JsonMat cameraExtrinsics;
+    @JsonAlias({"cameraExtrinsics", "distCoeffs"})
+    public final JsonMat distCoeffs;
 
     @JsonProperty("perViewErrors")
     public final double[] perViewErrors;
@@ -45,12 +47,12 @@ public class CameraCalibrationCoefficients implements Releasable {
     public CameraCalibrationCoefficients(
             @JsonProperty("resolution") Size resolution,
             @JsonProperty("cameraIntrinsics") JsonMat cameraIntrinsics,
-            @JsonProperty("cameraExtrinsics") JsonMat cameraExtrinsics,
+            @JsonProperty("cameraExtrinsics") JsonMat distCoeffs,
             @JsonProperty("perViewErrors") double[] perViewErrors,
             @JsonProperty("standardDeviation") double standardDeviation) {
         this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
-        this.cameraExtrinsics = cameraExtrinsics;
+        this.distCoeffs = distCoeffs;
         this.perViewErrors = perViewErrors;
         this.standardDeviation = standardDeviation;
     }
@@ -61,8 +63,8 @@ public class CameraCalibrationCoefficients implements Releasable {
     }
 
     @JsonIgnore
-    public MatOfDouble getCameraExtrinsicsMat() {
-        return cameraExtrinsics.getAsMatOfDouble();
+    public MatOfDouble getDistCoeffsMat() {
+        return distCoeffs.getAsMatOfDouble();
     }
 
     @JsonIgnore
@@ -78,6 +80,6 @@ public class CameraCalibrationCoefficients implements Releasable {
     @Override
     public void release() {
         cameraIntrinsics.release();
-        cameraExtrinsics.release();
+        distCoeffs.release();
     }
 }

@@ -46,7 +46,7 @@ public class NetworkManager {
 
         var config = ConfigManager.getInstance().getConfig().getNetworkConfig();
         logger.info("Setting " + config.connectionType + " with team team " + config.teamNumber);
-        if (Platform.isRaspberryPi() || Platform.isLinux()) {
+        if (Platform.isLinux()) {
             if (!Platform.isRoot) {
                 logger.error("Cannot manage network without root!");
                 return;
