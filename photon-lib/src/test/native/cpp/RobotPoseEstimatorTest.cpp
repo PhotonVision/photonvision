@@ -46,10 +46,15 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
   aprilTags.insert({1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
                                    units::meter_t(5), frc::Rotation3d())});
 
-  std::vector<std::pair<photonlib::PhotonCamera, frc::Transform3d>> cameras;
+  std::vector<
+      std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
+      cameras;
 
-  photonlib::PhotonCamera cameraOne("test");
-  photonlib::PhotonCamera cameraTwo("test");
+  std::shared_ptr<photonlib::PhotonCamera> cameraOne =
+      std::make_shared<photonlib::PhotonCamera>("test");
+  std::shared_ptr<photonlib::PhotonCamera> cameraTwo =
+      std::make_shared<photonlib::PhotonCamera>("test");
+
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
       photonlib::PhotonTrackedTarget{
           3.0,
@@ -77,8 +82,8 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraOne.test = true;
-  cameraOne.testResult = {2_s, targets};
+  cameraOne->test = true;
+  cameraOne->testResult = {2_s, targets};
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsTwo{
       photonlib::PhotonTrackedTarget{
@@ -95,8 +100,8 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraTwo.test = true;
-  cameraTwo.testResult = {4_s, targetsTwo};
+  cameraTwo->test = true;
+  cameraTwo->testResult = {4_s, targetsTwo};
 
   cameras.push_back(std::make_pair(
       cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
@@ -123,10 +128,15 @@ TEST(RobotPoseEstimatorTest, ClosestToCameraHeightStrategy) {
   aprilTags.insert({1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
                                    units::meter_t(5), frc::Rotation3d())});
 
-  std::vector<std::pair<photonlib::PhotonCamera, frc::Transform3d>> cameras;
+  std::vector<
+      std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
+      cameras;
 
-  photonlib::PhotonCamera cameraOne("test");
-  photonlib::PhotonCamera cameraTwo("test");
+  std::shared_ptr<photonlib::PhotonCamera> cameraOne =
+      std::make_shared<photonlib::PhotonCamera>("test");
+  std::shared_ptr<photonlib::PhotonCamera> cameraTwo =
+      std::make_shared<photonlib::PhotonCamera>("test");
+
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
       photonlib::PhotonTrackedTarget{
           3.0,
@@ -154,8 +164,8 @@ TEST(RobotPoseEstimatorTest, ClosestToCameraHeightStrategy) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraOne.test = true;
-  cameraOne.testResult = {2_s, targets};
+  cameraOne->test = true;
+  cameraOne->testResult = {2_s, targets};
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsTwo{
       photonlib::PhotonTrackedTarget{
@@ -172,8 +182,8 @@ TEST(RobotPoseEstimatorTest, ClosestToCameraHeightStrategy) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraTwo.test = true;
-  cameraTwo.testResult = {4_s, targetsTwo};
+  cameraTwo->test = true;
+  cameraTwo->testResult = {4_s, targetsTwo};
 
   cameras.push_back(std::make_pair(
       cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 4_m),
@@ -200,10 +210,15 @@ TEST(RobotPoseEstimatorTest, ClosestToReferencePoseStrategy) {
   aprilTags.insert({1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
                                    units::meter_t(5), frc::Rotation3d())});
 
-  std::vector<std::pair<photonlib::PhotonCamera, frc::Transform3d>> cameras;
+  std::vector<
+      std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
+      cameras;
 
-  photonlib::PhotonCamera cameraOne("test");
-  photonlib::PhotonCamera cameraTwo("test");
+  std::shared_ptr<photonlib::PhotonCamera> cameraOne =
+      std::make_shared<photonlib::PhotonCamera>("test");
+  std::shared_ptr<photonlib::PhotonCamera> cameraTwo =
+      std::make_shared<photonlib::PhotonCamera>("test");
+
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
       photonlib::PhotonTrackedTarget{
           3.0,
@@ -231,8 +246,8 @@ TEST(RobotPoseEstimatorTest, ClosestToReferencePoseStrategy) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraOne.test = true;
-  cameraOne.testResult = {2_s, targets};
+  cameraOne->test = true;
+  cameraOne->testResult = {2_s, targets};
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsTwo{
       photonlib::PhotonTrackedTarget{
@@ -249,8 +264,8 @@ TEST(RobotPoseEstimatorTest, ClosestToReferencePoseStrategy) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraTwo.test = true;
-  cameraTwo.testResult = {4_s, targetsTwo};
+  cameraTwo->test = true;
+  cameraTwo->testResult = {4_s, targetsTwo};
 
   cameras.push_back(std::make_pair(
       cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
@@ -279,10 +294,15 @@ TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
   aprilTags.insert({1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
                                    units::meter_t(5), frc::Rotation3d())});
 
-  std::vector<std::pair<photonlib::PhotonCamera, frc::Transform3d>> cameras;
+  std::vector<
+      std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
+      cameras;
 
-  photonlib::PhotonCamera cameraOne("test");
-  photonlib::PhotonCamera cameraTwo("test");
+  std::shared_ptr<photonlib::PhotonCamera> cameraOne =
+      std::make_shared<photonlib::PhotonCamera>("test");
+  std::shared_ptr<photonlib::PhotonCamera> cameraTwo =
+      std::make_shared<photonlib::PhotonCamera>("test");
+
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
       photonlib::PhotonTrackedTarget{
           3.0,
@@ -310,8 +330,8 @@ TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraOne.test = true;
-  cameraOne.testResult = {2_s, targets};
+  cameraOne->test = true;
+  cameraOne->testResult = {2_s, targets};
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsTwo{
       photonlib::PhotonTrackedTarget{
@@ -328,8 +348,8 @@ TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraTwo.test = true;
-  cameraTwo.testResult = {4_s, targetsTwo};
+  cameraTwo->test = true;
+  cameraTwo->testResult = {4_s, targetsTwo};
 
   cameras.push_back(std::make_pair(
       cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
@@ -372,7 +392,7 @@ TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraOne.testResult = {2_s, targetsThree};
+  cameraOne->testResult = {2_s, targetsThree};
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsFour{
       photonlib::PhotonTrackedTarget{
@@ -389,9 +409,10 @@ TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraTwo.testResult = {4_s, targetsFour};
+  cameraTwo->testResult = {4_s, targetsFour};
 
-  std::vector<std::pair<photonlib::PhotonCamera, frc::Transform3d>>
+  std::vector<
+      std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
       camerasUpdated;
   camerasUpdated.push_back(std::make_pair(
       cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
@@ -416,10 +437,15 @@ TEST(RobotPoseEstimatorTest, AverageBestPoses) {
   aprilTags.insert({1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
                                    units::meter_t(5), frc::Rotation3d())});
 
-  std::vector<std::pair<photonlib::PhotonCamera, frc::Transform3d>> cameras;
+  std::vector<
+      std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
+      cameras;
 
-  photonlib::PhotonCamera cameraOne("test");
-  photonlib::PhotonCamera cameraTwo("test");
+  std::shared_ptr<photonlib::PhotonCamera> cameraOne =
+      std::make_shared<photonlib::PhotonCamera>("test");
+  std::shared_ptr<photonlib::PhotonCamera> cameraTwo =
+      std::make_shared<photonlib::PhotonCamera>("test");
+
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 2> targets{
       photonlib::PhotonTrackedTarget{
           3.0,
@@ -447,8 +473,8 @@ TEST(RobotPoseEstimatorTest, AverageBestPoses) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraOne.test = true;
-  cameraOne.testResult = {2_s, targets};
+  cameraOne->test = true;
+  cameraOne->testResult = {2_s, targets};
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsTwo{
       photonlib::PhotonTrackedTarget{
@@ -465,8 +491,8 @@ TEST(RobotPoseEstimatorTest, AverageBestPoses) {
           {std::pair{1, 2}, std::pair{3, 4}, std::pair{5, 6},
            std::pair{7, 8}}}};
 
-  cameraTwo.test = true;
-  cameraTwo.testResult = {4_s, targetsTwo};
+  cameraTwo->test = true;
+  cameraTwo->testResult = {4_s, targetsTwo};
 
   cameras.push_back(std::make_pair(
       cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
