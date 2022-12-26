@@ -27,10 +27,10 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
-#include <span>
 
 #include <frc/Errors.h>
 #include <frc/geometry/Pose3d.h>
@@ -44,14 +44,14 @@
 
 namespace photonlib {
 RobotPoseEstimator::RobotPoseEstimator(
-    std::map<int, frc::Pose3d> aprilTags, PoseStrategy strategy,
-    std::vector<std::pair<PhotonCamera, frc::Transform3d>> cameras) {
-  this->aprilTags = aprilTags;
-  this->strategy = strategy;
-  this->cameras = cameras;
-  this->lastPose = frc::Pose3d();
-  this->referencePose = frc::Pose3d();
-}
+    std::map<int, frc::Pose3d> tags, PoseStrategy strat,
+    std::vector<std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>>
+        cams)
+    : aprilTags(tags),
+      strategy(strat),
+      cameras(std::move(cams)),
+      lastPose(frc::Pose3d()),
+      referencePose(frc::Pose3d()) {}
 
 std::pair<frc::Pose3d, units::millisecond_t> RobotPoseEstimator::Update() {
   if (cameras.empty()) {
@@ -92,11 +92,11 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
   int lowestAI = -1;
   int lowestAJ = -1;
   double lowestAmbiguityScore = std::numeric_limits<double>::infinity();
-  for (std::string::size_type i = 0; i < cameras.size(); ++i) {
-    std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
+  for (RobotPoseEstimator::size_type i = 0; i < cameras.size(); ++i) {
+    std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d> p = cameras[i];
     std::span<const PhotonTrackedTarget> targets =
-        p.first.GetLatestResult().GetTargets();
-    for (std::string::size_type j = 0; j < targets.size(); ++j) {
+        p.first->GetLatestResult().GetTargets();
+    for (RobotPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
       if (targets[j].GetPoseAmbiguity() < lowestAmbiguityScore) {
         lowestAI = i;
         lowestAJ = j;
@@ -110,7 +110,7 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
   }
 
   PhotonTrackedTarget bestTarget =
-      cameras[lowestAI].first.GetLatestResult().GetTargets()[lowestAJ];
+      cameras[lowestAI].first->GetLatestResult().GetTargets()[lowestAJ];
 
   if (aprilTags.count(bestTarget.GetFiducialId()) == 0) {
     FRC_ReportError(frc::warn::Warning,
@@ -123,7 +123,7 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
       aprilTags[bestTarget.GetFiducialId()]
           .TransformBy(bestTarget.GetBestCameraToTarget().Inverse())
           .TransformBy(cameras[lowestAI].second.Inverse()),
-      cameras[lowestAI].first.GetLatestResult().GetLatency() / 1000.);
+      cameras[lowestAI].first->GetLatestResult().GetLatency() / 1000.);
 }
 std::pair<frc::Pose3d, units::millisecond_t>
 RobotPoseEstimator::ClosestToCameraHeightStrategy() {
@@ -132,11 +132,11 @@ RobotPoseEstimator::ClosestToCameraHeightStrategy() {
   units::millisecond_t milli = units::millisecond_t(0);
   frc::Pose3d pose = lastPose;
 
-  for (std::string::size_type i = 0; i < cameras.size(); ++i) {
-    std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
+  for (RobotPoseEstimator::size_type i = 0; i < cameras.size(); ++i) {
+    std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d> p = cameras[i];
     std::span<const PhotonTrackedTarget> targets =
-        p.first.GetLatestResult().GetTargets();
-    for (std::string::size_type j = 0; j < targets.size(); ++j) {
+        p.first->GetLatestResult().GetTargets();
+    for (RobotPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
       if (aprilTags.count(target.GetFiducialId()) == 0) {
         FRC_ReportError(frc::warn::Warning,
@@ -156,12 +156,12 @@ RobotPoseEstimator::ClosestToCameraHeightStrategy() {
         smallestHeightDifference = alternativeDifference;
         pose = targetPose.TransformBy(
             target.GetAlternateCameraToTarget().Inverse());
-        milli = p.first.GetLatestResult().GetLatency() / 1000.;
+        milli = p.first->GetLatestResult().GetLatency() / 1000.;
       }
       if (bestDifference < smallestHeightDifference) {
         smallestHeightDifference = bestDifference;
         pose = targetPose.TransformBy(target.GetBestCameraToTarget().Inverse());
-        milli = p.first.GetLatestResult().GetLatency() / 1000.;
+        milli = p.first->GetLatestResult().GetLatency() / 1000.;
       }
     }
   }
@@ -174,11 +174,11 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
   units::millisecond_t milli = units::millisecond_t(0);
   frc::Pose3d pose = lastPose;
 
-  for (std::string::size_type i = 0; i < cameras.size(); ++i) {
-    std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
+  for (RobotPoseEstimator::size_type i = 0; i < cameras.size(); ++i) {
+    std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d> p = cameras[i];
     std::span<const PhotonTrackedTarget> targets =
-        p.first.GetLatestResult().GetTargets();
-    for (std::string::size_type j = 0; j < targets.size(); ++j) {
+        p.first->GetLatestResult().GetTargets();
+    for (RobotPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
       if (aprilTags.count(target.GetFiducialId()) == 0) {
         FRC_ReportError(frc::warn::Warning,
@@ -200,13 +200,13 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
         smallestDifference = alternativeDifference;
         pose = targetPose.TransformBy(
             target.GetAlternateCameraToTarget().Inverse());
-        milli = p.first.GetLatestResult().GetLatency() / 1000.;
+        milli = p.first->GetLatestResult().GetLatency() / 1000.;
       }
 
       if (bestDifference < smallestDifference) {
         smallestDifference = bestDifference;
         pose = targetPose.TransformBy(target.GetBestCameraToTarget().Inverse());
-        milli = p.first.GetLatestResult().GetLatency() / 1000.;
+        milli = p.first->GetLatestResult().GetLatency() / 1000.;
       }
     }
   }
@@ -219,11 +219,11 @@ RobotPoseEstimator::AverageBestTargetsStrategy() {
       tempPoses;
   double totalAmbiguity = 0;
 
-  for (std::string::size_type i = 0; i < cameras.size(); ++i) {
-    std::pair<PhotonCamera, frc::Transform3d> p = cameras[i];
+  for (RobotPoseEstimator::size_type i = 0; i < cameras.size(); ++i) {
+    std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d> p = cameras[i];
     std::span<const PhotonTrackedTarget> targets =
-        p.first.GetLatestResult().GetTargets();
-    for (std::string::size_type j = 0; j < targets.size(); ++j) {
+        p.first->GetLatestResult().GetTargets();
+    for (RobotPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
       if (aprilTags.count(target.GetFiducialId()) == 0) {
         FRC_ReportError(frc::warn::Warning,
@@ -239,14 +239,14 @@ RobotPoseEstimator::AverageBestTargetsStrategy() {
                         "");
         return std::make_pair(
             targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()),
-            p.first.GetLatestResult().GetLatency() / 1000.);
+            p.first->GetLatestResult().GetLatency() / 1000.);
       }
       totalAmbiguity += 1. / target.GetPoseAmbiguity();
 
       tempPoses.push_back(std::make_pair(
           targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()),
           std::make_pair(target.GetPoseAmbiguity(),
-                         p.first.GetLatestResult().GetLatency() / 1000.)));
+                         p.first->GetLatestResult().GetLatency() / 1000.)));
     }
   }
   frc::Translation3d transform = frc::Translation3d();

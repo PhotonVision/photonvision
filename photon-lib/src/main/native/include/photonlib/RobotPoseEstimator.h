@@ -25,6 +25,7 @@
 #pragma once
 
 #include <map>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -41,27 +42,33 @@ enum PoseStrategy : int {
   CLOSEST_TO_LAST_POSE,
   AVERAGE_BEST_TARGETS
 };
+
 /**
  * A managing class to determine how an estimated pose should be chosen.
  */
 class RobotPoseEstimator {
+  using map_value_type =
+      std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>;
+  using size_type = std::vector<map_value_type>::size_type;
+
  public:
-  explicit RobotPoseEstimator(
-      std::map<int, frc::Pose3d> aprilTags, PoseStrategy strategy,
-      std::vector<std::pair<PhotonCamera, frc::Transform3d>>);
+  explicit RobotPoseEstimator(std::map<int, frc::Pose3d> aprilTags,
+                              PoseStrategy strategy,
+                              std::vector<map_value_type>);
 
   std::pair<frc::Pose3d, units::millisecond_t> Update();
 
   void SetPoseStrategy(PoseStrategy strategy);
 
-  void SetReferencePose(frc::Pose3d referencePose) {
+  inline void SetReferencePose(frc::Pose3d referencePose) {
     this->referencePose = referencePose;
   }
 
-  void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
+  inline void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
 
-  void SetCameras(
-      std::vector<std::pair<PhotonCamera, frc::Transform3d>> cameras) {
+  inline void SetCameras(
+      const std::vector<std::pair<std::shared_ptr<PhotonCamera>,
+                                  frc::Transform3d>>& cameras) {
     this->cameras = cameras;
   }
 
@@ -74,7 +81,7 @@ class RobotPoseEstimator {
  private:
   std::map<int, frc::Pose3d> aprilTags;
   PoseStrategy strategy;
-  std::vector<std::pair<PhotonCamera, frc::Transform3d>> cameras;
+  std::vector<map_value_type> cameras;
   frc::Pose3d lastPose;
   frc::Pose3d referencePose;
 
