@@ -67,6 +67,8 @@ class PhotonCamera {
    */
   explicit PhotonCamera(const std::string_view cameraName);
 
+  virtual ~PhotonCamera() = default;
+
   /**
    * Returns the latest pipeline result.
    * @return The latest pipeline result.
