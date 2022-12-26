@@ -20,10 +20,12 @@ package org.photonvision.vision.pipe.impl;
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
+import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
+
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagPoseEstimatorPipe
-        extends CVPipe<AprilTagDetection, AprilTagPoseEstimate, AprilTagPoseEstimator.Config> {
+        extends CVPipe<AprilTagDetection, AprilTagPoseEstimate, AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams> {
     private final AprilTagPoseEstimator m_poseEstimator =
             new AprilTagPoseEstimator(new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
 
@@ -35,14 +37,13 @@ public class AprilTagPoseEstimatorPipe
 
     @Override
     protected AprilTagPoseEstimate process(AprilTagDetection in) {
-        // TODO don't hardcode # iters
-        return m_poseEstimator.estimateOrthogonalIteration(in, 50);
+        return m_poseEstimator.estimateOrthogonalIteration(in, params.nIters);
     }
 
     @Override
-    public void setParams(AprilTagPoseEstimator.Config newParams) {
-        if (this.params != newParams) {
-            m_poseEstimator.setConfig(newParams);
+    public void setParams(AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams newParams) {
+        if (this.params == null || !this.params.equals(newParams)) {
+            m_poseEstimator.setConfig(newParams.config);
         }
 
         super.setParams(newParams);
@@ -52,5 +53,40 @@ public class AprilTagPoseEstimatorPipe
         this.useNativePoseEst = enabled;
     }
 
-    public static class AprilTagPoseEstimatorPipeParams {}
+    public static class AprilTagPoseEstimatorPipeParams {
+        final AprilTagPoseEstimator.Config config;
+        final int nIters;
+
+        public AprilTagPoseEstimatorPipeParams(Config config, int nIters) {
+            this.config = config;
+            this.nIters = nIters;
+        }
+
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((config == null) ? 0 : config.hashCode());
+            result = prime * result + nIters;
+            return result;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            AprilTagPoseEstimatorPipeParams other = (AprilTagPoseEstimatorPipeParams) obj;
+            if (config == null) {
+                if (other.config != null)
+                    return false;
+            } else if (!config.equals(other.config))
+                return false;
+            if (nIters != other.nIters)
+                return false;
+            return true;
+        }
+    }
 }

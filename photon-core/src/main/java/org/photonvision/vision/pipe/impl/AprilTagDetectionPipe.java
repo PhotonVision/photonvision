@@ -49,14 +49,15 @@ public class AprilTagDetectionPipe
 
     @Override
     public void setParams(AprilTagDetectionPipeParams newParams) {
-        if (this.params != newParams) {
+        if (this.params == null || !this.params.equals(newParams)) {
             m_detector.setConfig(newParams.detectorParams);
 
             m_detector.clearFamilies();
             m_detector.addFamily(newParams.family.getNativeName());
+
         }
 
-        super.setParams(params);
+        super.setParams(newParams);
     }
 
     public void setNativePoseEstimationEnabled(boolean enabled) {

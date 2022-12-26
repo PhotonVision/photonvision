@@ -28,4 +28,32 @@ public class AprilTagDetectionPipeParams {
         this.family = tagFamily;
         this.detectorParams = config;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((family == null) ? 0 : family.hashCode());
+        result = prime * result + ((detectorParams == null) ? 0 : detectorParams.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        AprilTagDetectionPipeParams other = (AprilTagDetectionPipeParams) obj;
+        if (family != other.family)
+            return false;
+        if (detectorParams == null) {
+            if (other.detectorParams != null)
+                return false;
+        } else if (!detectorParams.equals(other.detectorParams))
+            return false;
+        return true;
+    }
 }

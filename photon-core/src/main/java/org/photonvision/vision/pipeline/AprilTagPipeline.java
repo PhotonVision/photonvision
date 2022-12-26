@@ -32,6 +32,7 @@ import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
+import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
@@ -107,18 +108,21 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var config = new AprilTagDetector.Config();
         config.numThreads = settings.threads;
         config.refineEdges = settings.refineEdges;
-        config.quadSigma = settings.blur;
+        config.quadSigma = (float)settings.blur;
         config.quadDecimate = settings.decimate;
         aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(settings.tagFamily, config));
 
-        var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
-        if (cameraMatrix != null) {
-            var cx = cameraMatrix.get(0, 2)[0];
-            var cy = cameraMatrix.get(1, 2)[0];
-            var fx = cameraMatrix.get(0, 0)[0];
-            var fy = cameraMatrix.get(1, 1)[0];
+        if (frameStaticProperties.cameraCalibration != null) {
+            var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
+            if (cameraMatrix != null) {
+                var cx = cameraMatrix.get(0, 2)[0];
+                var cy = cameraMatrix.get(1, 2)[0];
+                var fx = cameraMatrix.get(0, 0)[0];
+                var fy = cameraMatrix.get(1, 1)[0];
 
-            poseEstimatorPipe.setParams(new Config(tagWidth, fx, fy, cx, cy));
+                poseEstimatorPipe.setParams(
+                    new AprilTagPoseEstimatorPipeParams(new Config(tagWidth, fx, fy, cx, cy), settings.numIterations));
+            }
         }
     }
 
