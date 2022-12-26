@@ -182,7 +182,8 @@ public class ColoredShapePipeline
                         settings.offsetSinglePoint,
                         dualOffsetValues,
                         frameStaticProperties,
-                        settings.streamingFrameDivisor);
+                        settings.streamingFrameDivisor,
+                        settings.inputImageRotationMode);
         draw2dCrosshairPipe.setParams(draw2dCrosshairParams);
 
         var draw3dTargetsParams =

@@ -35,7 +35,7 @@ namespace photonlib {
 constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
 
 PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
-                           const std::string& cameraName)
+                           const std::string_view cameraName)
     : mainTable(instance->GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(rootTable->GetRawTopic("rawBytes").Subscribe("raw", {})),
@@ -52,9 +52,10 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
       pipelineIndexSubscriber(
           rootTable->GetIntegerTopic("pipelineIndex").Subscribe(-1)),
       ledModeSubscriber(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
-      path(rootTable->GetPath()) {}
+      path(rootTable->GetPath()),
+      m_cameraName(cameraName) {}
 
-PhotonCamera::PhotonCamera(const std::string& cameraName)
+PhotonCamera::PhotonCamera(const std::string_view cameraName)
     : PhotonCamera(std::make_shared<nt::NetworkTableInstance>(
                        nt::NetworkTableInstance::GetDefault()),
                    cameraName) {}
@@ -108,6 +109,10 @@ LEDMode PhotonCamera::GetLEDMode() const {
 
 void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModeEntry.Set(static_cast<double>(static_cast<int>(mode)));
+}
+
+const std::string_view PhotonCamera::GetCameraName() const {
+  return m_cameraName;
 }
 
 void PhotonCamera::VerifyVersion() {
