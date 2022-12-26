@@ -54,7 +54,6 @@ public class AprilTagDetectionPipe
 
             m_detector.clearFamilies();
             m_detector.addFamily(newParams.family.getNativeName());
-
         }
 
         super.setParams(newParams);

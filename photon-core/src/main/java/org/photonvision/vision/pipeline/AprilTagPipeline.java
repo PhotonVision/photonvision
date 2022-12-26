@@ -108,7 +108,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var config = new AprilTagDetector.Config();
         config.numThreads = settings.threads;
         config.refineEdges = settings.refineEdges;
-        config.quadSigma = (float)settings.blur;
+        config.quadSigma = (float) settings.blur;
         config.quadDecimate = settings.decimate;
         aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(settings.tagFamily, config));
 
@@ -121,7 +121,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 var fy = cameraMatrix.get(1, 1)[0];
 
                 poseEstimatorPipe.setParams(
-                    new AprilTagPoseEstimatorPipeParams(new Config(tagWidth, fx, fy, cx, cy), settings.numIterations));
+                        new AprilTagPoseEstimatorPipeParams(
+                                new Config(tagWidth, fx, fy, cx, cy), settings.numIterations));
             }
         }
     }

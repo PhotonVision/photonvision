@@ -21,11 +21,13 @@ import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
-
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagPoseEstimatorPipe
-        extends CVPipe<AprilTagDetection, AprilTagPoseEstimate, AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams> {
+        extends CVPipe<
+                AprilTagDetection,
+                AprilTagPoseEstimate,
+                AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams> {
     private final AprilTagPoseEstimator m_poseEstimator =
             new AprilTagPoseEstimator(new AprilTagPoseEstimator.Config(0, 0, 0, 0, 0));
 
@@ -70,22 +72,17 @@ public class AprilTagPoseEstimatorPipe
             result = prime * result + nIters;
             return result;
         }
+
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
             AprilTagPoseEstimatorPipeParams other = (AprilTagPoseEstimatorPipeParams) obj;
             if (config == null) {
-                if (other.config != null)
-                    return false;
-            } else if (!config.equals(other.config))
-                return false;
-            if (nIters != other.nIters)
-                return false;
+                if (other.config != null) return false;
+            } else if (!config.equals(other.config)) return false;
+            if (nIters != other.nIters) return false;
             return true;
         }
     }
