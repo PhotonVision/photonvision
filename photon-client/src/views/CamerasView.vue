@@ -656,7 +656,7 @@ export default {
                 console.log("starting calibration with index " + calData.videoModeIndex);
             }
             this.$store.commit('currentPipelineIndex', -2);
-            this.$socket.send(this.$msgPack.encode(data));
+            this.$store.state.websocket.send(this.$msgPack.encode(data));
         },
         sendCalibrationFinish() {
             console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex);
