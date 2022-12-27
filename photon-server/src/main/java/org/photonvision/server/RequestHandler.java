@@ -127,7 +127,6 @@ public class RequestHandler {
                 ctx.status(200);
                 logger.info("New .jar in place, going down for restart...");
                 restartProgram();
-
             } catch (FileNotFoundException e) {
                 logger.error(
                         ".jar of this program could not be found. How the heck this program started in the first place is a mystery.");
@@ -136,7 +135,6 @@ public class RequestHandler {
                 logger.error("Could not overwrite the .jar for this instance of photonvision.");
                 ctx.status(500);
             }
-
         } else {
             logger.error("Couldn't read provided file for new .jar! Ignoring.");
             ctx.status(500);

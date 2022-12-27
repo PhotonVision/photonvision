@@ -131,7 +131,7 @@ public class HardwareManager {
     }
 
     public boolean restartDevice() {
-        if (Platform.isRaspberryPi()) {
+        if (Platform.isLinux()) {
             try {
                 return shellExec.executeBashCommand("reboot now") == 0;
             } catch (IOException e) {

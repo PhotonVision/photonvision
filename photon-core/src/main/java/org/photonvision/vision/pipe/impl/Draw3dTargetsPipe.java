@@ -47,7 +47,7 @@ public class Draw3dTargetsPipe
         if (!params.shouldDraw) return null;
         if (params.cameraCalibrationCoefficients == null
                 || params.cameraCalibrationCoefficients.getCameraIntrinsicsMat() == null
-                || params.cameraCalibrationCoefficients.getCameraExtrinsicsMat() == null) {
+                || params.cameraCalibrationCoefficients.getDistCoeffsMat() == null) {
             return null;
         }
 
@@ -90,7 +90,7 @@ public class Draw3dTargetsPipe
                         target.getCameraRelativeRvec(),
                         target.getCameraRelativeTvec(),
                         params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
-                        params.cameraCalibrationCoefficients.getCameraExtrinsicsMat(),
+                        params.cameraCalibrationCoefficients.getDistCoeffsMat(),
                         tempMat,
                         jac);
                 // Distort the points so they match the image they're being overlaid on
@@ -101,7 +101,7 @@ public class Draw3dTargetsPipe
                         target.getCameraRelativeRvec(),
                         target.getCameraRelativeTvec(),
                         params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
-                        params.cameraCalibrationCoefficients.getCameraExtrinsicsMat(),
+                        params.cameraCalibrationCoefficients.getDistCoeffsMat(),
                         tempMat,
                         jac);
                 var topPoints = tempMat.toList();
@@ -140,7 +140,7 @@ public class Draw3dTargetsPipe
                         target.getCameraRelativeRvec(),
                         target.getCameraRelativeTvec(),
                         params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
-                        params.cameraCalibrationCoefficients.getCameraExtrinsicsMat(),
+                        params.cameraCalibrationCoefficients.getDistCoeffsMat(),
                         tempMat,
                         jac);
                 var axisPoints = tempMat.toList();
@@ -213,7 +213,7 @@ public class Draw3dTargetsPipe
         var dstList = new ArrayList<Point>();
         final Mat cameraMatrix = params.cameraCalibrationCoefficients.getCameraIntrinsicsMat();
         // k1, k2, p1, p2, k3
-        final Mat distCoeffs = params.cameraCalibrationCoefficients.getCameraExtrinsicsMat();
+        final Mat distCoeffs = params.cameraCalibrationCoefficients.getDistCoeffsMat();
         var cx = cameraMatrix.get(0, 2)[0];
         var cy = cameraMatrix.get(1, 2)[0];
         var fx = cameraMatrix.get(0, 0)[0];
