@@ -17,61 +17,37 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.util.Objects;
-import org.photonvision.vision.apriltag.AprilTagDetectorParams;
+import edu.wpi.first.apriltag.AprilTagDetector;
 import org.photonvision.vision.apriltag.AprilTagFamily;
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class AprilTagDetectionPipeParams {
-    public final AprilTagDetectorParams detectorParams;
-    public final CameraCalibrationCoefficients cameraCalibrationCoefficients;
-    public final int numIterations;
-    public final double tagWidthMeters;
+    public final AprilTagFamily family;
+    public final AprilTagDetector.Config detectorParams;
 
-    public AprilTagDetectionPipeParams(
-            AprilTagFamily tagFamily,
-            double decimate,
-            double blur,
-            int threads,
-            boolean debug,
-            boolean refineEdges,
-            int numIters,
-            double tagWidthMeters,
-            CameraCalibrationCoefficients cameraCalibrationCoefficients) {
-        detectorParams =
-                new AprilTagDetectorParams(tagFamily, decimate, blur, threads, debug, refineEdges);
-        this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
-        this.numIterations = numIters;
-        this.tagWidthMeters = tagWidthMeters;
-    }
-
-    public AprilTagDetectionPipeParams(
-            AprilTagDetectorParams detectorParams,
-            CameraCalibrationCoefficients cameraCalibrationCoefficients,
-            int numIters,
-            double tagWidthMeters) {
-        this.detectorParams = detectorParams;
-        this.cameraCalibrationCoefficients = cameraCalibrationCoefficients;
-        this.numIterations = numIters;
-        this.tagWidthMeters = tagWidthMeters;
+    public AprilTagDetectionPipeParams(AprilTagFamily tagFamily, AprilTagDetector.Config config) {
+        this.family = tagFamily;
+        this.detectorParams = config;
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        AprilTagDetectionPipeParams that = (AprilTagDetectionPipeParams) o;
-        return Objects.equals(detectorParams, that.detectorParams)
-                && Objects.equals(cameraCalibrationCoefficients, that.cameraCalibrationCoefficients);
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((family == null) ? 0 : family.hashCode());
+        result = prime * result + ((detectorParams == null) ? 0 : detectorParams.hashCode());
+        return result;
     }
 
     @Override
-    public String toString() {
-        return "AprilTagDetectionPipeParams{"
-                + "detectorParams="
-                + detectorParams
-                + ", cameraCalibrationCoefficients="
-                + cameraCalibrationCoefficients
-                + '}';
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        AprilTagDetectionPipeParams other = (AprilTagDetectionPipeParams) obj;
+        if (family != other.family) return false;
+        if (detectorParams == null) {
+            if (other.detectorParams != null) return false;
+        } else if (!detectorParams.equals(other.detectorParams)) return false;
+        return true;
     }
 }
