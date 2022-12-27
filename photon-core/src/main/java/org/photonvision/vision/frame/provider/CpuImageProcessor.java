@@ -92,11 +92,7 @@ public abstract class CpuImageProcessor implements FrameProvider {
         }
 
         return new Frame(
-                input.colorImage,
-                outputMat,
-                m_processType,
-                input.captureTimestamp,
-                input.staticProps);
+                input.colorImage, outputMat, m_processType, input.captureTimestamp, input.staticProps);
     }
 
     @Override

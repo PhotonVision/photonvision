@@ -23,9 +23,7 @@ import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.apriltag.AprilTagDetectorParams;
-import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
@@ -56,11 +54,11 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         // Sanitize thread count - not supported to have fewer than 1 threads
         settings.threads = Math.max(1, settings.threads);
 
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
-            // TODO: Picam grayscale
-            LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
-            // LibCameraJNI.setShouldCopyColor(true); // need the color image to grayscale
-        }
+        // if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
+        //     // TODO: Picam grayscale
+        //     LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
+        //     // LibCameraJNI.setShouldCopyColor(true); // need the color image to grayscale
+        // }
 
         AprilTagDetectorParams aprilTagDetectionParams =
                 new AprilTagDetectorParams(

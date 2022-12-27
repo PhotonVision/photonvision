@@ -24,6 +24,7 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.LibcameraGpuSource.FPSRatedVideoMode;
+import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class LibcameraGpuSettables extends VisionSourceSettables {
@@ -34,6 +35,16 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     private int lastGain = 50;
     private Pair<Integer, Integer> lastAwbGains = new Pair<>(18, 18);
     private boolean m_initialized = false;
+
+    private ImageRotationMode m_rotationMode;
+
+    public void setRotation(ImageRotationMode rotationMode) {
+        if (rotationMode != m_rotationMode) {
+            m_rotationMode = rotationMode;
+
+            setVideoModeInternal(getCurrentVideoMode());
+        }
+    }
 
     public LibcameraGpuSettables(CameraConfiguration configuration) {
         super(configuration);
@@ -177,7 +188,9 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
             // }
 
             System.out.println("Starting camera");
-            success |= LibCameraJNI.createCamera(mode.width, mode.height, mode.fpsActual);
+            success |=
+                    LibCameraJNI.createCamera(
+                            mode.width, mode.height, (m_rotationMode == ImageRotationMode.DEG_180 ? 180 : 0));
             success |= LibCameraJNI.startCamera();
             if (!success) {
                 throw new RuntimeException(

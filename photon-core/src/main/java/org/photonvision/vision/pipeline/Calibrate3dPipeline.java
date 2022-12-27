@@ -34,9 +34,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
@@ -97,10 +95,10 @@ public class Calibrate3dPipeline
                         new Size(frameStaticProperties.imageWidth, frameStaticProperties.imageHeight));
         calibrate3dPipe.setParams(calibratePipeParams);
 
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
-            LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
-            // LibCameraJNI.setShouldCopyColor(true);
-        }
+        // if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && LibCameraJNI.isSupported()) {
+        //     LibCameraJNI.setRotation(settings.inputImageRotationMode.value);
+        //     // LibCameraJNI.setShouldCopyColor(true);
+        // }
     }
 
     @Override

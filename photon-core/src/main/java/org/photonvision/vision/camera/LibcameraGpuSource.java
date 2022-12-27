@@ -30,7 +30,7 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 public class LibcameraGpuSource extends VisionSource {
     static final Logger logger = new Logger(LibcameraGpuSource.class, LogGroup.Camera);
 
-    private final VisionSourceSettables settables;
+    private final LibcameraGpuSettables settables;
     private final LibcameraGpuFrameProvider frameProvider;
 
     public LibcameraGpuSource(CameraConfiguration configuration) {

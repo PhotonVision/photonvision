@@ -20,18 +20,18 @@ package org.photonvision.vision.frame.provider;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.LibCameraJNI;
+import org.photonvision.vision.camera.LibcameraGpuSettables;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ImageRotationMode;
 import org.photonvision.vision.pipe.impl.HSVPipe.HSVParams;
-import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class LibcameraGpuFrameProvider implements FrameProvider {
-    private final VisionSourceSettables settables;
+    private final LibcameraGpuSettables settables;
 
-    public LibcameraGpuFrameProvider(VisionSourceSettables visionSettables) {
+    public LibcameraGpuFrameProvider(LibcameraGpuSettables visionSettables) {
         this.settables = visionSettables;
 
         var vidMode = settables.getCurrentVideoMode();
@@ -92,7 +92,7 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
 
     @Override
     public void requestFrameRotation(ImageRotationMode rotationMode) {
-        LibCameraJNI.setRotation(rotationMode.ordinal());
+        this.settables.setRotation(rotationMode);
     }
 
     @Override

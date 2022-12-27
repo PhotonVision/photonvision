@@ -116,7 +116,7 @@ public class LibCameraJNI {
      * @param fps Camera video mode FPS
      * @return success of creating a camera object
      */
-    public static native boolean createCamera(int width, int height, int fps);
+    public static native boolean createCamera(int width, int height, int rotation);
 
     /**
      * Starts the camera thresholder and display threads running. Make sure that this function is
@@ -147,15 +147,15 @@ public class LibCameraJNI {
     // Unknown ranges for red and blue AWB gain
     public static native boolean setAwbGain(double red, double blue);
 
-    public static native boolean setRotation(int rotation);
-
     /**
-     * Get the time when the first pixel exposure was started, in the same timebase as libcamera gives the frame capture time. Units are nanoseconds.
+     * Get the time when the first pixel exposure was started, in the same timebase as libcamera gives
+     * the frame capture time. Units are nanoseconds.
      */
     public static native long getFrameCaptureTime();
 
     /**
-     * Get the current time, in the same timebase as libcamera gives the frame capture time. Units are nanoseconds.
+     * Get the current time, in the same timebase as libcamera gives the frame capture time. Units are
+     * nanoseconds.
      */
     public static native long getLibcameraTimestamp();
 

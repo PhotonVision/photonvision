@@ -82,7 +82,7 @@ public class SocketVideoStream implements Consumer<CVMat> {
         // Send the frame in an FPS-limited fashion
         var now = MathUtils.wpiNanoTime();
         if (now > nextFrameSendTime) {
-            oldSchoolServer.accept(frame);
+            oldSchoolServer.accept(image);
             nextFrameSendTime = now + minFramePeriodNanos;
         }
     }
