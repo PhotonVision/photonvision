@@ -15,19 +15,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.common.hardware.metrics;
+package org.photonvision.common.hardware.metrics.cmds;
 
-public class GPUMetrics extends MetricsBase {
-    private String gpuMemSplit = null;
+import org.photonvision.common.configuration.HardwareConfig;
 
-    public String getGPUMemorySplit() {
-        if (gpuMemSplit == null) {
-            gpuMemSplit = execute(gpuMemoryCommand);
-        }
-        return gpuMemSplit;
-    }
+public class CmdBase {
+    // CPU
+    public String cpuMemoryCommand = "";
+    public String cpuTemperatureCommand = "";
+    public String cpuUtilizationCommand = "";
+    public String cpuThrottleReasonCmd = "";
+    public String cpuUptimeCommand = "";
+    // GPU
+    public String gpuMemoryCommand = "";
+    public String gpuMemUsageCommand = "";
+    // RAM
+    public String ramUsageCommand = "";
+    // Disk
+    public String diskUsageCommand = "";
 
-    public String getMallocedMemory() {
-        return execute(gpuMemUsageCommand);
+    public void initCmds(HardwareConfig config) {
+        return; // default - do nothing
     }
 }
