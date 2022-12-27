@@ -16,6 +16,9 @@ test {
     useJUnitPlatform()
 }
 
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
 wpilibTools.deps.wpilibVersion = wpilibVersion
 println("Buidling for wpilib ${wpilibTools.deps.wpilibVersion}")
 
