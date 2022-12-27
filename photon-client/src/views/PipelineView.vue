@@ -35,7 +35,7 @@
               >
                 <span class="pr-1">Processing @ {{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
                 <span v-if="!fpsTooLow">{{ Math.min(Math.round($store.state.pipelineResults.latency), 9999) }} ms latency</span>
-                <span v-else-if="!$store.getters.currentPipelineSettings.inputShouldShow">HSV thresholds are too broad; narrow them for better performance</span>
+                <span v-else-if="!$store.getters.currentPipelineSettings.inputShouldShow && $store.getters.pipelineType == 2">HSV thresholds are too broad; narrow them for better performance</span>
                 <span v-else>stop viewing the raw stream for better performance</span>
               </v-chip>
               <v-switch
