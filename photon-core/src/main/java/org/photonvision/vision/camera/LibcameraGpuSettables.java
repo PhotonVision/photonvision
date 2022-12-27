@@ -90,16 +90,16 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
             // Settings for the OV5647 sensor, which is used by the Pi Camera Module v1
             videoModes.put(0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 90, 90, 1));
-            videoModes.put(2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 85, 90, 1));
+            videoModes.put(1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 85, 90, 1));
             videoModes.put(
-                    4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 45, 49, 0.74));
+                    2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 960, 720, 45, 49, 0.74));
             // Half the size of the active areas on the OV5647
             videoModes.put(
-                    4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 2592 / 2, 1944 / 2, 20, 20, 1));
+                    3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 2592 / 2, 1944 / 2, 20, 20, 1));
             videoModes.put(
-                    5, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 30, 45, 0.91));
+                    4, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 720, 30, 45, 0.91));
             videoModes.put(
-                    6, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, 0.72));
+                    5, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1920, 1080, 15, 20, 0.72));
         }
 
         // TODO need to add more video modes for new sensors here
