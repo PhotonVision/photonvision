@@ -71,14 +71,14 @@ public class CirclePNPTest {
         assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMatOfDouble().cols());
         assertEquals(3, cameraCalibration.getCameraIntrinsicsMat().rows());
         assertEquals(3, cameraCalibration.getCameraIntrinsicsMat().cols());
-        assertEquals(1, cameraCalibration.cameraExtrinsics.rows);
-        assertEquals(5, cameraCalibration.cameraExtrinsics.cols);
-        assertEquals(1, cameraCalibration.cameraExtrinsics.getAsMat().rows());
-        assertEquals(5, cameraCalibration.cameraExtrinsics.getAsMat().cols());
-        assertEquals(1, cameraCalibration.cameraExtrinsics.getAsMatOfDouble().rows());
-        assertEquals(5, cameraCalibration.cameraExtrinsics.getAsMatOfDouble().cols());
-        assertEquals(1, cameraCalibration.getCameraExtrinsicsMat().rows());
-        assertEquals(5, cameraCalibration.getCameraExtrinsicsMat().cols());
+        assertEquals(1, cameraCalibration.distCoeffs.rows);
+        assertEquals(5, cameraCalibration.distCoeffs.cols);
+        assertEquals(1, cameraCalibration.distCoeffs.getAsMat().rows());
+        assertEquals(5, cameraCalibration.distCoeffs.getAsMat().cols());
+        assertEquals(1, cameraCalibration.distCoeffs.getAsMatOfDouble().rows());
+        assertEquals(5, cameraCalibration.distCoeffs.getAsMatOfDouble().cols());
+        assertEquals(1, cameraCalibration.getDistCoeffsMat().rows());
+        assertEquals(5, cameraCalibration.getDistCoeffsMat().cols());
     }
 
     @Test

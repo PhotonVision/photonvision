@@ -80,6 +80,7 @@ public class PhotonCamera {
     }
 
     private final String path;
+    private final String name;
 
     private static boolean VERSION_CHECK_ENABLED = true;
     private static long VERSION_CHECK_INTERVAL = 5;
@@ -104,6 +105,7 @@ public class PhotonCamera {
      * @param cameraName The name of the camera, as seen in the UI.
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
+        name = cameraName;
         var mainTable = instance.getTable("photonvision");
         this.rootTable = mainTable.getSubTable(cameraName);
         path = rootTable.getPath();
@@ -250,6 +252,16 @@ public class PhotonCamera {
     @Deprecated
     public boolean hasTargets() {
         return getLatestResult().hasTargets();
+    }
+
+    /**
+     * Returns the name of the camera. This will return the same value that was given to the
+     * constructor as cameraName.
+     *
+     * @return The name of the camera.
+     */
+    public String getName() {
+        return name;
     }
 
     /**
