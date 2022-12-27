@@ -29,6 +29,7 @@ import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 
 public class SocketVideoStream implements Consumer<Frame> {
     int portID = 0; // Align with cscore's port for unique identification of stream
+    private int userCount = 0;
 
     ConcurrentLinkedQueue<Frame> frameQueue = new ConcurrentLinkedQueue<Frame>();
 
