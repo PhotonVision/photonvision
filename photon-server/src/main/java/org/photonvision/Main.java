@@ -319,8 +319,6 @@ public class Main {
         Logger.setLevel(LogGroup.General, logLevel);
         logger.info("Logging initialized in debug mode.");
 
-        var piversion = PiVersion.getPiVersion(PiVersion.getPiVersionString());
-        Platform.piversion = piversion;
         logger.info(
                 "Starting PhotonVision version "
                         + PhotonVersion.versionString

@@ -46,7 +46,7 @@ public enum PiVersion {
         if (!Platform.isRaspberryPi()) return PiVersion.UNKNOWN;
         String piString = getPiVersionString();
         for (PiVersion p : PiVersion.values()) {
-            if (str.toLowerCase().contains(p.identifier)) return p;
+            if (piString.toLowerCase().contains(p.identifier)) return p;
         }
         return UNKNOWN;
     }

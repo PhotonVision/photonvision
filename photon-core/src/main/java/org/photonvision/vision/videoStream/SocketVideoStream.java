@@ -25,7 +25,6 @@ import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 import org.photonvision.vision.opencv.CVMat;
 
