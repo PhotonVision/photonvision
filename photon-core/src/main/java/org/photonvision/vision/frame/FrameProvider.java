@@ -30,6 +30,9 @@ public interface FrameProvider extends Supplier<Frame> {
     /** Ask the camera to rotate frames it outputs */
     public void requestFrameRotation(ImageRotationMode rotationMode);
 
+    /** Ask the camera to provide either the input, output, or both frames. */
+    public void requestFrameCopies(boolean copyInput, boolean copyOutput);
+
     /** Ask the camera to rotate frames it outputs */
     public void requestHsvSettings(HSVPipe.HSVParams params);
 }

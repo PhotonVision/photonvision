@@ -115,4 +115,10 @@ public abstract class CpuImageProcessor implements FrameProvider {
             m_hsvPipe.setParams(params);
         }
     }
+
+    @Override
+    public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
+        // We don't actually do zero-copy, so this method is a no-op
+        return;        
+    }
 }

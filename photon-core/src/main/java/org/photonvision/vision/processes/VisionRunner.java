@@ -87,7 +87,7 @@ public class VisionRunner {
                 frameSupplier.requestHsvSettings(hsvParams);
             }
             frameSupplier.requestFrameRotation(settings.inputImageRotationMode);
-            LibCameraJNI.setFramesToCopy(settings.inputShouldShow, settings.outputShouldShow);
+            frameSupplier.requestFrameCopies(settings.inputShouldShow, settings.outputShouldShow);
 
             // Grab the new camera frame
             var frame = frameSupplier.get();

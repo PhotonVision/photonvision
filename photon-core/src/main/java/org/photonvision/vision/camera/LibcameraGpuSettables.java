@@ -208,7 +208,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         setGain(lastGain);
         setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
 
-        //        LibCameraJNI.setFramesToCopy(true, true);
+        LibCameraJNI.setFramesToCopy(true, true);
 
         currentVideoMode = mode;
     }

@@ -106,4 +106,9 @@ public class LibcameraGpuFrameProvider implements FrameProvider {
                 params.getHsvUpper().val[2] / 255.0,
                 params.getHueInverted());
     }
+
+    @Override
+    public void requestFrameCopies(boolean copyInput, boolean copyOutput) {
+        LibCameraJNI.setFramesToCopy(copyInput, copyOutput);
+    }
 }
