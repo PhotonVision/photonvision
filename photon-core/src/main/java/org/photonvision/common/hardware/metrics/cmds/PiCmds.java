@@ -23,7 +23,7 @@ public class PiCmds extends LinuxCmds {
     /** Applies pi-specific commands, ignoring any input configuration */
     public void initCmds(HardwareConfig config) {
         super.initCmds(config);
-        
+
         // CPU
         cpuMemoryCommand = "vcgencmd get_mem arm | grep -Eo '[0-9]+'";
         cpuTemperatureCommand = "sed 's/.\\{3\\}$/.&/' /sys/class/thermal/thermal_zone0/temp";
