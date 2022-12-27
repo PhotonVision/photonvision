@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
 
@@ -39,10 +40,13 @@ public class SocketVideoStream implements Consumer<Frame> {
 
     // Synclock around manipulating the jpeg bytes from multiple threads
     Lock jpegBytesLock = new ReentrantLock();
-
-    MJPGFrameConsumer oldSchoolServer;
-
     private int userCount = 0;
+
+    // FPS-limited MJPEG sender
+    private final double FPS_MAX = 30.0;
+    private final long minFramePeriodNanos = Math.round(1000000000.0 / FPS_MAX);
+    private long nextFrameSendTime = MathUtils.wpiNanoTime() + minFramePeriodNanos;
+    MJPGFrameConsumer oldSchoolServer;
 
     public SocketVideoStream(int portID) {
         this.portID = portID;
@@ -73,7 +77,13 @@ public class SocketVideoStream implements Consumer<Frame> {
                 }
             }
         }
-        oldSchoolServer.accept(frame);
+
+        // Send the frame in an FPS-limited fashion
+        var now = MathUtils.wpiNanoTime();
+        if (now > nextFrameSendTime) {
+            oldSchoolServer.accept(frame);
+            nextFrameSendTime = now + minFramePeriodNanos;
+        }
     }
 
     public ByteBuffer getJPEGByteBuffer() {
