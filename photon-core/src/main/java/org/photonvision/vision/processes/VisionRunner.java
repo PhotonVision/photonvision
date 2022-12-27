@@ -21,7 +21,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.pipe.impl.HSVPipe;
