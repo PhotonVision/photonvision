@@ -17,7 +17,9 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.apriltag.jni.DetectionResult;
+import edu.wpi.first.apriltag.AprilTagDetection;
+import edu.wpi.first.apriltag.AprilTagDetector;
+import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
@@ -25,12 +27,12 @@ import java.util.List;
 import org.opencv.core.Mat;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.raspi.PicamJNI;
-import org.photonvision.vision.apriltag.AprilTagDetectorParams;
 import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
+import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
@@ -40,6 +42,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
     private final RotateImagePipe rotateImagePipe = new RotateImagePipe();
     private final GrayscalePipe grayscalePipe = new GrayscalePipe();
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
+    private final AprilTagPoseEstimatorPipe poseEstimatorPipe = new AprilTagPoseEstimatorPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     public AprilTagPipeline() {
@@ -64,15 +67,6 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             PicamJNI.setRotation(settings.inputImageRotationMode.value);
             PicamJNI.setShouldCopyColor(true); // need the color image to grayscale
         }
-
-        AprilTagDetectorParams aprilTagDetectionParams =
-                new AprilTagDetectorParams(
-                        settings.tagFamily,
-                        settings.decimate,
-                        settings.blur,
-                        settings.threads,
-                        settings.debug,
-                        settings.refineEdges);
 
         // TODO (HACK): tag width is Fun because it really belongs in the "target model"
         // We need the tag width for the JNI to figure out target pose, but we need a
@@ -102,12 +96,35 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 }
         }
 
-        aprilTagDetectionPipe.setParams(
-                new AprilTagDetectionPipeParams(
-                        aprilTagDetectionParams,
-                        frameStaticProperties.cameraCalibration,
-                        settings.numIterations,
-                        tagWidth));
+        // AprilTagDetectorParams aprilTagDetectionParams =
+        //         new AprilTagDetectorParams(
+        //                 settings.tagFamily,
+        //                 settings.decimate,
+        //                 settings.blur,
+        //                 settings.threads,
+        //                 settings.debug,
+        //                 settings.refineEdges);
+
+        var config = new AprilTagDetector.Config();
+        config.numThreads = settings.threads;
+        config.refineEdges = settings.refineEdges;
+        config.quadSigma = (float) settings.blur;
+        config.quadDecimate = settings.decimate;
+        aprilTagDetectionPipe.setParams(new AprilTagDetectionPipeParams(settings.tagFamily, config));
+
+        if (frameStaticProperties.cameraCalibration != null) {
+            var cameraMatrix = frameStaticProperties.cameraCalibration.getCameraIntrinsicsMat();
+            if (cameraMatrix != null) {
+                var cx = cameraMatrix.get(0, 2)[0];
+                var cy = cameraMatrix.get(1, 2)[0];
+                var fx = cameraMatrix.get(0, 0)[0];
+                var fy = cameraMatrix.get(1, 1)[0];
+
+                poseEstimatorPipe.setParams(
+                        new AprilTagPoseEstimatorPipeParams(
+                                new Config(tagWidth, fx, fy, cx, cy), settings.numIterations));
+            }
+        }
     }
 
     @Override
@@ -135,7 +152,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         var outputFrame = new Frame(new CVMat(grayscalePipeResult.output), frameStaticProperties);
 
         List<TrackedTarget> targetList;
-        CVPipeResult<List<DetectionResult>> tagDetectionPipeResult;
+        CVPipeResult<List<AprilTagDetection>> tagDetectionPipeResult;
 
         // Use the solvePNP Enabled flag to enable native pose estimation
         aprilTagDetectionPipe.setNativePoseEstimationEnabled(settings.solvePNPEnabled);
@@ -144,16 +161,22 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         sumPipeNanosElapsed += tagDetectionPipeResult.nanosElapsed;
 
         targetList = new ArrayList<>();
-        for (DetectionResult detection : tagDetectionPipeResult.output) {
+        for (AprilTagDetection detection : tagDetectionPipeResult.output) {
             // TODO this should be in a pipe, not in the top level here (Matt)
             if (detection.getDecisionMargin() < settings.decisionMargin) continue;
             if (detection.getHamming() > settings.hammingDist) continue;
+
+            // Do pose estimation for all the tags that make it thru
+            // TODO
+            var poseResult = poseEstimatorPipe.run(detection);
+            sumPipeNanosElapsed += poseResult.nanosElapsed;
 
             // populate the target list
             // Challenge here is that TrackedTarget functions with OpenCV Contour
             TrackedTarget target =
                     new TrackedTarget(
                             detection,
+                            poseResult.output,
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
 
