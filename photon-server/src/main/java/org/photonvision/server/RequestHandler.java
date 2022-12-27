@@ -35,7 +35,6 @@ import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
-import org.photonvision.common.hardware.metrics.MetricsPublisher;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
@@ -113,37 +112,29 @@ public class RequestHandler {
         logger.info("New .jar uploaded successfully.");
 
         if (file != null) {
-            if (Platform.isLinux()) {
-                try {
-                    Path filePath =
-                            Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
-                    File targetFile = new File(filePath.toString());
-                    var stream = new FileOutputStream(targetFile);
+            try {
+                Path filePath =
+                        Paths.get(ProgramDirectoryUtilities.getProgramDirectory(), "photonvision.jar");
+                File targetFile = new File(filePath.toString());
+                var stream = new FileOutputStream(targetFile);
 
-                    logger.info(
-                            "Streaming user-provided " + file.getFilename() + " into " + targetFile.toString());
+                logger.info(
+                        "Streaming user-provided " + file.getFilename() + " into " + targetFile.toString());
 
-                    file.getContent().transferTo(stream);
-                    stream.close();
+                file.getContent().transferTo(stream);
+                stream.close();
 
-                    ctx.status(200);
-                    logger.info("New .jar in place, going down for restart...");
-                    restartProgram();
-
-                } catch (FileNotFoundException e) {
-                    logger.error(
-                            ".jar of this program could not be found. How the heck this program started in the first place is a mystery.");
-                    ctx.status(500);
-                } catch (IOException e) {
-                    logger.error("Could not overwrite the .jar for this instance of photonvision.");
-                    ctx.status(500);
-                }
-
-            } else {
-                logger.error("Hot .jar replace currently only supported on Linux. Ignoring.");
+                ctx.status(200);
+                logger.info("New .jar in place, going down for restart...");
+                restartProgram();
+            } catch (FileNotFoundException e) {
+                logger.error(
+                        ".jar of this program could not be found. How the heck this program started in the first place is a mystery.");
+                ctx.status(500);
+            } catch (IOException e) {
+                logger.error("Could not overwrite the .jar for this instance of photonvision.");
                 ctx.status(500);
             }
-
         } else {
             logger.error("Couldn't read provided file for new .jar! Ignoring.");
             ctx.status(500);
@@ -274,7 +265,7 @@ public class RequestHandler {
     }
 
     public static void sendMetrics(Context ctx) {
-        MetricsPublisher.getInstance().publish();
+        HardwareManager.getInstance().publishMetrics();
         // TimedTaskManager.getInstance().addOneShotTask(() -> RoborioFinder.getInstance().findRios(),
         // 0);
         ctx.status(200);
