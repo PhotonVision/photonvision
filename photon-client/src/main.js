@@ -15,16 +15,15 @@ if (process.env.NODE_ENV === "production") {
     Vue.prototype.$address = location.hostname + ":5800";
 }
 
-const wsDataURL = '//' + Vue.prototype.$address + '/websocket_data';
+// const wsDataURL = '//' + Vue.prototype.$address + '/websocket_data';
+// import VueNativeSock from 'vue-native-websocket';
+// Vue.use(VueNativeSock, wsDataURL, {
+//     reconnection: true,
+//     reconnectionDelay: 100,
+//     connectManually: true,
+//     format: "arraybuffer",
+// });
 
-import VueNativeSock from 'vue-native-websocket';
-
-Vue.use(VueNativeSock, wsDataURL, {
-    reconnection: true,
-    reconnectionDelay: 100,
-    connectManually: true,
-    format: "arraybuffer",
-});
 Vue.use(VueAxios, axios);
 Vue.prototype.$msgPack = msgPack(true);
 

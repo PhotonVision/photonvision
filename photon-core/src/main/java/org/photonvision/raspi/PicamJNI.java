@@ -87,14 +87,18 @@ public class PicamJNI {
     }
 
     public static boolean isSupported() {
+        var piVer = PiVersion.getPiVersion();
+
+        boolean hwSupported =
+                (piVer == PiVersion.PI_3
+                        || piVer == PiVersion.COMPUTE_MODULE_3
+                        || piVer == PiVersion.ZERO_2_W);
+
         return libraryLoaded
                 && enabled
                 && isVCSMSupported()
                 && getSensorModel() != SensorModel.Disconnected
-                && Platform.isRaspberryPi()
-                && (Platform.currentPiVersion == PiVersion.PI_3
-                        || Platform.currentPiVersion == PiVersion.COMPUTE_MODULE_3
-                        || Platform.currentPiVersion == PiVersion.ZERO_2_W);
+                && hwSupported;
     }
 
     public static SensorModel getSensorModel() {
