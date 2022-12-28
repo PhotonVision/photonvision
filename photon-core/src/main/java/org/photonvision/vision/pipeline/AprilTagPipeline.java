@@ -19,6 +19,7 @@ package org.photonvision.vision.pipeline;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagDetector;
+import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
@@ -166,17 +167,19 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
             if (detection.getDecisionMargin() < settings.decisionMargin) continue;
             if (detection.getHamming() > settings.hammingDist) continue;
 
-            // Do pose estimation for all the tags that make it thru
-            // TODO
-            var poseResult = poseEstimatorPipe.run(detection);
-            sumPipeNanosElapsed += poseResult.nanosElapsed;
+            AprilTagPoseEstimate tagPoseEstimate = null;
+            if (settings.solvePNPEnabled) {
+                var poseResult = poseEstimatorPipe.run(detection);
+                sumPipeNanosElapsed += poseResult.nanosElapsed;
+                tagPoseEstimate = poseResult.output;
+            }
 
             // populate the target list
             // Challenge here is that TrackedTarget functions with OpenCV Contour
             TrackedTarget target =
                     new TrackedTarget(
                             detection,
-                            poseResult.output,
+                            tagPoseEstimate,
                             new TargetCalculationParameters(
                                     false, null, null, null, null, frameStaticProperties));
 
