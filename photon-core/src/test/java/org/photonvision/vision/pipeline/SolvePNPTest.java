@@ -34,6 +34,7 @@ import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourIntersectionDirection;
+import org.photonvision.vision.pipe.impl.HSVPipe;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
@@ -105,6 +106,15 @@ public class SolvePNPTest {
                         TestUtils.WPI2019Image.FOV,
                         TestUtils.get2019LifeCamCoeffs(false));
 
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+        var hsvParams =
+                new HSVPipe.HSVParams(
+                        pipeline.getSettings().hsvHue,
+                        pipeline.getSettings().hsvSaturation,
+                        pipeline.getSettings().hsvValue,
+                        pipeline.getSettings().hueInverted);
+        frameProvider.requestHsvSettings(hsvParams);
+
         CVPipelineResult pipelineResult;
 
         pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
@@ -125,7 +135,8 @@ public class SolvePNPTest {
         Assertions.assertEquals(
                 1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.05);
 
-        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
+        TestUtils.showImage(
+                pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
     }
 
     @Test
@@ -147,16 +158,22 @@ public class SolvePNPTest {
                         TestUtils.WPI2020Image.FOV,
                         TestUtils.get2020LifeCamCoeffs(false));
 
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
+        var hsvParams =
+                new HSVPipe.HSVParams(
+                        pipeline.getSettings().hsvHue,
+                        pipeline.getSettings().hsvSaturation,
+                        pipeline.getSettings().hsvValue,
+                        pipeline.getSettings().hueInverted);
+        frameProvider.requestHsvSettings(hsvParams);
+
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
         outputPipe.process(
-                pipelineResult.inputFrame,
-                pipelineResult.outputFrame,
-                pipeline.getSettings(),
-                pipelineResult.targets);
+                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
@@ -165,7 +182,8 @@ public class SolvePNPTest {
         // Z rotation should be mostly facing us
         Assertions.assertEquals(Units.degreesToRadians(-140), pose.getRotation().getZ(), 1);
 
-        TestUtils.showImage(pipelineResult.inputFrame.image.getMat(), "Pipeline output", 999999);
+        TestUtils.showImage(
+                pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
     }
 
     private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {

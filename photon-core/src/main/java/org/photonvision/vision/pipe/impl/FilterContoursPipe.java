@@ -107,8 +107,8 @@ public class FilterContoursPipe
 
         // Fullness Filtering.
         double contourArea = contour.getArea();
-        double minFullness = params.getFullness().getFirst() * minAreaRect.size.area() / 100;
-        double maxFullness = params.getFullness().getSecond() * minAreaRect.size.area() / 100;
+        double minFullness = params.getFullness().getFirst() * minAreaRect.size.area() / 100.0;
+        double maxFullness = params.getFullness().getSecond() * minAreaRect.size.area() / 100.0;
         if (contourArea <= minFullness || contourArea >= maxFullness) return;
 
         // Aspect Ratio Filtering.

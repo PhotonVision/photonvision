@@ -34,7 +34,7 @@ public enum PiVersion {
     private static final ShellExec shell = new ShellExec(true, false);
     private static final PiVersion currentPiVersion = calcPiVersion();
 
-    PiVersion(String s) {
+    private PiVersion(String s) {
         this.identifier = s.toLowerCase();
     }
 

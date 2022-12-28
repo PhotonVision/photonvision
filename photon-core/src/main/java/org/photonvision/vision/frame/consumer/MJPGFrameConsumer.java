@@ -28,7 +28,7 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.util.ColorHelper;
-import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.opencv.CVMat;
 
 public class MJPGFrameConsumer {
     public static final Mat EMPTY_MAT = new Mat(60, 15 * 7, CvType.CV_8UC3);
@@ -167,9 +167,9 @@ public class MJPGFrameConsumer {
         this(name, 320, 240, port);
     }
 
-    public void accept(Frame frame) {
-        if (frame != null && !frame.image.getMat().empty()) {
-            cvSource.putFrame(frame.image.getMat());
+    public void accept(CVMat image) {
+        if (image != null && !image.getMat().empty()) {
+            cvSource.putFrame(image.getMat());
 
             // Make sure our disabled framerate limiting doesn't get confused
             isDisabled = false;

@@ -19,12 +19,10 @@ package org.photonvision.vision.frame.provider;
 
 import edu.wpi.first.cscore.CvSink;
 import org.photonvision.common.util.math.MathUtils;
-import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.processes.VisionSourceSettables;
 
-public class USBFrameProvider implements FrameProvider {
+public class USBFrameProvider extends CpuImageProcessor {
     private final CvSink cvSink;
 
     @SuppressWarnings("SpellCheckingInspection")
@@ -38,18 +36,19 @@ public class USBFrameProvider implements FrameProvider {
     }
 
     @Override
-    public Frame get() {
+    public CapturedFrame getInputMat() {
         var mat = new CVMat(); // We do this so that we don't fill a Mat in use by another thread
         // This is from wpi::Now, or WPIUtilJNI.now()
         long time =
-                cvSink.grabFrame(
-                        mat.getMat()); // Units are microseconds, epoch is the same as the Unix epoch
+                cvSink.grabFrame(mat.getMat())
+                        * 1000; // Units are microseconds, epoch is the same as the Unix epoch
 
         // Sometimes CSCore gives us a zero frametime.
         if (time <= 1e-6) {
             time = MathUtils.wpiNanoTime();
         }
-        return new Frame(mat, MathUtils.microsToNanos(time), settables.getFrameStaticProperties());
+
+        return new CapturedFrame(mat, settables.getFrameStaticProperties(), time);
     }
 
     @Override
