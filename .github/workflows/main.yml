@@ -405,7 +405,7 @@ jobs:
       # but the filtering below won't pick these up (I hope)
       - uses: actions/download-artifact@v2
 
-      -run: find
+      - run: find
 
       # Push to dev release
       - uses: pyTooling/Actions/releaser@r0
