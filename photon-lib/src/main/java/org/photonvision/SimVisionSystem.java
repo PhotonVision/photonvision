@@ -114,10 +114,7 @@ public class SimVisionSystem {
      */
     public void addSimVisionTarget(SimVisionTarget target) {
         tgtList.add(target);
-        dbgField
-                .getObject("Target " + Integer.toString(target.targetID))
-                .setPose(target.targetPose.toPose2d());
-        ;
+        dbgField.getObject("Target " + target.targetID).setPose(target.targetPose.toPose2d());
     }
 
     /**

@@ -32,12 +32,12 @@ import org.junit.jupiter.api.Test;
 class PhotonUtilTest {
     @Test
     public void testDistance() {
-        var camHeight = 1;
-        var targetHeight = 3;
-        var camPitch = Units.degreesToRadians(0);
-        var targetPitch = Units.degreesToRadians(30);
+        int camHeight = 1;
+        int targetHeight = 3;
+        double camPitch = Units.degreesToRadians(0);
+        double targetPitch = Units.degreesToRadians(30);
 
-        var dist =
+        double dist =
                 PhotonUtils.calculateDistanceToTargetMeters(camHeight, targetHeight, camPitch, targetPitch);
 
         Assertions.assertEquals(3.464, dist, 0.01);
