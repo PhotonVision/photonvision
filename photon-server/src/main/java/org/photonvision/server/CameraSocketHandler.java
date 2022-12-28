@@ -109,7 +109,6 @@ public class CameraSocketHandler {
         } catch (JsonProcessingException e) {
             logger.warn("Could not parse message \"" + messageStr + "\"");
             e.printStackTrace();
-            return;
         }
     }
 

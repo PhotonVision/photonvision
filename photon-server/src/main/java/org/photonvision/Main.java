@@ -106,25 +106,16 @@ public class Main {
         ConfigManager.getInstance().load();
 
         try {
-            var reflective = new ReflectivePipelineSettings();
-            var shape = new ColoredShapePipelineSettings();
-            var aprilTag = new AprilTagPipelineSettings();
+            ReflectivePipelineSettings reflective = new ReflectivePipelineSettings();
+            ColoredShapePipelineSettings shape = new ColoredShapePipelineSettings();
+            AprilTagPipelineSettings aprilTag = new AprilTagPipelineSettings();
+
             List<VisionSource> collectedSources =
                     Files.list(testModeFolder)
                             .filter(p -> p.toFile().isFile())
                             .map(
                                     p -> {
                                         try {
-                                            //                                            var camConf =
-                                            //
-                                            // ConfigManager.getInstance()
-                                            //                                                            .getConfig()
-                                            //
-                                            // .getCameraConfigurations()
-                                            //
-                                            // .get(p.getFileName().toString());
-
-                                            //                                            if (camConf == null && false) {
                                             CameraConfiguration camConf;
                                             if (true) {
                                                 camConf =
