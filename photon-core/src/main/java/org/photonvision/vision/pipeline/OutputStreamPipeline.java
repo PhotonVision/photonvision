@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
-import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.impl.*;
@@ -99,18 +98,19 @@ public class OutputStreamPipeline {
     }
 
     public CVPipelineResult process(
-            Frame inputFrame,
-            Frame outputFrame,
+            Frame inputAndOutputFrame,
             AdvancedPipelineSettings settings,
             List<TrackedTarget> targetsToDraw) {
-        setPipeParams(inputFrame.frameStaticProperties, settings);
-        var inMat = inputFrame.image.getMat();
-        var outMat = outputFrame.image.getMat();
+        setPipeParams(inputAndOutputFrame.frameStaticProperties, settings);
+        var inMat = inputAndOutputFrame.colorImage.getMat();
+        var outMat = inputAndOutputFrame.processedImage.getMat();
 
         long sumPipeNanosElapsed = 0L;
 
         // Resize both in place before doing any conversion
-        sumPipeNanosElapsed += pipeProfileNanos[0] = resizeImagePipe.run(inMat).nanosElapsed;
+        boolean inEmpty = inMat.empty();
+        if (!inEmpty)
+            sumPipeNanosElapsed += pipeProfileNanos[0] = resizeImagePipe.run(inMat).nanosElapsed;
         sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
 
         // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
@@ -183,7 +183,6 @@ public class OutputStreamPipeline {
                 sumPipeNanosElapsed,
                 fps, // Unused but here just in case
                 targetsToDraw,
-                new Frame(new CVMat(outMat), outputFrame.frameStaticProperties),
-                new Frame(new CVMat(inMat), inputFrame.frameStaticProperties));
+                inputAndOutputFrame);
     }
 }

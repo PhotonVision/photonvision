@@ -38,6 +38,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
@@ -103,9 +104,11 @@ public class Calibrate3dPipeTest {
             var frame =
                     new Frame(
                             new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                            new CVMat(),
+                            FrameThresholdType.NONE,
                             new FrameStaticProperties(640, 480, 60, null));
             var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
-            // TestUtils.showImage(output.outputFrame.image.getMat());
+            // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat());
             output.release();
             frame.release();
         }
@@ -119,6 +122,8 @@ public class Calibrate3dPipeTest {
         var frame =
                 new Frame(
                         new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
+                        new CVMat(),
+                        FrameThresholdType.NONE,
                         new FrameStaticProperties(640, 480, 60, null));
         calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera).release();
         frame.release();
@@ -266,10 +271,13 @@ public class Calibrate3dPipeTest {
                 var frame =
                         new Frame(
                                 new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                                new CVMat(),
+                                FrameThresholdType.NONE,
                                 new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
                 var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
 
-                // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
+                // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(), file.getName(),
+                // 1);
                 output.release();
                 frame.release();
             }

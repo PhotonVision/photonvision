@@ -17,52 +17,58 @@
 
 package org.photonvision.vision.frame;
 
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
 import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.Releasable;
 
 public class Frame implements Releasable {
     public final long timestampNanos;
-    public final CVMat image;
+
+    // Frame should at _least_ contain the thresholded frame, and sometimes the color image
+    public final CVMat colorImage;
+    public final CVMat processedImage;
+    public final FrameThresholdType type;
+
     public final FrameStaticProperties frameStaticProperties;
 
-    public Frame(CVMat image, long timestampNanos, FrameStaticProperties frameStaticProperties) {
-        this.image = image;
+    public Frame(
+            CVMat color,
+            CVMat processed,
+            FrameThresholdType type,
+            long timestampNanos,
+            FrameStaticProperties frameStaticProperties) {
+        this.colorImage = color;
+        this.processedImage = processed;
+        this.type = type;
         this.timestampNanos = timestampNanos;
         this.frameStaticProperties = frameStaticProperties;
     }
 
-    public Frame(CVMat image, FrameStaticProperties frameStaticProperties) {
-        this(image, MathUtils.wpiNanoTime(), frameStaticProperties);
+    public Frame(
+            CVMat color,
+            CVMat processed,
+            FrameThresholdType processType,
+            FrameStaticProperties frameStaticProperties) {
+        this(color, processed, processType, MathUtils.wpiNanoTime(), frameStaticProperties);
     }
 
     public Frame() {
-        this(new CVMat(), MathUtils.wpiNanoTime(), new FrameStaticProperties(0, 0, 0, null));
-    }
-
-    public static Frame emptyFrame(int width, int height) {
-        return new Frame(
-                new CVMat(Mat.zeros(new Size(width, height), CvType.CV_8UC3)),
+        this(
+                new CVMat(),
+                new CVMat(),
+                FrameThresholdType.NONE,
                 MathUtils.wpiNanoTime(),
-                new FrameStaticProperties(width, height, 0, null));
+                new FrameStaticProperties(0, 0, 0, null));
     }
 
     public void copyTo(Frame destFrame) {
-        image.getMat().copyTo(destFrame.image.getMat());
-    }
-
-    public static Frame copyFromAndRelease(Frame frame) {
-        var mat = new CVMat();
-        frame.image.copyTo(mat);
-        frame.release();
-        return new Frame(mat, frame.timestampNanos, frame.frameStaticProperties);
+        colorImage.getMat().copyTo(destFrame.colorImage.getMat());
+        processedImage.getMat().copyTo(destFrame.processedImage.getMat());
     }
 
     @Override
     public void release() {
-        image.release();
+        colorImage.release();
+        processedImage.release();
     }
 }

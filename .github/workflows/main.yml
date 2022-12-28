@@ -375,7 +375,7 @@ jobs:
           ./gradlew photon-server:shadowJar --max-workers 2
         if: ${{ (matrix.arch-override == 'none') }}
 
-      # The image will only pull the Pi JAR in
+      # The image will only pull the Pi32 JAR in
       - name: Generate image
         if: ${{ github.event_name != 'pull_request' && (matrix.artifact-name) == 'LinuxArm32' }}
         run: |

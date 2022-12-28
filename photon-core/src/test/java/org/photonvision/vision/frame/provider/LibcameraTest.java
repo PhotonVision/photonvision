@@ -15,23 +15,24 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipeline;
+package org.photonvision.vision.frame.provider;
 
-import edu.wpi.first.math.util.Units;
-import org.opencv.core.Size;
+import org.junit.jupiter.api.Test;
+// import org.photonvision.raspi.LibCameraJNI;
 
-public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
-    public int boardHeight = 8;
-    public int boardWidth = 8;
-    public UICalibrationData.BoardType boardType = UICalibrationData.BoardType.CHESSBOARD;
-    public double gridSize = Units.inchesToMeters(1.0);
-
-    public Size resolution = new Size(640, 480);
-
-    public Calibration3dPipelineSettings() {
-        super();
-
-        this.inputShouldShow = true;
-        this.outputShouldShow = true;
+public class LibcameraTest {
+    @Test
+    public void testBasic() {
+        // System.load("/home/pi/photon-libcamera-gl-driver/build/libphotonlibcamera.so");
+        // LibCameraJNI.createCamera(1920, 1080, 60);
+        // try {
+        //     Thread.sleep(1000);
+        // } catch (InterruptedException e) {
+        // }
+        // LibCameraJNI.startCamera();
+        // try {
+        //     Thread.sleep(5000);
+        // } catch (InterruptedException e) {
+        // }
     }
 }

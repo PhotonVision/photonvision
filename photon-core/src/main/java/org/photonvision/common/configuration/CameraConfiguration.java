@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -45,6 +46,8 @@ public class CameraConfiguration {
     /** Can be either path (ex /dev/videoX) or index (ex 1). */
     public String path = "";
 
+    @JsonIgnore public String[] otherPaths = {};
+
     public CameraType cameraType = CameraType.UsbCamera;
     public double FOV = 70;
     public final List<CameraCalibrationCoefficients> calibrations;
@@ -59,15 +62,17 @@ public class CameraConfiguration {
     public DriverModePipelineSettings driveModeSettings = new DriverModePipelineSettings();
 
     public CameraConfiguration(String baseName, String path) {
-        this(baseName, baseName, baseName, path);
+        this(baseName, baseName, baseName, path, new String[0]);
     }
 
-    public CameraConfiguration(String baseName, String uniqueName, String nickname, String path) {
+    public CameraConfiguration(
+            String baseName, String uniqueName, String nickname, String path, String[] alternates) {
         this.baseName = baseName;
         this.uniqueName = uniqueName;
         this.nickname = nickname;
         this.path = path;
         this.calibrations = new ArrayList<>();
+        this.otherPaths = alternates;
 
         logger.debug(
                 "Creating USB camera configuration for "
@@ -144,5 +149,34 @@ public class CameraConfiguration {
                 .findAny()
                 .ifPresent(calibrations::remove);
         calibrations.add(calibration);
+    }
+
+    @Override
+    public String toString() {
+        return "CameraConfiguration [baseName="
+                + baseName
+                + ", uniqueName="
+                + uniqueName
+                + ", nickname="
+                + nickname
+                + ", path="
+                + path
+                + ", otherPaths="
+                + Arrays.toString(otherPaths)
+                + ", cameraType="
+                + cameraType
+                + ", FOV="
+                + FOV
+                + ", calibrations="
+                + calibrations
+                + ", currentPipelineIndex="
+                + currentPipelineIndex
+                + ", streamIndex="
+                + streamIndex
+                + ", pipelineSettings="
+                + pipelineSettings
+                + ", driveModeSettings="
+                + driveModeSettings
+                + "]";
     }
 }
