@@ -179,15 +179,14 @@ public class USBCameraSource extends VisionSource {
                 try {
                     int scaledExposure = 1;
                     if (cameraQuirks.hasQuirk(CameraQuirk.PiCam)) {
-                        scaledExposure =
-                                (int) Math.round(timeToPiCamRawExposure(pctToExposureTimeUs(exposure)));
-                        logger.debug("Setting camera raw exposure to " + Integer.toString(scaledExposure));
+                        scaledExposure = Math.round(timeToPiCamRawExposure(pctToExposureTimeUs(exposure)));
+                        logger.debug("Setting camera raw exposure to " + scaledExposure);
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
                         camera.getProperty("raw_exposure_time_absolute").set(scaledExposure);
 
                     } else {
                         scaledExposure = (int) Math.round(exposure);
-                        logger.debug("Setting camera exposure to " + Integer.toString(scaledExposure));
+                        logger.debug("Setting camera exposure to " + scaledExposure);
                         camera.setExposureManual(scaledExposure);
                         camera.setExposureManual(scaledExposure);
                     }
@@ -264,9 +263,7 @@ public class USBCameraSource extends VisionSource {
                     } else {
                         modes = camera.enumerateVideoModes();
                     }
-                    for (int i = 0; i < modes.length; i++) {
-                        var videoMode = modes[i];
-
+                    for (VideoMode videoMode : modes) {
                         // Filter grey modes
                         if (videoMode.pixelFormat == VideoMode.PixelFormat.kGray
                                 || videoMode.pixelFormat == VideoMode.PixelFormat.kUnknown) {

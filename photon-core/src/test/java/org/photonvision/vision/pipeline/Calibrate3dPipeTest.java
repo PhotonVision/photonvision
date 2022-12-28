@@ -54,7 +54,7 @@ public class Calibrate3dPipeTest {
 
         File dir = new File(TestUtils.getDotBoardImagesPath().toAbsolutePath().toString());
         File[] directoryListing = dir.listFiles();
-        for (var file : directoryListing) {
+        for (File file : directoryListing) {
             frames.add(Imgcodecs.imread(file.getAbsolutePath()));
         }
 

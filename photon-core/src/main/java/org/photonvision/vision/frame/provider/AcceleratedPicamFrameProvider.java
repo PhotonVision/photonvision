@@ -28,8 +28,6 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 public class AcceleratedPicamFrameProvider implements FrameProvider {
     private final VisionSourceSettables settables;
 
-    private CVMat mat;
-
     public AcceleratedPicamFrameProvider(VisionSourceSettables visionSettables) {
         this.settables = visionSettables;
 
@@ -51,9 +49,8 @@ public class AcceleratedPicamFrameProvider implements FrameProvider {
     @Override
     public Frame get() {
         long matHandle = PicamJNI.grabFrame(false);
-        mat = new CVMat(new Mat(matHandle));
         return new Frame(
-                mat,
+                new CVMat(new Mat(matHandle)),
                 MathUtils.wpiNanoTime() - PicamJNI.getFrameLatency(),
                 settables.getFrameStaticProperties());
     }

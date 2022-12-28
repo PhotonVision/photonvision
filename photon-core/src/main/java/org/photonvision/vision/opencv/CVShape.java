@@ -34,7 +34,7 @@ public class CVShape implements Releasable {
 
     private MatOfPoint2f approxCurve = new MatOfPoint2f();
 
-    public CVShape(Contour contour, ContourShape shape) {
+    public CVShape(Contour contour, @Nullable ContourShape shape) {
         this.contour = contour;
         this.shape = shape;
     }

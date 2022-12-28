@@ -50,8 +50,7 @@ public class SocketVideoStream implements Consumer<Frame> {
 
     public SocketVideoStream(int portID) {
         this.portID = portID;
-        oldSchoolServer =
-                new MJPGFrameConsumer("Port_" + Integer.toString(portID) + "_MJPEG_Server", portID);
+        oldSchoolServer = new MJPGFrameConsumer("Port_" + portID + "_MJPEG_Server", portID);
     }
 
     @Override

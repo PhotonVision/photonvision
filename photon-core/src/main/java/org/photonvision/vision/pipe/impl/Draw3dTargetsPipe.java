@@ -232,8 +232,9 @@ public class Draw3dTargetsPipe
             double r2 = x * x + y * y; // square of the radius from center
 
             // Radial distorsion
-            double xDistort = x * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
-            double yDistort = y * (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
+            var dCoef = (1 + k1 * r2 + k2 * r2 * r2 + k3 * r2 * r2 * r2);
+            double xDistort = x * dCoef;
+            double yDistort = y * dCoef;
 
             // Tangential distorsion
             xDistort = xDistort + (2 * p1 * x * y + p2 * (r2 + 2 * x * x));

@@ -56,7 +56,6 @@ public class ConfigManager {
     final File configDirectoryFile;
 
     private long saveRequestTimestamp = -1;
-    private Thread settingsSaveThread;
 
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
@@ -75,7 +74,6 @@ public class ConfigManager {
             logger.info("Copied settings successfully!");
         } catch (IOException e) {
             logger.error("Exception copying uploaded settings!", e);
-            return;
         }
     }
 
@@ -97,7 +95,7 @@ public class ConfigManager {
                 new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
         this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
 
-        settingsSaveThread = new Thread(this::saveAndWriteTask);
+        Thread settingsSaveThread = new Thread(this::saveAndWriteTask);
         settingsSaveThread.start();
     }
 

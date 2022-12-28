@@ -158,7 +158,7 @@ public class ReflectivePipeline extends CVPipeline<CVPipelineResult, ReflectiveP
 
             hsvPipeResult = hsvPipe.run(rawInputMat);
             sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
-            pipeProfileNanos[1] = pipeProfileNanos[1] = hsvPipeResult.nanosElapsed;
+            pipeProfileNanos[1] = hsvPipeResult.nanosElapsed;
         } else {
             // Try to copy the color frame.
             long inputMatPtr = PicamJNI.grabFrame(true);

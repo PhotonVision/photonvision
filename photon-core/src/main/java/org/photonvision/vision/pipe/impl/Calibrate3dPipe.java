@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
@@ -57,9 +58,6 @@ public class Calibrate3dPipe
     // finding the euclidean distance between the actual corners.
     private Mat perViewErrors = new Mat();
 
-    // RMS of the calibration
-    private double calibrationAccuracy;
-
     /**
      * Runs the process for the pipe.
      *
@@ -77,6 +75,8 @@ public class Calibrate3dPipe
                                                 && it.getMiddle() != null
                                                 && it.getRight() != null)
                         .collect(Collectors.toList());
+        // RMS of the calibration
+        double calibrationAccuracy;
         try {
             // FindBoardCorners pipe outputs all the image points, object points, and frames to calculate
             // imageSize from, other parameters are output Mats
@@ -135,21 +135,17 @@ public class Calibrate3dPipe
     }
 
     // Calculate standard deviation of the RMS error of the snapshots
-    private static double calculateSD(double numArray[]) {
-        double sum = 0.0, standardDeviation = 0.0;
-        int length = numArray.length;
-
-        for (double num : numArray) {
-            sum += num;
+    private static double calculateSD(double[] numArray) {
+        if (numArray.length == 0) {
+            return 0;
         }
 
-        double mean = sum / length;
+        double mean = DoubleStream.of(numArray).average().orElse(0);
+        // Because numArray is a primitive array, numArray.length works
+        double variance =
+                DoubleStream.of(numArray).map(val -> Math.pow(val - mean, 2)).sum() / (numArray.length - 1);
 
-        for (double num : numArray) {
-            standardDeviation += Math.pow(num - mean, 2);
-        }
-
-        return Math.sqrt(standardDeviation / length);
+        return Math.sqrt(variance);
     }
 
     public static class CalibratePipeParams {

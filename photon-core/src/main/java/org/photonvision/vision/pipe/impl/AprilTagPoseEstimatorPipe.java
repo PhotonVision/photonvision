@@ -82,8 +82,7 @@ public class AprilTagPoseEstimatorPipe
             if (config == null) {
                 if (other.config != null) return false;
             } else if (!config.equals(other.config)) return false;
-            if (nIters != other.nIters) return false;
-            return true;
+            return nIters == other.nIters;
         }
     }
 }

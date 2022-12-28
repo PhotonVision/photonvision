@@ -17,6 +17,7 @@
 
 package org.photonvision.common.networking;
 
+import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -35,12 +36,12 @@ public class NetworkInterface {
         name = inetface.getName();
         displayName = inetface.getDisplayName();
 
-        var inetAddress = ifaceAddress.getAddress();
+        InetAddress inetAddress = ifaceAddress.getAddress();
         ipAddress = inetAddress.getHostAddress();
         netmask = getIPv4LocalNetMask(ifaceAddress);
 
         // TODO: (low) hack to "get" gateway, this is gross and bad, pls fix
-        var splitIPAddr = ipAddress.split("\\.");
+        String[] splitIPAddr = ipAddress.split("\\.");
         splitIPAddr[3] = "1";
         splitIPAddr[3] = "255";
         broadcast = String.join(".", splitIPAddr);

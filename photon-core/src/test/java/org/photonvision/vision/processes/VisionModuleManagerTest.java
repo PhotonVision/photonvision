@@ -168,7 +168,6 @@ public class VisionModuleManagerTest {
                 Arrays.toString(
                         modules.stream()
                                 .map(it -> it.visionSource.getCameraConfiguration().streamIndex)
-                                .collect(Collectors.toList())
                                 .toArray()));
         var idxs =
                 modules.stream()

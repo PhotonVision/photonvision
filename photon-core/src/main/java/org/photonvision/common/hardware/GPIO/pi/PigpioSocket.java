@@ -18,7 +18,6 @@
 package org.photonvision.common.hardware.GPIO.pi;
 
 import static org.photonvision.common.hardware.GPIO.pi.PigpioException.*;
-import static org.photonvision.common.hardware.GPIO.pi.PigpioException.PI_NO_WAVEFORM_ID;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
