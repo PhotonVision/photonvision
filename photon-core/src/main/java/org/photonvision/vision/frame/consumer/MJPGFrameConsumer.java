@@ -119,6 +119,7 @@ public class MJPGFrameConsumer {
 
         this.mjpegServer = new MjpegServer("serve_" + cvSource.getName(), port);
         mjpegServer.setSource(cvSource);
+        mjpegServer.setCompression(75);
 
         listener =
                 new VideoListener(

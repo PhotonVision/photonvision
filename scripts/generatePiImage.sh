@@ -2,8 +2,8 @@
 # Not that it really matters, but it'll save us 50 megs or so
 NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm32.jar))
 echo "Using jar: " $NEW_JAR
-sudo apt install xz-utils
-curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.0-beta-2 | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
+sudo apt-get install -y xz-utils
+curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.0-beta-1 | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
 ls
 FILE_NAME=$(ls | grep image_*.xz)
 echo "Downloaded " $FILE_NAME
