@@ -21,7 +21,6 @@ import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
-import org.photonvision.vision.opencv.ContourShape;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
