@@ -31,9 +31,9 @@ import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.TimedTaskManager;
-import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.opencv.CVMat;
 
-public class FileSaveFrameConsumer implements Consumer<Frame> {
+public class FileSaveFrameConsumer implements Consumer<CVMat> {
     // Formatters to generate unique, timestamped file names
     private static String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
     private static String FILE_EXTENSION = ".jpg";
@@ -62,8 +62,8 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
     }
 
-    public void accept(Frame frame) {
-        if (frame != null && !frame.image.getMat().empty()) {
+    public void accept(CVMat image) {
+        if (image != null && image.getMat() != null && !image.getMat().empty()) {
             if (lock.tryLock()) {
                 boolean curCommand = entry.get(false);
                 if (curCommand && !prevCommand) {
@@ -78,7 +78,7 @@ public class FileSaveFrameConsumer implements Consumer<Frame> {
                                     + tf.format(now)
                                     + FILE_EXTENSION;
 
-                    Imgcodecs.imwrite(savefile, frame.image.getMat());
+                    Imgcodecs.imwrite(savefile, image.getMat());
 
                     // Help the user a bit - set the NT entry back to false after 500ms
                     TimedTaskManager.getInstance().addOneShotTask(this::resetCommand, CMD_RESET_TIME_MS);

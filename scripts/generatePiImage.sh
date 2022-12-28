@@ -16,8 +16,24 @@ LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
 sudo mount ${LOOP}p2 $TMP
 pushd .
 cd $TMP/opt/photonvision
-ls
 sudo cp $NEW_JAR photonvision.jar
+
+cd $TMP/etc/systemd/system/multi-user.target.wants
+sudo bash -c "printf \
+\"[Unit]
+Description=Service that runs PhotonVision
+
+[Service]
+WorkingDirectory=/opt/photonvision
+ExecStart=/usr/bin/java -Xmx512m -jar /opt/photonvision/photonvision.jar
+ExecStop=/bin/systemctl kill photonvision
+Type=simple
+Restart=on-failure
+RestartSec=1
+
+[Install]
+WantedBy=multi-user.target\" > photonvision.service"
+
 popd
 sudo umount ${TMP}
 sudo rmdir ${TMP}

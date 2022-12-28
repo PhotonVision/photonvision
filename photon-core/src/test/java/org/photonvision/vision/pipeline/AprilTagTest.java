@@ -52,6 +52,7 @@ public class AprilTagTest {
                         TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
                         TestUtils.WPI2020Image.FOV,
                         TestUtils.get2020LifeCamCoeffs(false));
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
         CVPipelineResult pipelineResult;
         try {
@@ -65,12 +66,10 @@ public class AprilTagTest {
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
         outputPipe.process(
-                pipelineResult.inputFrame,
-                pipelineResult.outputFrame,
-                pipeline.getSettings(),
-                pipelineResult.targets);
+                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        TestUtils.showImage(pipelineResult.inputFrame.image.getMat(), "Pipeline output", 999999);
+        TestUtils.showImage(
+                pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
 
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
