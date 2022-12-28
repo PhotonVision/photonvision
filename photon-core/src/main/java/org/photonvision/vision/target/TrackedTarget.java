@@ -80,19 +80,24 @@ public class TrackedTarget implements Releasable {
                         tagDetection.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
         var bestPose = new Transform3d();
         var altPose = new Transform3d();
-        if (tagPose.error1 <= tagPose.error2) {
-            bestPose = tagPose.pose1;
-            altPose = tagPose.pose2;
-        } else {
-            bestPose = tagPose.pose2;
-            altPose = tagPose.pose1;
+
+        if (tagPose != null) {
+            if (tagPose.error1 <= tagPose.error2) {
+                bestPose = tagPose.pose1;
+                altPose = tagPose.pose2;
+            } else {
+                bestPose = tagPose.pose2;
+                altPose = tagPose.pose1;
+            }
+
+            bestPose = MathUtils.convertApriltagtoOpenCV(bestPose);
+            altPose = MathUtils.convertApriltagtoOpenCV(altPose);
+
+            m_bestCameraToTarget3d = bestPose;
+            m_altCameraToTarget3d = altPose;
+
+            m_poseAmbiguity = tagPose.getAmbiguity();
         }
-
-        bestPose = MathUtils.convertApriltagtoOpenCV(bestPose);
-        altPose = MathUtils.convertApriltagtoOpenCV(altPose);
-
-        m_bestCameraToTarget3d = bestPose;
-        m_altCameraToTarget3d = altPose;
 
         double[] corners = tagDetection.getCorners();
         Point[] cornerPoints =
@@ -128,8 +133,6 @@ public class TrackedTarget implements Releasable {
         var rvec = new Mat(3, 1, CvType.CV_64FC1);
         MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
         setCameraRelativeRvec(rvec);
-
-        m_poseAmbiguity = tagPose.getAmbiguity();
     }
 
     public void setFiducialId(int id) {
