@@ -132,8 +132,7 @@ public class OutputStreamPipeline {
             sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
             if (settings.solvePNPEnabled
-                    || (settings.solvePNPEnabled
-                            && settings instanceof ColoredShapePipelineSettings
+                    || (settings instanceof ColoredShapePipelineSettings
                             && ((ColoredShapePipelineSettings) settings).contourShape == ContourShape.Circle)) {
                 // Draw 3D Targets on input and output if possible
                 pipeProfileNanos[5] = 0;
