@@ -78,7 +78,7 @@ public class FileUtils {
     }
 
     public static void setFilePerms(Path path) throws IOException {
-        if (!Platform.isWindows()) {
+        if (Platform.isLinux()) {
             File thisFile = path.toFile();
             Set<PosixFilePermission> perms =
                     Files.readAttributes(path, PosixFileAttributes.class).permissions();
@@ -96,7 +96,7 @@ public class FileUtils {
     }
 
     public static void setAllPerms(Path path) {
-        if (!Platform.isWindows()) {
+        if (Platform.isLinux()) {
             String command = String.format("chmod 777 -R %s", path.toString());
             try {
                 Process p = Runtime.getRuntime().exec(command);
