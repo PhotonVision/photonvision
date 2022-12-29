@@ -18,6 +18,7 @@
 package org.photonvision.vision.frame.consumer;
 
 import edu.wpi.first.networktables.BooleanEntry;
+import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import java.io.File;
 import java.text.DateFormat;
@@ -44,29 +45,28 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private NetworkTable subTable;
     private final NetworkTable rootTable;
     private final Logger logger;
-    private boolean prevCommand = false;
+    private long imgSaveCountInternal = 0;
     private String camNickname;
     private String fnamePrefix;
-    private final long CMD_RESET_TIME_MS = 500;
-    private final BooleanEntry entry;
-    // Helps prevent race conditions between user set & auto-reset logic
-    private ReentrantLock lock;
+    private IntegerEntry entry;
 
     public FileSaveFrameConsumer(String camNickname, String streamPrefix) {
-        this.lock = new ReentrantLock();
         this.fnamePrefix = camNickname + "_" + streamPrefix;
         this.ntEntryName = streamPrefix + NT_SUFFIX;
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
         updateCameraNickname(camNickname);
-        entry = subTable.getBooleanTopic(ntEntryName).getEntry(false);
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
     }
 
     public void accept(CVMat image) {
         if (image != null && image.getMat() != null && !image.getMat().empty()) {
-            if (lock.tryLock()) {
-                boolean curCommand = entry.get(false);
-                if (curCommand && !prevCommand) {
+            var curCommand = entry.get(); //default to just our current count
+            if(curCommand >= 0){
+                //Only do something if we got a valid current command
+                if (imgSaveCountInternal < curCommand) {
+
+                    //Save one frame.
+                    // Create the filename
                     Date now = new Date();
                     String savefile =
                             FILE_PATH
@@ -77,43 +77,37 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
                                     + "T"
                                     + tf.format(now)
                                     + FILE_EXTENSION;
+    
 
+                    //write to file
                     Imgcodecs.imwrite(savefile, image.getMat());
 
-                    // Help the user a bit - set the NT entry back to false after 500ms
-                    TimedTaskManager.getInstance().addOneShotTask(this::resetCommand, CMD_RESET_TIME_MS);
-
+                    //Count one more image saved
+                    imgSaveCountInternal++;
                     logger.info("Saved new image at " + savefile);
-                } else if (!curCommand) {
-                    // If the entry is currently false, set it again. This will make sure it shows up on the
-                    // dashboard.
-                    entry.set(false);
+    
+                } else if( imgSaveCountInternal > curCommand){
+                    imgSaveCountInternal = curCommand;
                 }
-
-                prevCommand = curCommand;
-                lock.unlock();
             }
+
         }
     }
 
-    private void resetCommand() {
-        lock.lock();
-        this.subTable.getEntry(ntEntryName).setBoolean(false);
-        lock.unlock();
-    }
+    public void updateCameraNickname(String newCameraNickname) {
 
-    private void removeEntries() {
+        // Remove existing entries
         if (this.subTable != null) {
             if (this.subTable.containsKey(ntEntryName)) {
                 this.subTable.getEntry(ntEntryName).close();
             }
         }
-    }
 
-    public void updateCameraNickname(String newCameraNickname) {
-        removeEntries();
+        //Recreate and re-init network tables structure
         this.camNickname = newCameraNickname;
         this.subTable = rootTable.getSubTable(this.camNickname);
-        resetCommand();
+        this.subTable.getEntry(ntEntryName).setInteger(imgSaveCountInternal);
+        this.entry = subTable.getIntegerTopic(ntEntryName).getEntry(-1); //Default negative
+
     }
 }

@@ -41,9 +41,13 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
       rawBytesEntry(rootTable->GetRawTopic("rawBytes").Subscribe("raw", {})),
       driverModeEntry(rootTable->GetBooleanTopic("driverMode").Publish()),
       inputSaveImgEntry(
-          rootTable->GetBooleanTopic("inputSaveImgCmd").Publish()),
+          rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
+      inputSaveImgSubscriber(
+          rootTable->GetIntegerTopic("inputSaveImgCmd").Subscribe(0)),
       outputSaveImgEntry(
-          rootTable->GetBooleanTopic("outputSaveImgCmd").Publish()),
+          rootTable->GetIntegerTopic("outputSaveImgCmd").Publish()),
+      outputSaveImgSubscriber(
+          rootTable->GetIntegerTopic("outputSaveImgCmd").Subscribe(0)),
       pipelineIndexEntry(rootTable->GetIntegerTopic("pipelineIndex").Publish()),
       ledModeEntry(mainTable->GetIntegerTopic("ledMode").Publish()),
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
@@ -89,9 +93,9 @@ void PhotonCamera::SetDriverMode(bool driverMode) {
   driverModeEntry.Set(driverMode);
 }
 
-void PhotonCamera::TakeInputSnapshot() { inputSaveImgEntry.Set(true); }
+void PhotonCamera::TakeInputSnapshot() { inputSaveImgEntry.Set(inputSaveImgSubscriber.Get() + 1); }
 
-void PhotonCamera::TakeOutputSnapshot() { outputSaveImgEntry.Set(true); }
+void PhotonCamera::TakeOutputSnapshot() { outputSaveImgEntry.Set(outputSaveImgSubscriber.Get() + 1); }
 
 bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 
