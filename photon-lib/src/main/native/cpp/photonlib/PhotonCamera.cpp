@@ -93,9 +93,13 @@ void PhotonCamera::SetDriverMode(bool driverMode) {
   driverModeEntry.Set(driverMode);
 }
 
-void PhotonCamera::TakeInputSnapshot() { inputSaveImgEntry.Set(inputSaveImgSubscriber.Get() + 1); }
+void PhotonCamera::TakeInputSnapshot() {
+  inputSaveImgEntry.Set(inputSaveImgSubscriber.Get() + 1);
+}
 
-void PhotonCamera::TakeOutputSnapshot() { outputSaveImgEntry.Set(outputSaveImgSubscriber.Get() + 1); }
+void PhotonCamera::TakeOutputSnapshot() {
+  outputSaveImgEntry.Set(outputSaveImgSubscriber.Get() + 1);
+}
 
 bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 

@@ -24,10 +24,10 @@
 
 #pragma once
 
-#include <span>
 #include <string>
 
 #include <frc/Errors.h>
+#include <span>
 #include <units/time.h>
 #include <wpi/SmallVector.h>
 

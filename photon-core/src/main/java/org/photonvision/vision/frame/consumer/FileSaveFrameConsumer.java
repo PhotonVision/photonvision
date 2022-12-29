@@ -77,7 +77,6 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
                                     + "T"
                                     + tf.format(now)
                                     + FILE_EXTENSION;
-    
 
                     //write to file
                     Imgcodecs.imwrite(savefile, image.getMat());
@@ -85,7 +84,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
                     //Count one more image saved
                     imgSaveCountInternal++;
                     logger.info("Saved new image at " + savefile);
-    
+
                 } else if( imgSaveCountInternal > curCommand){
                     imgSaveCountInternal = curCommand;
                 }
