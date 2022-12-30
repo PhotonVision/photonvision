@@ -46,8 +46,15 @@ public class PhotonCamera {
     protected final NetworkTable cameraTable;
 
     // NetworkTables entries
+    // Used
     RawSubscriber rawBytesEntry;
     BooleanEntry driverModeEntry;
+    StringSubscriber versionEntry;
+    BooleanPublisher inputSaveImgEntry, outputSaveImgEntry;
+    IntegerEntry pipelineIndexEntry, ledModeEntry;
+    IntegerSubscriber heartbeatEntry;
+
+    // Unused TODO: why are these here?
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
     DoublePublisher latencyMillisEntry;
@@ -57,10 +64,6 @@ public class PhotonCamera {
     DoublePublisher targetAreaEntry;
     DoubleArrayPublisher targetPoseEntry;
     DoublePublisher targetSkewEntry;
-    StringSubscriber versionEntry;
-    BooleanPublisher inputSaveImgEntry, outputSaveImgEntry;
-    IntegerEntry pipelineIndexEntry, ledModeEntry;
-    IntegerSubscriber heartbeatEntry;
 
     /**
      * Close out the NetworkTables entries used to communicate with the camera and releases their resources.
