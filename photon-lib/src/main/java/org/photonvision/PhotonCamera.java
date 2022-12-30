@@ -164,21 +164,44 @@ public class PhotonCamera {
     }
 
     /**
+     * Get the current vision mode of the camera.
+     *
+     * @return current vision mode.
+     */
+    public VisionCamMode getCamMode() {
+        return driverModeEntry.get(false) ? VisionCamMode.kDriver : VisionCamMode.kProcessing;
+    }
+
+    /**
+     * Set the current vision mode of the camera.
+     *
+     * @param mode new vision mode to set.
+     */
+    public void setCamMode(VisionCamMode mode) {
+        driverModeEntry.set(mode == VisionCamMode.kDriver);
+    }
+
+
+    /**
      * Returns whether the camera is in driver mode.
      *
      * @return Whether the camera is in driver mode.
+     * @deprecated this method should be replaced with {@link PhotonCamera#getCamMode()}
      */
+    @Deprecated
     public boolean getDriverMode() {
-        return driverModeEntry.get(false);
+        return getCamMode() == VisionCamMode.kDriver;
     }
 
     /**
      * Toggles driver mode.
      *
      * @param driverMode Whether to set driver mode.
+     * @deprecated this method should be replaced with {@link PhotonCamera#setCamMode(VisionCamMode)}
      */
+    @Deprecated
     public void setDriverMode(boolean driverMode) {
-        driverModeEntry.set(driverMode);
+        setCamMode(driverMode ? VisionCamMode.kDriver : VisionCamMode.kProcessing);
     }
 
     /**
