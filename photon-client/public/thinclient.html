@@ -87,8 +87,8 @@
 
             animationLoop(){
                 // Update time metrics
-                var now = window.performance.now();
-                var timeInState  = now - this.dsm_restart_start_time;
+                const now = window.performance.now();
+                const timeInState = now - this.dsm_restart_start_time;
 
                 // Save previous state
                 this.dsm_prev_state = this.dsm_cur_state;
@@ -275,11 +275,11 @@
 
         }
 
-        var stream = null;
+        let stream = null;
 
         function streamStartRequest() {
-            var host = document.getElementById("host").value + ":5800";
-            var port = document.getElementById("port").value;
+            const host = document.getElementById("host").value + ":5800";
+            const port = document.getElementById("port").value;
             if(stream == null){
                 stream = new WebsocketVideoStream("streamImg",port,host);
             } else {

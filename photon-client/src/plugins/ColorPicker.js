@@ -1,5 +1,5 @@
-var canvas = undefined;
-var image = undefined;
+let canvas = undefined;
+let image = undefined;
 
 function initColorPicker() {
     if (!canvas)
@@ -12,11 +12,11 @@ function initColorPicker() {
     }
 }
 
-//Called on click of the image,
-//Finds X,Y of the mouse on the image,
-//Draws the image on the (invisible) canvas
-//Reads the color values (pixelData) in X,Y of the canvas
-//calls the function to handle the button (either eyedrop,expand or shrink)
+// Called on click of the image,
+// Finds X,Y of the mouse on the image,
+// Draws the image on the (invisible) canvas
+// Reads the color values (pixelData) in X,Y of the canvas
+// calls the function to handle the button (either eyedrop,expand or shrink)
 function colorPickerClick(event, currentFunction, currentRange) {
     let rect = image.getBoundingClientRect();
     let x = Math.round((event.clientX - rect.left) / rect.width * image.width);
@@ -77,10 +77,10 @@ function RGBtoHSV(numbers) {
 //Loops though the colors array, finds the smallest and biggest value for H,S and V. Returns the range containing every color
 function createRange(HSVColors) {
     let range = [[], []];
-    for (var i = 0; i < 3; i++) {
+    for (let i = 0; i < 3; i++) {
         range[0][i] = HSVColors[0][i];
         range[1][i] = HSVColors[0][i];
-        for (var j = HSVColors.length - 1; j >= 0; j--) {
+        for (let j = HSVColors.length - 1; j >= 0; j--) {
             range[0][i] = Math.min(HSVColors[j][i], range[0][i]);
             range[1][i] = Math.max(HSVColors[j][i], range[1][i]);
         }

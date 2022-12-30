@@ -138,7 +138,7 @@ export default {
     this.refFrameCues.push(camBody)
     this.refFrameCues.push(camLens)
 
-    var controls = new TrackballControls(
+    const controls = new TrackballControls(
         camera,
         renderer.domElement
     );
@@ -231,7 +231,7 @@ export default {
     },
 
     onWindowResize() {
-      var container = document.getElementById("MapContainer")
+      const container = document.getElementById("MapContainer");
       if(container){
         this.canvas.width = container.clientWidth * 0.95;
         this.canvas.height = container.clientWidth * 0.85;

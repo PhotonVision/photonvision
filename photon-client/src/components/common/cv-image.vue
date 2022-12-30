@@ -50,7 +50,7 @@
             },
             src: {
               get() {
-                var port = this.getCurPort();
+                const port = this.getCurPort();
                 if(port <= 0){
                   //Invalid port, keep it spinny
                   return require("../../assets/loading.gif");
@@ -66,7 +66,7 @@
         },
         methods: {
             getCurPort(){
-              var port = -1;
+              let port = -1;
               if(this.disconnected){
                 //Disconnected, port is unknown.
                 port = -1;
@@ -92,7 +92,7 @@
               if(this.colorPicking){
                 this.$emit('click', event);
               } else {
-                var port = this.getCurPort();
+                const port = this.getCurPort();
                 if(port <= 0){
                   console.log("No valid port, ignoring click.");
                 } else {
