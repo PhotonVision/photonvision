@@ -54,7 +54,6 @@ public class PhotonCamera {
     IntegerEntry pipelineIndexEntry, ledModeEntry;
     IntegerSubscriber heartbeatEntry;
 
-    // Unused TODO: why are these here?
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
     DoublePublisher latencyMillisEntry;
@@ -70,8 +69,6 @@ public class PhotonCamera {
      * resources.
      */
     public void close() {
-        // TODO: what is the point of this method, most teams create the object in RobotInit then leave
-        // the object for the lifecycle of the robot, this serves no purpose.
         rawBytesEntry.close();
         driverModeEntry.close();
         driverModePublisher.close();
