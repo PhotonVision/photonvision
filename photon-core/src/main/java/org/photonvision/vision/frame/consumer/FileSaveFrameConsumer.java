@@ -17,21 +17,18 @@
 
 package org.photonvision.vision.frame.consumer;
 
-import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.vision.opencv.CVMat;
 
 public class FileSaveFrameConsumer implements Consumer<CVMat> {
@@ -60,12 +57,12 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
 
     public void accept(CVMat image) {
         if (image != null && image.getMat() != null && !image.getMat().empty()) {
-            var curCommand = entry.get(); //default to just our current count
-            if(curCommand >= 0){
-                //Only do something if we got a valid current command
+            var curCommand = entry.get(); // default to just our current count
+            if (curCommand >= 0) {
+                // Only do something if we got a valid current command
                 if (imgSaveCountInternal < curCommand) {
 
-                    //Save one frame.
+                    // Save one frame.
                     // Create the filename
                     Date now = new Date();
                     String savefile =
@@ -78,18 +75,17 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
                                     + tf.format(now)
                                     + FILE_EXTENSION;
 
-                    //write to file
+                    // write to file
                     Imgcodecs.imwrite(savefile, image.getMat());
 
-                    //Count one more image saved
+                    // Count one more image saved
                     imgSaveCountInternal++;
                     logger.info("Saved new image at " + savefile);
 
-                } else if( imgSaveCountInternal > curCommand){
+                } else if (imgSaveCountInternal > curCommand) {
                     imgSaveCountInternal = curCommand;
                 }
             }
-
         }
     }
 
@@ -102,11 +98,10 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
             }
         }
 
-        //Recreate and re-init network tables structure
+        // Recreate and re-init network tables structure
         this.camNickname = newCameraNickname;
         this.subTable = rootTable.getSubTable(this.camNickname);
         this.subTable.getEntry(ntEntryName).setInteger(imgSaveCountInternal);
-        this.entry = subTable.getIntegerTopic(ntEntryName).getEntry(-1); //Default negative
-
+        this.entry = subTable.getIntegerTopic(ntEntryName).getEntry(-1); // Default negative
     }
 }
