@@ -553,32 +553,32 @@ export default {
         downloadBoard() {
             // Generates a .pdf of a board for calibration and downloads it
 
-            //Murica paper.
-            var doc = new jsPDF({unit: 'in', format:'letter'});
-            var paper_x = 8.5;
-            var paper_y = 11.0;
+            const doc = new jsPDF({unit: 'in', format:'letter'});
+
+            const paper_x = 8.5;
+            const paper_y = 11.0;
 
             //Load in custom fonts
-            console.log(doc.getFontList());
             doc.setFont('Prompt-Regular');
             doc.setFontSize(12);
 
             // Common Parameters
-            var num_x = this.boardWidth;
-            var num_y = this.boardHeight;
-            var patternSize = this.squareSizeIn;
-            var isCheckerboard = (this.boardType==0);
+            const num_x = this.boardWidth;
+            const num_y = this.boardHeight;
+            const patternSize = this.squareSizeIn;
+            const isChessboard = this.boardType == 0;
 
-            var x_coord = 0.0;
-            var y_coord = 0.0;
-            var x_idx = 0;
-            var y_idx = 0;
-            var start_x = 0;
-            var start_y = 0;
+            let x_coord = 0.0;
+            let y_coord = 0.0;
 
-            var annotation = num_x + " x " + num_y + " | " + patternSize + "in "
+            let x_idx = 0;
+            let y_idx = 0;
+            let start_x = 0;
+            let start_y = 0;
 
-            if(isCheckerboard){
+            const annotation = `${num_x} x ${num_y} | ${patternSize}in `
+
+            if(isChessboard) {
               ///////////////////////////////////////////
               // Checkerboard Pattern
 
@@ -590,12 +590,11 @@ export default {
 
                   x_coord = start_x + x_idx * patternSize;
                   y_coord = start_y + y_idx * patternSize;
-                  if((x_idx + y_idx) % 2 == 0){
+                  if((x_idx + y_idx) % 2 === 0){
                     doc.rect(x_coord, y_coord, patternSize, patternSize, "F");
                   }
                 }
               }
-
             } else {
               ///////////////////////////////////////////
               // Assymetric Dot-Grid Pattern
@@ -616,32 +615,34 @@ export default {
             }
 
             ///////////////////////////////////////////
-            // Draw a fixed size inch ruler pattern to
-            // help users debug their printers
-            var lineStartX = 1.0;
-            var lineEndX = paper_x - lineStartX;
-            var lineY = paper_y - 1.0;
+            // Draw a fixed size inch ruler pattern to help users debug their printers
+            const lineStartX = 1.0;
+            const lineEndX = paper_x - lineStartX;
+
+            const lineY = paper_y - 1.0;
+
             doc.setFont('Prompt-Regular');
             doc.setLineWidth(0.01);
             doc.line(lineStartX, lineY, lineEndX, lineY);
-            var segIdx = 0;
-            for(var tickX = lineStartX; tickX <= lineEndX; tickX += 1.0){
+
+            let segIdx = 0;
+            for(let tickX = lineStartX; tickX <= lineEndX; tickX += 1.0){
               doc.line(tickX, lineY, tickX, lineY + 0.25);
-              doc.text(String(segIdx) + (segIdx == 0 ? " in" : ""), tickX + 0.1, lineY + 0.25);
+              // Only specify inches on the first tick
+              doc.text(`${segIdx}${segIdx === 0 ? " in" : ""}`, tickX + 0.1, lineY + 0.25);
               segIdx++;
             }
 
 
             ///////////////////////////////////////////
-            // Annotate what was drawn + branding
-            var img = new Image();
+            // Add photonvision logo
+            const img = new Image();
             img.src = require('@/assets/logoMono.png');
             doc.addImage(img, 'PNG', 1.0, 0.75, 1.4, 0.5 );
             doc.setFont('Prompt-Regular');
             doc.text(annotation, paper_x-1.0, 1.0, {maxWidth:(paper_x - 2.0)/2, align:"right"});
 
             doc.save("calibrationTarget.pdf");
-
         },
         sendCameraSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
