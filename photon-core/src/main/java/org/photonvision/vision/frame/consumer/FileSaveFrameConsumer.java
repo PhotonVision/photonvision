@@ -61,7 +61,6 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
             if (curCommand >= 0) {
                 // Only do something if we got a valid current command
                 if (imgSaveCountInternal < curCommand) {
-
                     // Save one frame.
                     // Create the filename
                     Date now = new Date();
@@ -90,7 +89,6 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     }
 
     public void updateCameraNickname(String newCameraNickname) {
-
         // Remove existing entries
         if (this.subTable != null) {
             if (this.subTable.containsKey(ntEntryName)) {

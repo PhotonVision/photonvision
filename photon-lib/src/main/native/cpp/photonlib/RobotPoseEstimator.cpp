@@ -27,6 +27,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <span>
 #include <string>
 #include <utility>
 #include <vector>
@@ -35,7 +36,6 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
-#include <span>
 #include <units/time.h>
 
 #include "photonlib/PhotonCamera.h"
