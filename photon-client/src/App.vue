@@ -362,7 +362,7 @@ export default {
       this.previouslySelectedIndices = null;
     },
     switchToSettingsTab() {
-      this.axios.post('http://' + this.$address + '/api/sendMetrics', {})
+      this.axios.post(`https://${this.$address}/api/sendMetrics`, {})
     }
   }
 };
