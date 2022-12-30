@@ -396,6 +396,9 @@ jobs:
               artifact-name: LinuxArm64
               image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.0-beta-2
 
+    runs-on: ${{ matrix.os }}
+    name: "Build image - ${{ matrix.image_url }}"
+
     steps:
       - uses: actions/download-artifact@v2
         with:
