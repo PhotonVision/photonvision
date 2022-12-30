@@ -377,10 +377,10 @@ jobs:
 
       # The image will only pull the Pi32 JAR in
       - name: Generate image
-        if: ${{ github.event_name != 'pull_request' && (matrix.artifact-name) == 'LinuxArm32' }}
+        if: ${{ github.event_name != 'pull_request' && (matrix.artifact-name) == 'LinuxArm64' }}
         run: |
-          chmod +x scripts/generatePiImage.sh
-          ./scripts/generatePiImage.sh
+          chmod +x scripts/generateGenericPiImage.sh
+          ./scripts/generateGenericPiImage.sh
 
       # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@v3
@@ -391,7 +391,7 @@ jobs:
       # Upload image as well
 
       - uses: actions/upload-artifact@v3
-        if: ${{ github.event_name != 'pull_request' && (matrix.artifact-name) == 'LinuxArm32' }}
+        if: ${{ github.event_name != 'pull_request' && (matrix.artifact-name) == 'LinuxArm64' }}
         with:
           name: image-${{ matrix.artifact-name }}
           path: photonvision*.xz

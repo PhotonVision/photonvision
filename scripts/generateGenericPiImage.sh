@@ -1,9 +1,9 @@
 # We need to look for a JAR with the "-raspi" suffix so we don't accidentally bundle the big jar
 # Not that it really matters, but it'll save us 50 megs or so
-NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm32.jar))
+NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
 echo "Using jar: " $NEW_JAR
 sudo apt-get install -y xz-utils
-curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.0-beta-1 | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
+curl -sk https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.0-beta-2 | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
 ls
 FILE_NAME=$(ls | grep image_*.xz)
 echo "Downloaded " $FILE_NAME
