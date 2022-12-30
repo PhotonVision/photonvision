@@ -44,7 +44,8 @@ public class PhotonCameraMountConfig {
      * camera is mounted on a non-static surface such as a turret or telescoping pole. The supplier
      * <b>cannot</b> return null or else an error will be thrown.
      *
-     * @param robotOriginPosition {@link Pose3d} representing the position of the robot origin in the RCS.
+     * @param robotOriginPosition {@link Pose3d} representing the position of the robot origin in the
+     *     RCS.
      * @param cameraPosition {@link Pose3d} supplier that returns the position of the camera in the
      *     RCS.
      */
@@ -74,7 +75,8 @@ public class PhotonCameraMountConfig {
      * Construct a PhotonCameraMountConfig for a statically mounted camera from the position of the
      * camera as a {@link Pose3d}.
      *
-     * @param robotOriginPosition {@link Pose3d} representing the position of the robot origin in the RCS.
+     * @param robotOriginPosition {@link Pose3d} representing the position of the robot origin in the
+     *     RCS.
      * @param cameraPosition {@link Pose3d} representing the position of the camera in the RCS.
      */
     public PhotonCameraMountConfig(Pose3d robotOriginPosition, Pose3d cameraPosition) {

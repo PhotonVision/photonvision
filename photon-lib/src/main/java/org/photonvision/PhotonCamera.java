@@ -104,6 +104,8 @@ public class PhotonCamera {
 
     private final Packet packet = new Packet(1);
 
+    private final PhotonCameraMountConfig cameraMountConfig;
+
     /**
      * Constructs a PhotonCamera from a root table.
      *
@@ -111,9 +113,12 @@ public class PhotonCamera {
      *     simulation, but should *usually* be the default NTInstance from
      *     NetworkTableInstance::getDefault
      * @param cameraName The name of the camera, as seen in the UI.
+     * @param config The mount config of the PhotonCamera.
      */
-    public PhotonCamera(NetworkTableInstance instance, String cameraName) {
+    public PhotonCamera(
+            NetworkTableInstance instance, String cameraName, PhotonCameraMountConfig config) {
         this.cameraName = cameraName;
+        this.cameraMountConfig = config;
 
         NetworkTable photonTable = instance.getTable("photonvision");
         this.ledModeEntry = photonTable.getIntegerTopic("ledMode").getEntry(-1);
@@ -133,9 +138,10 @@ public class PhotonCamera {
      * Constructs a PhotonCamera from the name of the camera.
      *
      * @param cameraName The nickname of the camera (found in the PhotonVision UI).
+     * @param config The mount config of the PhotonCamera.
      */
-    public PhotonCamera(String cameraName) {
-        this(NetworkTableInstance.getDefault(), cameraName);
+    public PhotonCamera(String cameraName, PhotonCameraMountConfig config) {
+        this(NetworkTableInstance.getDefault(), cameraName, config);
     }
 
     /**
@@ -295,6 +301,15 @@ public class PhotonCamera {
      */
     public String getName() {
         return cameraName;
+    }
+
+    /**
+     * Return the mount config of the photon camera.
+     *
+     * @return camera mount config.
+     */
+    public PhotonCameraMountConfig getCameraMountConfig() {
+        return cameraMountConfig;
     }
 
     /**
