@@ -50,7 +50,7 @@ public class RobotPoseEstimator {
      *       calculated
      * </ul>
      */
-    enum PoseStrategy {
+    public enum PoseStrategy {
         LOWEST_AMBIGUITY,
         CLOSEST_TO_CAMERA_HEIGHT,
         CLOSEST_TO_REFERENCE_POSE,
