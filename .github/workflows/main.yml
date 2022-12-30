@@ -417,7 +417,7 @@ jobs:
 
 
   photon-release:
-    needs: [photon-build-package]
+    needs: [photon-build-package, photon-image-generator]
     runs-on: ubuntu-22.04
     steps:
       # Download literally every single artifact. This also downloads client and docs,
