@@ -56,11 +56,11 @@
                   v-bind="attrs"
                   v-on="on"
                 >
-                ⓘ CPU Throttling
+                  ⓘ CPU Throttling
                 </span>
               </template>
               <span>
-                    Current or Previous Reason for the cpu being held back from maximum performance.
+                Current or Previous Reason for the cpu being held back from maximum performance.
               </span>
             </v-tooltip>
           </th>

@@ -60,7 +60,7 @@
                   <cv-image
                     :id="idx === 0 ? 'raw-stream' : 'processed-stream'"
                     ref="streams"
-                    :idx=idx
+                    :idx="idx"
                     :disconnected="!$store.state.backendConnected"
                     scale="100"
                     :max-height="$store.getters.isDriverMode ? '40vh' : '300px'"

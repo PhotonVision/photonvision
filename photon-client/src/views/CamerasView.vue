@@ -303,7 +303,7 @@
         <template>
           <CVimage
             :id="cameras-cal"
-            :idx=1
+            :idx="1"
             :disconnected="!$store.state.backendConnected"
             scale="100"
             style="border-radius: 5px;"
