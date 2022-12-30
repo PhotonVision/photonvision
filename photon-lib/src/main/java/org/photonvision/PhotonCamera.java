@@ -43,7 +43,9 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera {
-    protected final NetworkTable rootTable;
+    protected final NetworkTable cameraTable;
+
+    // NetworkTables entries
     RawSubscriber rawBytesEntry;
     BooleanEntry driverModeEntry;
     BooleanPublisher driverModePublisher;
@@ -60,6 +62,9 @@ public class PhotonCamera {
     IntegerEntry pipelineIndexEntry, ledModeEntry;
     IntegerSubscriber heartbeatEntry;
 
+    /**
+     * Close out the NetworkTables entries used to communicate with the camera and releases their resources.
+     */
     public void close() {
         rawBytesEntry.close();
         driverModeEntry.close();
@@ -79,8 +84,8 @@ public class PhotonCamera {
         ledModeEntry.close();
     }
 
-    private final String path;
-    private final String name;
+    private final String cameraTablePath;
+    private final String cameraName;
 
     private static boolean VERSION_CHECK_ENABLED = true;
     private static long VERSION_CHECK_INTERVAL = 5;
@@ -94,7 +99,7 @@ public class PhotonCamera {
         VERSION_CHECK_ENABLED = enabled;
     }
 
-    Packet packet = new Packet(1);
+    private final Packet packet = new Packet(1);
 
     /**
      * Constructs a PhotonCamera from a root table.
@@ -105,18 +110,20 @@ public class PhotonCamera {
      * @param cameraName The name of the camera, as seen in the UI.
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
-        name = cameraName;
-        var mainTable = instance.getTable("photonvision");
-        this.rootTable = mainTable.getSubTable(cameraName);
-        path = rootTable.getPath();
-        rawBytesEntry = rootTable.getRawTopic("rawBytes").subscribe("rawBytes", new byte[] {});
-        driverModeEntry = rootTable.getBooleanTopic("driverMode").getEntry(false);
-        inputSaveImgEntry = rootTable.getBooleanTopic("inputSaveImgCmd").getEntry(false);
-        outputSaveImgEntry = rootTable.getBooleanTopic("outputSaveImgCmd").getEntry(false);
-        pipelineIndexEntry = rootTable.getIntegerTopic("pipelineIndex").getEntry(0);
-        heartbeatEntry = rootTable.getIntegerTopic("heartbeat").subscribe(-1);
-        ledModeEntry = mainTable.getIntegerTopic("ledMode").getEntry(-1);
-        versionEntry = mainTable.getStringTopic("version").subscribe("");
+        this.cameraName = cameraName;
+
+        NetworkTable photonTable = instance.getTable("photonvision");
+        this.ledModeEntry = photonTable.getIntegerTopic("ledMode").getEntry(-1);
+        this.versionEntry = photonTable.getStringTopic("version").subscribe("");
+
+        this.cameraTable = photonTable.getSubTable(cameraName);
+        this.cameraTablePath = cameraTable.getPath();
+        this.rawBytesEntry = cameraTable.getRawTopic("rawBytes").subscribe("rawBytes", new byte[] {});
+        this.driverModeEntry = cameraTable.getBooleanTopic("driverMode").getEntry(false);
+        this.inputSaveImgEntry = cameraTable.getBooleanTopic("inputSaveImgCmd").getEntry(false);
+        this.outputSaveImgEntry = cameraTable.getBooleanTopic("outputSaveImgCmd").getEntry(false);
+        this.pipelineIndexEntry = cameraTable.getIntegerTopic("pipelineIndex").getEntry(0);
+        this.heartbeatEntry = cameraTable.getIntegerTopic("heartbeat").subscribe(-1);
     }
 
     /**
@@ -140,20 +147,20 @@ public class PhotonCamera {
         packet.clear();
 
         // Create latest result.
-        var ret = new PhotonPipelineResult();
+        PhotonPipelineResult pipelineResult = new PhotonPipelineResult();
 
         // Populate packet and create result.
         packet.setData(rawBytesEntry.get(new byte[] {}));
 
-        if (packet.getSize() < 1) return ret;
-        ret.createFromPacket(packet);
+        if (packet.getSize() < 1) return pipelineResult;
+        pipelineResult.createFromPacket(packet);
 
         // Set the timestamp of the result.
-        // getLatestChange returns in microseconds so we divide by 1e6 to convert to seconds.
-        ret.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
+        // getLatestChange returns in microseconds; divide by 1e6 to convert it to seconds.
+        pipelineResult.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - pipelineResult.getLatencyMillis() / 1e3);
 
         // Return result.
-        return ret;
+        return pipelineResult;
     }
 
     /**
@@ -261,7 +268,7 @@ public class PhotonCamera {
      * @return The name of the camera.
      */
     public String getName() {
-        return name;
+        return cameraName;
     }
 
     /**
@@ -271,8 +278,9 @@ public class PhotonCamera {
      * @return True if the camera is actively sending frame data, false otherwise.
      */
     public boolean isConnected() {
-        var curHeartbeat = heartbeatEntry.get();
-        var now = Timer.getFPGATimestamp();
+        long curHeartbeat = heartbeatEntry.get();
+        double now = Timer.getFPGATimestamp();
+
 
         if (curHeartbeat != prevHeartbeatValue) {
             // New heartbeat value from the coprocessor
@@ -293,13 +301,13 @@ public class PhotonCamera {
         // assume that a camera with that name was never connected in the first place.
         if (!heartbeatEntry.exists()) {
             DriverStation.reportError(
-                    "PhotonVision coprocessor at path " + path + " not found on NetworkTables!", true);
+                    "PhotonVision coprocessor at path " + cameraTablePath + " not found on NetworkTables!", true);
         }
 
         // Check for connection status. Warn if disconnected.
         if (!isConnected()) {
             DriverStation.reportWarning(
-                    "PhotonVision coprocessor at path " + path + " is not sending new data.", true);
+                    "PhotonVision coprocessor at path " + cameraTablePath + " is not sending new data.", true);
         }
 
         // Check for version. Warn if the versions aren't aligned.
