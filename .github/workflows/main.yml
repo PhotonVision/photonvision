@@ -400,6 +400,12 @@ jobs:
     name: "Build image - ${{ matrix.image_url }}"
 
     steps:
+      # Checkout code.
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - uses: actions/download-artifact@v2
         with:
           name: jar-${{ matrix.artifact-name }}
