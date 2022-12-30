@@ -540,6 +540,7 @@ export default {
             this.calibrationInProgress = false;
             this.calibrationFailed = false;
         },
+
         getCalibrationCoeffs(resolution) {
             const calList = this.$store.getters.calibrationList;
             let ret = null;
@@ -550,6 +551,7 @@ export default {
             });
             return ret;
         },
+
         downloadBoard() {
             // Generates a .pdf of a board for calibration and downloads it
 
@@ -644,6 +646,7 @@ export default {
 
             doc.save("calibrationTarget.pdf");
         },
+
         sendCameraSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
                 "settings": this.cameraSettings,
@@ -679,6 +682,7 @@ export default {
             this.$store.commit('currentPipelineIndex', -2);
             this.$store.state.websocket.send(this.$msgPack.encode(data));
         },
+
         sendCalibrationFinish() {
             console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex);
 
