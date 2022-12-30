@@ -167,7 +167,9 @@ class PhotonCamera {
   nt::RawSubscriber rawBytesEntry;
   nt::BooleanPublisher driverModeEntry;
   nt::IntegerPublisher inputSaveImgEntry;
+  nt::IntegerSubscriber inputSaveImgSubscriber;
   nt::IntegerPublisher outputSaveImgEntry;
+  nt::IntegerSubscriber outputSaveImgSubscriber;
   nt::IntegerPublisher pipelineIndexEntry;
   nt::IntegerPublisher ledModeEntry;
   nt::StringSubscriber versionEntry;
@@ -175,8 +177,6 @@ class PhotonCamera {
   nt::BooleanSubscriber driverModeSubscriber;
   nt::IntegerSubscriber pipelineIndexSubscriber;
   nt::IntegerSubscriber ledModeSubscriber;
-  nt::IntegerSubscriber inputSaveImgSubscriber;
-  nt::IntegerSubscriber outputSaveImgSubscriber;
 
   std::string path;
   std::string m_cameraName;
