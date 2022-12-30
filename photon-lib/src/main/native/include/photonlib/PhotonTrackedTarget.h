@@ -52,11 +52,13 @@ class PhotonTrackedTarget {
    * @param area The area of the target.
    * @param skew The skew of the target.
    * @param pose The camera-relative pose of the target.
+   * @param alternatePose The alternate camera-relative pose of the target.
    * @Param corners The corners of the bounding rectangle.
    */
   PhotonTrackedTarget(
       double yaw, double pitch, double area, double skew, int fiducialID,
-      const frc::Transform3d& pose,
+      const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
+      double ambiguity,
       const wpi::SmallVector<std::pair<double, double>, 4> corners);
 
   /**
@@ -87,7 +89,7 @@ class PhotonTrackedTarget {
    * Get the Fiducial ID of the target currently being tracked,
    * or -1 if not set.
    */
-  double GetFiducialId() const { return fiducialId; }
+  int GetFiducialId() const { return fiducialId; }
 
   /**
    * Returns the corners of the minimum area rectangle bounding this target.

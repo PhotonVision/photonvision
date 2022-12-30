@@ -61,6 +61,7 @@ PhotonCamera::PhotonCamera(const std::string_view cameraName)
                    cameraName) {}
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() {
+  if (test) return testResult;
   // Prints warning if not connected
   VerifyVersion();
 
