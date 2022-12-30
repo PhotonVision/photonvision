@@ -155,7 +155,7 @@ export class WebsocketVideoStream{
         this.dsm_prev_state = this.dsm_cur_state;
 
         // Evaluate state transitions
-        if(this.serverConnectionActive === false){
+        if(!this.serverConnectionActive){
             // Any state - if the server connection goes false, always transition to disconnected
             this.dsm_cur_state = this.DSM_DISCONNECTED;
         } else {

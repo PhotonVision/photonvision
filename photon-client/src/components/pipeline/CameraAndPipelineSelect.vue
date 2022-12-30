@@ -12,7 +12,7 @@
         class="pa-0"
       >
         <CVselect
-          v-if="isCameraNameEdit === false"
+          v-if="!isCameraNameEdit"
           v-model="currentCameraIndex"
           name="Camera"
           :list="$store.getters.cameraList"
@@ -33,7 +33,7 @@
         lg="2"
       >
         <CVicon
-          v-if="isCameraNameEdit === false"
+          v-if="!isCameraNameEdit"
           color="#c5c5c5"
           :hover="true"
           text="edit"
@@ -288,7 +288,7 @@ export default {
       return "";
     },
     checkPipelineName() {
-      if (this.newPipelineName !== this.$store.getters.pipelineList[this.currentPipelineIndex - 1] || this.isPipelineNameEdit === false) {
+      if (this.newPipelineName !== this.$store.getters.pipelineList[this.currentPipelineIndex - 1] || !this.isPipelineNameEdit) {
         if (this.re.test(this.newPipelineName)) {
           for (let pipe in this.$store.getters.pipelineList) {
             if (this.$store.getters.pipelineList.hasOwnProperty(pipe)) {

@@ -669,7 +669,7 @@ export default {
                 ['cameraIndex']: this.$store.state.currentCameraIndex
             };
 
-            if (this.isCalibrating === true) {
+            if (this.isCalibrating) {
                 data['takeCalibrationSnapshot'] = true
             } else {
                 // This store prevents an edge case of a user not selecting a different resolution, which causes the set logic to not be called
