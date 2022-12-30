@@ -296,7 +296,7 @@ export default {
 
 @keyframes pulse-animation {
   0% {
-    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
     background-color: rgba(0, 0, 0, 0.2);
   }
 
