@@ -365,14 +365,13 @@ export default {
                   const group = ret[i];
 
                   // All the tabs we allow
-                  const filteredGroup = group.filter(it =>
-                          !(!allow3d && it.name === "3D") //Filter out 3D tab any time 3D isn't calibrated
-                       && !((!allow3d || isAprilTag) && it.name === "PnP") //Filter out the PnP config tab if 3D isn't available, or we're doing Apriltags
-                       && !(isAprilTag && (it.name === "Threshold")) //Filter out threshold tab if we're doing apriltags
-                       && !(isAprilTag && (it.name === "Contours")) //Filter out contours if we're doing Apriltag
-                       && !(!isAprilTag && it.name === "AprilTag") //Filter out apriltag unless we actually are doing Apriltags
-                      );
-                  ret[i] = filteredGroup;
+                  ret[i] = group.filter(it =>
+                      !(!allow3d && it.name === "3D") //Filter out 3D tab any time 3D isn't calibrated
+                      && !((!allow3d || isAprilTag) && it.name === "PnP") //Filter out the PnP config tab if 3D isn't available, or we're doing Apriltags
+                      && !(isAprilTag && (it.name === "Threshold")) //Filter out threshold tab if we're doing apriltags
+                      && !(isAprilTag && (it.name === "Contours")) //Filter out contours if we're doing Apriltag
+                      && !(!isAprilTag && it.name === "AprilTag") //Filter out apriltag unless we actually are doing Apriltags
+                  );
                 }
 
                 // One last filter to remove empty lists

@@ -33,8 +33,7 @@ function colorPickerClick(event, currentFunction, currentRange) {
 
 function eyeDrop(pixel) {
     let hsv = RGBtoHSV(pixel);
-    let range = widenRange([hsv, hsv.slice(0)]);//sends hsv and a copy of hsv
-    return range
+    return widenRange([hsv, hsv.slice(0)]); //sends hsv and a copy of hsv
 }
 
 function expand(pixel, currentRange) {
