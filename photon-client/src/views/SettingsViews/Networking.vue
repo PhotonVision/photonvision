@@ -237,7 +237,7 @@ export default {
             let restAreOnes = false;
             for (let i = 3; i >= 0; i--) {
                 for (let j = 0; j < 8; j++) {
-                    let bitValue = (octets[i] >>> j & 1) == 1;
+                    let bitValue = (octets[i] >>> j & 1) === 1;
                     if (restAreOnes && !bitValue)
                         return false;
                     restAreOnes = bitValue;

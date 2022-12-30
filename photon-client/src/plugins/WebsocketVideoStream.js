@@ -125,7 +125,7 @@ export class WebsocketVideoStream{
     }
 
     dispImageData(){
-        if(this.prevImgDataTime != this.imgDataTime){
+        if(this.prevImgDataTime !== this.imgDataTime){
             //From https://stackoverflow.com/questions/67507616/set-image-src-from-image-blob/67507685#67507685
             //Ensure uniqueness by making the new one before revoking the old one.
             const oldURL = this.imgObjURL;
@@ -221,12 +221,12 @@ export class WebsocketVideoStream{
 
         //take current-state or state-transition actions
 
-        if(this.dsm_cur_state != this.dsm_prev_state){
+        if(this.dsm_cur_state !== this.dsm_prev_state){
             //Any state transition
             console.log("State Change: " + this.dsm_prev_state + " -> " + this.dsm_cur_state);
         }
 
-        if(this.dsm_cur_state == this.DSM_SHOWING){
+        if(this.dsm_cur_state === this.DSM_SHOWING){
             // Currently in SHOWING
             // Show image and update status text
             this.dispImageData();
@@ -236,24 +236,24 @@ export class WebsocketVideoStream{
             this.statsTextDiv.innerHTML = this.dsm_cur_state;
         }
 
-        if(this.dsm_cur_state != this.DSM_SHOWING && this.dsm_prev_state == this.DSM_SHOWING ){
+        if(this.dsm_cur_state !== this.DSM_SHOWING && this.dsm_prev_state === this.DSM_SHOWING ){
             //Any transition out of showing - no stream
             this.dispNoStream();
         }
 
-        if(this.dsm_cur_state == this.DSM_RESTART_UNSUBSCRIBE){
+        if(this.dsm_cur_state === this.DSM_RESTART_UNSUBSCRIBE){
             // Currently in UNSUBSCRIBE, do the unsubscribe actions
             this.stopStream();
             this.dsm_restart_start_time = curTime_s;
         }
 
-        if(this.dsm_cur_state == this.DSM_SUBSCRIBE){
+        if(this.dsm_cur_state === this.DSM_SUBSCRIBE){
             // Currently in SUBSCRIBE, do the subscribe actions
             this.startStream();
             this.dsm_restart_start_time = curTime_s;
         }
 
-        if(this.dsm_cur_state == this.DSM_WAIT_FOR_VALID_PORT){
+        if(this.dsm_cur_state === this.DSM_WAIT_FOR_VALID_PORT){
             // Currently waiting for a vaild port to be requested
             if(this.newStreamPortReq != null){
                 this.streamPort = this.newStreamPortReq;
