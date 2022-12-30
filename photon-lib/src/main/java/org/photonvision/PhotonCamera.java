@@ -66,9 +66,12 @@ public class PhotonCamera {
     DoublePublisher targetSkewEntry;
 
     /**
-     * Close out the NetworkTables entries used to communicate with the camera and releases their resources.
+     * Close out the NetworkTables entries used to communicate with the camera and releases their
+     * resources.
      */
     public void close() {
+        // TODO: what is the point of this method, most teams create the object in RobotInit then leave
+        // the object for the lifecycle of the robot, this serves no purpose.
         rawBytesEntry.close();
         driverModeEntry.close();
         driverModePublisher.close();
@@ -160,7 +163,8 @@ public class PhotonCamera {
 
         // Set the timestamp of the result.
         // getLatestChange returns in microseconds; divide by 1e6 to convert it to seconds.
-        pipelineResult.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - pipelineResult.getLatencyMillis() / 1e3);
+        pipelineResult.setTimestampSeconds(
+                (rawBytesEntry.getLastChange() / 1e6) - pipelineResult.getLatencyMillis() / 1e3);
 
         // Return result.
         return pipelineResult;
@@ -183,7 +187,6 @@ public class PhotonCamera {
     public void setCamMode(VisionCamMode mode) {
         driverModeEntry.set(mode == VisionCamMode.kDriver);
     }
-
 
     /**
      * Returns whether the camera is in driver mode.
@@ -307,7 +310,6 @@ public class PhotonCamera {
         long curHeartbeat = heartbeatEntry.get();
         double now = Timer.getFPGATimestamp();
 
-
         if (curHeartbeat != prevHeartbeatValue) {
             // New heartbeat value from the coprocessor
             prevHeartbeatChangeTime = now;
@@ -327,13 +329,15 @@ public class PhotonCamera {
         // assume that a camera with that name was never connected in the first place.
         if (!heartbeatEntry.exists()) {
             DriverStation.reportError(
-                    "PhotonVision coprocessor at path " + cameraTablePath + " not found on NetworkTables!", true);
+                    "PhotonVision coprocessor at path " + cameraTablePath + " not found on NetworkTables!",
+                    true);
         }
 
         // Check for connection status. Warn if disconnected.
         if (!isConnected()) {
             DriverStation.reportWarning(
-                    "PhotonVision coprocessor at path " + cameraTablePath + " is not sending new data.", true);
+                    "PhotonVision coprocessor at path " + cameraTablePath + " is not sending new data.",
+                    true);
         }
 
         // Check for version. Warn if the versions aren't aligned.

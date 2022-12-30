@@ -73,9 +73,8 @@ public class SimVisionSystem {
      *     make it visible. Set to 9000 or more if your vision system does not rely on LED's.
      * @param cameraResWidth Width of your camera's image sensor in pixels
      * @param cameraResHeight Height of your camera's image sensor in pixels
-     * @param minTargetArea Minimum area that the target should be before it's recognized as a
-     *     target by the camera. Match this with your contour filtering settings in the PhotonVision
-     *     GUI.
+     * @param minTargetArea Minimum area that the target should be before it's recognized as a target
+     *     by the camera. Match this with your contour filtering settings in the PhotonVision GUI.
      */
     public SimVisionSystem(
             String camName,
