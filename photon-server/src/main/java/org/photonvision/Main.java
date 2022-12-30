@@ -37,6 +37,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
@@ -293,11 +294,11 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
         }
 
-        // try {
-        //    PicamJNI.forceLoad();
-        // } catch (IOException e) {
-        //    logger.error("Failed to load Picam JNI!", e);
-        // }
+        try {
+            LibCameraJNI.forceLoad();
+        } catch (IOException e) {
+            logger.error("Failed to load native libraries!", e);
+        }
 
         try {
             if (!handleArgs(args)) {

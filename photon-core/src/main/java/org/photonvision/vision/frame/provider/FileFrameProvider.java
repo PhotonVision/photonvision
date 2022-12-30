@@ -22,8 +22,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameProvider;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.CVMat;
@@ -32,14 +32,14 @@ import org.photonvision.vision.opencv.CVMat;
  * A {@link FrameProvider} that will read and provide an image from a {@link java.nio.file.Path
  * path}.
  */
-public class FileFrameProvider implements FrameProvider {
+public class FileFrameProvider extends CpuImageProcessor {
     public static final int MAX_FPS = 5;
     private static int count = 0;
 
     private final int thisIndex = count++;
     private final Path path;
     private final int millisDelay;
-    private final Frame originalFrame;
+    private final CVMat originalFrame;
 
     private final FrameStaticProperties properties;
 
@@ -70,7 +70,7 @@ public class FileFrameProvider implements FrameProvider {
         Mat rawImage = Imgcodecs.imread(path.toString());
         if (rawImage.cols() > 0 && rawImage.rows() > 0) {
             properties = new FrameStaticProperties(rawImage.width(), rawImage.height(), fov, calibration);
-            originalFrame = new Frame(new CVMat(rawImage), properties);
+            originalFrame = new CVMat(rawImage);
         } else {
             throw new RuntimeException("Image loading failed!");
         }
@@ -97,9 +97,9 @@ public class FileFrameProvider implements FrameProvider {
     }
 
     @Override
-    public Frame get() {
-        Frame outputFrame = new Frame(new CVMat(), properties);
-        originalFrame.copyTo(outputFrame);
+    public CapturedFrame getInputMat() {
+        var out = new CVMat();
+        out.copyTo(originalFrame);
 
         // block to keep FPS at a defined rate
         if (System.currentTimeMillis() - lastGetMillis < millisDelay) {
@@ -111,7 +111,7 @@ public class FileFrameProvider implements FrameProvider {
         }
 
         lastGetMillis = System.currentTimeMillis();
-        return outputFrame;
+        return new CapturedFrame(out, properties, MathUtils.wpiNanoTime());
     }
 
     @Override
