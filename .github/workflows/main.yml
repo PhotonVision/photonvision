@@ -406,7 +406,7 @@ jobs:
 
       - name: Generate image
         run: |
-          chmod +x scripts/generatePiImage.sh 
+          chmod +x scripts/generatePiImage.sh
           ./scripts/generatePiImage.sh ${{ matrix.image_url }}
 
       - uses: actions/upload-artifact@v3
