@@ -42,7 +42,7 @@ import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
-public class PhotonCamera {
+public class PhotonCamera implements AutoCloseable {
     protected final NetworkTable cameraTable;
 
     // NetworkTables entries
@@ -63,29 +63,6 @@ public class PhotonCamera {
     DoublePublisher targetAreaEntry;
     DoubleArrayPublisher targetPoseEntry;
     DoublePublisher targetSkewEntry;
-
-    /**
-     * Close out the NetworkTables entries used to communicate with the camera and releases their
-     * resources.
-     */
-    public void close() {
-        rawBytesEntry.close();
-        driverModeEntry.close();
-        driverModePublisher.close();
-        driverModeSubscriber.close();
-        latencyMillisEntry.close();
-        hasTargetEntry.close();
-        targetPitchEntry.close();
-        targetYawEntry.close();
-        targetAreaEntry.close();
-        targetPoseEntry.close();
-        targetSkewEntry.close();
-        versionEntry.close();
-        inputSaveImgEntry.close();
-        outputSaveImgEntry.close();
-        pipelineIndexEntry.close();
-        ledModeEntry.close();
-    }
 
     private final String cameraTablePath;
     private final String cameraName;
@@ -365,5 +342,29 @@ public class PhotonCamera {
                             + "!",
                     true);
         }
+    }
+
+    /**
+     * Close out the NetworkTables entries used to communicate with the camera and releases their
+     * resources.
+     */
+    @Override
+    public void close() {
+        rawBytesEntry.close();
+        driverModeEntry.close();
+        driverModePublisher.close();
+        driverModeSubscriber.close();
+        latencyMillisEntry.close();
+        hasTargetEntry.close();
+        targetPitchEntry.close();
+        targetYawEntry.close();
+        targetAreaEntry.close();
+        targetPoseEntry.close();
+        targetSkewEntry.close();
+        versionEntry.close();
+        inputSaveImgEntry.close();
+        outputSaveImgEntry.close();
+        pipelineIndexEntry.close();
+        ledModeEntry.close();
     }
 }
