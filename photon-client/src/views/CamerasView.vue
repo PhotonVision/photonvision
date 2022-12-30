@@ -560,7 +560,7 @@ export default {
             const paper_x = 8.5;
             const paper_y = 11.0;
 
-            //Load in custom fonts
+            // Load in custom fonts
             doc.setFont('Prompt-Regular');
             doc.setFontSize(12);
 
@@ -581,7 +581,7 @@ export default {
             const annotation = `${num_x} x ${num_y} | ${patternSize}in `
 
             if(isChessboard) {
-              ///////////////////////////////////////////
+              // /////////////////////////////////////////
               // Checkerboard Pattern
 
               start_x = paper_x/2.0 - (num_x * patternSize)/2.0;
@@ -598,7 +598,7 @@ export default {
                 }
               }
             } else {
-              ///////////////////////////////////////////
+              // /////////////////////////////////////////
               // Assymetric Dot-Grid Pattern
               // see https://github.com/opencv/opencv/blob/b450dd7a87bc69997a8417d94bdfb87427a9fe62/modules/calib3d/src/circlesgrid.cpp#L437
               // as well as FindBoardCornersPipe.java's Dotboard implementation
@@ -616,7 +616,7 @@ export default {
               }
             }
 
-            ///////////////////////////////////////////
+            // /////////////////////////////////////////
             // Draw a fixed size inch ruler pattern to help users debug their printers
             const lineStartX = 1.0;
             const lineEndX = paper_x - lineStartX;
@@ -636,7 +636,7 @@ export default {
             }
 
 
-            ///////////////////////////////////////////
+            // /////////////////////////////////////////
             // Add photonvision logo
             const img = new Image();
             img.src = require('@/assets/logoMono.png');

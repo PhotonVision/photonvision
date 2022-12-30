@@ -33,7 +33,7 @@ function colorPickerClick(event, currentFunction, currentRange) {
 
 function eyeDrop(pixel) {
     let hsv = RGBtoHSV(pixel);
-    return widenRange([hsv, hsv.slice(0)]); //sends hsv and a copy of hsv
+    return widenRange([hsv, hsv.slice(0)]); // sends hsv and a copy of hsv
 }
 
 function expand(pixel, currentRange) {
@@ -45,12 +45,12 @@ function expand(pixel, currentRange) {
 function shrink(pixel, currentRange) {
     let hsv = RGBtoHSV(pixel);
     let widenHSV = widenRange([[].concat(hsv), hsv]);
-    if (!shrinkRange(currentRange, widenHSV[0]))//Tries to shrink the lower part of the widen HSV
-        shrinkRange(currentRange, widenHSV[1]);//If the prev attempt failed, try to shrink the higher part of the widen HSV
+    if (!shrinkRange(currentRange, widenHSV[0]))// Tries to shrink the lower part of the widen HSV
+        shrinkRange(currentRange, widenHSV[1]);// If the prev attempt failed, try to shrink the higher part of the widen HSV
     return currentRange
 }
 
-//numbers is an array of 3 rgb values, returns array for 3 hsv values
+// numbers is an array of 3 rgb values, returns array for 3 hsv values
 function RGBtoHSV(numbers) {
     let r = numbers[0],
         g = numbers[1],
@@ -74,7 +74,7 @@ function RGBtoHSV(numbers) {
     return [Math.round(H), Math.round(S), Math.round(V)];
 }
 
-//Loops though the colors array, finds the smallest and biggest value for H,S and V. Returns the range containing every color
+// Loops though the colors array, finds the smallest and biggest value for H,S and V. Returns the range containing every color
 function createRange(HSVColors) {
     let range = [[], []];
     for (let i = 0; i < 3; i++) {
@@ -85,27 +85,27 @@ function createRange(HSVColors) {
             range[1][i] = Math.max(HSVColors[j][i], range[1][i]);
         }
     }
-    return range;//[[Hmin,Smin,Vmin],[Hmax,Smax,Vmax]]
+    return range;// [[Hmin,Smin,Vmin],[Hmax,Smax,Vmax]]
 }
 
-//This function adds 10 extra units to each side of the sliders, not to be confued with the expand selection button
+// This function adds 10 extra units to each side of the sliders, not to be confued with the expand selection button
 function widenRange(range) {
     let expanded = [[], []];
     for (let i = 0; i < 3; i++) {
-        //Expanding the range by 10
+        // Expanding the range by 10
         expanded[0][i] = Math.max(0, range[0][i] - 10);
         expanded[1][i] = Math.min(255, range[1][i] + 10);
     }
-    expanded[1][0] = Math.min(180, expanded[1][0]);//h is up to 180
+    expanded[1][0] = Math.min(180, expanded[1][0]);// h is up to 180
     return expanded;
 }
 
-//If color in range then take the closer range value to color and set it to color plus or minus 10
-//For example if hmax is 200 hmin is 100 and color's h is 120 range will become [130,200]
+// If color in range then take the closer range value to color and set it to color plus or minus 10
+// For example if hmax is 200 hmin is 100 and color's h is 120 range will become [130,200]
 function shrinkRange(range, color) {
 
     let inside = true;
-    for (let i = 0; i < color.length && inside; i++) {//Check if color is in range
+    for (let i = 0; i < color.length && inside; i++) {// Check if color is in range
         if (!(range[0][i] <= color[i] <= range[1][i]))
             inside = false;
     }
@@ -113,13 +113,13 @@ function shrinkRange(range, color) {
     if (inside) {
         for (let j = 0; j < color.length; j++) {
             if (color[j] - range[0][j] < range[1][j] - color[j])
-                range[0][j] = Math.min(range[0][j] + 10, range[1][j]);//shrink from min side
+                range[0][j] = Math.min(range[0][j] + 10, range[1][j]);// shrink from min side
             else
-                range[1][j] = Math.max(range[1][j] - 10, range[0][j]);//shrink from max side
+                range[1][j] = Math.max(range[1][j] - 10, range[0][j]);// shrink from max side
         }
     }
 
-    return inside;//returns if color is inside or not
+    return inside;// returns if color is inside or not
 }
 
 

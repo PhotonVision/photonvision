@@ -10,7 +10,7 @@ class StatsHistoryBuffer{
         this.frameCount = 0;
         this.bitAvgAccum = 0;
 
-        //calculated vals
+        // calculated vals
         this.bitRate_Mbps = 0;
         this.framerate_fps = 0;
     }
@@ -37,11 +37,11 @@ class StatsHistoryBuffer{
 
             this.bitAvgAccum -= oldFrameSize;
 
-            //bitrate - total bits transferred over the time period, divided by the period length
+            // bitrate - total bits transferred over the time period, divided by the period length
             // converted to mbps
             this.bitRate_Mbps = ( this.bitAvgAccum / deltaTime_s ) * (1.0/1048576.0);
 
-            //framerate - total frames displayed over the time period, divided by the period length
+            // framerate - total frames displayed over the time period, divided by the period length
             this.framerate_fps = (dispFrame_count - oldFrameCount) / deltaTime_s;
         }
 
@@ -73,10 +73,10 @@ export class WebsocketVideoStream{
         this.dispFrameCount = 0;
         this.stats = null;
 
-        //Set up div for stream stats info provided for users
+        // Set up div for stream stats info provided for users
         this.statsTextDiv = this.image.parentNode.appendChild(document.createElement("div"));
 
-        //Centered over the image
+        // Centered over the image
         this.statsTextDiv.style.position = "absolute";
         this.statsTextDiv.style.left = "50%";
         this.statsTextDiv.style.top = "50%";
@@ -93,7 +93,7 @@ export class WebsocketVideoStream{
         this.statsTextDiv.style.color = "#9E9E9E";
         this.statsTextDiv.style.borderRadius = "3px";
 
-        //Default no text
+        // Default no text
         this.statsTextDiv.innerHTML = "";
 
         // Only show on mouseover, with opacity fade-in/fade-out
@@ -104,7 +104,7 @@ export class WebsocketVideoStream{
         this.statsTextDiv.addEventListener('mouseover', () => {this.statsTextDiv.style.opacity = "0.6";});
         this.image.addEventListener('mouseout', () => {this.statsTextDiv.style.opacity = "0.0";});
 
-        //Display state machine descriptions
+        // Display state machine descriptions
         this.DSM_DISCONNECTED = "Disconnected";
         this.DSM_WAIT_FOR_VALID_PORT = "Waiting for valid port ID";
         this.DSM_SUBSCRIBE = "Subscribing";
@@ -126,15 +126,15 @@ export class WebsocketVideoStream{
 
     dispImageData(){
         if(this.prevImgDataTime !== this.imgDataTime){
-            //From https://stackoverflow.com/questions/67507616/set-image-src-from-image-blob/67507685#67507685
-            //Ensure uniqueness by making the new one before revoking the old one.
+            // From https://stackoverflow.com/questions/67507616/set-image-src-from-image-blob/67507685#67507685
+            // Ensure uniqueness by making the new one before revoking the old one.
             const oldURL = this.imgObjURL;
             this.imgObjURL = URL.createObjectURL(this.imgData);
             if(oldURL != null){
                 URL.revokeObjectURL(oldURL)
             }
 
-            //Update the image with the new mimetype and image
+            // Update the image with the new mimetype and image
             this.image.src = this.imgObjURL;
 
             this.dispFrameCount++;
@@ -156,13 +156,13 @@ export class WebsocketVideoStream{
 
         // Evaluate state transitions
         if(this.serverConnectionActive === false){
-            //Any state - if the server connection goes false, always transition to disconnected
+            // Any state - if the server connection goes false, always transition to disconnected
             this.dsm_cur_state = this.DSM_DISCONNECTED;
         } else {
-            //Conditional transitions
+            // Conditional transitions
             switch(this.dsm_cur_state) {
                 case this.DSM_DISCONNECTED:
-                    //Immediately transition to waiting for the first frame
+                    // Immediately transition to waiting for the first frame
                     this.dsm_cur_state = this.DSM_WAIT_FOR_VALID_PORT;
                     break;
                 case this.DSM_WAIT_FOR_VALID_PORT:
@@ -179,10 +179,10 @@ export class WebsocketVideoStream{
                     break;
                 case this.DSM_WAIT_FOR_FIRST_FRAME:
                     if(this.imgData != null){
-                        //we got some image data, start showing it
+                        // we got some image data, start showing it
                         this.dsm_cur_state = this.DSM_SHOWING;
                     } else if (this.newStreamPortReq != null){
-                        //Stream port requested changed, unsubscribe and restart
+                        // Stream port requested changed, unsubscribe and restart
                         this.dsm_cur_state = this.DSM_RESTART_UNSUBSCRIBE;
                     } else {
                         this.dsm_cur_state = this.DSM_WAIT_FOR_FIRST_FRAME;
@@ -190,26 +190,26 @@ export class WebsocketVideoStream{
                     break;
                 case this.DSM_SHOWING:
                     if((curTime_s - this.imgDataTime) > 2.5){
-                        //timeout, begin the restart sequence
+                        // timeout, begin the restart sequence
                         this.dsm_cur_state = this.DSM_RESTART_UNSUBSCRIBE;
                     } else if (this.newStreamPortReq != null){
-                        //Stream port requested changed, unsubscribe and restart
+                        // Stream port requested changed, unsubscribe and restart
                         this.dsm_cur_state = this.DSM_RESTART_UNSUBSCRIBE;
                     }  else {
-                        //stay in this state.
+                        // stay in this state.
                         this.dsm_cur_state = this.DSM_SHOWING;
                     }
                     break;
                 case this.DSM_RESTART_UNSUBSCRIBE:
-                    //Only should spend one loop in Unsubscribe, immediately transition
+                    // Only should spend one loop in Unsubscribe, immediately transition
                     this.dsm_cur_state = this.DSM_RESTART_WAIT;
                     break;
                 case this.DSM_RESTART_WAIT:
                     if (timeInState > 0.25) {
-                        //we've waited long enough, go to try to re-subscribe
+                        // we've waited long enough, go to try to re-subscribe
                         this.dsm_cur_state = this.DSM_WAIT_FOR_VALID_PORT;
                     } else {
-                        //stay in this state.
+                        // stay in this state.
                         this.dsm_cur_state = this.DSM_RESTART_WAIT;
                     }
                     break;
@@ -219,10 +219,10 @@ export class WebsocketVideoStream{
               }
         }
 
-        //take current-state or state-transition actions
+        // take current-state or state-transition actions
 
         if(this.dsm_cur_state !== this.dsm_prev_state){
-            //Any state transition
+            // Any state transition
             console.log("State Change: " + this.dsm_prev_state + " -> " + this.dsm_cur_state);
         }
 
@@ -232,12 +232,12 @@ export class WebsocketVideoStream{
             this.dispImageData();
             this.statsTextDiv.innerHTML = this.stats.getText();
         } else {
-            //Just show the state for debug
+            // Just show the state for debug
             this.statsTextDiv.innerHTML = this.dsm_cur_state;
         }
 
         if(this.dsm_cur_state !== this.DSM_SHOWING && this.dsm_prev_state === this.DSM_SHOWING ){
-            //Any transition out of showing - no stream
+            // Any transition out of showing - no stream
             this.dispNoStream();
         }
 
@@ -261,7 +261,7 @@ export class WebsocketVideoStream{
             }
         }
 
-        //Update status text
+        // Update status text
 
         requestAnimationFrame(()=>this.animationLoop());
     }
@@ -295,7 +295,7 @@ export class WebsocketVideoStream{
     }
 
     ws_onClose(e) {
-        //Clear flags to stop server communication
+        // Clear flags to stop server communication
         this.ws = null;
         this.serverConnectionActive = false;
 
@@ -309,27 +309,27 @@ export class WebsocketVideoStream{
     }
 
     ws_onError(e){
-        e; //prevent unused failure
+        e; // prevent unused failure
         this.ws.close();
     }
 
     ws_onMessage(e){
-        //console.log("Got message from " + this.serverAddr)
+        // console.log("Got message from " + this.serverAddr)
         const msgTime_s = window.performance.now() / 1000.0;
         if(typeof e.data === 'string'){
-            //string data from host
-            //TODO - anything to receive info here? Maybe "available streams?"
+            // string data from host
+            // TODO - anything to receive info here? Maybe "available streams?"
         } else {
             if(e.data.size > 0){
-                //binary data - a frame!
-                //Save frame data for display in the next animation thread
+                // binary data - a frame!
+                // Save frame data for display in the next animation thread
                 this.imgData = e.data;
                 this.imgDataTime = msgTime_s;
 
-                //Count the incoming frame
+                // Count the incoming frame
                 this.frameRxCount++;
 
-                //keep the stats up to date
+                // keep the stats up to date
                 this.stats.addSample(msgTime_s,this.imgData.size * 8,this.dispFrameCount);
             } else {
                 console.log("WS Stream Error: Server sent empty frame!");

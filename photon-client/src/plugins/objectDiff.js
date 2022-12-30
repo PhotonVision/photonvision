@@ -1,4 +1,4 @@
-//https://gomakethings.com/getting-the-differences-between-two-objects-with-vanilla-js/
+// https://gomakethings.com/getting-the-differences-between-two-objects-with-vanilla-js/
 export const diff = function (obj1, obj2) {
 
     // Make sure an object to compare is provided

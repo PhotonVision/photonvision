@@ -99,11 +99,11 @@ export default {
     this.renderer = renderer;
     scene.background = new Color(0xa9a9a9)
 
-    //Set up resize handlers
+    // Set up resize handlers
     this.onWindowResize();
     window.addEventListener( 'resize', this.onWindowResize, false );
 
-    //Add the reference frame cues
+    // Add the reference frame cues
     this.refFrameCues = []
     // coordinate system
     this.refFrameCues.push(new ArrowHelper(new Vector3(1, 0, 0).normalize(), new Vector3(0, 0, 0),
@@ -125,7 +125,7 @@ export default {
         0.1,
     ))
 
-    //something that looks vaguely like a camera
+    // something that looks vaguely like a camera
     const camSize = 0.2;
     const camBodyGeometry = new BoxGeometry(camSize, camSize, camSize);
     const camLensGeometry = new ConeGeometry(camSize*0.4, camSize*0.8, 30);
@@ -163,11 +163,11 @@ export default {
       controls.update();
       renderer.render(scene, camera);
 
-      //camera.updateMatrixWorld();
-      //console.log("================")
-      //console.log(camera.position);
-      //console.log(camera.rotation);
-      //console.log(camera.up);
+      // camera.updateMatrixWorld();
+      // console.log("================")
+      // console.log(camera.position);
+      // console.log(camera.rotation);
+      // console.log(camera.up);
 
     }
 
@@ -241,7 +241,7 @@ export default {
       }
     },
     resetCamThirdPerson(){
-      //Sets camera to third person position
+      // Sets camera to third person position
       this.controls.reset();
       this.camera.position.set(-1.39,-1.09,1.17);
       this.camera.up.set(0,0,1);
@@ -250,7 +250,7 @@ export default {
       this.scene.add(...this.refFrameCues)
     },
     resetCamFirstPerson(){
-      //Sets camera to first person position
+      // Sets camera to first person position
       this.controls.reset();
       this.camera.position.set(-0.1,0,0);
       this.camera.up.set(0,0,1);

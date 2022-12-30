@@ -52,10 +52,10 @@
               get() {
                 const port = this.getCurPort();
                 if(port <= 0){
-                  //Invalid port, keep it spinny
+                  // Invalid port, keep it spinny
                   return require("../../assets/loading.gif");
                 } else {
-                  //Valid port, connect
+                  // Valid port, connect
                   return this.getSrcURLFromPort(port);
                 }
               },
@@ -68,10 +68,10 @@
             getCurPort(){
               let port = -1;
               if(this.disconnected){
-                //Disconnected, port is unknown.
+                // Disconnected, port is unknown.
                 port = -1;
               } else {
-                //Connected - get the port
+                // Connected - get the port
                 if(this.id == 'raw-stream'){
                   port = this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].inputStreamPort
                 } else {
@@ -96,7 +96,7 @@
                 if(port <= 0){
                   console.log("No valid port, ignoring click.");
                 } else {
-                  //Valid port, connect
+                  // Valid port, connect
                   window.open(this.getSrcURLFromPort(port), '_blank');
                 }
               }

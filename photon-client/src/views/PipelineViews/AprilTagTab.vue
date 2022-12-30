@@ -111,7 +111,7 @@
             return {
               familyList: ["tag36h11", "tag25h9", "tag16h5"],
               // Selected model is offset (ew) by 6 from the photon ordinal, as we only wanna show the 36h11 and 16h5 options
-              targetList: ['6.5in (36h11) AprilTag', '6in (16h5) AprilTag'], //Keep in sync with TargetModel.java
+              targetList: ['6.5in (36h11) AprilTag', '6in (16h5) AprilTag'], // Keep in sync with TargetModel.java
             }
         },
         computed: {

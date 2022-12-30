@@ -46,7 +46,7 @@ export const dataHandleMixin = {
             this.$emit('update')
         },
         rollback(val, e) {
-            //TODO UPDATE VALUES INTO WEBSOCKET
+            // TODO UPDATE VALUES INTO WEBSOCKET
             this.$store.commit('updatePipeline', {[val]: e})
         }
     }
