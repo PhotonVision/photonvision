@@ -56,7 +56,7 @@ public class PhotonCamera {
     DoubleArrayPublisher targetPoseEntry;
     DoublePublisher targetSkewEntry;
     StringSubscriber versionEntry;
-    BooleanPublisher inputSaveImgEntry, outputSaveImgEntry;
+    IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerEntry pipelineIndexEntry, ledModeEntry;
     IntegerSubscriber heartbeatEntry;
 
@@ -111,8 +111,8 @@ public class PhotonCamera {
         path = rootTable.getPath();
         rawBytesEntry = rootTable.getRawTopic("rawBytes").subscribe("rawBytes", new byte[] {});
         driverModeEntry = rootTable.getBooleanTopic("driverMode").getEntry(false);
-        inputSaveImgEntry = rootTable.getBooleanTopic("inputSaveImgCmd").getEntry(false);
-        outputSaveImgEntry = rootTable.getBooleanTopic("outputSaveImgCmd").getEntry(false);
+        inputSaveImgEntry = rootTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
+        outputSaveImgEntry = rootTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexEntry = rootTable.getIntegerTopic("pipelineIndex").getEntry(0);
         heartbeatEntry = rootTable.getIntegerTopic("heartbeat").subscribe(-1);
         ledModeEntry = mainTable.getIntegerTopic("ledMode").getEntry(-1);
@@ -181,7 +181,7 @@ public class PhotonCamera {
      * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
      */
     public void takeInputSnapshot() {
-        inputSaveImgEntry.set(true);
+        inputSaveImgEntry.set(inputSaveImgEntry.get() + 1);
     }
 
     /**
@@ -191,7 +191,7 @@ public class PhotonCamera {
      * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
      */
     public void takeOutputSnapshot() {
-        outputSaveImgEntry.set(true);
+        outputSaveImgEntry.set(outputSaveImgEntry.get() + 1);
     }
 
     /**
