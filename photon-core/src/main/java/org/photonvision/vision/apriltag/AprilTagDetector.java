@@ -36,7 +36,7 @@ import edu.wpi.first.apriltag.jni.DetectionResult;
 public class AprilTagDetector {
     private static final Logger logger = new Logger(AprilTagDetector.class, LogGroup.VisionModule);
     private long m_detectorPtr = 0;
-    private AprilTagDetectorParams m_detectorParams = AprilTagDetectorParams.DEFAULT_36H11;
+    private AprilTagDetectorParams m_detectorParams = AprilTagDetectorParams.DEFAULT_16H5;
 
     public AprilTagDetector() {
         updateDetector();

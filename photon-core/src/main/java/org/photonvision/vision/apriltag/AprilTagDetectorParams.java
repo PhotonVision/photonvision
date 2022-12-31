@@ -29,7 +29,7 @@ package org.photonvision.vision.apriltag;
 import java.util.Objects;
 
 public class AprilTagDetectorParams {
-    public static AprilTagDetectorParams DEFAULT_36H11 =
+    public static AprilTagDetectorParams DEFAULT_16H5 =
             new AprilTagDetectorParams(AprilTagFamily.kTag16h5, 1.0, 0.0, 4, false, false);
 
     public final AprilTagFamily tagFamily;
