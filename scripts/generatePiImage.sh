@@ -8,15 +8,29 @@ fi
 
 NEW_JAR=$(realpath $(find . -name photonvision\*-linuxarm64.jar))
 echo "Using jar: " $NEW_JAR
-echo "Downloading image from " $1
+echo "Downloading image from" $1
 sudo apt-get install -y xz-utils
-# curl -sk $1 | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
+curl -sk $1 | grep "browser_download_url.*xz" | cut -d : -f 2,3 | tr -d '"' | wget -qi -
 ls
 FILE_NAME=$(ls | grep image_*.xz)
+
+if [ -z "$FILE_NAME" ]
+then
+    echo "Could not locate image archive!"
+    exit 1
+fi
+
 echo "Downloaded " $FILE_NAME " -- decompressing now..."
 xz -T0 -v --decompress $FILE_NAME
 IMAGE_FILE=$(ls | grep *.img)
 ls
+
+if [ -z "$FILE_NAME" ]
+then
+    echo "Could not locate unzipped image!"
+    exit 1
+fi
+
 echo "Unziped image: " $IMAGE_FILE " -- mounting"
 TMP=$(mktemp -d)
 LOOP=$(sudo losetup --show -fP "${IMAGE_FILE}")
