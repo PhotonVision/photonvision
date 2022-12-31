@@ -15,6 +15,7 @@ import org.gradle.api.internal.artifacts.dependencies.DefaultExternalModuleDepen
 allprojects {
     repositories {
         mavenCentral()
+        mavenLocal()
         maven { url = "https://maven.photonvision.org/repository/internal/" }
     }
     wpilibRepositories.addAllReleaseRepositories(it)
@@ -25,7 +26,7 @@ allprojects {
 apply from: "versioningHelper.gradle"
 
 ext {
-    wpilibVersion = "2023.1.1-beta-7"
+    wpilibVersion = "2023.1.1-beta-7-15-g1e7fcd5"
     opencvVersion = "4.6.0-4"
     joglVersion = "2.4.0-rc-20200307"
     pubVersion = versionString
@@ -35,9 +36,10 @@ ext {
         jniPlatforms = ['linuxarm32']
     } else if(project.hasProperty('winonly')) {
         jniPlatforms = ['windowsx86-64']
+    } else if(project.hasProperty('aarch64only')) {
+        jniPlatforms = ['linuxaarch64bionic']
     } else {
         jniPlatforms = ['linuxarm64', 'linuxarm32', 'linuxx86-64', 'osxuniversal', 'windowsx86-64']
-
     }
 
     println("Building for archs " + jniPlatforms)

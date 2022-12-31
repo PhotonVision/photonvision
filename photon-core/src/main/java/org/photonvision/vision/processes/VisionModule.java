@@ -21,6 +21,7 @@ import edu.wpi.first.cscore.VideoException;
 import edu.wpi.first.math.util.Units;
 import io.javalin.websocket.WsContext;
 import java.util.*;
+import java.util.function.BiConsumer;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.PhotonConfiguration;
@@ -33,12 +34,11 @@ import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.SerializationUtils;
-import org.photonvision.common.util.java.TriConsumer;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.CameraQuirk;
+import org.photonvision.vision.camera.LibcameraGpuSource;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.camera.USBCameraSource;
-import org.photonvision.vision.camera.ZeroCopyPicamSource;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.consumer.FileSaveFrameConsumer;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
@@ -65,7 +65,7 @@ public class VisionModule {
     private final StreamRunnable streamRunnable;
     private final LinkedList<CVPipelineResultConsumer> resultConsumers = new LinkedList<>();
     // Raw result consumers run before any drawing has been done by the OutputStreamPipeline
-    private final LinkedList<TriConsumer<Frame, Frame, List<TrackedTarget>>> streamResultConsumers =
+    private final LinkedList<BiConsumer<Frame, List<TrackedTarget>>> streamResultConsumers =
             new LinkedList<>();
     private final NTDataPublisher ntConsumer;
     private final UIDataPublisher uiDataConsumer;
@@ -93,7 +93,7 @@ public class VisionModule {
         // Find quirks for the current camera
         if (visionSource instanceof USBCameraSource) {
             cameraQuirks = ((USBCameraSource) visionSource).cameraQuirks;
-        } else if (visionSource instanceof ZeroCopyPicamSource) {
+        } else if (visionSource instanceof LibcameraGpuSource) {
             cameraQuirks = QuirkyCamera.ZeroCopyPiCamera;
         } else {
             cameraQuirks = QuirkyCamera.DefaultCamera;
@@ -190,17 +190,29 @@ public class VisionModule {
     }
 
     private void recreateStreamResultConsumers() {
-        streamResultConsumers.add((in, out, tgts) -> inputFrameSaver.accept(in));
-        streamResultConsumers.add((in, out, tgts) -> outputFrameSaver.accept(out));
-        streamResultConsumers.add((in, out, tgts) -> inputVideoStreamer.accept(in));
-        streamResultConsumers.add((in, out, tgts) -> outputVideoStreamer.accept(out));
+        streamResultConsumers.add(
+                (frame, tgts) -> {
+                    if (frame != null) inputFrameSaver.accept(frame.colorImage);
+                });
+        streamResultConsumers.add(
+                (frame, tgts) -> {
+                    if (frame != null) outputFrameSaver.accept(frame.processedImage);
+                });
+        streamResultConsumers.add(
+                (frame, tgts) -> {
+                    if (frame != null) inputVideoStreamer.accept(frame.colorImage);
+                });
+        streamResultConsumers.add(
+                (frame, tgts) -> {
+                    if (frame != null) outputVideoStreamer.accept(frame.processedImage);
+                });
     }
 
     private class StreamRunnable extends Thread {
         private final OutputStreamPipeline outputStreamPipeline;
 
         private final Object frameLock = new Object();
-        private Frame inputFrame, outputFrame;
+        private Frame latestFrame;
         private AdvancedPipelineSettings settings = new AdvancedPipelineSettings();
         private List<TrackedTarget> targets = new ArrayList<>();
 
@@ -211,42 +223,35 @@ public class VisionModule {
         }
 
         public void updateData(
-                Frame inputFrame,
-                Frame outputFrame,
-                AdvancedPipelineSettings settings,
-                List<TrackedTarget> targets) {
+                Frame inputOutputFrame, AdvancedPipelineSettings settings, List<TrackedTarget> targets) {
             synchronized (frameLock) {
-                if (shouldRun && this.inputFrame != null && this.outputFrame != null) {
+                if (shouldRun && this.latestFrame != null) {
                     logger.trace("Fell behind; releasing last unused Mats");
-                    this.inputFrame.release();
-                    this.outputFrame.release();
+                    this.latestFrame.release();
                 }
 
-                this.inputFrame = inputFrame;
-                this.outputFrame = outputFrame;
+                this.latestFrame = inputOutputFrame;
                 this.settings = settings;
                 this.targets = targets;
 
-                shouldRun =
-                        inputFrame != null
-                                && !inputFrame.image.getMat().empty()
-                                && outputFrame != null
-                                && !outputFrame.image.getMat().empty();
+                shouldRun = inputOutputFrame != null;
+                // && inputOutputFrame.colorImage != null
+                // && !inputOutputFrame.colorImage.getMat().empty()
+                // && inputOutputFrame.processedImage != null
+                // && !inputOutputFrame.processedImage.getMat().empty();
             }
         }
 
         @Override
         public void run() {
             while (true) {
-                final Frame inputFrame, outputFrame;
+                final Frame m_frame;
                 final AdvancedPipelineSettings settings;
                 final List<TrackedTarget> targets;
                 final boolean shouldRun;
                 synchronized (frameLock) {
-                    inputFrame = this.inputFrame;
-                    outputFrame = this.outputFrame;
-                    this.inputFrame = null;
-                    this.outputFrame = null;
+                    m_frame = this.latestFrame;
+                    this.latestFrame = null;
 
                     settings = this.settings;
                     targets = this.targets;
@@ -256,17 +261,15 @@ public class VisionModule {
                 }
                 if (shouldRun) {
                     try {
-                        CVPipelineResult osr =
-                                outputStreamPipeline.process(inputFrame, outputFrame, settings, targets);
-                        consumeResults(inputFrame, osr.outputFrame, targets);
+                        CVPipelineResult osr = outputStreamPipeline.process(m_frame, settings, targets);
+                        consumeResults(m_frame, targets);
 
                     } catch (Exception e) {
                         // Never die
                         logger.error("Exception while running stream runnable!", e);
                     }
                     try {
-                        inputFrame.release();
-                        outputFrame.release();
+                        m_frame.release();
                     } catch (Exception e) {
                         logger.error("Exception freeing frames", e);
                     }
@@ -496,7 +499,7 @@ public class VisionModule {
             internalMap.put("fps", videoModes.get(k).fps);
             internalMap.put(
                     "pixelFormat",
-                    ((videoModes.get(k) instanceof ZeroCopyPicamSource.FPSRatedVideoMode)
+                    ((videoModes.get(k) instanceof LibcameraGpuSource.FPSRatedVideoMode)
                                     ? "kPicam"
                                     : videoModes.get(k).pixelFormat.toString())
                             .substring(1)); // Remove the k prefix
@@ -516,7 +519,7 @@ public class VisionModule {
             internalMap.put("width", c.resolution.width);
             internalMap.put("height", c.resolution.height);
             internalMap.put("intrinsics", c.cameraIntrinsics.data);
-            internalMap.put("extrinsics", c.cameraExtrinsics.data);
+            internalMap.put("distCoeffs", c.distCoeffs.data);
 
             calList.add(internalMap);
         }
@@ -546,16 +549,15 @@ public class VisionModule {
         consumePipelineResult(result);
 
         // Pipelines like DriverMode and Calibrate3dPipeline have null output frames
-        if (result.inputFrame != null
+        if (result.inputAndOutputFrame != null
                 && (pipelineManager.getCurrentPipelineSettings() instanceof AdvancedPipelineSettings)) {
             streamRunnable.updateData(
-                    result.inputFrame,
-                    result.outputFrame,
+                    result.inputAndOutputFrame,
                     (AdvancedPipelineSettings) pipelineManager.getCurrentPipelineSettings(),
                     result.targets);
             // The streamRunnable manages releasing in this case
         } else {
-            consumeResults(result.inputFrame, result.outputFrame, result.targets);
+            consumeResults(result.inputAndOutputFrame, result.targets);
 
             result.release();
             // In this case we don't bother with a separate streaming thread and we release
@@ -569,9 +571,9 @@ public class VisionModule {
     }
 
     /** Consume stream/target results, no rate limiting applied */
-    private void consumeResults(Frame inputFrame, Frame outputFrame, List<TrackedTarget> targets) {
+    private void consumeResults(Frame frame, List<TrackedTarget> targets) {
         for (var c : streamResultConsumers) {
-            c.accept(inputFrame, outputFrame, targets);
+            c.accept(frame, targets);
         }
     }
 

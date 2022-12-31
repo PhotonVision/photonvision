@@ -25,7 +25,7 @@ import org.photonvision.vision.target.TargetModel;
 @JsonTypeName("AprilTagPipelineSettings")
 public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagFamily tagFamily = AprilTagFamily.kTag16h5;
-    public double decimate = 1.0;
+    public int decimate = 1;
     public double blur = 0;
     public int threads = 1;
     public boolean debug = false;
@@ -43,8 +43,8 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
         pipelineType = PipelineType.AprilTag;
         outputShowMultipleTargets = true;
         targetModel = TargetModel.k6in_16h5;
-        cameraExposure = -1;
-        cameraAutoExposure = true;
+        cameraExposure = 20;
+        cameraAutoExposure = false;
         ledMode = false;
     }
 

@@ -330,6 +330,7 @@ public class TestUtils {
     private static int DefaultTimeoutMillis = 5000;
 
     public static void showImage(Mat frame, String title, int timeoutMs) {
+        if (frame.empty()) return;
         try {
             HighGui.imshow(title, frame);
             HighGui.waitKey(timeoutMs);

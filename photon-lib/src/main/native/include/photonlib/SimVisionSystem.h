@@ -181,6 +181,10 @@ class SimVisionSystem {
                                 0.0,
                                 target.targetId,
                                 camToTargetTransform,
+                                // TODO sim alternate pose
+                                camToTargetTransform,
+                                // TODO ambiguity
+                                0.0,
                                 {{0, 0}, {0, 0}, {0, 0}, {0, 0}}});
       }
 

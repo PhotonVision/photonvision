@@ -24,10 +24,11 @@ import java.util.function.Consumer;
 import org.opencv.core.MatOfByte;
 import org.opencv.core.MatOfInt;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.photonvision.vision.frame.Frame;
+import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.frame.consumer.MJPGFrameConsumer;
+import org.photonvision.vision.opencv.CVMat;
 
-public class SocketVideoStream implements Consumer<Frame> {
+public class SocketVideoStream implements Consumer<CVMat> {
     int portID = 0; // Align with cscore's port for unique identification of stream
     MatOfByte jpegBytes = null;
 
@@ -39,10 +40,13 @@ public class SocketVideoStream implements Consumer<Frame> {
 
     // Synclock around manipulating the jpeg bytes from multiple threads
     Lock jpegBytesLock = new ReentrantLock();
-
-    MJPGFrameConsumer oldSchoolServer;
-
     private int userCount = 0;
+
+    // FPS-limited MJPEG sender
+    private final double FPS_MAX = 30.0;
+    private final long minFramePeriodNanos = Math.round(1000000000.0 / FPS_MAX);
+    private long nextFrameSendTime = MathUtils.wpiNanoTime() + minFramePeriodNanos;
+    MJPGFrameConsumer oldSchoolServer;
 
     public SocketVideoStream(int portID) {
         this.portID = portID;
@@ -51,7 +55,7 @@ public class SocketVideoStream implements Consumer<Frame> {
     }
 
     @Override
-    public void accept(Frame frame) {
+    public void accept(CVMat image) {
         if (userCount > 0) {
             if (jpegBytesLock
                     .tryLock()) { // we assume frames are coming in frequently. Just skip this frame if we're
@@ -59,12 +63,12 @@ public class SocketVideoStream implements Consumer<Frame> {
                 try {
                     // Does a single-shot frame recieve and convert to JPEG for efficency
                     // Will not capture/convert again until convertNextFrame() is called
-                    if (frame != null && !frame.image.getMat().empty() && jpegBytes == null) {
+                    if (image != null && !image.getMat().empty() && jpegBytes == null) {
                         frameWasConsumed = false;
                         jpegBytes = new MatOfByte();
                         Imgcodecs.imencode(
                                 ".jpg",
-                                frame.image.getMat(),
+                                image.getMat(),
                                 jpegBytes,
                                 new MatOfInt(Imgcodecs.IMWRITE_JPEG_QUALITY, 75));
                     }
@@ -73,7 +77,13 @@ public class SocketVideoStream implements Consumer<Frame> {
                 }
             }
         }
-        oldSchoolServer.accept(frame);
+
+        // Send the frame in an FPS-limited fashion
+        var now = MathUtils.wpiNanoTime();
+        if (now > nextFrameSendTime) {
+            oldSchoolServer.accept(image);
+            nextFrameSendTime = now + minFramePeriodNanos;
+        }
     }
 
     public ByteBuffer getJPEGByteBuffer() {

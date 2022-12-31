@@ -219,6 +219,17 @@
                   @input="e => handlePipelineUpdate('cameraAutoExposure', e)"
                 />
                 <CVslider
+                  v-if="cameraGain >= 0"
+                  v-model="cameraGain"
+                  name="Camera Gain"
+                  min="0"
+                  max="100"
+                  tooltip="Controls camera gain, similar to brightness"
+                  :slider-cols="largeBox"
+                  @input="handlePipelineData('cameraGain')"
+                  @rollback="e => rollback('cameraGain', e)"
+                />
+                <CVslider
                   v-if="$store.getters.currentPipelineSettings.cameraRedGain !== -1"
                   v-model="$store.getters.currentPipelineSettings.cameraRedGain"
                   name="Red AWB Gain"
@@ -408,6 +419,15 @@ export default {
             set(value) {
                 this.$store.commit('currentCameraIndex', value);
             }
+        },
+
+        cameraGain: {
+          get() {
+              return parseInt(this.$store.getters.currentPipelineSettings.cameraGain)
+          },
+          set(val) {
+              this.$store.commit("mutatePipeline", {"cameraGain": parseInt(val)});
+          }
         },
 
         // Makes sure there's only one entry per resolution
@@ -656,7 +676,7 @@ export default {
                 console.log("starting calibration with index " + calData.videoModeIndex);
             }
             this.$store.commit('currentPipelineIndex', -2);
-            this.$socket.send(this.$msgPack.encode(data));
+            this.$store.state.websocket.send(this.$msgPack.encode(data));
         },
         sendCalibrationFinish() {
             console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex);

@@ -58,20 +58,22 @@ class PhotonCamera {
    * over.
    */
   explicit PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
-                        const std::string& cameraName);
+                        const std::string_view cameraName);
 
   /**
    * Constructs a PhotonCamera from the name of the camera.
    * @param cameraName The nickname of the camera (found in the PhotonVision
    * UI).
    */
-  explicit PhotonCamera(const std::string& cameraName);
+  explicit PhotonCamera(const std::string_view cameraName);
+
+  virtual ~PhotonCamera() = default;
 
   /**
    * Returns the latest pipeline result.
    * @return The latest pipeline result.
    */
-  PhotonPipelineResult GetLatestResult();
+  virtual PhotonPipelineResult GetLatestResult();
 
   /**
    * Toggles driver mode.
@@ -132,6 +134,14 @@ class PhotonCamera {
   void SetLEDMode(LEDMode led);
 
   /**
+   * Returns the name of the camera.
+   * This will return the same value that was given to the constructor as
+   * cameraName.
+   * @return The name of the camera.
+   */
+  const std::string_view GetCameraName() const;
+
+  /**
    * Returns whether the latest target result has targets.
    * This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should
    * be used instead.
@@ -147,13 +157,19 @@ class PhotonCamera {
     PhotonCamera::VERSION_CHECK_ENABLED = enabled;
   }
 
+  // For use in tests
+  bool test = false;
+  PhotonPipelineResult testResult;
+
  protected:
   std::shared_ptr<nt::NetworkTable> mainTable;
   std::shared_ptr<nt::NetworkTable> rootTable;
   nt::RawSubscriber rawBytesEntry;
   nt::BooleanPublisher driverModeEntry;
-  nt::BooleanPublisher inputSaveImgEntry;
-  nt::BooleanPublisher outputSaveImgEntry;
+  nt::IntegerPublisher inputSaveImgEntry;
+  nt::IntegerSubscriber inputSaveImgSubscriber;
+  nt::IntegerPublisher outputSaveImgEntry;
+  nt::IntegerSubscriber outputSaveImgSubscriber;
   nt::IntegerPublisher pipelineIndexEntry;
   nt::IntegerPublisher ledModeEntry;
   nt::StringSubscriber versionEntry;
@@ -163,6 +179,7 @@ class PhotonCamera {
   nt::IntegerSubscriber ledModeSubscriber;
 
   std::string path;
+  std::string m_cameraName;
 
   mutable Packet packet;
 

@@ -38,6 +38,7 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.impl.Calibrate3dPipe;
 import org.photonvision.vision.pipe.impl.FindBoardCornersPipe;
@@ -103,9 +104,11 @@ public class Calibrate3dPipeTest {
             var frame =
                     new Frame(
                             new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                            new CVMat(),
+                            FrameThresholdType.NONE,
                             new FrameStaticProperties(640, 480, 60, null));
             var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
-            // TestUtils.showImage(output.outputFrame.image.getMat());
+            // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat());
             output.release();
             frame.release();
         }
@@ -119,6 +122,8 @@ public class Calibrate3dPipeTest {
         var frame =
                 new Frame(
                         new CVMat(Imgcodecs.imread(directoryListing[0].getAbsolutePath())),
+                        new CVMat(),
+                        FrameThresholdType.NONE,
                         new FrameStaticProperties(640, 480, 60, null));
         calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera).release();
         frame.release();
@@ -134,8 +139,8 @@ public class Calibrate3dPipeTest {
         assertNotNull(cal);
         assertNotNull(cal.perViewErrors);
         System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
-        System.out.println("Camera Intrinsics : " + cal.cameraIntrinsics.toString());
-        System.out.println("Camera Extrinsics : " + cal.cameraExtrinsics.toString());
+        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
+        System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
         System.out.println("Standard Deviation: " + cal.standardDeviation);
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
@@ -266,10 +271,13 @@ public class Calibrate3dPipeTest {
                 var frame =
                         new Frame(
                                 new CVMat(Imgcodecs.imread(file.getAbsolutePath())),
+                                new CVMat(),
+                                FrameThresholdType.NONE,
                                 new FrameStaticProperties((int) imgRes.width, (int) imgRes.height, 67, null));
                 var output = calibration3dPipeline.run(frame, QuirkyCamera.DefaultCamera);
 
-                // TestUtils.showImage(output.outputFrame.image.getMat(), file.getName(), 1);
+                // TestUtils.showImage(output.inputAndOutputFrame.processedImage.getMat(), file.getName(),
+                // 1);
                 output.release();
                 frame.release();
             }
@@ -300,8 +308,8 @@ public class Calibrate3dPipeTest {
         assertTrue(centerYErrPct < 10.0);
 
         System.out.println("Per View Errors: " + Arrays.toString(cal.perViewErrors));
-        System.out.println("Camera Intrinsics : " + cal.cameraIntrinsics.toString());
-        System.out.println("Camera Extrinsics : " + cal.cameraExtrinsics.toString());
+        System.out.println("Camera Intrinsics: " + cal.cameraIntrinsics.toString());
+        System.out.println("Dist Coeffs: " + cal.distCoeffs.toString());
         System.out.println("Standard Deviation: " + cal.standardDeviation);
         System.out.println(
                 "Mean: " + Arrays.stream(calibration3dPipeline.perViewErrors()).average().toString());
@@ -330,7 +338,7 @@ public class Calibrate3dPipeTest {
                 Mat raw = Imgcodecs.imread(file.getAbsolutePath());
                 Mat undistorted = new Mat(new Size(imgRes.width * 2, imgRes.height * 2), raw.type());
                 Calib3d.undistort(
-                        raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.cameraExtrinsics.getAsMat());
+                        raw, undistorted, cal.cameraIntrinsics.getAsMat(), cal.distCoeffs.getAsMat());
                 TestUtils.showImage(undistorted, "undistorted " + file.getName(), 1);
                 raw.release();
                 undistorted.release();

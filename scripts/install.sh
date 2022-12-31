@@ -8,18 +8,29 @@ fi
 echo "This is the installation script for PhotonVision."
 
 echo "Installing curl..."
-apt-get install curl
+apt-get install --yes curl
 echo "curl installation complete."
 
 echo "Installing avahi-daemon..."
-apt-get install avahi-daemon
+apt-get install --yes avahi-daemon
 echo "avahi-daemon installation complete."
+
+echo "Installing cpufrequtils..."
+apt-get install --yes cpufrequtils
+echo "cpufrequtils installation complete."
+
+echo "Setting cpufrequtils to performance mode"
+if [ -f /etc/default/cpufrequtils ]; then
+    sed -i -e 's/^#\?GOVERNOR=.*$/GOVERNOR=performance/' /etc/default/cpufrequtils
+else
+    echo 'GOVERNOR=performance' > /etc/default/cpufrequtils
+fi
 
 echo "Installing the JDK..."
 if [ $(dpkg-query -W -f='${Status}' openjdk-11-jdk-headless 2>/dev/null | grep -c "ok installed") -eq 0 ];
 then
-   apt update
-   apt-get install openjdk-11-jdk-headless;
+   apt-get update
+   apt-get install --yes openjdk-11-jdk-headless
 fi
 echo "JDK installation complete."
 
@@ -45,23 +56,29 @@ if service --status-all | grep -Fq 'photonvision'; then
   systemctl reset-failed
 fi
 
-cd /lib/systemd/system/
-touch photonvision.service
-printf \
-"[Unit]
+cat > /lib/systemd/system/photonvision.service <<EOF
+[Unit]
 Description=Service that runs PhotonVision
 
 [Service]
 WorkingDirectory=/opt/photonvision
-ExecStart=/usr/bin/java -jar /opt/photonvision/photonvision.jar -Xmx512m
+# Run photonvision at "nice" -10, which is higher priority than standard
+Nice=-10
+# for non-uniform CPUs, like big.LITTLE, you want to select the big cores
+# look up the right values for your CPU
+# AllowCPUs=4-7
+
+ExecStart=/usr/bin/java -Xmx512m -jar /opt/photonvision/photonvision.jar
 ExecStop=/bin/systemctl kill photonvision
 Type=simple
 Restart=on-failure
 RestartSec=1
 
 [Install]
-WantedBy=multi-user.target" >> photonvision.service
-cp photonvision.service /etc/systemd/system/photonvision.service
+WantedBy=multi-user.target
+EOF
+
+cp /lib/systemd/system/photonvision.service /etc/systemd/system/photonvision.service
 chmod 644 /etc/systemd/system/photonvision.service
 systemctl daemon-reload
 systemctl enable photonvision.service

@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Objects;
 import org.photonvision.vision.frame.FrameDivisor;
-import org.photonvision.vision.opencv.ImageFlipMode;
 import org.photonvision.vision.opencv.ImageRotationMode;
 
 @JsonTypeInfo(
@@ -37,7 +36,6 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;
     public PipelineType pipelineType = PipelineType.DriverMode;
-    public ImageFlipMode inputImageFlipMode = ImageFlipMode.NONE;
     public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
     public String pipelineNickname = "New Pipeline";
     public boolean cameraAutoExposure = false;
@@ -70,7 +68,6 @@ public class CVPipelineSettings implements Cloneable {
                 && cameraVideoModeIndex == that.cameraVideoModeIndex
                 && ledMode == that.ledMode
                 && pipelineType == that.pipelineType
-                && inputImageFlipMode == that.inputImageFlipMode
                 && inputImageRotationMode == that.inputImageRotationMode
                 && pipelineNickname.equals(that.pipelineNickname)
                 && streamingFrameDivisor == that.streamingFrameDivisor
@@ -83,7 +80,6 @@ public class CVPipelineSettings implements Cloneable {
         return Objects.hash(
                 pipelineIndex,
                 pipelineType,
-                inputImageFlipMode,
                 inputImageRotationMode,
                 pipelineNickname,
                 cameraExposure,
@@ -115,8 +111,6 @@ public class CVPipelineSettings implements Cloneable {
                 + pipelineIndex
                 + ", pipelineType="
                 + pipelineType
-                + ", inputImageFlipMode="
-                + inputImageFlipMode
                 + ", inputImageRotationMode="
                 + inputImageRotationMode
                 + ", pipelineNickname='"

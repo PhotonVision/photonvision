@@ -48,7 +48,7 @@ public class SolvePNPPipe
     protected List<TrackedTarget> process(List<TrackedTarget> targetList) {
         if (params.cameraCoefficients == null
                 || params.cameraCoefficients.getCameraIntrinsicsMat() == null
-                || params.cameraCoefficients.getCameraExtrinsicsMat() == null) {
+                || params.cameraCoefficients.getDistCoeffsMat() == null) {
             if (!hasWarned) {
                 logger.warn(
                         "Cannot perform solvePNP an uncalibrated camera! Please calibrate this resolution...");
@@ -69,7 +69,7 @@ public class SolvePNPPipe
                 || corners.isEmpty()
                 || params.cameraCoefficients == null
                 || params.cameraCoefficients.getCameraIntrinsicsMat() == null
-                || params.cameraCoefficients.getCameraExtrinsicsMat() == null) {
+                || params.cameraCoefficients.getDistCoeffsMat() == null) {
             return;
         }
         this.imagePoints.fromList(corners);
@@ -81,7 +81,7 @@ public class SolvePNPPipe
                     params.targetModel.getRealWorldTargetCoordinates(),
                     imagePoints,
                     params.cameraCoefficients.getCameraIntrinsicsMat(),
-                    params.cameraCoefficients.getCameraExtrinsicsMat(),
+                    params.cameraCoefficients.getDistCoeffsMat(),
                     rVec,
                     tVec);
         } catch (Exception e) {
