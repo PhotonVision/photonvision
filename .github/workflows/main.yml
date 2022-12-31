@@ -392,11 +392,11 @@ jobs:
             - os: ubuntu-latest
               artifact-name: LinuxArm64
               image_suffix: raspi
-              image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.0-beta-2
+              image_url: https://github.com/PhotonVision/photon-pi-gen/releases/tag/v2023.1.0-beta-3_arm64
             - os: ubuntu-latest
               artifact-name: LinuxArm64
               image_suffix: limelight
-              image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.0-beta-2
+              image_url: https://github.com/PhotonVision/photon-pi-gen/releases/tag/v2023.1.0-beta-3_limelight-arm64
 
     runs-on: ${{ matrix.os }}
     name: "Build image - ${{ matrix.image_url }}"
