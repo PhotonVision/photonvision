@@ -46,8 +46,8 @@ public class CVPipelineSettings implements Cloneable {
     // quirk
     public int cameraGain = 50;
     // Currently only used by the zero-copy Pi Camera driver
-    public int cameraRedGain = 18;
-    public int cameraBlueGain = 24;
+    public int cameraRedGain = 11;
+    public int cameraBlueGain = 20;
     public int cameraVideoModeIndex = 0;
     public FrameDivisor streamingFrameDivisor = FrameDivisor.NONE;
     public boolean ledMode = false;
