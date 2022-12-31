@@ -40,14 +40,14 @@ public class CVPipelineSettings implements Cloneable {
     public String pipelineNickname = "New Pipeline";
     public boolean cameraAutoExposure = false;
     // manual exposure only used if cameraAutoExposure if false
-    public double cameraExposure = 100;
+    public double cameraExposure = 20;
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
     // quirk
-    public int cameraGain = 50;
+    public int cameraGain = 75;
     // Currently only used by the zero-copy Pi Camera driver
-    public int cameraRedGain = 18;
-    public int cameraBlueGain = 24;
+    public int cameraRedGain = 11;
+    public int cameraBlueGain = 20;
     public int cameraVideoModeIndex = 0;
     public FrameDivisor streamingFrameDivisor = FrameDivisor.NONE;
     public boolean ledMode = false;

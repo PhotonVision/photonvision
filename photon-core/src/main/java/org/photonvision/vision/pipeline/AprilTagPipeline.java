@@ -69,28 +69,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
         // target model for the draw 3d targets pipeline to work...
 
         // for now, hard code tag width based on enum value
-        double tagWidth;
-
-        // This needs
-        switch (settings.targetModel) {
-            case k200mmAprilTag:
-                {
-                    tagWidth = Units.inchesToMeters(3.25 * 2);
-                    break;
-                }
-            case k6in_16h5:
-                {
-                    tagWidth = Units.inchesToMeters(3 * 2);
-                    break;
-                }
-            default:
-                {
-                    // guess at 200mm?? If it's zero everything breaks, but it should _never_ be zero. Unless
-                    // users select the wrong model...
-                    tagWidth = 0.16;
-                    break;
-                }
-        }
+        double tagWidth = Units.inchesToMeters(3 * 2); // for 6in 16h5 tag.
 
         // AprilTagDetectorParams aprilTagDetectionParams =
         //         new AprilTagDetectorParams(

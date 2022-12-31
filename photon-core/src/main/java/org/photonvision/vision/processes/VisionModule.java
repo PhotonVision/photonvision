@@ -104,14 +104,14 @@ public class VisionModule {
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
-                        if (it.cameraGain == -1) it.cameraGain = 20; // Sane default
+                        if (it.cameraGain == -1) it.cameraGain = 75; // Sane default
                     });
         }
         if (cameraQuirks.hasQuirk(CameraQuirk.AWBGain)) {
             pipelineManager.userPipelineSettings.forEach(
                     it -> {
-                        if (it.cameraRedGain == -1) it.cameraRedGain = 16; // Sane defaults
-                        if (it.cameraBlueGain == -1) it.cameraBlueGain = 16;
+                        if (it.cameraRedGain == -1) it.cameraRedGain = 11; // Sane defaults
+                        if (it.cameraBlueGain == -1) it.cameraBlueGain = 20;
                     });
         }
 
@@ -401,7 +401,7 @@ public class VisionModule {
         }
         if (cameraQuirks.hasQuirk(CameraQuirk.Gain)) {
             // If the gain is disabled for some reason, re-enable it
-            if (pipelineSettings.cameraGain == -1) pipelineSettings.cameraGain = 20;
+            if (pipelineSettings.cameraGain == -1) pipelineSettings.cameraGain = 75;
             visionSource.getSettables().setGain(Math.max(0, pipelineSettings.cameraGain));
         } else {
             pipelineSettings.cameraGain = -1;
@@ -409,8 +409,8 @@ public class VisionModule {
 
         if (cameraQuirks.hasQuirk(CameraQuirk.AWBGain)) {
             // If the AWB gains are disabled for some reason, re-enable it
-            if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 16;
-            if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 16;
+            if (pipelineSettings.cameraRedGain == -1) pipelineSettings.cameraRedGain = 11;
+            if (pipelineSettings.cameraBlueGain == -1) pipelineSettings.cameraBlueGain = 20;
             visionSource.getSettables().setRedGain(Math.max(0, pipelineSettings.cameraRedGain));
             visionSource.getSettables().setBlueGain(Math.max(0, pipelineSettings.cameraBlueGain));
         } else {
