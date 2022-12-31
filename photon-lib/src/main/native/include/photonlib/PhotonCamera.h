@@ -166,8 +166,10 @@ class PhotonCamera {
   std::shared_ptr<nt::NetworkTable> rootTable;
   nt::RawSubscriber rawBytesEntry;
   nt::BooleanPublisher driverModeEntry;
-  nt::BooleanPublisher inputSaveImgEntry;
-  nt::BooleanPublisher outputSaveImgEntry;
+  nt::IntegerPublisher inputSaveImgEntry;
+  nt::IntegerSubscriber inputSaveImgSubscriber;
+  nt::IntegerPublisher outputSaveImgEntry;
+  nt::IntegerSubscriber outputSaveImgSubscriber;
   nt::IntegerPublisher pipelineIndexEntry;
   nt::IntegerPublisher ledModeEntry;
   nt::StringSubscriber versionEntry;
