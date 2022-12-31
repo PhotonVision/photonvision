@@ -27,12 +27,10 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public AprilTagFamily tagFamily = AprilTagFamily.kTag16h5;
     public int decimate = 1;
     public double blur = 0;
-    public int threads = 1;
+    public int threads = 4; //Multiple threads seems to be better performance on most platforms
     public boolean debug = false;
     public boolean refineEdges = true;
     public int numIterations = 200;
-
-    // TODO is this a legit, reasonable default?
     public int hammingDist = 0;
     public int decisionMargin = 35;
 

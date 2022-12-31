@@ -44,7 +44,7 @@ public class CVPipelineSettings implements Cloneable {
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
     // quirk
-    public int cameraGain = 50;
+    public int cameraGain = 75;
     // Currently only used by the zero-copy Pi Camera driver
     public int cameraRedGain = 11;
     public int cameraBlueGain = 20;
