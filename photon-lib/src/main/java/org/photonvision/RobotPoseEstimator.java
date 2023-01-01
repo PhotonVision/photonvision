@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class RobotPoseEstimator {
@@ -60,11 +61,11 @@ public class RobotPoseEstimator {
 
     private Map<Integer, Pose3d> aprilTags;
     private PoseStrategy strategy;
-    private ArrayList<Pair<PhotonCamera, Transform3d>> cameras;
+    private List<Pair<PhotonCamera, Transform3d>> cameras;
     private Pose3d lastPose;
 
     private Pose3d referencePose;
-    private HashSet<Integer> reportedErrors;
+    private Set<Integer> reportedErrors;
 
     /**
      * Create a new RobotPoseEstimator.
@@ -80,7 +81,7 @@ public class RobotPoseEstimator {
     public RobotPoseEstimator(
             Map<Integer, Pose3d> aprilTags,
             PoseStrategy strategy,
-            ArrayList<Pair<PhotonCamera, Transform3d>> cameras) {
+            List<Pair<PhotonCamera, Transform3d>> cameras) {
         this.aprilTags = aprilTags;
         this.strategy = strategy;
         this.cameras = cameras;
