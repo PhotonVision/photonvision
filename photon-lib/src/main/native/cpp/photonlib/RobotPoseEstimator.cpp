@@ -36,6 +36,7 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
+#include <frc/apriltag/AprilTagFieldLayout.h>
 #include <units/time.h>
 
 #include "photonlib/PhotonCamera.h"
@@ -44,7 +45,7 @@
 
 namespace photonlib {
 RobotPoseEstimator::RobotPoseEstimator(
-    std::map<int, frc::Pose3d> tags, PoseStrategy strat,
+    std::shared_ptr<frc::AprilTagFieldLayout> tags, PoseStrategy strat,
     std::vector<std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>>
         cams)
     : aprilTags(tags),
@@ -112,7 +113,8 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
   PhotonTrackedTarget bestTarget =
       cameras[lowestAI].first->GetLatestResult().GetTargets()[lowestAJ];
 
-  if (aprilTags.count(bestTarget.GetFiducialId()) == 0) {
+  std::optional<frc::Pose3d> fiducialPose = aprilTags->GetTagPose(target.GetFiducialId());
+  if (!fiducialPose) {
     FRC_ReportError(frc::warn::Warning,
                     "Tried to get pose of unknown April Tag: {}",
                     bestTarget.GetFiducialId());
@@ -120,7 +122,7 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
   }
 
   return std::make_pair(
-      aprilTags[bestTarget.GetFiducialId()]
+      aprilTags->GetTagPose(bestTarget.GetFiducialId())
           .TransformBy(bestTarget.GetBestCameraToTarget().Inverse())
           .TransformBy(cameras[lowestAI].second.Inverse()),
       cameras[lowestAI].first->GetLatestResult().GetLatency() / 1000.);
@@ -138,13 +140,14 @@ RobotPoseEstimator::ClosestToCameraHeightStrategy() {
         p.first->GetLatestResult().GetTargets();
     for (RobotPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
-      if (aprilTags.count(target.GetFiducialId()) == 0) {
+      std::optional<frc::Pose3d> fiducialPose = aprilTags->GetTagPose(target.GetFiducialId());
+      if (!fiducialPose) {
         FRC_ReportError(frc::warn::Warning,
                         "Tried to get pose of unknown April Tag: {}",
                         target.GetFiducialId());
         continue;
       }
-      frc::Pose3d targetPose = aprilTags[target.GetFiducialId()];
+      frc::Pose3d targetPose = fiducialPose.value();
       units::meter_t alternativeDifference = units::math::abs(
           p.second.Z() -
           targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
@@ -180,13 +183,14 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
         p.first->GetLatestResult().GetTargets();
     for (RobotPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
-      if (aprilTags.count(target.GetFiducialId()) == 0) {
+      std::optional<frc::Pose3d> fiducialPose = aprilTags->GetTagPose(target.GetFiducialId());
+      if (!fiducialPose) {
         FRC_ReportError(frc::warn::Warning,
                         "Tried to get pose of unknown April Tag: {}",
                         target.GetFiducialId());
         continue;
       }
-      frc::Pose3d targetPose = aprilTags[target.GetFiducialId()];
+      frc::Pose3d targetPose = fiducialPose.value();
       units::meter_t alternativeDifference =
           units::math::abs(referencePose.Translation().Distance(
               targetPose
@@ -225,14 +229,15 @@ RobotPoseEstimator::AverageBestTargetsStrategy() {
         p.first->GetLatestResult().GetTargets();
     for (RobotPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
-      if (aprilTags.count(target.GetFiducialId()) == 0) {
+      std::optional<frc::Pose3d> fiducialPose = aprilTags->GetTagPose(target.GetFiducialId());
+      if (!fiducialPose) {
         FRC_ReportError(frc::warn::Warning,
                         "Tried to get pose of unknown April Tag: {}",
                         target.GetFiducialId());
         continue;
       }
 
-      frc::Pose3d targetPose = aprilTags[target.GetFiducialId()];
+      frc::Pose3d targetPose = fiducialPose.value();
       if (target.GetPoseAmbiguity() == 0) {
         FRC_ReportError(frc::warn::Warning,
                         "Pose ambiguity of zero exists, using that instead!",

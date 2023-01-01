@@ -31,6 +31,7 @@
 
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
+#include <frc/apriltag/AprilTagFieldLayout.h>
 
 #include "photonlib/PhotonCamera.h"
 
@@ -52,7 +53,7 @@ class RobotPoseEstimator {
   using size_type = std::vector<map_value_type>::size_type;
 
  public:
-  explicit RobotPoseEstimator(std::map<int, frc::Pose3d> aprilTags,
+  explicit RobotPoseEstimator(std::shared_ptr<frc::AprilTagFieldLayout> aprilTags,
                               PoseStrategy strategy,
                               std::vector<map_value_type>);
 
@@ -79,7 +80,7 @@ class RobotPoseEstimator {
   frc::Pose3d GetReferencePose() const { return referencePose; }
 
  private:
-  std::map<int, frc::Pose3d> aprilTags;
+  std::shared_ptr<frc::AprilTagFieldLayout> aprilTags;
   PoseStrategy strategy;
   std::vector<map_value_type> cameras;
   frc::Pose3d lastPose;
