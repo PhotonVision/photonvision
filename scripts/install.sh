@@ -9,7 +9,7 @@ ARCH=$(uname -m)
 ARCH_NAME=""
 if [ "$ARCH" = "aarch64" ]; then
   ARCH_NAME="linuxarm64"
-elif [ "$ARCH" = "aarch32" ]; then
+elif [ "$ARCH" = "armv7l" ]; then
   ARCH_NAME="linuxarm32"
 elif [ "$ARCH" = "x86_64" ]; then
   ARCH_NAME="linuxx64"
@@ -109,4 +109,3 @@ systemctl enable photonvision.service
 echo "Created PhotonVision systemd service."
 
 echo "PhotonVision installation successful."
-
