@@ -32,18 +32,11 @@ ext {
     pubVersion = versionString
     isDev = pubVersion.startsWith("dev")
 
-    if(project.hasProperty('pionly')) {
-        jniPlatforms = ['linuxarm32']
-    } else if(project.hasProperty('winonly')) {
-        jniPlatforms = ['windowsx86-64']
-    } else if(project.hasProperty('aarch64only')) {
-        jniPlatforms = ['linuxaarch64bionic']
-    } else {
-        jniPlatforms = ['linuxarm64', 'linuxarm32', 'linuxx86-64', 'osxuniversal', 'windowsx86-64']
-    }
-
-    println("Building for archs " + jniPlatforms)
-
+    // A list, for legacy reasons, with only the current platform contained
+    String nativeName = wpilibTools.platformMapper.currentPlatform.platformName;
+    if (nativeName == "linuxx64") nativeName = "linuxx86-64";
+    jniPlatform = nativeName
+    println("Building for platform " + jniPlatform)
 }
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
