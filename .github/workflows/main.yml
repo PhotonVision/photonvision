@@ -375,30 +375,57 @@ jobs:
           ./gradlew photon-server:shadowJar --max-workers 2
         if: ${{ (matrix.arch-override == 'none') }}
 
-      # The image will only pull the Pi32 JAR in
-      - name: Generate image
-        if: ${{ github.event_name != 'pull_request' && (matrix.artifact-name) == 'LinuxArm32' }}
-        run: |
-          chmod +x scripts/generatePiImage.sh
-          ./scripts/generatePiImage.sh
-
       # Upload final fat jar as artifact.
       - uses: actions/upload-artifact@v3
         with:
           name: jar-${{ matrix.artifact-name }}
           path: photon-server/build/libs
 
-      # Upload image as well
+
+  photon-image-generator:
+    needs: [photon-build-package]
+    if: ${{ github.event_name != 'pull_request' }}
+    strategy:
+        fail-fast: false
+        matrix:
+          include:
+            - os: ubuntu-latest
+              artifact-name: LinuxArm64
+              image_suffix: raspi
+              image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.0-beta-4_arm64
+            - os: ubuntu-latest
+              artifact-name: LinuxArm64
+              image_suffix: limelight
+              image_url: https://api.github.com/repos/photonvision/photon-pi-gen/releases/tags/v2023.1.0-beta-5_limelight-arm64
+
+    runs-on: ${{ matrix.os }}
+    name: "Build image - ${{ matrix.image_url }}"
+
+    steps:
+      # Checkout code.
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: jar-${{ matrix.artifact-name }}
+
+      - name: Generate image
+        run: |
+          chmod +x scripts/generatePiImage.sh
+          ./scripts/generatePiImage.sh ${{ matrix.image_url }} ${{ matrix.image_suffix }}
 
       - uses: actions/upload-artifact@v3
-        if: ${{ github.event_name != 'pull_request' && (matrix.artifact-name) == 'LinuxArm32' }}
+        name: Upload image
         with:
-          name: image-${{ matrix.artifact-name }}
+          name: image-${{ matrix.image_suffix }}
           path: photonvision*.xz
 
 
   photon-release:
-    needs: [photon-build-package]
+    needs: [photon-build-package, photon-image-generator]
     runs-on: ubuntu-22.04
     steps:
       # Download literally every single artifact. This also downloads client and docs,
