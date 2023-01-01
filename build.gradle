@@ -35,6 +35,9 @@ ext {
     // A list, for legacy reasons, with only the current platform contained
     String nativeName = wpilibTools.platformMapper.currentPlatform.platformName;
     if (nativeName == "linuxx64") nativeName = "linuxx86-64";
+    if (nativeName == "winx64") nativeName = "windowsx86-64";
+    if (nativeName == "macx64") nativeName = "osxx86-64";
+    if (nativeName == "macarm64") nativeName = "osxarm64";
     jniPlatform = nativeName
     println("Building for platform " + jniPlatform)
 }
