@@ -102,32 +102,30 @@ public class RobotPoseEstimator {
             DriverStation.reportError("[RobotPoseEstimator] Missing any camera!", false);
             return Optional.empty();
         }
-        Pair<Pose3d, Double> pair;
+
+        Pair<Pose3d, Double> pair = getResultFromActiveStrategy();
+
+        lastPose = pair.getFirst();
+        return Optional.ofNullable(pair);
+
+    }
+
+    private Pair<Pose3d, Double> getResultFromActiveStrategy() {
         switch (strategy) {
             case LOWEST_AMBIGUITY:
-                pair = lowestAmbiguityStrategy();
-                lastPose = pair.getFirst();
-                return Optional.of(pair);
+                return lowestAmbiguityStrategy();
             case CLOSEST_TO_CAMERA_HEIGHT:
-                pair = closestToCameraHeightStrategy();
-                lastPose = pair.getFirst();
-                return Optional.of(pair);
+                return closestToCameraHeightStrategy();
             case CLOSEST_TO_REFERENCE_POSE:
-                pair = closestToReferencePoseStrategy();
-                lastPose = pair.getFirst();
-                return Optional.of(pair);
+                return closestToReferencePoseStrategy();
             case CLOSEST_TO_LAST_POSE:
                 referencePose = lastPose;
-                pair = closestToReferencePoseStrategy();
-                lastPose = pair.getFirst();
-                return Optional.of(pair);
+                return closestToReferencePoseStrategy();
             case AVERAGE_BEST_TARGETS:
-                pair = averageBestTargetsStrategy();
-                lastPose = pair.getFirst();
-                return Optional.of(pair);
+                return averageBestTargetsStrategy();
             default:
                 DriverStation.reportError("[RobotPoseEstimator] Invalid pose strategy!", false);
-                return Optional.empty();
+                return null;
         }
     }
 
