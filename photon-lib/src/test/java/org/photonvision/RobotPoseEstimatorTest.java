@@ -29,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -132,10 +133,10 @@ class RobotPoseEstimatorTest {
 
         RobotPoseEstimator estimator = new RobotPoseEstimator(tagLayout, PoseStrategy.LOWEST_AMBIGUITY, cameras);
 
-        Pair<Pose3d, Double> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.getFirst();
+        Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.get().getFirst();
 
-        assertEquals(2, estimatedPose.getSecond());
+        assertEquals(2, estimatedPose.get().getSecond());
         assertEquals(1, pose.getX(), .01);
         assertEquals(3, pose.getY(), .01);
         assertEquals(2, pose.getZ(), .01);
@@ -207,10 +208,10 @@ class RobotPoseEstimatorTest {
         RobotPoseEstimator estimator = new RobotPoseEstimator(tagLayout, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
                 cameras);
 
-        Pair<Pose3d, Double> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.getFirst();
+        Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.get().getFirst();
 
-        assertEquals(2, estimatedPose.getSecond());
+        assertEquals(2, estimatedPose.get().getSecond());
         assertEquals(4, pose.getX(), .01);
         assertEquals(4, pose.getY(), .01);
         assertEquals(4, pose.getZ(), .01);
@@ -283,10 +284,10 @@ class RobotPoseEstimatorTest {
                 cameras);
         estimator.setReferencePose(new Pose3d(1, 1, 1, new Rotation3d()));
 
-        Pair<Pose3d, Double> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.getFirst();
+        Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.get().getFirst();
 
-        assertEquals(4, estimatedPose.getSecond());
+        assertEquals(4, estimatedPose.get().getSecond());
         assertEquals(1, pose.getX(), .01);
         assertEquals(1.1, pose.getY(), .01);
         assertEquals(.9, pose.getZ(), .01);
@@ -359,8 +360,8 @@ class RobotPoseEstimatorTest {
 
         estimator.setLastPose(new Pose3d(1, 1, 1, new Rotation3d()));
 
-        Pair<Pose3d, Double> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.getFirst();
+        Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.get().getFirst();
 
         cameraOne.result = new PhotonPipelineResult(
                 2,
@@ -412,9 +413,9 @@ class RobotPoseEstimatorTest {
                                         new TargetCorner(7, 8)))));
 
         estimatedPose = estimator.update();
-        pose = estimatedPose.getFirst();
+        pose = estimatedPose.get().getFirst();
 
-        assertEquals(2, estimatedPose.getSecond());
+        assertEquals(2, estimatedPose.get().getSecond());
         assertEquals(.9, pose.getX(), .01);
         assertEquals(1.1, pose.getY(), .01);
         assertEquals(1, pose.getZ(), .01);
@@ -485,9 +486,9 @@ class RobotPoseEstimatorTest {
 
         RobotPoseEstimator estimator = new RobotPoseEstimator(tagLayout, PoseStrategy.AVERAGE_BEST_TARGETS, cameras);
 
-        Pair<Pose3d, Double> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.getFirst();
-        assertEquals(2.6885245901639347, estimatedPose.getSecond(), .01);
+        Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.get().getFirst();
+        assertEquals(2.6885245901639347, estimatedPose.get().getSecond(), .01);
         assertEquals(2.15, pose.getX(), .01);
         assertEquals(2.15, pose.getY(), .01);
         assertEquals(2.15, pose.getZ(), .01);
