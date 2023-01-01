@@ -51,7 +51,6 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 class RobotPoseEstimatorTest {
-
     static AprilTagFieldLayout aprilTags;
 
     @BeforeAll
@@ -75,8 +74,6 @@ class RobotPoseEstimatorTest {
         var fl = Units.feetToMeters(54.0);
         var fw = Units.feetToMeters(27.0);
         aprilTags = new AprilTagFieldLayout(atList, fl, fw);
-
-        NetworkTableInstance.getDefault().stopServer();
     }
 
     @Test
