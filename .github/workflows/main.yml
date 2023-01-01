@@ -156,10 +156,11 @@ jobs:
           pip install sphinx sphinx_rtd_theme sphinx-tabs sphinxext-opengraph doc8
           pip install -r requirements.txt
 
-      - name: Check the docs
-        run: |
-          make linkcheck
-          make lint
+      # Don't check the docs. If a PR was merged to the docs repo, it ought to pass CI. No need to re-check here.
+      # - name: Check the docs
+      #   run: |
+      #     make linkcheck
+      #     make lint
 
       - name: Build the docs
         run: |
