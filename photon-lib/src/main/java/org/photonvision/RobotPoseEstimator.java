@@ -32,11 +32,9 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.apriltag.AprilTagFieldLayout;
-
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -76,7 +74,8 @@ public class RobotPoseEstimator {
      * <p>Example: {@code <code> <p> Map<Integer, Pose3d> map = new HashMap<>(); <p> map.put(1, new
      * Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is at (1.0,2.0,3.0) </code> }
      *
-     * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with respect to the FIRST field.
+     * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with respect to the
+     *     FIRST field.
      * @param strategy The strategy it should use to determine the best pose.
      * @param cameras An ArrayList of Pairs of PhotonCameras and their respective Transform3ds from
      *     the center of the robot to the cameras.
@@ -95,8 +94,8 @@ public class RobotPoseEstimator {
     /**
      * Update the estimated pose using the selected strategy.
      *
-     * @return The updated estimated pose and the latency in milliseconds
-     * Estimated pose may be null if no targets were seen
+     * @return The updated estimated pose and the latency in milliseconds Estimated pose may be null
+     *     if no targets were seen
      */
     public Pair<Pose3d, Double> update() {
         if (cameras.isEmpty()) {
@@ -164,7 +163,6 @@ public class RobotPoseEstimator {
         // Pick the lowest and do the heavy calculations
         PhotonTrackedTarget bestTarget = results.get(lowestAI).targets.get(lowestAJ);
 
-
         // If the map doesn't contain the ID fail
         var tmp = aprilTags.getTagPose(bestTarget.getFiducialId());
         if (tmp.isEmpty()) {
@@ -180,10 +178,11 @@ public class RobotPoseEstimator {
 
         var tagPose = tmp.get();
 
-        return Pair.of(tagPose
+        return Pair.of(
+                tagPose
                         .transformBy(bestTarget.getBestCameraToTarget().inverse())
                         .transformBy(cameras.get(lowestAI).getSecond().inverse()),
-                        results.get(lowestAI).getLatencyMillis());
+                results.get(lowestAI).getLatencyMillis());
     }
 
     private Pair<Pose3d, Double> closestToCameraHeightStrategy() {
@@ -219,12 +218,18 @@ public class RobotPoseEstimator {
                                         - targetPose.transformBy(target.getBestCameraToTarget().inverse()).getZ());
                 if (alternativeDifference < smallestHeightDifference) {
                     smallestHeightDifference = alternativeDifference;
-                    pose = targetPose.transformBy(target.getAlternateCameraToTarget().inverse()).transformBy(p.getSecond().inverse());
+                    pose =
+                            targetPose
+                                    .transformBy(target.getAlternateCameraToTarget().inverse())
+                                    .transformBy(p.getSecond().inverse());
                     mili = result.getLatencyMillis();
                 }
                 if (bestDifference < smallestHeightDifference) {
                     smallestHeightDifference = bestDifference;
-                    pose = targetPose.transformBy(target.getBestCameraToTarget().inverse()).transformBy(p.getSecond().inverse());
+                    pose =
+                            targetPose
+                                    .transformBy(target.getBestCameraToTarget().inverse())
+                                    .transformBy(p.getSecond().inverse());
                     mili = result.getLatencyMillis();
                 }
             }
@@ -262,18 +267,16 @@ public class RobotPoseEstimator {
                     continue;
                 }
                 Pose3d targetPose = tmp.get();
-                Pose3d botBestPose = targetPose.transformBy(target.getAlternateCameraToTarget().inverse()).transformBy(p.getSecond().inverse());
-                Pose3d botAltPose = targetPose.transformBy(target.getBestCameraToTarget().inverse()).transformBy(p.getSecond().inverse());
-                double alternativeDifference =
-                        Math.abs(
-                                calculateDifference(
-                                        referencePose,
-                                        botAltPose));
-                double bestDifference =
-                        Math.abs(
-                                calculateDifference(
-                                        referencePose,
-                                        botBestPose));
+                Pose3d botBestPose =
+                        targetPose
+                                .transformBy(target.getAlternateCameraToTarget().inverse())
+                                .transformBy(p.getSecond().inverse());
+                Pose3d botAltPose =
+                        targetPose
+                                .transformBy(target.getBestCameraToTarget().inverse())
+                                .transformBy(p.getSecond().inverse());
+                double alternativeDifference = Math.abs(calculateDifference(referencePose, botAltPose));
+                double bestDifference = Math.abs(calculateDifference(referencePose, botBestPose));
                 if (alternativeDifference < smallestDifference) {
                     smallestDifference = alternativeDifference;
                     pose = botAltPose;
@@ -318,14 +321,17 @@ public class RobotPoseEstimator {
                 } catch (ArithmeticException e) {
                     // A total ambiguity of zero exists, using that pose instead!",
                     return Pair.of(
-                            targetPose.transformBy(target.getBestCameraToTarget().inverse()).transformBy(p.getSecond().inverse()),
+                            targetPose
+                                    .transformBy(target.getBestCameraToTarget().inverse())
+                                    .transformBy(p.getSecond().inverse()),
                             result.getLatencyMillis());
                 }
                 tempPoses.add(
                         Pair.of(
-                                targetPose.transformBy(target.getBestCameraToTarget().inverse()).transformBy(p.getSecond().inverse()),
-                                Pair.of(
-                                        target.getPoseAmbiguity(), result.getLatencyMillis())));
+                                targetPose
+                                        .transformBy(target.getBestCameraToTarget().inverse())
+                                        .transformBy(p.getSecond().inverse()),
+                                Pair.of(target.getPoseAmbiguity(), result.getLatencyMillis())));
             }
         }
 
@@ -333,13 +339,14 @@ public class RobotPoseEstimator {
         Rotation3d rotation = new Rotation3d();
         double latency = 0;
 
-        if(tempPoses.size() > 0){
+        if (tempPoses.size() > 0) {
             for (Pair<Pose3d, Pair<Double, Double>> pair : tempPoses) {
                 try {
                     double weight = (1. / pair.getSecond().getFirst()) / totalAmbiguity;
                     transform = transform.plus(pair.getFirst().getTranslation().times(weight));
                     rotation = rotation.plus(pair.getFirst().getRotation().times(weight));
-                    latency += pair.getSecond().getSecond() * weight; // NOTE: Average latency may not work well
+                    latency +=
+                            pair.getSecond().getSecond() * weight; // NOTE: Average latency may not work well
                 } catch (ArithmeticException e) {
                     DriverStation.reportWarning(
                             "[RobotPoseEstimator] A total ambiguity of zero exists, using that pose instead!",
