@@ -36,6 +36,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.WPINetJNI;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
@@ -74,11 +75,12 @@ class RobotPoseEstimatorTest {
         var fl = Units.feetToMeters(54.0);
         var fw = Units.feetToMeters(27.0);
         aprilTags = new AprilTagFieldLayout(atList, fl, fw);
+
+        NetworkTableInstance.getDefault().stopServer();
     }
 
     @Test
     void testLowestAmbiguityStrategy() {
-
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
@@ -151,7 +153,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void testClosestToCameraHeightStrategy() {
-
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
@@ -224,7 +225,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void closestToReferencePoseStrategy() {
-
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
@@ -298,7 +298,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void closestToLastPose() {
-
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
@@ -427,7 +426,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void averageBestPoses() {
-
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
