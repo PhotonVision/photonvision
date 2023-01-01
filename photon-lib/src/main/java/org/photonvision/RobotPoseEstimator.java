@@ -107,7 +107,6 @@ public class RobotPoseEstimator {
 
         lastPose = pair.getFirst();
         return Optional.ofNullable(pair);
-
     }
 
     private Pair<Pose3d, Double> getResultFromActiveStrategy() {
