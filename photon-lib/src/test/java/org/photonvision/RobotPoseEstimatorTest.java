@@ -26,21 +26,22 @@ package org.photonvision;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.RobotPoseEstimator.PoseStrategy;
@@ -49,6 +50,9 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 class RobotPoseEstimatorTest {
+
+    static AprilTagFieldLayout aprilTags;
+
     @BeforeAll
     public static void init() {
         JNIWrapper.Helper.setExtractOnStaticLoad(false);
@@ -63,13 +67,17 @@ class RobotPoseEstimatorTest {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
+        List<AprilTag> atList = new ArrayList<AprilTag>(2);
+        atList.add(new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
+        atList.add(new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
+        var fl = Units.feetToMeters(54.0);
+        var fw = Units.feetToMeters(27.0);
+        aprilTags = new AprilTagFieldLayout(atList, fl, fw);
     }
 
     @Test
     void testLowestAmbiguityStrategy() {
-        Map<Integer, Pose3d> aprilTags = new HashMap<>();
-        aprilTags.put(0, new Pose3d(3, 3, 3, new Rotation3d()));
-        aprilTags.put(1, new Pose3d(5, 5, 5, new Rotation3d()));
 
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
@@ -143,9 +151,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void testClosestToCameraHeightStrategy() {
-        Map<Integer, Pose3d> aprilTags = new HashMap<>();
-        aprilTags.put(0, new Pose3d(3, 3, 3, new Rotation3d()));
-        aprilTags.put(1, new Pose3d(5, 5, 5, new Rotation3d()));
 
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
@@ -219,9 +224,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void closestToReferencePoseStrategy() {
-        Map<Integer, Pose3d> aprilTags = new HashMap<>();
-        aprilTags.put(0, new Pose3d(3, 3, 3, new Rotation3d()));
-        aprilTags.put(1, new Pose3d(5, 5, 5, new Rotation3d()));
 
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
@@ -296,9 +298,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void closestToLastPose() {
-        Map<Integer, Pose3d> aprilTags = new HashMap<>();
-        aprilTags.put(0, new Pose3d(3, 3, 3, new Rotation3d()));
-        aprilTags.put(1, new Pose3d(5, 5, 5, new Rotation3d()));
 
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
@@ -428,9 +427,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void averageBestPoses() {
-        Map<Integer, Pose3d> aprilTags = new HashMap<>();
-        aprilTags.put(0, new Pose3d(3, 3, 3, new Rotation3d()));
-        aprilTags.put(1, new Pose3d(5, 5, 5, new Rotation3d()));
 
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
