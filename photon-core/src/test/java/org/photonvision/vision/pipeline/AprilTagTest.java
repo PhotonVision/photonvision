@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -46,6 +47,7 @@ public class AprilTagTest {
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
         pipeline.getSettings().targetModel = TargetModel.k200mmAprilTag;
+        pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
 
         var frameProvider =
                 new FileFrameProvider(
