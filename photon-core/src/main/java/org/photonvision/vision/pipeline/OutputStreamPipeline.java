@@ -110,7 +110,10 @@ public class OutputStreamPipeline {
         boolean inEmpty = inMat.empty();
         if (!inEmpty)
             sumPipeNanosElapsed += pipeProfileNanos[0] = resizeImagePipe.run(inMat).nanosElapsed;
-        sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
+
+        boolean outEmpty = outMat.empty();
+        if (!outEmpty)
+            sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
 
         // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
         if (outMat.channels() == 1) {
