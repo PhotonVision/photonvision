@@ -21,6 +21,11 @@ import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
+import java.util.Arrays;
+import org.opencv.calib3d.Calib3d;
+import org.opencv.core.MatOfPoint2f;
+import org.opencv.core.Point;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagPoseEstimatorPipe
@@ -37,8 +42,55 @@ public class AprilTagPoseEstimatorPipe
         super();
     }
 
+    MatOfPoint2f temp = new MatOfPoint2f();
+
     @Override
     protected AprilTagPoseEstimate process(AprilTagDetection in) {
+        // Save the corner points of our detection to an array
+        Point corners[] = new Point[4];
+        for (int i = 0; i < 4; i++) {
+            corners[i] = new Point(in.getCornerX(i), in.getCornerY(i));
+        }
+        System.out.println("Before: " + Arrays.toString(corners));
+        // And shove into our matofpoints
+        temp.fromArray(corners);
+
+        System.out.println("Size " + temp.size().toString());
+
+        // Probably overwrites what was in temp before. I hope
+        Calib3d.undistortPoints(
+                temp,
+                temp,
+                params.calibration.getCameraIntrinsicsMat(),
+                params.calibration.getDistCoeffsMat());
+
+        // Save out undistorted corners
+        corners = temp.toArray();
+
+        // Apriltagdetection expects an array in form [x1 y1 x2 y2 ...]
+        var fixedCorners = new double[8];
+        for (int i = 0; i < 4; i++) {
+            // https://stackoverflow.com/questions/8499984/how-to-undistort-points-in-camera-shot-coordinates-and-obtain-corresponding-undi
+            // perform transformation.
+            // In fact this is equivalent to multiplication to camera matrix
+
+            fixedCorners[i * 2] = corners[i].x * params.config.fx + params.config.cx;
+            fixedCorners[i * 2 + 1] = corners[i].y * params.config.fy + params.config.cy;
+        }
+        System.out.println("After: " + Arrays.toString(fixedCorners));
+
+        // Create a new Detection with the fixed corners
+        var corrected =
+                new AprilTagDetection(
+                        in.getFamily(),
+                        in.getId(),
+                        in.getHamming(),
+                        in.getDecisionMargin(),
+                        in.getHomography(),
+                        in.getCenterX(),
+                        in.getCenterY(),
+                        fixedCorners);
+
         return m_poseEstimator.estimateOrthogonalIteration(in, params.nIters);
     }
 
@@ -57,11 +109,14 @@ public class AprilTagPoseEstimatorPipe
 
     public static class AprilTagPoseEstimatorPipeParams {
         final AprilTagPoseEstimator.Config config;
+        final CameraCalibrationCoefficients calibration;
         final int nIters;
 
-        public AprilTagPoseEstimatorPipeParams(Config config, int nIters) {
+        public AprilTagPoseEstimatorPipeParams(
+                Config config, CameraCalibrationCoefficients cal, int nIters) {
             this.config = config;
             this.nIters = nIters;
+            this.calibration = cal;
         }
 
         @Override
