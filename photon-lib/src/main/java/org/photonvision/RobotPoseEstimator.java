@@ -179,8 +179,8 @@ public class RobotPoseEstimator {
     }
 
     private Pair<Pose3d, Double> closestToCameraHeightStrategy() {
-        double smallestHeightDifference = 10e9;
-        double mili = 0;
+        double smallestHeightDifference = Double.MAX_VALUE;
+        double latency = 0;
         Pose3d pose = null;
 
         for (int i = 0; i < cameras.size(); i++) {
@@ -195,30 +195,34 @@ public class RobotPoseEstimator {
                     continue;
                 }
                 Pose3d targetPose = fiducialPose.get();
-                double alternativeDifference = Math.abs(
-                        p.getSecond().getZ()
-                                - targetPose.transformBy(target.getAlternateCameraToTarget().inverse()).getZ());
-                double bestDifference = Math.abs(
-                        p.getSecond().getZ()
-                                - targetPose.transformBy(target.getBestCameraToTarget().inverse()).getZ());
+                double alternativeDifference =
+                        Math.abs(
+                                p.getSecond().getZ()
+                                        - targetPose.transformBy(target.getAlternateCameraToTarget().inverse()).getZ());
+                double bestDifference =
+                        Math.abs(
+                                p.getSecond().getZ()
+                                        - targetPose.transformBy(target.getBestCameraToTarget().inverse()).getZ());
                 if (alternativeDifference < smallestHeightDifference) {
                     smallestHeightDifference = alternativeDifference;
-                    pose = targetPose
-                            .transformBy(target.getAlternateCameraToTarget().inverse())
-                            .transformBy(p.getSecond().inverse());
-                    mili = result.getLatencyMillis();
+                    pose =
+                            targetPose
+                                    .transformBy(target.getAlternateCameraToTarget().inverse())
+                                    .transformBy(p.getSecond().inverse());
+                    latency = result.getLatencyMillis();
                 }
                 if (bestDifference < smallestHeightDifference) {
                     smallestHeightDifference = bestDifference;
-                    pose = targetPose
-                            .transformBy(target.getBestCameraToTarget().inverse())
-                            .transformBy(p.getSecond().inverse());
-                    mili = result.getLatencyMillis();
+                    pose =
+                            targetPose
+                                    .transformBy(target.getBestCameraToTarget().inverse())
+                                    .transformBy(p.getSecond().inverse());
+                    latency = result.getLatencyMillis();
                 }
             }
         }
 
-        return Pair.of(pose, mili);
+        return Pair.of(pose, latency);
     }
 
     private Pair<Pose3d, Double> closestToReferencePoseStrategy() {
@@ -229,7 +233,7 @@ public class RobotPoseEstimator {
             return null;
         }
         double smallestDifference = 10e9;
-        double mili = 0;
+        double latency = 0;
         Pose3d pose = null;
         for (int i = 0; i < cameras.size(); i++) {
             Pair<PhotonCamera, Transform3d> p = cameras.get(i);
@@ -243,27 +247,29 @@ public class RobotPoseEstimator {
                     continue;
                 }
                 Pose3d targetPose = fiducialPose.get();
-                Pose3d botBestPose = targetPose
-                        .transformBy(target.getAlternateCameraToTarget().inverse())
-                        .transformBy(p.getSecond().inverse());
-                Pose3d botAltPose = targetPose
-                        .transformBy(target.getBestCameraToTarget().inverse())
-                        .transformBy(p.getSecond().inverse());
+                Pose3d botBestPose =
+                        targetPose
+                                .transformBy(target.getAlternateCameraToTarget().inverse())
+                                .transformBy(p.getSecond().inverse());
+                Pose3d botAltPose =
+                        targetPose
+                                .transformBy(target.getBestCameraToTarget().inverse())
+                                .transformBy(p.getSecond().inverse());
                 double alternativeDifference = Math.abs(calculateDifference(referencePose, botAltPose));
                 double bestDifference = Math.abs(calculateDifference(referencePose, botBestPose));
                 if (alternativeDifference < smallestDifference) {
                     smallestDifference = alternativeDifference;
                     pose = botAltPose;
-                    mili = result.getLatencyMillis();
+                    latency = result.getLatencyMillis();
                 }
                 if (bestDifference < smallestDifference) {
                     smallestDifference = bestDifference;
                     pose = botBestPose;
-                    mili = result.getLatencyMillis();
+                    latency = result.getLatencyMillis();
                 }
             }
         }
-        return Pair.of(pose, mili);
+        return Pair.of(pose, latency);
     }
 
     private Pair<Pose3d, Double> closestToLastPoseStrategy() {
@@ -315,18 +321,17 @@ public class RobotPoseEstimator {
             return null;
         }
 
+        if (totalAmbiguity == 0) {
+            Pose3d p = tempPoses.get(0).getFirst();
+            double l = tempPoses.get(0).getSecond().getSecond();
+            return Pair.of(p, l);
+        }
+
         for (Pair<Pose3d, Pair<Double, Double>> pair : tempPoses) {
-            try {
-                double weight = (1. / pair.getSecond().getFirst()) / totalAmbiguity;
-                transform = transform.plus(pair.getFirst().getTranslation().times(weight));
-                rotation = rotation.plus(pair.getFirst().getRotation().times(weight));
-                latency += pair.getSecond().getSecond() * weight; // NOTE: Average latency may not work well
-            } catch (ArithmeticException e) {
-                DriverStation.reportWarning(
-                        "[RobotPoseEstimator] A total ambiguity of zero exists, using that pose instead!",
-                        false);
-                return Pair.of(pair.getFirst(), pair.getSecond().getSecond());
-            }
+            double weight = (1. / pair.getSecond().getFirst()) / totalAmbiguity;
+            transform = transform.plus(pair.getFirst().getTranslation().times(weight));
+            rotation = rotation.plus(pair.getFirst().getRotation().times(weight));
+            latency += pair.getSecond().getSecond() * weight; // NOTE: Average latency may not work well
         }
 
         return Pair.of(new Pose3d(transform, rotation), latency);
@@ -396,9 +401,7 @@ public class RobotPoseEstimator {
     private void reportFiducialPoseError(int fiducialId) {
         if (!reportedErrors.contains(fiducialId)) {
             DriverStation.reportError(
-                    "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
-                            + fiducialId,
-                    false);
+                    "[RobotPoseEstimator] Tried to get pose of unknown April Tag: " + fiducialId, false);
             reportedErrors.add(fiducialId);
         }
     }
