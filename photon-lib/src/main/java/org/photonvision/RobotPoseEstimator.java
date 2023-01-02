@@ -166,7 +166,6 @@ public class RobotPoseEstimator {
 
         Optional<Pose3d> fiducialPose = aprilTags.getTagPose(bestTarget.getFiducialId());
         if (fiducialPose.isEmpty()) {
-
             return null;
         }
 

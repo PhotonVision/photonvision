@@ -33,10 +33,10 @@
 #include <vector>
 
 #include <frc/Errors.h>
+#include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
-#include <frc/apriltag/AprilTagFieldLayout.h>
 #include <units/time.h>
 
 #include "photonlib/PhotonCamera.h"
@@ -113,7 +113,8 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
   PhotonTrackedTarget bestTarget =
       cameras[lowestAI].first->GetLatestResult().GetTargets()[lowestAJ];
 
-  std::optional<frc::Pose3d> fiducialPose = aprilTags->GetTagPose(bestTarget.GetFiducialId());
+  std::optional<frc::Pose3d> fiducialPose =
+      aprilTags->GetTagPose(bestTarget.GetFiducialId());
   if (!fiducialPose) {
     FRC_ReportError(frc::warn::Warning,
                     "Tried to get pose of unknown April Tag: {}",
@@ -140,7 +141,8 @@ RobotPoseEstimator::ClosestToCameraHeightStrategy() {
         p.first->GetLatestResult().GetTargets();
     for (RobotPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
-      std::optional<frc::Pose3d> fiducialPose = aprilTags->GetTagPose(target.GetFiducialId());
+      std::optional<frc::Pose3d> fiducialPose =
+          aprilTags->GetTagPose(target.GetFiducialId());
       if (!fiducialPose) {
         FRC_ReportError(frc::warn::Warning,
                         "Tried to get pose of unknown April Tag: {}",
@@ -183,7 +185,8 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
         p.first->GetLatestResult().GetTargets();
     for (RobotPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
-      std::optional<frc::Pose3d> fiducialPose = aprilTags->GetTagPose(target.GetFiducialId());
+      std::optional<frc::Pose3d> fiducialPose =
+          aprilTags->GetTagPose(target.GetFiducialId());
       if (!fiducialPose) {
         FRC_ReportError(frc::warn::Warning,
                         "Tried to get pose of unknown April Tag: {}",
@@ -229,7 +232,8 @@ RobotPoseEstimator::AverageBestTargetsStrategy() {
         p.first->GetLatestResult().GetTargets();
     for (RobotPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
       PhotonTrackedTarget target = targets[j];
-      std::optional<frc::Pose3d> fiducialPose = aprilTags->GetTagPose(target.GetFiducialId());
+      std::optional<frc::Pose3d> fiducialPose =
+          aprilTags->GetTagPose(target.GetFiducialId());
       if (!fiducialPose) {
         FRC_ReportError(frc::warn::Warning,
                         "Tried to get pose of unknown April Tag: {}",
