@@ -212,9 +212,9 @@ public class PipelineManager {
         }
 
         DataChangeService.getInstance()
-        .publishEvent(
-                new OutgoingUIEvent<>(
-                        "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
     /**
