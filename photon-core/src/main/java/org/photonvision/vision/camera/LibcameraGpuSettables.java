@@ -31,10 +31,12 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     private FPSRatedVideoMode currentVideoMode;
     private double lastExposure = 50;
     private int lastBrightness = 50;
-    private boolean lastExposureMode;
+    private boolean autoExposureActive;
     private int lastGain = 50;
     private Pair<Integer, Integer> lastAwbGains = new Pair<>(18, 18);
     private boolean m_initialized = false;
+
+    private final LibCameraJNI.SensorModel sensorModel;
 
     private ImageRotationMode m_rotationMode;
 
@@ -51,7 +53,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         videoModes = new HashMap<>();
 
-        LibCameraJNI.SensorModel sensorModel = LibCameraJNI.getSensorModel();
+        sensorModel = LibCameraJNI.getSensorModel();
 
         if (sensorModel == LibCameraJNI.SensorModel.IMX219) {
             // Settings for the IMX219 sensor, which is used on the Pi Camera Module v2
@@ -115,22 +117,29 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
-        lastExposureMode = cameraAutoExposure;
-        // TODO (Matt) -- call LibCameraJNI's auto exposure function, when that exists
+        autoExposureActive = cameraAutoExposure;
         LibCameraJNI.setAutoExposure(cameraAutoExposure);
     }
 
     @Override
     public void setExposure(double exposure) {
-        // Todo (Chris) - for now, handle auto exposure by using -1
-        if (exposure < 0.0) {
-            exposure = -1;
+        if (exposure < 0.0 || autoExposureActive) {
+            exposure = -1.0;
+        } else if(sensorModel == LibCameraJNI.SensorModel.OV9281){
+            // HACK!
+            // OV9821 specific thing - if we set exposure too low, libcamera crashes
+            // For now, band-aid this by just not setting it lower than the "it breaks" limit
+            if(exposure < 6.0){
+                exposure = 6.0; 
+            }
         }
 
-        // TODO convert to uS
         lastExposure = exposure;
-        var success = LibCameraJNI.setExposure((int) Math.round(exposure) * 800);
-        if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
+
+        if(exposure >= 0.0){
+            var success = LibCameraJNI.setExposure((int) Math.round(exposure) * 800);
+            if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
+        }
     }
 
     @Override
@@ -151,19 +160,25 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public void setRedGain(int red) {
-        lastAwbGains = Pair.of(red, lastAwbGains.getSecond());
-        setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
+        if(sensorModel != LibCameraJNI.SensorModel.OV9281){
+            lastAwbGains = Pair.of(red, lastAwbGains.getSecond());
+            setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
+        }
     }
 
     @Override
     public void setBlueGain(int blue) {
-        lastAwbGains = Pair.of(lastAwbGains.getFirst(), blue);
-        setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
+        if(sensorModel != LibCameraJNI.SensorModel.OV9281){
+            lastAwbGains = Pair.of(lastAwbGains.getFirst(), blue);
+            setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
+        }
     }
 
     public void setAwbGain(int red, int blue) {
-        var success = LibCameraJNI.setAwbGain(red / 10.0, blue / 10.0);
-        if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera AWB gains");
+        if(sensorModel != LibCameraJNI.SensorModel.OV9281){
+            var success = LibCameraJNI.setAwbGain(red / 10.0, blue / 10.0);
+            if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera AWB gains");
+        }
     }
 
     @Override
@@ -204,7 +219,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         // We don't store last settings on the native side, and when you change video mode these get
         // reset on MMAL's end
         setExposure(lastExposure);
-        setAutoExposure(lastExposureMode);
+        setAutoExposure(autoExposureActive);
         setBrightness(lastBrightness);
         setGain(lastGain);
         setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
