@@ -29,9 +29,9 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class LibcameraGpuSettables extends VisionSourceSettables {
     private FPSRatedVideoMode currentVideoMode;
-    private double lastExposure = 50;
+    private double lastManualExposure = 50;
     private int lastBrightness = 50;
-    private boolean autoExposureActive;
+    private boolean lastAutoExposureActive;
     private int lastGain = 50;
     private Pair<Integer, Integer> lastAwbGains = new Pair<>(18, 18);
     private boolean m_initialized = false;
@@ -117,29 +117,36 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
-        autoExposureActive = cameraAutoExposure;
+        lastAutoExposureActive = cameraAutoExposure;
         LibCameraJNI.setAutoExposure(cameraAutoExposure);
     }
 
     @Override
     public void setExposure(double exposure) {
-        if (exposure < 0.0 || autoExposureActive) {
-            exposure = -1.0;
-        } else if(sensorModel == LibCameraJNI.SensorModel.OV9281){
-            // HACK!
-            // OV9821 specific thing - if we set exposure too low, libcamera crashes
-            // For now, band-aid this by just not setting it lower than the "it breaks" limit
+        if (exposure < 0.0 || lastAutoExposureActive) {
+            //Auto-exposure is active right now, don't set anything.
+            return;
+        }
+        
+        // HACKS!
+        // If we set exposure too low, libcamera crashes or slows down 
+        // Very weird and smelly
+        // For now, band-aid this by just not setting it lower than the "it breaks" limit
+        // Limit is different depending on camera.
+        if(sensorModel == LibCameraJNI.SensorModel.OV9281){
             if(exposure < 6.0){
                 exposure = 6.0; 
             }
+        } else if(sensorModel == LibCameraJNI.SensorModel.OV5647){
+            if(exposure < 0.7){
+                exposure = 0.7; 
+            }
         }
 
-        lastExposure = exposure;
-
-        if(exposure >= 0.0){
-            var success = LibCameraJNI.setExposure((int) Math.round(exposure) * 800);
-            if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
-        }
+        lastManualExposure = exposure;
+        var success = LibCameraJNI.setExposure((int) Math.round(exposure) * 800);
+        if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
+        
     }
 
     @Override
@@ -218,8 +225,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         // We don't store last settings on the native side, and when you change video mode these get
         // reset on MMAL's end
-        setExposure(lastExposure);
-        setAutoExposure(autoExposureActive);
+        setExposure(lastManualExposure);
+        setAutoExposure(lastAutoExposureActive);
         setBrightness(lastBrightness);
         setGain(lastGain);
         setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
