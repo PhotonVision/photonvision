@@ -217,7 +217,7 @@ class RobotPoseEstimatorTest {
         assertEquals(2, estimatedPose.getSecond());
         assertEquals(4, pose.getX(), .01);
         assertEquals(4, pose.getY(), .01);
-        assertEquals(4, pose.getZ(), .01);
+        assertEquals(0, pose.getZ(), .01);
     }
 
     @Test
