@@ -34,6 +34,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
@@ -50,6 +51,8 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 class RobotPoseEstimatorTest {
+    static AprilTagFieldLayout aprilTags;
+
     @BeforeAll
     public static void init() {
         JNIWrapper.Helper.setExtractOnStaticLoad(false);
@@ -64,16 +67,17 @@ class RobotPoseEstimatorTest {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+
+        List<AprilTag> atList = new ArrayList<AprilTag>(2);
+        atList.add(new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())));
+        atList.add(new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
+        var fl = Units.feetToMeters(54.0);
+        var fw = Units.feetToMeters(27.0);
+        aprilTags = new AprilTagFieldLayout(atList, fl, fw);
     }
 
     @Test
     void testLowestAmbiguityStrategy() {
-        List<AprilTag> aprilTags =
-                List.of(
-                        new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())),
-                        new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
-        AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(aprilTags, 10, 10);
-
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
@@ -133,7 +137,7 @@ class RobotPoseEstimatorTest {
         cameras.add(Pair.of(cameraTwo, new Transform3d()));
 
         RobotPoseEstimator estimator =
-                new RobotPoseEstimator(tagLayout, PoseStrategy.LOWEST_AMBIGUITY, cameras);
+                new RobotPoseEstimator(aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameras);
 
         Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
         Pose3d pose = estimatedPose.get().getFirst();
@@ -146,12 +150,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void testClosestToCameraHeightStrategy() {
-        List<AprilTag> aprilTags =
-                List.of(
-                        new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())),
-                        new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
-        AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(aprilTags, 10, 10);
-
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
@@ -211,7 +209,7 @@ class RobotPoseEstimatorTest {
         cameras.add(Pair.of(cameraTwo, new Transform3d(new Translation3d(0, 0, 2), new Rotation3d())));
 
         RobotPoseEstimator estimator =
-                new RobotPoseEstimator(tagLayout, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT, cameras);
+                new RobotPoseEstimator(aprilTags, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT, cameras);
 
         Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
         Pose3d pose = estimatedPose.get().getFirst();
@@ -219,17 +217,11 @@ class RobotPoseEstimatorTest {
         assertEquals(2, estimatedPose.get().getSecond());
         assertEquals(4, pose.getX(), .01);
         assertEquals(4, pose.getY(), .01);
-        assertEquals(4, pose.getZ(), .01);
+        assertEquals(0, pose.getZ(), .01);
     }
 
     @Test
     void closestToReferencePoseStrategy() {
-        List<AprilTag> aprilTags =
-                List.of(
-                        new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())),
-                        new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
-        AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(aprilTags, 10, 10);
-
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
@@ -289,7 +281,7 @@ class RobotPoseEstimatorTest {
         cameras.add(Pair.of(cameraTwo, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
 
         RobotPoseEstimator estimator =
-                new RobotPoseEstimator(tagLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, cameras);
+                new RobotPoseEstimator(aprilTags, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, cameras);
         estimator.setReferencePose(new Pose3d(1, 1, 1, new Rotation3d()));
 
         Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
@@ -303,12 +295,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void closestToLastPose() {
-        List<AprilTag> aprilTags =
-                List.of(
-                        new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())),
-                        new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
-        AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(aprilTags, 10, 10);
-
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
@@ -368,7 +354,7 @@ class RobotPoseEstimatorTest {
         cameras.add(Pair.of(cameraTwo, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
 
         RobotPoseEstimator estimator =
-                new RobotPoseEstimator(tagLayout, PoseStrategy.CLOSEST_TO_LAST_POSE, cameras);
+                new RobotPoseEstimator(aprilTags, PoseStrategy.CLOSEST_TO_LAST_POSE, cameras);
 
         estimator.setLastPose(new Pose3d(1, 1, 1, new Rotation3d()));
 
@@ -437,12 +423,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void averageBestPoses() {
-        List<AprilTag> aprilTags =
-                List.of(
-                        new AprilTag(0, new Pose3d(3, 3, 3, new Rotation3d())),
-                        new AprilTag(1, new Pose3d(5, 5, 5, new Rotation3d())));
-        AprilTagFieldLayout tagLayout = new AprilTagFieldLayout(aprilTags, 10, 10);
-
         ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
 
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
@@ -502,7 +482,7 @@ class RobotPoseEstimatorTest {
         cameras.add(Pair.of(cameraTwo, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
 
         RobotPoseEstimator estimator =
-                new RobotPoseEstimator(tagLayout, PoseStrategy.AVERAGE_BEST_TARGETS, cameras);
+                new RobotPoseEstimator(aprilTags, PoseStrategy.AVERAGE_BEST_TARGETS, cameras);
 
         Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
         Pose3d pose = estimatedPose.get().getFirst();

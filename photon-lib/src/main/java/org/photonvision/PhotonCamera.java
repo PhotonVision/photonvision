@@ -280,7 +280,7 @@ public class PhotonCamera {
             prevHeartbeatValue = curHeartbeat;
         }
 
-        return ((now - prevHeartbeatChangeTime) > HEARBEAT_DEBOUNCE_SEC);
+        return ((now - prevHeartbeatChangeTime) < HEARBEAT_DEBOUNCE_SEC);
     }
 
     private void verifyVersion() {
