@@ -32,6 +32,7 @@
 #include <units/angle.h>
 #include <units/length.h>
 #include <wpi/SmallVector.h>
+#include <frc/apriltag/AprilTagFieldLayout.h>
 
 #include "gtest/gtest.h"
 #include "photonlib/PhotonCamera.h"
@@ -40,11 +41,18 @@
 #include "photonlib/RobotPoseEstimator.h"
 
 TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
-  std::map<int, frc::Pose3d> aprilTags;
-  aprilTags.insert({0, frc::Pose3d(units::meter_t(3), units::meter_t(3),
-                                   units::meter_t(3), frc::Rotation3d())});
-  aprilTags.insert({1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
-                                   units::meter_t(5), frc::Rotation3d())});
+  std::vector<frc::AprilTag> tags = {
+{0, frc::Pose3d(units::meter_t(3), units::meter_t(3),
+                                   units::meter_t(3), frc::Rotation3d())},
+  {1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
+                                   units::meter_t(5), frc::Rotation3d())}
+  };
+
+  std::shared_ptr<frc::AprilTagFieldLayout> aprilTags = std::make_shared<frc::AprilTagFieldLayout>(
+    tags,
+    54_ft,
+    27_ft
+  );
 
   std::vector<
       std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
@@ -122,11 +130,17 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
 }
 
 TEST(RobotPoseEstimatorTest, ClosestToCameraHeightStrategy) {
-  std::map<int, frc::Pose3d> aprilTags;
-  aprilTags.insert({0, frc::Pose3d(units::meter_t(3), units::meter_t(3),
-                                   units::meter_t(3), frc::Rotation3d())});
-  aprilTags.insert({1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
-                                   units::meter_t(5), frc::Rotation3d())});
+  std::vector<frc::AprilTag> tags = {
+  {0, frc::Pose3d(units::meter_t(3), units::meter_t(3),
+                                   units::meter_t(3), frc::Rotation3d())},
+  {1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
+                                   units::meter_t(5), frc::Rotation3d())},
+  };
+  std::shared_ptr<frc::AprilTagFieldLayout> aprilTags = std::make_shared<frc::AprilTagFieldLayout>(
+    tags,
+    54_ft,
+    27_ft
+  );
 
   std::vector<
       std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
@@ -204,11 +218,17 @@ TEST(RobotPoseEstimatorTest, ClosestToCameraHeightStrategy) {
 }
 
 TEST(RobotPoseEstimatorTest, ClosestToReferencePoseStrategy) {
-  std::map<int, frc::Pose3d> aprilTags;
-  aprilTags.insert({0, frc::Pose3d(units::meter_t(3), units::meter_t(3),
-                                   units::meter_t(3), frc::Rotation3d())});
-  aprilTags.insert({1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
-                                   units::meter_t(5), frc::Rotation3d())});
+    std::vector<frc::AprilTag> tags = {
+  {0, frc::Pose3d(units::meter_t(3), units::meter_t(3),
+                                   units::meter_t(3), frc::Rotation3d())},
+  {1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
+                                   units::meter_t(5), frc::Rotation3d())},
+    };
+  std::shared_ptr<frc::AprilTagFieldLayout> aprilTags = std::make_shared<frc::AprilTagFieldLayout>(
+    tags,
+    54_ft,
+    27_ft
+  );
 
   std::vector<
       std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
@@ -288,11 +308,16 @@ TEST(RobotPoseEstimatorTest, ClosestToReferencePoseStrategy) {
 }
 
 TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
-  std::map<int, frc::Pose3d> aprilTags;
-  aprilTags.insert({0, frc::Pose3d(units::meter_t(3), units::meter_t(3),
-                                   units::meter_t(3), frc::Rotation3d())});
-  aprilTags.insert({1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
-                                   units::meter_t(5), frc::Rotation3d())});
+    std::vector<frc::AprilTag> tags = {
+  {0, frc::Pose3d(units::meter_t(3), units::meter_t(3),
+                                   units::meter_t(3), frc::Rotation3d())},
+  {1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
+                                   units::meter_t(5), frc::Rotation3d())}};
+  std::shared_ptr<frc::AprilTagFieldLayout> aprilTags = std::make_shared<frc::AprilTagFieldLayout>(
+    tags,
+    54_ft,
+    27_ft
+  );
 
   std::vector<
       std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
@@ -431,11 +456,16 @@ TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
 }
 
 TEST(RobotPoseEstimatorTest, AverageBestPoses) {
-  std::map<int, frc::Pose3d> aprilTags;
-  aprilTags.insert({0, frc::Pose3d(units::meter_t(3), units::meter_t(3),
-                                   units::meter_t(3), frc::Rotation3d())});
-  aprilTags.insert({1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
-                                   units::meter_t(5), frc::Rotation3d())});
+    std::vector<frc::AprilTag> tags = {
+  {0, frc::Pose3d(units::meter_t(3), units::meter_t(3),
+                                   units::meter_t(3), frc::Rotation3d())},
+  {1, frc::Pose3d(units::meter_t(5), units::meter_t(5),
+                                   units::meter_t(5), frc::Rotation3d())}};
+  std::shared_ptr<frc::AprilTagFieldLayout> aprilTags = std::make_shared<frc::AprilTagFieldLayout>(
+    tags,
+    54_ft,
+    27_ft
+  );
 
   std::vector<
       std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>

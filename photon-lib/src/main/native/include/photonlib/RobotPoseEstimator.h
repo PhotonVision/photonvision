@@ -31,9 +31,12 @@
 
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
-#include <frc/apriltag/AprilTagFieldLayout.h>
 
 #include "photonlib/PhotonCamera.h"
+
+namespace frc {
+  class AprilTagFieldLayout;
+}
 
 namespace photonlib {
 enum PoseStrategy : int {
@@ -48,18 +51,18 @@ enum PoseStrategy : int {
  * A managing class to determine how an estimated pose should be chosen.
  */
 class RobotPoseEstimator {
+public:
   using map_value_type =
       std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>;
   using size_type = std::vector<map_value_type>::size_type;
 
- public:
   explicit RobotPoseEstimator(std::shared_ptr<frc::AprilTagFieldLayout> aprilTags,
                               PoseStrategy strategy,
-                              std::vector<map_value_type>);
+                              std::vector<map_value_type> cameras);
 
   std::pair<frc::Pose3d, units::millisecond_t> Update();
 
-  void SetPoseStrategy(PoseStrategy strategy);
+  inline void SetPoseStrategy(PoseStrategy strat) { strategy = strat; }
 
   inline void SetReferencePose(frc::Pose3d referencePose) {
     this->referencePose = referencePose;

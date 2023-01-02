@@ -113,7 +113,7 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
   PhotonTrackedTarget bestTarget =
       cameras[lowestAI].first->GetLatestResult().GetTargets()[lowestAJ];
 
-  std::optional<frc::Pose3d> fiducialPose = aprilTags->GetTagPose(target.GetFiducialId());
+  std::optional<frc::Pose3d> fiducialPose = aprilTags->GetTagPose(bestTarget.GetFiducialId());
   if (!fiducialPose) {
     FRC_ReportError(frc::warn::Warning,
                     "Tried to get pose of unknown April Tag: {}",
@@ -122,7 +122,7 @@ RobotPoseEstimator::LowestAmbiguityStrategy() {
   }
 
   return std::make_pair(
-      aprilTags->GetTagPose(bestTarget.GetFiducialId())
+      fiducialPose.value()
           .TransformBy(bestTarget.GetBestCameraToTarget().Inverse())
           .TransformBy(cameras[lowestAI].second.Inverse()),
       cameras[lowestAI].first->GetLatestResult().GetLatency() / 1000.);

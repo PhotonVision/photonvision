@@ -65,6 +65,7 @@ model {
                 }
             }
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+            nativeUtils.useRequiredLibrary(it, "vision_shared")
         }
     }
     testSuites {
@@ -79,6 +80,7 @@ model {
             }
 
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
+            nativeUtils.useRequiredLibrary(it, "vision_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
         }
     }
