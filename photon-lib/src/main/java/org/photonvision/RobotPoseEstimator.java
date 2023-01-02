@@ -267,7 +267,7 @@ public class RobotPoseEstimator {
     }
 
     private Pair<Pose3d, Double> closestToLastPoseStrategy() {
-        referencePose = lastPose;
+        setReferencePose(lastPose);
         return closestToReferencePoseStrategy();
     }
 
@@ -381,7 +381,7 @@ public class RobotPoseEstimator {
      * @param referencePose the referencePose to set
      */
     public void setReferencePose(Pose2d referencePose) {
-        this.referencePose = new Pose3d(referencePose);
+        setReferencePose(new Pose3d(referencePose));
     }
 
     /**
