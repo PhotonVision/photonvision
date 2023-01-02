@@ -118,11 +118,11 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
         lastAutoExposureActive = cameraAutoExposure;
-        
+
         // HACK!
         // OV 9281 does not currently support autoexposure in our driver
         // Just skip setting it silently
-        if(sensorModel == LibCameraJNI.SensorModel.OV9281){
+        if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
             lastAutoExposureActive = false;
         } else {
             LibCameraJNI.setAutoExposure(cameraAutoExposure);
@@ -132,29 +132,28 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public void setExposure(double exposure) {
         if (exposure < 0.0 || lastAutoExposureActive) {
-            //Auto-exposure is active right now, don't set anything.
+            // Auto-exposure is active right now, don't set anything.
             return;
         }
-        
+
         // HACKS!
-        // If we set exposure too low, libcamera crashes or slows down 
+        // If we set exposure too low, libcamera crashes or slows down
         // Very weird and smelly
         // For now, band-aid this by just not setting it lower than the "it breaks" limit
         // Limit is different depending on camera.
-        if(sensorModel == LibCameraJNI.SensorModel.OV9281){
-            if(exposure < 6.0){
-                exposure = 6.0; 
+        if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
+            if (exposure < 6.0) {
+                exposure = 6.0;
             }
-        } else if(sensorModel == LibCameraJNI.SensorModel.OV5647){
-            if(exposure < 0.7){
-                exposure = 0.7; 
+        } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
+            if (exposure < 0.7) {
+                exposure = 0.7;
             }
         }
 
         lastManualExposure = exposure;
         var success = LibCameraJNI.setExposure((int) Math.round(exposure) * 800);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
-        
     }
 
     @Override
@@ -175,7 +174,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public void setRedGain(int red) {
-        if(sensorModel != LibCameraJNI.SensorModel.OV9281){
+        if (sensorModel != LibCameraJNI.SensorModel.OV9281) {
             lastAwbGains = Pair.of(red, lastAwbGains.getSecond());
             setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
         }
@@ -183,14 +182,14 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public void setBlueGain(int blue) {
-        if(sensorModel != LibCameraJNI.SensorModel.OV9281){
+        if (sensorModel != LibCameraJNI.SensorModel.OV9281) {
             lastAwbGains = Pair.of(lastAwbGains.getFirst(), blue);
             setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
         }
     }
 
     public void setAwbGain(int red, int blue) {
-        if(sensorModel != LibCameraJNI.SensorModel.OV9281){
+        if (sensorModel != LibCameraJNI.SensorModel.OV9281) {
             var success = LibCameraJNI.setAwbGain(red / 10.0, blue / 10.0);
             if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera AWB gains");
         }

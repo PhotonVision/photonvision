@@ -149,11 +149,10 @@ public class PipelineManager {
                 case DRIVERMODE_INDEX:
                     return driverModePipeline;
             }
-        } 
+        }
 
-        //Just return the current user pipeline, we're not on aa built-in one
+        // Just return the current user pipeline, we're not on aa built-in one
         return currentUserPipeline;
-        
     }
 
     /**
@@ -175,7 +174,7 @@ public class PipelineManager {
      */
     private void setPipelineInternal(int newIndex) {
         if (newIndex < 0 && currentPipelineIndex >= 0) {
-            //Transitioning to a built-in pipe, save off the current user one
+            // Transitioning to a built-in pipe, save off the current user one
             lastUserPipelineIdx = currentPipelineIndex;
         }
 

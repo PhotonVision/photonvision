@@ -79,19 +79,18 @@ public class DriverModePipeline
 
         boolean emptyIn = inputMat.empty();
 
-        if(!emptyIn){
+        if (!emptyIn) {
             if (!accelerated) {
                 var rotateImageResult = rotateImagePipe.run(inputMat);
                 totalNanos += rotateImageResult.nanosElapsed;
             }
 
             totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
-    
+
             var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
 
             // calculate elapsed nanoseconds
             totalNanos += draw2dCrosshairResult.nanosElapsed;
-
         }
 
         var fpsResult = calculateFPSPipe.run(null);

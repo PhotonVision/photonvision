@@ -115,8 +115,7 @@ public class OutputStreamPipeline {
         if (!outEmpty)
             sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
 
-
-        //Only attempt drawing on a non-empty frame
+        // Only attempt drawing on a non-empty frame
         if (!outEmpty) {
             // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
             if (outMat.channels() == 1) {
