@@ -190,12 +190,49 @@
           Restart Device
         </v-btn>
       </v-col>
+      <v-col
+        cols="12"
+        lg="4"
+      >
+        <v-btn
+          color="secondary"
+          @click="showLogs()"
+        >
+          <v-icon left>
+            mdi-bug
+          </v-icon>
+          Show log viewer
+        </v-btn>
+      </v-col>
+      <v-col
+        cols="12"
+        lg="4"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.exportLogFile.click()"
+        >
+          <v-icon left>
+            mdi-file
+          </v-icon>
+          Export current log
+
+          <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
+          <a
+            ref="exportLogFile"
+            style="color: black; text-decoration: none; display: none"
+            :href="'http://' + this.$address + '/api/settings/photonvision-journalctl.txt'"
+            download="photonvision-journalctl.txt"
+          />
+
+        </v-btn>
+      </v-col>
     </v-row>
     <v-snackbar
       v-model="snack"
       top
       :color="snackbar.color"
-      timeout="0"
+      timeout="-1"
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
@@ -262,8 +299,8 @@ export default {
           return  `${this.settings.gpuAcceleration ? "Enabled" : "Unsupported"} ${this.settings.gpuAcceleration ? "(" + this.settings.gpuAcceleration + ")" : ""}`
         },
         metrics() {
-          console.log(this.$store.state.metrics);
-            return this.$store.state.metrics;
+          // console.log(this.$store.state.metrics);
+          return this.$store.state.metrics;
         }
     },
     methods: {
@@ -349,6 +386,10 @@ export default {
                 this.snack = true;
             });
         },
+        showLogs(event) {
+          event;
+          this.$store.state.logsOverlay = true;
+        }
     }
 }
 </script>
