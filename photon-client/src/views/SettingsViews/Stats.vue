@@ -117,117 +117,6 @@
       </table>
     </v-row>
 
-    <v-row>
-      <v-col
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <v-btn
-          color="secondary"
-          @click="$refs.exportSettings.click()"
-        >
-          <v-icon left>
-            mdi-download
-          </v-icon>
-          Export Settings
-        </v-btn>
-      </v-col>
-      <v-col
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <v-btn
-          color="secondary"
-          @click="$refs.importSettings.click()"
-        >
-          <v-icon left>
-            mdi-upload
-          </v-icon>
-          Import Settings
-        </v-btn>
-      </v-col>
-      <v-col
-        cols="12"
-        md="4"
-      >
-        <v-btn
-          color="secondary"
-          @click="$refs.offlineUpdate.click()"
-        >
-          <v-icon left>
-            mdi-update
-          </v-icon>
-          Offline Update
-        </v-btn>
-      </v-col>
-      <v-col
-        cols="12"
-        lg="6"
-      >
-        <v-btn
-          color="red"
-          @click="restartProgram()"
-        >
-          <v-icon left>
-            mdi-restart
-          </v-icon>
-          Restart PhotonVision
-        </v-btn>
-      </v-col>
-      <v-col
-        cols="12"
-        lg="6"
-      >
-        <v-btn
-          color="red"
-          @click="restartDevice()"
-        >
-          <v-icon left>
-            mdi-restart-alert
-          </v-icon>
-          Restart Device
-        </v-btn>
-      </v-col>
-      <v-col
-        cols="12"
-        lg="4"
-      >
-        <v-btn
-          color="secondary"
-          @click="showLogs()"
-        >
-          <v-icon left>
-            mdi-bug
-          </v-icon>
-          Show log viewer
-        </v-btn>
-      </v-col>
-      <v-col
-        cols="12"
-        lg="4"
-      >
-        <v-btn
-          color="secondary"
-          @click="$refs.exportLogFile.click()"
-        >
-          <v-icon left>
-            mdi-file
-          </v-icon>
-          Export current log
-
-          <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
-          <a
-            ref="exportLogFile"
-            style="color: black; text-decoration: none; display: none"
-            :href="'http://' + this.$address + '/api/settings/photonvision-journalctl.txt'"
-            download="photonvision-journalctl.txt"
-          />
-
-        </v-btn>
-      </v-col>
-    </v-row>
     <v-snackbar
       v-model="snack"
       top
@@ -267,7 +156,7 @@
 
 <script>
 export default {
-    name: 'General',
+    name: 'Stats',
     data() {
         return {
             snack: false,
