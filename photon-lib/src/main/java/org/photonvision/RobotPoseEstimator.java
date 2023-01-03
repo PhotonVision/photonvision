@@ -351,9 +351,7 @@ public class RobotPoseEstimator {
         }
 
         // Need to null check here in case none of the provided targets are fiducial.
-        if (closestHeightTarget == null) return Optional.empty();
-
-        return Optional.of(closestHeightTarget);
+        return Optional.ofNullable(closestHeightTarget);
     }
 
     /**
