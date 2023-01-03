@@ -24,19 +24,23 @@ import org.photonvision.common.logging.Logger;
 
 public class ArucoDetectorParams {
     private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
+    static float decimate;
+    static int iterations;
+    static double accuracy;
 
     private ArucoDetectorParams() {}
 
-    public static DetectorParameters getDetectorParams(
-            DetectorParameters curr,
-            double decimate,
-            int cornerIterations,
-            double minAccuracy) {
-        if (curr == null
-                || !(curr.get_aprilTagQuadDecimate() == decimate
-                        && curr.get_cornerRefinementMaxIterations() == cornerIterations
+    public static void setCurr(float decimate, int iterations, double accuracy) {
+        ArucoDetectorParams.decimate = decimate;
+        ArucoDetectorParams.iterations = iterations;
+        ArucoDetectorParams.accuracy = accuracy;
+    }
 
-                        && minAccuracy == curr.get_cornerRefinementMinAccuracy())) {
+    public static DetectorParameters getDetectorParams(
+            DetectorParameters curr, double decimate, int cornerIterations, double minAccuracy) {
+        if (!(ArucoDetectorParams.decimate == (float) decimate
+                && ArucoDetectorParams.iterations == cornerIterations
+                && ArucoDetectorParams.accuracy == minAccuracy)) {
             DetectorParameters parameters = DetectorParameters.create();
 
             parameters.set_aprilTagQuadDecimate((float) decimate);
@@ -48,6 +52,14 @@ public class ArucoDetectorParams {
                 parameters.set_cornerRefinementMinAccuracy(
                         minAccuracy / 1000.0); // divides by 1000 because the UI multiplies it by 1000
             }
+            logger.info(
+                    "Creating new ArucoDetectorParams with: Decimate: "
+                            + parameters.get_aprilTagQuadDecimate()
+                            + ", Corner Refinement Max Iterations: "
+                            + parameters.get_cornerRefinementMaxIterations()
+                            + ", Corner Min Accuracy: "
+                            + parameters.get_cornerRefinementMinAccuracy());
+
             return parameters;
         }
         return curr;

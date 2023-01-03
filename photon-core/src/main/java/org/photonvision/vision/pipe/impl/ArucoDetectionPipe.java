@@ -17,7 +17,9 @@
 
 package org.photonvision.vision.pipe.impl;
 
+import edu.wpi.first.math.util.Units;
 import java.util.List;
+import org.opencv.aruco.DetectorParameters;
 import org.opencv.core.Mat;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.PhotonArucoDetector;
@@ -29,13 +31,22 @@ public class ArucoDetectionPipe
 
     @Override
     protected List<ArucoDetectionResult> process(Mat in) {
+
         return List.of(
-                detector.detect(in, params.cameraCalibrationCoefficients, params.detectorParams));
+                detector.detect(
+                        in,
+                        (float) Units.inchesToMeters(6),
+                        params.cameraCalibrationCoefficients,
+                        params.detectorParams));
     }
 
     @Override
     public void setParams(ArucoDetectionPipeParams params) {
         super.setParams(params);
         // m_detector.updateParams(params.detectorParams);
+    }
+
+    public DetectorParameters getParameters() {
+        return params == null ? null : params.detectorParams.get_params();
     }
 }
