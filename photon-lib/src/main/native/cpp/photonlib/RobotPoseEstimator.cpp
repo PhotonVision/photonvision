@@ -58,7 +58,7 @@ std::pair<frc::Pose3d, units::second_t> RobotPoseEstimator::Update() {
   if (cameras.empty()) {
     return std::make_pair(lastPose, units::seconds_t(0));
   }
-  
+
   std::pair<frc::Pose3d, units::second_t> pair;
   switch (strategy) {
     case LOWEST_AMBIGUITY:
@@ -83,12 +83,12 @@ std::pair<frc::Pose3d, units::second_t> RobotPoseEstimator::Update() {
       lastPose = pair.first;
       return pair;
     default:
-      FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!","");
+      FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
+                      "");
   }
-  
+
   return std::make_pair(lastPose, units::second_t(0));
 }
-
 
 std::pair<frc::Pose3d, units::second_t>
 RobotPoseEstimator::LowestAmbiguityStrategy() {
@@ -178,7 +178,8 @@ RobotPoseEstimator::ClosestToCameraHeightStrategy() {
 
 std::pair<frc::Pose3d, units::second_t>
 RobotPoseEstimator::ClosestToReferencePoseStrategy() {
-  units::meter_t smallestDifference = units::meter_t(std::numeric_limits<double>::infinity());
+  units::meter_t smallestDifference =
+      units::meter_t(std::numeric_limits<double>::infinity());
   units::second_t stateTimestamp = units::second_t(0);
   frc::Pose3d pose = lastPose;
 
@@ -226,7 +227,8 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
 
 std::pair<frc::Pose3d, units::second_t>
 RobotPoseEstimator::AverageBestTargetsStrategy() {
-  std::vector<std::pair<frc::Pose3d, std::pair<double, units::second_t>>> tempPoses;
+  std::vector<std::pair<frc::Pose3d, std::pair<double, units::second_t>>>
+      tempPoses;
   double totalAmbiguity = 0;
   units::second_t timstampSum = units::second_t(0);
 
@@ -263,7 +265,7 @@ RobotPoseEstimator::AverageBestTargetsStrategy() {
                          p.first->GetLatestResult().GetTimestamp()));
     }
   }
-  
+
   frc::Translation3d transform = frc::Translation3d();
   frc::Rotation3d rotation = frc::Rotation3d();
 
@@ -274,6 +276,7 @@ RobotPoseEstimator::AverageBestTargetsStrategy() {
     rotation = rotation + pair.first.Rotation() * weight;
   }
 
-  return std::make_pair(frc::Pose3d(transform, rotation), timstampSum / cameras.size());
+  return std::make_pair(frc::Pose3d(transform, rotation),
+                        timstampSum / cameras.size());
 }
 }  // namespace photonlib

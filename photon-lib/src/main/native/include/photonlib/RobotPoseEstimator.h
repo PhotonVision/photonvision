@@ -52,32 +52,33 @@ enum PoseStrategy : int {
  */
 class RobotPoseEstimator {
  public:
-  using map_value_type = std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>;
+  using map_value_type =
+      std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>;
   using size_type = std::vector<map_value_type>::size_type;
 
   /**
    * Create a new RobotPoseEstimator.
    *
-   * <p>Example: {@code <code> <p> Map<Integer, Pose3d> map = new HashMap<>(); <p> map.put(1, new
-   * Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is at (1.0,2.0,3.0) </code> }
+   * <p>Example: {@code <code> <p> Map<Integer, Pose3d> map = new HashMap<>();
+   * <p> map.put(1, new Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is
+   * at (1.0,2.0,3.0) </code> }
    *
-   * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with respect to the
-   *     FIRST field.
+   * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with
+   * respect to the FIRST field.
    * @param strategy The strategy it should use to determine the best pose.
-   * @param cameras An ArrayList of Pairs of PhotonCameras and their respective Transform3ds from
-   *     the center of the robot to the cameras.
+   * @param cameras An ArrayList of Pairs of PhotonCameras and their respective
+   * Transform3ds from the center of the robot to the cameras.
    */
   explicit RobotPoseEstimator(
       std::shared_ptr<frc::AprilTagFieldLayout> aprilTags,
       PoseStrategy strategy, std::vector<map_value_type> cameras);
 
-    /**
+  /**
    * Get the AprilTagFieldLayout being used by the PositionEstimator.
    *
    * @return the AprilTagFieldLayout
    */
   frc::AprilTagFieldLayout getFieldLayout() const { return aprilTags; }
-
 
   /**
    * Get the Position Estimation Strategy being used by the Position Estimator.
@@ -86,7 +87,7 @@ class RobotPoseEstimator {
    */
   PoseStrategy GetPoseStrategy() const { return strategy; }
 
-    /**
+  /**
    * Set the Position Estimation Strategy used by the Position Estimator.
    *
    * @param strategy the strategy to set
@@ -100,9 +101,9 @@ class RobotPoseEstimator {
    */
   frc::Pose3d GetReferencePose() const { return referencePose; }
 
-    /**
-   * Update the stored reference pose for use when using the CLOSEST_TO_REFERENCE_POSE
-   * strategy.
+  /**
+   * Update the stored reference pose for use when using the
+   * CLOSEST_TO_REFERENCE_POSE strategy.
    *
    * @param referencePose the referencePose to set
    */
@@ -110,14 +111,13 @@ class RobotPoseEstimator {
     this->referencePose = referencePose;
   }
 
-    /**
-   * Update the stored last pose. Useful for setting the initial estimate when using the
-   * CLOSEST_TO_LAST_POSE strategy.
+  /**
+   * Update the stored last pose. Useful for setting the initial estimate when
+   * using the CLOSEST_TO_LAST_POSE strategy.
    *
    * @param lastPose the lastPose to set
    */
   inline void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
-
 
   std::pair<frc::Pose3d, units::second_t> Update();
 
@@ -129,37 +129,40 @@ class RobotPoseEstimator {
   frc::Pose3d referencePose;
 
   /**
- * Return the estimated position of the robot with the lowest position ambiguity from a List of
- * pipeline results.
- *
- * @return the estimated position of the robot in the FCS and the estimated timestamp of this
- *     estimation.
- */
+   * Return the estimated position of the robot with the lowest position
+   * ambiguity from a List of pipeline results.
+   *
+   * @return the estimated position of the robot in the FCS and the estimated
+   * timestamp of this estimation.
+   */
   std::pair<frc::Pose3d, units::second_t> LowestAmbiguityStrategy();
 
-    /**
-   * Return the estimated position of the robot using the target with the lowest delta height
-   * difference between the estimated and actual height of the camera.
+  /**
+   * Return the estimated position of the robot using the target with the lowest
+   * delta height difference between the estimated and actual height of the
+   * camera.
    *
-   * @return the estimated position of the robot in the FCS and the estimated timestamp of this
-   *     estimation.
+   * @return the estimated position of the robot in the FCS and the estimated
+   * timestamp of this estimation.
    */
   std::pair<frc::Pose3d, units::second_t> ClosestToCameraHeightStrategy();
 
-    /**
-   * Return the estimated position of the robot using the target with the lowest delta in the vector
-   * magnitude between it and the reference pose.
+  /**
+   * Return the estimated position of the robot using the target with the lowest
+   * delta in the vector magnitude between it and the reference pose.
    *
-   * @param referencePose reference pose to check vector magnitude difference against.
-   * @return the estimated position of the robot in the FCS and the estimated timestamp of this
-   *     estimation.
+   * @param referencePose reference pose to check vector magnitude difference
+   * against.
+   * @return the estimated position of the robot in the FCS and the estimated
+   * timestamp of this estimation.
    */
   std::pair<frc::Pose3d, units::second_t> ClosestToReferencePoseStrategy();
 
   /**
    * Return the average of the best target poses using ambiguity as weight.
 
-   * @return the estimated position of the robot in the FCS and the estimated timestamp of this
+   * @return the estimated position of the robot in the FCS and the estimated
+   timestamp of this
    *     estimation.
    */
   std::pair<frc::Pose3d, units::second_t> AverageBestTargetsStrategy();
