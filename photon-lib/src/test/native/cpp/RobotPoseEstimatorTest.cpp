@@ -121,7 +121,7 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
       estimator.Update();
   frc::Pose3d pose = estimatedPose.first;
 
-  EXPECT_NEAR(11, units::unit_cast<double>(estimatedPose.second), .01);
+  EXPECT_NEAR(11, units::unit_cast<double>(estimatedPose.second) / 1000.0, .01);
   EXPECT_NEAR(1, units::unit_cast<double>(pose.X()), .01);
   EXPECT_NEAR(3, units::unit_cast<double>(pose.Y()), .01);
   EXPECT_NEAR(2, units::unit_cast<double>(pose.Z()), .01);
@@ -208,7 +208,7 @@ TEST(RobotPoseEstimatorTest, ClosestToCameraHeightStrategy) {
       estimator.Update();
   frc::Pose3d pose = estimatedPose.first;
 
-  EXPECT_NEAR(4, units::unit_cast<double>(estimatedPose.second), .01);
+  EXPECT_NEAR(12, units::unit_cast<double>(estimatedPose.second) / 1000.0, .01);
   EXPECT_NEAR(4, units::unit_cast<double>(pose.X()), .01);
   EXPECT_NEAR(4, units::unit_cast<double>(pose.Y()), .01);
   EXPECT_NEAR(4, units::unit_cast<double>(pose.Z()), .01);
@@ -297,7 +297,7 @@ TEST(RobotPoseEstimatorTest, ClosestToReferencePoseStrategy) {
       estimator.Update();
   frc::Pose3d pose = estimatedPose.first;
 
-  EXPECT_NEAR(17, units::unit_cast<double>(estimatedPose.second), .01);
+  EXPECT_NEAR(17, units::unit_cast<double>(estimatedPose.second) / 1000.0, .01);
   EXPECT_NEAR(1, units::unit_cast<double>(pose.X()), .01);
   EXPECT_NEAR(1.1, units::unit_cast<double>(pose.Y()), .01);
   EXPECT_NEAR(.9, units::unit_cast<double>(pose.Z()), .01);
@@ -444,7 +444,7 @@ TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
   estimatedPose = estimator.Update();
   pose = estimatedPose.first;
 
-  EXPECT_NEAR(7.0, units::unit_cast<double>(estimatedPose.second), .01);
+  EXPECT_NEAR(7.0, units::unit_cast<double>(estimatedPose.second) / 1000.0, .01);
   EXPECT_NEAR(.9, units::unit_cast<double>(pose.X()), .01);
   EXPECT_NEAR(1.1, units::unit_cast<double>(pose.Y()), .01);
   EXPECT_NEAR(1, units::unit_cast<double>(pose.Z()), .01);
@@ -530,7 +530,7 @@ TEST(RobotPoseEstimatorTest, AverageBestPoses) {
       estimator.Update();
   frc::Pose3d pose = estimatedPose.first;
 
-  EXPECT_NEAR(15.0, units::unit_cast<double>(estimatedPose.second), .01);
+  EXPECT_NEAR(15.0, units::unit_cast<double>(estimatedPose.second) / 1000.0, .01);
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.X()), .01);
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.Y()), .01);
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.Z()), .01);
