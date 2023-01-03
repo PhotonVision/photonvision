@@ -27,7 +27,6 @@ package org.photonvision;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
@@ -139,13 +138,7 @@ public class SimVisionSystem {
      *     PhotonVision parameters.
      */
     public void processFrame(Pose2d robotPoseMeters) {
-        var robotPose3d =
-                new Pose3d(
-                        robotPoseMeters.getX(),
-                        robotPoseMeters.getY(),
-                        0.0,
-                        new Rotation3d(0, 0, robotPoseMeters.getRotation().getRadians()));
-        processFrame(robotPose3d);
+        processFrame(new Pose3d(robotPoseMeters));
     }
 
     /**
