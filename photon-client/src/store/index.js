@@ -15,6 +15,7 @@ export default new Vuex.Store({
     },
     state: {
         backendConnected: false,
+        websocket: null,
         ntConnectionInfo: {
             connected: false,
             address: "",
@@ -169,6 +170,7 @@ export default new Vuex.Store({
     },
     mutations: {
         compactMode: set('compactMode'),
+        websocket: set('websocket'),
         cameraSettings: set('cameraSettings'),
         currentCameraIndex: set('currentCameraIndex'),
         selectedOutputs: set('selectedOutputs'),

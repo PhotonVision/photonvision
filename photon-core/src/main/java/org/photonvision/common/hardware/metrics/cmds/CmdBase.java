@@ -15,22 +15,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.frame.provider;
+package org.photonvision.common.hardware.metrics.cmds;
 
-import org.apache.commons.lang3.NotImplementedException;
-import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.frame.FrameProvider;
+import org.photonvision.common.configuration.HardwareConfig;
 
-public class NetworkFrameProvider implements FrameProvider {
-    private int count = 0;
+public class CmdBase {
+    // CPU
+    public String cpuMemoryCommand = "";
+    public String cpuTemperatureCommand = "";
+    public String cpuUtilizationCommand = "";
+    public String cpuThrottleReasonCmd = "";
+    public String cpuUptimeCommand = "";
+    // GPU
+    public String gpuMemoryCommand = "";
+    public String gpuMemUsageCommand = "";
+    // RAM
+    public String ramUsageCommand = "";
+    // Disk
+    public String diskUsageCommand = "";
 
-    @Override
-    public Frame get() {
-        throw new NotImplementedException("");
-    }
-
-    @Override
-    public String getName() {
-        return "NetworkFrameProvider" + count++;
+    public void initCmds(HardwareConfig config) {
+        return; // default - do nothing
     }
 }

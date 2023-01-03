@@ -168,8 +168,42 @@ public final class PhotonUtils {
         return fieldToTarget.transformBy(targetToCamera);
     }
 
-    public Pose3d getFieldToRobot(
-            Pose3d tagPose, Transform3d robotToCamera, Transform3d cameraToTarget) {
-        return tagPose.plus(cameraToTarget.inverse()).plus(robotToCamera.inverse());
+    /**
+     * Estimates the pose of the robot in the field coordinate system, given the pose of the fiducial
+     * tag, the robot relative to the camera, and the target relative to the camera.
+     *
+     * @param fieldRelativeTagPose Pose3D the field relative pose of the target
+     * @param cameraToRobot Transform3D of the robot relative to the camera. Origin of the robot is
+     *     defined as the center.
+     * @param cameraToTarget Transform3D of the target relative to the camera, returned by
+     *     PhotonVision
+     * @return Transform3d Robot position relative to the field
+     */
+    public static Pose3d estimateFieldToRobotAprilTag(
+            Transform3d cameraToTarget, Pose3d fieldRelativeTagPose, Transform3d cameraToRobot) {
+        return fieldRelativeTagPose.plus(cameraToTarget.inverse()).plus(cameraToRobot);
+    }
+
+    /**
+     * Returns the yaw between your robot and a target.
+     *
+     * @param robotPose Current pose of the robot
+     * @param targetPose Pose of the target on the field
+     * @return double Yaw to the target
+     */
+    public static Rotation2d getYawToPose(Pose2d robotPose, Pose2d targetPose) {
+        Translation2d relativeTrl = targetPose.relativeTo(robotPose).getTranslation();
+        return new Rotation2d(relativeTrl.getX(), relativeTrl.getY());
+    }
+
+    /**
+     * Returns the distance between two poses
+     *
+     * @param robotPose Pose of the robot
+     * @param targetPose Pose of the target
+     * @return
+     */
+    public static double getDistanceToPose(Pose2d robotPose, Pose2d targetPose) {
+        return robotPose.getTranslation().getDistance(targetPose.getTranslation());
     }
 }

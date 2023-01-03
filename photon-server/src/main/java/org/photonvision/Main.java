@@ -29,6 +29,7 @@ import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
+import org.photonvision.common.hardware.PiVersion;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.LogLevel;
@@ -36,6 +37,7 @@ import org.photonvision.common.logging.Logger;
 import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.server.Server;
 import org.photonvision.vision.camera.FileVisionSource;
 import org.photonvision.vision.opencv.CVMat;
@@ -292,11 +294,11 @@ public class Main {
             logger.error("Failed to load native libraries!", e);
         }
 
-        // try {
-        //    PicamJNI.forceLoad();
-        // } catch (IOException e) {
-        //    logger.error("Failed to load Picam JNI!", e);
-        // }
+        try {
+            LibCameraJNI.forceLoad();
+        } catch (IOException e) {
+            logger.error("Failed to load native libraries!", e);
+        }
 
         try {
             if (!handleArgs(args)) {
@@ -321,8 +323,8 @@ public class Main {
                 "Starting PhotonVision version "
                         + PhotonVersion.versionString
                         + " on "
-                        + Platform.currentPlatform.toString()
-                        + (Platform.isRaspberryPi() ? (" (Pi " + Platform.currentPiVersion.name() + ")") : ""));
+                        + Platform.getPlatformName()
+                        + (Platform.isRaspberryPi() ? (" (Pi " + PiVersion.getPiVersion() + ")") : ""));
 
         ConfigManager.getInstance().load(); // init config manager
         ConfigManager.getInstance().requestSave();

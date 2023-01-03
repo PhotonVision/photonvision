@@ -16,6 +16,9 @@ test {
     useJUnitPlatform()
 }
 
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
 wpilibTools.deps.wpilibVersion = wpilibVersion
 println("Buidling for wpilib ${wpilibTools.deps.wpilibVersion}")
 
@@ -29,6 +32,8 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("hal")
     implementation wpilibTools.deps.wpilibJava("ntcore")
     implementation wpilibTools.deps.wpilibJava("wpilibj")
+    implementation wpilibTools.deps.wpilibJava("apriltag")
+
 
     // Junit
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")

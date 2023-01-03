@@ -35,15 +35,19 @@ namespace photonlib {
 constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
 
 PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
-                           const std::string& cameraName)
+                           const std::string_view cameraName)
     : mainTable(instance->GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(rootTable->GetRawTopic("rawBytes").Subscribe("raw", {})),
       driverModeEntry(rootTable->GetBooleanTopic("driverMode").Publish()),
       inputSaveImgEntry(
-          rootTable->GetBooleanTopic("inputSaveImgCmd").Publish()),
+          rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
+      inputSaveImgSubscriber(
+          rootTable->GetIntegerTopic("inputSaveImgCmd").Subscribe(0)),
       outputSaveImgEntry(
-          rootTable->GetBooleanTopic("outputSaveImgCmd").Publish()),
+          rootTable->GetIntegerTopic("outputSaveImgCmd").Publish()),
+      outputSaveImgSubscriber(
+          rootTable->GetIntegerTopic("outputSaveImgCmd").Subscribe(0)),
       pipelineIndexEntry(rootTable->GetIntegerTopic("pipelineIndex").Publish()),
       ledModeEntry(mainTable->GetIntegerTopic("ledMode").Publish()),
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
@@ -52,14 +56,16 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
       pipelineIndexSubscriber(
           rootTable->GetIntegerTopic("pipelineIndex").Subscribe(-1)),
       ledModeSubscriber(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
-      path(rootTable->GetPath()) {}
+      path(rootTable->GetPath()),
+      m_cameraName(cameraName) {}
 
-PhotonCamera::PhotonCamera(const std::string& cameraName)
+PhotonCamera::PhotonCamera(const std::string_view cameraName)
     : PhotonCamera(std::make_shared<nt::NetworkTableInstance>(
                        nt::NetworkTableInstance::GetDefault()),
                    cameraName) {}
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() {
+  if (test) return testResult;
   // Prints warning if not connected
   VerifyVersion();
 
@@ -87,9 +93,13 @@ void PhotonCamera::SetDriverMode(bool driverMode) {
   driverModeEntry.Set(driverMode);
 }
 
-void PhotonCamera::TakeInputSnapshot() { inputSaveImgEntry.Set(true); }
+void PhotonCamera::TakeInputSnapshot() {
+  inputSaveImgEntry.Set(inputSaveImgSubscriber.Get() + 1);
+}
 
-void PhotonCamera::TakeOutputSnapshot() { outputSaveImgEntry.Set(true); }
+void PhotonCamera::TakeOutputSnapshot() {
+  outputSaveImgEntry.Set(outputSaveImgSubscriber.Get() + 1);
+}
 
 bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 
@@ -107,6 +117,10 @@ LEDMode PhotonCamera::GetLEDMode() const {
 
 void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModeEntry.Set(static_cast<double>(static_cast<int>(mode)));
+}
+
+const std::string_view PhotonCamera::GetCameraName() const {
+  return m_cameraName;
 }
 
 void PhotonCamera::VerifyVersion() {

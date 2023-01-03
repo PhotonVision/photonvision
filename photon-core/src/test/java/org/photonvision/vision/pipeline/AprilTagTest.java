@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
+import org.photonvision.vision.apriltag.AprilTagFamily;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.provider.FileFrameProvider;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -46,12 +47,14 @@ public class AprilTagTest {
         pipeline.getSettings().cornerDetectionAccuracyPercentage = 4;
         pipeline.getSettings().cornerDetectionUseConvexHulls = true;
         pipeline.getSettings().targetModel = TargetModel.k200mmAprilTag;
+        pipeline.getSettings().tagFamily = AprilTagFamily.kTag36h11;
 
         var frameProvider =
                 new FileFrameProvider(
                         TestUtils.getApriltagImagePath(TestUtils.ApriltagTestImages.kTag1_640_480, false),
                         TestUtils.WPI2020Image.FOV,
                         TestUtils.get2020LifeCamCoeffs(false));
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
         CVPipelineResult pipelineResult;
         try {
@@ -65,12 +68,10 @@ public class AprilTagTest {
         // Draw on input
         var outputPipe = new OutputStreamPipeline();
         outputPipe.process(
-                pipelineResult.inputFrame,
-                pipelineResult.outputFrame,
-                pipeline.getSettings(),
-                pipelineResult.targets);
+                pipelineResult.inputAndOutputFrame, pipeline.getSettings(), pipelineResult.targets);
 
-        TestUtils.showImage(pipelineResult.inputFrame.image.getMat(), "Pipeline output", 999999);
+        TestUtils.showImage(
+                pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
 
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();

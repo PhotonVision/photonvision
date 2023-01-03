@@ -42,12 +42,10 @@ import org.opencv.aruco.ArucoDetector;
 import org.opencv.aruco.DetectorParameters;
 import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
-import org.photonvision.raspi.PicamJNI;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.ArucoDetectorParams;
-import org.photonvision.vision.camera.CameraQuirk;
 import org.photonvision.vision.frame.Frame;
-import org.photonvision.vision.opencv.CVMat;
+import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
@@ -64,10 +62,12 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
     DetectorParameters arucoDetectionParams = null;
 
     public ArucoPipeline() {
+        super(FrameThresholdType.GREYSCALE);
         settings = new ArucoPipelineSettings();
     }
 
     public ArucoPipeline(ArucoPipelineSettings settings) {
+        super(FrameThresholdType.GREYSCALE);
         this.settings = settings;
     }
 
@@ -79,12 +79,6 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         RotateImagePipe.RotateImageParams rotateImageParams =
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
-
-        if (cameraQuirks.hasQuirk(CameraQuirk.PiCam) && PicamJNI.isSupported()) {
-            // TODO: Picam grayscale
-            PicamJNI.setRotation(settings.inputImageRotationMode.value);
-            PicamJNI.setShouldCopyColor(false); // need the color image to grayscale
-        }
 
         arucoDetectionParams =
                 ArucoDetectorParams.getDetectorParams(
@@ -101,30 +95,16 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
     @Override
     protected CVPipelineResult process(Frame frame, ArucoPipelineSettings settings) {
-        CVPipeResult<Mat> grayscalePipeResult;
         long sumPipeNanosElapsed = 0L;
         Mat rawInputMat;
-        boolean inputSingleChannel = frame.image.getMat().channels() == 1;
-
-        if (inputSingleChannel) {
-            rawInputMat = new Mat(PicamJNI.grabFrame(true));
-            frame.image.getMat().release(); // release the 8bit frame ASAP.
-        } else {
-            rawInputMat = frame.image.getMat();
-        }
-
-        var inputFrame = new Frame(new CVMat(rawInputMat), frameStaticProperties);
-
-        grayscalePipeResult = grayscalePipe.run(rawInputMat);
-        sumPipeNanosElapsed += grayscalePipeResult.nanosElapsed;
-
-        var outputFrame = new Frame(new CVMat(grayscalePipeResult.output), frameStaticProperties);
-
+        rawInputMat = frame.colorImage.getMat();
 
         List<TrackedTarget> targetList;
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
 
         tagDetectionPipeResult = arucoDetectionPipe.run(rawInputMat);
+        ArucoDetectorParams.setCurr(
+                (float) settings.decimate, settings.numIterations, settings.cornerAccuracy);
         targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
             // TODO this should be in a pipe, not in the top level here (Matt)
@@ -148,6 +128,6 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
 
-        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, outputFrame, inputFrame);
+        return new CVPipelineResult(sumPipeNanosElapsed, fps, targetList, frame);
     }
 }

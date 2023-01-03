@@ -17,33 +17,50 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import edu.wpi.first.apriltag.jni.DetectionResult;
+import edu.wpi.first.apriltag.AprilTagDetection;
+import edu.wpi.first.apriltag.AprilTagDetector;
 import java.util.List;
-import org.opencv.core.Mat;
-import org.photonvision.vision.apriltag.AprilTagDetector;
+import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.pipe.CVPipe;
 
 public class AprilTagDetectionPipe
-        extends CVPipe<Mat, List<DetectionResult>, AprilTagDetectionPipeParams> {
+        extends CVPipe<CVMat, List<AprilTagDetection>, AprilTagDetectionPipeParams> {
     private final AprilTagDetector m_detector = new AprilTagDetector();
 
     boolean useNativePoseEst;
 
-    @Override
-    protected List<DetectionResult> process(Mat in) {
-        return List.of(
-                m_detector.detect(
-                        in,
-                        params.cameraCalibrationCoefficients,
-                        useNativePoseEst,
-                        params.numIterations,
-                        params.tagWidthMeters));
+    public AprilTagDetectionPipe() {
+        super();
+
+        m_detector.addFamily("tag16h5");
+        m_detector.addFamily("tag36h11");
     }
 
     @Override
-    public void setParams(AprilTagDetectionPipeParams params) {
-        super.setParams(params);
-        m_detector.updateParams(params.detectorParams);
+    protected List<AprilTagDetection> process(CVMat in) {
+        if (in.getMat().empty()) {
+            return List.of();
+        }
+
+        var ret = m_detector.detect(in.getMat());
+
+        if (ret == null) {
+            return List.of();
+        }
+
+        return List.of(ret);
+    }
+
+    @Override
+    public void setParams(AprilTagDetectionPipeParams newParams) {
+        if (this.params == null || !this.params.equals(newParams)) {
+            m_detector.setConfig(newParams.detectorParams);
+
+            m_detector.clearFamilies();
+            m_detector.addFamily(newParams.family.getNativeName());
+        }
+
+        super.setParams(newParams);
     }
 
     public void setNativePoseEstimationEnabled(boolean enabled) {

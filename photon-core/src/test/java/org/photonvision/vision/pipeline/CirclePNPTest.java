@@ -71,14 +71,14 @@ public class CirclePNPTest {
         assertEquals(3, cameraCalibration.cameraIntrinsics.getAsMatOfDouble().cols());
         assertEquals(3, cameraCalibration.getCameraIntrinsicsMat().rows());
         assertEquals(3, cameraCalibration.getCameraIntrinsicsMat().cols());
-        assertEquals(1, cameraCalibration.cameraExtrinsics.rows);
-        assertEquals(5, cameraCalibration.cameraExtrinsics.cols);
-        assertEquals(1, cameraCalibration.cameraExtrinsics.getAsMat().rows());
-        assertEquals(5, cameraCalibration.cameraExtrinsics.getAsMat().cols());
-        assertEquals(1, cameraCalibration.cameraExtrinsics.getAsMatOfDouble().rows());
-        assertEquals(5, cameraCalibration.cameraExtrinsics.getAsMatOfDouble().cols());
-        assertEquals(1, cameraCalibration.getCameraExtrinsicsMat().rows());
-        assertEquals(5, cameraCalibration.getCameraExtrinsicsMat().cols());
+        assertEquals(1, cameraCalibration.distCoeffs.rows);
+        assertEquals(5, cameraCalibration.distCoeffs.cols);
+        assertEquals(1, cameraCalibration.distCoeffs.getAsMat().rows());
+        assertEquals(5, cameraCalibration.distCoeffs.getAsMat().cols());
+        assertEquals(1, cameraCalibration.distCoeffs.getAsMatOfDouble().rows());
+        assertEquals(5, cameraCalibration.distCoeffs.getAsMatOfDouble().cols());
+        assertEquals(1, cameraCalibration.getDistCoeffsMat().rows());
+        assertEquals(5, cameraCalibration.getDistCoeffsMat().cols());
     }
 
     @Test
@@ -111,11 +111,13 @@ public class CirclePNPTest {
                         TestUtils.getPowercellImagePath(TestUtils.PowercellTestImages.kPowercell_test_6, false),
                         TestUtils.WPI2020Image.FOV,
                         TestUtils.get2020LifeCamCoeffs(true));
+        frameProvider.requestFrameThresholdType(pipeline.getThresholdType());
 
         CVPipelineResult pipelineResult = pipeline.run(frameProvider.get(), QuirkyCamera.DefaultCamera);
         printTestResults(pipelineResult);
 
-        TestUtils.showImage(pipelineResult.outputFrame.image.getMat(), "Pipeline output", 999999);
+        TestUtils.showImage(
+                pipelineResult.inputAndOutputFrame.colorImage.getMat(), "Pipeline output", 999999);
     }
 
     private static void continuouslyRunPipeline(Frame frame, ReflectivePipelineSettings settings) {

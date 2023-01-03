@@ -16,7 +16,8 @@
  */
 package org.photonvision.vision.target;
 
-import edu.wpi.first.apriltag.jni.DetectionResult;
+import edu.wpi.first.apriltag.AprilTagDetection;
+import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashMap;
@@ -66,33 +67,41 @@ public class TrackedTarget implements Releasable {
         calculateValues(params);
     }
 
-    public TrackedTarget(DetectionResult result, TargetCalculationParameters params) {
-        m_targetOffsetPoint = new Point(result.getCenterX(), result.getCenterY());
+    public TrackedTarget(
+            AprilTagDetection tagDetection,
+            AprilTagPoseEstimate tagPose,
+            TargetCalculationParameters params) {
+        m_targetOffsetPoint = new Point(tagDetection.getCenterX(), tagDetection.getCenterY());
         m_robotOffsetPoint = new Point();
 
         m_pitch =
                 TargetCalculations.calculatePitch(
-                        result.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
+                        tagDetection.getCenterY(), params.cameraCenterPoint.y, params.verticalFocalLength);
         m_yaw =
                 TargetCalculations.calculateYaw(
-                        result.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
+                        tagDetection.getCenterX(), params.cameraCenterPoint.x, params.horizontalFocalLength);
         var bestPose = new Transform3d();
         var altPose = new Transform3d();
-        if (result.getError1() <= result.getError2()) {
-            bestPose = result.getPoseResult1();
-            altPose = result.getPoseResult2();
-        } else {
-            bestPose = result.getPoseResult2();
-            altPose = result.getPoseResult1();
+
+        if (tagPose != null) {
+            if (tagPose.error1 <= tagPose.error2) {
+                bestPose = tagPose.pose1;
+                altPose = tagPose.pose2;
+            } else {
+                bestPose = tagPose.pose2;
+                altPose = tagPose.pose1;
+            }
+
+            bestPose = MathUtils.convertApriltagtoOpenCV(bestPose);
+            altPose = MathUtils.convertApriltagtoOpenCV(altPose);
+
+            m_bestCameraToTarget3d = bestPose;
+            m_altCameraToTarget3d = altPose;
+
+            m_poseAmbiguity = tagPose.getAmbiguity();
         }
 
-        bestPose = MathUtils.convertApriltagtoOpenCV(bestPose);
-        altPose = MathUtils.convertApriltagtoOpenCV(altPose);
-
-        m_bestCameraToTarget3d = bestPose;
-        m_altCameraToTarget3d = altPose;
-
-        double[] corners = result.getCorners();
+        double[] corners = tagDetection.getCorners();
         Point[] cornerPoints =
                 new Point[] {
                     new Point(corners[0], corners[1]),
@@ -105,7 +114,7 @@ public class TrackedTarget implements Releasable {
         m_approximateBoundingPolygon = new MatOfPoint2f(cornerPoints);
         m_mainContour = new Contour(contourMat);
         m_area = m_mainContour.getArea() / params.imageArea * 100;
-        m_fiducialId = result.getId();
+        m_fiducialId = tagDetection.getId();
         m_shape = null;
 
         // TODO implement skew? or just yeet
@@ -126,8 +135,6 @@ public class TrackedTarget implements Releasable {
         var rvec = new Mat(3, 1, CvType.CV_64FC1);
         MathUtils.rotationToOpencvRvec(bestPose.getRotation(), rvec);
         setCameraRelativeRvec(rvec);
-
-        m_poseAmbiguity = result.getPoseAmbiguity();
     }
 
     public TrackedTarget(ArucoDetectionResult result, TargetCalculationParameters params) {
@@ -165,7 +172,6 @@ public class TrackedTarget implements Releasable {
 
         // TODO implement skew? or just yeet
 
-
         var tvec = new Mat(3, 1, CvType.CV_64FC1);
         tvec.put(
                 0,
@@ -178,7 +184,11 @@ public class TrackedTarget implements Releasable {
         setCameraRelativeTvec(tvec);
 
         // Opencv expects a 3d vector with norm = angle and direction = axis
-        Rotation3d newRot = new Rotation3d(bestPose.getRotation().getY(),bestPose.getRotation().getZ(), -bestPose.getRotation().getX());
+        Rotation3d newRot =
+                new Rotation3d(
+                        bestPose.getRotation().getY(),
+                        bestPose.getRotation().getZ(),
+                        -bestPose.getRotation().getX());
         var rvec = new Mat(3, 1, CvType.CV_64FC1);
         MathUtils.rotationToOpencvRvec(newRot, rvec);
         setCameraRelativeRvec(rvec);

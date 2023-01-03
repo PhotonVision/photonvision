@@ -27,4 +27,11 @@ public class Calibration3dPipelineSettings extends AdvancedPipelineSettings {
     public double gridSize = Units.inchesToMeters(1.0);
 
     public Size resolution = new Size(640, 480);
+
+    public Calibration3dPipelineSettings() {
+        super();
+        this.cameraAutoExposure = true;
+        this.inputShouldShow = true;
+        this.outputShouldShow = true;
+    }
 }

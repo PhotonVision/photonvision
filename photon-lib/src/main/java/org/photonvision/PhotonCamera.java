@@ -56,7 +56,7 @@ public class PhotonCamera {
     DoubleArrayPublisher targetPoseEntry;
     DoublePublisher targetSkewEntry;
     StringSubscriber versionEntry;
-    BooleanPublisher inputSaveImgEntry, outputSaveImgEntry;
+    IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerEntry pipelineIndexEntry, ledModeEntry;
     IntegerSubscriber heartbeatEntry;
 
@@ -80,6 +80,7 @@ public class PhotonCamera {
     }
 
     private final String path;
+    private final String name;
 
     private static boolean VERSION_CHECK_ENABLED = true;
     private static long VERSION_CHECK_INTERVAL = 5;
@@ -104,13 +105,14 @@ public class PhotonCamera {
      * @param cameraName The name of the camera, as seen in the UI.
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
+        name = cameraName;
         var mainTable = instance.getTable("photonvision");
         this.rootTable = mainTable.getSubTable(cameraName);
         path = rootTable.getPath();
         rawBytesEntry = rootTable.getRawTopic("rawBytes").subscribe("rawBytes", new byte[] {});
         driverModeEntry = rootTable.getBooleanTopic("driverMode").getEntry(false);
-        inputSaveImgEntry = rootTable.getBooleanTopic("inputSaveImgCmd").getEntry(false);
-        outputSaveImgEntry = rootTable.getBooleanTopic("outputSaveImgCmd").getEntry(false);
+        inputSaveImgEntry = rootTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
+        outputSaveImgEntry = rootTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexEntry = rootTable.getIntegerTopic("pipelineIndex").getEntry(0);
         heartbeatEntry = rootTable.getIntegerTopic("heartbeat").subscribe(-1);
         ledModeEntry = mainTable.getIntegerTopic("ledMode").getEntry(-1);
@@ -179,7 +181,7 @@ public class PhotonCamera {
      * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
      */
     public void takeInputSnapshot() {
-        inputSaveImgEntry.set(true);
+        inputSaveImgEntry.set(inputSaveImgEntry.get() + 1);
     }
 
     /**
@@ -189,7 +191,7 @@ public class PhotonCamera {
      * /opt/photonvision/photonvision_config/imgSaves frequently to prevent issues.
      */
     public void takeOutputSnapshot() {
-        outputSaveImgEntry.set(true);
+        outputSaveImgEntry.set(outputSaveImgEntry.get() + 1);
     }
 
     /**
@@ -253,6 +255,16 @@ public class PhotonCamera {
     }
 
     /**
+     * Returns the name of the camera. This will return the same value that was given to the
+     * constructor as cameraName.
+     *
+     * @return The name of the camera.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
      * Returns whether the camera is connected and actively returning new data. Connection status is
      * debounced.
      *
@@ -268,7 +280,7 @@ public class PhotonCamera {
             prevHeartbeatValue = curHeartbeat;
         }
 
-        return ((now - prevHeartbeatChangeTime) > HEARBEAT_DEBOUNCE_SEC);
+        return ((now - prevHeartbeatChangeTime) < HEARBEAT_DEBOUNCE_SEC);
     }
 
     private void verifyVersion() {

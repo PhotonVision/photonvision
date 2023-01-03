@@ -21,7 +21,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.util.Objects;
 import org.photonvision.vision.frame.FrameDivisor;
-import org.photonvision.vision.opencv.ImageFlipMode;
 import org.photonvision.vision.opencv.ImageRotationMode;
 
 @JsonTypeInfo(
@@ -38,19 +37,18 @@ import org.photonvision.vision.opencv.ImageRotationMode;
 public class CVPipelineSettings implements Cloneable {
     public int pipelineIndex = 0;
     public PipelineType pipelineType = PipelineType.DriverMode;
-    public ImageFlipMode inputImageFlipMode = ImageFlipMode.NONE;
     public ImageRotationMode inputImageRotationMode = ImageRotationMode.DEG_0;
     public String pipelineNickname = "New Pipeline";
     public boolean cameraAutoExposure = false;
     // manual exposure only used if cameraAutoExposure if false
-    public double cameraExposure = 100;
+    public double cameraExposure = 20;
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
     // quirk
-    public int cameraGain = 50;
+    public int cameraGain = 75;
     // Currently only used by the zero-copy Pi Camera driver
-    public int cameraRedGain = 18;
-    public int cameraBlueGain = 24;
+    public int cameraRedGain = 11;
+    public int cameraBlueGain = 20;
     public int cameraVideoModeIndex = 0;
     public FrameDivisor streamingFrameDivisor = FrameDivisor.NONE;
     public boolean ledMode = false;
@@ -71,7 +69,6 @@ public class CVPipelineSettings implements Cloneable {
                 && cameraVideoModeIndex == that.cameraVideoModeIndex
                 && ledMode == that.ledMode
                 && pipelineType == that.pipelineType
-                && inputImageFlipMode == that.inputImageFlipMode
                 && inputImageRotationMode == that.inputImageRotationMode
                 && pipelineNickname.equals(that.pipelineNickname)
                 && streamingFrameDivisor == that.streamingFrameDivisor
@@ -84,7 +81,6 @@ public class CVPipelineSettings implements Cloneable {
         return Objects.hash(
                 pipelineIndex,
                 pipelineType,
-                inputImageFlipMode,
                 inputImageRotationMode,
                 pipelineNickname,
                 cameraExposure,
@@ -116,8 +112,6 @@ public class CVPipelineSettings implements Cloneable {
                 + pipelineIndex
                 + ", pipelineType="
                 + pipelineType
-                + ", inputImageFlipMode="
-                + inputImageFlipMode
                 + ", inputImageRotationMode="
                 + inputImageRotationMode
                 + ", pipelineNickname='"

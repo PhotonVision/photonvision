@@ -6,7 +6,10 @@ import java.time.format.DateTimeFormatter
 apply plugin: "jacoco"
 apply plugin: "java"
 
-sourceCompatibility = 11
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
 wpilibTools.deps.wpilibVersion = wpilibVersion
 
@@ -34,7 +37,7 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("wpilibj")
 
     implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
-    jniPlatforms.each { implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-jni:$opencvVersion:$it" }
+    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-jni:$opencvVersion:$jniPlatform"
 
     implementation "org.ejml:ejml-simple:0.41"
 

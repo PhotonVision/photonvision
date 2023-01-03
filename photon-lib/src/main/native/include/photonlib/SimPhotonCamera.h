@@ -57,6 +57,8 @@ class SimPhotonCamera : public PhotonCamera {
                             nt::NetworkTableInstance::GetDefault()),
                         cameraName) {}
 
+  virtual ~SimPhotonCamera() = default;
+
   /**
    * Simulate one processed frame of vision data, putting one result to NT.
    *
