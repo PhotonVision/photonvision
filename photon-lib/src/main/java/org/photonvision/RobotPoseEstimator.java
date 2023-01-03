@@ -252,9 +252,9 @@ public class RobotPoseEstimator {
         for (Pair<PhotonPipelineResult, Transform3d> result : results) {
             for (PhotonTrackedTarget target : result.getFirst().targets) {
                 double targetPoseAmbiguity = target.getPoseAmbiguity();
-
                 // Make sure the target is a Fiducial target.
                 if (targetPoseAmbiguity != -1 && targetPoseAmbiguity < lowestAmbiguityScore) {
+                    lowestAmbiguityScore = targetPoseAmbiguity;
                     lowestAmbiguityTarget = Pair.of(target, result.getSecond());
                     lowestAmbiguityTargetTimestamp = result.getFirst().getTimestampSeconds();
                 }
@@ -437,8 +437,10 @@ public class RobotPoseEstimator {
         // List<Pair<RobotPose, Pair<PoseAmbiguity, StateTimestamp>>>
         List<Pair<Pose3d, Pair<Double, Double>>> targetData = new ArrayList<>();
         double totalAmbiguity = 0;
+        double timestampSum = 0;
 
         for (Pair<PhotonPipelineResult, Transform3d> result : results) {
+            timestampSum += result.getFirst().getTimestampSeconds();
             for (PhotonTrackedTarget target : result.getFirst().targets) {
                 int targetFiducialId = target.getFiducialId();
 
@@ -486,17 +488,14 @@ public class RobotPoseEstimator {
 
         if (targetData.isEmpty()) return Optional.empty();
 
-        double timestampSum = 0;
-
         for (Pair<Pose3d, Pair<Double, Double>> pair : targetData) {
             // Total ambiguity is non-zero confirmed because if it was zero, that pose was returned.
             double weight = (1.0 / pair.getSecond().getFirst()) / totalAmbiguity;
             transform = transform.plus(pair.getFirst().getTranslation().times(weight));
             rotation = rotation.plus(pair.getFirst().getRotation().times(weight));
-            timestampSum += pair.getSecond().getSecond();
         }
 
-        return Optional.of(Pair.of(new Pose3d(transform, rotation), timestampSum / targetData.size()));
+        return Optional.of(Pair.of(new Pose3d(transform, rotation), timestampSum / results.size()));
     }
 
     /**
