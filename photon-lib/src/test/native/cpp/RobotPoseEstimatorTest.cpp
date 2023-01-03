@@ -88,7 +88,7 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
 
   cameraOne->test = true;
   cameraOne->testResult = {2_s, targets};
-  cameraOne->testResult.SetTimestamp(units::seconds_t(11));
+  cameraOne->testResult.SetTimestamp(units::second_t(11));
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsTwo{
       photonlib::PhotonTrackedTarget{
@@ -107,7 +107,7 @@ TEST(RobotPoseEstimatorTest, LowestAmbiguityStrategy) {
 
   cameraTwo->test = true;
   cameraTwo->testResult = {4_s, targetsTwo};
-  cameraTwo->testResult.SetTimestamp(units::seconds_t(units::seconds_t(16)));
+  cameraTwo->testResult.SetTimestamp(units::second_t(units::second_t(16)));
 
   cameras.push_back(std::make_pair(
       cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
@@ -175,7 +175,7 @@ TEST(RobotPoseEstimatorTest, ClosestToCameraHeightStrategy) {
 
   cameraOne->test = true;
   cameraOne->testResult = {2_s, targets};
-  cameraOne->testResult.SetTimestamp(units::seconds_t(4));
+  cameraOne->testResult.SetTimestamp(units::second_t(4));
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsTwo{
       photonlib::PhotonTrackedTarget{
@@ -194,7 +194,7 @@ TEST(RobotPoseEstimatorTest, ClosestToCameraHeightStrategy) {
 
   cameraTwo->test = true;
   cameraTwo->testResult = {4_s, targetsTwo};
-  cameraOne->testResult.SetTimestamp(units::seconds_t(12));
+  cameraOne->testResult.SetTimestamp(units::second_t(12));
 
   cameras.push_back(std::make_pair(
       cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 4_m),
@@ -262,7 +262,7 @@ TEST(RobotPoseEstimatorTest, ClosestToReferencePoseStrategy) {
 
   cameraOne->test = true;
   cameraOne->testResult = {2_s, targets};
-  cameraOne->testResult.SetTimestamp(units::seconds_t(4));
+  cameraOne->testResult.SetTimestamp(units::second_t(4));
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsTwo{
       photonlib::PhotonTrackedTarget{
@@ -281,7 +281,7 @@ TEST(RobotPoseEstimatorTest, ClosestToReferencePoseStrategy) {
 
   cameraTwo->test = true;
   cameraTwo->testResult = {4_s, targetsTwo};
-  cameraTwo->testResult.SetTimestamp(units::seconds_t(17));
+  cameraTwo->testResult.SetTimestamp(units::second_t(17));
 
   cameras.push_back(std::make_pair(
       cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
@@ -411,7 +411,7 @@ TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
            std::pair{7, 8}}}};
 
   cameraOne->testResult = {2_s, targetsThree};
-  cameraOne->testResult.SetTimestamp(units::seconds_t(7));
+  cameraOne->testResult.SetTimestamp(units::second_t(7));
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsFour{
       photonlib::PhotonTrackedTarget{
@@ -429,7 +429,7 @@ TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
            std::pair{7, 8}}}};
 
   cameraTwo->testResult = {4_s, targetsFour};
-  cameraTwo->testResult.SetTimestamp(units::seconds_t(13));
+  cameraTwo->testResult.SetTimestamp(units::second_t(13));
 
   std::vector<
       std::pair<std::shared_ptr<photonlib::PhotonCamera>, frc::Transform3d>>
@@ -497,7 +497,7 @@ TEST(RobotPoseEstimatorTest, AverageBestPoses) {
 
   cameraOne->test = true;
   cameraOne->testResult = {2_s, targets};
-  cameraOne->testResult.SetTimestamp(units::seconds_t(10));
+  cameraOne->testResult.SetTimestamp(units::second_t(10));
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 1> targetsTwo{
       photonlib::PhotonTrackedTarget{
@@ -516,7 +516,7 @@ TEST(RobotPoseEstimatorTest, AverageBestPoses) {
 
   cameraTwo->test = true;
   cameraTwo->testResult = {4_s, targetsTwo};
-  cameraTwo->testResult.SetTimestamp(units::seconds_t(20));
+  cameraTwo->testResult.SetTimestamp(units::second_t(20));
 
   cameras.push_back(std::make_pair(
       cameraOne, frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
