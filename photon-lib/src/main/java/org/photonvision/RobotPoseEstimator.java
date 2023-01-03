@@ -225,7 +225,7 @@ public class RobotPoseEstimator {
                 estimatedPose = closestToReferencePoseStrategy(cameraResults, referencePose);
                 break;
             case AVERAGE_BEST_TARGETS:
-                estimatedPose = Optional.empty();
+                estimatedPose = averageBestTargetsStrategy(cameraResults);
                 break;
             default:
                 DriverStation.reportError("[RobotPoseEstimator] Unknown Position Estimation Strategy!", false);
@@ -476,7 +476,7 @@ public class RobotPoseEstimator {
         Translation3d transform = new Translation3d();
         Rotation3d rotation = new Rotation3d();
 
-        if(targetData.size() == 0)
+        if(targetData.isEmpty())
             return Optional.empty();
 
         double timestampSum = 0;
