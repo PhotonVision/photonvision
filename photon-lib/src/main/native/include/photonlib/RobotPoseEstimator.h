@@ -83,6 +83,17 @@ class RobotPoseEstimator {
   }
 
   /**
+   * Set the cameras to be used by the PoseEstimator.
+   * 
+   * @param cameras cameras to set.
+  */
+  inline void SetCameras(
+      const std::vector<std::pair<std::shared_ptr<PhotonCamera>,
+                                  frc::Transform3d>>& cameras) {
+    this->cameras = cameras;
+  }
+
+  /**
    * Get the Position Estimation Strategy being used by the Position Estimator.
    *
    * @return the strategy
