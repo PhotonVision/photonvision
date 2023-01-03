@@ -269,17 +269,12 @@ public class RobotPoseEstimator {
         if(lowestAmbiguityTarget == null)
             return Optional.empty();
 
-        Optional<Pose3d> targetPosition = fieldTags.getTagPose(lowestAmbiguityTarget.getFirst().getFiducialId());
+        int targetFiducialId = lowestAmbiguityTarget.getFirst().getFiducialId();
+
+        Optional<Pose3d> targetPosition = fieldTags.getTagPose(targetFiducialId);
 
         if(targetPosition.isEmpty()) {
-            int targetFiducialId = lowestAmbiguityTarget.getFirst().getFiducialId();
-            if (!reportedErrors.contains(targetFiducialId)) {
-                DriverStation.reportError(
-                        "[RobotPoseEstimator] Tried to get pose of unknown April Tag: " + targetFiducialId,
-                        false);
-                reportedErrors.add(targetFiducialId);
-            }
-
+            reportFiducialPoseError(targetFiducialId);
             return Optional.empty();
         }
 
@@ -306,7 +301,7 @@ public class RobotPoseEstimator {
 
         for(Pair<PhotonPipelineResult, Transform3d> result : results) {
             for(PhotonTrackedTarget target : result.getFirst().targets) {
-                double targetFiducialId = target.getFiducialId();
+                int targetFiducialId = target.getFiducialId();
 
                 // Don't report errors for non-fiducial targets. This could also be resolved by adding -1 to the initial HashSet.
                 if(targetFiducialId == -1)
@@ -315,13 +310,8 @@ public class RobotPoseEstimator {
                 Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
 
                 if(targetPosition.isEmpty()) {
-                    if (!reportedErrors.contains(target.getFiducialId())) {
-                        DriverStation.reportWarning(
-                                "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
-                                        + target.getFiducialId(),
-                                false);
-                        reportedErrors.add(target.getFiducialId());
-                    }
+                    reportFiducialPoseError(target.getFiducialId());
+                    continue;
                 }
 
                 double alternateTransformDelta = Math.abs(
@@ -385,7 +375,7 @@ public class RobotPoseEstimator {
 
         for(Pair<PhotonPipelineResult, Transform3d> result : results) {
             for(PhotonTrackedTarget target : result.getFirst().targets) {
-                double targetFiducialId = target.getFiducialId();
+                int targetFiducialId = target.getFiducialId();
 
                 // Don't report errors for non-fiducial targets. This could also be resolved by adding -1 to the initial HashSet.
                 if(targetFiducialId == -1)
@@ -394,13 +384,8 @@ public class RobotPoseEstimator {
                 Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
 
                 if(targetPosition.isEmpty()) {
-                    if (!reportedErrors.contains(target.getFiducialId())) {
-                        DriverStation.reportWarning(
-                                "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
-                                        + target.getFiducialId(),
-                                false);
-                        reportedErrors.add(target.getFiducialId());
-                    }
+                    reportFiducialPoseError(targetFiducialId);
+                    continue;
                 }
 
                 Pose3d altTransformPosition = targetPosition.get()
@@ -445,7 +430,7 @@ public class RobotPoseEstimator {
 
         for(Pair<PhotonPipelineResult, Transform3d> result : results) {
             for(PhotonTrackedTarget target : result.getFirst().targets) {
-                double targetFiducialId = target.getFiducialId();
+                int targetFiducialId = target.getFiducialId();
 
                 // Don't report errors for non-fiducial targets. This could also be resolved by adding -1 to the initial HashSet.
                 if(targetFiducialId == -1)
@@ -454,13 +439,8 @@ public class RobotPoseEstimator {
                 Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
 
                 if(targetPosition.isEmpty()) {
-                    if (!reportedErrors.contains(target.getFiducialId())) {
-                        DriverStation.reportWarning(
-                                "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
-                                        + target.getFiducialId(),
-                                false);
-                        reportedErrors.add(target.getFiducialId());
-                    }
+                    reportFiducialPoseError(targetFiducialId);
+                    continue;
                 }
 
                 double targetPoseAmbiguity = target.getPoseAmbiguity();
