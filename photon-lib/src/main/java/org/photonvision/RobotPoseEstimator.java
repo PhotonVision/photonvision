@@ -42,33 +42,43 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class RobotPoseEstimator {
     /**
-     *
-     *
-     * <ul>
-     *   <li><strong>LOWEST_AMBIGUITY</strong>: Choose the Pose with the lowest ambiguity
-     *   <li><strong>CLOSEST_TO_CAMERA_HEIGHT</strong>: Choose the Pose which is closest to the camera
-     *       height
-     *   <li><strong>CLOSEST_TO_REFERENCE_POSE</strong>: Choose the Pose which is closest to the pose
-     *       from setReferencePose()
-     *   <li><strong>CLOSEST_TO_LAST_POSE</strong>: Choose the Pose which is closest to the last pose
-     *       calculated
-     * </ul>
+     * Position estimation strategies that can be used by the {@link RobotPoseEstimator} class.
      */
     public enum PoseStrategy {
+        /**
+         * Choose the Pose with the lowest ambiguity.
+         */
         LOWEST_AMBIGUITY,
+
+        /**
+         * Choose the Pose which is closest to the camera height.
+         */
         CLOSEST_TO_CAMERA_HEIGHT,
+
+        /**
+         * Choose the Pose which is closest to a set Reference position.
+         */
         CLOSEST_TO_REFERENCE_POSE,
+
+        /**
+         * Choose the Pose which is closest to the last pose
+         *  calculated
+         */
         CLOSEST_TO_LAST_POSE,
+
+        /**
+         * Choose the Pose with the lowest ambiguity.
+         */
         AVERAGE_BEST_TARGETS
     }
 
-    private AprilTagFieldLayout aprilTags;
+    private AprilTagFieldLayout fieldTags;
     private PoseStrategy strategy;
-    private List<Pair<PhotonCamera, Transform3d>> cameras;
-    private Pose3d lastPose;
+    private final List<Pair<PhotonCamera, Transform3d>> cameras;
 
+    private Pose3d lastPose;
     private Pose3d referencePose;
-    private Set<Integer> reportedErrors;
+    private final Set<Integer> reportedErrors = new HashSet<>();
 
     /**
      * Create a new RobotPoseEstimator.
@@ -76,265 +86,430 @@ public class RobotPoseEstimator {
      * <p>Example: {@code <code> <p> Map<Integer, Pose3d> map = new HashMap<>(); <p> map.put(1, new
      * Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is at (1.0,2.0,3.0) </code> }
      *
-     * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with respect to the
+     * @param fieldTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with respect to the
      *     FIRST field.
      * @param strategy The strategy it should use to determine the best pose.
      * @param cameras An ArrayList of Pairs of PhotonCameras and their respective Transform3ds from
      *     the center of the robot to the cameras.
      */
     public RobotPoseEstimator(
-            AprilTagFieldLayout aprilTags,
+            AprilTagFieldLayout fieldTags,
             PoseStrategy strategy,
             List<Pair<PhotonCamera, Transform3d>> cameras) {
-        this.aprilTags = aprilTags;
+        this.fieldTags = fieldTags;
         this.strategy = strategy;
         this.cameras = cameras;
-        lastPose = new Pose3d();
-        reportedErrors = new HashSet<>();
     }
 
     /**
-     * Update the estimated pose using the selected strategy.
+     * Get the AprilTagFieldLayout being used by the PositionEstimator.
      *
-     * @return The updated estimated pose and the latency in milliseconds Estimated pose may be null
-     *     if no targets were seen
+     * @return the AprilTagFieldLayout
+     */
+    public AprilTagFieldLayout getFieldTags() {
+        return fieldTags;
+    }
+
+    /**
+     * Set the AprilTagFieldLayout being used by the PositionEstimator.
+     *
+     * @param fieldTags the AprilTagFieldLayout
+     */
+    public void setFieldTags(AprilTagFieldLayout fieldTags) {
+        this.fieldTags = fieldTags;
+    }
+
+    /**
+     * Get the Position Estimation Strategy being used by the Position Estimator.
+     *
+     * @return the strategy
+     */
+    public PoseStrategy getStrategy() {
+        return strategy;
+    }
+
+    /**
+     * Set the Position Estimation Strategy used by the Position Estimator.
+     *
+     * @param strategy the strategy to set
+     */
+    public void setStrategy(PoseStrategy strategy) {
+        this.strategy = strategy;
+    }
+
+    /**
+     * Return the reference position that is being used by the estimator.
+     *
+     * @return the referencePose
+     */
+    public Pose3d getReferencePose() {
+        return referencePose;
+    }
+
+    /**
+     * Update the stored reference pose for use when using the <b>CLOSEST_TO_REFERENCE_POSE</b> strategy.
+     *
+     * @param referencePose the referencePose to set
+     */
+    public void setReferencePose(Pose3d referencePose) {
+        this.referencePose = referencePose;
+    }
+
+    /**
+     * Update the stored reference pose for use when using the <b>CLOSEST_TO_REFERENCE_POSE</b> strategy.
+     *
+     * @param referencePose the referencePose to set
+     */
+    public void setReferencePose(Pose2d referencePose) {
+        this.referencePose = new Pose3d(referencePose);
+    }
+
+    /**
+     * Update the stored last pose. Useful for setting the initial estimate when using the <b>CLOSEST_TO_LAST_POSE</b> strategy.
+     *
+     * @param lastPose the lastPose to set
+     */
+    public void setLastPose(Pose3d lastPose) {
+        this.lastPose = lastPose;
+    }
+
+    /**
+     * Update the stored last pose. Useful for setting the initial estimate when using the <b>CLOSEST_TO_LAST_POSE</b> strategy.
+     *
+     * @param lastPose the lastPose to set
+     */
+    public void setLastPose(Pose2d lastPose) {
+        this.lastPose = new Pose3d(lastPose);
+    }
+
+    /**
+     * Poll data from the configured cameras and update the estimated position of the robot. Returns empty if there are no cameras set or
+     * no targets were found from the cameras.
+     *
+     * @return a Pair of the estimated Position of the robot in the form of a Pose3d object and the timestamp of that
+     * position from the camera in seconds that is comparable to the FPGA hardware clock (in seconds).
      */
     public Optional<Pair<Pose3d, Double>> update() {
-        if (cameras.isEmpty()) {
+        if(cameras.isEmpty()) {
             DriverStation.reportError("[RobotPoseEstimator] Missing any camera!", false);
             return Optional.empty();
         }
 
-        Pair<Pose3d, Double> pair = getResultFromActiveStrategy();
+        ArrayList<Pair<PhotonPipelineResult, Transform3d>> cameraResults = new ArrayList<>(cameras.size());
+        boolean hasTargets = false;
 
-        if (pair != null) {
-            lastPose = pair.getFirst();
+        for(Pair<PhotonCamera, Transform3d> p : cameras) {
+            PhotonPipelineResult pipelineResults = p.getFirst().getLatestResult();
+
+            if(pipelineResults.hasTargets())
+                hasTargets = true;
+
+            cameraResults.add(Pair.of(pipelineResults, p.getSecond()));
         }
 
-        return Optional.ofNullable(pair);
-    }
+        if(!hasTargets) {
+            return Optional.empty();
+        }
 
-    private Pair<Pose3d, Double> getResultFromActiveStrategy() {
+        Optional<Pair<Pose3d, Double>> estimatedPose;
         switch (strategy) {
             case LOWEST_AMBIGUITY:
-                return lowestAmbiguityStrategy();
+                estimatedPose = lowestAmbiguityStrategy(cameraResults);
+                break;
             case CLOSEST_TO_CAMERA_HEIGHT:
-                return closestToCameraHeightStrategy();
-            case CLOSEST_TO_REFERENCE_POSE:
-                return closestToReferencePoseStrategy();
+                estimatedPose = closestToCameraHeightStrategy(cameraResults);
+                break;
             case CLOSEST_TO_LAST_POSE:
-                return closestToLastPoseStrategy();
+                setReferencePose(lastPose);
+            case CLOSEST_TO_REFERENCE_POSE:
+                estimatedPose = closestToReferencePoseStrategy(cameraResults, referencePose);
+                break;
             case AVERAGE_BEST_TARGETS:
-                return averageBestTargetsStrategy();
+                estimatedPose = Optional.empty();
+                break;
             default:
-                DriverStation.reportError("[RobotPoseEstimator] Invalid pose strategy!", false);
-                return null;
+                DriverStation.reportError("[RobotPoseEstimator] Unknown Position Estimation Strategy!", false);
+                return Optional.empty();
         }
+
+        if(estimatedPose.isEmpty()) {
+            lastPose = null;
+            return Optional.empty();
+        }
+
+        return estimatedPose;
     }
 
-    private Pair<Pose3d, Double> lowestAmbiguityStrategy() {
-        int lowestAI = -1;
-        int lowestAJ = -1;
+    /**
+     * Return the estimated position of the robot with the lowest position ambiguity from a List of pipeline results.
+     *
+     * @param results non-empty list of pipeline results and their camera's position transformation in the RCS
+     *                from the robot origin to the camera.
+     * @return the estimated position of the robot in the FCS and the estimated timestamp of this estimation.
+     */
+    private Optional<Pair<Pose3d, Double>> lowestAmbiguityStrategy(List<Pair<PhotonPipelineResult, Transform3d>> results) {
+        Pair<PhotonTrackedTarget, Transform3d> lowestAmbiguityTarget = null;
+        double lowestAmbiguityTargetTimestamp = 0;
+
         double lowestAmbiguityScore = 10;
-        ArrayList<PhotonPipelineResult> results = new ArrayList<PhotonPipelineResult>(cameras.size());
 
-        // Sample result from each camera
-        for (int i = 0; i < cameras.size(); i++) {
-            Pair<PhotonCamera, Transform3d> p = cameras.get(i);
-            results.add(p.getFirst().getLatestResult());
-        }
+        for(Pair<PhotonPipelineResult, Transform3d> result : results) {
+            for(PhotonTrackedTarget target : result.getFirst().targets) {
+                double targetPoseAmbiguity = target.getPoseAmbiguity();
 
-        // Loop over each ambiguity of all the cameras
-        for (int i = 0; i < cameras.size(); i++) {
-            List<PhotonTrackedTarget> targets = results.get(i).targets;
-            for (int j = 0; j < targets.size(); j++) {
-                if (targets.get(j).getPoseAmbiguity() < lowestAmbiguityScore) {
-                    lowestAI = i;
-                    lowestAJ = j;
-                    lowestAmbiguityScore = targets.get(j).getPoseAmbiguity();
+                // Make sure the target is a Fiducial target.
+                if(targetPoseAmbiguity != -1 && targetPoseAmbiguity < lowestAmbiguityScore) {
+                    lowestAmbiguityTarget = Pair.of(target, result.getSecond());
+                    lowestAmbiguityTargetTimestamp = result.getFirst().getTimestampSeconds();
                 }
             }
         }
 
-        // No targets, return null
-        if (lowestAI == -1 || lowestAJ == -1) {
-            return null;
+        // Although there are confirmed to be targets, none of them may be fiducial targets.
+        if(lowestAmbiguityTarget == null)
+            return Optional.empty();
+
+        Optional<Pose3d> targetPosition = fieldTags.getTagPose(lowestAmbiguityTarget.getFirst().getFiducialId());
+
+        if(targetPosition.isEmpty()) {
+            int targetFiducialId = lowestAmbiguityTarget.getFirst().getFiducialId();
+            if (!reportedErrors.contains(targetFiducialId)) {
+                DriverStation.reportError(
+                        "[RobotPoseEstimator] Tried to get pose of unknown April Tag: " + targetFiducialId,
+                        false);
+                reportedErrors.add(targetFiducialId);
+            }
+
+            return Optional.empty();
         }
 
-        // Pick the lowest and do the heavy calculations
-        PhotonTrackedTarget bestTarget = results.get(lowestAI).targets.get(lowestAJ);
-
-        Optional<Pose3d> fiducialPose = aprilTags.getTagPose(bestTarget.getFiducialId());
-        if (fiducialPose.isEmpty()) {
-            reportFiducialPoseError(bestTarget.getFiducialId());
-            return null;
-        }
-
-        return Pair.of(
-                fiducialPose
-                        .get()
-                        .transformBy(bestTarget.getBestCameraToTarget().inverse())
-                        .transformBy(cameras.get(lowestAI).getSecond().inverse()),
-                results.get(lowestAI).getLatencyMillis());
+        return Optional.of(
+                Pair.of(
+                        targetPosition.get()
+                                .transformBy(lowestAmbiguityTarget.getFirst().getBestCameraToTarget().inverse())
+                                .transformBy(lowestAmbiguityTarget.getSecond().inverse()),
+                        lowestAmbiguityTargetTimestamp
+                )
+        );
     }
 
-    private Pair<Pose3d, Double> closestToCameraHeightStrategy() {
-        double smallestHeightDifference = Double.MAX_VALUE;
-        double latency = 0;
-        Pose3d pose = null;
+    /**
+     * Return the estimated position of the robot using the target with the lowest delta height difference between the estimated and actual height of the camera.
+     *
+     * @param results non-empty list of pipeline results and their camera's position transformation in the RCS
+     *                from the robot origin to the camera.
+     * @return the estimated position of the robot in the FCS and the estimated timestamp of this estimation.
+     */
+    private Optional<Pair<Pose3d, Double>> closestToCameraHeightStrategy(List<Pair<PhotonPipelineResult, Transform3d>> results) {
+        double smallestHeightDifference = 10e9;
+        Pair<Pose3d, Double> closestHeightTarget = null;
 
-        for (int i = 0; i < cameras.size(); i++) {
-            Pair<PhotonCamera, Transform3d> p = cameras.get(i);
-            var result = p.getFirst().getLatestResult();
-            List<PhotonTrackedTarget> targets = result.targets;
-            for (int j = 0; j < targets.size(); j++) {
-                PhotonTrackedTarget target = targets.get(j);
-                Optional<Pose3d> fiducialPose = aprilTags.getTagPose(target.getFiducialId());
-                if (fiducialPose.isEmpty()) {
-                    reportFiducialPoseError(target.getFiducialId());
+        for(Pair<PhotonPipelineResult, Transform3d> result : results) {
+            for(PhotonTrackedTarget target : result.getFirst().targets) {
+                double targetFiducialId = target.getFiducialId();
+
+                // Don't report errors for non-fiducial targets. This could also be resolved by adding -1 to the initial HashSet.
+                if(targetFiducialId == -1)
                     continue;
+
+                Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
+
+                if(targetPosition.isEmpty()) {
+                    if (!reportedErrors.contains(target.getFiducialId())) {
+                        DriverStation.reportWarning(
+                                "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                                        + target.getFiducialId(),
+                                false);
+                        reportedErrors.add(target.getFiducialId());
+                    }
                 }
-                Pose3d targetPose = fiducialPose.get();
-                double alternativeDifference =
-                        Math.abs(
-                                p.getSecond().getZ()
-                                        - targetPose.transformBy(target.getAlternateCameraToTarget().inverse()).getZ());
-                double bestDifference =
-                        Math.abs(
-                                p.getSecond().getZ()
-                                        - targetPose.transformBy(target.getBestCameraToTarget().inverse()).getZ());
-                if (alternativeDifference < smallestHeightDifference) {
-                    smallestHeightDifference = alternativeDifference;
-                    pose =
-                            targetPose
+
+                double alternateTransformDelta = Math.abs(
+                        result.getSecond().getZ()
+                                - targetPosition.get().transformBy(target.getAlternateCameraToTarget().inverse()).getZ()
+                );
+                double bestTransformDelta = Math.abs(
+                        result.getSecond().getZ()
+                                - targetPosition.get().transformBy(target.getBestCameraToTarget().inverse()).getZ()
+                );
+
+                if(alternateTransformDelta < smallestHeightDifference) {
+                    smallestHeightDifference = alternateTransformDelta;
+                    closestHeightTarget = Pair.of(
+                            targetPosition.get()
                                     .transformBy(target.getAlternateCameraToTarget().inverse())
-                                    .transformBy(p.getSecond().inverse());
-                    latency = result.getLatencyMillis();
+                                    .transformBy(result.getSecond().inverse()),
+                            result.getFirst().getTimestampSeconds()
+                    );
                 }
-                if (bestDifference < smallestHeightDifference) {
-                    smallestHeightDifference = bestDifference;
-                    pose =
-                            targetPose
+
+                if(bestTransformDelta < smallestHeightDifference) {
+                    smallestHeightDifference = bestTransformDelta;
+                    closestHeightTarget = Pair.of(
+                            targetPosition.get()
                                     .transformBy(target.getBestCameraToTarget().inverse())
-                                    .transformBy(p.getSecond().inverse());
-                    latency = result.getLatencyMillis();
+                                    .transformBy(result.getSecond().inverse()),
+                            result.getFirst().getTimestampSeconds()
+                    );
                 }
+
+
             }
         }
 
-        return Pair.of(pose, latency);
+        // Need to null check here in case none of the provided targets are fiducial.
+        if(closestHeightTarget == null)
+            return Optional.empty();
+
+        return Optional.of(closestHeightTarget);
     }
 
-    private Pair<Pose3d, Double> closestToReferencePoseStrategy() {
+    /**
+     * Return the estimated position of the robot using the target with the lowest delta in the vector magnitude between it and the reference pose.
+     *
+     * @param results non-empty list of pipeline results and their camera's position transformation in the RCS
+     *                from the robot origin to the camera.
+     * @param referencePose reference pose to check vector magnitude difference against.
+     * @return the estimated position of the robot in the FCS and the estimated timestamp of this estimation.
+     */
+    private Optional<Pair<Pose3d, Double>> closestToReferencePoseStrategy(List<Pair<PhotonPipelineResult, Transform3d>> results, Pose3d referencePose) {
         if (referencePose == null) {
             DriverStation.reportError(
                     "[RobotPoseEstimator] Tried to use reference pose strategy without setting the reference!",
                     false);
-            return null;
+            return Optional.empty();
         }
-        double smallestDifference = 10e9;
-        double latency = 0;
-        Pose3d pose = null;
-        for (int i = 0; i < cameras.size(); i++) {
-            Pair<PhotonCamera, Transform3d> p = cameras.get(i);
-            var result = p.getFirst().getLatestResult();
-            List<PhotonTrackedTarget> targets = result.targets;
-            for (int j = 0; j < targets.size(); j++) {
-                PhotonTrackedTarget target = targets.get(j);
-                Optional<Pose3d> fiducialPose = aprilTags.getTagPose(target.getFiducialId());
-                if (fiducialPose.isEmpty()) {
-                    reportFiducialPoseError(target.getFiducialId());
+
+        double smallestPoseDelta = 10e9;
+        Pair<Pose3d, Double> lowestDeltaPose = null;
+
+        for(Pair<PhotonPipelineResult, Transform3d> result : results) {
+            for(PhotonTrackedTarget target : result.getFirst().targets) {
+                double targetFiducialId = target.getFiducialId();
+
+                // Don't report errors for non-fiducial targets. This could also be resolved by adding -1 to the initial HashSet.
+                if(targetFiducialId == -1)
                     continue;
+
+                Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
+
+                if(targetPosition.isEmpty()) {
+                    if (!reportedErrors.contains(target.getFiducialId())) {
+                        DriverStation.reportWarning(
+                                "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                                        + target.getFiducialId(),
+                                false);
+                        reportedErrors.add(target.getFiducialId());
+                    }
                 }
-                Pose3d targetPose = fiducialPose.get();
-                Pose3d botBestPose =
-                        targetPose
-                                .transformBy(target.getAlternateCameraToTarget().inverse())
-                                .transformBy(p.getSecond().inverse());
-                Pose3d botAltPose =
-                        targetPose
-                                .transformBy(target.getBestCameraToTarget().inverse())
-                                .transformBy(p.getSecond().inverse());
-                double alternativeDifference = Math.abs(calculateDifference(referencePose, botAltPose));
-                double bestDifference = Math.abs(calculateDifference(referencePose, botBestPose));
-                if (alternativeDifference < smallestDifference) {
-                    smallestDifference = alternativeDifference;
-                    pose = botAltPose;
-                    latency = result.getLatencyMillis();
+
+                Pose3d altTransformPosition = targetPosition.get()
+                        .transformBy(target.getAlternateCameraToTarget().inverse())
+                        .transformBy(result.getSecond().inverse());
+                Pose3d bestTransformPosition = targetPosition.get()
+                        .transformBy(target.getBestCameraToTarget().inverse())
+                        .transformBy(result.getSecond().inverse());
+
+                double altDifference = Math.abs(calculateDifference(referencePose, altTransformPosition));
+                double bestDifference = Math.abs(calculateDifference(referencePose, bestTransformPosition));
+
+                if(altDifference < smallestPoseDelta) {
+                    smallestPoseDelta = altDifference;
+                    lowestDeltaPose = Pair.of(altTransformPosition, result.getFirst().getTimestampSeconds());
                 }
-                if (bestDifference < smallestDifference) {
-                    smallestDifference = bestDifference;
-                    pose = botBestPose;
-                    latency = result.getLatencyMillis();
+                if(bestDifference < smallestPoseDelta) {
+                    smallestPoseDelta = bestDifference;
+                    lowestDeltaPose = Pair.of(bestTransformPosition, result.getFirst().getTimestampSeconds());
                 }
             }
         }
-        return Pair.of(pose, latency);
+
+        // Need to null check here in case none of the provided targets are fiducial.
+        if(lowestDeltaPose == null)
+            return Optional.empty();
+
+        return Optional.of(lowestDeltaPose);
     }
 
-    private Pair<Pose3d, Double> closestToLastPoseStrategy() {
-        setReferencePose(lastPose);
-        return closestToReferencePoseStrategy();
-    }
-
-    /** Return the average of the best target poses using ambiguity as weight */
-    private Pair<Pose3d, Double> averageBestTargetsStrategy() {
-        //                  Pair of Double, Double = Ambiguity, Mili
-        List<Pair<Pose3d, Pair<Double, Double>>> tempPoses = new ArrayList<>();
+    /**
+     * Return the average of the best target poses using ambiguity as weight.
+     *
+     * @param results non-empty list of pipeline results and their camera's position transformation in the RCS
+     *                from the robot origin to the camera.
+     * @return the estimated position of the robot in the FCS and the estimated timestamp of this estimation.
+     */
+    private Optional<Pair<Pose3d, Double>> averageBestTargetsStrategy(List<Pair<PhotonPipelineResult, Transform3d>> results) {
+        // List<Pair<RobotPose, Pair<PoseAmbiguity, StateTimestamp>>>
+        List<Pair<Pose3d, Pair<Double, Double>>> targetData = new ArrayList<>();
         double totalAmbiguity = 0;
-        for (int i = 0; i < cameras.size(); i++) {
-            Pair<PhotonCamera, Transform3d> p = cameras.get(i);
-            var result = p.getFirst().getLatestResult();
-            List<PhotonTrackedTarget> targets = result.targets;
-            for (int j = 0; j < targets.size(); j++) {
-                PhotonTrackedTarget target = targets.get(j);
-                Optional<Pose3d> fiducialPose = aprilTags.getTagPose(target.getFiducialId());
-                if (fiducialPose.isEmpty()) {
-                    reportFiducialPoseError(target.getFiducialId());
+
+        for(Pair<PhotonPipelineResult, Transform3d> result : results) {
+            for(PhotonTrackedTarget target : result.getFirst().targets) {
+                double targetFiducialId = target.getFiducialId();
+
+                // Don't report errors for non-fiducial targets. This could also be resolved by adding -1 to the initial HashSet.
+                if(targetFiducialId == -1)
                     continue;
+
+                Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
+
+                if(targetPosition.isEmpty()) {
+                    if (!reportedErrors.contains(target.getFiducialId())) {
+                        DriverStation.reportWarning(
+                                "[RobotPoseEstimator] Tried to get pose of unknown April Tag: "
+                                        + target.getFiducialId(),
+                                false);
+                        reportedErrors.add(target.getFiducialId());
+                    }
                 }
-                Pose3d targetPose = fiducialPose.get();
-                try {
-                    totalAmbiguity += 1. / target.getPoseAmbiguity();
-                } catch (ArithmeticException e) {
-                    // A total ambiguity of zero exists, using that pose instead!",
-                    return Pair.of(
-                            targetPose
-                                    .transformBy(target.getBestCameraToTarget().inverse())
-                                    .transformBy(p.getSecond().inverse()),
-                            result.getLatencyMillis());
+
+                double targetPoseAmbiguity = target.getPoseAmbiguity();
+                double targetPoseTimestamp = result.getFirst().getTimestampSeconds();
+
+                // Pose ambiguity is 0, use that pose
+                if(targetPoseAmbiguity == 0) {
+                    return Optional.of(
+                            Pair.of(
+                                    targetPosition.get()
+                                            .transformBy(target.getBestCameraToTarget().inverse())
+                                            .transformBy(result.getSecond().inverse()),
+                                    targetPoseTimestamp
+                            )
+                    );
                 }
-                tempPoses.add(
+
+                totalAmbiguity += 1.0 / target.getPoseAmbiguity();
+
+                targetData.add(
                         Pair.of(
-                                targetPose
+                                targetPosition.get()
                                         .transformBy(target.getBestCameraToTarget().inverse())
-                                        .transformBy(p.getSecond().inverse()),
-                                Pair.of(target.getPoseAmbiguity(), result.getLatencyMillis())));
+                                        .transformBy(result.getSecond().inverse()),
+                                Pair.of(targetPoseAmbiguity, targetPoseTimestamp)
+                        )
+                );
             }
         }
+
+        // Take the average
 
         Translation3d transform = new Translation3d();
         Rotation3d rotation = new Rotation3d();
-        double latency = 0;
 
-        if (tempPoses.isEmpty()) {
-            return null;
-        }
+        if(targetData.size() == 0)
+            return Optional.empty();
 
-        if (totalAmbiguity == 0) {
-            Pose3d p = tempPoses.get(0).getFirst();
-            double l = tempPoses.get(0).getSecond().getSecond();
-            return Pair.of(p, l);
-        }
+        double timestampSum = 0;
 
-        for (Pair<Pose3d, Pair<Double, Double>> pair : tempPoses) {
-            double weight = (1. / pair.getSecond().getFirst()) / totalAmbiguity;
+        for(Pair<Pose3d, Pair<Double, Double>> pair : targetData) {
+            // Total ambiguity is non-zero confirmed because if it was zero, that pose was returned.
+            double weight = (1.0 / pair.getSecond().getFirst()) / totalAmbiguity;
             transform = transform.plus(pair.getFirst().getTranslation().times(weight));
             rotation = rotation.plus(pair.getFirst().getRotation().times(weight));
-            latency += pair.getSecond().getSecond() * weight; // NOTE: Average latency may not work well
+            timestampSum += pair.getSecond().getSecond();
         }
 
-        return Pair.of(new Pose3d(transform, rotation), latency);
+        return Optional.of(Pair.of(new Pose3d(transform, rotation), timestampSum / targetData.size()));
     }
 
     /**
@@ -344,58 +519,6 @@ public class RobotPoseEstimator {
      */
     private double calculateDifference(Pose3d x, Pose3d y) {
         return x.getTranslation().getDistance(y.getTranslation());
-    }
-
-    /** @param aprilTags the aprilTags to set */
-    public void setAprilTags(AprilTagFieldLayout aprilTags) {
-        this.aprilTags = aprilTags;
-    }
-
-    /** @return the aprilTags */
-    public AprilTagFieldLayout getAprilTags() {
-        return aprilTags;
-    }
-
-    /** @return the strategy */
-    public PoseStrategy getStrategy() {
-        return strategy;
-    }
-
-    /** @param strategy the strategy to set */
-    public void setStrategy(PoseStrategy strategy) {
-        this.strategy = strategy;
-    }
-
-    /** @return the referencePose */
-    public Pose3d getReferencePose() {
-        return referencePose;
-    }
-
-    /**
-     * Update the stored reference pose for use with CLOSEST_TO_REFERENCE_POSE
-     *
-     * @param referencePose the referencePose to set
-     */
-    public void setReferencePose(Pose3d referencePose) {
-        this.referencePose = referencePose;
-    }
-
-    /**
-     * Update the stored reference pose for use with CLOSEST_TO_REFERENCE_POSE
-     *
-     * @param referencePose the referencePose to set
-     */
-    public void setReferencePose(Pose2d referencePose) {
-        setReferencePose(new Pose3d(referencePose));
-    }
-
-    /**
-     * UPdate the stored last pose. Useful for setting the initial estimate with CLOSEST_TO_LAST_POSE
-     *
-     * @param lastPose the lastPose to set
-     */
-    public void setLastPose(Pose3d lastPose) {
-        this.lastPose = lastPose;
     }
 
     private void reportFiducialPoseError(int fiducialId) {
