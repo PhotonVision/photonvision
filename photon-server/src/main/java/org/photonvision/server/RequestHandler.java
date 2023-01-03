@@ -195,6 +195,7 @@ public class RequestHandler {
     }
 
     private static ShellExec shell = new ShellExec();
+
     public static void onExportCurrentLogs(Context ctx) {
         if (!Platform.isLinux()) {
             logger.warn("Cannot export journalctl on non-Linux platforms! Ignoring");
@@ -204,8 +205,9 @@ public class RequestHandler {
 
         try {
             var tempPath = Files.createTempFile("photonvision-journalctl", ".txt");
-            shell.executeBashCommand("journalctl -u photonvision.service > " + tempPath.toAbsolutePath().toString());
-            
+            shell.executeBashCommand(
+                    "journalctl -u photonvision.service > " + tempPath.toAbsolutePath().toString());
+
             while (!shell.isOutputCompleted()) {
                 // TODO: add timeout
             }
