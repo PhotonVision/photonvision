@@ -56,7 +56,7 @@ RobotPoseEstimator::RobotPoseEstimator(
 
 std::pair<frc::Pose3d, units::second_t> RobotPoseEstimator::Update() {
   if (cameras.empty()) {
-    return std::make_pair(lastPose, units::seconds_t(0));
+    return std::make_pair(lastPose, units::second_t(0));
   }
 
   std::pair<frc::Pose3d, units::second_t> pair;
@@ -262,7 +262,7 @@ RobotPoseEstimator::AverageBestTargetsStrategy() {
       tempPoses.push_back(std::make_pair(
           targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()),
           std::make_pair(target.GetPoseAmbiguity(),
-                         p.first->GetLatestResult().GetTimestamp()));
+                         p.first->GetLatestResult().GetTimestamp())));
     }
   }
 

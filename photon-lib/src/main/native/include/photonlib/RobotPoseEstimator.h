@@ -78,7 +78,9 @@ class RobotPoseEstimator {
    *
    * @return the AprilTagFieldLayout
    */
-  frc::AprilTagFieldLayout getFieldLayout() const { return aprilTags; }
+  std::shared_ptr<frc::AprilTagFieldLayout> getFieldLayout() const {
+    return aprilTags;
+  }
 
   /**
    * Get the Position Estimation Strategy being used by the Position Estimator.
