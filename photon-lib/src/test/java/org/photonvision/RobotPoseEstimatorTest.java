@@ -422,7 +422,6 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(7, 8)))));
         cameraTwo.result.setTimestampSeconds(13);
 
-
         estimatedPose = estimator.update();
         pose = estimatedPose.get().getFirst();
 
