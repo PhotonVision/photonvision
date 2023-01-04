@@ -37,7 +37,6 @@ public class NetworkTablesManager {
     private final NetworkTableInstance ntInstance = NetworkTableInstance.getDefault();
     private final String kRootTableName = "/photonvision";
     public final NetworkTable kRootTable = ntInstance.getTable(kRootTableName);
-    public final NetworkTable FMSTable = ntInstance.getTable("FMSInfo");
 
     private boolean isRetryingConnection = false;
 
@@ -77,6 +76,10 @@ public class NetworkTablesManager {
         }
     }
 
+    public NetworkTableInstance getNTInst() {
+        return ntInstance;
+    }
+
     public void broadcastConnectedStatus() {
         TimedTaskManager.getInstance().addOneShotTask(this::broadcastConnectedStatusImpl, 1000L);
     }
@@ -102,11 +105,8 @@ public class NetworkTablesManager {
     private void broadcastVersion() {
         kRootTable.getEntry("version").setString(PhotonVersion.versionString);
         kRootTable.getEntry("buildDate").setString(PhotonVersion.buildDate);
-
-        FMSTable.getEntry("MatchNumber").setDefaultNumber(0);
-        FMSTable.getEntry("MatchType").setDefaultNumber(0);
     }
-    
+
     public void setConfig(NetworkConfig config) {
         if (config.runNTServer) {
             setServerMode();
