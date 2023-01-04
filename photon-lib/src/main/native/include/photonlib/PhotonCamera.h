@@ -30,6 +30,7 @@
 #include <networktables/BooleanTopic.h>
 #include <networktables/DoubleTopic.h>
 #include <networktables/IntegerTopic.h>
+#include <networktables/MultiSubscriber.h>
 #include <networktables/NetworkTable.h>
 #include <networktables/NetworkTableInstance.h>
 #include <networktables/RawTopic.h>
@@ -177,6 +178,8 @@ class PhotonCamera {
   nt::BooleanSubscriber driverModeSubscriber;
   nt::IntegerSubscriber pipelineIndexSubscriber;
   nt::IntegerSubscriber ledModeSubscriber;
+
+  nt::MultiSubscriber m_topicNameSubscriber;
 
   std::string path;
   std::string m_cameraName;
