@@ -12,12 +12,21 @@
         color="secondary"
         style="margin-left: auto;"
         depressed
-        @click="download('photonlog.log', rawLogs.map(it => it.message).join('\n'))"
+        @click="$refs.exportLogFile.click()"
       >
         <v-icon left>
           mdi-download
         </v-icon>
         Download Log
+
+        <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
+        <a
+          ref="exportLogFile"
+          style="color: black; text-decoration: none; display: none"
+          :href="'http://' + this.$address + '/api/settings/photonvision-journalctl.txt'"
+          download="photonvision-journalctl.txt"
+        />
+
       </v-btn>
     </v-card-title>
     <div class="pr-6 pl-6">

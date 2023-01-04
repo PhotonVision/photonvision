@@ -25,6 +25,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -190,6 +191,43 @@ public class RequestHandler {
             e.printStackTrace();
             ctx.status(501);
             logger.error("Got bad recode from zip to byte");
+        }
+    }
+
+    private static ShellExec shell = new ShellExec();
+
+    public static void onExportCurrentLogs(Context ctx) {
+        if (!Platform.isLinux()) {
+            logger.warn("Cannot export journalctl on non-Linux platforms! Ignoring");
+            ctx.status(500);
+            return;
+        }
+
+        try {
+            var tempPath = Files.createTempFile("photonvision-journalctl", ".txt");
+            shell.executeBashCommand(
+                    "journalctl -u photonvision.service > " + tempPath.toAbsolutePath().toString());
+
+            while (!shell.isOutputCompleted()) {
+                // TODO: add timeout
+            }
+
+            if (shell.getExitCode() == 0) {
+                // Wrote to the temp file! Add it to the ctx
+                var stream = new FileInputStream(tempPath.toFile());
+                logger.info("Uploading settings with size " + stream.available());
+                ctx.result(stream);
+                ctx.contentType("application/zip");
+                ctx.header("Content-Disposition: attachment; filename=\"photonvision-journalctl.txt\"");
+                ctx.status(200);
+            } else {
+                logger.error("Could not export journactl logs! (exit code != 0)");
+                ctx.status(500);
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            logger.error("Could not export journactl logs! (IOexception)", e);
+            ctx.status(500);
         }
     }
 

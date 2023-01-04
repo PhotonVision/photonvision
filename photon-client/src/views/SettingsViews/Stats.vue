@@ -117,85 +117,11 @@
       </table>
     </v-row>
 
-    <v-row>
-      <v-col
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <v-btn
-          color="secondary"
-          @click="$refs.exportSettings.click()"
-        >
-          <v-icon left>
-            mdi-download
-          </v-icon>
-          Export Settings
-        </v-btn>
-      </v-col>
-      <v-col
-        cols="12"
-        sm="6"
-        md="4"
-      >
-        <v-btn
-          color="secondary"
-          @click="$refs.importSettings.click()"
-        >
-          <v-icon left>
-            mdi-upload
-          </v-icon>
-          Import Settings
-        </v-btn>
-      </v-col>
-      <v-col
-        cols="12"
-        md="4"
-      >
-        <v-btn
-          color="secondary"
-          @click="$refs.offlineUpdate.click()"
-        >
-          <v-icon left>
-            mdi-update
-          </v-icon>
-          Offline Update
-        </v-btn>
-      </v-col>
-      <v-col
-        cols="12"
-        lg="6"
-      >
-        <v-btn
-          color="red"
-          @click="restartProgram()"
-        >
-          <v-icon left>
-            mdi-restart
-          </v-icon>
-          Restart PhotonVision
-        </v-btn>
-      </v-col>
-      <v-col
-        cols="12"
-        lg="6"
-      >
-        <v-btn
-          color="red"
-          @click="restartDevice()"
-        >
-          <v-icon left>
-            mdi-restart-alert
-          </v-icon>
-          Restart Device
-        </v-btn>
-      </v-col>
-    </v-row>
     <v-snackbar
       v-model="snack"
       top
       :color="snackbar.color"
-      timeout="0"
+      timeout="-1"
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
@@ -230,7 +156,7 @@
 
 <script>
 export default {
-    name: 'General',
+    name: 'Stats',
     data() {
         return {
             snack: false,
@@ -262,8 +188,8 @@ export default {
           return  `${this.settings.gpuAcceleration ? "Enabled" : "Unsupported"} ${this.settings.gpuAcceleration ? "(" + this.settings.gpuAcceleration + ")" : ""}`
         },
         metrics() {
-          console.log(this.$store.state.metrics);
-            return this.$store.state.metrics;
+          // console.log(this.$store.state.metrics);
+          return this.$store.state.metrics;
         }
     },
     methods: {
@@ -349,6 +275,10 @@ export default {
                 this.snack = true;
             });
         },
+        showLogs(event) {
+          event;
+          this.$store.state.logsOverlay = true;
+        }
     }
 }
 </script>
