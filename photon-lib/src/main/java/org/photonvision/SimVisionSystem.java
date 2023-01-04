@@ -67,7 +67,7 @@ public class SimVisionSystem {
      * @param camDiagFOVDegrees Diagonal Field of View of the camera used. Align it with the
      *     manufacturer specifications, and/or whatever is configured in the PhotonVision Setting
      *     page.
-     * @param cameraToRobot Transform to move from the camera's mount position to the robot's position
+     * @param cameraToRobot Transform to move from the camera's mount position to the center of the robot
      * @param maxLEDRangeMeters Maximum distance at which your camera can illuminate the target and
      *     make it visible. Set to 9000 or more if your vision system does not rely on LED's.
      * @param cameraResWidth Width of your camera's image sensor in pixels

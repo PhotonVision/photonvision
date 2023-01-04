@@ -73,14 +73,11 @@ public class RobotPoseEstimator {
     /**
      * Create a new RobotPoseEstimator.
      *
-     * <p>Example: {@code <code> <p> Map<Integer, Pose3d> map = new HashMap<>(); <p> map.put(1, new
-     * Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is at (1.0,2.0,3.0) </code> }
-     *
-     * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with respect to the
-     *     FIRST field.
+     * @param aprilTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3ds with
+     *     respect to the FIRST field.
      * @param strategy The strategy it should use to determine the best pose.
      * @param cameras An ArrayList of Pairs of PhotonCameras and their respective Transform3ds from
-     *     the center of the robot to the cameras.
+     *     the camera mount positions to the center of the robot.
      */
     public RobotPoseEstimator(
             AprilTagFieldLayout aprilTags,
