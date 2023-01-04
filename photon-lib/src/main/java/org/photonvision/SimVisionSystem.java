@@ -69,7 +69,8 @@ public class SimVisionSystem {
      * @param camDiagFOVDegrees Diagonal Field of View of the camera used. Align it with the
      *     manufacturer specifications, and/or whatever is configured in the PhotonVision Setting
      *     page.
-     * @param cameraToRobot Transform to move from the camera's mount position to the center of the robot
+     * @param cameraToRobot Transform to move from the camera's mount position to the center of the
+     *     robot
      * @param maxLEDRangeMeters Maximum distance at which your camera can illuminate the target and
      *     make it visible. Set to 9000 or more if your vision system does not rely on LED's.
      * @param cameraResWidth Width of your camera's image sensor in pixels
@@ -122,8 +123,8 @@ public class SimVisionSystem {
     }
 
     /**
-     * Adds all apriltags from the provided {@link AprilTagFieldLayout} as sim vision targets.
-     * The poses added will preserve the tag layout's alliance origin at the time of calling this method.
+     * Adds all apriltags from the provided {@link AprilTagFieldLayout} as sim vision targets. The
+     * poses added will preserve the tag layout's alliance origin at the time of calling this method.
      *
      * @param tagLayout The field tag layout to get Apriltag poses and IDs from
      */
