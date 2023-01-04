@@ -29,12 +29,14 @@ import org.photonvision.vision.processes.VisionSourceSettables;
 
 public class LibcameraGpuSettables extends VisionSourceSettables {
     private FPSRatedVideoMode currentVideoMode;
-    private double lastExposure = 50;
+    private double lastManualExposure = 50;
     private int lastBrightness = 50;
-    private boolean lastExposureMode;
+    private boolean lastAutoExposureActive;
     private int lastGain = 50;
     private Pair<Integer, Integer> lastAwbGains = new Pair<>(18, 18);
     private boolean m_initialized = false;
+
+    private final LibCameraJNI.SensorModel sensorModel;
 
     private ImageRotationMode m_rotationMode;
 
@@ -51,7 +53,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         videoModes = new HashMap<>();
 
-        LibCameraJNI.SensorModel sensorModel = LibCameraJNI.getSensorModel();
+        sensorModel = LibCameraJNI.getSensorModel();
 
         if (sensorModel == LibCameraJNI.SensorModel.IMX219) {
             // Settings for the IMX219 sensor, which is used on the Pi Camera Module v2
@@ -72,13 +74,14 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
                     6, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 3280 / 4, 2464 / 4, 15, 20, 1));
         } else if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
             videoModes.put(
-                    0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 800, 60, 60, 1));
+                    0, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 30, 30, .39));
             videoModes.put(
                     1, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280 / 2, 800 / 2, 60, 60, 1));
             videoModes.put(
-                    2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 320, 240, 30, 30, .39));
+                    2, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65, 90, .39));
             videoModes.put(
-                    3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 640, 480, 65, 90, .39));
+                    3, new FPSRatedVideoMode(VideoMode.PixelFormat.kUnknown, 1280, 800, 60, 60, 1));
+
         } else {
             if (sensorModel == LibCameraJNI.SensorModel.IMX477) {
                 LibcameraGpuSource.logger.warn(
@@ -114,20 +117,33 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
-        lastExposureMode = cameraAutoExposure;
-        // TODO (Matt) -- call LibCameraJNI's auto exposure function, when that exists
+        lastAutoExposureActive = cameraAutoExposure;
         LibCameraJNI.setAutoExposure(cameraAutoExposure);
     }
 
     @Override
     public void setExposure(double exposure) {
-        // Todo (Chris) - for now, handle auto exposure by using -1
-        if (exposure < 0.0) {
-            exposure = -1;
+        if (exposure < 0.0 || lastAutoExposureActive) {
+            // Auto-exposure is active right now, don't set anything.
+            return;
         }
 
-        // TODO convert to uS
-        lastExposure = exposure;
+        // HACKS!
+        // If we set exposure too low, libcamera crashes or slows down
+        // Very weird and smelly
+        // For now, band-aid this by just not setting it lower than the "it breaks" limit
+        // Limit is different depending on camera.
+        if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
+            if (exposure < 6.0) {
+                exposure = 6.0;
+            }
+        } else if (sensorModel == LibCameraJNI.SensorModel.OV5647) {
+            if (exposure < 0.7) {
+                exposure = 0.7;
+            }
+        }
+
+        lastManualExposure = exposure;
         var success = LibCameraJNI.setExposure((int) Math.round(exposure) * 800);
         if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera exposure");
     }
@@ -150,19 +166,25 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
     @Override
     public void setRedGain(int red) {
-        lastAwbGains = Pair.of(red, lastAwbGains.getSecond());
-        setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
+        if (sensorModel != LibCameraJNI.SensorModel.OV9281) {
+            lastAwbGains = Pair.of(red, lastAwbGains.getSecond());
+            setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
+        }
     }
 
     @Override
     public void setBlueGain(int blue) {
-        lastAwbGains = Pair.of(lastAwbGains.getFirst(), blue);
-        setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
+        if (sensorModel != LibCameraJNI.SensorModel.OV9281) {
+            lastAwbGains = Pair.of(lastAwbGains.getFirst(), blue);
+            setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
+        }
     }
 
     public void setAwbGain(int red, int blue) {
-        var success = LibCameraJNI.setAwbGain(red / 10.0, blue / 10.0);
-        if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera AWB gains");
+        if (sensorModel != LibCameraJNI.SensorModel.OV9281) {
+            var success = LibCameraJNI.setAwbGain(red / 10.0, blue / 10.0);
+            if (!success) LibcameraGpuSource.logger.warn("Couldn't set Pi Camera AWB gains");
+        }
     }
 
     @Override
@@ -202,8 +224,8 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
 
         // We don't store last settings on the native side, and when you change video mode these get
         // reset on MMAL's end
-        setExposure(lastExposure);
-        setAutoExposure(lastExposureMode);
+        setExposure(lastManualExposure);
+        setAutoExposure(lastAutoExposureActive);
         setBrightness(lastBrightness);
         setGain(lastGain);
         setAwbGain(lastAwbGains.getFirst(), lastAwbGains.getSecond());
