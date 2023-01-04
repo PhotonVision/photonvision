@@ -24,6 +24,8 @@
 
 package org.photonvision;
 
+import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -117,6 +119,23 @@ public class SimVisionSystem {
                 .getObject("Target " + Integer.toString(target.targetID))
                 .setPose(target.targetPose.toPose2d());
         ;
+    }
+
+    /**
+     * Adds all apriltags from the provided {@link AprilTagFieldLayout} as sim vision targets.
+     * The poses added will preserve the tag layout's alliance origin at the time of calling this method.
+     *
+     * @param tagLayout The field tag layout to get Apriltag poses and IDs from
+     */
+    public void addVisionTargets(AprilTagFieldLayout tagLayout) {
+        for (AprilTag tag : tagLayout.getTags()) {
+            addSimVisionTarget(
+                    new SimVisionTarget(
+                            tagLayout.getTagPose(tag.ID).get(), // preserve alliance rotation
+                            Units.inchesToMeters(6),
+                            Units.inchesToMeters(6),
+                            tag.ID));
+        }
     }
 
     /**
