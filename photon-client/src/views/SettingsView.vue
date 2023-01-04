@@ -37,7 +37,8 @@
     import Networking from './SettingsViews/Networking'
     import Lighting from "./SettingsViews/Lighting";
     import cvImage from '../components/common/cv-image'
-    import General from "./SettingsViews/General";
+    import Stats from "./SettingsViews/Stats";
+    import DeviceControl from "./SettingsViews/DeviceControl";
 
     export default {
         name: 'SettingsTab',
@@ -69,7 +70,7 @@
             },
             tabList: {
                 get() {
-                    return [General, Networking].concat(this.$store.state.settings.lighting.supported ? Lighting : []);
+                    return [Stats, DeviceControl, Networking].concat(this.$store.state.settings.lighting.supported ? Lighting : []);
                 }
             }
         },

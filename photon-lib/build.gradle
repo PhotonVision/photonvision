@@ -34,7 +34,6 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("wpilibj")
     implementation wpilibTools.deps.wpilibJava("apriltag")
 
-
     // Junit
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
@@ -66,6 +65,7 @@ model {
                 }
             }
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
+            nativeUtils.useRequiredLibrary(it, "vision_shared")
         }
     }
     testSuites {
@@ -80,6 +80,7 @@ model {
             }
 
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
+            nativeUtils.useRequiredLibrary(it, "vision_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
         }
     }
