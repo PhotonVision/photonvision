@@ -444,7 +444,8 @@ TEST(RobotPoseEstimatorTest, ClosestToLastPose) {
   estimatedPose = estimator.Update();
   pose = estimatedPose.first;
 
-  EXPECT_NEAR(7.0, units::unit_cast<double>(estimatedPose.second) / 1000.0, .01);
+  EXPECT_NEAR(7.0, units::unit_cast<double>(estimatedPose.second) / 1000.0,
+              .01);
   EXPECT_NEAR(.9, units::unit_cast<double>(pose.X()), .01);
   EXPECT_NEAR(1.1, units::unit_cast<double>(pose.Y()), .01);
   EXPECT_NEAR(1, units::unit_cast<double>(pose.Z()), .01);
@@ -530,7 +531,8 @@ TEST(RobotPoseEstimatorTest, AverageBestPoses) {
       estimator.Update();
   frc::Pose3d pose = estimatedPose.first;
 
-  EXPECT_NEAR(15.0, units::unit_cast<double>(estimatedPose.second) / 1000.0, .01);
+  EXPECT_NEAR(15.0, units::unit_cast<double>(estimatedPose.second) / 1000.0,
+              .01);
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.X()), .01);
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.Y()), .01);
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.Z()), .01);
