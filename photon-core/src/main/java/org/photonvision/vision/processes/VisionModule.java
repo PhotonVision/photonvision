@@ -178,10 +178,12 @@ public class VisionModule {
         this.outputStreamPort = 1181 + (camStreamIdx * 2) + 1;
 
         inputFrameSaver =
-                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input");
+                new FileSaveFrameConsumer(visionSource.getSettables().getConfiguration().nickname, "input",
+                  visionSource.getSettables().getConfiguration().uniqueName);
         outputFrameSaver =
                 new FileSaveFrameConsumer(
-                        visionSource.getSettables().getConfiguration().nickname, "output");
+                    visionSource.getSettables().getConfiguration().nickname, "output",
+                  visionSource.getSettables().getConfiguration().uniqueName);
 
         inputVideoStreamer = new SocketVideoStream(this.inputStreamPort);
         outputVideoStreamer = new SocketVideoStream(this.outputStreamPort);
@@ -371,6 +373,10 @@ public class VisionModule {
         return ret;
     }
 
+    public void takeReplaySnapshot() {
+        inputFrameSaver.requestSnapshot();
+    }
+
     void setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
         logger.info("Pipeline name: " + pipelineManager.getPipelineNickname(index));
@@ -483,6 +489,7 @@ public class VisionModule {
 
         ret.fov = visionSource.getSettables().getFOV();
         ret.nickname = visionSource.getSettables().getConfiguration().nickname;
+        ret.uniqueName = visionSource.getSettables().getConfiguration().uniqueName;
         ret.currentPipelineSettings =
                 SerializationUtils.objectToHashMap(pipelineManager.getCurrentPipelineSettings());
         ret.currentPipelineIndex = pipelineManager.getCurrentPipelineIndex();

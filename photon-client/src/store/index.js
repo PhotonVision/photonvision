@@ -39,6 +39,7 @@ export default new Vuex.Store({
                 outputStreamPort: 0,
                 inputStreamPort: 0,
                 nickname: "Unknown",
+                uniqueName: "Unknown",
                 videoFormatList: [
                     {
                         "width": 1920,

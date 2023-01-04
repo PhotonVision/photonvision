@@ -38,12 +38,6 @@
                 <span v-else-if="$fpsTooLow && getters.currentCameraSettings.inputShouldShow">stop viewing the raw stream for better performance</span>
                 <span v-else>{{ Math.min(Math.round($store.state.pipelineResults.latency), 9999) }} ms latency</span>
               </v-chip>
-              <v-switch
-                v-model="driverMode"
-                label="Driver Mode"
-                style="margin-left: auto;"
-                color="accent"
-              />
             </v-card-title>
             <v-row
               align="center"
@@ -72,6 +66,27 @@
                     @click="onImageClick"
                   />
                 </div>
+              </v-col>
+            </v-row>
+            <v-row class="align-end">
+              <v-col cols="3" class="justify-end align-center">
+                <v-switch
+                    v-model="driverMode"
+                    label="Driver Mode"
+                    color="accent"
+                    class="ml-3"
+                />
+              </v-col>
+              <v-col cols="9" class="justify-end no-gutters">
+                <v-row class="justify-end mr-3">
+                  <v-btn
+                      color="secondary"
+                      @click="takeSnapshot()"
+                      class="ml-3"
+                  >
+                    Take Snapshot
+                  </v-btn>
+                </v-row>
               </v-col>
             </v-row>
           </v-card>
@@ -469,8 +484,22 @@ export default {
         this.$store.state.connectedCallbacks.push(this.reloadStreams)
     },
     methods: {
-        reloadStreams() {
-            // Reload the streams as we technically close and reopen them
+      takeSnapshot() {
+        // this.$refs.snapshotReplayDialog.show();
+        // this.replaySnapshots = true
+        const camIdx = this.$store.getters.currentCameraIndex
+        const url = "http://" + this.$address + "/api/takeSnapshot?camIdx=" + camIdx
+        console.log(url)
+          this.axios.post(url).then(
+              function (response) {
+                  console.log(response)
+              },
+              function (error) {
+                  console.log(error)
+              })
+      },
+      reloadStreams() {
+        // Reload the streams as we technically close and reopen them
             this.$refs.streams.forEach(it => it.reload())
         },
         onImageClick(event) {

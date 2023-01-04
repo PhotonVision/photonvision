@@ -33,7 +33,6 @@ import org.photonvision.vision.opencv.CVMat;
 
 public class FileSaveFrameConsumer implements Consumer<CVMat> {
     // Formatters to generate unique, timestamped file names
-    private static String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
     private static String FILE_EXTENSION = ".jpg";
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
     DateFormat tf = new SimpleDateFormat("hhmmssSS");
@@ -47,12 +46,17 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     private String fnamePrefix;
     private IntegerEntry entry;
 
-    public FileSaveFrameConsumer(String camNickname, String streamPrefix) {
+    // The folder we put snapshots into
+    private final String snapshotFolder;
+
+    public FileSaveFrameConsumer(String camNickname, String streamPrefix, String uniqueName) {
         this.fnamePrefix = camNickname + "_" + streamPrefix;
         this.ntEntryName = streamPrefix + NT_SUFFIX;
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
         updateCameraNickname(camNickname);
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
+
+        this.snapshotFolder = ConfigManager.getInstance().getSnapshotDirectory(uniqueName).toString();
     }
 
     public void accept(CVMat image) {
@@ -65,7 +69,7 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
                     // Create the filename
                     Date now = new Date();
                     String savefile =
-                            FILE_PATH
+                            snapshotFolder
                                     + File.separator
                                     + fnamePrefix
                                     + "_"
@@ -101,5 +105,9 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         this.subTable = rootTable.getSubTable(this.camNickname);
         this.subTable.getEntry(ntEntryName).setInteger(imgSaveCountInternal);
         this.entry = subTable.getIntegerTopic(ntEntryName).getEntry(-1); // Default negative
+    }
+
+    public void requestSnapshot() {
+        entry.set(entry.get() + 1);
     }
 }

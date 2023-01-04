@@ -42,8 +42,12 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
+import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.target.TargetModel;
+
+import javax.imageio.stream.FileImageInputStream;
+import javax.imageio.stream.FileImageOutputStream;
 
 public class RequestHandler {
     private static final Logger logger = new Logger(RequestHandler.class, LogGroup.WebServer);
@@ -312,5 +316,31 @@ public class RequestHandler {
     public static class UITargetData {
         public int index;
         public TargetModel targetModel;
+    }
+
+    public static void takeSnapshot(Context ctx) {
+        var idxStr = ctx.queryParam("camIdx");
+
+        if (idxStr == null) {
+            logger.error("Missing parameter for takeSnapshot!");
+            ctx.status(400);
+            return;
+        }
+
+        int camIdx;
+        try {
+            camIdx = Integer.parseInt(idxStr);
+        } catch (Exception e) {
+            logger.error("Failed to parse parameter for camera index");
+            ctx.status(400);
+            return;
+        }
+
+        var module = VisionModuleManager.getInstance().getModule(camIdx);
+        module.takeReplaySnapshot();
+        ctx.status(200);
+
+        var camName = module.getStateAsCameraConfig().nickname;
+        logger.debug("Taking snapshot for camera " + camName);
     }
 }

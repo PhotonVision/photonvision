@@ -131,6 +131,7 @@ public class PhotonConfiguration {
         public double fov;
 
         public String nickname;
+        public String uniqueName;
         public HashMap<String, Object> currentPipelineSettings;
         public int currentPipelineIndex;
         public List<String> pipelineNicknames;
