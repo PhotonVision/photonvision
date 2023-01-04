@@ -118,15 +118,7 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
     @Override
     public void setAutoExposure(boolean cameraAutoExposure) {
         lastAutoExposureActive = cameraAutoExposure;
-
-        // HACK!
-        // OV 9281 does not currently support autoexposure in our driver
-        // Just skip setting it silently
-        if (sensorModel == LibCameraJNI.SensorModel.OV9281) {
-            lastAutoExposureActive = false;
-        } else {
-            LibCameraJNI.setAutoExposure(cameraAutoExposure);
-        }
+        LibCameraJNI.setAutoExposure(cameraAutoExposure);
     }
 
     @Override
