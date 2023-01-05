@@ -52,7 +52,6 @@ import frc.robot.Constants.DriveTrainConstants;
 
 /** Represents a differential drive style drivetrain. */
 public class Drivetrain {
-
     private final MotorController m_leftLeader = new PWMSparkMax(1);
     private final MotorController m_leftFollower = new PWMSparkMax(2);
     private final MotorController m_rightLeader = new PWMSparkMax(3);
