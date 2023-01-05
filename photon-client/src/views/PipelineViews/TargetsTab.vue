@@ -19,7 +19,7 @@
                 Target
               </th>
               <th
-                v-if="$store.getters.pipelineType === 4"
+                  v-if="$store.getters.pipelineType === 4 || (($store.getters.pipelineType - 2) === 3)"
                 class="text-center"
               >
                 Fiducial ID
@@ -62,7 +62,7 @@
               :key="index"
             >
               <td>{{ index }}</td>
-              <td v-if="$store.getters.pipelineType === 4">
+              <td v-if="$store.getters.pipelineType === 4 || (($store.getters.pipelineType - 2) === 3)">
                 {{ parseInt(value.fiducialId) }}
               </td>
               <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled">

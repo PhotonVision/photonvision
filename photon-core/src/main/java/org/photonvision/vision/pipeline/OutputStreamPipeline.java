@@ -24,6 +24,7 @@ import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.opencv.DualOffsetValues;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
+import org.photonvision.vision.target.TargetModel;
 import org.photonvision.vision.target.TrackedTarget;
 
 /**
@@ -37,6 +38,9 @@ public class OutputStreamPipeline {
     private final Draw3dTargetsPipe draw3dTargetsPipe = new Draw3dTargetsPipe();
     private final Draw2dAprilTagsPipe draw2dAprilTagsPipe = new Draw2dAprilTagsPipe();
     private final Draw3dAprilTagsPipe draw3dAprilTagsPipe = new Draw3dAprilTagsPipe();
+
+    private final Draw2dArucoPipe draw2dArucoPipe = new Draw2dArucoPipe();
+    private final Draw3dArucoPipe draw3dArucoPipe = new Draw3dArucoPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
     private final ResizeImagePipe resizeImagePipe = new ResizeImagePipe();
 
@@ -65,6 +69,13 @@ public class OutputStreamPipeline {
                         settings.streamingFrameDivisor);
         draw2dAprilTagsPipe.setParams(draw2DAprilTagsParams);
 
+        var draw2DArucoParams =
+                new Draw2dArucoPipe.Draw2dArucoParams(
+                        settings.outputShouldDraw,
+                        settings.outputShowMultipleTargets,
+                        settings.streamingFrameDivisor);
+        draw2dArucoPipe.setParams(draw2DArucoParams);
+
         var draw2dCrosshairParams =
                 new Draw2dCrosshairPipe.Draw2dCrosshairParams(
                         settings.outputShouldDraw,
@@ -91,6 +102,14 @@ public class OutputStreamPipeline {
                         settings.targetModel,
                         settings.streamingFrameDivisor);
         draw3dAprilTagsPipe.setParams(draw3dAprilTagsParams);
+
+        var draw3dArucoParams =
+                new Draw3dArucoPipe.Draw3dArucoParams(
+                        settings.outputShouldDraw,
+                        frameStaticProperties.cameraCalibration,
+                        TargetModel.k6in_16h5,
+                        settings.streamingFrameDivisor);
+        draw3dArucoPipe.setParams(draw3dArucoParams);
 
         resizeImagePipe.setParams(
                 new ResizeImagePipe.ResizeImageParams(settings.streamingFrameDivisor));
@@ -126,12 +145,12 @@ public class OutputStreamPipeline {
             }
 
             // Draw 2D Crosshair on output
-            var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
+            var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
             sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
-            if (!(settings instanceof AprilTagPipelineSettings)) {
-                // If we're processing anything other than Apriltags...
-
+            if (!(settings instanceof AprilTagPipelineSettings)
+                    && !(settings instanceof ArucoPipelineSettings)) {
+                // If we're processing anything other than Apriltags..
                 var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
                 sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
@@ -154,7 +173,7 @@ public class OutputStreamPipeline {
                     pipeProfileNanos[8] = 0;
                 }
 
-            } else {
+            } else if (settings instanceof AprilTagPipelineSettings) {
                 // If we are doing apriltags...
                 if (settings.solvePNPEnabled) {
                     // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
@@ -169,6 +188,26 @@ public class OutputStreamPipeline {
                 } else {
                     // Draw 2d apriltag markers
                     var draw2dTargetsOnInput = draw2dAprilTagsPipe.run(Pair.of(outMat, targetsToDraw));
+                    sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
+
+                    pipeProfileNanos[6] = 0;
+                    pipeProfileNanos[7] = 0;
+                    pipeProfileNanos[8] = 0;
+                }
+            } else if (settings instanceof ArucoPipelineSettings) {
+                if (settings.solvePNPEnabled) {
+                    // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
+                    pipeProfileNanos[5] = 0;
+                    pipeProfileNanos[6] = 0;
+
+                    var drawOnInputResult = draw3dArucoPipe.run(Pair.of(outMat, targetsToDraw));
+                    sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
+
+                    pipeProfileNanos[8] = 0;
+
+                } else {
+                    // Draw 2d apriltag markers
+                    var draw2dTargetsOnInput = draw2dArucoPipe.run(Pair.of(outMat, targetsToDraw));
                     sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
 
                     pipeProfileNanos[6] = 0;
