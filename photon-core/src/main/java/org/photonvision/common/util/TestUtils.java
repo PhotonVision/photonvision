@@ -197,7 +197,8 @@ public class TestUtils {
     public enum ApriltagTestImages {
         kRobots,
         kTag1_640_480,
-        kTag1_16h5_1280;
+        kTag1_16h5_1280,
+        kTag_corner_1280;
 
         public final Path path;
 
@@ -305,6 +306,7 @@ public class TestUtils {
 
     private static final String LIFECAM_240P_CAL_FILE = "lifecam240p.json";
     private static final String LIFECAM_480P_CAL_FILE = "lifecam480p.json";
+    public static final String LIMELIGHT_480P_CAL_FILE = "limelight_1280_720.json";
 
     public static CameraCalibrationCoefficients getCoeffs(String filename, boolean testMode) {
         try {
