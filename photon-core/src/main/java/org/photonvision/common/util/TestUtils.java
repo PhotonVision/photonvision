@@ -196,14 +196,17 @@ public class TestUtils {
 
     public enum ApriltagTestImages {
         kRobots,
-        kTag1_640_480;
+        kTag1_640_480,
+        kTag1_16h5_1280;
 
         public final Path path;
 
         Path getPath() {
             // Strip leading k
             var filename = this.toString().substring(1).toLowerCase();
-            return Path.of("apriltag", filename + ".jpg");
+            var extension = ".jpg";
+            if (filename.equals("tag1_16h5_1280")) extension = ".png";
+            return Path.of("apriltag", filename + extension);
         }
 
         ApriltagTestImages() {
