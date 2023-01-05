@@ -24,14 +24,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.apriltag.jni.AprilTagJNI;
-import edu.wpi.first.hal.JNIWrapper;
-import edu.wpi.first.net.WPINetJNI;
-import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.networktables.NetworkTablesJNI;
-import edu.wpi.first.util.CombinedRuntimeLoader;
-import edu.wpi.first.util.WPIUtilJNI;
-import java.io.IOException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.dataflow.structures.Packet;
