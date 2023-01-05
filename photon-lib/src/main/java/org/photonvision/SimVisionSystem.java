@@ -51,7 +51,7 @@ public class SimVisionSystem {
     int cameraResWidth;
     int cameraResHeight;
     double minTargetArea;
-    Transform3d cameraToRobot;
+    Transform3d robotToCamera;
 
     Field2d dbgField;
     FieldObject2d dbgRobot;
@@ -69,8 +69,8 @@ public class SimVisionSystem {
      * @param camDiagFOVDegrees Diagonal Field of View of the camera used. Align it with the
      *     manufacturer specifications, and/or whatever is configured in the PhotonVision Setting
      *     page.
-     * @param cameraToRobot Transform to move from the camera's mount position to the center of the
-     *     robot
+     * @param robotToCamera Transform to move from the center of the robot to the camera's mount
+     *     position
      * @param maxLEDRangeMeters Maximum distance at which your camera can illuminate the target and
      *     make it visible. Set to 9000 or more if your vision system does not rely on LED's.
      * @param cameraResWidth Width of your camera's image sensor in pixels
@@ -82,12 +82,12 @@ public class SimVisionSystem {
     public SimVisionSystem(
             String camName,
             double camDiagFOVDegrees,
-            Transform3d cameraToRobot,
+            Transform3d robotToCamera,
             double maxLEDRangeMeters,
             int cameraResWidth,
             int cameraResHeight,
             double minTargetArea) {
-        this.cameraToRobot = cameraToRobot;
+        this.robotToCamera = robotToCamera;
         this.maxLEDRangeMeters = maxLEDRangeMeters;
         this.cameraResWidth = cameraResWidth;
         this.cameraResHeight = cameraResHeight;
@@ -143,10 +143,10 @@ public class SimVisionSystem {
      * Adjust the camera position relative to the robot. Use this if your camera is on a gimbal or
      * turret or some other mobile platform.
      *
-     * @param newCameraToRobot New Transform from the robot to the camera
+     * @param newRobotToCamera New Transform from the robot to the camera
      */
-    public void moveCamera(Transform3d newCameraToRobot) {
-        this.cameraToRobot = newCameraToRobot;
+    public void moveCamera(Transform3d newRobotToCamera) {
+        this.robotToCamera = newRobotToCamera;
     }
 
     /**
@@ -170,7 +170,7 @@ public class SimVisionSystem {
      *     PhotonVision parameters.
      */
     public void processFrame(Pose3d robotPoseMeters) {
-        Pose3d cameraPose = robotPoseMeters.transformBy(cameraToRobot.inverse());
+        Pose3d cameraPose = robotPoseMeters.transformBy(robotToCamera);
 
         dbgRobot.setPose(robotPoseMeters.toPose2d());
         dbgCamera.setPose(cameraPose.toPose2d());

@@ -77,7 +77,7 @@ public class RobotPoseEstimator {
      *     respect to the FIRST field.
      * @param strategy The strategy it should use to determine the best pose.
      * @param cameras An ArrayList of Pairs of PhotonCameras and their respective Transform3ds from
-     *     the camera mount positions to the center of the robot.
+     *     the center of the robot to the camera mount positions.
      */
     public RobotPoseEstimator(
             AprilTagFieldLayout aprilTags,
