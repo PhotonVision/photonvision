@@ -195,7 +195,6 @@ public class OutputStreamPipeline {
                     pipeProfileNanos[8] = 0;
                 }
             } else if (settings instanceof ArucoPipelineSettings) {
-
                 if (settings.solvePNPEnabled) {
                     // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
                     pipeProfileNanos[5] = 0;
