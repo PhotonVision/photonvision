@@ -1,5 +1,7 @@
 import org.gradle.internal.os.OperatingSystem
 
+rootProject.name = 'simposeest'
+
 pluginManagement {
     repositories {
         mavenLocal()
