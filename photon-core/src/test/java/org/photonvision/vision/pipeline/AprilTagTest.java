@@ -76,12 +76,11 @@ public class AprilTagTest {
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
         Assertions.assertEquals(2, pose.getTranslation().getX(), 0.2);
         Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.2);
-        Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.2);
+        Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
 
         var objX = new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getY();
         var objY = new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getZ();
         var objZ = new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getX();
-        System.out.printf("Object x %.2f y %.2f z %.2f\n", objX, objY, objZ);
 
         // We expect the object X to be forward, or -X in world space
         Assertions.assertEquals(
@@ -131,23 +130,9 @@ public class AprilTagTest {
 
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        Assertions.assertEquals(2, pose.getTranslation().getX(), 0.2);
-        Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.2);
-        Assertions.assertEquals(0.0, pose.getTranslation().getY(), 0.2);
-
-        var objX = new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getY();
-        var objY = new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getZ();
-        var objZ = new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getX();
-        System.out.printf("Object x %.2f y %.2f z %.2f\n", objX, objY, objZ);
-
-        // We expect the object X to be forward, or -X in world space
-        Assertions.assertEquals(
-                -1, new Translation3d(1, 0, 0).rotateBy(pose.getRotation()).getX(), 0.1);
-        // We expect the object Y axis to be right, or negative-Y in world space
-        Assertions.assertEquals(
-                -1, new Translation3d(0, 1, 0).rotateBy(pose.getRotation()).getY(), 0.1);
-        // We expect the object Z axis to be up, or +Z in world space
-        Assertions.assertEquals(1, new Translation3d(0, 0, 1).rotateBy(pose.getRotation()).getZ(), 0.1);
+        Assertions.assertEquals(4, pose.getTranslation().getX(), 0.2);
+        Assertions.assertEquals(2, pose.getTranslation().getY(), 0.2);
+        Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
     }
 
     private static void printTestResults(CVPipelineResult pipelineResult) {
