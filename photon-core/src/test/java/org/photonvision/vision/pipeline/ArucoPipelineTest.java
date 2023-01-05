@@ -17,10 +17,8 @@
 
 package org.photonvision.vision.pipeline;
 
-import edu.wpi.first.math.geometry.Translation3d;
 import java.io.IOException;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.util.TestUtils;
