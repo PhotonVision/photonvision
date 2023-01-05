@@ -1,12 +1,12 @@
 /**
- * Auto-reconnecting Websocket, a stripped down version of the NT4 client from 
+ * Auto-reconnecting Websocket, a stripped down version of the NT4 client from
  * https://raw.githubusercontent.com/wpilibsuite/NetworkTablesClients/2f8d378ac08d5ca703d590cfb019fc4af062db89/nt4/js/src/nt4.js
  */
 export class ReconnectingWebsocket {
     constructor(serverAddr,
-        onDataIn_in,    
-        onConnect_in,         
-        onDisconnect_in) {    
+        onDataIn_in,
+        onConnect_in,
+        onDisconnect_in) {
 
         this.onDataIn = onDataIn_in;
         this.onConnect = onConnect_in;

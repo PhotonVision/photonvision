@@ -212,7 +212,7 @@ export default {
 
       // on connect
       (event) => {
-        event; this.$store.commit("backendConnected", true); 
+        event; this.$store.commit("backendConnected", true);
         this.$store.state.connectedCallbacks.forEach(it => it());
        },
 
