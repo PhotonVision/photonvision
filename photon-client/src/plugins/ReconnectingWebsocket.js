@@ -14,13 +14,10 @@ export class ReconnectingWebsocket {
 
         // WS Connection State (with defaults)
         this.serverAddr = serverAddr;
-        this.clientIdx = 0;
         this.serverConnectionActive = false;
-        this.serverTimeOffset_us = 0;
 
         //Trigger the websocket to connect automatically
         this.ws_connect();
-
     }
 
     //////////////////////////////////////////////////////////////
@@ -54,7 +51,7 @@ export class ReconnectingWebsocket {
     }
 
     ws_onError(e) {
-        console.log("[NT4] Websocket error - " + e.toString());
+        console.log("[WebSocket] Websocket error - " + e.toString());
         this.ws.close();
     }
 
@@ -63,8 +60,6 @@ export class ReconnectingWebsocket {
     }
 
     ws_connect() {
-        this.clientIdx = Math.floor(Math.random() * 99999999); //Not great, but using it for now
-
         this.ws = new WebSocket(this.serverAddr);
         this.ws.binaryType = "arraybuffer";
         this.ws.onopen = this.ws_onOpen.bind(this);
@@ -72,7 +67,7 @@ export class ReconnectingWebsocket {
         this.ws.onclose = this.ws_onClose.bind(this);
         this.ws.onerror = this.ws_onError.bind(this);
 
-        console.log("[WebSocket] Started");
+        console.log("[WebSocket] Starting...");
     }
 }
 
