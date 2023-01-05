@@ -17,19 +17,15 @@
 
 package org.photonvision.vision.aruco;
 
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.ArrayList;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.ArucoDetector;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
-import org.photonvision.common.util.math.MathUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class PhotonArucoDetector {
@@ -98,18 +94,19 @@ public class PhotonArucoDetector {
                         cornerMat.get(0, 3)[1]
                     };
             cornerMat.release();
-            // todo: only do pose est when 3d is enabled
-            if (coeffs != null && xCorners[0] != 0) {
-                final var axis =
-                        VecBuilder.fill(rvecs.get(i, 0)[0], rvecs.get(i, 0)[1], rvecs.get(i, 0)[2]);
-                translation =
-                        new Translation3d(tvecs.get(i, 0)[0], tvecs.get(i, 0)[1], tvecs.get(i, 0)[2]); // 201
-                tagPose =
-                        MathUtils.convertOpenCVtoPhotonPose(
-                                new Transform3d(translation, new Rotation3d(axis, Core.norm(rvecs.col(i)))));
-            }
+            // // todo: only do pose est when 3d is enabled
+            // if (coeffs != null && xCorners[0] != 0) {
+            //     final var axis =
+            //             VecBuilder.fill(rvecs.get(i, 0)[0], rvecs.get(i, 0)[1], rvecs.get(i, 0)[2]);
+            //     translation =
+            //             new Translation3d(tvecs.get(i, 0)[0], tvecs.get(i, 0)[1], tvecs.get(i, 0)[2]);
+            // // 201
+            //     tagPose = new Pose3d(translation, new Rotation3d(axis, Core.norm(rvecs.col(i))));
+            // }
 
-            toReturn[i] = new ArucoDetectionResult(xCorners, yCorners, (int) ids.get(i, 0)[0], tagPose);
+            toReturn[i] =
+                    new ArucoDetectionResult(
+                            xCorners, yCorners, (int) ids.get(i, 0)[0], tvecs.get(i, 0), rvecs.get(i, 0));
         }
         rvecs.release();
         tvecs.release();

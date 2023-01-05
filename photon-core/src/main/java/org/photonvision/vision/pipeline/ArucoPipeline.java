@@ -37,10 +37,6 @@ package org.photonvision.vision.pipeline;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.ArrayList;
 import java.util.List;
-import org.opencv.aruco.Aruco;
-import org.opencv.aruco.ArucoDetector;
-import org.opencv.aruco.DetectorParameters;
-import org.opencv.aruco.Dictionary;
 import org.opencv.core.Mat;
 import org.photonvision.vision.aruco.ArucoDetectionResult;
 import org.photonvision.vision.aruco.ArucoDetectorParams;
@@ -87,8 +83,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
         arucoDetectionPipe.setParams(
                 new ArucoDetectionPipeParams(
-                        m_arucoDetectorParams.getDetector(),
-                        frameStaticProperties.cameraCalibration));
+                        m_arucoDetectorParams.getDetector(), frameStaticProperties.cameraCalibration));
     }
 
     @Override
@@ -101,7 +96,7 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
 
         if (rawInputMat.empty()) {
-                return new CVPipelineResult(sumPipeNanosElapsed, 0, List.of(), frame);
+            return new CVPipelineResult(sumPipeNanosElapsed, 0, List.of(), frame);
         }
 
         tagDetectionPipeResult = arucoDetectionPipe.run(rawInputMat);

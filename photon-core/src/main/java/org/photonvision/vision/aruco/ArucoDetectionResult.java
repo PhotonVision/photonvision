@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.aruco;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import java.util.Arrays;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -28,24 +27,26 @@ public class ArucoDetectionResult {
     double[] xCorners;
     double[] yCorners;
 
-    double centerX;
-    double centerY;
     int id;
 
-    Pose3d pose;
+    double[] tvec, rvec;
 
-    public ArucoDetectionResult(double[] xCorners, double[] yCorners, int id, Pose3d pose) {
+    public ArucoDetectionResult(
+            double[] xCorners, double[] yCorners, int id, double[] tvec, double[] rvec) {
         this.xCorners = xCorners;
         this.yCorners = yCorners;
-        this.centerX = centerX;
-        this.centerY = centerY;
         this.id = id;
-        this.pose = pose;
+        this.tvec = tvec;
+        this.rvec = rvec;
         // logger.debug("Creating a new detection result: " + this.toString());
     }
 
-    public Pose3d getPose() {
-        return pose;
+    public double[] getTvec() {
+        return tvec;
+    }
+
+    public double[] getRvec() {
+        return rvec;
     }
 
     public double[] getxCorners() {
@@ -77,8 +78,6 @@ public class ArucoDetectionResult {
                 + Arrays.toString(yCorners)
                 + ", id="
                 + id
-                + ", pose="
-                + pose
                 + '}';
     }
 }

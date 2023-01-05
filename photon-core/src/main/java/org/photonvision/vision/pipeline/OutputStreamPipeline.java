@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -145,12 +144,12 @@ public class OutputStreamPipeline {
                 pipeProfileNanos[2] = 0;
             }
 
-
             // Draw 2D Crosshair on output
             var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
             sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
-            if (!(settings instanceof AprilTagPipelineSettings) && !(settings instanceof ArucoPipelineSettings)) {
+            if (!(settings instanceof AprilTagPipelineSettings)
+                    && !(settings instanceof ArucoPipelineSettings)) {
                 // If we're processing anything other than Apriltags..
                 var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
                 sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
@@ -229,5 +228,4 @@ public class OutputStreamPipeline {
                 targetsToDraw,
                 inputAndOutputFrame);
     }
-
 }

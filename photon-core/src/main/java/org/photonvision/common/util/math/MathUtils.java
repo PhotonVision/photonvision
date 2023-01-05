@@ -172,6 +172,17 @@ public class MathUtils {
     private static final Rotation3d WPILIB_BASE_ROTATION =
             new Rotation3d(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(0, 1, 0, 0, 0, 1, 1, 0, 0));
 
+    public static Transform3d convertOpenCVtoPhotonTransform(Transform3d cameraToTarget3d) {
+        // TODO: Refactor into new pipe?
+        // CameraToTarget _should_ be in opencv-land EDN
+        var nwu =
+                CoordinateSystem.convert(
+                        new Pose3d().transformBy(cameraToTarget3d),
+                        CoordinateSystem.EDN(),
+                        CoordinateSystem.NWU());
+        return new Transform3d(nwu.getTranslation(), WPILIB_BASE_ROTATION.rotateBy(nwu.getRotation()));
+    }
+
     public static Pose3d convertOpenCVtoPhotonPose(Transform3d cameraToTarget3d) {
         // TODO: Refactor into new pipe?
         // CameraToTarget _should_ be in opencv-land EDN
