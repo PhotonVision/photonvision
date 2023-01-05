@@ -92,10 +92,21 @@ class PhotonTrackedTarget {
   int GetFiducialId() const { return fiducialId; }
 
   /**
-   * Returns the corners of the minimum area rectangle bounding this target.
+   * Return a list of the 4 corners in image space (origin top left, x right, y
+   * down), in no particular order, of the minimum area bounding rectangle of
+   * this target
    */
-  wpi::SmallVector<std::pair<double, double>, 4> GetCorners() const {
+  wpi::SmallVector<std::pair<double, double>, 4> GetMinAreaRectCorners() const {
     return minAreaRectCorners;
+  }
+
+  /**
+   * Return a list of the n corners in image space (origin top left, x right, y
+   * down), in no particular order, detected for this target. For fiducials, the
+   * order is known and is always counter-clock wise around the tag.
+   */
+  std::vector<std::pair<double, double>> GetDetectedCorners() {
+    return detectedCorners;
   }
 
   /**
