@@ -109,6 +109,14 @@ public enum TargetModel implements Releasable {
                     new Point3(Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0),
                     new Point3(-Units.inchesToMeters(3.25), -Units.inchesToMeters(3.25), 0)),
             Units.inchesToMeters(3.25 * 2)),
+    kAruco6in_16h5( // Nominal edge length of 200 mm includes the white border, but solvePNP corners
+            // do not
+            List.of(
+                    new Point3(Units.inchesToMeters(3), Units.inchesToMeters(3), 0),
+                    new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
+                    new Point3(-Units.inchesToMeters(3), -Units.inchesToMeters(3), 0),
+                    new Point3(Units.inchesToMeters(3), -Units.inchesToMeters(3), 0)),
+            Units.inchesToMeters(3 * 2)),
     k6in_16h5( // Nominal edge length of 200 mm includes the white border, but solvePNP corners
             // do not
             List.of(
