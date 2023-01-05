@@ -102,8 +102,14 @@ class PhotonTrackedTarget {
 
   /**
    * Return a list of the n corners in image space (origin top left, x right, y
-   * down), in no particular order, detected for this target. For fiducials, the
-   * order is known and is always counter-clock wise around the tag.
+   * down), in no particular order, detected for this target.
+   * For fiducials, the order is known and is always counter-clock wise around
+   * the tag, like so
+   *
+   * -> +X     3 ----- 2
+   * |         |       |
+   * V + Y     |       |
+   *           0 ----- 1
    */
   std::vector<std::pair<double, double>> GetDetectedCorners() {
     return detectedCorners;
