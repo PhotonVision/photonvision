@@ -35,9 +35,9 @@ namespace photonlib {
 constexpr const units::second_t VERSION_CHECK_INTERVAL = 5_s;
 static const std::vector<std::string_view> PHOTON_PREFIX = {"/photonvision/"};
 
-PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
+PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                            const std::string_view cameraName)
-    : mainTable(instance->GetTable("photonvision")),
+    : mainTable(instance.GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(rootTable->GetRawTopic("rawBytes").Subscribe("raw", {})),
       driverModeEntry(rootTable->GetBooleanTopic("driverMode").Publish()),
@@ -57,14 +57,12 @@ PhotonCamera::PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
       pipelineIndexSubscriber(
           rootTable->GetIntegerTopic("pipelineIndex").Subscribe(-1)),
       ledModeSubscriber(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
-      m_topicNameSubscriber(*instance, PHOTON_PREFIX, {.topicsOnly = true}),
+      m_topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
       m_cameraName(cameraName) {}
 
 PhotonCamera::PhotonCamera(const std::string_view cameraName)
-    : PhotonCamera(std::make_shared<nt::NetworkTableInstance>(
-                       nt::NetworkTableInstance::GetDefault()),
-                   cameraName) {}
+    : PhotonCamera(nt::NetworkTableInstance::GetDefault(), cameraName) {}
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() {
   if (test) return testResult;

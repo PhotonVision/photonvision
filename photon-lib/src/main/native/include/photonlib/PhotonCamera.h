@@ -58,7 +58,7 @@ class PhotonCamera {
    * @param cameraName The name of the camera, as seen in the UI.
    * over.
    */
-  explicit PhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
+  explicit PhotonCamera(nt::NetworkTableInstance instance,
                         const std::string_view cameraName);
 
   /**

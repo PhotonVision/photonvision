@@ -37,7 +37,7 @@
 namespace photonlib {
 class SimPhotonCamera : public PhotonCamera {
  public:
-  SimPhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
+  SimPhotonCamera(nt::NetworkTableInstance instance,
                   const std::string& cameraName)
       : PhotonCamera(instance, cameraName) {
     latencyMillisEntry = rootTable->GetEntry("latencyMillis");
