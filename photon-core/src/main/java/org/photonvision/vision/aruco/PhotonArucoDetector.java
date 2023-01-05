@@ -17,9 +17,11 @@
 
 package org.photonvision.vision.aruco;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.ArucoDetector;
@@ -30,6 +32,9 @@ import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 public class PhotonArucoDetector {
     private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
+
+    private static final Rotation3d ARUCO_BASE_ROTATION =
+            new Rotation3d(VecBuilder.fill(0, 0, 1), Units.degreesToRadians(180));
 
     Mat ids;
 
@@ -95,9 +100,22 @@ public class PhotonArucoDetector {
                     };
             cornerMat.release();
 
+            // Need to apply a 180 rotation about Z
+            var origRvec = rvecs.get(i, 0);
+            var axisangle = VecBuilder.fill(origRvec[0], origRvec[1], origRvec[2]);
+            Rotation3d rotation = new Rotation3d(axisangle, axisangle.normF());
+            var ocvRotation = ARUCO_BASE_ROTATION.rotateBy(rotation);
+
+            var angle = ocvRotation.getAngle();
+            var finalAxisAngle = ocvRotation.getAxis().times(angle);
+
             toReturn[i] =
                     new ArucoDetectionResult(
-                            xCorners, yCorners, (int) ids.get(i, 0)[0], tvecs.get(i, 0), rvecs.get(i, 0));
+                            xCorners,
+                            yCorners,
+                            (int) ids.get(i, 0)[0],
+                            tvecs.get(i, 0),
+                            finalAxisAngle.getData());
         }
         rvecs.release();
         tvecs.release();
