@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import org.opencv.aruco.Aruco;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.DataChangeService;
@@ -205,6 +206,11 @@ public class PipelineManager {
                     currentUserPipeline =
                             new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
                     break;
+
+                case Aruco:
+                    logger.debug("Creating Aruco Pipeline");
+                    currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
+                    break;
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;
@@ -297,6 +303,12 @@ public class PipelineManager {
             case AprilTag:
                 {
                     var added = new AprilTagPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
+            case Aruco:
+                {
+                    var added = new ArucoPipelineSettings();
                     added.pipelineNickname = nickname;
                     return added;
                 }

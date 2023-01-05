@@ -17,20 +17,26 @@
 
 package org.photonvision.vision.pipeline;
 
-@SuppressWarnings("rawtypes")
-public enum PipelineType {
-    Calib3d(-2, Calibrate3dPipeline.class),
-    DriverMode(-1, DriverModePipeline.class),
-    Reflective(0, ReflectivePipeline.class),
-    ColoredShape(1, ColoredShapePipeline.class),
-    AprilTag(2, AprilTagPipeline.class),
-    Aruco(3, ArucoPipeline.class);
+import com.fasterxml.jackson.annotation.JsonTypeName;
+import org.photonvision.vision.target.TargetModel;
 
-    public final int baseIndex;
-    public final Class clazz;
+@JsonTypeName("ArucoPipelineSettings")
+public class ArucoPipelineSettings extends AdvancedPipelineSettings {
+    public double decimate = 1;
+    public int threads = 2;
+    public int numIterations = 100;
+    public double cornerAccuracy = 25.0;
+    public boolean useAruco3 = true;
 
-    PipelineType(int baseIndex, Class clazz) {
-        this.baseIndex = baseIndex;
-        this.clazz = clazz;
+    // 3d settings
+
+    public ArucoPipelineSettings() {
+        super();
+        pipelineType = PipelineType.Aruco;
+        outputShowMultipleTargets = true;
+        targetModel = TargetModel.kAruco6in_16h5;
+        cameraExposure = -1;
+        cameraAutoExposure = true;
+        ledMode = false;
     }
 }
