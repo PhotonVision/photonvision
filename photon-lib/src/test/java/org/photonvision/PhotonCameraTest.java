@@ -51,41 +51,4 @@ class PhotonCameraTest {
                     ret.createFromPacket(packet);
                 });
     }
-
-    @Test
-    public void testFoo() throws IOException, InterruptedException {
-        JNIWrapper.Helper.setExtractOnStaticLoad(false);
-        WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
-        NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
-        WPINetJNI.Helper.setExtractOnStaticLoad(false);
-        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
-
-        try {
-            CombinedRuntimeLoader.loadLibraries(
-                    PhotonCameraTest.class,
-                    "wpiutiljni",
-                    "ntcorejni",
-                    "wpinetjni",
-                    "wpiHaljni",
-                    "cscorejni",
-                    "apriltagjni");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        var ntInstance = NetworkTableInstance.getDefault();
-        ntInstance.stopServer();
-        ntInstance.startClient4("photonvision");
-        ntInstance.setServer("localhost");
-
-        var camera = new PhotonCamera("foo");
-        while (true) {
-            var res = camera.getLatestResult();
-            for (var target : res.getTargets()) {
-                System.out.println(target.getDetectedCorners());
-            }
-
-            Thread.sleep(100);
-        }
-    }
 }
