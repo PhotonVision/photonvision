@@ -37,7 +37,7 @@ public class PhotonTrackedTarget {
     private Transform3d bestCameraToTarget = new Transform3d();
     private Transform3d altCameraToTarget = new Transform3d();
     private double poseAmbiguity;
-    private List<TargetCorner> targetCorners;
+    private List<TargetCorner> minAreaRectCorners;
 
     public PhotonTrackedTarget() {}
 
@@ -51,8 +51,8 @@ public class PhotonTrackedTarget {
             Transform3d pose,
             Transform3d altPose,
             double ambiguity,
-            List<TargetCorner> corners) {
-        assert corners.size() == 4;
+            List<TargetCorner> minAreaRectCorners) {
+        assert minAreaRectCorners.size() == 4;
         this.yaw = yaw;
         this.pitch = pitch;
         this.area = area;
@@ -60,7 +60,7 @@ public class PhotonTrackedTarget {
         this.fiducialId = id;
         this.bestCameraToTarget = pose;
         this.altCameraToTarget = altPose;
-        this.targetCorners = corners;
+        this.minAreaRectCorners = minAreaRectCorners;
         this.poseAmbiguity = ambiguity;
     }
 
@@ -97,8 +97,8 @@ public class PhotonTrackedTarget {
      * Return a list of the 4 corners in image space (origin top left, x left, y down), in no
      * particular order, of the minimum area bounding rectangle of this target
      */
-    public List<TargetCorner> getCorners() {
-        return targetCorners;
+    public List<TargetCorner> getMinAreaRectCorners() {
+        return minAreaRectCorners;
     }
 
     /**
@@ -127,7 +127,7 @@ public class PhotonTrackedTarget {
                 && Double.compare(that.area, area) == 0
                 && Objects.equals(bestCameraToTarget, that.bestCameraToTarget)
                 && Objects.equals(altCameraToTarget, that.altCameraToTarget)
-                && Objects.equals(targetCorners, that.targetCorners);
+                && Objects.equals(minAreaRectCorners, that.minAreaRectCorners);
     }
 
     @Override
@@ -176,11 +176,11 @@ public class PhotonTrackedTarget {
 
         this.poseAmbiguity = packet.decodeDouble();
 
-        this.targetCorners = new ArrayList<>(4);
+        this.minAreaRectCorners = new ArrayList<>(4);
         for (int i = 0; i < 4; i++) {
             double cx = packet.decodeDouble();
             double cy = packet.decodeDouble();
-            targetCorners.add(new TargetCorner(cx, cy));
+            minAreaRectCorners.add(new TargetCorner(cx, cy));
         }
 
         return packet;
@@ -203,8 +203,8 @@ public class PhotonTrackedTarget {
         packet.encode(poseAmbiguity);
 
         for (int i = 0; i < 4; i++) {
-            packet.encode(targetCorners.get(i).x);
-            packet.encode(targetCorners.get(i).y);
+            packet.encode(minAreaRectCorners.get(i).x);
+            packet.encode(minAreaRectCorners.get(i).y);
         }
 
         return packet;
@@ -226,7 +226,7 @@ public class PhotonTrackedTarget {
                 + ", cameraToTarget="
                 + bestCameraToTarget
                 + ", targetCorners="
-                + targetCorners
+                + minAreaRectCorners
                 + '}';
     }
 }
