@@ -18,6 +18,9 @@ package org.photonvision.vision.target;
 
 import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
+import edu.wpi.first.math.Vector;
+import edu.wpi.first.math.geometry.CoordinateAxis;
+import edu.wpi.first.math.geometry.CoordinateSystem;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import java.util.HashMap;
@@ -171,24 +174,25 @@ public class TrackedTarget implements Releasable {
         m_shape = null;
 
         // TODO implement skew? or just yeet
-
+        //MathUtils.convertOpenCVtoPhotonPose(bestPose);
         var tvec = new Mat(3, 1, CvType.CV_64FC1);
         tvec.put(
                 0,
                 0,
-                new double[] {
-                    -bestPose.getTranslation().getY(),
-                    -bestPose.getTranslation().getZ(),
-                    bestPose.getTranslation().getX()
+                new double[] { //-y-z x
+                    bestPose.getTranslation().getX(),
+                    bestPose.getTranslation().getY(),
+                    bestPose.getTranslation().getZ()
                 });
-        setCameraRelativeTvec(tvec);
 
+        setCameraRelativeTvec(tvec);
+        CoordinateSystem.convert(bestPose.getRotation(), CoordinateSystem.EDN(), CoordinateSystem.NWU());
         // Opencv expects a 3d vector with norm = angle and direction = axis
-        Rotation3d newRot =
+        Rotation3d newRot = //y z -x worked
                 new Rotation3d(
+                        bestPose.getRotation().getX(),
                         bestPose.getRotation().getY(),
-                        bestPose.getRotation().getZ(),
-                        -bestPose.getRotation().getX());
+                        bestPose.getRotation().getZ());
         var rvec = new Mat(3, 1, CvType.CV_64FC1);
         MathUtils.rotationToOpencvRvec(newRot, rvec);
         setCameraRelativeRvec(rvec);

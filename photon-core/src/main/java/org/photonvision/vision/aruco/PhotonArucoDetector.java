@@ -25,6 +25,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import java.util.ArrayList;
 import org.opencv.aruco.Aruco;
 import org.opencv.aruco.ArucoDetector;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -105,7 +106,7 @@ public class PhotonArucoDetector {
                         new Translation3d(tvecs.get(i, 0)[0], tvecs.get(i, 0)[1], tvecs.get(i, 0)[2]); // 201
                 tagPose =
                         MathUtils.convertOpenCVtoPhotonPose(
-                                new Transform3d(translation, new Rotation3d(axis, axis.normF())));
+                                new Transform3d(translation, new Rotation3d(axis, Core.norm(rvecs.col(i)))));
             }
 
             toReturn[i] = new ArucoDetectionResult(xCorners, yCorners, (int) ids.get(i, 0)[0], tagPose);

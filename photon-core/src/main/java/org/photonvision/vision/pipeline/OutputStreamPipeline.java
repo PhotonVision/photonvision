@@ -144,79 +144,79 @@ public class OutputStreamPipeline {
             } else {
                 pipeProfileNanos[2] = 0;
             }
-        }
 
-        // Draw 2D Crosshair on output
-        var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
-        sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
-        if (!(settings instanceof AprilTagPipelineSettings)
-                && !(settings instanceof ArucoPipelineSettings)) {
-            // If we're processing anything other than Apriltags..
-            var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
-            sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
+            // Draw 2D Crosshair on output
+            var draw2dCrosshairResultOnInput = draw2dCrosshairPipe.run(Pair.of(inMat, targetsToDraw));
+            sumPipeNanosElapsed += pipeProfileNanos[3] = draw2dCrosshairResultOnInput.nanosElapsed;
 
-            if (settings.solvePNPEnabled) {
-                // Draw 3D Targets on input and output if possible
-                pipeProfileNanos[5] = 0;
-                pipeProfileNanos[6] = 0;
-                pipeProfileNanos[7] = 0;
+            if (!(settings instanceof AprilTagPipelineSettings) && !(settings instanceof ArucoPipelineSettings)) {
+                // If we're processing anything other than Apriltags..
+                var draw2dCrosshairResultOnOutput = draw2dCrosshairPipe.run(Pair.of(outMat, targetsToDraw));
+                sumPipeNanosElapsed += pipeProfileNanos[4] = draw2dCrosshairResultOnOutput.nanosElapsed;
 
-                var drawOnOutputResult = draw3dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[8] = drawOnOutputResult.nanosElapsed;
-            } else {
-                // Only draw 2d targets
-                pipeProfileNanos[5] = 0;
+                if (settings.solvePNPEnabled) {
+                    // Draw 3D Targets on input and output if possible
+                    pipeProfileNanos[5] = 0;
+                    pipeProfileNanos[6] = 0;
+                    pipeProfileNanos[7] = 0;
 
-                var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
+                    var drawOnOutputResult = draw3dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
+                    sumPipeNanosElapsed += pipeProfileNanos[8] = drawOnOutputResult.nanosElapsed;
+                } else {
+                    // Only draw 2d targets
+                    pipeProfileNanos[5] = 0;
 
-                pipeProfileNanos[7] = 0;
-                pipeProfileNanos[8] = 0;
-            }
+                    var draw2dTargetsOnOutput = draw2dTargetsPipe.run(Pair.of(outMat, targetsToDraw));
+                    sumPipeNanosElapsed += pipeProfileNanos[6] = draw2dTargetsOnOutput.nanosElapsed;
 
-        } else if (settings instanceof AprilTagPipelineSettings) {
-            // If we are doing apriltags...
-            if (settings.solvePNPEnabled) {
-                // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
-                pipeProfileNanos[5] = 0;
-                pipeProfileNanos[6] = 0;
+                    pipeProfileNanos[7] = 0;
+                    pipeProfileNanos[8] = 0;
+                }
 
-                var drawOnInputResult = draw3dAprilTagsPipe.run(Pair.of(outMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
+            } else if (settings instanceof AprilTagPipelineSettings) {
+                // If we are doing apriltags...
+                if (settings.solvePNPEnabled) {
+                    // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
+                    pipeProfileNanos[5] = 0;
+                    pipeProfileNanos[6] = 0;
 
-                pipeProfileNanos[8] = 0;
+                    var drawOnInputResult = draw3dAprilTagsPipe.run(Pair.of(outMat, targetsToDraw));
+                    sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
 
-            } else {
-                // Draw 2d apriltag markers
-                var draw2dTargetsOnInput = draw2dAprilTagsPipe.run(Pair.of(outMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
+                    pipeProfileNanos[8] = 0;
 
-                pipeProfileNanos[6] = 0;
-                pipeProfileNanos[7] = 0;
-                pipeProfileNanos[8] = 0;
-            }
+                } else {
+                    // Draw 2d apriltag markers
+                    var draw2dTargetsOnInput = draw2dAprilTagsPipe.run(Pair.of(outMat, targetsToDraw));
+                    sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
 
-        } else if (settings instanceof ArucoPipelineSettings) {
+                    pipeProfileNanos[6] = 0;
+                    pipeProfileNanos[7] = 0;
+                    pipeProfileNanos[8] = 0;
+                }
 
-            if (settings.solvePNPEnabled) {
-                // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
-                pipeProfileNanos[5] = 0;
-                pipeProfileNanos[6] = 0;
+            } else if (settings instanceof ArucoPipelineSettings) {
 
-                var drawOnInputResult = draw3dArucoPipe.run(Pair.of(outMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
+                if (settings.solvePNPEnabled) {
+                    // Draw 3d Apriltag markers (camera is calibrated and running in 3d mode)
+                    pipeProfileNanos[5] = 0;
+                    pipeProfileNanos[6] = 0;
 
-                pipeProfileNanos[8] = 0;
+                    var drawOnInputResult = draw3dArucoPipe.run(Pair.of(outMat, targetsToDraw));
+                    sumPipeNanosElapsed += pipeProfileNanos[7] = drawOnInputResult.nanosElapsed;
 
-            } else {
-                // Draw 2d apriltag markers
-                var draw2dTargetsOnInput = draw2dArucoPipe.run(Pair.of(outMat, targetsToDraw));
-                sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
+                    pipeProfileNanos[8] = 0;
 
-                pipeProfileNanos[6] = 0;
-                pipeProfileNanos[7] = 0;
-                pipeProfileNanos[8] = 0;
+                } else {
+                    // Draw 2d apriltag markers
+                    var draw2dTargetsOnInput = draw2dArucoPipe.run(Pair.of(outMat, targetsToDraw));
+                    sumPipeNanosElapsed += pipeProfileNanos[5] = draw2dTargetsOnInput.nanosElapsed;
+
+                    pipeProfileNanos[6] = 0;
+                    pipeProfileNanos[7] = 0;
+                    pipeProfileNanos[8] = 0;
+                }
             }
         }
 
