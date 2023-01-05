@@ -37,7 +37,7 @@ public class TrackedTarget implements Releasable {
 
     private MatOfPoint2f m_approximateBoundingPolygon;
 
-    private List<Point> m_targetCorners;
+    private List<Point> m_targetCorners = List.of();
 
     private Point m_targetOffsetPoint;
     private Point m_robotOffsetPoint;
