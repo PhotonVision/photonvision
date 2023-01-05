@@ -18,6 +18,7 @@
 package org.photonvision.vision.pipeline;
 
 import java.util.List;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -129,14 +130,20 @@ public class OutputStreamPipeline {
         boolean inEmpty = inMat.empty();
         if (!inEmpty)
             sumPipeNanosElapsed += pipeProfileNanos[0] = resizeImagePipe.run(inMat).nanosElapsed;
-        sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
 
-        // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
-        if (outMat.channels() == 1) {
-            var outputMatPipeResult = outputMatPipe.run(outMat);
-            sumPipeNanosElapsed += pipeProfileNanos[2] = outputMatPipeResult.nanosElapsed;
-        } else {
-            pipeProfileNanos[2] = 0;
+        boolean outEmpty = outMat.empty();
+        if (!outEmpty)
+            sumPipeNanosElapsed += pipeProfileNanos[1] = resizeImagePipe.run(outMat).nanosElapsed;
+
+        // Only attempt drawing on a non-empty frame
+        if (!outEmpty) {
+            // Convert single-channel HSV output mat to 3-channel BGR in preparation for streaming
+            if (outMat.channels() == 1) {
+                var outputMatPipeResult = outputMatPipe.run(outMat);
+                sumPipeNanosElapsed += pipeProfileNanos[2] = outputMatPipeResult.nanosElapsed;
+            } else {
+                pipeProfileNanos[2] = 0;
+            }
         }
 
         // Draw 2D Crosshair on output
@@ -222,4 +229,5 @@ public class OutputStreamPipeline {
                 targetsToDraw,
                 inputAndOutputFrame);
     }
+
 }

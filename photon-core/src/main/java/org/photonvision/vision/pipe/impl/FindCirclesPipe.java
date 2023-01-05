@@ -66,7 +66,7 @@ public class FindCirclesPipe
                 1.0,
                 params.minDist,
                 params.maxCannyThresh,
-                params.accuracy,
+                Math.max(1.0, params.accuracy),
                 minRadius,
                 maxRadius);
         // Great, we now found the center point of the circle and it's radius, but we have no idea what

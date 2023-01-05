@@ -120,7 +120,7 @@ public class VisionModule {
         this.visionRunner =
                 new VisionRunner(
                         this.visionSource.getFrameProvider(),
-                        this.pipelineManager::getCurrentUserPipeline,
+                        this.pipelineManager::getCurrentPipeline,
                         this::consumeResult,
                         this.cameraQuirks);
         this.streamRunnable = new StreamRunnable(new OutputStreamPipeline());
@@ -578,7 +578,7 @@ public class VisionModule {
     }
 
     public void setTargetModel(TargetModel targetModel) {
-        var settings = pipelineManager.getCurrentUserPipeline().getSettings();
+        var settings = pipelineManager.getCurrentPipeline().getSettings();
         if (settings instanceof ReflectivePipelineSettings) {
             ((ReflectivePipelineSettings) settings).targetModel = targetModel;
             saveAndBroadcastAll();
