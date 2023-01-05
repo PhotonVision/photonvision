@@ -59,7 +59,8 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
 
     private final ArucoDetectionPipe arucoDetectionPipe = new ArucoDetectionPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
-    DetectorParameters arucoDetectionParams = null;
+
+    ArucoDetectorParams m_arucoDetectorParams = new ArucoDetectorParams();
 
     public ArucoPipeline() {
         super(FrameThresholdType.GREYSCALE);
@@ -80,16 +81,13 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
                 new RotateImagePipe.RotateImageParams(settings.inputImageRotationMode);
         rotateImagePipe.setParams(rotateImageParams);
 
-        arucoDetectionParams =
-                ArucoDetectorParams.getDetectorParams(
-                        arucoDetectionParams,
-                        settings.decimate,
-                        settings.numIterations,
-                        settings.cornerAccuracy);
+        m_arucoDetectorParams.setDecimation((float) settings.decimate);
+        m_arucoDetectorParams.setCornerRefinementMaxIterations(settings.numIterations);
+        m_arucoDetectorParams.setCornerAccuracy(settings.cornerAccuracy);
 
         arucoDetectionPipe.setParams(
                 new ArucoDetectionPipeParams(
-                        new ArucoDetector(Dictionary.get(Aruco.DICT_APRILTAG_16h5), arucoDetectionParams),
+                        m_arucoDetectorParams.getDetector(),
                         frameStaticProperties.cameraCalibration));
     }
 
@@ -102,9 +100,11 @@ public class ArucoPipeline extends CVPipeline<CVPipelineResult, ArucoPipelineSet
         List<TrackedTarget> targetList;
         CVPipeResult<List<ArucoDetectionResult>> tagDetectionPipeResult;
 
+        if (rawInputMat.empty()) {
+                return new CVPipelineResult(sumPipeNanosElapsed, 0, List.of(), frame);
+        }
+
         tagDetectionPipeResult = arucoDetectionPipe.run(rawInputMat);
-        ArucoDetectorParams.setCurr(
-                (float) settings.decimate, settings.numIterations, settings.cornerAccuracy);
         targetList = new ArrayList<>();
         for (ArucoDetectionResult detection : tagDetectionPipeResult.output) {
             // TODO this should be in a pipe, not in the top level here (Matt)

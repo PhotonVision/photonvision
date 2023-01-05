@@ -67,7 +67,6 @@ public class PhotonArucoDetector {
             float tagSize,
             CameraCalibrationCoefficients coeffs,
             ArucoDetector detector) {
-
         detector.detectMarkers(grayscaleImg, corners, ids);
         if (coeffs != null)
             Aruco.estimatePoseSingleMarkers(

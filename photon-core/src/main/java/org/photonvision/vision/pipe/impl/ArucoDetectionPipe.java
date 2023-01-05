@@ -31,7 +31,6 @@ public class ArucoDetectionPipe
 
     @Override
     protected List<ArucoDetectionResult> process(Mat in) {
-
         return List.of(
                 detector.detect(
                         in,
@@ -43,7 +42,6 @@ public class ArucoDetectionPipe
     @Override
     public void setParams(ArucoDetectionPipeParams params) {
         super.setParams(params);
-        // m_detector.updateParams(params.detectorParams);
     }
 
     public DetectorParameters getParameters() {

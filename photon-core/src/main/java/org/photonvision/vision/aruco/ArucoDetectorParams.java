@@ -18,50 +18,59 @@
 package org.photonvision.vision.aruco;
 
 import org.opencv.aruco.Aruco;
+import org.opencv.aruco.ArucoDetector;
 import org.opencv.aruco.DetectorParameters;
+import org.opencv.aruco.Dictionary;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
 public class ArucoDetectorParams {
     private static final Logger logger = new Logger(PhotonArucoDetector.class, LogGroup.VisionModule);
-    static float decimate;
-    static int iterations;
-    static double accuracy;
 
-    private ArucoDetectorParams() {}
+    private float m_decimate = -1;
+    private int m_iterations = -1;
+    private double m_accuracy = -1;
 
-    public static void setCurr(float decimate, int iterations, double accuracy) {
-        ArucoDetectorParams.decimate = decimate;
-        ArucoDetectorParams.iterations = iterations;
-        ArucoDetectorParams.accuracy = accuracy;
+    DetectorParameters parameters = DetectorParameters.create();
+    ArucoDetector detector;
+
+    public ArucoDetectorParams() {
+        setDecimation(1);
+        setCornerAccuracy(25);
+        setCornerRefinementMaxIterations(100);
+
+        detector = new ArucoDetector(Dictionary.get(Aruco.DICT_APRILTAG_16h5), parameters);
     }
 
-    public static DetectorParameters getDetectorParams(
-            DetectorParameters curr, double decimate, int cornerIterations, double minAccuracy) {
-        if (!(ArucoDetectorParams.decimate == (float) decimate
-                && ArucoDetectorParams.iterations == cornerIterations
-                && ArucoDetectorParams.accuracy == minAccuracy)) {
-            DetectorParameters parameters = DetectorParameters.create();
+    public void setDecimation(float decimate) {
+        if (decimate == m_decimate) return;
 
-            parameters.set_aprilTagQuadDecimate((float) decimate);
-            parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
-            if (cornerIterations != 0) {
-                parameters.set_cornerRefinementMaxIterations(cornerIterations); // 200
-            }
-            if (minAccuracy != 0) {
-                parameters.set_cornerRefinementMinAccuracy(
-                        minAccuracy / 1000.0); // divides by 1000 because the UI multiplies it by 1000
-            }
-            logger.info(
-                    "Creating new ArucoDetectorParams with: Decimate: "
-                            + parameters.get_aprilTagQuadDecimate()
-                            + ", Corner Refinement Max Iterations: "
-                            + parameters.get_cornerRefinementMaxIterations()
-                            + ", Corner Min Accuracy: "
-                            + parameters.get_cornerRefinementMinAccuracy());
+        logger.info("Setting decimation from " + m_decimate + " to " + decimate);
 
-            return parameters;
-        }
-        return curr;
+        // We only need to mutate the parameters -- the detector keeps a poitner to the parameters
+        // object internally, so it should automatically update
+        parameters.set_aprilTagQuadDecimate((float) decimate);
+        m_decimate = decimate;
+    }
+
+    public void setCornerRefinementMaxIterations(int iters) {
+        if (iters == m_iterations || iters <= 0) return;
+
+        parameters.set_cornerRefinementMethod(Aruco.CORNER_REFINE_SUBPIX);
+        parameters.set_cornerRefinementMaxIterations(iters); // 200
+
+        m_iterations = iters;
+    }
+
+    public void setCornerAccuracy(double accuracy) {
+        if (accuracy == m_accuracy || accuracy <= 0) return;
+
+        parameters.set_cornerRefinementMinAccuracy(
+                accuracy / 1000.0); // divides by 1000 because the UI multiplies it by 1000
+        m_accuracy = accuracy;
+    }
+
+    public ArucoDetector getDetector() {
+        return detector;
     }
 }
