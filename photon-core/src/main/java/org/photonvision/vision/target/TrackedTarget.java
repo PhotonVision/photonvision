@@ -232,7 +232,7 @@ public class TrackedTarget implements Releasable {
         if (m_cameraRelativeRvec != null) m_cameraRelativeRvec.release();
     }
 
-    public void setCorners(List<Point> targetCorners) {
+    public void setTargetCorners(List<Point> targetCorners) {
         this.m_targetCorners = targetCorners;
     }
 

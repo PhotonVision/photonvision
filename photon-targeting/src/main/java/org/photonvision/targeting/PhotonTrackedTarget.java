@@ -27,7 +27,9 @@ import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class PhotonTrackedTarget {
-    public static final int PACK_SIZE_BYTES = Double.BYTES * (5 + 7 + 2 * 4 + 1 + 7);
+    private static final int MAX_CORNERS = 8;
+    public static final int PACK_SIZE_BYTES =
+            Double.BYTES * (5 + 7 + 2 * 4 + 1 + 7 + 2 * MAX_CORNERS);
 
     private double yaw;
     private double pitch;
@@ -37,7 +39,12 @@ public class PhotonTrackedTarget {
     private Transform3d bestCameraToTarget = new Transform3d();
     private Transform3d altCameraToTarget = new Transform3d();
     private double poseAmbiguity;
+
+    // Corners from the min-area rectangle bounding the target
     private List<TargetCorner> minAreaRectCorners;
+
+    // Corners from whatever corner detection method was used
+    private List<TargetCorner> detectedCorners;
 
     public PhotonTrackedTarget() {}
 
@@ -51,8 +58,14 @@ public class PhotonTrackedTarget {
             Transform3d pose,
             Transform3d altPose,
             double ambiguity,
-            List<TargetCorner> minAreaRectCorners) {
+            List<TargetCorner> minAreaRectCorners,
+            List<TargetCorner> detectedCorners) {
         assert minAreaRectCorners.size() == 4;
+
+        if (detectedCorners.size() > MAX_CORNERS) {
+            detectedCorners = detectedCorners.subList(0, MAX_CORNERS);
+        }
+
         this.yaw = yaw;
         this.pitch = pitch;
         this.area = area;
@@ -61,6 +74,7 @@ public class PhotonTrackedTarget {
         this.bestCameraToTarget = pose;
         this.altCameraToTarget = altPose;
         this.minAreaRectCorners = minAreaRectCorners;
+        this.detectedCorners = detectedCorners;
         this.poseAmbiguity = ambiguity;
     }
 
@@ -102,6 +116,15 @@ public class PhotonTrackedTarget {
     }
 
     /**
+     * Return a list of the n corners in image space (origin top left, x left, y down), in no
+     * particular order, detected for this target. For fiducials, the order is known and is always
+     * counter-clock wise around the tag.
+     */
+    public List<TargetCorner> getDetectedCorners() {
+        return detectedCorners;
+    }
+
+    /**
      * Get the transform that maps camera space (X = forward, Y = left, Z = up) to object/fiducial tag
      * space (X forward, Y left, Z up) with the lowest reprojection error
      */
@@ -127,12 +150,20 @@ public class PhotonTrackedTarget {
                 && Double.compare(that.area, area) == 0
                 && Objects.equals(bestCameraToTarget, that.bestCameraToTarget)
                 && Objects.equals(altCameraToTarget, that.altCameraToTarget)
-                && Objects.equals(minAreaRectCorners, that.minAreaRectCorners);
+                && Objects.equals(minAreaRectCorners, that.minAreaRectCorners)
+                && Objects.equals(detectedCorners, that.detectedCorners);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(yaw, pitch, area, bestCameraToTarget, altCameraToTarget);
+        return Objects.hash(
+                yaw,
+                pitch,
+                area,
+                bestCameraToTarget,
+                altCameraToTarget,
+                detectedCorners,
+                minAreaRectCorners);
     }
 
     private static Transform3d decodeTransform(Packet packet) {
@@ -156,6 +187,25 @@ public class PhotonTrackedTarget {
         packet.encode(transform.getRotation().getQuaternion().getX());
         packet.encode(transform.getRotation().getQuaternion().getY());
         packet.encode(transform.getRotation().getQuaternion().getZ());
+    }
+
+    private static void encodeList(Packet packet, List<TargetCorner> list) {
+        packet.encode((byte) list.size());
+        for (int i = 0; i < list.size(); i++) {
+            packet.encode(list.get(i).x);
+            packet.encode(list.get(i).y);
+        }
+    }
+
+    private static List<TargetCorner> decodeList(Packet p) {
+        byte len = p.decodeByte();
+        var ret = new ArrayList<TargetCorner>();
+        for (int i = 0; i < len; i++) {
+            double cx = p.decodeDouble();
+            double cy = p.decodeDouble();
+            ret.add(new TargetCorner(cx, cy));
+        }
+        return ret;
     }
 
     /**
@@ -183,6 +233,8 @@ public class PhotonTrackedTarget {
             minAreaRectCorners.add(new TargetCorner(cx, cy));
         }
 
+        detectedCorners = decodeList(packet);
+
         return packet;
     }
 
@@ -206,6 +258,8 @@ public class PhotonTrackedTarget {
             packet.encode(minAreaRectCorners.get(i).x);
             packet.encode(minAreaRectCorners.get(i).y);
         }
+
+        encodeList(packet, detectedCorners);
 
         return packet;
     }

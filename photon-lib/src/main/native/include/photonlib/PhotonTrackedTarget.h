@@ -95,7 +95,7 @@ class PhotonTrackedTarget {
    * Returns the corners of the minimum area rectangle bounding this target.
    */
   wpi::SmallVector<std::pair<double, double>, 4> GetCorners() const {
-    return corners;
+    return minAreaRectCorners;
   }
 
   /**
@@ -137,6 +137,7 @@ class PhotonTrackedTarget {
   frc::Transform3d bestCameraToTarget;
   frc::Transform3d altCameraToTarget;
   double poseAmbiguity;
-  wpi::SmallVector<std::pair<double, double>, 4> corners;
+  wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners;
+  std::vector<std::pair<double, double>> detectedCorners;
 };
 }  // namespace photonlib
