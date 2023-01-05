@@ -5,6 +5,7 @@
 package frc.robot;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import org.photonvision.PhotonCamera;
 import org.photonvision.RobotPoseEstimator;
@@ -62,10 +63,10 @@ public class PhotonCameraWrapper {
   public Pair<Pose2d, Double> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
     robotPoseEstimator.setReferencePose(prevEstimatedRobotPose);
     
-    var currentTime = Timer.getFPGATimestamp();
-    var result = robotPoseEstimator.update();
-    if(result.getFirst() != null){
-      return new Pair<Pose2d, Double>(result.getFirst().toPose2d(), currentTime - result.getSecond());
+    double currentTime = Timer.getFPGATimestamp();
+    Optional<Pair<Pose3d, Double>> result = robotPoseEstimator.update();
+    if(result.isPresent()){
+      return new Pair<Pose2d, Double>(result.get().getFirst().toPose2d(), currentTime - result.get().getSecond());
     } else {
       return new Pair<Pose2d, Double>(null, 0.0);
     }
