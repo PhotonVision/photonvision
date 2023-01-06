@@ -116,7 +116,11 @@ public class PhotonCamera {
         var mainTable = instance.getTable(kTableName);
         this.rootTable = mainTable.getSubTable(cameraName);
         path = rootTable.getPath();
-        rawBytesEntry = rootTable.getRawTopic("rawBytes").subscribe("rawBytes", new byte[] {});
+        rawBytesEntry =
+                rootTable
+                        .getRawTopic("rawBytes")
+                        .subscribe(
+                                "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
         driverModeEntry = rootTable.getBooleanTopic("driverMode").getEntry(false);
         inputSaveImgEntry = rootTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = rootTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);

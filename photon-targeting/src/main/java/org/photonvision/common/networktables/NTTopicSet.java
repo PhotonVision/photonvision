@@ -67,7 +67,9 @@ public class NTTopicSet {
 
     public void updateEntries() {
         rawBytesEntry =
-                subTable.getRawTopic("rawBytes").publish("rawBytes", PubSubOption.periodic(0.01));
+                subTable
+                        .getRawTopic("rawBytes")
+                        .publish("rawBytes", PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
         pipelineIndexTopic = subTable.getIntegerTopic("pipelineIndex");
         pipelineIndexPublisher = pipelineIndexTopic.publish();
