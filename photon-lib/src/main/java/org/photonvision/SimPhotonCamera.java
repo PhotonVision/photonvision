@@ -48,7 +48,7 @@ public class SimPhotonCamera {
      */
     public SimPhotonCamera(NetworkTableInstance instance, String cameraName) {
         ts.removeEntries();
-        ts.subTable = instance.getTable("/photonvision").getSubTable(cameraName);
+        ts.subTable = instance.getTable(PhotonCamera.kTableName).getSubTable(cameraName);
         ts.updateEntries();
     }
 

@@ -37,7 +37,7 @@
 namespace photonlib {
 class SimPhotonCamera : public PhotonCamera {
  public:
-  SimPhotonCamera(std::shared_ptr<nt::NetworkTableInstance> instance,
+  SimPhotonCamera(nt::NetworkTableInstance instance,
                   const std::string& cameraName)
       : PhotonCamera(instance, cameraName) {
     latencyMillisEntry = rootTable->GetEntry("latencyMillis");
@@ -48,14 +48,12 @@ class SimPhotonCamera : public PhotonCamera {
     targetSkewEntry = rootTable->GetEntry("targetSkewEntry");
     targetPoseEntry = rootTable->GetEntry("targetPoseEntry");
     rawBytesPublisher = rootTable->GetRawTopic("rawBytes").Publish("raw");
-    versionEntry = instance->GetTable("photonvision")->GetEntry("version");
+    versionEntry = instance.GetTable("photonvision")->GetEntry("version");
     // versionEntry.SetString(PhotonVersion.versionString);
   }
 
   explicit SimPhotonCamera(const std::string& cameraName)
-      : SimPhotonCamera(std::make_shared<nt::NetworkTableInstance>(
-                            nt::NetworkTableInstance::GetDefault()),
-                        cameraName) {}
+      : SimPhotonCamera(nt::NetworkTableInstance::GetDefault(), cameraName) {}
 
   virtual ~SimPhotonCamera() = default;
 
