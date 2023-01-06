@@ -153,7 +153,7 @@
           v-model="currentPipelineType"
           name="Type"
           tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
-          :list="['Reflective Tape', 'Colored Shape', 'AprilTag']"
+          :list="['Reflective Tape', 'Colored Shape', 'AprilTag', 'Aruco']"
           @input="e => showTypeDialog(e)"
         />
       </v-col>
@@ -257,7 +257,7 @@ export default {
   },
   data: () => {
     return {
-      re: RegExp("^[A-Za-z0-9 \\-)(]*[A-Za-z0-9][A-Za-z0-9 \\-)(.]*$"),
+      re: RegExp("^[A-Za-z0-9_ \\-)(]*[A-Za-z0-9][A-Za-z0-9_ \\-)(.]*$"),
       isCameraNameEdit: false,
       newCameraName: "",
       cameraNameError: "",

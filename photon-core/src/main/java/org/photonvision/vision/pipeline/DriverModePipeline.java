@@ -77,17 +77,21 @@ public class DriverModePipeline
         // apply pipes
         var inputMat = frame.colorImage.getMat();
 
-        totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
+        boolean emptyIn = inputMat.empty();
 
-        if (!accelerated) {
-            var rotateImageResult = rotateImagePipe.run(inputMat);
-            totalNanos += rotateImageResult.nanosElapsed;
+        if (!emptyIn) {
+            if (!accelerated) {
+                var rotateImageResult = rotateImagePipe.run(inputMat);
+                totalNanos += rotateImageResult.nanosElapsed;
+            }
+
+            totalNanos += resizeImagePipe.run(inputMat).nanosElapsed;
+
+            var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
+
+            // calculate elapsed nanoseconds
+            totalNanos += draw2dCrosshairResult.nanosElapsed;
         }
-
-        var draw2dCrosshairResult = draw2dCrosshairPipe.run(Pair.of(inputMat, List.of()));
-
-        // calculate elapsed nanoseconds
-        totalNanos += draw2dCrosshairResult.nanosElapsed;
 
         var fpsResult = calculateFPSPipe.run(null);
         var fps = fpsResult.output;
