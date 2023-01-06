@@ -39,7 +39,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
                            const std::string_view cameraName)
     : mainTable(instance.GetTable("photonvision")),
       rootTable(mainTable->GetSubTable(cameraName)),
-      rawBytesEntry(rootTable->GetRawTopic("rawBytes").Subscribe("raw", {})),
+      rawBytesEntry(
+          rootTable->GetRawTopic("rawBytes")
+              .Subscribe("raw", {}, {.periodic = 0.01, .sendAll = true})),
       driverModeEntry(rootTable->GetBooleanTopic("driverMode").Publish()),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
