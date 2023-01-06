@@ -17,20 +17,18 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import java.awt.*;
 import org.photonvision.vision.frame.FrameDivisor;
-import org.photonvision.vision.target.TargetModel;
 
-public class Draw3dAprilTagsPipe extends Draw3dTargetsPipe {
-    public static class Draw3dAprilTagsParams extends Draw3dContoursParams {
-        public Draw3dAprilTagsParams(
-                boolean shouldDraw,
-                CameraCalibrationCoefficients cameraCalibrationCoefficients,
-                TargetModel targetModel,
-                FrameDivisor divisor) {
-            super(shouldDraw, cameraCalibrationCoefficients, targetModel, divisor);
-            this.shouldDrawHull = false;
-            this.redistortPoints = true;
+public class Draw2dArucoPipe extends Draw2dTargetsPipe {
+    public static class Draw2dArucoParams extends Draw2dTargetsPipe.Draw2dTargetsParams {
+        public Draw2dArucoParams(
+                boolean shouldDraw, boolean showMultipleTargets, FrameDivisor divisor) {
+            super(shouldDraw, showMultipleTargets, divisor);
+            // We want to show the polygon, not the rotated box
+            this.showRotatedBox = false;
+            this.showMaximumBox = false;
+            this.rotatedBoxColor = Color.RED;
         }
     }
 }

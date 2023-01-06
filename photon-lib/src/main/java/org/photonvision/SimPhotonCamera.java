@@ -36,6 +36,8 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 public class SimPhotonCamera {
     NTTopicSet ts = new NTTopicSet();
     PhotonPipelineResult latestResult;
+    private long heartbeatCounter = 0;
+
     /**
      * Constructs a Simulated PhotonCamera from a root table.
      *
@@ -133,6 +135,8 @@ public class SimPhotonCamera {
             };
             ts.targetPoseEntry.set(poseData);
         }
+
+        ts.heartbeatPublisher.set(heartbeatCounter++);
 
         latestResult = newResult;
     }

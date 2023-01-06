@@ -15,22 +15,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.photonvision.vision.pipe.impl;
+package org.photonvision.vision.pipeline;
 
-import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
-import org.photonvision.vision.frame.FrameDivisor;
+import com.fasterxml.jackson.annotation.JsonTypeName;
 import org.photonvision.vision.target.TargetModel;
 
-public class Draw3dAprilTagsPipe extends Draw3dTargetsPipe {
-    public static class Draw3dAprilTagsParams extends Draw3dContoursParams {
-        public Draw3dAprilTagsParams(
-                boolean shouldDraw,
-                CameraCalibrationCoefficients cameraCalibrationCoefficients,
-                TargetModel targetModel,
-                FrameDivisor divisor) {
-            super(shouldDraw, cameraCalibrationCoefficients, targetModel, divisor);
-            this.shouldDrawHull = false;
-            this.redistortPoints = true;
-        }
+@JsonTypeName("ArucoPipelineSettings")
+public class ArucoPipelineSettings extends AdvancedPipelineSettings {
+    public double decimate = 1;
+    public int threads = 2;
+    public int numIterations = 100;
+    public double cornerAccuracy = 25.0;
+    public boolean useAruco3 = true;
+
+    // 3d settings
+
+    public ArucoPipelineSettings() {
+        super();
+        pipelineType = PipelineType.Aruco;
+        outputShowMultipleTargets = true;
+        targetModel = TargetModel.kAruco6in_16h5;
+        cameraExposure = -1;
+        cameraAutoExposure = true;
+        ledMode = false;
     }
 }
