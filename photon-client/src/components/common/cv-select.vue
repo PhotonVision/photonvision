@@ -56,7 +56,6 @@ import TooltippedLabel from "./cv-tooltipped-label";
                         index: i
                     });
                 }
-                console.log(list);
                 return list;
             }
         }
