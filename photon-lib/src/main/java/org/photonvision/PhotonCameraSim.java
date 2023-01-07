@@ -321,7 +321,7 @@ public class PhotonCameraSim implements AutoCloseable {
 
             // find target's 3d corner points
             //TODO: Handle spherical targets
-            var fieldCorners = tgt.getModel().getFieldVertices(tgt.getPose());
+            var fieldCorners = tgt.getFieldVertices();
 
             // project 3d target points into 2d image points
             var targetCorners = OpenCVHelp.projectPoints(

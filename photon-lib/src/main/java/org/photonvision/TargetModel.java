@@ -51,10 +51,10 @@ public class TargetModel {
     public TargetModel(double widthMeters, double heightMeters) {
         this.vertices = List.of(
             // this order is relevant for AprilTag compatibility
-            new Translation3d(0, -widthMeters/2.0, heightMeters/2.0),
-            new Translation3d(0, widthMeters/2.0, heightMeters/2.0),
+            new Translation3d(0, -widthMeters/2.0, -heightMeters/2.0),
             new Translation3d(0, widthMeters/2.0, -heightMeters/2.0),
-            new Translation3d(0, -widthMeters/2.0, -heightMeters/2.0)
+            new Translation3d(0, widthMeters/2.0, heightMeters/2.0),
+            new Translation3d(0, -widthMeters/2.0, heightMeters/2.0)
         );
         this.isPlanar = true;
         this.isSpherical = false;

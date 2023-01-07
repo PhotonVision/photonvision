@@ -189,7 +189,7 @@ public final class OpenCVHelp {
      * @param elements
      * @param backwards If indexing should happen in reverse (0, size-1, size-2, ...)
      * @param shiftStart How much the inital index should be shifted (instead of starting at index 0,
-     *     start at shiftStart)
+     *     start at shiftStart, negated if backwards)
      * @return Reordered list
      */
     public static <T> List<T> reorderCircular(List<T> elements, boolean backwards, int shiftStart) {
@@ -393,8 +393,8 @@ public final class OpenCVHelp {
     public static PNPResults solvePNP_SQUARE(
             CameraProperties camProp, List<Translation3d> modelTrls, List<TargetCorner> imageCorners) {
         // IPPE_SQUARE expects our corners in a specific order
-        modelTrls = reorderCircular(modelTrls, false, 2);
-        imageCorners = reorderCircular(imageCorners, false, 2);
+        modelTrls = reorderCircular(modelTrls, true, -1);
+        imageCorners = reorderCircular(imageCorners, true, -1);
         // translate to opencv classes
         var objectPoints = translationToTvec(modelTrls.toArray(new Translation3d[0]));
         var imagePoints = targetCornersToMat(imageCorners);
