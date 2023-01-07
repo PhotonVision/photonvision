@@ -153,7 +153,7 @@
           v-model="currentPipelineType"
           name="Type"
           tooltip="Changes the pipeline type, which changes the type of processing that will happen on input frames"
-          :list="['Reflective Tape', 'Colored Shape', 'AprilTag', 'Aruco']"
+          :list="['Reflective Tape', 'Colored Shape', 'AprilTag']"
           @input="e => showTypeDialog(e)"
         />
       </v-col>
