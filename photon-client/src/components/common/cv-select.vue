@@ -37,7 +37,7 @@ import TooltippedLabel from "./cv-tooltipped-label";
             TooltippedLabel,
         },
       // eslint-disable-next-line vue/require-prop-types
-        props: ['list', 'name', 'value', 'disabled', 'selectCols', 'rules', 'tooltip'],
+        props: ['list', 'name', 'value', 'disabled', 'filteredIndices', 'selectCols', 'rules', 'tooltip'],
         computed: {
             localValue: {
                 get() {
@@ -50,11 +50,13 @@ import TooltippedLabel from "./cv-tooltipped-label";
             indexList() {
                 let list = [];
                 for (let i = 0; i < this.list.length; i++) {
+                    if (this.filteredIndices instanceof Set && this.filteredIndices.has(i)) continue;
                     list.push({
                         name: this.list[i],
                         index: i
                     });
                 }
+                console.log(list);
                 return list;
             }
         }

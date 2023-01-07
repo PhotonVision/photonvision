@@ -62,11 +62,13 @@
       @input="handlePipelineData('cameraBlueGain')"
       @rollback="e => rollback('cameraBlueGain', e)"
     />
+    <!-- TODO: stop filtering out the 90 degree rotation modes when we fix those in libcamera -->
     <CVselect
       v-model="inputImageRotationMode"
       name="Orientation"
       tooltip="Rotates the camera stream"
       :list="['Normal','90° CW','180°','90° CCW']"
+      :filtered-indices="this.$store.state.settings.general.gpuAcceleration ? new Set([1, 3]) : undefined"
       :select-cols="largeBox"
       @input="handlePipelineData('inputImageRotationMode')"
       @rollback="e => rollback('inputImageRotationMode',e)"
