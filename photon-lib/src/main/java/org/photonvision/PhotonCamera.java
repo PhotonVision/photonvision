@@ -45,7 +45,7 @@ import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
-public class PhotonCamera {
+public class PhotonCamera implements AutoCloseable {
     static final String kTableName = "photonvision";
 
     protected final NetworkTable rootTable;
@@ -65,6 +65,7 @@ public class PhotonCamera {
     IntegerEntry pipelineIndexEntry, ledModeEntry;
     IntegerSubscriber heartbeatEntry;
 
+    @Override
     public void close() {
         rawBytesEntry.close();
         driverModeEntry.close();
