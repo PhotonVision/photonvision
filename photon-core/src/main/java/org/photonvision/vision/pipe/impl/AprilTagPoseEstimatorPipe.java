@@ -21,7 +21,6 @@ import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
-import java.util.Arrays;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -51,14 +50,11 @@ public class AprilTagPoseEstimatorPipe
         for (int i = 0; i < 4; i++) {
             corners[i] = new Point(in.getCornerX(i), in.getCornerY(i));
         }
-        System.out.println("Before: " + Arrays.toString(corners));
         // And shove into our matofpoints
         temp.fromArray(corners);
 
-        System.out.println("Size " + temp.size().toString());
-
         // Probably overwrites what was in temp before. I hope
-        Calib3d.undistortPoints(
+        Calib3d.undistortImagePoints(
                 temp,
                 temp,
                 params.calibration.getCameraIntrinsicsMat(),
@@ -70,14 +66,9 @@ public class AprilTagPoseEstimatorPipe
         // Apriltagdetection expects an array in form [x1 y1 x2 y2 ...]
         var fixedCorners = new double[8];
         for (int i = 0; i < 4; i++) {
-            // https://stackoverflow.com/questions/8499984/how-to-undistort-points-in-camera-shot-coordinates-and-obtain-corresponding-undi
-            // perform transformation.
-            // In fact this is equivalent to multiplication to camera matrix
-
-            fixedCorners[i * 2] = corners[i].x * params.config.fx + params.config.cx;
-            fixedCorners[i * 2 + 1] = corners[i].y * params.config.fy + params.config.cy;
+            fixedCorners[i * 2] = corners[i].x;
+            fixedCorners[i * 2 + 1] = corners[i].y;
         }
-        System.out.println("After: " + Arrays.toString(fixedCorners));
 
         // Create a new Detection with the fixed corners
         var corrected =
@@ -91,7 +82,7 @@ public class AprilTagPoseEstimatorPipe
                         in.getCenterY(),
                         fixedCorners);
 
-        return m_poseEstimator.estimateOrthogonalIteration(in, params.nIters);
+        return m_poseEstimator.estimateOrthogonalIteration(corrected, params.nIters);
     }
 
     @Override
