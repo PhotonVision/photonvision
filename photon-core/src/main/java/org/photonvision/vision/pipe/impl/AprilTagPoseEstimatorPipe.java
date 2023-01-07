@@ -21,7 +21,6 @@ import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
-import java.util.Arrays;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
