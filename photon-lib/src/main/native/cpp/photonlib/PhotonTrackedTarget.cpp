@@ -30,6 +30,8 @@
 #include <frc/geometry/Translation2d.h>
 #include <wpi/SmallVector.h>
 
+static constexpr const uint8_t MAX_CORNERS = 8;
+
 namespace photonlib {
 
 PhotonTrackedTarget::PhotonTrackedTarget(
@@ -81,7 +83,8 @@ Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
            << target.minAreaRectCorners[i].second;
   }
 
-  packet << static_cast<uint8_t>(target.detectedCorners.size());
+  uint8_t num_corners = std::min<uint8_t>(target.detectedCorners.size(), MAX_CORNERS);
+  packet << num_corners;
   for (size_t i = 0; i < target.detectedCorners.size(); i++) {
     packet << target.detectedCorners[i].first
            << target.detectedCorners[i].second;

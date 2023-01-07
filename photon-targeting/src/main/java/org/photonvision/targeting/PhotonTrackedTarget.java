@@ -23,7 +23,6 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class PhotonTrackedTarget {
@@ -144,29 +143,54 @@ public class PhotonTrackedTarget {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PhotonTrackedTarget that = (PhotonTrackedTarget) o;
-        return Double.compare(that.yaw, yaw) == 0
-                && Double.compare(that.pitch, pitch) == 0
-                && Double.compare(that.area, area) == 0
-                && Objects.equals(bestCameraToTarget, that.bestCameraToTarget)
-                && Objects.equals(altCameraToTarget, that.altCameraToTarget)
-                && Objects.equals(minAreaRectCorners, that.minAreaRectCorners)
-                && Objects.equals(detectedCorners, that.detectedCorners);
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        long temp;
+        temp = Double.doubleToLongBits(yaw);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(pitch);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(area);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(skew);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + fiducialId;
+        result = prime * result + ((bestCameraToTarget == null) ? 0 : bestCameraToTarget.hashCode());
+        result = prime * result + ((altCameraToTarget == null) ? 0 : altCameraToTarget.hashCode());
+        temp = Double.doubleToLongBits(poseAmbiguity);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + ((minAreaRectCorners == null) ? 0 : minAreaRectCorners.hashCode());
+        result = prime * result + ((detectedCorners == null) ? 0 : detectedCorners.hashCode());
+        return result;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(
-                yaw,
-                pitch,
-                area,
-                bestCameraToTarget,
-                altCameraToTarget,
-                detectedCorners,
-                minAreaRectCorners);
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        PhotonTrackedTarget other = (PhotonTrackedTarget) obj;
+        if (Double.doubleToLongBits(yaw) != Double.doubleToLongBits(other.yaw)) return false;
+        if (Double.doubleToLongBits(pitch) != Double.doubleToLongBits(other.pitch)) return false;
+        if (Double.doubleToLongBits(area) != Double.doubleToLongBits(other.area)) return false;
+        if (Double.doubleToLongBits(skew) != Double.doubleToLongBits(other.skew)) return false;
+        if (fiducialId != other.fiducialId) return false;
+        if (bestCameraToTarget == null) {
+            if (other.bestCameraToTarget != null) return false;
+        } else if (!bestCameraToTarget.equals(other.bestCameraToTarget)) return false;
+        if (altCameraToTarget == null) {
+            if (other.altCameraToTarget != null) return false;
+        } else if (!altCameraToTarget.equals(other.altCameraToTarget)) return false;
+        if (Double.doubleToLongBits(poseAmbiguity) != Double.doubleToLongBits(other.poseAmbiguity))
+            return false;
+        if (minAreaRectCorners == null) {
+            if (other.minAreaRectCorners != null) return false;
+        } else if (!minAreaRectCorners.equals(other.minAreaRectCorners)) return false;
+        if (detectedCorners == null) {
+            if (other.detectedCorners != null) return false;
+        } else if (!detectedCorners.equals(other.detectedCorners)) return false;
+        return true;
     }
 
     private static Transform3d decodeTransform(Packet packet) {
@@ -193,7 +217,7 @@ public class PhotonTrackedTarget {
     }
 
     private static void encodeList(Packet packet, List<TargetCorner> list) {
-        packet.encode((byte) list.size());
+        packet.encode((byte) Math.min(list.size(), Byte.MAX_VALUE));
         for (int i = 0; i < list.size(); i++) {
             packet.encode(list.get(i).x);
             packet.encode(list.get(i).y);
