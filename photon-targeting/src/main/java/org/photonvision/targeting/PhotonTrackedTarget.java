@@ -120,7 +120,12 @@ public class PhotonTrackedTarget {
      *
      * <p>For fiducials, the order is known and is always counter-clock wise around the tag, like so
      *
-     * <p>-> +X 3 ----- 2 | | | V + Y | | 0 ----- 1
+     * <p>spotless:off
+     * -> +X  3 ----- 2
+     * |      |       |
+     * V      |       |
+     * +Y     0 ----- 1
+     * spotless:on
      */
     public List<TargetCorner> getDetectedCorners() {
         return detectedCorners;
