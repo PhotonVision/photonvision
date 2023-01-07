@@ -98,6 +98,11 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -108,6 +113,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(0, 0, 0)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.3,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -127,6 +137,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         new Transform3d(new Translation3d(1, 2, 3), new Rotation3d(1, 2, 3)),
                                         0.4,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -170,6 +185,11 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -180,6 +200,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -199,6 +224,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(4, 4, 4), new Rotation3d()),
                                         new Transform3d(new Translation3d(5, 5, 5), new Rotation3d()),
                                         0.4,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -242,6 +272,11 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -252,6 +287,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -271,6 +311,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
                                         new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
                                         0.4,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -315,6 +360,11 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -325,6 +375,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(2, 2, 2), new Rotation3d()),
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -344,6 +399,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(2.2, 2.2, 2.2), new Rotation3d()),
                                         new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
                                         0.4,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -378,6 +438,11 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -388,6 +453,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(2.1, 1.9, 2), new Rotation3d()),
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -406,6 +476,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(2.4, 2.4, 2.2), new Rotation3d()),
                                         new Transform3d(new Translation3d(2, 1, 2), new Rotation3d()),
                                         0.4,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -443,6 +518,11 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))), // 1 1 1 ambig: .7
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -453,6 +533,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         new Transform3d(new Translation3d(3, 3, 3), new Rotation3d()),
                                         0.3,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
@@ -472,6 +557,11 @@ class RobotPoseEstimatorTest {
                                         new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()),
                                         new Transform3d(new Translation3d(2, 1.9, 2.1), new Rotation3d()),
                                         0.4,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),

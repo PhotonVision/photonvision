@@ -233,6 +233,9 @@ public class SimVisionSystem {
                                         0.0, // TODO - simulate ambiguity when straight on?
                                         List.of(
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0),
+                                                new TargetCorner(0, 0), new TargetCorner(0, 0)),
+                                        List.of(
+                                                new TargetCorner(0, 0), new TargetCorner(0, 0),
                                                 new TargetCorner(0, 0), new TargetCorner(0, 0))));
                     }
                 });

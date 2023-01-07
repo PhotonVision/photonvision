@@ -223,7 +223,7 @@ public class ColoredShapePipeline
             collect2dTargetsResult.output.forEach(
                     shape -> {
                         shape.getMinAreaRect().points(rectPoints);
-                        shape.setCorners(Arrays.asList(rectPoints));
+                        shape.setTargetCorners(Arrays.asList(rectPoints));
                     });
             sumPipeNanosElapsed += cornerDetectionResult.nanosElapsed;
 

@@ -23,11 +23,12 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class PhotonTrackedTarget {
-    public static final int PACK_SIZE_BYTES = Double.BYTES * (5 + 7 + 2 * 4 + 1 + 7);
+    private static final int MAX_CORNERS = 8;
+    public static final int PACK_SIZE_BYTES =
+            Double.BYTES * (5 + 7 + 2 * 4 + 1 + 7 + 2 * MAX_CORNERS);
 
     private double yaw;
     private double pitch;
@@ -37,7 +38,12 @@ public class PhotonTrackedTarget {
     private Transform3d bestCameraToTarget = new Transform3d();
     private Transform3d altCameraToTarget = new Transform3d();
     private double poseAmbiguity;
-    private List<TargetCorner> targetCorners;
+
+    // Corners from the min-area rectangle bounding the target
+    private List<TargetCorner> minAreaRectCorners;
+
+    // Corners from whatever corner detection method was used
+    private List<TargetCorner> detectedCorners;
 
     public PhotonTrackedTarget() {}
 
@@ -51,8 +57,14 @@ public class PhotonTrackedTarget {
             Transform3d pose,
             Transform3d altPose,
             double ambiguity,
-            List<TargetCorner> corners) {
-        assert corners.size() == 4;
+            List<TargetCorner> minAreaRectCorners,
+            List<TargetCorner> detectedCorners) {
+        assert minAreaRectCorners.size() == 4;
+
+        if (detectedCorners.size() > MAX_CORNERS) {
+            detectedCorners = detectedCorners.subList(0, MAX_CORNERS);
+        }
+
         this.yaw = yaw;
         this.pitch = pitch;
         this.area = area;
@@ -60,7 +72,8 @@ public class PhotonTrackedTarget {
         this.fiducialId = id;
         this.bestCameraToTarget = pose;
         this.altCameraToTarget = altPose;
-        this.targetCorners = corners;
+        this.minAreaRectCorners = minAreaRectCorners;
+        this.detectedCorners = detectedCorners;
         this.poseAmbiguity = ambiguity;
     }
 
@@ -94,11 +107,28 @@ public class PhotonTrackedTarget {
     }
 
     /**
-     * Return a list of the 4 corners in image space (origin top left, x left, y down), in no
+     * Return a list of the 4 corners in image space (origin top left, x right, y down), in no
      * particular order, of the minimum area bounding rectangle of this target
      */
-    public List<TargetCorner> getCorners() {
-        return targetCorners;
+    public List<TargetCorner> getMinAreaRectCorners() {
+        return minAreaRectCorners;
+    }
+
+    /**
+     * Return a list of the n corners in image space (origin top left, x right, y down), in no
+     * particular order, detected for this target.
+     *
+     * <p>For fiducials, the order is known and is always counter-clock wise around the tag, like so
+     *
+     * <p>spotless:off
+     * -> +X  3 ----- 2
+     * |      |       |
+     * V      |       |
+     * +Y     0 ----- 1
+     * spotless:on
+     */
+    public List<TargetCorner> getDetectedCorners() {
+        return detectedCorners;
     }
 
     /**
@@ -118,21 +148,54 @@ public class PhotonTrackedTarget {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PhotonTrackedTarget that = (PhotonTrackedTarget) o;
-        return Double.compare(that.yaw, yaw) == 0
-                && Double.compare(that.pitch, pitch) == 0
-                && Double.compare(that.area, area) == 0
-                && Objects.equals(bestCameraToTarget, that.bestCameraToTarget)
-                && Objects.equals(altCameraToTarget, that.altCameraToTarget)
-                && Objects.equals(targetCorners, that.targetCorners);
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        long temp;
+        temp = Double.doubleToLongBits(yaw);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(pitch);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(area);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(skew);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + fiducialId;
+        result = prime * result + ((bestCameraToTarget == null) ? 0 : bestCameraToTarget.hashCode());
+        result = prime * result + ((altCameraToTarget == null) ? 0 : altCameraToTarget.hashCode());
+        temp = Double.doubleToLongBits(poseAmbiguity);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + ((minAreaRectCorners == null) ? 0 : minAreaRectCorners.hashCode());
+        result = prime * result + ((detectedCorners == null) ? 0 : detectedCorners.hashCode());
+        return result;
     }
 
     @Override
-    public int hashCode() {
-        return Objects.hash(yaw, pitch, area, bestCameraToTarget, altCameraToTarget);
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        PhotonTrackedTarget other = (PhotonTrackedTarget) obj;
+        if (Double.doubleToLongBits(yaw) != Double.doubleToLongBits(other.yaw)) return false;
+        if (Double.doubleToLongBits(pitch) != Double.doubleToLongBits(other.pitch)) return false;
+        if (Double.doubleToLongBits(area) != Double.doubleToLongBits(other.area)) return false;
+        if (Double.doubleToLongBits(skew) != Double.doubleToLongBits(other.skew)) return false;
+        if (fiducialId != other.fiducialId) return false;
+        if (bestCameraToTarget == null) {
+            if (other.bestCameraToTarget != null) return false;
+        } else if (!bestCameraToTarget.equals(other.bestCameraToTarget)) return false;
+        if (altCameraToTarget == null) {
+            if (other.altCameraToTarget != null) return false;
+        } else if (!altCameraToTarget.equals(other.altCameraToTarget)) return false;
+        if (Double.doubleToLongBits(poseAmbiguity) != Double.doubleToLongBits(other.poseAmbiguity))
+            return false;
+        if (minAreaRectCorners == null) {
+            if (other.minAreaRectCorners != null) return false;
+        } else if (!minAreaRectCorners.equals(other.minAreaRectCorners)) return false;
+        if (detectedCorners == null) {
+            if (other.detectedCorners != null) return false;
+        } else if (!detectedCorners.equals(other.detectedCorners)) return false;
+        return true;
     }
 
     private static Transform3d decodeTransform(Packet packet) {
@@ -158,6 +221,25 @@ public class PhotonTrackedTarget {
         packet.encode(transform.getRotation().getQuaternion().getZ());
     }
 
+    private static void encodeList(Packet packet, List<TargetCorner> list) {
+        packet.encode((byte) Math.min(list.size(), Byte.MAX_VALUE));
+        for (int i = 0; i < list.size(); i++) {
+            packet.encode(list.get(i).x);
+            packet.encode(list.get(i).y);
+        }
+    }
+
+    private static List<TargetCorner> decodeList(Packet p) {
+        byte len = p.decodeByte();
+        var ret = new ArrayList<TargetCorner>();
+        for (int i = 0; i < len; i++) {
+            double cx = p.decodeDouble();
+            double cy = p.decodeDouble();
+            ret.add(new TargetCorner(cx, cy));
+        }
+        return ret;
+    }
+
     /**
      * Populates the fields of this class with information from the incoming packet.
      *
@@ -176,12 +258,14 @@ public class PhotonTrackedTarget {
 
         this.poseAmbiguity = packet.decodeDouble();
 
-        this.targetCorners = new ArrayList<>(4);
+        this.minAreaRectCorners = new ArrayList<>(4);
         for (int i = 0; i < 4; i++) {
             double cx = packet.decodeDouble();
             double cy = packet.decodeDouble();
-            targetCorners.add(new TargetCorner(cx, cy));
+            minAreaRectCorners.add(new TargetCorner(cx, cy));
         }
+
+        detectedCorners = decodeList(packet);
 
         return packet;
     }
@@ -203,9 +287,11 @@ public class PhotonTrackedTarget {
         packet.encode(poseAmbiguity);
 
         for (int i = 0; i < 4; i++) {
-            packet.encode(targetCorners.get(i).x);
-            packet.encode(targetCorners.get(i).y);
+            packet.encode(minAreaRectCorners.get(i).x);
+            packet.encode(minAreaRectCorners.get(i).y);
         }
+
+        encodeList(packet, detectedCorners);
 
         return packet;
     }
@@ -226,7 +312,7 @@ public class PhotonTrackedTarget {
                 + ", cameraToTarget="
                 + bestCameraToTarget
                 + ", targetCorners="
-                + targetCorners
+                + minAreaRectCorners
                 + '}';
     }
 }

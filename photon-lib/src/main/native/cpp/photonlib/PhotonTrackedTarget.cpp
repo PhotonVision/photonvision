@@ -30,13 +30,15 @@
 #include <frc/geometry/Translation2d.h>
 #include <wpi/SmallVector.h>
 
+static constexpr const uint8_t MAX_CORNERS = 8;
+
 namespace photonlib {
 
 PhotonTrackedTarget::PhotonTrackedTarget(
     double yaw, double pitch, double area, double skew, int id,
     const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
     double ambiguity,
-    const wpi::SmallVector<std::pair<double, double>, 4> corners)
+    const wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners)
     : yaw(yaw),
       pitch(pitch),
       area(area),
@@ -45,12 +47,12 @@ PhotonTrackedTarget::PhotonTrackedTarget(
       bestCameraToTarget(pose),
       altCameraToTarget(alternatePose),
       poseAmbiguity(ambiguity),
-      corners(corners) {}
+      minAreaRectCorners(minAreaRectCorners) {}
 
 bool PhotonTrackedTarget::operator==(const PhotonTrackedTarget& other) const {
   return other.yaw == yaw && other.pitch == pitch && other.area == area &&
          other.skew == skew && other.bestCameraToTarget == bestCameraToTarget &&
-         other.corners == corners;
+         other.minAreaRectCorners == minAreaRectCorners;
 }
 
 bool PhotonTrackedTarget::operator!=(const PhotonTrackedTarget& other) const {
@@ -77,7 +79,16 @@ Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
          << target.poseAmbiguity;
 
   for (int i = 0; i < 4; i++) {
-    packet << target.corners[i].first << target.corners[i].second;
+    packet << target.minAreaRectCorners[i].first
+           << target.minAreaRectCorners[i].second;
+  }
+
+  uint8_t num_corners =
+      std::min<uint8_t>(target.detectedCorners.size(), MAX_CORNERS);
+  packet << num_corners;
+  for (size_t i = 0; i < target.detectedCorners.size(); i++) {
+    packet << target.detectedCorners[i].first
+           << target.detectedCorners[i].second;
   }
 
   return packet;
@@ -111,12 +122,21 @@ Packet& operator>>(Packet& packet, PhotonTrackedTarget& target) {
 
   packet >> target.poseAmbiguity;
 
-  target.corners.clear();
+  target.minAreaRectCorners.clear();
+  double first = 0;
+  double second = 0;
   for (int i = 0; i < 4; i++) {
-    double first = 0;
-    double second = 0;
     packet >> first >> second;
-    target.corners.emplace_back(first, second);
+    target.minAreaRectCorners.emplace_back(first, second);
+  }
+
+  uint8_t numCorners = 0;
+  packet >> numCorners;
+  target.detectedCorners.clear();
+  target.detectedCorners.reserve(numCorners);
+  for (size_t i = 0; i < numCorners; i++) {
+    packet >> first >> second;
+    target.detectedCorners.emplace_back(first, second);
   }
 
   return packet;

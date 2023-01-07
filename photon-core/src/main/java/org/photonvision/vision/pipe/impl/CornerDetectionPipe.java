@@ -47,7 +47,7 @@ public class CornerDetectionPipe
                     {
                         var targetCorners =
                                 detectExtremeCornersByApproxPolyDp(target, params.calculateConvexHulls);
-                        target.setCorners(targetCorners);
+                        target.setTargetCorners(targetCorners);
                         break;
                     }
                 default:

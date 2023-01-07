@@ -41,7 +41,7 @@ public class TrackedTarget implements Releasable {
 
     private MatOfPoint2f m_approximateBoundingPolygon;
 
-    private List<Point> m_targetCorners;
+    private List<Point> m_targetCorners = List.of();
 
     private Point m_targetOffsetPoint;
     private Point m_robotOffsetPoint;
@@ -289,7 +289,7 @@ public class TrackedTarget implements Releasable {
         if (m_cameraRelativeRvec != null) m_cameraRelativeRvec.release();
     }
 
-    public void setCorners(List<Point> targetCorners) {
+    public void setTargetCorners(List<Point> targetCorners) {
         this.m_targetCorners = targetCorners;
     }
 
