@@ -83,7 +83,8 @@ Packet& operator<<(Packet& packet, const PhotonTrackedTarget& target) {
            << target.minAreaRectCorners[i].second;
   }
 
-  uint8_t num_corners = std::min<uint8_t>(target.detectedCorners.size(), MAX_CORNERS);
+  uint8_t num_corners =
+      std::min<uint8_t>(target.detectedCorners.size(), MAX_CORNERS);
   packet << num_corners;
   for (size_t i = 0; i < target.detectedCorners.size(); i++) {
     packet << target.detectedCorners[i].first
