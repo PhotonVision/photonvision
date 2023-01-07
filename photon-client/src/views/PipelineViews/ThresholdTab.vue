@@ -247,7 +247,7 @@ export default {
             'cameraIndex': this.$store.state.currentCameraIndex
           }
         });
-        this.$store.state.websocket.send(msg);
+        this.$store.state.websocket.ws.send(msg);
         this.$emit('update');
       }
     },

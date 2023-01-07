@@ -35,7 +35,7 @@
               >
                 <span class="pr-1">Processing @ {{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
                 <span v-if="fpsTooLow && !$store.getters.currentPipelineSettings.inputShouldShow && $store.getters.pipelineType == 2">HSV thresholds are too broad; narrow them for better performance</span>
-                <span v-else-if="$fpsTooLow && getters.currentCameraSettings.inputShouldShow">stop viewing the raw stream for better performance</span>
+                <span v-else-if="fpsTooLow && getters.currentCameraSettings.inputShouldShow">stop viewing the raw stream for better performance</span>
                 <span v-else>{{ Math.min(Math.round($store.state.pipelineResults.latency), 9999) }} ms latency</span>
               </v-chip>
               <v-switch
@@ -446,7 +446,13 @@ export default {
     fpsTooLow: {
       get() {
         // For now we only show the FPS is too low warning when GPU acceleration is enabled, because we don't really trust the presented video modes otherwise
-        return this.$store.state.pipelineResults.fps - this.$store.getters.currentVideoFormat.fps < -5 && this.$store.state.pipelineResults.fps !== 0 && !this.$store.getters.isDriverMode && this.$store.state.settings.general.gpuAcceleration;
+        const currFPS = this.$store.state.pipelineResults.fps;
+        const targetFPS = this.$store.getters.currentVideoFormat.fps;
+        const driverMode = this.$store.getters.isDriverMode;
+        const gpuAccel = this.$store.state.settings.general.gpuAcceleration === true;
+        const isReflective = this.$store.getters.pipelineType === 2;
+
+        return (currFPS - targetFPS) < -5 && this.$store.state.pipelineResults.fps !== 0 && !driverMode && gpuAccel && isReflective;
       }
     },
     latency: {

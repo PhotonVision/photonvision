@@ -134,7 +134,7 @@
 
 <script>
 import Logs from "./views/LogsView"
-// import {mapState} from "vuex";
+import { ReconnectingWebsocket } from "./plugins/ReconnectingWebsocket.js"
 
 export default {
   name: 'App',
@@ -145,7 +145,8 @@ export default {
     // Used so that we can switch back to the previously selected pipeline after camera calibration
     previouslySelectedIndices: [],
     timer: undefined,
-    teamNumberDialog: true
+    teamNumberDialog: true,
+    websocket: null,
   }),
   computed: {
     needsTeamNumberSet: {
@@ -190,15 +191,12 @@ export default {
       }
     });
 
-    this.recreateWebsocket();
-  },
-  methods: {
-    recreateWebsocket() {
-      const wsDataURL = 'ws://' + this.$address + '/websocket_data';
-      let socket = new WebSocket(wsDataURL);
-      socket.binaryType = "arraybuffer";
+    const wsDataURL = 'ws://' + this.$address + '/websocket_data';
+    this.websocket = new ReconnectingWebsocket(
+      wsDataURL,
 
-      socket.onmessage = (event) => {
+      // On data in
+      (event) => {
         try {
           let message = this.$msgPack.decode(event.data);
           for (let prop in message) {
@@ -210,31 +208,21 @@ export default {
           console.log(event)
           console.error('error: ' + JSON.stringify(event.data) + " , " + error);
         }
-      };
+      },
 
-      socket.onerror = () => {
-        socket.close();
-        this.$store.commit("backendConnected", false)
-      };
+      // on connect
+      (event) => {
+        event; this.$store.commit("backendConnected", true);
+        this.$store.state.connectedCallbacks.forEach(it => it());
+       },
 
+      // on disconnect
+      (event) => { event; this.$store.commit("backendConnected", false) }
+    );
 
-      socket.onopen = () => {
-        clearInterval(this.timerId);
-
-        socket.onclose = () => {
-          this.$store.commit("backendConnected", false)
-          this.timerId = setInterval(() => {
-            this.recreateWebsocket();
-          }, 1000);
-        };
-
-
-        this.$store.commit("backendConnected", true)
-        this.$store.state.connectedCallbacks.forEach(it => it())
-      };
-
-      this.$store.commit("websocket", socket);
-    },
+    this.$store.commit("websocket", this.websocket);
+  },
+  methods: {
     handleMessage(key, value) {
       if (key === "logMessage") {
         this.logMessage(value["logMessage"], value["logLevel"]);
