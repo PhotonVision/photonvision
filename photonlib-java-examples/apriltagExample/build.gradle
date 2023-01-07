@@ -1,14 +1,14 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2023.1.1"
+    id "edu.wpi.first.GradleRIO" version "2023.1.1-beta-7"
 }
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
-def ROBOT_MAIN_CLASS = "frc.robot.Main"
-
 apply from: "${rootDir}/../shared/examples_common.gradle"
+
+def ROBOT_MAIN_CLASS = "frc.robot.Main"
 
 // Define my targets (RoboRIO) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.

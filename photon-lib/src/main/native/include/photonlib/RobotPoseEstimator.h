@@ -56,10 +56,25 @@ class RobotPoseEstimator {
       std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>;
   using size_type = std::vector<map_value_type>::size_type;
 
+  /**
+   * Create a new RobotPoseEstimator.
+   *
+   * @param aprilTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs
+   * to Pose3ds with respect to the FIRST field.
+   * @param strategy The strategy it should use to determine the best pose.
+   * @param cameras An ArrayList of Pairs of PhotonCameras and their respective
+   * Transform3ds from the center of the robot to the camera mount positions
+   * (ie, robot -> camera).
+   */
   explicit RobotPoseEstimator(
       std::shared_ptr<frc::AprilTagFieldLayout> aprilTags,
       PoseStrategy strategy, std::vector<map_value_type> cameras);
 
+  /**
+   * Update the estimated pose using the selected strategy.
+   *
+   * @return The updated estimated pose and the latency in milliseconds.
+   */
   std::pair<frc::Pose3d, units::millisecond_t> Update();
 
   inline void SetPoseStrategy(PoseStrategy strat) { strategy = strat; }

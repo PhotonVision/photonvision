@@ -31,18 +31,23 @@ import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.IntegerSubscriber;
+import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.RawSubscriber;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera {
+    static final String kTableName = "photonvision";
+
     protected final NetworkTable rootTable;
     RawSubscriber rawBytesEntry;
     BooleanEntry driverModeEntry;
@@ -96,6 +101,8 @@ public class PhotonCamera {
 
     Packet packet = new Packet(1);
 
+    private final MultiSubscriber m_topicNameSubscriber;
+
     /**
      * Constructs a PhotonCamera from a root table.
      *
@@ -106,10 +113,14 @@ public class PhotonCamera {
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
         name = cameraName;
-        var mainTable = instance.getTable("photonvision");
+        var mainTable = instance.getTable(kTableName);
         this.rootTable = mainTable.getSubTable(cameraName);
         path = rootTable.getPath();
-        rawBytesEntry = rootTable.getRawTopic("rawBytes").subscribe("rawBytes", new byte[] {});
+        rawBytesEntry =
+                rootTable
+                        .getRawTopic("rawBytes")
+                        .subscribe(
+                                "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
         driverModeEntry = rootTable.getBooleanTopic("driverMode").getEntry(false);
         inputSaveImgEntry = rootTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = rootTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
@@ -117,6 +128,12 @@ public class PhotonCamera {
         heartbeatEntry = rootTable.getIntegerTopic("heartbeat").subscribe(-1);
         ledModeEntry = mainTable.getIntegerTopic("ledMode").getEntry(-1);
         versionEntry = mainTable.getStringTopic("version").subscribe("");
+
+        m_topicNameSubscriber =
+                new MultiSubscriber(
+                        instance,
+                        new String[] {"/photonvision/"},
+                        new PubSubOption[] {PubSubOption.topicsOnly(true)});
     }
 
     /**
@@ -280,7 +297,7 @@ public class PhotonCamera {
             prevHeartbeatValue = curHeartbeat;
         }
 
-        return ((now - prevHeartbeatChangeTime) < HEARBEAT_DEBOUNCE_SEC);
+        return (now - prevHeartbeatChangeTime) < HEARBEAT_DEBOUNCE_SEC;
     }
 
     private void verifyVersion() {
@@ -292,12 +309,25 @@ public class PhotonCamera {
         // Heartbeat entry is assumed to always be present. If it's not present, we
         // assume that a camera with that name was never connected in the first place.
         if (!heartbeatEntry.exists()) {
-            DriverStation.reportError(
-                    "PhotonVision coprocessor at path " + path + " not found on NetworkTables!", true);
+            Set<String> cameraNames = rootTable.getInstance().getTable(kTableName).getSubTables();
+            if (cameraNames.isEmpty()) {
+                DriverStation.reportError(
+                        "Could not find any PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",
+                        false);
+            } else {
+                DriverStation.reportError(
+                        "PhotonVision coprocessor at path "
+                                + path
+                                + " not found on NetworkTables. Double check that your camera names match!",
+                        true);
+                DriverStation.reportError(
+                        "Found the following PhotonVision cameras on NetworkTables:\n"
+                                + String.join("\n", cameraNames),
+                        false);
+            }
         }
-
         // Check for connection status. Warn if disconnected.
-        if (!isConnected()) {
+        else if (!isConnected()) {
             DriverStation.reportWarning(
                     "PhotonVision coprocessor at path " + path + " is not sending new data.", true);
         }
