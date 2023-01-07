@@ -101,6 +101,7 @@ public class PhotonCamera {
 
     Packet packet = new Packet(1);
 
+    @SuppressWarnings("unused")
     private final MultiSubscriber m_topicNameSubscriber;
 
     /**
