@@ -67,7 +67,7 @@
                       :max-height-md="$store.getters.isDriverMode ? '50vh' : '380px'"
                       :max-height-lg="$store.getters.isDriverMode ? '55vh' : '390px'"
                       :max-height-xl="$store.getters.isDriverMode ? '60vh' : '450px'"
-                      :alt="'Stream ' + idx"
+                      :alt="idx === 0 ? 'Raw stream' : 'Processed stream'"
                       :color-picking="$store.state.colorPicking && idx === 0"
                       @click="onImageClick"
                   />
@@ -488,8 +488,6 @@ export default {
       this.$refs.streams.forEach(it => it.reload())
     },
     onImageClick(event) {
-      // Only run on the input stream
-      if (event.target.alt !== "Stream0") return;
       // Get a reference to the threshold tab (if it is shown) and call its "onClick" method
       let ref = this.$refs["Threshold"];
       if (ref && ref[0])
