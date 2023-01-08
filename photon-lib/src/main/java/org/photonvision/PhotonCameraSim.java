@@ -91,14 +91,6 @@ public class PhotonCameraSim implements AutoCloseable {
     private final Mat videoSimFrameProcessed = new Mat();
     private boolean videoSimProcEnabled = true;
 
-    static {
-        try {
-            CameraServerCvJNI.forceLoad();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load native libraries!", e);
-        }
-    }
-
     @Override
     public void close() throws Exception {
         videoSimRaw.close();

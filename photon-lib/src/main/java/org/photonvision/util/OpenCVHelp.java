@@ -59,14 +59,6 @@ import edu.wpi.first.math.numbers.*;
 
 public final class OpenCVHelp {
 
-    static {
-        try {
-            CameraServerCvJNI.forceLoad();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load native libraries!", e);
-        }
-    }
-
     public static MatOfDouble matrixToMat(SimpleMatrix matrix) {
         var mat = new Mat(matrix.numRows(), matrix.numCols(), CvType.CV_64F);
         mat.put(0, 0, matrix.getDDRM().getData());

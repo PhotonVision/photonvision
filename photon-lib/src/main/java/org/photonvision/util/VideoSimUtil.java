@@ -57,12 +57,6 @@ public class VideoSimUtil {
     public static final Point[] kTag16h5MarkerPts;
 
     static {
-        try {
-            CameraServerCvJNI.forceLoad();
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to load native libraries!", e);
-        }
-
         // create Mats of 8x8 apriltag images
         for(int i = 0; i < VideoSimUtil.kNumTags16h5; i++) {
             Mat tagImage = VideoSimUtil.get16h5TagImage(i);

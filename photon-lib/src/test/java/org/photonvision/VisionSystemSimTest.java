@@ -44,6 +44,7 @@ import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTablesJNI;
 import edu.wpi.first.util.CombinedRuntimeLoader;
+import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.util.WPIUtilJNI;
 import java.util.List;
 import java.util.stream.Stream;
@@ -55,6 +56,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.opencv.core.Core;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 class VisionSystemSimTest {
@@ -89,9 +91,13 @@ class VisionSystemSimTest {
                 "wpinetjni",
                 "wpiHaljni",
                 "cscorejni",
-                "cscorejnicvstatic",
-                "apriltagjni"
+                "cscorejnicvstatic"
             );
+
+            var loader =
+                    new RuntimeLoader<>(
+                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
+            loader.loadLibrary();
         } catch (Exception e) {
             e.printStackTrace();
         }
