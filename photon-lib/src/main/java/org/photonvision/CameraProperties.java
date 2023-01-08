@@ -48,16 +48,16 @@ import edu.wpi.first.math.numbers.*;
     /**
      * Calibration and performance values for this camera.
      * 
-     * <p>The resolution will affect the accuracy of projected(3d->2d) target corners and
-     * similarly the severity of image noise on estimation(2d->3d).
+     * <p>The resolution will affect the accuracy of projected(3d to 2d) target corners and
+     * similarly the severity of image noise on estimation(2d to 3d).</p>
      * 
      * <p>The camera intrinsics and distortion coefficients describe the results of calibration,
-     * and how to map between 3d field points and 2d image points.
+     * and how to map between 3d field points and 2d image points.</p>
      * 
      * <p>The performance values (framerate/exposure time, latency) determine how often results
      * should be updated and with how much latency in simulation. High exposure time causes motion
      * blur which can inhibit target detection while moving. Note that latency estimation does not
-     * account for network latency and the latency reported will always be perfect.
+     * account for network latency and the latency reported will always be perfect.</p>
      */
 public class CameraProperties {
     private final Random rand = new Random();
@@ -210,8 +210,8 @@ public class CameraProperties {
         frameSpeedMs = Math.max(frameSpeedMs, exposureTimeMs);
     }
     /**
-     * @param avgLatencyMs The average latency (image capture -> data) in milliseconds
-     *     a frame should have
+     * @param avgLatencyMs The average latency (from image capture to data published) in
+     *     milliseconds a frame should have
      */
     public void setAvgLatencyMs(double avgLatencyMs) {
         this.avgLatencyMs = avgLatencyMs;
@@ -300,6 +300,7 @@ public class CameraProperties {
     /**
      * The percentage(0 - 100) of this camera's resolution the contour takes up in pixels
      * of the image.
+     * 
      * @param corners Corners of the contour
      */
     public double getContourAreaPercent(List<TargetCorner> corners) {

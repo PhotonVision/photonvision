@@ -87,7 +87,8 @@ public final class OpenCVHelp {
      * Creates a new {@link MatOfPoint3f} with these 3d translations.
      * The opencv tvec is a vector with three elements representing {x, y, z} in the
      * EDN coordinate system.
-     * @param tvecOutput The tvec to be filled with data
+     * 
+     * @param translations The translations to convert into a MatOfPoint3f
      */
     public static MatOfPoint3f translationToTvec(Translation3d... translations) {
         Point3[] points = new Point3[translations.length];
@@ -105,6 +106,8 @@ public final class OpenCVHelp {
      * Returns a new 3d translation from this {@link Mat}.
      * The opencv tvec is a vector with three elements representing {x, y, z} in the
      * EDN coordinate system.
+     * 
+     * @param tvecInput The tvec to create a Translation3d from
      */
     public static Translation3d tvecToTranslation(Mat tvecInput) {
         float[] data = new float[3];
@@ -124,7 +127,8 @@ public final class OpenCVHelp {
      * The opencv rvec Mat is a vector with three elements representing the axis
      * scaled by the angle in the EDN coordinate system.
      * (angle = norm, and axis = rvec / norm)
-     * @param rvecOutput The rvec Mat to be filled with data
+     * 
+     * @param rotation The rotation to convert into a MatOfPoint3f
      */
     public static MatOfPoint3f rotationToRvec(Rotation3d rotation) {
         rotation = rotationNWUtoEDN(rotation);
@@ -135,6 +139,8 @@ public final class OpenCVHelp {
      * The opencv rvec Mat is a vector with three elements representing the axis
      * scaled by the angle in the EDN coordinate system.
      * (angle = norm, and axis = rvec / norm)
+     * 
+     * @param rvecInput The rvec to create a Rotation3d from
      */
     public static Rotation3d rvecToRotation(Mat rvecInput) {
         float[] data = new float[3];
@@ -180,10 +186,10 @@ public final class OpenCVHelp {
      * Reorders the list, optionally indexing backwards and wrapping around to the
      * last element after the first, and shifting all indices in the direction of indexing.
      * 
-     * <p>e.g.
-     * <p>({1,2,3}, false, 1) -> {2,3,1}
-     * <p>({1,2,3}, true, 0) -> {1,3,2}
-     * <p>({1,2,3}, true, 1) -> {3,2,1}
+     * <p>e.g.</p>
+     * <p>({1,2,3}, false, 1) == {2,3,1}</p>
+     * <p>({1,2,3}, true, 0) == {1,3,2}</p>
+     * <p>({1,2,3}, true, 1) == {3,2,1}</p>
      * 
      * @param <T> Element type
      * @param elements
@@ -280,9 +286,9 @@ public final class OpenCVHelp {
     /**
      * Undistort 2d image points using a given camera's intrinsics and distortion.
      * 
-     * <p>2d image points from {@link #projectPoints(Pose3d, CameraProperties, Translation3d...)}
+     * <p>2d image points from {@link #projectPoints(Pose3d, CameraProperties, List) projectPoints}
      * will naturally be distorted, so this operation is important if the image points
-     * need to be directly used (e.g. 2d yaw/pitch).
+     * need to be directly used (e.g. 2d yaw/pitch).</p>
      * 
      * @param camProp The properties of this camera
      * @param corners The distorted image points
@@ -309,7 +315,7 @@ public final class OpenCVHelp {
      * Gets the (upright) rectangle which bounds this contour.
      * 
      * <p>Note that rectangle size and position are stored with ints and do not
-     * have sub-pixel accuracy.
+     * have sub-pixel accuracy.</p>
      * 
      * @param corners The corners/points to be bounded
      * @return Rectangle bounding the given corners
@@ -324,7 +330,7 @@ public final class OpenCVHelp {
      * Gets the rotated rectangle with minimum area which bounds this contour.
      * 
      * <p>Note that rectangle size and position are stored with doubles and
-     * have sub-pixel accuracy.
+     * have sub-pixel accuracy.</p>
      * 
      * @param corners The corners/points to be bounded
      * @return Rotated rectangle bounding the given corners
@@ -371,10 +377,10 @@ public final class OpenCVHelp {
      * 
      * <p>For planar targets, there may be an alternate solution which is plausible given
      * the 2d image points. This has an associated "ambiguity" which describes the
-     * ratio of reprojection error between the "best" and "alternate" solution.
+     * ratio of reprojection error between the "best" and "alternate" solution.</p>
      * 
      * <p>This method is intended for use with individual AprilTags, and will not work
-     * unless 4 points are provided.
+     * unless 4 points are provided.</p>
      * 
      * @param camProp The properties of this camera
      * @param modelTrls The translations of the object corners. These should have the object
@@ -387,8 +393,8 @@ public final class OpenCVHelp {
      *     </ul>
      * @param imageCorners The projection of these 3d object points into the 2d camera image.
      *     The order should match the given object point translations.
-     * @return The resulting <b>transformation(s)</b> that map the camera pose to the target pose
-     *     and the ambiguity if alternate solutions are also available.
+     * @return The resulting transformation that maps the camera pose to the target pose
+     *     and the ambiguity if an alternate solution is available.
      */
     public static PNPResults solvePNP_SQUARE(
             CameraProperties camProp, List<Translation3d> modelTrls, List<TargetCorner> imageCorners) {
@@ -451,7 +457,7 @@ public final class OpenCVHelp {
      * the target's corners on the field and their associated 2d points imaged by the camera.
      * 
      * <p>This method is intended for use with multiple AprilTags and has no ambiguous solutions.
-     * There must be at least 3 points.
+     * There must be at least 3 points.</p>
      * 
      * @param camProp The properties of this camera
      * @param objectTrls The translations of the object corners, relative to the field.
