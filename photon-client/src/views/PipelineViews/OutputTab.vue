@@ -10,6 +10,7 @@
     />
 
     <CVselect
+      v-if="!isTagPipeline"
       v-model="contourTargetOrientation"
       name="Target Orientation"
       tooltip="Used to determine how to calculate target landmarks (e.g. the top, left, or bottom of the target)"
@@ -21,7 +22,8 @@
     <CVswitch
       v-model="outputShowMultipleTargets"
       name="Show Multiple Targets"
-      tooltip="If enabled, up to five targets will be displayed and sent to user code"
+      tooltip="If enabled, up to five targets will be displayed and sent to user code, instead of just one"
+      :disabled="isTagPipeline"
       class="mb-4"
       text-cols="3"
       @input="handlePipelineData('outputShowMultipleTargets')"
@@ -136,6 +138,11 @@
             rawPoint: {
                 get() {
                     return undefined; // TODO fix
+                }
+            },
+            isTagPipeline: {
+                get() {
+                     return this.$store.getters.currentPipelineSettings.pipelineType > 3;
                 }
             }
         },

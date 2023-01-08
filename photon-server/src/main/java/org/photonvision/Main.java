@@ -17,6 +17,7 @@
 
 package org.photonvision;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -169,24 +170,6 @@ public class Main {
     private static void addTestModeSources() {
         ConfigManager.getInstance().load();
 
-        var camConfApril =
-                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("Apriltag");
-        if (camConfApril == null) {
-            camConfApril =
-                    new CameraConfiguration("Apriltag", TestUtils.getTestModeApriltagPath().toString());
-            camConfApril.FOV = TestUtils.WPI2019Image.FOV;
-            camConfApril.calibrations.add(TestUtils.get2019LifeCamCoeffs(true));
-
-            var pipeline2019 = new AprilTagPipelineSettings();
-            pipeline2019.pipelineNickname = "Robots";
-            pipeline2019.outputShowMultipleTargets = true;
-            pipeline2019.inputShouldShow = true;
-
-            var psList2019 = new ArrayList<CVPipelineSettings>();
-            psList2019.add(pipeline2019);
-            camConfApril.pipelineSettings = psList2019;
-        }
-
         var camConf2019 =
                 ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2019");
         if (camConf2019 == null) {
@@ -245,6 +228,32 @@ public class Main {
             camConf2022.pipelineSettings = psList2022;
         }
 
+        CameraConfiguration camConf2023 =
+                ConfigManager.getInstance().getConfig().getCameraConfigurations().get("WPI2023");
+        if (camConf2023 == null) {
+            camConf2023 =
+                    new CameraConfiguration(
+                            "WPI2023",
+                            TestUtils.getResourcesFolderPath(true)
+                                    .resolve("testimages")
+                                    .resolve(TestUtils.WPI2023Apriltags.k383_60_Angle2.path)
+                                    .toString());
+
+            camConf2023.FOV = TestUtils.WPI2023Apriltags.FOV;
+            camConf2023.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
+
+            var pipeline2023 = new AprilTagPipelineSettings();
+            var path_split = camConf2023.path.split(File.separator);
+            pipeline2023.pipelineNickname = path_split[path_split.length - 1].replace(".png", "");
+            pipeline2023.targetModel = TargetModel.k6in_16h5;
+            pipeline2023.inputShouldShow = true;
+            pipeline2023.solvePNPEnabled = true;
+
+            var psList2023 = new ArrayList<CVPipelineSettings>();
+            psList2023.add(pipeline2023);
+            camConf2023.pipelineSettings = psList2023;
+        }
+
         // Colored shape testing
         var camConfShape =
                 ConfigManager.getInstance().getConfig().getCameraConfigurations().get("Shape");
@@ -269,13 +278,13 @@ public class Main {
 
         var collectedSources = new ArrayList<VisionSource>();
 
-        var fvsApril = new FileVisionSource(camConfApril);
         var fvsShape = new FileVisionSource(camConfShape);
         var fvs2019 = new FileVisionSource(camConf2019);
         var fvs2020 = new FileVisionSource(camConf2020);
         var fvs2022 = new FileVisionSource(camConf2022);
+        var fvs2023 = new FileVisionSource(camConf2023);
 
-        collectedSources.add(fvsApril);
+        collectedSources.add(fvs2023);
         collectedSources.add(fvs2022);
         collectedSources.add(fvsShape);
         collectedSources.add(fvs2020);
@@ -287,6 +296,7 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        isTestMode = true;
         try {
             TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");
