@@ -28,6 +28,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.apriltag.jni.AprilTagJNI;
+import edu.wpi.first.cscore.CameraServerCvJNI;
+import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.hal.JNIWrapper;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -74,10 +77,21 @@ class VisionSystemSimTest {
         WPIUtilJNI.Helper.setExtractOnStaticLoad(false);
         NetworkTablesJNI.Helper.setExtractOnStaticLoad(false);
         WPINetJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerJNI.Helper.setExtractOnStaticLoad(false);
+        CameraServerCvJNI.Helper.setExtractOnStaticLoad(false);
+        AprilTagJNI.Helper.setExtractOnStaticLoad(false);
 
         try {
             CombinedRuntimeLoader.loadLibraries(
-                    VisionSystemSim.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
+                VisionSystemSim.class,
+                "wpiutiljni",
+                "ntcorejni",
+                "wpinetjni",
+                "wpiHaljni",
+                "cscorejni",
+                "cscorejnicvstatic",
+                "apriltagjni"
+            );
         } catch (Exception e) {
             e.printStackTrace();
         }
