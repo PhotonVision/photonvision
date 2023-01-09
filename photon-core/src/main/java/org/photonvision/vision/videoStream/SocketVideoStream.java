@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.videoStream;
 
+import edu.wpi.first.cscore.CameraServerJNI;
 import java.nio.ByteBuffer;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -51,7 +52,9 @@ public class SocketVideoStream implements Consumer<CVMat> {
     public SocketVideoStream(int portID) {
         this.portID = portID;
         oldSchoolServer =
-                new MJPGFrameConsumer("Port_" + Integer.toString(portID) + "_MJPEG_Server", portID);
+                new MJPGFrameConsumer(
+                        CameraServerJNI.getHostname() + "_Port_" + Integer.toString(portID) + "_MJPEG_Server",
+                        portID);
     }
 
     @Override
