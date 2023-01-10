@@ -30,7 +30,7 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int threads = 4; // Multiple threads seems to be better performance on most platforms
     public boolean debug = false;
     public boolean refineEdges = true;
-    public int numIterations = 200;
+    public int numIterations = 40;
     public int hammingDist = 0;
     public int decisionMargin = 35;
 
