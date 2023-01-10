@@ -123,6 +123,10 @@ task writeCurrentVersion {
 
 build.dependsOn writeCurrentVersion
 
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}
+
 apply from: "publish.gradle"
 
 def testNativeConfigName = 'wpilibTestNatives'
