@@ -65,7 +65,7 @@ model {
                 }
             }
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
-            nativeUtils.useRequiredLibrary(it, "vision_shared")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
         }
     }
     testSuites {
@@ -80,7 +80,7 @@ model {
             }
 
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
-            nativeUtils.useRequiredLibrary(it, "vision_shared")
+            nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
         }
     }
@@ -122,6 +122,10 @@ task writeCurrentVersion {
 }
 
 build.dependsOn writeCurrentVersion
+
+tasks.withType(Javadoc) {
+    options.encoding = 'UTF-8'
+}
 
 apply from: "publish.gradle"
 
