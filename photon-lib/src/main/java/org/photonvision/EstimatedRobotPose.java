@@ -28,7 +28,10 @@ public class EstimatedRobotPose {
     }
 
     public double getTimestamp() {
-        return cameraPipelineResults.stream().flatMap(r -> r.photonPipelineResults.stream()).collect(Collectors.averagingDouble(cpr -> cpr.getTimestampSeconds()));
+        return cameraPipelineResults
+                .stream()
+                .flatMap(r -> r.photonPipelineResults.stream())
+                .collect(Collectors.averagingDouble(cpr -> cpr.getTimestampSeconds()));
     }
 
     public static class CameraPipelineResult {

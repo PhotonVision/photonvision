@@ -157,10 +157,10 @@ class RobotPoseEstimatorTest {
         RobotPoseEstimator estimator =
                 new RobotPoseEstimator(aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameras);
 
-        Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.get().getFirst();
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.get().estimatedPose;
 
-        assertEquals(11, estimatedPose.get().getSecond());
+        assertEquals(11, estimatedPose.get().getTimestamp());
         assertEquals(1, pose.getX(), .01);
         assertEquals(3, pose.getY(), .01);
         assertEquals(2, pose.getZ(), .01);
@@ -246,10 +246,10 @@ class RobotPoseEstimatorTest {
         RobotPoseEstimator estimator =
                 new RobotPoseEstimator(aprilTags, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT, cameras);
 
-        Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.get().getFirst();
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.get().estimatedPose;
 
-        assertEquals(4, estimatedPose.get().getSecond());
+        assertEquals(4, estimatedPose.get().getTimestamp());
         assertEquals(4, pose.getX(), .01);
         assertEquals(4, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);
@@ -336,10 +336,10 @@ class RobotPoseEstimatorTest {
                 new RobotPoseEstimator(aprilTags, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, cameras);
         estimator.setReferencePose(new Pose3d(1, 1, 1, new Rotation3d()));
 
-        Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.get().getFirst();
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.get().estimatedPose;
 
-        assertEquals(17, estimatedPose.get().getSecond());
+        assertEquals(17, estimatedPose.get().getTimestamp());
         assertEquals(1, pose.getX(), .01);
         assertEquals(1.1, pose.getY(), .01);
         assertEquals(.9, pose.getZ(), .01);
@@ -425,8 +425,8 @@ class RobotPoseEstimatorTest {
 
         estimator.setLastPose(new Pose3d(1, 1, 1, new Rotation3d()));
 
-        Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.get().getFirst();
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.get().estimatedPose;
 
         cameraOne.result =
                 new PhotonPipelineResult(
@@ -498,9 +498,9 @@ class RobotPoseEstimatorTest {
         cameraTwo.result.setTimestampSeconds(13);
 
         estimatedPose = estimator.update();
-        pose = estimatedPose.get().getFirst();
+        pose = estimatedPose.get().estimatedPose;
 
-        assertEquals(7, estimatedPose.get().getSecond());
+        assertEquals(7, estimatedPose.get().getTimestamp());
         assertEquals(.9, pose.getX(), .01);
         assertEquals(1.1, pose.getY(), .01);
         assertEquals(1, pose.getZ(), .01);
@@ -553,7 +553,7 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))))); // 2 2 2 ambig .3
-        cameraOne.result.setTimestampSeconds(10);
+        cameraOne.result.setTimestampSeconds(5);
 
         PhotonCameraInjector cameraTwo = new PhotonCameraInjector();
         cameraTwo.result =
@@ -587,10 +587,10 @@ class RobotPoseEstimatorTest {
         RobotPoseEstimator estimator =
                 new RobotPoseEstimator(aprilTags, PoseStrategy.AVERAGE_BEST_TARGETS, cameras);
 
-        Optional<Pair<Pose3d, Double>> estimatedPose = estimator.update();
-        Pose3d pose = estimatedPose.get().getFirst();
+        Optional<EstimatedRobotPose> estimatedPose = estimator.update();
+        Pose3d pose = estimatedPose.get().estimatedPose;
 
-        assertEquals(15, estimatedPose.get().getSecond(), .01);
+        assertEquals(10, estimatedPose.get().getTimestamp(), .01);
         assertEquals(2.15, pose.getX(), .01);
         assertEquals(2.15, pose.getY(), .01);
         assertEquals(2.15, pose.getZ(), .01);
