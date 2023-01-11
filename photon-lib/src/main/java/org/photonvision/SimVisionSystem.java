@@ -119,7 +119,6 @@ public class SimVisionSystem {
         dbgField
                 .getObject("Target " + Integer.toString(target.targetID))
                 .setPose(target.targetPose.toPose2d());
-        ;
     }
 
     /**
@@ -137,6 +136,15 @@ public class SimVisionSystem {
                             Units.inchesToMeters(6),
                             tag.ID));
         }
+    }
+
+    /**
+     * Clears all sim vision targets. This is useful for switching alliances and needing to repopulate
+     * the sim targets. NOTE: Old targets will still show on the Field2d unless overwritten by new
+     * targets with the same ID
+     */
+    public void clearVisionTargets() {
+        tgtList.clear();
     }
 
     /**
