@@ -92,10 +92,27 @@ class PhotonTrackedTarget {
   int GetFiducialId() const { return fiducialId; }
 
   /**
-   * Returns the corners of the minimum area rectangle bounding this target.
+   * Return a list of the 4 corners in image space (origin top left, x right, y
+   * down), in no particular order, of the minimum area bounding rectangle of
+   * this target
    */
-  wpi::SmallVector<std::pair<double, double>, 4> GetCorners() const {
-    return corners;
+  wpi::SmallVector<std::pair<double, double>, 4> GetMinAreaRectCorners() const {
+    return minAreaRectCorners;
+  }
+
+  /**
+   * Return a list of the n corners in image space (origin top left, x right, y
+   * down), in no particular order, detected for this target.
+   * For fiducials, the order is known and is always counter-clock wise around
+   * the tag, like so
+   *
+   * -> +X     3 ----- 2
+   * |         |       |
+   * V + Y     |       |
+   *           0 ----- 1
+   */
+  std::vector<std::pair<double, double>> GetDetectedCorners() {
+    return detectedCorners;
   }
 
   /**
@@ -137,6 +154,7 @@ class PhotonTrackedTarget {
   frc::Transform3d bestCameraToTarget;
   frc::Transform3d altCameraToTarget;
   double poseAmbiguity;
-  wpi::SmallVector<std::pair<double, double>, 4> corners;
+  wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners;
+  std::vector<std::pair<double, double>> detectedCorners;
 };
 }  // namespace photonlib

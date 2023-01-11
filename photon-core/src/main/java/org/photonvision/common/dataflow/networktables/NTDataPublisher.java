@@ -142,8 +142,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         ts.rawBytesEntry.set(packet.getData());
 
-        ts.pipelineIndexPublisher.set(pipelineIndexSupplier.get());
-        ts.driverModePublisher.set(driverModeSupplier.getAsBoolean());
+        ts.pipelineIndexPublisher.setDefault(pipelineIndexSupplier.get());
+        ts.driverModePublisher.setDefault(driverModeSupplier.getAsBoolean());
         ts.latencyMillisEntry.set(result.getLatencyMillis());
         ts.hasTargetEntry.set(result.hasTargets());
 
@@ -189,11 +189,21 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     public static List<PhotonTrackedTarget> simpleFromTrackedTargets(List<TrackedTarget> targets) {
         var ret = new ArrayList<PhotonTrackedTarget>();
         for (var t : targets) {
-            var points = new Point[4];
-            t.getMinAreaRect().points(points);
-            var cornerList = new ArrayList<TargetCorner>();
-
-            for (int i = 0; i < 4; i++) cornerList.add(new TargetCorner(points[i].x, points[i].y));
+            var minAreaRectCorners = new ArrayList<TargetCorner>();
+            var detectedCorners = new ArrayList<TargetCorner>();
+            {
+                var points = new Point[4];
+                t.getMinAreaRect().points(points);
+                for (int i = 0; i < 4; i++) {
+                    minAreaRectCorners.add(new TargetCorner(points[i].x, points[i].y));
+                }
+            }
+            {
+                var points = t.getTargetCorners();
+                for (int i = 0; i < points.size(); i++) {
+                    detectedCorners.add(new TargetCorner(points.get(i).x, points.get(i).y));
+                }
+            }
 
             ret.add(
                     new PhotonTrackedTarget(
@@ -205,7 +215,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
                             t.getBestCameraToTarget3d(),
                             t.getAltCameraToTarget3d(),
                             t.getPoseAmbiguity(),
-                            cornerList));
+                            minAreaRectCorners,
+                            detectedCorners));
         }
         return ret;
     }

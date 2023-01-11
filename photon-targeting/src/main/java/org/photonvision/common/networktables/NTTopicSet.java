@@ -26,6 +26,7 @@ import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.IntegerTopic;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.PubSubOption;
 import edu.wpi.first.networktables.RawPublisher;
 
 /**
@@ -65,7 +66,10 @@ public class NTTopicSet {
     public IntegerPublisher heartbeatPublisher;
 
     public void updateEntries() {
-        rawBytesEntry = subTable.getRawTopic("rawBytes").publish("rawBytes");
+        rawBytesEntry =
+                subTable
+                        .getRawTopic("rawBytes")
+                        .publish("rawBytes", PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
         pipelineIndexTopic = subTable.getIntegerTopic("pipelineIndex");
         pipelineIndexPublisher = pipelineIndexTopic.publish();

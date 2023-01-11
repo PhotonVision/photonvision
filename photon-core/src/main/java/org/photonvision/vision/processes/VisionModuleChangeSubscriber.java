@@ -59,7 +59,7 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
 
                 var propName = wsEvent.propertyName;
                 var newPropValue = wsEvent.data;
-                var currentSettings = parentModule.pipelineManager.getCurrentUserPipeline().getSettings();
+                var currentSettings = parentModule.pipelineManager.getCurrentPipeline().getSettings();
 
                 // special case for non-PipelineSetting changes
                 switch (propName) {

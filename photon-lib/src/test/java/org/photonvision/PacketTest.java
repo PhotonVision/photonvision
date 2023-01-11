@@ -51,6 +51,11 @@ class PacketTest {
                                 new TargetCorner(1, 2),
                                 new TargetCorner(3, 4),
                                 new TargetCorner(5, 6),
+                                new TargetCorner(7, 8)),
+                        List.of(
+                                new TargetCorner(1, 2),
+                                new TargetCorner(3, 4),
+                                new TargetCorner(5, 6),
                                 new TargetCorner(7, 8)));
         var p = new Packet(PhotonTrackedTarget.PACK_SIZE_BYTES);
         target.populatePacket(p);
@@ -89,6 +94,11 @@ class PacketTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -99,6 +109,11 @@ class PacketTest {
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         new Transform3d(new Translation3d(4, 2, 3), new Rotation3d(1, 5, 3)),
                                         0.25,
+                                        List.of(
+                                                new TargetCorner(1, 2),
+                                                new TargetCorner(3, 4),
+                                                new TargetCorner(5, 6),
+                                                new TargetCorner(7, 8)),
                                         List.of(
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),

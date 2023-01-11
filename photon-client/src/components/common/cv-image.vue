@@ -4,7 +4,7 @@
     crossOrigin="anonymous"
     :style="styleObject"
     :src="src"
-    alt=""
+    :alt="alt"
     @click="clickHandler"
     @error="loadErrHandler"
   />
@@ -14,7 +14,7 @@
     export default {
         name: "CvImage",
         // eslint-disable-next-line vue/require-prop-types
-        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightLg', 'maxHeightXl', 'colorPicking', 'id', 'disconnected'],
+        props: ['address', 'scale', 'maxHeight', 'maxHeightMd', 'maxHeightLg', 'maxHeightXl', 'colorPicking', 'id', 'disconnected', 'alt'],
         data() {
             return {
                 seed: 1.0,

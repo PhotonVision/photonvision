@@ -1,0 +1,34 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/SmartDashboard/Field": "Field2d"
+    },
+    "windows": {
+      "/SmartDashboard/Field": {
+        "window": {
+          "visible": true
+        }
+      }
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "Shuffleboard": {
+        "open": true
+      },
+      "photonvision": {
+        "OV9281": {
+          "open": true
+        },
+        "USB_Camera": {
+          "open": true
+        },
+        "open": true,
+        "testCamera": {
+          "open": true
+        }
+      }
+    }
+  }
+}

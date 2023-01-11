@@ -21,7 +21,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import org.opencv.aruco.Aruco;
 import org.photonvision.common.configuration.CameraConfiguration;
+import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.OutgoingUIEvent;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.vision.pipeline.*;
@@ -48,7 +52,7 @@ public class PipelineManager {
      * <br>
      * Used only when switching from any of the built-in pipelines back to a user-created pipeline.
      */
-    private int lastPipelineIndex;
+    private int lastUserPipelineIdx;
 
     /**
      * Creates a PipelineManager with a DriverModePipeline, a Calibration3dPipeline, and all provided
@@ -141,7 +145,7 @@ public class PipelineManager {
      *
      * @return The currently active pipeline.
      */
-    public CVPipeline getCurrentUserPipeline() {
+    public CVPipeline getCurrentPipeline() {
         if (currentPipelineIndex < 0) {
             switch (currentPipelineIndex) {
                 case CAL_3D_INDEX:
@@ -151,23 +155,7 @@ public class PipelineManager {
             }
         }
 
-        var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
-        //        if (currentPipeline.getSettings().pipelineIndex !=
-        // desiredPipelineSettings.pipelineIndex) {
-        //            switch (desiredPipelineSettings.pipelineType) {
-        //                case Reflective:
-        //                    currentPipeline =
-        //                            new ReflectivePipeline((ReflectivePipelineSettings)
-        // desiredPipelineSettings);
-        //                    break;
-        //                case ColoredShape:
-        //                    currentPipeline =
-        //                            new ColoredShapePipeline((ColoredShapePipelineSettings)
-        // desiredPipelineSettings);
-        //                    break;
-        //            }
-        //        }
-
+        // Just return the current user pipeline, we're not on aa built-in one
         return currentUserPipeline;
     }
 
@@ -186,20 +174,21 @@ public class PipelineManager {
      * All externally accessible methods that intend to change the active pipeline MUST go through
      * here to ensure all proper steps are taken.
      *
-     * @param index Index of pipeline to be active
+     * @param newIndex Index of pipeline to be active
      */
-    private void setPipelineInternal(int index) {
-        if (index < 0) {
-            lastPipelineIndex = currentPipelineIndex;
+    private void setPipelineInternal(int newIndex) {
+        if (newIndex < 0 && currentPipelineIndex >= 0) {
+            // Transitioning to a built-in pipe, save off the current user one
+            lastUserPipelineIdx = currentPipelineIndex;
         }
 
-        if (userPipelineSettings.size() - 1 < index) {
+        if (userPipelineSettings.size() - 1 < newIndex) {
             logger.warn("User attempted to set index to non-existent pipeline!");
             return;
         }
 
-        currentPipelineIndex = index;
-        if (index >= 0) {
+        currentPipelineIndex = newIndex;
+        if (newIndex >= 0) {
             var desiredPipelineSettings = userPipelineSettings.get(currentPipelineIndex);
             switch (desiredPipelineSettings.pipelineType) {
                 case Reflective:
@@ -217,11 +206,21 @@ public class PipelineManager {
                     currentUserPipeline =
                             new AprilTagPipeline((AprilTagPipelineSettings) desiredPipelineSettings);
                     break;
+
+                case Aruco:
+                    logger.debug("Creating Aruco Pipeline");
+                    currentUserPipeline = new ArucoPipeline((ArucoPipelineSettings) desiredPipelineSettings);
+                    break;
                 default:
                     // Can be calib3d or drivermode, both of which are special cases
                     break;
             }
         }
+
+        DataChangeService.getInstance()
+                .publishEvent(
+                        new OutgoingUIEvent<>(
+                                "fullsettings", ConfigManager.getInstance().getConfig().toHashMap()));
     }
 
     /**
@@ -233,7 +232,7 @@ public class PipelineManager {
      */
     public void setCalibrationMode(boolean wantsCalibration) {
         if (!wantsCalibration) calibration3dPipeline.finishCalibration();
-        setPipelineInternal(wantsCalibration ? CAL_3D_INDEX : lastPipelineIndex);
+        setPipelineInternal(wantsCalibration ? CAL_3D_INDEX : lastUserPipelineIdx);
     }
 
     /**
@@ -244,7 +243,7 @@ public class PipelineManager {
      * @param state True to enter driver mode, false to exit driver mode.
      */
     public void setDriverMode(boolean state) {
-        setPipelineInternal(state ? DRIVERMODE_INDEX : lastPipelineIndex);
+        setPipelineInternal(state ? DRIVERMODE_INDEX : lastUserPipelineIdx);
     }
 
     /**
@@ -304,6 +303,12 @@ public class PipelineManager {
             case AprilTag:
                 {
                     var added = new AprilTagPipelineSettings();
+                    added.pipelineNickname = nickname;
+                    return added;
+                }
+            case Aruco:
+                {
+                    var added = new ArucoPipelineSettings();
                     added.pipelineNickname = nickname;
                     return added;
                 }

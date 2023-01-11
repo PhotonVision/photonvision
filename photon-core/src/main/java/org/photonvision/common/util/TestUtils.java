@@ -22,6 +22,7 @@ import edu.wpi.first.apriltag.jni.AprilTagJNI;
 import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CameraServerJNI;
 import edu.wpi.first.hal.JNIWrapper;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.net.WPINetJNI;
 import edu.wpi.first.networktables.NetworkTablesJNI;
@@ -139,6 +140,34 @@ public class TestUtils {
         }
     }
 
+    public enum WPI2023Apriltags {
+        k162_36_Angle,
+        k162_36_Straight,
+        k383_60_Angle2;
+
+        public static double FOV = 68.5;
+
+        public final Translation2d approxPose;
+        public final Path path;
+
+        Path getPath() {
+            var filename = this.toString().substring(1);
+            return Path.of("2023", "AprilTags", filename + ".png");
+        }
+
+        Translation2d getPose() {
+            var names = this.toString().substring(1).split("_");
+            var x = Units.inchesToMeters(Integer.parseInt(names[0]));
+            var y = Units.inchesToMeters(Integer.parseInt(names[1]));
+            return new Translation2d(x, y);
+        }
+
+        WPI2023Apriltags() {
+            this.approxPose = getPose();
+            this.path = getPath();
+        }
+    }
+
     public enum WPI2022Image {
         kTerminal12ft6in(Units.feetToMeters(12.5)),
         kTerminal22ft6in(Units.feetToMeters(22.5));
@@ -196,14 +225,18 @@ public class TestUtils {
 
     public enum ApriltagTestImages {
         kRobots,
-        kTag1_640_480;
+        kTag1_640_480,
+        kTag1_16h5_1280,
+        kTag_corner_1280;
 
         public final Path path;
 
         Path getPath() {
             // Strip leading k
             var filename = this.toString().substring(1).toLowerCase();
-            return Path.of("apriltag", filename + ".jpg");
+            var extension = ".jpg";
+            if (filename.equals("tag1_16h5_1280")) extension = ".png";
+            return Path.of("apriltag", filename + extension);
         }
 
         ApriltagTestImages() {
@@ -211,7 +244,7 @@ public class TestUtils {
         }
     }
 
-    private static Path getResourcesFolderPath(boolean testMode) {
+    public static Path getResourcesFolderPath(boolean testMode) {
         System.out.println("CWD: " + Path.of("").toAbsolutePath().toString());
 
         // VSCode likes to make this path relative to the wrong root directory, so a fun hack to tell
@@ -302,6 +335,8 @@ public class TestUtils {
 
     private static final String LIFECAM_240P_CAL_FILE = "lifecam240p.json";
     private static final String LIFECAM_480P_CAL_FILE = "lifecam480p.json";
+    public static final String LIFECAM_1280P_CAL_FILE = "lifecam_1280.json";
+    public static final String LIMELIGHT_480P_CAL_FILE = "limelight_1280_720.json";
 
     public static CameraCalibrationCoefficients getCoeffs(String filename, boolean testMode) {
         try {
@@ -349,5 +384,15 @@ public class TestUtils {
 
     public static void showImage(Mat frame) {
         showImage(frame, DefaultTimeoutMillis);
+    }
+
+    public static Path getTestMode2023ImagePath() {
+        return getResourcesFolderPath(true)
+                .resolve("testimages")
+                .resolve(WPI2022Image.kTerminal22ft6in.path);
+    }
+
+    public static CameraCalibrationCoefficients get2023LifeCamCoeffs(boolean testMode) {
+        return getCoeffs(LIFECAM_1280P_CAL_FILE, testMode);
     }
 }

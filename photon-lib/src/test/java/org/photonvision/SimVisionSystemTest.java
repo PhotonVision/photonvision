@@ -182,8 +182,7 @@ class SimVisionSystemTest {
                 new Pose3d(new Translation3d(15.98, 0, 2), new Rotation3d(0, 0, Math.PI));
         var robotToCamera =
                 new Transform3d(new Translation3d(0, 0, 1), new Rotation3d(0, Math.PI / 4, 0));
-        var sysUnderTest =
-                new SimVisionSystem("Test", 80.0, robotToCamera.inverse(), 99999, 1234, 1234, 0);
+        var sysUnderTest = new SimVisionSystem("Test", 80.0, robotToCamera, 99999, 1234, 1234, 0);
         sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 3.0, 0.5, 1736));
 
         var robotPose = new Pose2d(new Translation2d(14.98, 0), Rotation2d.fromDegrees(5));
@@ -247,14 +246,15 @@ class SimVisionSystemTest {
     @ParameterizedTest
     @ValueSource(doubles = {-10, -5, -0, -1, -2, 5, 7, 10.23, 20.21, -19.999})
     public void testCameraPitch(double testPitch) {
+        testPitch = testPitch * -1;
+
         final var targetPose =
                 new Pose3d(new Translation3d(15.98, 0, 0), new Rotation3d(0, 0, 3 * Math.PI / 4));
         final var robotPose = new Pose2d(new Translation2d(10, 0), new Rotation2d(0));
         var sysUnderTest = new SimVisionSystem("Test", 120.0, new Transform3d(), 99999, 640, 480, 0);
         sysUnderTest.addSimVisionTarget(new SimVisionTarget(targetPose, 0.5, 0.5, 23));
 
-        // Here, passing in a positive testPitch points the camera downward (since moveCamera takes the
-        // camera->robot transform)
+        // Transform is now robot -> camera
         sysUnderTest.moveCamera(
                 new Transform3d(
                         new Translation3d(), new Rotation3d(0, Units.degreesToRadians(testPitch), 0)));
@@ -263,10 +263,11 @@ class SimVisionSystemTest {
         assertTrue(res.hasTargets());
         var tgt = res.getBestTarget();
 
-        // Since the camera is level with the target, a downward point will mean the target is in the
-        // upper half of the image
-        // which should produce positive pitch.
-        assertEquals(testPitch, tgt.getPitch(), 0.0001);
+        // Since the camera is level with the target, a positive-upward point will mean the target is in
+        // the
+        // lower half of the image
+        // which should produce negative pitch.
+        assertEquals(testPitch * -1, tgt.getPitch(), 0.0001);
     }
 
     private static Stream<Arguments> distCalCParamProvider() {
@@ -309,7 +310,7 @@ class SimVisionSystemTest {
                 new SimVisionSystem(
                         "absurdlylongnamewhichshouldneveractuallyhappenbuteehwelltestitanywaysohowsyourdaygoingihopegoodhaveagreatrestofyourlife!",
                         160.0,
-                        robotToCamera.inverse(),
+                        robotToCamera,
                         99999,
                         640,
                         480,

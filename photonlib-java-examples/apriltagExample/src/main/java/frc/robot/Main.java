@@ -10,8 +10,8 @@
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -22,22 +22,24 @@
  * SOFTWARE.
  */
 
-#pragma once
+package frc.robot;
 
-#include <Eigen/Core>
+import edu.wpi.first.wpilibj.RobotBase;
 
-namespace frc {
+/**
+ * Do NOT add any static variables to this class, or any initialization at all. Unless you know what
+ * you are doing, do not modify this file except to change the parameter class to the startRobot
+ * call.
+ */
+public final class Main {
+    private Main() {}
 
-template <int Size>
-using Vectord = Eigen::Vector<double, Size>;
-
-template <int Rows, int Cols,
-          int Options = Eigen::AutoAlign |
-                        ((Rows == 1 && Cols != 1) ? Eigen::RowMajor
-                         : (Cols == 1 && Rows != 1)
-                             ? Eigen::ColMajor
-                             : EIGEN_DEFAULT_MATRIX_STORAGE_ORDER_OPTION),
-          int MaxRows = Rows, int MaxCols = Cols>
-using Matrixd = Eigen::Matrix<double, Rows, Cols, Options, MaxRows, MaxCols>;
-
-}  // namespace frc
+    /**
+     * Main initialization function. Do not perform any initialization here.
+     *
+     * <p>If you change your main robot class, change the parameter type.
+     */
+    public static void main(String... args) {
+        RobotBase.startRobot(Robot::new);
+    }
+}

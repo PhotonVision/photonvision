@@ -30,6 +30,7 @@ public class Draw3dAprilTagsPipe extends Draw3dTargetsPipe {
                 FrameDivisor divisor) {
             super(shouldDraw, cameraCalibrationCoefficients, targetModel, divisor);
             this.shouldDrawHull = false;
+            this.redistortPoints = true;
         }
     }
 }

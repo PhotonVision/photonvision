@@ -23,7 +23,8 @@ public enum PipelineType {
     DriverMode(-1, DriverModePipeline.class),
     Reflective(0, ReflectivePipeline.class),
     ColoredShape(1, ColoredShapePipeline.class),
-    AprilTag(2, AprilTagPipeline.class);
+    AprilTag(2, AprilTagPipeline.class),
+    Aruco(3, ArucoPipeline.class);
 
     public final int baseIndex;
     public final Class clazz;
