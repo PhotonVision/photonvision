@@ -29,7 +29,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Twist3d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
@@ -57,20 +56,8 @@ public class VisionSystemSim {
     private final Map<PhotonCameraSim, TimeInterpolatableBuffer<Pose3d>> camTrfMap = new HashMap<>();
 
     // interpolate drivetrain with twists
-    private final TimeInterpolatableBuffer<Pose3d> robotPoseBuffer = TimeInterpolatableBuffer.<Pose3d>createBuffer(
-        (Pose3d start, Pose3d end, double t) -> {
-            if(t < 0) return start;
-            else if(t >= 1) return end;
-            else {
-                var fullTwist = start.log(end);
-                return start.exp(new Twist3d(
-                    fullTwist.dx * t, fullTwist.dy * t, fullTwist.dz * t,
-                    fullTwist.rx * t, fullTwist.ry * t, fullTwist.rz * t
-                ));
-            }
-        },
-        kBufferLengthSeconds
-    );
+    private final TimeInterpolatableBuffer<Pose3d> robotPoseBuffer =
+            TimeInterpolatableBuffer.createBuffer(kBufferLengthSeconds);
 
     private Map<String, Set<VisionTargetSim>> targetSets = new HashMap<>();
 
@@ -224,7 +211,7 @@ public class VisionSystemSim {
             addVisionTargets("apriltags",
             new VisionTargetSim(
                 tagLayout.getTagPose(tag.ID).get(), // preserve alliance rotation
-                Units.inchesToMeters(6),
+                TargetModel.kTag16h5,
                 tag.ID
             ));
         }

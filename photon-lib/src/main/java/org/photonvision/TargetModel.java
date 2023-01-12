@@ -32,6 +32,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 
 /**
  * Describes the 3d model of a target.
@@ -44,6 +45,9 @@ public class TargetModel {
     public final List<Translation3d> vertices;
     public final boolean isPlanar;
     public final boolean isSpherical;
+
+    public static final TargetModel kTag16h5 =
+            new TargetModel(Units.inchesToMeters(6), Units.inchesToMeters(6));
 
     /**
      * Creates a rectangular, planar target model given the width and height.
@@ -70,7 +74,7 @@ public class TargetModel {
     }
     /**
      * Creates a target model from arbitrary 3d vertices. Automatically determines if the given
-     * vertices are planar. More than 2 vertices must be given.
+     * vertices are planar(x == 0). More than 2 vertices must be given.
      * 
      * @param vertices Translations representing the vertices of this target model relative to its
      *     pose.
@@ -86,15 +90,7 @@ public class TargetModel {
             for(Translation3d corner : vertices) {
                 if(corner.getX() != 0) cornersPlanar = false;
             }
-            if(vertices.size() != 4 || !cornersPlanar) {
-                throw new IllegalArgumentException(
-                    String.format(
-                        "Supplied target corners (%s) must total 4 and be planar (all X == 0).",
-                        vertices.size()
-                    )
-                );
-            };
-            this.isPlanar = true;
+            this.isPlanar = cornersPlanar;
         }
         this.vertices = vertices;
     }

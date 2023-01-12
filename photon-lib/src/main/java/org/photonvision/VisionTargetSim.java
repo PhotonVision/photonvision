@@ -37,16 +37,6 @@ public class VisionTargetSim {
     public final int fiducialID;
 
     /**
-     * Describes a spherical vision target located somewhere on the field that your vision system
-     * can detect.
-     *
-     * @param pose Pose3d of the target in field-relative coordinates
-     * @param diameterMeters Diameter of the sphere in meters.
-     */
-    public VisionTargetSim(Pose3d pose, double diameterMeters) {
-        this(pose, new TargetModel(diameterMeters));
-    }
-    /**
      * Describes a vision target located somewhere on the field that your vision system can detect.
      *
      * @param pose Pose3d of the tag in field-relative coordinates
@@ -61,23 +51,12 @@ public class VisionTargetSim {
      * Describes a fiducial tag located somewhere on the field that your vision system can detect.
      *
      * @param pose Pose3d of the tag in field-relative coordinates
-     * @param lengthMeters Width/height of the outer bounding box of the tag(black square) in meters.
+     * @param model TargetModel which describes the shape of the target(tag)
      * @param id The ID of this fiducial tag
      */
-    public VisionTargetSim(Pose3d pose, double lengthMeters, int id) {
-        this(pose, lengthMeters, lengthMeters, id);
-    }
-    /**
-     * Describes a fiducial tag located somewhere on the field that your vision system can detect.
-     *
-     * @param pose Pose3d of the tag in field-relative coordinates
-     * @param widthMeters Width of the outer bounding box of the tag(black square) in meters.
-     * @param heightMeters Height of the outer bounding box of the tag(black square) in meters.
-     * @param id The ID of this fiducial tag
-     */
-    public VisionTargetSim(Pose3d pose, double widthMeters, double heightMeters, int id) {
+    public VisionTargetSim(Pose3d pose, TargetModel model, int id) {
         this.pose = pose;
-        this.model = new TargetModel(widthMeters, heightMeters);
+        this.model = model;
         this.fiducialID = id;
     }
 

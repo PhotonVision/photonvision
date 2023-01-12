@@ -42,7 +42,6 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.CameraProperties;
 
-import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.cscore.CvSource;
 
 public class VideoSimUtil {

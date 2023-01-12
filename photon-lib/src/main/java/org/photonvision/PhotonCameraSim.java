@@ -112,7 +112,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param camera The camera to be simulated
      */
     public PhotonCameraSim(PhotonCamera camera) {
-        this(camera, CameraProperties.PERFECT_90DEG);
+        this(camera, CameraProperties.PERFECT_90DEG());
     }
     /**
      * Constructs a handle for simulating {@link PhotonCamera} values.
@@ -184,6 +184,9 @@ public class PhotonCameraSim implements AutoCloseable {
 
     public CvSource getVideoSimRaw() {
         return videoSimRaw;
+    }
+    public Mat getVideoSimFrameRaw() {
+        return videoSimFrameRaw;
     }
 
     /**
@@ -317,8 +320,8 @@ public class PhotonCameraSim implements AutoCloseable {
 
             // project 3d target points into 2d image points
             var targetCorners = OpenCVHelp.projectPoints(
-                cameraPose,
                 prop,
+                cameraPose,
                 fieldCorners
             );
             // save visible tags for stream simulation
@@ -327,8 +330,9 @@ public class PhotonCameraSim implements AutoCloseable {
             }
             // estimate pixel noise
             var noisyTargetCorners = prop.estPixelNoise(targetCorners);
-            // find the 2d yaw/pitch
-            var boundingCenterRot = prop.getPixelRot(noisyTargetCorners);
+            // find the (naive) 2d yaw/pitch
+            var centerPt = OpenCVHelp.getMinAreaRect(noisyTargetCorners).center;
+            var centerRot = prop.getPixelRot(new TargetCorner(centerPt.x, centerPt.y));
             // find contour area            
             double areaPercent = prop.getContourAreaPercent(noisyTargetCorners);
 
@@ -338,6 +342,11 @@ public class PhotonCameraSim implements AutoCloseable {
             var pnpSim = new PNPResults();
             if(tgt.fiducialID >= 0 && tgt.getFieldVertices().size() == 4) { // single AprilTag solvePNP
                 pnpSim = OpenCVHelp.solvePNP_SQUARE(prop, tgt.getModel().vertices, noisyTargetCorners);
+                centerRot = prop.getPixelRot(
+                    OpenCVHelp.projectPoints(
+                        prop, new Pose3d(), List.of(pnpSim.best.getTranslation())
+                    ).get(0)
+                );
             }
 
             Point[] minAreaRectPts = new Point[noisyTargetCorners.size()];
@@ -345,10 +354,10 @@ public class PhotonCameraSim implements AutoCloseable {
             
             detectableTgts.add(
                 new PhotonTrackedTarget(
-                    Math.toDegrees(boundingCenterRot.getZ()),
-                    -Math.toDegrees(boundingCenterRot.getY()),
+                    Math.toDegrees(centerRot.getZ()),
+                    -Math.toDegrees(centerRot.getY()),
                     areaPercent,
-                    Math.toDegrees(boundingCenterRot.getX()),
+                    Math.toDegrees(centerRot.getX()),
                     tgt.fiducialID,
                     pnpSim.best,
                     pnpSim.alt,

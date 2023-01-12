@@ -30,6 +30,7 @@ import java.util.List;
 
 import org.ejml.simple.SimpleMatrix;
 import org.opencv.calib3d.Calib3d;
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
@@ -45,7 +46,6 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.CameraProperties;
 import org.photonvision.targeting.TargetCorner;
 
-import edu.wpi.first.cscore.CameraServerCvJNI;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Num;
@@ -146,7 +146,16 @@ public final class OpenCVHelp {
         axis.set(2, 0, data[2]);
         return rotationEDNtoNWU(new Rotation3d(axis.div(axis.norm()), axis.norm()));
     }
-    
+
+    public static TargetCorner averageCorner(List<TargetCorner> corners) {
+        if(corners == null || corners.size() == 0) return null;
+
+        var pointMat = targetCornersToMat(corners);
+        Core.reduce(pointMat, pointMat, 0, Core.REDUCE_AVG);
+        var avgPt = matToTargetCorners(pointMat)[0];
+        pointMat.release();
+        return avgPt;
+    }
     public static MatOfPoint2f targetCornersToMat(List<TargetCorner> corners) {
         return targetCornersToMat(corners.toArray(TargetCorner[]::new));
     }
@@ -241,13 +250,13 @@ public final class OpenCVHelp {
      * Project object points from the 3d world into the 2d camera image.
      * The camera properties(intrinsics, distortion) determine the results of this projection.
      * 
-     * @param camPose The current camera pose in the 3d world
      * @param camProp The properties of this camera
+     * @param camPose The current camera pose in the 3d world
      * @param objectTranslations The 3d points to be projected
      * @return The 2d points in pixels which correspond to the image of the 3d points on the camera
      */
     public static List<TargetCorner> projectPoints(
-            Pose3d camPose, CameraProperties camProp,
+            CameraProperties camProp, Pose3d camPose,
             List<Translation3d> objectTranslations) {
         // translate to opencv classes
         var objectPoints = translationToTvec(objectTranslations.toArray(new Translation3d[0]));
@@ -444,18 +453,20 @@ public final class OpenCVHelp {
         else return new PNPResults(best, errors[0]);
     }
     /**
-     * Finds the transformation that maps the camera's pose to the field origin.
-     * The camera's pose relative to the targets is determined by the supplied 3d points of
-     * the target's corners on the field and their associated 2d points imaged by the camera.
+     * Finds the transformation that maps the camera's pose to the target pose.
+     * The camera's pose relative to the target is determined by the supplied
+     * 3d points of the target's model and their associated 2d points imaged by the camera.
      * 
-     * <p>This method is intended for use with multiple AprilTags and has no ambiguous solutions.
+     * <p>This method is intended for use with multiple targets and has no alternate solutions.
      * There must be at least 3 points.</p>
      * 
      * @param camProp The properties of this camera
      * @param objectTrls The translations of the object corners, relative to the field.
      * @param imageCorners The projection of these 3d object points into the 2d camera image.
      *     The order should match the given object point translations.
-     * @return The resulting transformation that maps the camera pose to the field origin.
+     * @return The resulting transformation that maps the camera pose to the target pose.
+     *     If the 3d model points are supplied relative to the origin, this transformation
+     *     brings the camera to the origin.
      */
     public static PNPResults solvePNP_SQPNP(
             CameraProperties camProp, List<Translation3d> objectTrls, List<TargetCorner> imageCorners) {

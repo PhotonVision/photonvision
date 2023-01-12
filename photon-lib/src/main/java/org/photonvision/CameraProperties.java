@@ -30,8 +30,6 @@ import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import org.opencv.core.Point;
-import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 import org.photonvision.util.OpenCVHelp;
 
@@ -44,6 +42,7 @@ import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.*;
+import edu.wpi.first.wpilibj.DriverStation;
 
     /**
      * Calibration and performance values for this camera.
@@ -161,6 +160,14 @@ public class CameraProperties {
         var fovHeight = new Rotation2d(
             fovDiag.getRadians() * (resHeight / Math.sqrt(resWidth*resWidth + resHeight*resHeight))
         );
+        double maxFovDeg = Math.max(fovWidth.getDegrees(), fovHeight.getDegrees());
+        if(maxFovDeg > 179) {
+            double scale = 179.0 / maxFovDeg;
+            fovWidth = new Rotation2d(fovWidth.getRadians() * scale);
+            fovHeight = new Rotation2d(fovHeight.getRadians() * scale);
+            DriverStation.reportError(
+                    "Requested FOV width/height too large! Scaling below 180 degrees...", false);
+        }
         // assume no distortion
         var distCoeff = VecBuilder.fill(0,0,0,0,0);
         // assume centered principal point (pixels)
@@ -263,36 +270,9 @@ public class CameraProperties {
         newProp.setExposureTimeMs(exposureTimeMs);
         newProp.setAvgLatencyMs(avgLatencyMs);
         newProp.setLatencyStdDevMs(latencyStdDevMs);
-        return new CameraProperties();
+        return newProp;
     }
 
-    /**
-     * Undistorts a detected target's corner points, and returns a new PhotonTrackedTarget
-     * with updated corners, yaw, pitch, skew, and area. Best/alt pose and ambiguity are unchanged.
-     */
-    public PhotonTrackedTarget undistort2dTarget(PhotonTrackedTarget target) {
-        var undistortedCorners = undistort(target.getDetectedCorners());
-        // find the 2d yaw/pitch
-        var boundingCenterRot = getPixelRot(undistortedCorners);
-        // find contour area            
-        double areaPercent = getContourAreaPercent(undistortedCorners);
-
-        Point[] minAreaRectPts = new Point[undistortedCorners.size()];
-        OpenCVHelp.getMinAreaRect(undistortedCorners).points(minAreaRectPts);
-
-        return new PhotonTrackedTarget(
-            Math.toDegrees(boundingCenterRot.getZ()),
-            -Math.toDegrees(boundingCenterRot.getY()),
-            areaPercent,
-            Math.toDegrees(boundingCenterRot.getX()),
-            target.getFiducialId(),
-            target.getBestCameraToTarget(),
-            target.getAlternateCameraToTarget(),
-            target.getPoseAmbiguity(),
-            undistortedCorners,
-            List.of(OpenCVHelp.pointsToTargetCorners(minAreaRectPts))
-        );
-    }
     public List<TargetCorner> undistort(List<TargetCorner> points) {
         return OpenCVHelp.undistortPoints(this, points);
     }
@@ -324,6 +304,9 @@ public class CameraProperties {
     /**
      * The pitch from the principal point of this camera to the pixel y value.
      * Pitch is positive down.
+     * 
+     * <p>Note that this angle is naively computed and may be incorrect.
+     * See {@link #getCorrectedPixelRot(TargetCorner)}.</p>
      */
     public Rotation2d getPixelPitch(double pixelY) {
         double fy = camIntrinsics.get(1, 1);
@@ -336,26 +319,65 @@ public class CameraProperties {
         );
     }
     /**
-     * Undistorts these image points, and then finds the yaw and pitch to the center
-     * of the rectangle bounding them. Yaw is positive left, and pitch is positive down.
+     * Finds the yaw and pitch to the given image point.
+     * Yaw is positive left, and pitch is positive down.
+     * 
+     * <p>Note that pitch is naively computed and may be incorrect.
+     * See {@link #getCorrectedPixelRot(TargetCorner)}.</p>
      */
-    public Rotation3d getUndistortedPixelRot(List<TargetCorner> points) {
-        return getPixelRot(undistort(points));
-    }
-    /**
-     * Finds the yaw and pitch to the center of the rectangle bounding the given
-     * image points. Yaw is positive left, and pitch is positive down.
-     */
-    public Rotation3d getPixelRot(List<TargetCorner> points) {
-        if(points == null || points.size() == 0) return new Rotation3d();
-
-        var rect = OpenCVHelp.getMinAreaRect(points);
+    public Rotation3d getPixelRot(TargetCorner point) {
         return new Rotation3d(
-            rect.angle,
-            getPixelPitch(rect.center.y).getRadians(),
-            getPixelYaw(rect.center.x).getRadians()
+            0,
+            getPixelPitch(point.y).getRadians(),
+            getPixelYaw(point.x).getRadians()
         );
     }
+    /**
+     * Gives the yaw and pitch of the line intersecting the camera lens and the given pixel coordinates
+     * on the sensor. Yaw is positive left, and pitch positive down.
+     * 
+     * <p>
+     * The pitch traditionally calculated from pixel offsets do not correctly account
+     * for non-zero values of yaw because of perspective distortion (not to be confused
+     * with lens distortion)-- for example, the pitch angle is naively calculated as:
+     * 
+     * <pre>pitch = arctan(pixel y offset / focal length y)</pre>
+     * 
+     * However, using focal length as a side of the associated right triangle is not correct when
+     * the pixel x value is not 0, because the distance from this pixel (projected on the x-axis)
+     * to the camera lens increases. Projecting a line back out of the camera with these naive angles
+     * will not intersect the 3d point that was originally projected into this 2d pixel.
+     * Instead, this length should be:
+     * 
+     * <pre>focal length y ⟶ (focal length y / cos(arctan(pixel x offset / focal length x)))</pre>
+     * </p>
+     * 
+     * @return Rotation3d with yaw and pitch of the line projected out of the camera from the given
+     *     pixel (roll is zero).
+     */
+    public Rotation3d getCorrectedPixelRot(TargetCorner point) {
+        double fx = camIntrinsics.get(0, 0);
+        double cx = camIntrinsics.get(0, 2);
+        double xOffset = cx - point.x;
+
+        double fy = camIntrinsics.get(1, 1);
+        double cy = camIntrinsics.get(1, 2);
+        double yOffset = cy - point.y;
+
+        // calculate yaw normally
+        var yaw = new Rotation2d(
+            fx,
+            xOffset
+        );
+        // correct pitch based on yaw
+        var pitch = new Rotation2d(
+            fy / Math.cos(Math.atan(xOffset / fx)),
+            -yOffset
+        );
+
+        return new Rotation3d(0, pitch.getRadians(), yaw.getRadians());
+    }
+
     public Rotation2d getHorizFOV() {
         // sum of FOV left and right principal point
         var left = getPixelYaw(0);
@@ -434,13 +456,12 @@ public class CameraProperties {
     // pre-calibrated example cameras
 
     /** 960x720 resolution, 90 degree FOV, "perfect" lagless camera */
-    public static final CameraProperties PERFECT_90DEG = new CameraProperties();
-
-    public static final CameraProperties PI4_PICAM2_480p = new CameraProperties();
-
-    // ----- Example calibrations
-    static {
-        PI4_PICAM2_480p.setCalibration(640, 480,
+    public static CameraProperties PERFECT_90DEG() {
+        return new CameraProperties();
+    }
+    public static CameraProperties PI4_PICAM2_480p() {
+        var prop = new CameraProperties();
+        prop.setCalibration(640, 480,
             Matrix.mat(Nat.N3(), Nat.N3()).fill( // intrinsic
                 497.8204072694636,  0.0,                314.53659309737424,
                 0.0,                481.6955284883231,  231.95042993880858,
@@ -454,9 +475,10 @@ public class CameraProperties {
                 0.36623021008942863
             )
         );
-        PI4_PICAM2_480p.setCalibError(0.25, 0.07);
-        PI4_PICAM2_480p.setFPS(17);
-        PI4_PICAM2_480p.setAvgLatencyMs(35);
-        PI4_PICAM2_480p.setLatencyStdDevMs(8);
+        prop.setCalibError(0.25, 0.07);
+        prop.setFPS(17);
+        prop.setAvgLatencyMs(35);
+        prop.setLatencyStdDevMs(8);
+        return prop;
     }
 }
