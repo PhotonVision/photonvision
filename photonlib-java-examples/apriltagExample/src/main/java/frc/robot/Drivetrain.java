@@ -188,9 +188,9 @@ public class Drivetrain {
                 pcw.getEstimatedGlobalPose(m_poseEstimator.getEstimatedPosition());
 
         if (result.isPresent()) {
-            var camPose = result.get();
+            EstimatedRobotPose camPose = result.get();
             m_poseEstimator.addVisionMeasurement(
-                    camPose.estimatedPose.toPose2d(), camPose.getTimestamp());
+                    camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
             m_fieldSim.getObject("Cam Est Pos").setPose(camPose.estimatedPose.toPose2d());
         } else {
             // move it way off the screen to make it disappear

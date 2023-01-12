@@ -26,11 +26,9 @@ package frc.robot;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.VisionConstants;
 import java.util.ArrayList;
@@ -73,14 +71,10 @@ public class PhotonCameraWrapper {
                                 .cameraName); // Change the name of your camera here to whatever it is in the
         // PhotonVision UI.
 
-        // ... Add other cameras here
-
-        // Assemble the list of cameras & mount locations
-        var camList = new ArrayList<Pair<PhotonCamera, Transform3d>>();
-        camList.add(new Pair<PhotonCamera, Transform3d>(photonCamera, VisionConstants.robotToCam));
-
+        // Create pose estimator
         robotPoseEstimator =
-                new RobotPoseEstimator(atfl, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, camList);
+                new RobotPoseEstimator(
+                        atfl, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, photonCamera, VisionConstants.robotToCam);
     }
 
     /**

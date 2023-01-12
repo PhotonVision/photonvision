@@ -78,8 +78,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void testLowestAmbiguityStrategy() {
-        ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
-
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
@@ -122,14 +120,7 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(11);
-
-        PhotonCameraInjector cameraTwo = new PhotonCameraInjector();
-        cameraTwo.result =
-                new PhotonPipelineResult(
-                        4,
-                        List.of(
+                                                new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         9.0,
                                         -2.0,
@@ -149,18 +140,16 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraTwo.result.setTimestampSeconds(16);
-
-        cameras.add(Pair.of(cameraOne, new Transform3d()));
-        cameras.add(Pair.of(cameraTwo, new Transform3d()));
+        cameraOne.result.setTimestampSeconds(11);
 
         RobotPoseEstimator estimator =
-                new RobotPoseEstimator(aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameras);
+                new RobotPoseEstimator(
+                        aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameraOne, new Transform3d());
 
         Optional<EstimatedRobotPose> estimatedPose = estimator.update();
         Pose3d pose = estimatedPose.get().estimatedPose;
 
-        assertEquals(11, estimatedPose.get().getTimestamp());
+        assertEquals(11, estimatedPose.get().timestampSeconds);
         assertEquals(1, pose.getX(), .01);
         assertEquals(3, pose.getY(), .01);
         assertEquals(2, pose.getZ(), .01);
@@ -212,13 +201,7 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(4);
-        PhotonCameraInjector cameraTwo = new PhotonCameraInjector();
-        cameraTwo.result =
-                new PhotonPipelineResult(
-                        4,
-                        List.of(
+                                                new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         9.0,
                                         -2.0,
@@ -238,18 +221,20 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraTwo.result.setTimestampSeconds(12);
 
-        cameras.add(Pair.of(cameraOne, new Transform3d(new Translation3d(0, 0, 4), new Rotation3d())));
-        cameras.add(Pair.of(cameraTwo, new Transform3d(new Translation3d(0, 0, 2), new Rotation3d())));
+        cameraOne.result.setTimestampSeconds(4);
 
         RobotPoseEstimator estimator =
-                new RobotPoseEstimator(aprilTags, PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT, cameras);
+                new RobotPoseEstimator(
+                        aprilTags,
+                        PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
+                        cameraOne,
+                        new Transform3d(new Translation3d(0, 0, 4), new Rotation3d()));
 
         Optional<EstimatedRobotPose> estimatedPose = estimator.update();
         Pose3d pose = estimatedPose.get().estimatedPose;
 
-        assertEquals(4, estimatedPose.get().getTimestamp());
+        assertEquals(4, estimatedPose.get().timestampSeconds);
         assertEquals(4, pose.getX(), .01);
         assertEquals(4, pose.getY(), .01);
         assertEquals(0, pose.getZ(), .01);
@@ -257,8 +242,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void closestToReferencePoseStrategy() {
-        ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
-
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
@@ -301,13 +284,7 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(4);
-        PhotonCameraInjector cameraTwo = new PhotonCameraInjector();
-        cameraTwo.result =
-                new PhotonPipelineResult(
-                        4,
-                        List.of(
+                                                new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         9.0,
                                         -2.0,
@@ -327,19 +304,20 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraTwo.result.setTimestampSeconds(17);
-
-        cameras.add(Pair.of(cameraOne, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
-        cameras.add(Pair.of(cameraTwo, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
+        cameraOne.result.setTimestampSeconds(17);
 
         RobotPoseEstimator estimator =
-                new RobotPoseEstimator(aprilTags, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, cameras);
+                new RobotPoseEstimator(
+                        aprilTags,
+                        PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
+                        cameraOne,
+                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
         estimator.setReferencePose(new Pose3d(1, 1, 1, new Rotation3d()));
 
         Optional<EstimatedRobotPose> estimatedPose = estimator.update();
         Pose3d pose = estimatedPose.get().estimatedPose;
 
-        assertEquals(17, estimatedPose.get().getTimestamp());
+        assertEquals(17, estimatedPose.get().timestampSeconds);
         assertEquals(1, pose.getX(), .01);
         assertEquals(1.1, pose.getY(), .01);
         assertEquals(.9, pose.getZ(), .01);
@@ -347,8 +325,6 @@ class RobotPoseEstimatorTest {
 
     @Test
     void closestToLastPose() {
-        ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
-
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
@@ -391,12 +367,7 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        PhotonCameraInjector cameraTwo = new PhotonCameraInjector();
-        cameraTwo.result =
-                new PhotonPipelineResult(
-                        4,
-                        List.of(
+                                                new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         9.0,
                                         -2.0,
@@ -417,11 +388,12 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
 
-        cameras.add(Pair.of(cameraOne, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
-        cameras.add(Pair.of(cameraTwo, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
-
         RobotPoseEstimator estimator =
-                new RobotPoseEstimator(aprilTags, PoseStrategy.CLOSEST_TO_LAST_POSE, cameras);
+                new RobotPoseEstimator(
+                        aprilTags,
+                        PoseStrategy.CLOSEST_TO_LAST_POSE,
+                        cameraOne,
+                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
         estimator.setLastPose(new Pose3d(1, 1, 1, new Rotation3d()));
 
@@ -469,13 +441,7 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8)))));
-        cameraOne.result.setTimestampSeconds(7);
-
-        cameraTwo.result =
-                new PhotonPipelineResult(
-                        4,
-                        List.of(
+                                                new TargetCorner(7, 8))),
                                 new PhotonTrackedTarget(
                                         9.0,
                                         -2.0,
@@ -495,12 +461,12 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
-        cameraTwo.result.setTimestampSeconds(13);
+        cameraOne.result.setTimestampSeconds(7);
 
         estimatedPose = estimator.update();
         pose = estimatedPose.get().estimatedPose;
 
-        assertEquals(7, estimatedPose.get().getTimestamp());
+        assertEquals(7, estimatedPose.get().timestampSeconds);
         assertEquals(.9, pose.getX(), .01);
         assertEquals(1.1, pose.getY(), .01);
         assertEquals(1, pose.getZ(), .01);
@@ -552,14 +518,7 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(1, 2),
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
-                                                new TargetCorner(7, 8))))); // 2 2 2 ambig .3
-        cameraOne.result.setTimestampSeconds(5);
-
-        PhotonCameraInjector cameraTwo = new PhotonCameraInjector();
-        cameraTwo.result =
-                new PhotonPipelineResult(
-                        4,
-                        List.of(
+                                                new TargetCorner(7, 8))), // 2 2 2 ambig .3
                                 new PhotonTrackedTarget(
                                         9.0,
                                         -2.0,
@@ -579,18 +538,19 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(3, 4),
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8))))); // 3 3 3 ambig .4
-        cameraTwo.result.setTimestampSeconds(20);
-
-        cameras.add(Pair.of(cameraOne, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
-        cameras.add(Pair.of(cameraTwo, new Transform3d(new Translation3d(0, 0, 0), new Rotation3d())));
+        cameraOne.result.setTimestampSeconds(20);
 
         RobotPoseEstimator estimator =
-                new RobotPoseEstimator(aprilTags, PoseStrategy.AVERAGE_BEST_TARGETS, cameras);
+                new RobotPoseEstimator(
+                        aprilTags,
+                        PoseStrategy.AVERAGE_BEST_TARGETS,
+                        cameraOne,
+                        new Transform3d(new Translation3d(0, 0, 0), new Rotation3d()));
 
         Optional<EstimatedRobotPose> estimatedPose = estimator.update();
         Pose3d pose = estimatedPose.get().estimatedPose;
 
-        assertEquals(10, estimatedPose.get().getTimestamp(), .01);
+        assertEquals(20, estimatedPose.get().timestampSeconds, .01);
         assertEquals(2.15, pose.getX(), .01);
         assertEquals(2.15, pose.getY(), .01);
         assertEquals(2.15, pose.getZ(), .01);
