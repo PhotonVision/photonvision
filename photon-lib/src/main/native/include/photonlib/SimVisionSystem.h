@@ -109,6 +109,14 @@ class SimVisionSystem {
   }
 
   /**
+   * Clears all sim vision targets.
+   * This is useful for switching alliances and needing to repopulate the sim
+   * targets. NOTE: Old targets will still show on the Field2d unless
+   * overwritten by new targets with the same ID
+   */
+  void ClearVisionTargets() { targetList.clear(); }
+
+  /**
    * Adjust the camera position relative to the robot. Use this if your camera
    * is on a gimbal or turret or some other mobile platform.
    *
