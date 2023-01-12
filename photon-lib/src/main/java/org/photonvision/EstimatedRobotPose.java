@@ -32,8 +32,8 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import edu.wpi.first.math.geometry.Pose3d;
 
 public class EstimatedRobotPose {
-    Pose3d estimatedPose;
-    List<CameraPipelineResult> cameraPipelineResults;
+    public Pose3d estimatedPose;
+    public List<CameraPipelineResult> cameraPipelineResults;
 
     public EstimatedRobotPose(Pose3d estimatedPose, List<CameraPipelineResult> cameraPipelineResults) {
         this.estimatedPose = estimatedPose;
@@ -58,8 +58,8 @@ public class EstimatedRobotPose {
     }
 
     public static class CameraPipelineResult {
-        PhotonCamera camera;
-        List<PhotonPipelineResult> photonPipelineResults;
+        public PhotonCamera camera;
+        public List<PhotonPipelineResult> photonPipelineResults;
 
         public CameraPipelineResult(PhotonCamera camera, List<PhotonPipelineResult> photonPipelineResults) {
             this.camera = camera;

@@ -39,6 +39,7 @@ import java.util.Optional;
 import org.photonvision.PhotonCamera;
 import org.photonvision.RobotPoseEstimator;
 import org.photonvision.RobotPoseEstimator.PoseStrategy;
+import org.photonvision.EstimatedRobotPose;
 
 public class PhotonCameraWrapper {
     public PhotonCamera photonCamera;
@@ -88,16 +89,8 @@ public class PhotonCameraWrapper {
      * @return A pair of the fused camera observations to a single Pose2d on the field, and the time
      *     of the observation. Assumes a planar field and the robot is always firmly on the ground
      */
-    public Pair<Pose2d, Double> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
+    public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
         robotPoseEstimator.setReferencePose(prevEstimatedRobotPose);
-
-        double currentTime = Timer.getFPGATimestamp();
-        Optional<Pair<Pose3d, Double>> result = robotPoseEstimator.update();
-        if (result.isPresent()) {
-            return new Pair<Pose2d, Double>(
-                    result.get().getFirst().toPose2d(), currentTime - result.get().getSecond());
-        } else {
-            return new Pair<Pose2d, Double>(null, 0.0);
-        }
+        return robotPoseEstimator.update();
     }
 }
