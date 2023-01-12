@@ -48,7 +48,10 @@ enum PoseStrategy : int {
 };
 
 /**
- * A managing class to determine how an estimated pose should be chosen.
+ * The RobotPoseEstimator class filters or combines readings from all the
+ * fiducials visible at a given timestamp on the field to produce a single robot
+ * in field pose, using the strategy set below. Example usage can be found in
+ * our apriltagExample example project.
  */
 class RobotPoseEstimator {
  public:
