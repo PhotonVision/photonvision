@@ -40,6 +40,11 @@ import java.util.Set;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+/**
+ * The RobotPoseEstimator class filters or combines readings from all the fiducials visible at a
+ * given timestamp on the field to produce a single robot in field pose, using the strategy set
+ * below. Example usage can be found in our apriltagExample example project.
+ */
 public class RobotPoseEstimator {
     /** Position estimation strategies that can be used by the {@link RobotPoseEstimator} class. */
     public enum PoseStrategy {
