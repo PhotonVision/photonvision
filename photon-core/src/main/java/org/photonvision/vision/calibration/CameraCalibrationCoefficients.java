@@ -113,7 +113,7 @@ public class CameraCalibrationCoefficients implements Releasable {
                 };
 
         var cam_jsonmat = new JsonMat(3, 3, cam_arr);
-        var distortion_jsonmat = new JsonMat(3, 3, dist_array);
+        var distortion_jsonmat = new JsonMat(1, 5, dist_array);
 
         var error = json.get("avg_reprojection_error").asDouble();
         var width = json.get("img_size").get(0).doubleValue();
