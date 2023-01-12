@@ -407,7 +407,7 @@ public class RobotPoseEstimator {
 
                 if (altDifference < smallestPoseDelta) {
                     smallestPoseDelta = altDifference;
-                    lowestDeltaPose = 
+                    lowestDeltaPose =
                             new EstimatedRobotPose(
                                     altTransformPosition,
                                     result.camera,
@@ -415,7 +415,7 @@ public class RobotPoseEstimator {
                 }
                 if (bestDifference < smallestPoseDelta) {
                     smallestPoseDelta = bestDifference;
-                    lowestDeltaPose = 
+                    lowestDeltaPose =
                             new EstimatedRobotPose(
                                     bestTransformPosition,
                                     result.camera,
@@ -498,12 +498,12 @@ public class RobotPoseEstimator {
             rotation = rotation.plus(estimatedPose.getRotation().times(weight));
         }
 
-        List<EstimatedRobotPose.CameraPipelineResult> cameraPipelineResults = 
+        List<EstimatedRobotPose.CameraPipelineResult> cameraPipelineResults =
                 estimatedRobotPoses.stream().flatMap(e -> e.getSecond().cameraPipelineResults.stream()).toList();
 
         return Optional.of(
                 new EstimatedRobotPose(
-                        new Pose3d(transform, rotation), 
+                        new Pose3d(transform, rotation),
                         cameraPipelineResults));
     }
 
