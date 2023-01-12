@@ -31,7 +31,6 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 /** An estimated pose based on pipeline results */
 public class EstimatedRobotPose {
-
     /** The estimated pose */
     public Pose3d estimatedPose;
 
@@ -87,7 +86,6 @@ public class EstimatedRobotPose {
 
     /** A camera and list of photon pipeline results used to estimate the pose */
     public static class CameraPipelineResult {
-
         /** Camera used to estimate the pose */
         public PhotonCamera camera;
 
