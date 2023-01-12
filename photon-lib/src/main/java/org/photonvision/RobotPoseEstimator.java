@@ -174,9 +174,8 @@ public class RobotPoseEstimator {
      * Poll data from the configured cameras and update the estimated position of the robot. Returns
      * empty if there are no cameras set or no targets were found from the cameras.
      *
-     * @return a Pair of the estimated Position of the robot in the form of a Pose3d object and the
-     *     timestamp of that position from the camera in seconds that is comparable to the FPGA
-     *     hardware clock (in seconds).
+     * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
+     *     pipeline results used to create the estimate
      */
     public Optional<EstimatedRobotPose> update() {
         if (cameras.isEmpty()) {
