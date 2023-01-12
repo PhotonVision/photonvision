@@ -24,18 +24,17 @@
 
 package org.photonvision;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import java.util.List;
 import java.util.stream.Collectors;
-
 import org.photonvision.targeting.PhotonPipelineResult;
-
-import edu.wpi.first.math.geometry.Pose3d;
 
 public class EstimatedRobotPose {
     public Pose3d estimatedPose;
     public List<CameraPipelineResult> cameraPipelineResults;
 
-    public EstimatedRobotPose(Pose3d estimatedPose, List<CameraPipelineResult> cameraPipelineResults) {
+    public EstimatedRobotPose(
+            Pose3d estimatedPose, List<CameraPipelineResult> cameraPipelineResults) {
         this.estimatedPose = estimatedPose;
         this.cameraPipelineResults = cameraPipelineResults;
     }
@@ -45,14 +44,14 @@ public class EstimatedRobotPose {
         this.cameraPipelineResults = List.of(cameraPipelineResult);
     }
 
-    public EstimatedRobotPose(Pose3d estimatedPose, PhotonCamera camera, PhotonPipelineResult photonPipelineResult) {
+    public EstimatedRobotPose(
+            Pose3d estimatedPose, PhotonCamera camera, PhotonPipelineResult photonPipelineResult) {
         this.estimatedPose = estimatedPose;
         this.cameraPipelineResults = List.of(new CameraPipelineResult(camera, photonPipelineResult));
     }
 
     public double getTimestamp() {
-        return cameraPipelineResults
-                .stream()
+        return cameraPipelineResults.stream()
                 .flatMap(r -> r.photonPipelineResults.stream())
                 .collect(Collectors.averagingDouble(cpr -> cpr.getTimestampSeconds()));
     }
@@ -61,14 +60,15 @@ public class EstimatedRobotPose {
         public PhotonCamera camera;
         public List<PhotonPipelineResult> photonPipelineResults;
 
-        public CameraPipelineResult(PhotonCamera camera, List<PhotonPipelineResult> photonPipelineResults) {
+        public CameraPipelineResult(
+                PhotonCamera camera, List<PhotonPipelineResult> photonPipelineResults) {
             this.camera = camera;
             this.photonPipelineResults = photonPipelineResults;
         }
+
         public CameraPipelineResult(PhotonCamera camera, PhotonPipelineResult photonPipelineResult) {
             this.camera = camera;
             this.photonPipelineResults = List.of(photonPipelineResult);
         }
-
     }
 }

@@ -184,8 +184,7 @@ public class RobotPoseEstimator {
             return Optional.empty();
         }
 
-        ArrayList<CameraResult> cameraResults =
-                new ArrayList<>(cameras.size());
+        ArrayList<CameraResult> cameraResults = new ArrayList<>(cameras.size());
         boolean hasTargets = false;
 
         for (Pair<PhotonCamera, Transform3d> p : cameras) {
@@ -239,8 +238,7 @@ public class RobotPoseEstimator {
      * @return the estimated position of the robot in the FCS and the estimated timestamp of this
      *     estimation.
      */
-    private Optional<EstimatedRobotPose> lowestAmbiguityStrategy(
-            List<CameraResult> results) {
+    private Optional<EstimatedRobotPose> lowestAmbiguityStrategy(List<CameraResult> results) {
         Pair<PhotonTrackedTarget, Transform3d> lowestAmbiguityTarget = null;
         CameraResult lowestAmbiguityCameraResult = null;
 
@@ -289,8 +287,7 @@ public class RobotPoseEstimator {
      * @return the estimated position of the robot in the FCS and the estimated timestamp of this
      *     estimation.
      */
-    private Optional<EstimatedRobotPose> closestToCameraHeightStrategy(
-            List<CameraResult> results) {
+    private Optional<EstimatedRobotPose> closestToCameraHeightStrategy(List<CameraResult> results) {
         double smallestHeightDifference = 10e9;
         EstimatedRobotPose closestHeightTarget = null;
 
@@ -408,18 +405,12 @@ public class RobotPoseEstimator {
                 if (altDifference < smallestPoseDelta) {
                     smallestPoseDelta = altDifference;
                     lowestDeltaPose =
-                            new EstimatedRobotPose(
-                                    altTransformPosition,
-                                    result.camera,
-                                    result.pipelineResult);
+                            new EstimatedRobotPose(altTransformPosition, result.camera, result.pipelineResult);
                 }
                 if (bestDifference < smallestPoseDelta) {
                     smallestPoseDelta = bestDifference;
                     lowestDeltaPose =
-                            new EstimatedRobotPose(
-                                    bestTransformPosition,
-                                    result.camera,
-                                    result.pipelineResult);
+                            new EstimatedRobotPose(bestTransformPosition, result.camera, result.pipelineResult);
                 }
             }
         }
@@ -434,8 +425,7 @@ public class RobotPoseEstimator {
      * @return the estimated position of the robot in the FCS and the estimated timestamp of this
      *     estimation.
      */
-    private Optional<EstimatedRobotPose> averageBestTargetsStrategy(
-            List<CameraResult> results) {
+    private Optional<EstimatedRobotPose> averageBestTargetsStrategy(List<CameraResult> results) {
         List<Pair<PhotonTrackedTarget, EstimatedRobotPose>> estimatedRobotPoses = new ArrayList<>();
         double totalAmbiguity = 0;
 
@@ -471,15 +461,15 @@ public class RobotPoseEstimator {
                 totalAmbiguity += 1.0 / target.getPoseAmbiguity();
 
                 estimatedRobotPoses.add(
-                    new Pair<>(
-                            target,
-                            new EstimatedRobotPose(
-                                    targetPosition
-                                            .get()
-                                            .transformBy(target.getBestCameraToTarget().inverse())
-                                            .transformBy(result.cameraPose.inverse()),
-                                    result.camera,
-                                    result.pipelineResult)));
+                        new Pair<>(
+                                target,
+                                new EstimatedRobotPose(
+                                        targetPosition
+                                                .get()
+                                                .transformBy(target.getBestCameraToTarget().inverse())
+                                                .transformBy(result.cameraPose.inverse()),
+                                        result.camera,
+                                        result.pipelineResult)));
             }
         }
 
@@ -490,7 +480,7 @@ public class RobotPoseEstimator {
 
         if (estimatedRobotPoses.isEmpty()) return Optional.empty();
 
-        for (Pair<PhotonTrackedTarget, EstimatedRobotPose> pair: estimatedRobotPoses) {
+        for (Pair<PhotonTrackedTarget, EstimatedRobotPose> pair : estimatedRobotPoses) {
             // Total ambiguity is non-zero confirmed because if it was zero, that pose was returned.
             double weight = (1.0 / pair.getFirst().getPoseAmbiguity()) / totalAmbiguity;
             Pose3d estimatedPose = pair.getSecond().estimatedPose;
@@ -499,12 +489,12 @@ public class RobotPoseEstimator {
         }
 
         List<EstimatedRobotPose.CameraPipelineResult> cameraPipelineResults =
-                estimatedRobotPoses.stream().flatMap(e -> e.getSecond().cameraPipelineResults.stream()).toList();
+                estimatedRobotPoses.stream()
+                        .flatMap(e -> e.getSecond().cameraPipelineResults.stream())
+                        .toList();
 
         return Optional.of(
-                new EstimatedRobotPose(
-                        new Pose3d(transform, rotation),
-                        cameraPipelineResults));
+                new EstimatedRobotPose(new Pose3d(transform, rotation), cameraPipelineResults));
     }
 
     /**
@@ -528,7 +518,9 @@ public class RobotPoseEstimator {
         final PhotonCamera camera;
         final Transform3d cameraPose;
         final PhotonPipelineResult pipelineResult;
-        public CameraResult(PhotonCamera camera, Transform3d cameraPose, PhotonPipelineResult pipelineResult) {
+
+        public CameraResult(
+                PhotonCamera camera, Transform3d cameraPose, PhotonPipelineResult pipelineResult) {
             this.camera = camera;
             this.cameraPose = cameraPose;
             this.pipelineResult = pipelineResult;

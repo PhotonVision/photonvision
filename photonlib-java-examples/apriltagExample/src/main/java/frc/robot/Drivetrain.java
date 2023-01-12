@@ -24,7 +24,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
@@ -190,7 +189,8 @@ public class Drivetrain {
 
         if (result.isPresent()) {
             var camPose = result.get();
-            m_poseEstimator.addVisionMeasurement(camPose.estimatedPose.toPose2d(), camPose.getTimestamp());
+            m_poseEstimator.addVisionMeasurement(
+                    camPose.estimatedPose.toPose2d(), camPose.getTimestamp());
             m_fieldSim.getObject("Cam Est Pos").setPose(camPose.estimatedPose.toPose2d());
         } else {
             // move it way off the screen to make it disappear
