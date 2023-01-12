@@ -99,7 +99,8 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                         new AprilTagPoseEstimatorPipeParams(
                                 new Config(tagWidth, fx, fy, cx, cy),
                                 frameStaticProperties.cameraCalibration,
-                                settings.numIterations));
+                                settings.numIterations,
+                                settings.minImprovement));
             }
         }
     }
