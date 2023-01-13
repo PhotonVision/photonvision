@@ -45,12 +45,12 @@ import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.photonvision.RobotPoseEstimator.PoseStrategy;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
-class RobotPoseEstimatorTest {
+class PhotonPoseEstimatorTest {
     static AprilTagFieldLayout aprilTags;
 
     @BeforeAll
@@ -62,7 +62,7 @@ class RobotPoseEstimatorTest {
 
         try {
             CombinedRuntimeLoader.loadLibraries(
-                    RobotPoseEstimatorTest.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
+                    PhotonPoseEstimatorTest.class, "wpiutiljni", "ntcorejni", "wpinetjni", "wpiHaljni");
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -142,8 +142,8 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(7, 8)))));
         cameraOne.result.setTimestampSeconds(11);
 
-        RobotPoseEstimator estimator =
-                new RobotPoseEstimator(
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
                         aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameraOne, new Transform3d());
 
         Optional<EstimatedRobotPose> estimatedPose = estimator.update();
@@ -224,8 +224,8 @@ class RobotPoseEstimatorTest {
 
         cameraOne.result.setTimestampSeconds(4);
 
-        RobotPoseEstimator estimator =
-                new RobotPoseEstimator(
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT,
                         cameraOne,
@@ -306,8 +306,8 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(7, 8)))));
         cameraOne.result.setTimestampSeconds(17);
 
-        RobotPoseEstimator estimator =
-                new RobotPoseEstimator(
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.CLOSEST_TO_REFERENCE_POSE,
                         cameraOne,
@@ -388,8 +388,8 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(5, 6),
                                                 new TargetCorner(7, 8)))));
 
-        RobotPoseEstimator estimator =
-                new RobotPoseEstimator(
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.CLOSEST_TO_LAST_POSE,
                         cameraOne,
@@ -540,8 +540,8 @@ class RobotPoseEstimatorTest {
                                                 new TargetCorner(7, 8))))); // 3 3 3 ambig .4
         cameraOne.result.setTimestampSeconds(20);
 
-        RobotPoseEstimator estimator =
-                new RobotPoseEstimator(
+        PhotonPoseEstimator estimator =
+                new PhotonPoseEstimator(
                         aprilTags,
                         PoseStrategy.AVERAGE_BEST_TARGETS,
                         cameraOne,

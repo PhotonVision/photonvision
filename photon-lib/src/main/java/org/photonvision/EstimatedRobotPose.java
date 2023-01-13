@@ -26,7 +26,7 @@ package org.photonvision;
 
 import edu.wpi.first.math.geometry.Pose3d;
 
-/** An estimated pose based on pipeline results */
+/** An estimated pose based on pipeline result */
 public class EstimatedRobotPose {
     /** The estimated pose */
     public final Pose3d estimatedPose;

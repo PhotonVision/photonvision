@@ -35,12 +35,12 @@ import java.util.ArrayList;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
-import org.photonvision.RobotPoseEstimator;
-import org.photonvision.RobotPoseEstimator.PoseStrategy;
+import org.photonvision.PhotonPoseEstimator;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public class PhotonCameraWrapper {
     public PhotonCamera photonCamera;
-    public RobotPoseEstimator robotPoseEstimator;
+    public PhotonPoseEstimator photonPoseEstimator;
 
     public PhotonCameraWrapper() {
         // Set up a test arena of two apriltags at the center of each driver station set
@@ -72,8 +72,8 @@ public class PhotonCameraWrapper {
         // PhotonVision UI.
 
         // Create pose estimator
-        robotPoseEstimator =
-                new RobotPoseEstimator(
+        photonPoseEstimator =
+                new PhotonPoseEstimator(
                         atfl, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, photonCamera, VisionConstants.robotToCam);
     }
 
@@ -83,7 +83,7 @@ public class PhotonCameraWrapper {
      *     of the observation. Assumes a planar field and the robot is always firmly on the ground
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
-        robotPoseEstimator.setReferencePose(prevEstimatedRobotPose);
-        return robotPoseEstimator.update();
+        photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
+        return photonPoseEstimator.update();
     }
 }
