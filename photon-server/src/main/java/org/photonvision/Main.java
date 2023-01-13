@@ -17,7 +17,6 @@
 
 package org.photonvision;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -243,8 +242,8 @@ public class Main {
             camConf2023.calibrations.add(TestUtils.get2023LifeCamCoeffs(true));
 
             var pipeline2023 = new AprilTagPipelineSettings();
-            var path_split = camConf2023.path.split(File.separator);
-            pipeline2023.pipelineNickname = path_split[path_split.length - 1].replace(".png", "");
+            var path_split = Path.of(camConf2023.path).getFileName().toString();
+            pipeline2023.pipelineNickname = path_split.replace(".png", "");
             pipeline2023.targetModel = TargetModel.k6in_16h5;
             pipeline2023.inputShouldShow = true;
             pipeline2023.solvePNPEnabled = true;
@@ -296,7 +295,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        isTestMode = true;
         try {
             TestUtils.loadLibraries();
             logger.info("Native libraries loaded.");

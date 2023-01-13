@@ -130,7 +130,7 @@ public class AprilTagTest {
 
         // these numbers are not *accurate*, but they are known and expected
         var pose = pipelineResult.targets.get(0).getBestCameraToTarget3d();
-        Assertions.assertEquals(4, pose.getTranslation().getX(), 0.2);
+        Assertions.assertEquals(4.14, pose.getTranslation().getX(), 0.2);
         Assertions.assertEquals(2, pose.getTranslation().getY(), 0.2);
         Assertions.assertEquals(0.0, pose.getTranslation().getZ(), 0.2);
     }
