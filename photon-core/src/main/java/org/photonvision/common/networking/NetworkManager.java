@@ -18,6 +18,7 @@
 package org.photonvision.common.networking;
 
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -96,10 +97,9 @@ public class NetworkManager {
             if (config.connectionType == NetworkMode.DHCP) {
                 var shell = new ShellExec();
                 try {
-                    if (!config.staticIp.equals("")) {
-                        shell.executeBashCommand("ip addr del " + config.staticIp + "/8 dev eth0");
-                    }
-                    shell.executeBashCommand("dhclient eth0", false);
+                    // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
+                    shell.executeBashCommand(config.setDHCPcommand.replace(NetworkConfig.NM_IFACE_STRING, config.networkManagerIface));
+                    shell.executeBashCommand("dhclient " + config.physicalInterface, false);
                 } catch (Exception e) {
                     logger.error("Exception while setting DHCP!");
                 }
@@ -107,7 +107,11 @@ public class NetworkManager {
                 var shell = new ShellExec();
                 if (config.staticIp.length() > 0) {
                     try {
-                        shell.executeBashCommand("ip addr add " + config.staticIp + "/8" + " dev eth0");
+                        shell.executeBashCommand(
+                                config
+                                        .setStaticCommand
+                                        .replace(NetworkConfig.NM_IFACE_STRING, config.networkManagerIface)
+                                        .replace(NetworkConfig.NM_IP_STRING, config.staticIp));
                     } catch (Exception e) {
                         logger.error("Error while setting static IP!", e);
                     }
