@@ -30,6 +30,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
@@ -59,6 +60,7 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
@@ -90,6 +92,17 @@ public class PhotonCameraSim implements AutoCloseable {
     private final CvSource videoSimProcessed;
     private final Mat videoSimFrameProcessed = new Mat();
     private boolean videoSimProcEnabled = true;
+
+    static {
+        try {
+            var loader =
+                    new RuntimeLoader<>(
+                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
+            loader.loadLibrary();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load native libraries!", e);
+        }
+    }
 
     @Override
     public void close() throws Exception {

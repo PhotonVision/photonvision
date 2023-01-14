@@ -43,6 +43,7 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.CameraProperties;
 
 import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.util.RuntimeLoader;
 
 public class VideoSimUtil {
     
@@ -56,6 +57,15 @@ public class VideoSimUtil {
     public static final Point[] kTag16h5MarkerPts;
 
     static {
+        try {
+            var loader =
+                    new RuntimeLoader<>(
+                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
+            loader.loadLibrary();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load native libraries!", e);
+        }
+        
         // create Mats of 8x8 apriltag images
         for(int i = 0; i < VideoSimUtil.kNumTags16h5; i++) {
             Mat tagImage = VideoSimUtil.get16h5TagImage(i);

@@ -30,7 +30,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -76,8 +75,8 @@ public class VisionSystemSim {
     /**
      * Get one of the simulated cameras.
      */
-    public PhotonCameraSim getCameraSim(String name) {
-        return camSimMap.get(name);
+    public Optional<PhotonCameraSim> getCameraSim(String name) {
+        return Optional.ofNullable(camSimMap.get(name));
     }
     /**
      * Get all of the simulated cameras.
@@ -144,7 +143,7 @@ public class VisionSystemSim {
         return Optional.of(
             new Transform3d(
                 new Pose3d(),
-                trfBuffer.getSample(timeSeconds).orElse(new Pose3d())
+                sample.orElse(new Pose3d())
             )
         );
     }
@@ -257,6 +256,12 @@ public class VisionSystemSim {
      */
     public Optional<Pose3d> getRobotPose(double timestamp) {
         return robotPoseBuffer.getSample(timestamp);
+    }
+    /**
+     * Clears all previous robot poses and sets robotPose at current time.
+     */
+    public void resetRobotPose(Pose2d robotPose) {
+        resetRobotPose(new Pose3d(robotPose));
     }
     /**
      * Clears all previous robot poses and sets robotPose at current time.

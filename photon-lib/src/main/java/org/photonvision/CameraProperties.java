@@ -350,7 +350,6 @@ public class CameraProperties {
      * Instead, this length should be:
      * 
      * <pre>focal length y ⟶ (focal length y / cos(arctan(pixel x offset / focal length x)))</pre>
-     * </p>
      * 
      * @return Rotation3d with yaw and pitch of the line projected out of the camera from the given
      *     pixel (roll is zero).

@@ -56,8 +56,20 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.*;
+import edu.wpi.first.util.RuntimeLoader;
 
 public final class OpenCVHelp {
+
+    static {
+        try {
+            var loader =
+                    new RuntimeLoader<>(
+                            Core.NATIVE_LIBRARY_NAME, RuntimeLoader.getDefaultExtractionRoot(), Core.class);
+            loader.loadLibrary();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to load native libraries!", e);
+        }
+    }
 
     public static MatOfDouble matrixToMat(SimpleMatrix matrix) {
         var mat = new Mat(matrix.numRows(), matrix.numCols(), CvType.CV_64F);
@@ -287,7 +299,7 @@ public final class OpenCVHelp {
     /**
      * Undistort 2d image points using a given camera's intrinsics and distortion.
      * 
-     * <p>2d image points from {@link #projectPoints(Pose3d, CameraProperties, List) projectPoints}
+     * <p>2d image points from {@link #projectPoints(CameraProperties, Pose3d, List) projectPoints}
      * will naturally be distorted, so this operation is important if the image points
      * need to be directly used (e.g. 2d yaw/pitch).</p>
      * 
