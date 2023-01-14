@@ -49,8 +49,7 @@ public class NetworkManager {
         logger.info("Setting " + config.connectionType + " with team team " + config.teamNumber);
         if (Platform.isLinux()) {
             if (!Platform.isRoot()) {
-                logger.error("Cannot manage network without root!");
-                return;
+                logger.error("Cannot manage hostname without root!");
             }
 
             // always set hostname
