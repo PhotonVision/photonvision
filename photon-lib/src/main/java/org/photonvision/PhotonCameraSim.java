@@ -375,8 +375,8 @@ public class PhotonCameraSim implements AutoCloseable {
                     pnpSim.best,
                     pnpSim.alt,
                     pnpSim.ambiguity,
-                    noisyTargetCorners,
-                    List.of(OpenCVHelp.pointsToTargetCorners(minAreaRectPts))
+                    List.of(OpenCVHelp.pointsToTargetCorners(minAreaRectPts)),
+                    noisyTargetCorners
                 )
             );
         }

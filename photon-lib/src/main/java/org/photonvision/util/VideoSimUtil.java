@@ -29,6 +29,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -47,7 +51,8 @@ import edu.wpi.first.util.RuntimeLoader;
 
 public class VideoSimUtil {
     
-    public static final String kTagImagesPath = "./images/apriltags/";
+    public static final String kLocalTagImagesPath = "./src/main/resources/images/apriltags/";
+    public static final String kResourceTagImagesPath = "/images/apriltags/";
     public static final String kTag16h5ImageName = "tag16_05_00000";
     public static final int kNumTags16h5 = 30;
 
@@ -107,7 +112,40 @@ public class VideoSimUtil {
         String name = kTag16h5ImageName;
         String idString = String.valueOf(id);
         name = name.substring(0, name.length() - idString.length()) + idString;
-        return Imgcodecs.imread(kTagImagesPath + name + ".png", Imgcodecs.IMREAD_GRAYSCALE);
+
+        var resource = VideoSimUtil.class.getResource(kResourceTagImagesPath + name + ".png");
+        // local IDE tests
+        String path = kLocalTagImagesPath + name + ".png";
+        // gradle tests
+        if(resource != null) {
+            path = resource.getPath();
+            if(path.startsWith("/")) path = path.substring(1);
+        }
+        Mat result = new Mat();
+        try {
+            result = Imgcodecs.imread(path, Imgcodecs.IMREAD_GRAYSCALE);
+        } catch (Exception e) {}
+        // reading jar file
+        if(result.empty()) {
+            BufferedImage buf;
+            try {
+                buf = ImageIO.read(resource);
+            } catch (IOException e) {
+                System.err.println("Couldn't read tag image from jar!");
+                return result;
+            }
+
+            result = new Mat(buf.getHeight(), buf.getWidth(), CvType.CV_8UC1);
+
+            byte[] px = new byte[1];
+            for(int y = 0; y < result.height(); y++) {
+                for(int x = 0; x < result.width(); x++) {
+                    px[0] = (byte)(buf.getRGB(x, y) & 0xFF);
+                    result.put(y, x, px);
+                }
+            }
+        }
+        return result;
     }
     /**
      * Gets the points representing the marker(black square) corners.
@@ -148,7 +186,7 @@ public class VideoSimUtil {
     public static void warp16h5TagImage(
             int tagId, MatOfPoint2f dstPoints, Mat destination, boolean antialiasing) {
         Mat tagImage = kTag16h5Images.get(tagId);
-        if(tagImage == null) return;
+        if(tagImage == null || tagImage.empty()) return;
         var tagPoints = new MatOfPoint2f(kTag16h5MarkerPts);
         // points of tag image corners
         var tagImageCorners = new MatOfPoint2f(getImageCorners(tagImage.size()));
