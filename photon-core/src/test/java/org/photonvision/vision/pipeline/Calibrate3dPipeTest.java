@@ -265,6 +265,7 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
         calibration3dPipeline.getSettings().boardWidth = (int) Math.round(boardDim.width);
         calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
+        calibration3dPipeline.getSettings().streamingFrameDivisor = FrameDivisor.NONE;
 
         for (var file : directoryListing) {
             if (file.isFile()) {
