@@ -29,14 +29,11 @@
 #include <utility>
 #include <vector>
 
+#include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
 
 #include "photonlib/PhotonCamera.h"
-
-namespace frc {
-class AprilTagFieldLayout;
-}  // namespace frc
 
 namespace photonlib {
 enum PoseStrategy : int {
@@ -47,20 +44,31 @@ enum PoseStrategy : int {
   AVERAGE_BEST_TARGETS
 };
 
+struct EstimatedRobotPose {
+  /** The estimated pose */
+  frc::Pose3d estimatedPose;
+  /** The estimated time the frame used to derive the robot pose was taken, in
+   * the same timebase as the RoboRIO FPGA Timestamp */
+  units::second_t timestamp;
+
+  EstimatedRobotPose(frc::Pose3d pose_, units::second_t time_)
+      : estimatedPose(pose_), timestamp(time_) {}
+};
+
 /**
- * The RobotPoseEstimator class filters or combines readings from all the
+ * The PhotonPoseEstimator class filters or combines readings from all the
  * fiducials visible at a given timestamp on the field to produce a single robot
  * in field pose, using the strategy set below. Example usage can be found in
  * our apriltagExample example project.
  */
-class RobotPoseEstimator {
+class PhotonPoseEstimator {
  public:
   using map_value_type =
       std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>;
   using size_type = std::vector<map_value_type>::size_type;
 
   /**
-   * Create a new RobotPoseEstimator.
+   * Create a new PhotonPoseEstimator.
    *
    * <p>Example: {@code <code> <p> Map<Integer, Pose3d> map = new HashMap<>();
    * <p> map.put(1, new Pose3d(1.0, 2.0, 3.0, new Rotation3d())); // Tag ID 1 is
@@ -69,32 +77,20 @@ class RobotPoseEstimator {
    * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with
    * respect to the FIRST field.
    * @param strategy The strategy it should use to determine the best pose.
-   * @param cameras An ArrayList of Pairs of PhotonCameras and their respective
-   * Transform3ds from the center of the robot to the cameras.
+   * @param camera PhotonCameras and
+   * @param robotToCamera Transform3d from the center of the robot to the camera
+   * mount positions (ie, robot ➔ camera).
    */
-  explicit RobotPoseEstimator(
-      std::shared_ptr<frc::AprilTagFieldLayout> aprilTags,
-      PoseStrategy strategy, std::vector<map_value_type> cameras);
+  explicit PhotonPoseEstimator(frc::AprilTagFieldLayout aprilTags,
+                               PoseStrategy strategy, PhotonCamera&& camera,
+                               frc::Transform3d robotToCamera);
 
   /**
    * Get the AprilTagFieldLayout being used by the PositionEstimator.
    *
    * @return the AprilTagFieldLayout
    */
-  std::shared_ptr<frc::AprilTagFieldLayout> getFieldLayout() const {
-    return aprilTags;
-  }
-
-  /**
-   * Set the cameras to be used by the PoseEstimator.
-   *
-   * @param cameras cameras to set.
-   */
-  inline void SetCameras(
-      const std::vector<std::pair<std::shared_ptr<PhotonCamera>,
-                                  frc::Transform3d>>& cameras) {
-    this->cameras = cameras;
-  }
+  frc::AprilTagFieldLayout GetFieldLayout() const { return aprilTags; }
 
   /**
    * Get the Position Estimation Strategy being used by the Position Estimator.
@@ -135,12 +131,21 @@ class RobotPoseEstimator {
    */
   inline void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
 
-  std::pair<frc::Pose3d, units::second_t> Update();
+  /**
+   * Update the pose estimator. Internally grabs a new PhotonPipelineResult from
+   * the camera and process it.
+   */
+  std::optional<EstimatedRobotPose> Update();
+
+  inline PhotonCamera& GetCamera() { return camera; }
 
  private:
-  std::shared_ptr<frc::AprilTagFieldLayout> aprilTags;
+  frc::AprilTagFieldLayout aprilTags;
   PoseStrategy strategy;
-  std::vector<map_value_type> cameras;
+
+  PhotonCamera camera;
+  frc::Transform3d m_robotToCamera;
+
   frc::Pose3d lastPose;
   frc::Pose3d referencePose;
 
@@ -151,7 +156,8 @@ class RobotPoseEstimator {
    * @return the estimated position of the robot in the FCS and the estimated
    * timestamp of this estimation.
    */
-  std::pair<frc::Pose3d, units::second_t> LowestAmbiguityStrategy();
+  std::optional<EstimatedRobotPose> LowestAmbiguityStrategy(
+      PhotonPipelineResult result);
 
   /**
    * Return the estimated position of the robot using the target with the lowest
@@ -161,7 +167,8 @@ class RobotPoseEstimator {
    * @return the estimated position of the robot in the FCS and the estimated
    * timestamp of this estimation.
    */
-  std::pair<frc::Pose3d, units::second_t> ClosestToCameraHeightStrategy();
+  std::optional<EstimatedRobotPose> ClosestToCameraHeightStrategy(
+      PhotonPipelineResult result);
 
   /**
    * Return the estimated position of the robot using the target with the lowest
@@ -172,7 +179,8 @@ class RobotPoseEstimator {
    * @return the estimated position of the robot in the FCS and the estimated
    * timestamp of this estimation.
    */
-  std::pair<frc::Pose3d, units::second_t> ClosestToReferencePoseStrategy();
+  std::optional<EstimatedRobotPose> ClosestToReferencePoseStrategy(
+      PhotonPipelineResult result);
 
   /**
    * Return the average of the best target poses using ambiguity as weight.
@@ -181,7 +189,8 @@ class RobotPoseEstimator {
    timestamp of this
    *     estimation.
    */
-  std::pair<frc::Pose3d, units::second_t> AverageBestTargetsStrategy();
+  std::optional<EstimatedRobotPose> AverageBestTargetsStrategy(
+      PhotonPipelineResult result);
 };
 
 }  // namespace photonlib
