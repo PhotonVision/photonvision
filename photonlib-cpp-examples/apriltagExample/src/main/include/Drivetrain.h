@@ -25,6 +25,9 @@
 #include <units/length.h>
 #include <units/velocity.h>
 
+#include "PhotonCameraWrapper.h"
+#include <frc/estimator/DifferentialDrivePoseEstimator.h>
+
 /**
  * Represents a differential drive style drivetrain.
  */
@@ -95,6 +98,12 @@ class Drivetrain {
   frc::DifferentialDriveOdometry m_odometry{
       m_gyro.GetRotation2d(), units::meter_t{m_leftEncoder.GetDistance()},
       units::meter_t{m_rightEncoder.GetDistance()}};
+
+  frc::DifferentialDrivePoseEstimator m_poseEstimator {
+    m_kinematics,
+    m_gyro.GetRotation2d(),
+    
+  };
 
   // Gains are for example purposes only - must be determined for your own
   // robot!

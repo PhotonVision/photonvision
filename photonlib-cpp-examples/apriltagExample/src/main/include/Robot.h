@@ -42,8 +42,6 @@ class Robot : public frc::TimedRobot {
   void SimulationPeriodic() override;
 
  private:
-  // Change this to match the name of your camera
-  photonlib::PhotonCamera camera{"photonvision"};
 
   frc::XboxController m_controller{0};
 
