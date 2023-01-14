@@ -310,10 +310,10 @@ public class PhotonCameraSim implements AutoCloseable {
             double dist1 = t1.getPose().getTranslation().getDistance(cameraPose.getTranslation());
             double dist2 = t2.getPose().getTranslation().getDistance(cameraPose.getTranslation());
             if(dist1 == dist2) return 0;
-            return dist1 > dist2 ? 1 : -1;
+            return dist1 < dist2 ? 1 : -1;
         });
         // all targets visible (in FOV)
-        var visibleTgts = new ArrayList<Pair<Integer, List<TargetCorner>>>();
+        var visibleTags = new ArrayList<Pair<Integer, List<TargetCorner>>>();
         // all targets actually detectable to the camera
         var detectableTgts = new ArrayList<PhotonTrackedTarget>();
 
@@ -339,7 +339,7 @@ public class PhotonCameraSim implements AutoCloseable {
             );
             // save visible tags for stream simulation
             if(tgt.fiducialID >= 0) {
-                visibleTgts.add(new Pair<Integer,List<TargetCorner>>(tgt.fiducialID, targetCorners));
+                visibleTags.add(new Pair<Integer,List<TargetCorner>>(tgt.fiducialID, targetCorners));
             }
             // estimate pixel noise
             var noisyTargetCorners = prop.estPixelNoise(targetCorners);
@@ -382,10 +382,10 @@ public class PhotonCameraSim implements AutoCloseable {
         }
         // render visible tags to raw video frame
         if(videoSimRawEnabled) {
-            for(var detect : visibleTgts) {
+            for(var tag : visibleTags) {
                 VideoSimUtil.warp16h5TagImage(
-                    detect.getFirst(),
-                    OpenCVHelp.targetCornersToMat(detect.getSecond()),
+                    tag.getFirst(),
+                    OpenCVHelp.targetCornersToMat(tag.getSecond()),
                     videoSimFrameRaw, true
                 );
             }
@@ -395,12 +395,14 @@ public class PhotonCameraSim implements AutoCloseable {
         // draw/annotate tag detection outline on processed view
         if(videoSimProcEnabled) {
             Imgproc.cvtColor(videoSimFrameRaw, videoSimFrameProcessed, Imgproc.COLOR_GRAY2BGR);
-            for(var tag : detectableTgts) {
-                VideoSimUtil.drawTagDetection(
-                    tag.getFiducialId(),
-                    OpenCVHelp.targetCornersToMat(tag.getDetectedCorners()),
-                    videoSimFrameProcessed
-                );
+            for(var tgt : detectableTgts) {
+                if(tgt.getFiducialId() >= 0) {
+                    VideoSimUtil.drawTagDetection(
+                        tgt.getFiducialId(),
+                        OpenCVHelp.targetCornersToMat(tgt.getDetectedCorners()),
+                        videoSimFrameProcessed
+                    );
+                }
             }
             videoSimProcessed.putFrame(videoSimFrameProcessed);
         }
