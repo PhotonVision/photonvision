@@ -41,7 +41,7 @@ public class FindBoardCornersPipe
 
     // Tune to taste for a reasonable tradeoff between making
     // the findCorners portion work hard, versus the subpixel refinement work hard.
-    final int FIND_CORNERS_WIDTH_PX = 320;
+    final int FIND_CORNERS_WIDTH_PX = 640;
 
     // Configure the optimizations used while using openCV's find corners algorithm
     // Since we return results in real-time, we want ensure it goes as fast as possible
