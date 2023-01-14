@@ -73,6 +73,14 @@
                     tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
                   />
                   <CVselect
+                    v-model="streamingFrameDivisor"
+                    name="Decimation"
+                    tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
+                    :list="unfilteredStreamDivisors"
+                    :select-cols="largeBox"
+                    @rollback="e => rollback('streamingFrameDivisor', e)"
+                  />
+                  <CVselect
                     v-model="boardType"
                     name="Board Type"
                     select-cols="7"
@@ -397,6 +405,7 @@ export default {
             calibrationFailed: false,
             filteredVideomodeIndex: 0,
             settingsValid: true,
+            unfilteredStreamDivisors: [1, 2, 4],
         }
     },
     computed: {
@@ -466,6 +475,17 @@ export default {
                 this.$store.commit('cameraSettings', value);
             }
         },
+
+        streamingFrameDivisor: {
+            get() {
+                return this.$store.getters.currentPipelineSettings.streamingFrameDivisor;
+            },
+            set(val) {
+                this.$store.commit("mutatePipeline", {"streamingFrameDivisor": val});
+                this.handlePipelineUpdate("streamingFrameDivisor", val);
+            }
+        },
+
         boardType: {
             get() {
                 return this.calibrationData.boardType

@@ -17,7 +17,6 @@
 
 package org.photonvision.vision.pipe.impl;
 
-import java.util.Objects;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.opencv.calib3d.Calib3d;
@@ -25,6 +24,7 @@ import org.opencv.core.*;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.pipeline.UICalibrationData;
 
@@ -38,10 +38,6 @@ public class FindBoardCornersPipe
 
     Size imageSize;
     Size patternSize;
-
-    // Tune to taste for a reasonable tradeoff between making
-    // the findCorners portion work hard, versus the subpixel refinement work hard.
-    final int FIND_CORNERS_WIDTH_PX = 640;
 
     // Configure the optimizations used while using openCV's find corners algorithm
     // Since we return results in real-time, we want ensure it goes as fast as possible
@@ -125,17 +121,13 @@ public class FindBoardCornersPipe
 
     /**
      * Figures out how much a frame or point cloud must be scaled down by to match the desired size at
-     * which to run FindCorners
+     * which to run FindCorners. Should usually be > 1.
      *
      * @param inFrame
      * @return
      */
     private double getFindCornersScaleFactor(Mat inFrame) {
-        if (inFrame.width() > FIND_CORNERS_WIDTH_PX) {
-            return ((double) FIND_CORNERS_WIDTH_PX) / inFrame.width();
-        } else {
-            return 1.0;
-        }
+        return 1.0 / params.divisor.value;
     }
 
     /**
@@ -174,9 +166,10 @@ public class FindBoardCornersPipe
      *     findBoardCorners
      * @return the size to scale the input mat to
      */
-    private Size getFindCornersImgSize(Mat inFrame) {
-        var findcorners_height = Math.round(inFrame.height() * getFindCornersScaleFactor(inFrame));
-        return new Size(FIND_CORNERS_WIDTH_PX, findcorners_height);
+    private Size getFindCornersImgSize(Mat in) {
+        int width = in.cols() / params.divisor.value;
+        int height = in.rows() / params.divisor.value;
+        return new Size(width, height);
     }
 
     /**
@@ -295,29 +288,48 @@ public class FindBoardCornersPipe
         private final int boardWidth;
         private final UICalibrationData.BoardType type;
         private final double gridSize;
+        private final FrameDivisor divisor;
 
         public FindCornersPipeParams(
-                int boardHeight, int boardWidth, UICalibrationData.BoardType type, double gridSize) {
+                int boardHeight,
+                int boardWidth,
+                UICalibrationData.BoardType type,
+                double gridSize,
+                FrameDivisor divisor) {
             this.boardHeight = boardHeight;
             this.boardWidth = boardWidth;
             this.type = type;
             this.gridSize = gridSize; // mm
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            FindCornersPipeParams that = (FindCornersPipeParams) o;
-            return boardHeight == that.boardHeight
-                    && boardWidth == that.boardWidth
-                    && Double.compare(that.gridSize, gridSize) == 0
-                    && type == that.type;
+            this.divisor = divisor;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(boardHeight, boardWidth, type, gridSize);
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + boardHeight;
+            result = prime * result + boardWidth;
+            result = prime * result + ((type == null) ? 0 : type.hashCode());
+            long temp;
+            temp = Double.doubleToLongBits(gridSize);
+            result = prime * result + (int) (temp ^ (temp >>> 32));
+            result = prime * result + ((divisor == null) ? 0 : divisor.hashCode());
+            return result;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+            FindCornersPipeParams other = (FindCornersPipeParams) obj;
+            if (boardHeight != other.boardHeight) return false;
+            if (boardWidth != other.boardWidth) return false;
+            if (type != other.type) return false;
+            if (Double.doubleToLongBits(gridSize) != Double.doubleToLongBits(other.gridSize))
+                return false;
+            if (divisor != other.divisor) return false;
+            return true;
         }
     }
 }
