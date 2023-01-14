@@ -98,7 +98,9 @@ public class NetworkManager {
                 var shell = new ShellExec();
                 try {
                     // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
-                    shell.executeBashCommand(config.setDHCPcommand.replace(NetworkConfig.NM_IFACE_STRING, config.networkManagerIface));
+                    shell.executeBashCommand(
+                            config.setDHCPcommand.replace(
+                                    NetworkConfig.NM_IFACE_STRING, config.networkManagerIface));
                     shell.executeBashCommand("dhclient " + config.physicalInterface, false);
                 } catch (Exception e) {
                     logger.error("Exception while setting DHCP!");
