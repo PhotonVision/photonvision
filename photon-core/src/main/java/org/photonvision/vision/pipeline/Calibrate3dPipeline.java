@@ -87,7 +87,11 @@ public class Calibrate3dPipeline
     protected void setPipeParamsImpl() {
         FindBoardCornersPipe.FindCornersPipeParams findCornersPipeParams =
                 new FindBoardCornersPipe.FindCornersPipeParams(
-                        settings.boardHeight, settings.boardWidth, settings.boardType, settings.gridSize);
+                        settings.boardHeight,
+                        settings.boardWidth,
+                        settings.boardType,
+                        settings.gridSize,
+                        settings.streamingFrameDivisor);
         findBoardCornersPipe.setParams(findCornersPipeParams);
 
         Calibrate3dPipe.CalibratePipeParams calibratePipeParams =
@@ -105,7 +109,7 @@ public class Calibrate3dPipeline
     protected CVPipelineResult process(Frame frame, Calibration3dPipelineSettings settings) {
         Mat inputColorMat = frame.colorImage.getMat();
 
-        if (this.calibrating) {
+        if (this.calibrating || inputColorMat.empty()) {
             return new CVPipelineResult(0, 0, null, frame);
         }
 
