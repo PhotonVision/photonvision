@@ -38,6 +38,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.AnalogGyro;
 import edu.wpi.first.wpilibj.Encoder;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorController;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
@@ -49,7 +50,10 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveTrainConstants;
 import java.util.Optional;
+import org.photonvision.CameraProperties;
 import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCameraSim;
+import org.photonvision.VisionSystemSim;
 
 /** Represents a differential drive style drivetrain. */
 public class Drivetrain {
@@ -94,7 +98,7 @@ public class Drivetrain {
     private final EncoderSim m_rightEncoderSim = new EncoderSim(m_rightEncoder);
     private final Field2d m_fieldSim = new Field2d();
     private final LinearSystem<N2, N2, N2> m_drivetrainSystem =
-            LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.3);
+            LinearSystemId.identifyDrivetrainSystem(1.98, 0.2, 1.5, 0.8);
     private final DifferentialDrivetrainSim m_drivetrainSimulator =
             new DifferentialDrivetrainSim(
                     m_drivetrainSystem,
@@ -103,6 +107,9 @@ public class Drivetrain {
                     DriveTrainConstants.kTrackWidth,
                     DriveTrainConstants.kWheelRadius,
                     null);
+
+    // Simulated PhotonCamera -- only used in sim!
+    VisionSystemSim m_visionSystemSim;
 
     /**
      * Constructs a differential drive object. Sets the encoder distance per pulse and resets the
@@ -128,6 +135,14 @@ public class Drivetrain {
         m_rightEncoder.reset();
 
         SmartDashboard.putData("Field", m_fieldSim);
+
+        // Only simulate our PhotonCamera in simulation
+        if (RobotBase.isSimulation()) {
+            m_visionSystemSim = new VisionSystemSim(Constants.VisionConstants.cameraName);
+            var cameraSim = new PhotonCameraSim(pcw.photonCamera, CameraProperties.PI4_LIFECAM_640_480());
+            m_visionSystemSim.addCamera(cameraSim, Constants.VisionConstants.robotToCam);
+            m_visionSystemSim.addVisionTargets(pcw.atfl);
+        }
     }
 
     /**
@@ -174,6 +189,9 @@ public class Drivetrain {
         m_rightEncoderSim.setDistance(m_drivetrainSimulator.getRightPositionMeters());
         m_rightEncoderSim.setRate(m_drivetrainSimulator.getRightVelocityMetersPerSecond());
         m_gyroSim.setAngle(-m_drivetrainSimulator.getHeading().getDegrees());
+
+        // Update results from vision as well
+        m_visionSystemSim.update(m_drivetrainSimulator.getPose());
     }
 
     /** Updates the field-relative position. */

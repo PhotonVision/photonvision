@@ -24,14 +24,11 @@
 
 package frc.robot;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.VisionConstants;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -41,28 +38,16 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 public class PhotonCameraWrapper {
     public PhotonCamera photonCamera;
     public PhotonPoseEstimator photonPoseEstimator;
+    public AprilTagFieldLayout atfl;
 
     public PhotonCameraWrapper() {
-        // Set up a test arena of two apriltags at the center of each driver station set
-        final AprilTag tag18 =
-                new AprilTag(
-                        18,
-                        new Pose3d(
-                                new Pose2d(
-                                        FieldConstants.length,
-                                        FieldConstants.width / 2.0,
-                                        Rotation2d.fromDegrees(180))));
-        final AprilTag tag01 =
-                new AprilTag(
-                        01,
-                        new Pose3d(new Pose2d(0.0, FieldConstants.width / 2.0, Rotation2d.fromDegrees(0.0))));
-        ArrayList<AprilTag> atList = new ArrayList<AprilTag>();
-        atList.add(tag18);
-        atList.add(tag01);
-
-        // TODO - once 2023 happens, replace this with just loading the 2023 field arrangement
-        AprilTagFieldLayout atfl =
-                new AprilTagFieldLayout(atList, FieldConstants.length, FieldConstants.width);
+        // Load 2023 field
+        try {
+            atfl = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
         // Forward Camera
         photonCamera =

@@ -28,6 +28,7 @@ import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import frc.robot.Constants.DriveTrainConstants;
 
 public class Robot extends TimedRobot {
@@ -42,11 +43,16 @@ public class Robot extends TimedRobot {
     public void robotInit() {
         if (Robot.isSimulation()) {
             NetworkTableInstance instance = NetworkTableInstance.getDefault();
+
+            // We have to have Photon running and set to NT server mode for it to connect
+            // to our computer instead of to a roboRIO.
             instance.stopServer();
             // set the NT server if simulating this code.
             // "localhost" for photon on desktop, or "photonvision.local" / "[ip-address]" for coprocessor
             instance.setServer("localhost");
             instance.startClient4("myRobot");
+
+            DriverStationSim.setEnabled(true);
         }
 
         m_controller = new XboxController(0);
