@@ -458,26 +458,114 @@ public class CameraProperties {
     public static CameraProperties PERFECT_90DEG() {
         return new CameraProperties();
     }
-    public static CameraProperties PI4_PICAM2_480p() {
+    public static CameraProperties PI4_LIFECAM_320_240() {
         var prop = new CameraProperties();
-        prop.setCalibration(640, 480,
+        prop.setCalibration(320, 240,
             Matrix.mat(Nat.N3(), Nat.N3()).fill( // intrinsic
-                497.8204072694636,  0.0,                314.53659309737424,
-                0.0,                481.6955284883231,  231.95042993880858,
+                328.2733242048587,  0.0,                164.8190261141906,
+                0.0,                318.0609794305216,  123.8633838438093,
                 0.0,                0.0,                1.0
             ),
             VecBuilder.fill( // distort
-                0.16990717177326176,
-                -0.47305087536583684,
-                -0.002992219989630736,
-                -0.0016840919550094836,
-                0.36623021008942863
+                0.09957946553445934,
+                -0.9166265114485799,
+                0.0019519890627236526,
+                -0.0036071725380870333,
+                1.5627234622420942
             )
         );
-        prop.setCalibError(0.25, 0.07);
-        prop.setFPS(17);
+        prop.setCalibError(0.21, 0.0124);
+        prop.setFPS(30);
+        prop.setAvgLatencyMs(30);
+        prop.setLatencyStdDevMs(10);
+        return prop;
+    }
+    public static CameraProperties PI4_LIFECAM_640_480() {
+        var prop = new CameraProperties();
+        prop.setCalibration(640, 480,
+            Matrix.mat(Nat.N3(), Nat.N3()).fill( // intrinsic
+                669.1428078983059,  0.0,                322.53377249329213,
+                0.0,                646.9843137061716,  241.26567383784163,
+                0.0,                0.0,                1.0
+            ),
+            VecBuilder.fill( // distort
+                0.12788470750464645,
+                -1.2350335805796528,
+                0.0024990767286192732,
+                -0.0026958287600230705,
+                2.2951386729115537
+            )
+        );
+        prop.setCalibError(0.26, 0.046);
+        prop.setFPS(15);
+        prop.setAvgLatencyMs(65);
+        prop.setLatencyStdDevMs(15);
+        return prop;
+    }
+    public static CameraProperties LL2_640_480() {
+        var prop = new CameraProperties();
+        prop.setCalibration(640, 480,
+            Matrix.mat(Nat.N3(), Nat.N3()).fill( // intrinsic
+                511.22843367007755, 0.0,                323.62049380211096,
+                0.0,                514.5452336723849,  261.8827920543568,
+                0.0,                0.0,                1.0
+            ),
+            VecBuilder.fill( // distort
+                0.1917469998873756,
+                -0.5142936883324216,
+                0.012461562046896614,
+                0.0014084973492408186,
+                0.35160648971214437
+            )
+        );
+        prop.setCalibError(0.25, 0.05);
+        prop.setFPS(15);
         prop.setAvgLatencyMs(35);
         prop.setLatencyStdDevMs(8);
+        return prop;
+    }
+    public static CameraProperties LL2_960_720() {
+        var prop = new CameraProperties();
+        prop.setCalibration(960, 720,
+            Matrix.mat(Nat.N3(), Nat.N3()).fill( // intrinsic
+                769.6873145148892,  0.0,                486.1096609458122,
+                0.0,                773.8164483705323,  384.66071662358354,
+                0.0,                0.0,                1.0
+            ),
+            VecBuilder.fill( // distort
+                0.189462064814501,
+                -0.49903003669627627,
+                0.007468423590519429,
+                0.002496885298683693,
+                0.3443122090208624
+            )
+        );
+        prop.setCalibError(0.35, 0.10);
+        prop.setFPS(10);
+        prop.setAvgLatencyMs(50);
+        prop.setLatencyStdDevMs(15);
+        return prop;
+    }
+    public static CameraProperties LL2_1280_720() {
+        var prop = new CameraProperties();
+        prop.setCalibration(1280, 720,
+            Matrix.mat(Nat.N3(), Nat.N3()).fill( // intrinsic
+                1011.3749416937393, 0.0,                645.4955139388737,
+                0.0,                1008.5391755084075, 508.32877656020196,
+                0.0,                0.0,                1.0
+            ),
+            VecBuilder.fill( // distort
+                0.13730101577061535,
+                -0.2904345656989261,
+                8.32475714507539E-4,
+                -3.694397782014239E-4,
+                0.09487962227027584
+            )
+        );
+        prop.setCalibError(0.37, 0.06);
+        prop.setFPS(7);
+        prop.setAvgLatencyMs(60);
+        prop.setLatencyStdDevMs(20);
         return prop;
     }
 }
