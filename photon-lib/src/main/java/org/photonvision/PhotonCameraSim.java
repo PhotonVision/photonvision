@@ -64,6 +64,11 @@ import edu.wpi.first.util.RuntimeLoader;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
+/**
+ * A handle for simulating {@link PhotonCamera} values.
+ * Processing simulated targets through this class will change the associated
+ * PhotonCamera's results.
+ */
 @SuppressWarnings("unused")
 public class PhotonCameraSim implements AutoCloseable {
     private final PhotonCamera cam;
@@ -130,26 +135,6 @@ public class PhotonCameraSim implements AutoCloseable {
      * Constructs a handle for simulating {@link PhotonCamera} values.
      * Processing simulated targets through this class will change the associated
      * PhotonCamera's results.
-     *
-     * @param camera The camera to be simulated
-     * @param prop Properties of this camera such as FOV and FPS
-     * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected target must take up of the
-     *     camera's image to be processed. Match this with your contour filtering settings in the
-     *     PhotonVision GUI.
-     * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
-     *     Note that minimum target area of the image is separate from this.
-     */
-    public PhotonCameraSim(
-            PhotonCamera camera, CameraProperties prop,
-            double minTargetAreaPercent, double maxSightRangeMeters) {
-        this(camera, prop);
-        this.minTargetAreaPercent = minTargetAreaPercent;
-        this.maxSightRangeMeters = maxSightRangeMeters;
-    }
-    /**
-     * Constructs a handle for simulating {@link PhotonCamera} values.
-     * Processing simulated targets through this class will change the associated
-     * PhotonCamera's results.
      * 
      * <p>By default, the minimum target area is 100 pixels and there is no maximum sight range.
      *
@@ -171,6 +156,26 @@ public class PhotonCameraSim implements AutoCloseable {
         ts.removeEntries();
         ts.subTable = rootTable;
         ts.updateEntries();        
+    }
+    /**
+     * Constructs a handle for simulating {@link PhotonCamera} values.
+     * Processing simulated targets through this class will change the associated
+     * PhotonCamera's results.
+     *
+     * @param camera The camera to be simulated
+     * @param prop Properties of this camera such as FOV and FPS
+     * @param minTargetAreaPercent The minimum percentage(0 - 100) a detected target must take up of the
+     *     camera's image to be processed. Match this with your contour filtering settings in the
+     *     PhotonVision GUI.
+     * @param maxSightRangeMeters Maximum distance at which the target is illuminated to your camera.
+     *     Note that minimum target area of the image is separate from this.
+     */
+    public PhotonCameraSim(
+            PhotonCamera camera, CameraProperties prop,
+            double minTargetAreaPercent, double maxSightRangeMeters) {
+        this(camera, prop);
+        this.minTargetAreaPercent = minTargetAreaPercent;
+        this.maxSightRangeMeters = maxSightRangeMeters;
     }
 
     public PhotonCamera getCamera() {

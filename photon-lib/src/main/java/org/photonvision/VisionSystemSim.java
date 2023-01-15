@@ -44,6 +44,13 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
+ * running PhotonVision, detecting targets placed on the field. {@link VisionTargetSim}s added to
+ * this class will be detected by the {@link PhotonCameraSim}s added to this class. This class
+ * should be updated periodically with the robot's current pose in order to publish the simulated
+ * camera target info.
+ */
 public class VisionSystemSim {
 
     private final String tableName;
@@ -63,12 +70,17 @@ public class VisionSystemSim {
     private final Field2d dbgField;
 
     /**
-     * Create a simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
-     * running PhotonVision, detecting one or more targets scattered around the field.
+     * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
+     * running PhotonVision, detecting targets placed on the field. {@link VisionTargetSim}s added to
+     * this class will be detected by the {@link PhotonCameraSim}s added to this class. This class
+     * should be updated periodically with the robot's current pose in order to publish the simulated
+     * camera target info.
+     * 
+     * @param visionSystemName The specific identifier for this vision system in NetworkTables.
      */
     public VisionSystemSim(String visionSystemName) {
         dbgField = new Field2d();
-        tableName = "vision-"+visionSystemName;
+        tableName = "VisionSystemSim-"+visionSystemName;
         SmartDashboard.putData(tableName + "/Sim Field", dbgField);
     }
 
