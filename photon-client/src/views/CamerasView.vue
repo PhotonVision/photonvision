@@ -73,6 +73,14 @@
                     tooltip="Resolution to calibrate at (you will have to calibrate every resolution you use 3D mode on)"
                   />
                   <CVselect
+                    v-model="streamingFrameDivisor"
+                    name="Decimation"
+                    tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
+                    :list="calibrationDivisors"
+                    select-cols="7"
+                    @rollback="e => rollback('streamingFrameDivisor', e)"
+                  />
+                  <CVselect
                     v-model="boardType"
                     name="Board Type"
                     select-cols="7"
@@ -397,6 +405,7 @@ export default {
             calibrationFailed: false,
             filteredVideomodeIndex: 0,
             settingsValid: true,
+            unfilteredStreamDivisors: [1, 2, 4],
         }
     },
     computed: {
@@ -427,6 +436,22 @@ export default {
           },
           set(val) {
               this.$store.commit("mutatePipeline", {"cameraGain": parseInt(val)});
+          }
+        },
+
+        calibrationDivisors: {
+          get() {
+            return this.unfilteredStreamDivisors.filter(item => {
+              var res = this.stringResolutionList[this.selectedFilteredResIndex].split(" X ").map(it => parseInt(it));
+              console.log(res);
+              console.log(item);
+              // Realistically, we need more than 320x240, but lower than this is
+              // basically unusable. For now, don't allow decimations that take us
+              // below that
+              const ret = ((res[0] / item) >= 300 && (res[1] / item) >= 220) || (item === 1);
+              console.log(ret);
+              return ret;
+            })
           }
         },
 
@@ -466,6 +491,17 @@ export default {
                 this.$store.commit('cameraSettings', value);
             }
         },
+
+        streamingFrameDivisor: {
+            get() {
+                return this.$store.getters.currentPipelineSettings.streamingFrameDivisor;
+            },
+            set(val) {
+                this.$store.commit("mutatePipeline", {"streamingFrameDivisor": val});
+                this.handlePipelineUpdate("streamingFrameDivisor", val);
+            }
+        },
+
         boardType: {
             get() {
                 return this.calibrationData.boardType
