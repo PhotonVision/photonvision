@@ -41,8 +41,8 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
- * The PhotonPoseEstimator class filters or combines readings from all the fiducial targets visible
- * at a given timestamp on the field to produce a single robot in field pose, using the strategy set
+ * The PhotonPoseEstimator class filters or combines readings from all the April Tags visible at a
+ * given timestamp on the field to produce a single robot in field pose, using the strategy set
  * below. Example usage can be found in our apriltagExample example project.
  */
 public class PhotonPoseEstimator {
@@ -77,11 +77,15 @@ public class PhotonPoseEstimator {
      * Create a new PhotonPoseEstimator.
      *
      * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3d objects
-     *     with respect to the FIRST field using the Field Coordinate System (FCS).
+     *     with respect to the FIRST field using the <a
+     *     href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
+     *     Coordinate System</a>.
      * @param strategy The strategy it should use to determine the best pose.
      * @param camera PhotonCameras and
      * @param robotToCamera Transform3d from the center of the robot to the camera mount positions
-     *     (ie, robot ➔ camera) in the Robot Coordinate System (RCS).
+     *     (ie, robot ➔ camera) in the <a
+     *     href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
+     *     Coordinate System</a>.
      */
     public PhotonPoseEstimator(
             AprilTagFieldLayout fieldTags,
