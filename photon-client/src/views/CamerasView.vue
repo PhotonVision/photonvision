@@ -76,7 +76,7 @@
                     v-model="streamingFrameDivisor"
                     name="Decimation"
                     tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
-                    :list="unfilteredStreamDivisors"
+                    :list="calibrationDivisors"
                     :select-cols="largeBox"
                     @rollback="e => rollback('streamingFrameDivisor', e)"
                   />
@@ -436,6 +436,22 @@ export default {
           },
           set(val) {
               this.$store.commit("mutatePipeline", {"cameraGain": parseInt(val)});
+          }
+        },
+
+        calibrationDivisors: {
+          get() {
+            return this.unfilteredStreamDivisors.filter(item => {
+              var res = this.stringResolutionList[this.selectedFilteredResIndex].split(" X ").map(it => parseInt(it));
+              console.log(res);
+              console.log(item);
+              // Realistically, we need more than 320x240, but lower than this is
+              // basically unusable. For now, don't allow decimations that take us
+              // below that
+              const ret = ((res[0] / item) >= 300 && (res[1] / item) >= 220) || (item === 1);
+              console.log(ret);
+              return ret;
+            })
           }
         },
 
