@@ -57,8 +57,7 @@ public class VisionSystemSim {
 
     private final Map<String, PhotonCameraSim> camSimMap = new HashMap<>();
     private static final double kBufferLengthSeconds = 1.5;
-    // save robot-to-camera for each camera over time
-    // These are Pose3d because they are already interpolatable
+    // save robot-to-camera for each camera over time (Pose3d is easily interpolatable)
     private final Map<PhotonCameraSim, TimeInterpolatableBuffer<Pose3d>> camTrfMap = new HashMap<>();
 
     // interpolate drivetrain with twists
@@ -107,10 +106,6 @@ public class VisionSystemSim {
     public void addCamera(PhotonCameraSim cameraSim, Transform3d robotToCamera) {
         var existing = camSimMap.putIfAbsent(cameraSim.getCamera().getName(), cameraSim);
         if(existing == null) {
-            SmartDashboard.putData(
-                tableName+"/"+cameraSim.getCamera().getName()+"/Sim Corners",
-                cameraSim.getDebugCorners()
-            );
             camTrfMap.put(cameraSim, TimeInterpolatableBuffer.createBuffer(kBufferLengthSeconds));
             camTrfMap.get(cameraSim).addSample(Timer.getFPGATimestamp(), new Pose3d().plus(robotToCamera));
         }
@@ -136,6 +131,8 @@ public class VisionSystemSim {
     /**
      * Get a simulated camera's position relative to the robot.
      * If the requested camera is invalid, an empty optional is returned.
+     * 
+     * @return The transform of this cameraSim, or an empty optional if it is invalid
      */
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim) {
         return getRobotToCamera(cameraSim, Timer.getFPGATimestamp());
@@ -146,6 +143,7 @@ public class VisionSystemSim {
      * 
      * @param cameraSim Specific camera to get the robot-to-camera transform of
      * @param timeSeconds Timestamp in seconds of when the transform should be observed
+     * @return The transform of this cameraSim, or an empty optional if it is invalid
      */
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim, double timeSeconds) {
         var trfBuffer = camTrfMap.get(cameraSim);
@@ -165,24 +163,31 @@ public class VisionSystemSim {
      *
      * @param cameraSim The simulated camera to change the relative position of
      * @param robotToCamera New transform from the robot to the camera
+     * @return If the cameraSim was valid and transform was adjusted
      */
-    public void adjustCamera(PhotonCameraSim cameraSim, Transform3d robotToCamera) {
+    public boolean adjustCamera(PhotonCameraSim cameraSim, Transform3d robotToCamera) {
         var trfBuffer = camTrfMap.get(cameraSim);
-        if(trfBuffer == null) return;
+        if(trfBuffer == null) return false;
         trfBuffer.addSample(Timer.getFPGATimestamp(), new Pose3d().plus(robotToCamera));
+        return true;
     }
-    /** Reset the previous transforms for this camera. */
-    public void resetCameraTransforms(PhotonCameraSim cameraSim) {
-        double now = Timer.getFPGATimestamp();
-        var trfBuffer = camTrfMap.get(cameraSim);
-        if(trfBuffer == null) return;
-        var lastTrf = trfBuffer.getSample(now).orElse(new Pose3d());
-        trfBuffer.clear();
-        adjustCamera(cameraSim, new Transform3d(new Pose3d(), lastTrf));
-    }
-    /** Reset the previous transforms for all cameras. */
+    /** Reset the previous transforms for all cameras to their current transform. */
     public void resetCameraTransforms() {
         for(var cam : camTrfMap.keySet()) resetCameraTransforms(cam);
+    }
+    /**
+     * Reset the transform history for this camera to just the current transform.
+     * 
+     * @return If the cameraSim was valid and transforms were reset
+     */
+    public boolean resetCameraTransforms(PhotonCameraSim cameraSim) {
+        double now = Timer.getFPGATimestamp();
+        var trfBuffer = camTrfMap.get(cameraSim);
+        if(trfBuffer == null) return false;
+        trfBuffer.clear();
+        var lastTrf = new Transform3d(new Pose3d(), trfBuffer.getSample(now).orElse(new Pose3d()));
+        adjustCamera(cameraSim, lastTrf);
+        return true;
     }
     
     public Set<VisionTargetSim> getVisionTargets() {
@@ -263,11 +268,17 @@ public class VisionSystemSim {
     }
 
     /**
+     * Get the latest robot pose in meters saved by the vision system.
+     */
+    public Pose3d getRobotPose() {
+        return getRobotPose(Timer.getFPGATimestamp());
+    }
+    /**
      * Get the robot pose in meters saved by the vision system at this timestamp.
      * @param timestamp Timestamp of the desired robot pose
      */
-    public Optional<Pose3d> getRobotPose(double timestamp) {
-        return robotPoseBuffer.getSample(timestamp);
+    public Pose3d getRobotPose(double timestamp) {
+        return robotPoseBuffer.getSample(timestamp).orElse(new Pose3d());
     }
     /**
      * Clears all previous robot poses and sets robotPose at current time.
@@ -290,6 +301,7 @@ public class VisionSystemSim {
     /**
      * Periodic update. Ensure this is called repeatedly-- camera performance is used to
      * automatically determine if a new frame should be submitted.
+     * 
      * @param robotPoseMeters The current robot pose in meters
      */
     public void update(Pose2d robotPoseMeters) {
@@ -298,6 +310,7 @@ public class VisionSystemSim {
     /**
      * Periodic update. Ensure this is called repeatedly-- camera performance is used to
      * automatically determine if a new frame should be submitted.
+     * 
      * @param robotPoseMeters The current robot pose in meters
      */
     public void update(Pose3d robotPoseMeters) {
@@ -331,7 +344,7 @@ public class VisionSystemSim {
             double timestampCapture = timestampNT - latencyMillis / 1e3;
 
             // use camera pose from the image capture timestamp
-            Pose3d lateRobotPose = getRobotPose(timestampCapture).get();
+            Pose3d lateRobotPose = getRobotPose(timestampCapture);
             Pose3d lateCameraPose = lateRobotPose.plus(getRobotToCamera(camSim).get());
             cameraPose2ds.add(lateCameraPose.toPose2d());
 

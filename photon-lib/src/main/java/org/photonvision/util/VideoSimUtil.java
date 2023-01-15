@@ -122,16 +122,14 @@ public class VideoSimUtil {
             if(path.startsWith("/")) path = path.substring(1);
         }
         Mat result = new Mat();
-        try {
-            result = Imgcodecs.imread(path, Imgcodecs.IMREAD_GRAYSCALE);
-        } catch (Exception e) {}
+        if(!path.startsWith("file")) result = Imgcodecs.imread(path, Imgcodecs.IMREAD_GRAYSCALE);
         // reading jar file
         if(result.empty()) {
             BufferedImage buf;
             try {
                 buf = ImageIO.read(resource);
             } catch (IOException e) {
-                System.err.println("Couldn't read tag image from jar!");
+                System.err.println("Couldn't read tag image!");
                 return result;
             }
 

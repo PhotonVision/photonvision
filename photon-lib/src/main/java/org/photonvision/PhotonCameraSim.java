@@ -83,11 +83,9 @@ public class PhotonCameraSim implements AutoCloseable {
     private double nextNTEntryTime = Timer.getFPGATimestamp();
     
     private double maxSightRangeMeters = Double.MAX_VALUE;
-    private static final double kDefaultMinAreaPx = 100;
+    private static final double kDefaultMinAreaPx = 90;
     private double minTargetAreaPercent;
     private PhotonTargetSortMode sortMode = PhotonTargetSortMode.Largest;
-
-    private final Field2d dbgCorners = new Field2d();
     
     // video stream simulation
     private final CvSource videoSimRaw;
@@ -114,7 +112,6 @@ public class PhotonCameraSim implements AutoCloseable {
         videoSimFrameRaw.release();
         videoSimProcessed.close();
         videoSimFrameProcessed.release();
-        dbgCorners.close();
     }
     
     /**
@@ -193,10 +190,6 @@ public class PhotonCameraSim implements AutoCloseable {
     }
     public PhotonTargetSortMode getTargetSortMode() {
         return sortMode;
-    }
-
-    public Field2d getDebugCorners() {
-        return dbgCorners;
     }
 
     public CvSource getVideoSimRaw() {
