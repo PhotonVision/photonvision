@@ -206,7 +206,7 @@ public class CameraProperties {
      *     <b>Exposure time limits FPS if set!</b>
      */
     public void setFPS(double fps) {
-        this.frameSpeedMs = Math.max(1000.0 / fps, exposureTimeMs);
+        frameSpeedMs = Math.max(1000.0 / fps, exposureTimeMs);
     }
     /**
      * @param exposureTimeMs The amount of time the "shutter" is open for one frame.

@@ -75,8 +75,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * This simulated camera's {@link CameraProperties}
      */
     public final CameraProperties prop;
-    private double lastTime = Timer.getFPGATimestamp();
-    private double msUntilNextFrame = 0;
+    private double nextNTEntryTime = Timer.getFPGATimestamp();
     
     private double maxSightRangeMeters = Double.MAX_VALUE;
     private static final double kDefaultMinAreaPx = 100;
@@ -240,26 +239,33 @@ public class PhotonCameraSim implements AutoCloseable {
     /**
      * Determine if this camera should process a new frame based on performance metrics and the time
      * since the last update. This returns an Optional which is either empty if no update should occur
-     * or a Double of the latency in milliseconds of the frame which should be processed. If a
-     * latency is returned, the last frame update time becomes the current time.
-     * @return Optional double which is empty while blocked or the latency in milliseconds if ready
+     * or a Double of the timestamp in seconds of when the frame which should be received by NT. If a
+     * timestamp is returned, the last frame update time becomes that timestamp.
+     * 
+     * @return Optional double which is empty while blocked or the NT entry timestamp in seconds if ready
      */
-    public Optional<Double> getShouldProcess() {
+    public Optional<Double> consumeNextEntryTime() {
         // check if this camera is ready for another frame update
         double now = Timer.getFPGATimestamp();
-        double dt = now - lastTime;
-        double latencyMillis;
+        double timestamp = -1;
+        int iter = 0;
+        // prepare next latest update
+        while(now >= nextNTEntryTime) {
+            timestamp = nextNTEntryTime;
+            double frameTime = prop.estMsUntilNextFrame() / 1e3;
+            nextNTEntryTime += frameTime;
 
-        if(dt >= msUntilNextFrame/1000.0) {
-            latencyMillis = prop.estLatencyMs();
-            msUntilNextFrame = prop.estMsUntilNextFrame();
-            lastTime = now;
-            return Optional.of(latencyMillis);
+            // if frame time is very small, avoid blocking
+            if(iter++ > 100) {
+                timestamp = now;
+                nextNTEntryTime = now + frameTime;
+                break;
+            }
         }
-        else {
-            // this camera isnt ready to process yet
-            return Optional.empty();
-        }
+        // return the timestamp of the latest update
+        if(timestamp >= 0) return Optional.of(timestamp);
+        // or this camera isnt ready to process yet
+        else return Optional.empty();
     }
 
     /**
@@ -412,18 +418,30 @@ public class PhotonCameraSim implements AutoCloseable {
         if (sortMode != null) {
             detectableTgts.sort(sortMode.getComparator());
         }
-        var result = new PhotonPipelineResult(latencyMillis, detectableTgts);
-        submitProcessedFrame(result);
-        return result;
+        return new PhotonPipelineResult(latencyMillis, detectableTgts);
     }
 
     /**
-     * Simulate one processed frame of vision data, putting one result to NT.
+     * Simulate one processed frame of vision data, putting one result to NT
+     * at current timestamp. Image capture time is assumed be (current time - latency).
      *
      * @param result The pipeline result to submit
      */
     public void submitProcessedFrame(PhotonPipelineResult result) {
+        submitProcessedFrame(result, Timer.getFPGATimestamp());
+    }
+    /**
+     * Simulate one processed frame of vision data, putting one result to NT.
+     * Image capture timestamp overrides
+     * {@link PhotonPipelineResult#getTimestampSeconds() getTimestampSeconds()}
+     * for more precise latency simulation.
+     *
+     * @param result The pipeline result to submit
+     * @param receiveTimestamp The (sim) timestamp when this result was read by NT
+     */
+    public void submitProcessedFrame(PhotonPipelineResult result, double receiveTimestamp) {
         ts.latencyMillisEntry.set(result.getLatencyMillis());
+        cam.simNTTimestamp = receiveTimestamp;
 
         var newPacket = new Packet(result.getPacketSize());
         result.populatePacket(newPacket);

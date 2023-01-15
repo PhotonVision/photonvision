@@ -309,21 +309,25 @@ public class VisionSystemSim {
         // process each camera
         for(var camSim : camSimMap.values()) {            
             // check if this camera is ready to process and get latency
-            var optionalLatency = camSim.getShouldProcess();
-            if(optionalLatency.isEmpty()) continue;
-            double latencyMillis = optionalLatency.get();
-            // save "real" camera poses over time
-            // camSim.updateCameraPose(robotPoseMeters.transformBy(getRobotToCamera(camSim)));
-            
-            // display camera latency milliseconds ago
-            // Pose3d lateCameraPose = camSim.getCameraPose(latencyMillis / 1000.0);
-            Pose3d lateRobotPose = getRobotPose(Timer.getFPGATimestamp() - latencyMillis / 1000.0).get();
+            var optTimestamp = camSim.consumeNextEntryTime();
+            if(optTimestamp.isEmpty()) continue;
+            // when this result "was" read by NT
+            double timestampNT = optTimestamp.get();
+            // this result's processing latency in milliseconds
+            double latencyMillis = camSim.prop.estLatencyMs();
+            // the image capture timestamp of this result
+            double timestampCapture = timestampNT - latencyMillis / 1e3;
+
+            // use camera pose from the image capture timestamp
+            Pose3d lateRobotPose = getRobotPose(timestampCapture).get();
             Pose3d lateCameraPose = lateRobotPose.plus(getRobotToCamera(camSim).get());
             cameraPose2ds.add(lateCameraPose.toPose2d());
 
-            // update camera's visible targets
+            // process a PhotonPipelineResult with visible targets
             var camResult = camSim.process(latencyMillis, lateCameraPose, allTargets);
-            // display results
+            // publish this info to NT at estimated timestamp of receive
+            camSim.submitProcessedFrame(camResult, timestampNT);
+            // display debug results
             for(var target : camResult.getTargets()) {
                 visibleTargets.add(
                     lateCameraPose.transformBy(target.getBestCameraToTarget())
@@ -331,7 +335,7 @@ public class VisionSystemSim {
             }
         }
         if(visibleTargets.size() != 0) {
-            dbgField.getObject("visibleTargets").setPoses(
+            dbgField.getObject("visibleTargetPoses").setPoses(
                 visibleTargets.stream().map(p -> p.toPose2d()).collect(Collectors.toList())
             );
         }
