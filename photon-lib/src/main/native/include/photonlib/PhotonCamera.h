@@ -68,6 +68,8 @@ class PhotonCamera {
    */
   explicit PhotonCamera(const std::string_view cameraName);
 
+  PhotonCamera(PhotonCamera&&) = default;
+
   virtual ~PhotonCamera() = default;
 
   /**

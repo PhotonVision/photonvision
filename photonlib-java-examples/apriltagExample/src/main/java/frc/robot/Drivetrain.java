@@ -24,7 +24,6 @@
 
 package frc.robot;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.DifferentialDrivePoseEstimator;
@@ -49,6 +48,8 @@ import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveTrainConstants;
+import java.util.Optional;
+import org.photonvision.EstimatedRobotPose;
 
 /** Represents a differential drive style drivetrain. */
 public class Drivetrain {
@@ -183,13 +184,14 @@ public class Drivetrain {
         // Also apply vision measurements. We use 0.3 seconds in the past as an example
         // -- on
         // a real robot, this must be calculated based either on latency or timestamps.
-        Pair<Pose2d, Double> result =
+        Optional<EstimatedRobotPose> result =
                 pcw.getEstimatedGlobalPose(m_poseEstimator.getEstimatedPosition());
-        var camPose = result.getFirst();
-        var camPoseObsTime = result.getSecond();
-        if (camPose != null) {
-            m_poseEstimator.addVisionMeasurement(camPose, camPoseObsTime);
-            m_fieldSim.getObject("Cam Est Pos").setPose(camPose);
+
+        if (result.isPresent()) {
+            EstimatedRobotPose camPose = result.get();
+            m_poseEstimator.addVisionMeasurement(
+                    camPose.estimatedPose.toPose2d(), camPose.timestampSeconds);
+            m_fieldSim.getObject("Cam Est Pos").setPose(camPose.estimatedPose.toPose2d());
         } else {
             // move it way off the screen to make it disappear
             m_fieldSim.getObject("Cam Est Pos").setPose(new Pose2d(-100, -100, new Rotation2d()));

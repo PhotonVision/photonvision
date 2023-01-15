@@ -37,6 +37,7 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
+import org.photonvision.vision.frame.FrameDivisor;
 import org.photonvision.vision.frame.FrameStaticProperties;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.opencv.CVMat;
@@ -62,7 +63,7 @@ public class Calibrate3dPipeTest {
         FindBoardCornersPipe findBoardCornersPipe = new FindBoardCornersPipe();
         findBoardCornersPipe.setParams(
                 new FindBoardCornersPipe.FindCornersPipeParams(
-                        11, 4, UICalibrationData.BoardType.DOTBOARD, 15));
+                        11, 4, UICalibrationData.BoardType.DOTBOARD, 15, FrameDivisor.NONE));
 
         List<Triple<Size, Mat, Mat>> foundCornersList = new ArrayList<>();
 
@@ -264,6 +265,7 @@ public class Calibrate3dPipeTest {
         calibration3dPipeline.getSettings().boardHeight = (int) Math.round(boardDim.height);
         calibration3dPipeline.getSettings().boardWidth = (int) Math.round(boardDim.width);
         calibration3dPipeline.getSettings().gridSize = boardGridSize_m;
+        calibration3dPipeline.getSettings().streamingFrameDivisor = FrameDivisor.NONE;
 
         for (var file : directoryListing) {
             if (file.isFile()) {

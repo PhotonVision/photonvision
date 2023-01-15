@@ -193,6 +193,7 @@ class SimVisionSystem {
                                 camToTargetTransform,
                                 // TODO ambiguity
                                 0.0,
+                                {{0, 0}, {0, 0}, {0, 0}, {0, 0}},
                                 {{0, 0}, {0, 0}, {0, 0}, {0, 0}}});
       }
 

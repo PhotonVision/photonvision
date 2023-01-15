@@ -59,7 +59,8 @@ class PhotonTrackedTarget {
       double yaw, double pitch, double area, double skew, int fiducialID,
       const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
       double ambiguity,
-      const wpi::SmallVector<std::pair<double, double>, 4> corners);
+      const wpi::SmallVector<std::pair<double, double>, 4> corners,
+      const std::vector<std::pair<double, double>> detectedCorners);
 
   /**
    * Returns the target yaw (positive-left).

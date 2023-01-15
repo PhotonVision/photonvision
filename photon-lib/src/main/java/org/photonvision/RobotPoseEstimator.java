@@ -40,6 +40,8 @@ import java.util.Set;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+/** @deprecated Use {@link PhotonPoseEstimator} */
+@Deprecated
 public class RobotPoseEstimator {
     /**
      *

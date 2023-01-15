@@ -38,7 +38,8 @@ PhotonTrackedTarget::PhotonTrackedTarget(
     double yaw, double pitch, double area, double skew, int id,
     const frc::Transform3d& pose, const frc::Transform3d& alternatePose,
     double ambiguity,
-    const wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners)
+    const wpi::SmallVector<std::pair<double, double>, 4> minAreaRectCorners,
+    const std::vector<std::pair<double, double>> detectedCorners)
     : yaw(yaw),
       pitch(pitch),
       area(area),
@@ -47,7 +48,8 @@ PhotonTrackedTarget::PhotonTrackedTarget(
       bestCameraToTarget(pose),
       altCameraToTarget(alternatePose),
       poseAmbiguity(ambiguity),
-      minAreaRectCorners(minAreaRectCorners) {}
+      minAreaRectCorners(minAreaRectCorners),
+      detectedCorners(detectedCorners) {}
 
 bool PhotonTrackedTarget::operator==(const PhotonTrackedTarget& other) const {
   return other.yaw == yaw && other.pitch == pitch && other.area == area &&
