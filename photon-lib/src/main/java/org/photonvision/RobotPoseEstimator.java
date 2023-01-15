@@ -389,7 +389,7 @@ public class RobotPoseEstimator {
     }
 
     /**
-     * UPdate the stored last pose. Useful for setting the initial estimate with CLOSEST_TO_LAST_POSE
+     * Update the stored last pose. Useful for setting the initial estimate with CLOSEST_TO_LAST_POSE
      *
      * @param lastPose the lastPose to set
      */
