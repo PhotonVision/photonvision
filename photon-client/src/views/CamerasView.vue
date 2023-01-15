@@ -77,7 +77,7 @@
                     name="Decimation"
                     tooltip="Resolution to which camera frames are downscaled for detection. Calibration still uses full-res"
                     :list="calibrationDivisors"
-                    :select-cols="largeBox"
+                    select-cols="7"
                     @rollback="e => rollback('streamingFrameDivisor', e)"
                   />
                   <CVselect
