@@ -41,8 +41,8 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
- * The PhotonPoseEstimator class filters or combines readings from all the fiducials visible at a
- * given timestamp on the field to produce a single robot in field pose, using the strategy set
+ * The PhotonPoseEstimator class filters or combines readings from all the fiducial targets visible
+ * at a given timestamp on the field to produce a single robot in field pose, using the strategy set
  * below. Example usage can be found in our apriltagExample example project.
  */
 public class PhotonPoseEstimator {
@@ -76,12 +76,12 @@ public class PhotonPoseEstimator {
     /**
      * Create a new PhotonPoseEstimator.
      *
-     * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3ds with
-     *     respect to the FIRST field.
+     * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3d objects
+     *     with respect to the FIRST field using the Field Coordinate System (FCS).
      * @param strategy The strategy it should use to determine the best pose.
      * @param camera PhotonCameras and
      * @param robotToCamera Transform3d from the center of the robot to the camera mount positions
-     *     (ie, robot ➔ camera).
+     *     (ie, robot ➔ camera) in the Robot Coordinate System (RCS).
      */
     public PhotonPoseEstimator(
             AprilTagFieldLayout fieldTags,
@@ -176,7 +176,7 @@ public class PhotonPoseEstimator {
      * @param lastPose the lastPose to set
      */
     public void setLastPose(Pose2d lastPose) {
-        this.lastPose = new Pose3d(lastPose);
+        setLastPose(new Pose3d(lastPose));
     }
 
     /**
