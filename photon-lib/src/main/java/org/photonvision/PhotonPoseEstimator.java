@@ -41,7 +41,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
- * The PhotonPoseEstimator class filters or combines readings from all the April Tags visible at a
+ * The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a
  * given timestamp on the field to produce a single robot in field pose, using the strategy set
  * below. Example usage can be found in our apriltagExample example project.
  */
@@ -489,7 +489,7 @@ public class PhotonPoseEstimator {
     private void reportFiducialPoseError(int fiducialId) {
         if (!reportedErrors.contains(fiducialId)) {
             DriverStation.reportError(
-                    "[PhotonPoseEstimator] Tried to get pose of unknown April Tag: " + fiducialId, false);
+                    "[PhotonPoseEstimator] Tried to get pose of unknown AprilTag: " + fiducialId, false);
             reportedErrors.add(fiducialId);
         }
     }

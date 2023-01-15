@@ -400,7 +400,7 @@ public class RobotPoseEstimator {
     private void reportFiducialPoseError(int fiducialId) {
         if (!reportedErrors.contains(fiducialId)) {
             DriverStation.reportError(
-                    "[RobotPoseEstimator] Tried to get pose of unknown April Tag: " + fiducialId, false);
+                    "[RobotPoseEstimator] Tried to get pose of unknown AprilTag: " + fiducialId, false);
             reportedErrors.add(fiducialId);
         }
     }
