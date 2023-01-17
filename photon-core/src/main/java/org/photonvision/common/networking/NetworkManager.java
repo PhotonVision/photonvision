@@ -123,6 +123,14 @@ public class NetworkManager {
                                             + " down; sleep 5; ifconfig "
                                             + config.physicalInterface
                                             + " up'");
+                        } else {
+                            // for now just bring down /up
+                            shell.executeBashCommand(
+                                    "sh -c 'ifconfig "
+                                            + config.physicalInterface
+                                            + " down; sleep 1; ifconfig "
+                                            + config.physicalInterface
+                                            + " up'");
                         }
                     } catch (Exception e) {
                         logger.error("Error while setting static IP!", e);
