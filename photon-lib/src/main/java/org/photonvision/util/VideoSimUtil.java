@@ -24,15 +24,15 @@
 
 package org.photonvision.util;
 
+import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.util.RuntimeLoader;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
@@ -46,11 +46,8 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.photonvision.CameraProperties;
 
-import edu.wpi.first.cscore.CvSource;
-import edu.wpi.first.util.RuntimeLoader;
-
 public class VideoSimUtil {
-    
+
     public static final String kLocalTagImagesPath = "./src/main/resources/images/apriltags/";
     public static final String kResourceTagImagesPath = "/images/apriltags/";
     public static final String kTag16h5ImageName = "tag16_05_00000";
@@ -70,9 +67,9 @@ public class VideoSimUtil {
         } catch (Exception e) {
             throw new RuntimeException("Failed to load native libraries!", e);
         }
-        
+
         // create Mats of 8x8 apriltag images
-        for(int i = 0; i < VideoSimUtil.kNumTags16h5; i++) {
+        for (int i = 0; i < VideoSimUtil.kNumTags16h5; i++) {
             Mat tagImage = VideoSimUtil.get16h5TagImage(i);
             kTag16h5Images.put(i, tagImage);
         }
@@ -80,32 +77,31 @@ public class VideoSimUtil {
         kTag16h5MarkerPts = get16h5MarkerPts();
     }
 
-    /**
-     * Updates the properties of this CvSource video stream with the given camera properties.
-     */
+    /** Updates the properties of this CvSource video stream with the given camera properties. */
     public static void updateVideoProp(CvSource video, CameraProperties prop) {
         video.setResolution(prop.getResWidth(), prop.getResHeight());
-        video.setFPS((int)prop.getFPS());
+        video.setFPS((int) prop.getFPS());
     }
 
     /**
-     * Gets the points representing the corners of this image. Because image pixels are
-     * accessed through a Mat, the point (0,0) actually represents the center of the top-left
-     * pixel and not the actual top-left corner.
+     * Gets the points representing the corners of this image. Because image pixels are accessed
+     * through a Mat, the point (0,0) actually represents the center of the top-left pixel and not the
+     * actual top-left corner.
+     *
      * @param size Size of image
      */
     public static final Point[] getImageCorners(Size size) {
-        return new Point[]{
+        return new Point[] {
             new Point(-0.5, -0.5),
-            new Point(size.width-0.5, -0.5),
-            new Point(size.width-0.5, size.height-0.5),
-            new Point(-0.5, size.height-0.5)
+            new Point(size.width - 0.5, -0.5),
+            new Point(size.width - 0.5, size.height - 0.5),
+            new Point(-0.5, size.height - 0.5)
         };
     }
 
     /**
      * Gets the 8x8 (grayscale) image of a specific 16h5 AprilTag.
-     * 
+     *
      * @param id The fiducial id of the desired tag
      */
     public static Mat get16h5TagImage(int id) {
@@ -117,14 +113,14 @@ public class VideoSimUtil {
         // local IDE tests
         String path = kLocalTagImagesPath + name + ".png";
         // gradle tests
-        if(resource != null) {
+        if (resource != null) {
             path = resource.getPath();
-            if(path.startsWith("/")) path = path.substring(1);
+            if (path.startsWith("/")) path = path.substring(1);
         }
         Mat result = new Mat();
-        if(!path.startsWith("file")) result = Imgcodecs.imread(path, Imgcodecs.IMREAD_GRAYSCALE);
+        if (!path.startsWith("file")) result = Imgcodecs.imread(path, Imgcodecs.IMREAD_GRAYSCALE);
         // reading jar file
-        if(result.empty()) {
+        if (result.empty()) {
             BufferedImage buf;
             try {
                 buf = ImageIO.read(resource);
@@ -136,23 +132,22 @@ public class VideoSimUtil {
             result = new Mat(buf.getHeight(), buf.getWidth(), CvType.CV_8UC1);
 
             byte[] px = new byte[1];
-            for(int y = 0; y < result.height(); y++) {
-                for(int x = 0; x < result.width(); x++) {
-                    px[0] = (byte)(buf.getRGB(x, y) & 0xFF);
+            for (int y = 0; y < result.height(); y++) {
+                for (int x = 0; x < result.width(); x++) {
+                    px[0] = (byte) (buf.getRGB(x, y) & 0xFF);
                     result.put(y, x, px);
                 }
             }
         }
         return result;
     }
-    /**
-     * Gets the points representing the marker(black square) corners.
-     */
+    /** Gets the points representing the marker(black square) corners. */
     public static Point[] get16h5MarkerPts() {
         return get16h5MarkerPts(1);
     }
     /**
      * Gets the points representing the marker(black square) corners.
+     *
      * @param scale The scale of the tag image (8*scale x 8*scale image)
      */
     public static Point[] get16h5MarkerPts(int scale) {
@@ -162,7 +157,7 @@ public class VideoSimUtil {
         roi16h5.width *= scale;
         roi16h5.height *= scale;
         var pts = getImageCorners(roi16h5.size());
-        for(int i = 0; i < pts.length; i++) {
+        for (int i = 0; i < pts.length; i++) {
             var pt = pts[i];
             pts[i] = new Point(roi16h5.tl().x + pt.x, roi16h5.tl().y + pt.y);
         }
@@ -171,7 +166,7 @@ public class VideoSimUtil {
 
     /**
      * Warps the image of a specific 16h5 AprilTag onto the destination image at the given points.
-     * 
+     *
      * @param tagId The id of the specific tag to warp onto the destination image
      * @param dstPoints Points(4) in destination image where the tag marker(black square) corners
      *     should be warped onto.
@@ -184,7 +179,7 @@ public class VideoSimUtil {
     public static void warp16h5TagImage(
             int tagId, MatOfPoint2f dstPoints, Mat destination, boolean antialiasing) {
         Mat tagImage = kTag16h5Images.get(tagId);
-        if(tagImage == null || tagImage.empty()) return;
+        if (tagImage == null || tagImage.empty()) return;
         var tagPoints = new MatOfPoint2f(kTag16h5MarkerPts);
         // points of tag image corners
         var tagImageCorners = new MatOfPoint2f(getImageCorners(tagImage.size()));
@@ -213,51 +208,46 @@ public class VideoSimUtil {
         TODO: Simplify magic numbers to one or two variables, or use a more proper approach?
         */
         int supersampling = 6;
-        supersampling = (int)Math.ceil(supersampling / warpedTagUpscale);
+        supersampling = (int) Math.ceil(supersampling / warpedTagUpscale);
         supersampling = Math.max(Math.min(supersampling, 8), 1);
 
         Mat scaledTagImage = new Mat();
-        if(warpedTagUpscale > 2.0) {
+        if (warpedTagUpscale > 2.0) {
             warpStrategy = Imgproc.INTER_LINEAR;
-            int scaleFactor = (int)(warpedTagUpscale / 3.0) + 2;
+            int scaleFactor = (int) (warpedTagUpscale / 3.0) + 2;
             scaleFactor = Math.max(Math.min(scaleFactor, 40), 1);
             scaleFactor *= supersampling;
             Imgproc.resize(
-                tagImage, scaledTagImage,
-                new Size(), scaleFactor, scaleFactor,
-                Imgproc.INTER_NEAREST
-            );
+                    tagImage, scaledTagImage, new Size(), scaleFactor, scaleFactor, Imgproc.INTER_NEAREST);
             tagPoints.fromArray(get16h5MarkerPts(scaleFactor));
-        }
-        else tagImage.assignTo(scaledTagImage);
+        } else tagImage.assignTo(scaledTagImage);
 
-        // constrain the bounding rect inside of the destination image 
+        // constrain the bounding rect inside of the destination image
         boundingRect.x -= 1;
         boundingRect.y -= 1;
         boundingRect.width += 2;
         boundingRect.height += 2;
-        if(boundingRect.x < 0) {
+        if (boundingRect.x < 0) {
             boundingRect.width += boundingRect.x;
             boundingRect.x = 0;
         }
-        if(boundingRect.y < 0) {
+        if (boundingRect.y < 0) {
             boundingRect.height += boundingRect.y;
             boundingRect.y = 0;
         }
         boundingRect.width = Math.min(destination.width() - boundingRect.x, boundingRect.width);
         boundingRect.height = Math.min(destination.height() - boundingRect.y, boundingRect.height);
-        if(boundingRect.width <= 0 || boundingRect.height <= 0) return;
+        if (boundingRect.width <= 0 || boundingRect.height <= 0) return;
 
         // upscale if supersampling
         Mat scaledDstPts = new Mat();
-        if(supersampling > 1) {
+        if (supersampling > 1) {
             Core.multiply(dstPoints, new Scalar(supersampling, supersampling), scaledDstPts);
             boundingRect.x *= supersampling;
             boundingRect.y *= supersampling;
             boundingRect.width *= supersampling;
             boundingRect.height *= supersampling;
-        }
-        else dstPoints.assignTo(scaledDstPts);
+        } else dstPoints.assignTo(scaledDstPts);
 
         // update transform relative to expanded, scaled bounding rect
         Core.subtract(scaledDstPts, new Scalar(boundingRect.tl().x, boundingRect.tl().y), scaledDstPts);
@@ -266,15 +256,10 @@ public class VideoSimUtil {
         // warp (scaled) tag image onto (scaled) ROI image representing the portion of
         // the destination image encapsulated by boundingRect
         Mat tempROI = new Mat();
-        Imgproc.warpPerspective(
-            scaledTagImage, tempROI,
-            perspecTrf,
-            boundingRect.size(),
-            warpStrategy
-        );
+        Imgproc.warpPerspective(scaledTagImage, tempROI, perspecTrf, boundingRect.size(), warpStrategy);
 
         // downscale ROI with interpolation if supersampling
-        if(supersampling > 1) {
+        if (supersampling > 1) {
             boundingRect.x /= supersampling;
             boundingRect.y /= supersampling;
             boundingRect.width /= supersampling;
@@ -283,26 +268,28 @@ public class VideoSimUtil {
         }
 
         // we want to copy ONLY the transformed tag to the result image, not the entire bounding rect
-        // using a mask only copies the source pixels which have an associated non-zero value in the mask
+        // using a mask only copies the source pixels which have an associated non-zero value in the
+        // mask
         Mat tempMask = Mat.zeros(tempROI.size(), CvType.CV_8UC1);
-        Core.subtract(extremeCorners, new Scalar(boundingRect.tl().x, boundingRect.tl().y), extremeCorners);
+        Core.subtract(
+                extremeCorners, new Scalar(boundingRect.tl().x, boundingRect.tl().y), extremeCorners);
         Point tempCenter = new Point();
-        tempCenter.x = Arrays.stream(extremeCorners.toArray()).mapToDouble(p -> p.x).average().getAsDouble();
-        tempCenter.y = Arrays.stream(extremeCorners.toArray()).mapToDouble(p -> p.y).average().getAsDouble();
+        tempCenter.x =
+                Arrays.stream(extremeCorners.toArray()).mapToDouble(p -> p.x).average().getAsDouble();
+        tempCenter.y =
+                Arrays.stream(extremeCorners.toArray()).mapToDouble(p -> p.y).average().getAsDouble();
         // dilate tag corners
-        Arrays.stream(extremeCorners.toArray()).forEach(p -> {
-            double xdiff = p.x - tempCenter.x;
-            double ydiff = p.y - tempCenter.y;
-            xdiff += 1 * Math.signum(xdiff);
-            ydiff += 1 * Math.signum(ydiff);
-            new Point(tempCenter.x + xdiff, tempCenter.y + ydiff);
-        });
+        Arrays.stream(extremeCorners.toArray())
+                .forEach(
+                        p -> {
+                            double xdiff = p.x - tempCenter.x;
+                            double ydiff = p.y - tempCenter.y;
+                            xdiff += 1 * Math.signum(xdiff);
+                            ydiff += 1 * Math.signum(ydiff);
+                            new Point(tempCenter.x + xdiff, tempCenter.y + ydiff);
+                        });
         // (make inside of tag completely white in mask)
-        Imgproc.fillConvexPoly(
-            tempMask,
-            new MatOfPoint(extremeCorners.toArray()),
-            new Scalar(255)
-        );
+        Imgproc.fillConvexPoly(tempMask, new MatOfPoint(extremeCorners.toArray()), new Scalar(255));
 
         // copy transformed tag onto result image
         tempROI.copyTo(destination.submat(boundingRect), tempMask);
@@ -310,40 +297,38 @@ public class VideoSimUtil {
 
     /**
      * Draws a contour around the given points and text of the id onto the destination image.
-     * 
+     *
      * @param id Fiducial ID number to draw
-     * @param dstPoints Points representing the four corners of the tag marker(black square) in
-     *     the destination image.
-     * @param destination The destination image to draw onto. The image should be in the BGR
-     *     color space.
+     * @param dstPoints Points representing the four corners of the tag marker(black square) in the
+     *     destination image.
+     * @param destination The destination image to draw onto. The image should be in the BGR color
+     *     space.
      */
     public static void drawTagDetection(int id, MatOfPoint2f dstPoints, Mat destination) {
         var dstPointsd = new MatOfPoint(dstPoints.toArray());
         double scaleX = destination.width() / 640.0;
         double scaleY = destination.height() / 480.0;
         double minScale = Math.min(scaleX, scaleY);
-        int thickness = (int)(1 * minScale);
+        int thickness = (int) (1 * minScale);
         // for(var pt : dstPoints.toArray()) {
         //     Imgproc.circle(destination, pt, 4, new Scalar(255), 1, Imgproc.LINE_AA);
         // }
         // Imgproc.rectangle(destination, extremeRect, new Scalar(255), 1, Imgproc.LINE_AA);
-        // Imgproc.rectangle(destination, Imgproc.boundingRect(dstPoints), new Scalar(255), 1, Imgproc.LINE_AA);
+        // Imgproc.rectangle(destination, Imgproc.boundingRect(dstPoints), new Scalar(255), 1,
+        // Imgproc.LINE_AA);
         Imgproc.polylines(
-            destination,
-            List.of(dstPointsd),
-            true,
-            new Scalar(0, 0, 255),
-            thickness,
-            Imgproc.LINE_AA
-        );
+                destination, List.of(dstPointsd), true, new Scalar(0, 0, 255), thickness, Imgproc.LINE_AA);
         var textPt = Imgproc.boundingRect(dstPoints).tl();
         textPt.x -= 10.0 * scaleX;
         textPt.y -= 12.0 * scaleY;
         Imgproc.putText(
-            destination,
-            String.valueOf(id),
-            textPt, Imgproc.FONT_HERSHEY_PLAIN, 1.5 * minScale, new Scalar(0, 0, 255),
-            thickness, Imgproc.LINE_AA
-        );
+                destination,
+                String.valueOf(id),
+                textPt,
+                Imgproc.FONT_HERSHEY_PLAIN,
+                1.5 * minScale,
+                new Scalar(0, 0, 255),
+                thickness,
+                Imgproc.LINE_AA);
     }
 }

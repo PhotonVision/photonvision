@@ -24,19 +24,16 @@
 
 package org.photonvision;
 
-import java.util.List;
-
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import java.util.List;
 
-/**
- * Describes a vision target located somewhere on the field that your vision system can detect.
- */
+/** Describes a vision target located somewhere on the field that your vision system can detect. */
 public class VisionTargetSim {
 
     private Pose3d pose;
     private TargetModel model;
-    
+
     public final int fiducialID;
 
     /**
@@ -66,6 +63,7 @@ public class VisionTargetSim {
     public void setPose(Pose3d pose) {
         this.pose = pose;
     }
+
     public void setModel(TargetModel model) {
         this.model = model;
     }
@@ -73,23 +71,21 @@ public class VisionTargetSim {
     public Pose3d getPose() {
         return pose;
     }
-    public TargetModel getModel(){ 
+
+    public TargetModel getModel() {
         return model;
     }
-    /**
-     * This target's vertices offset from its field pose.
-     */
+    /** This target's vertices offset from its field pose. */
     public List<Translation3d> getFieldVertices() {
         return model.getFieldVertices(pose);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(this == obj) return true;
-        if(obj instanceof VisionTargetSim) {
-            var o = (VisionTargetSim)obj;
-            return pose.equals(o.pose) &&
-                    model.equals(o.model);
+        if (this == obj) return true;
+        if (obj instanceof VisionTargetSim) {
+            var o = (VisionTargetSim) obj;
+            return pose.equals(o.pose) && model.equals(o.model);
         }
         return false;
     }

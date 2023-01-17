@@ -32,9 +32,7 @@ import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-/**
- * @deprecated Use {@link PhotonCameraSim} instead
- */
+/** @deprecated Use {@link PhotonCameraSim} instead */
 @Deprecated
 @SuppressWarnings("unused")
 public class SimPhotonCamera {
