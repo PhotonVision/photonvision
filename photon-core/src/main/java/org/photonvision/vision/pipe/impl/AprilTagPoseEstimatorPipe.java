@@ -82,7 +82,8 @@ public class AprilTagPoseEstimatorPipe
                         in.getCenterY(),
                         fixedCorners);
 
-        return m_poseEstimator.estimateOrthogonalIteration(corrected, params.nIters);
+        return m_poseEstimator.estimateOrthogonalIteration(
+                corrected, params.nIters, params.minImprovement);
     }
 
     @Override
@@ -102,12 +103,14 @@ public class AprilTagPoseEstimatorPipe
         final AprilTagPoseEstimator.Config config;
         final CameraCalibrationCoefficients calibration;
         final int nIters;
+        final double minImprovement;
 
         public AprilTagPoseEstimatorPipeParams(
-                Config config, CameraCalibrationCoefficients cal, int nIters) {
+                Config config, CameraCalibrationCoefficients cal, int nIters, double minImprovement) {
             this.config = config;
             this.nIters = nIters;
             this.calibration = cal;
+            this.minImprovement = minImprovement;
         }
 
         @Override

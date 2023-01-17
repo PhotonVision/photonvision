@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.Objects;
 import org.photonvision.vision.apriltag.AprilTagFamily;
@@ -34,7 +35,8 @@ public class AprilTagPipelineSettings extends AdvancedPipelineSettings {
     public int hammingDist = 0;
     public int decisionMargin = 35;
 
-    // 3d settings
+    // Ignore this field since we don't expose it as a slider, and wanna be able to change later
+    @JsonIgnore public double minImprovement = 1e-8;
 
     public AprilTagPipelineSettings() {
         super();
