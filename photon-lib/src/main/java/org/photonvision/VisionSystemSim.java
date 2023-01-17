@@ -337,11 +337,11 @@ public class VisionSystemSim {
             var optTimestamp = camSim.consumeNextEntryTime();
             if(optTimestamp.isEmpty()) continue;
             // when this result "was" read by NT
-            double timestampNT = optTimestamp.get();
+            long timestampNT = optTimestamp.get();
             // this result's processing latency in milliseconds
             double latencyMillis = camSim.prop.estLatencyMs();
-            // the image capture timestamp of this result
-            double timestampCapture = timestampNT - latencyMillis / 1e3;
+            // the image capture timestamp in seconds of this result
+            double timestampCapture = timestampNT / 1e6 - latencyMillis / 1e3;
 
             // use camera pose from the image capture timestamp
             Pose3d lateRobotPose = getRobotPose(timestampCapture);

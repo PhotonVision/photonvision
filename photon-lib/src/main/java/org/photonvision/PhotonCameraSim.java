@@ -61,6 +61,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.util.RuntimeLoader;
+import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 
@@ -80,7 +81,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * This simulated camera's {@link CameraProperties}
      */
     public final CameraProperties prop;
-    private double nextNTEntryTime = Timer.getFPGATimestamp();
+    private long nextNTEntryTime = WPIUtilJNI.now();
     
     private double maxSightRangeMeters = Double.MAX_VALUE;
     private static final double kDefaultMinAreaPx = 90;
@@ -237,24 +238,24 @@ public class PhotonCameraSim implements AutoCloseable {
     /**
      * Determine if this camera should process a new frame based on performance metrics and the time
      * since the last update. This returns an Optional which is either empty if no update should occur
-     * or a Double of the timestamp in seconds of when the frame which should be received by NT. If a
+     * or a Long of the timestamp in microseconds of when the frame which should be received by NT. If a
      * timestamp is returned, the last frame update time becomes that timestamp.
      * 
-     * @return Optional double which is empty while blocked or the NT entry timestamp in seconds if ready
+     * @return Optional long which is empty while blocked or the NT entry timestamp in microseconds if ready
      */
-    public Optional<Double> consumeNextEntryTime() {
+    public Optional<Long> consumeNextEntryTime() {
         // check if this camera is ready for another frame update
-        double now = Timer.getFPGATimestamp();
-        double timestamp = -1;
+        long now = WPIUtilJNI.now();
+        long timestamp = -1;
         int iter = 0;
         // prepare next latest update
         while(now >= nextNTEntryTime) {
             timestamp = nextNTEntryTime;
-            double frameTime = prop.estMsUntilNextFrame() / 1e3;
+            long frameTime = (long)(prop.estMsUntilNextFrame() * 1e3);
             nextNTEntryTime += frameTime;
 
             // if frame time is very small, avoid blocking
-            if(iter++ > 100) {
+            if(iter++ > 50) {
                 timestamp = now;
                 nextNTEntryTime = now + frameTime;
                 break;
@@ -426,7 +427,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param result The pipeline result to submit
      */
     public void submitProcessedFrame(PhotonPipelineResult result) {
-        submitProcessedFrame(result, Timer.getFPGATimestamp());
+        submitProcessedFrame(result, WPIUtilJNI.now());
     }
     /**
      * Simulate one processed frame of vision data, putting one result to NT.
@@ -435,39 +436,38 @@ public class PhotonCameraSim implements AutoCloseable {
      * for more precise latency simulation.
      *
      * @param result The pipeline result to submit
-     * @param receiveTimestamp The (sim) timestamp when this result was read by NT
+     * @param receiveTimestamp The (sim) timestamp when this result was read by NT in microseconds
      */
-    public void submitProcessedFrame(PhotonPipelineResult result, double receiveTimestamp) {
-        ts.latencyMillisEntry.set(result.getLatencyMillis());
-        cam.simNTTimestamp = receiveTimestamp;
+    public void submitProcessedFrame(PhotonPipelineResult result, long receiveTimestamp) {
+        ts.latencyMillisEntry.set(result.getLatencyMillis(), receiveTimestamp);
 
         var newPacket = new Packet(result.getPacketSize());
         result.populatePacket(newPacket);
-        ts.rawBytesEntry.set(newPacket.getData());
+        ts.rawBytesEntry.set(newPacket.getData(), receiveTimestamp);
 
         boolean hasTargets = result.hasTargets();
-        ts.hasTargetEntry.set(hasTargets);
+        ts.hasTargetEntry.set(hasTargets, receiveTimestamp);
         if (!hasTargets) {
-            ts.targetPitchEntry.set(0.0);
-            ts.targetYawEntry.set(0.0);
-            ts.targetAreaEntry.set(0.0);
-            ts.targetPoseEntry.set(new double[] {0.0, 0.0, 0.0});
-            ts.targetSkewEntry.set(0.0);
+            ts.targetPitchEntry.set(0.0, receiveTimestamp);
+            ts.targetYawEntry.set(0.0, receiveTimestamp);
+            ts.targetAreaEntry.set(0.0, receiveTimestamp);
+            ts.targetPoseEntry.set(new double[] {0.0, 0.0, 0.0}, receiveTimestamp);
+            ts.targetSkewEntry.set(0.0, receiveTimestamp);
         } else {
             var bestTarget = result.getBestTarget();
 
-            ts.targetPitchEntry.set(bestTarget.getPitch());
-            ts.targetYawEntry.set(bestTarget.getYaw());
-            ts.targetAreaEntry.set(bestTarget.getArea());
-            ts.targetSkewEntry.set(bestTarget.getSkew());
+            ts.targetPitchEntry.set(bestTarget.getPitch(), receiveTimestamp);
+            ts.targetYawEntry.set(bestTarget.getYaw(), receiveTimestamp);
+            ts.targetAreaEntry.set(bestTarget.getArea(), receiveTimestamp);
+            ts.targetSkewEntry.set(bestTarget.getSkew(), receiveTimestamp);
 
             var transform = bestTarget.getBestCameraToTarget();
             double[] poseData = {
                 transform.getX(), transform.getY(), transform.getRotation().toRotation2d().getDegrees()
             };
-            ts.targetPoseEntry.set(poseData);
+            ts.targetPoseEntry.set(poseData, receiveTimestamp);
         }
 
-        ts.heartbeatPublisher.set(heartbeatCounter++);
+        ts.heartbeatPublisher.set(heartbeatCounter++, receiveTimestamp);
     }
 }

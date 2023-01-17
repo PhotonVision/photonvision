@@ -104,9 +104,6 @@ public class PhotonCamera implements AutoCloseable {
 
     private final MultiSubscriber m_topicNameSubscriber;
 
-    /** When simulating, the timestamp of NT data entry on the latest result */
-    protected double simNTTimestamp = -1;
-
     /**
      * Constructs a PhotonCamera from a root table.
      *
@@ -171,12 +168,7 @@ public class PhotonCamera implements AutoCloseable {
 
         // Set the timestamp of the result.
         // getLatestChange returns in microseconds so we divide by 1e6 to convert to seconds.
-        if(simNTTimestamp <= 0) {
-            ret.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
-        }
-        else { // override timestamp in simulation
-            ret.setTimestampSeconds(simNTTimestamp - ret.getLatencyMillis() / 1e3);
-        }
+        ret.setTimestampSeconds((rawBytesEntry.getLastChange() / 1e6) - ret.getLatencyMillis() / 1e3);
 
         // Return result.
         return ret;
