@@ -118,19 +118,19 @@ public class NetworkManager {
                             // Pi's need to manually have their interface adjusted?? and the 5 second sleep is
                             // integral in my testing (Matt)
                             shell.executeBashCommand(
-                                    "sh -c 'ifconfig "
-                                            + config.physicalInterface
-                                            + " down; sleep 5; ifconfig "
-                                            + config.physicalInterface
-                                            + " up'");
+                                    "sh -c 'nmcli con down "
+                                            + config.networkManagerIface
+                                            + "; sleep 5; nmcli con up "
+                                            + config.networkManagerIface
+                                            + "'");
                         } else {
-                            // for now just bring down /up
+                            // for now just bring down /up -- more testing needed on beelink et al
                             shell.executeBashCommand(
-                                    "sh -c 'ifconfig "
-                                            + config.physicalInterface
-                                            + " down; sleep 1; ifconfig "
-                                            + config.physicalInterface
-                                            + " up'");
+                                    "sh -c 'nmcli con down "
+                                            + config.networkManagerIface
+                                            + "; sleep 3; nmcli con up "
+                                            + config.networkManagerIface
+                                            + "'");
                         }
                     } catch (Exception e) {
                         logger.error("Error while setting static IP!", e);
