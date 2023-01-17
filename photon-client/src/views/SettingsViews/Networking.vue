@@ -272,6 +272,8 @@ export default {
             return true;
         },
         sendGeneralSettings() {
+            const changingStaticIp = !this.isDHCP;
+
             this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
                 response => {
                     if (response.status === 200) {
@@ -283,10 +285,17 @@ export default {
                     }
                 },
                 error => {
+                  if (error.status === 504 || changingStaticIp) {
+                    this.snackbar = {
+                        color: "error",
+                        text: (error.response || {data: `Connection lost! Try the new static IP at ${this.staticIp}:5800 or ${this.hostname}:5800 ?`}).data
+                    };
+                  } else {
                     this.snackbar = {
                         color: "error",
                         text: (error.response || {data: "Couldn't save settings"}).data
                     };
+                  }
                     this.snack = true;
                 }
             )
