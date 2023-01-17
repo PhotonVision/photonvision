@@ -115,8 +115,14 @@ public class NetworkManager {
                                         .replace(NetworkConfig.NM_IP_STRING, config.staticIp));
 
                         if (Platform.isRaspberryPi()) {
-                            // Pi's need to manually have their interface adjusted?? and the 5 second sleep is integral in my testing (Matt)
-                            shell.executeBashCommand("sh -c 'ifconfig " + config.physicalInterface + " down; sleep 5; ifconfig " + config.physicalInterface + " up'");
+                            // Pi's need to manually have their interface adjusted?? and the 5 second sleep is
+                            // integral in my testing (Matt)
+                            shell.executeBashCommand(
+                                    "sh -c 'ifconfig "
+                                            + config.physicalInterface
+                                            + " down; sleep 5; ifconfig "
+                                            + config.physicalInterface
+                                            + " up'");
                         }
                     } catch (Exception e) {
                         logger.error("Error while setting static IP!", e);
