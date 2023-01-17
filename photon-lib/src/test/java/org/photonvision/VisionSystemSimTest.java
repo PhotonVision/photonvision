@@ -60,7 +60,6 @@ import org.opencv.core.Core;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 class VisionSystemSimTest {
-
     private static final double kTrlDelta = 0.005;
     private static final double kRotDeltaDeg = 0.25;
 

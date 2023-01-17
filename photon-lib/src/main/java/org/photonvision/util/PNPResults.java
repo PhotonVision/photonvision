@@ -36,7 +36,6 @@ import edu.wpi.first.math.geometry.Transform3d;
  * method.
  */
 public class PNPResults {
-
     public final Transform3d best;
     public final double bestReprojErr;
 

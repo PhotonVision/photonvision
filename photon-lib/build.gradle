@@ -26,7 +26,7 @@ println("Buidling for wpilib ${wpilibTools.deps.wpilibVersion}")
 dependencies {
     implementation project(":photon-targeting")
 
-    // WPILib deps  
+    // WPILib deps
     implementation wpilibTools.deps.wpilibJava("wpiutil")
     implementation wpilibTools.deps.wpilibJava("cameraserver")
     implementation wpilibTools.deps.wpilibJava("cscore")

@@ -47,7 +47,6 @@ import org.opencv.imgproc.Imgproc;
 import org.photonvision.CameraProperties;
 
 public class VideoSimUtil {
-
     public static final String kLocalTagImagesPath = "./src/main/resources/images/apriltags/";
     public static final String kResourceTagImagesPath = "/images/apriltags/";
     public static final String kTag16h5ImageName = "tag16_05_00000";

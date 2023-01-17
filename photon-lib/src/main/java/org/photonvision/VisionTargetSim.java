@@ -30,7 +30,6 @@ import java.util.List;
 
 /** Describes a vision target located somewhere on the field that your vision system can detect. */
 public class VisionTargetSim {
-
     private Pose3d pose;
     private TargetModel model;
 

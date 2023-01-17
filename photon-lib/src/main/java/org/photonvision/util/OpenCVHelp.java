@@ -57,7 +57,6 @@ import org.photonvision.CameraProperties;
 import org.photonvision.targeting.TargetCorner;
 
 public final class OpenCVHelp {
-
     static {
         try {
             var loader =

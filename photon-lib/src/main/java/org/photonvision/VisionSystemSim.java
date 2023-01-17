@@ -51,7 +51,6 @@ import java.util.stream.Collectors;
  * camera target info.
  */
 public class VisionSystemSim {
-
     private final String tableName;
 
     private final Map<String, PhotonCameraSim> camSimMap = new HashMap<>();
