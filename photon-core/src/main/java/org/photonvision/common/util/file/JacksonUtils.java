@@ -31,8 +31,11 @@ import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
 
 public class JacksonUtils {
+    public static class UIMap extends HashMap<String, Object> {}
+
     public static <T> void serialize(Path path, T object) throws IOException {
         serialize(path, object, true);
     }
