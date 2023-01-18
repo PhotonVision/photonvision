@@ -274,6 +274,12 @@ export default {
         sendGeneralSettings() {
             const changingStaticIp = !this.isDHCP;
 
+            this.snackbar = {
+                color: "secondary",
+                text: "Updating settings..."
+            };
+            this.snack = true;
+
             this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
                 response => {
                     if (response.status === 200) {

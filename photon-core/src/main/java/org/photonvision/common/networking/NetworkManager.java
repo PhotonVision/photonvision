@@ -120,7 +120,7 @@ public class NetworkManager {
                             shell.executeBashCommand(
                                     "sh -c 'nmcli con down "
                                             + config.networkManagerIface
-                                            + "; sleep 5; nmcli con up "
+                                            + "; nmcli con up "
                                             + config.networkManagerIface
                                             + "'");
                         } else {
@@ -128,7 +128,7 @@ public class NetworkManager {
                             shell.executeBashCommand(
                                     "sh -c 'nmcli con down "
                                             + config.networkManagerIface
-                                            + "; sleep 3; nmcli con up "
+                                            + "; nmcli con up "
                                             + config.networkManagerIface
                                             + "'");
                         }
