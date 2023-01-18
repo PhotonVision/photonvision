@@ -28,6 +28,7 @@ import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.numbers.DoubleCouple;
 import org.photonvision.common.util.numbers.IntegerCouple;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipeline.AdvancedPipelineSettings;
 import org.photonvision.vision.pipeline.PipelineType;
 import org.photonvision.vision.pipeline.UICalibrationData;
@@ -113,6 +114,10 @@ public class VisionModuleChangeSubscriber extends DataChangeSubscriber {
                         int idx = parentModule.pipelineManager.duplicatePipeline((Integer) newPropValue);
                         parentModule.setPipeline(idx);
                         parentModule.saveAndBroadcastAll();
+                        return;
+                    case "calibrationUploaded":
+                        if (newPropValue instanceof CameraCalibrationCoefficients)
+                            parentModule.addCalibrationToConfig((CameraCalibrationCoefficients) newPropValue);
                         return;
                     case "robotOffsetPoint":
                         if (currentSettings instanceof AdvancedPipelineSettings) {
