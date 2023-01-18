@@ -77,17 +77,21 @@ public class NetworkConfig {
     }
 
     public static NetworkConfig fromHashMap(Map<String, Object> map) {
-        return new ObjectMapper().convertValue(map, NetworkConfig.class);
+        try {
+            return new ObjectMapper().convertValue(map, NetworkConfig.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new NetworkConfig();
+        }
     }
 
     public Map<String, Object> toHashMap() {
         try {
             return new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
         } catch (Exception e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
+            return new HashMap<>();
         }
-        return new HashMap<>();
     }
 
     @JsonGetter("shouldManage")
