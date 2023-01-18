@@ -24,52 +24,40 @@
 
 package frc.robot;
 
-import edu.wpi.first.apriltag.AprilTag;
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.VisionConstants;
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.Optional;
+
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFieldLayout.OriginPosition;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import frc.robot.Constants.VisionConstants;
 
 public class PhotonCameraWrapper {
     public PhotonCamera photonCamera;
     public PhotonPoseEstimator photonPoseEstimator;
 
     public PhotonCameraWrapper() {
-        // Set up a test arena of two apriltags at the center of each driver station set
-        final AprilTag tag18 =
-                new AprilTag(
-                        18,
-                        new Pose3d(
-                                new Pose2d(
-                                        FieldConstants.length,
-                                        FieldConstants.width / 2.0,
-                                        Rotation2d.fromDegrees(180))));
-        final AprilTag tag01 =
-                new AprilTag(
-                        01,
-                        new Pose3d(new Pose2d(0.0, FieldConstants.width / 2.0, Rotation2d.fromDegrees(0.0))));
-        ArrayList<AprilTag> atList = new ArrayList<AprilTag>();
-        atList.add(tag18);
-        atList.add(tag01);
-
-        // TODO - once 2023 happens, replace this with just loading the 2023 field arrangement
-        AprilTagFieldLayout atfl =
-                new AprilTagFieldLayout(atList, FieldConstants.length, FieldConstants.width);
+        // Load field layout from resource file. Handle IOException by reporting it to driver station before robot crashes.
+        AprilTagFieldLayout atfl;
+        try {
+                atfl = AprilTagFieldLayout.loadFromResource(AprilTagFields.k2023ChargedUp.m_resourceFile);
+        } catch (IOException e) {
+                DriverStation.reportError("Failed to load AprilTagFieldLayout.", true);
+                atfl = null;
+        }
+        boolean isRedAlliance = DriverStation.getAlliance() == DriverStation.Alliance.Red;
+        atfl.setOrigin(isRedAlliance ? OriginPosition.kRedAllianceWallRightSide : OriginPosition.kRedAllianceWallRightSide);
 
         // Forward Camera
-        photonCamera =
-                new PhotonCamera(
-                        VisionConstants
-                                .cameraName); // Change the name of your camera here to whatever it is in the
-        // PhotonVision UI.
+        photonCamera = new PhotonCamera(VisionConstants.cameraName); 
+        // Change the name of your camera here to whatever it is in the PhotonVision UI.
 
         // Create pose estimator
         photonPoseEstimator =
