@@ -28,6 +28,7 @@ public class UICalibrationData {
     public final int patternWidth;
     public final int patternHeight;
     public final BoardType boardType; //
+    public final boolean isFisheye; //
 
     public UICalibrationData(
             int count,
@@ -37,7 +38,8 @@ public class UICalibrationData {
             double squareSizeIn,
             int patternWidth,
             int patternHeight,
-            BoardType boardType) {
+            BoardType boardType,
+            boolean isFisheye) {
         this.count = count;
         this.minCount = minCount;
         this.videoModeIndex = videoModeIndex;
@@ -46,6 +48,7 @@ public class UICalibrationData {
         this.patternWidth = patternWidth;
         this.patternHeight = patternHeight;
         this.boardType = boardType;
+        this.isFisheye = isFisheye;
     }
 
     public enum BoardType {
@@ -62,7 +65,9 @@ public class UICalibrationData {
                 ((Number) map.get("squareSizeIn")).doubleValue(),
                 ((Number) map.get("patternWidth")).intValue(),
                 ((Number) map.get("patternHeight")).intValue(),
-                BoardType.values()[(int) map.get("boardType")]);
+                BoardType.values()[(int) map.get("boardType")],
+                (boolean)map.get("isFisheye")
+                );
     }
 
     @Override
@@ -84,6 +89,8 @@ public class UICalibrationData {
                 + patternHeight
                 + ", boardType="
                 + boardType
+                + ", isFisheye="
+                + isFisheye
                 + '}';
     }
 }

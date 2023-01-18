@@ -54,7 +54,7 @@ public class JsonMat implements Releasable {
     }
 
     private static boolean isDistortionCoeffsMat(Mat mat) {
-        return mat.type() == CvType.CV_64FC1 && mat.cols() == 5 && mat.rows() == 1;
+        return mat.type() == CvType.CV_64FC1 && ((mat.cols() == 5 && mat.rows() == 1) || (/* fisheye */ mat.cols() == 1 && mat.rows() == 4));
     }
 
     private static boolean isCalibrationMat(Mat mat) {

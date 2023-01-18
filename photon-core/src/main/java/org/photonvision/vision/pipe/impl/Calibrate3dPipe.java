@@ -23,10 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Triple;
-import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
+import org.photonvision.vision.calibration.Calib3dorFisheye;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.calibration.JsonMat;
 import org.photonvision.vision.pipe.CVPipe;
@@ -68,6 +68,7 @@ public class Calibrate3dPipe
      */
     @Override
     protected CameraCalibrationCoefficients process(List<Triple<Size, Mat, Mat>> in) {
+
         in =
                 in.stream()
                         .filter(
@@ -87,18 +88,18 @@ public class Calibrate3dPipe
                 logger.error("objpts.size != imgpts.size");
                 return null;
             }
+
             calibrationAccuracy =
-                    Calib3d.calibrateCameraExtended(
+                    Calib3dorFisheye.calibrateCamera(
+                        false
                             objPoints,
                             imgPts,
                             new Size(in.get(0).getLeft().width, in.get(0).getLeft().height),
                             cameraMatrix,
                             distortionCoefficients,
                             rvecs,
-                            tvecs,
-                            stdDeviationsIntrinsics,
-                            stdDeviationsExtrinsics,
-                            perViewErrors);
+                            tvecs);
+
         } catch (Exception e) {
             logger.error("Calibration failed!", e);
             e.printStackTrace();
@@ -106,13 +107,10 @@ public class Calibrate3dPipe
         }
         JsonMat cameraMatrixMat = JsonMat.fromMat(cameraMatrix);
         JsonMat distortionCoefficientsMat = JsonMat.fromMat(distortionCoefficients);
-        // Create a new CameraCalibrationCoefficients object to pass onto SolvePnP
-        double[] perViewErrorsArray =
-                new double[(int) perViewErrors.total() * perViewErrors.channels()];
-        perViewErrors.get(0, 0, perViewErrorsArray);
 
-        // Standard deviation of results
-        double stdDev = calculateSD(perViewErrorsArray);
+        double[] perViewErrorsArray = new double[5];
+        double stdDev = 5;
+
         try {
             // Print calibration successful
             logger.info(
@@ -130,26 +128,8 @@ public class Calibrate3dPipe
         } catch (JsonProcessingException e) {
             logger.error("Failed to parse calibration data to json!", e);
         }
-        return new CameraCalibrationCoefficients(
-                params.resolution, cameraMatrixMat, distortionCoefficientsMat, perViewErrorsArray, stdDev);
-    }
-
-    // Calculate standard deviation of the RMS error of the snapshots
-    private static double calculateSD(double numArray[]) {
-        double sum = 0.0, standardDeviation = 0.0;
-        int length = numArray.length;
-
-        for (double num : numArray) {
-            sum += num;
-        }
-
-        double mean = sum / length;
-
-        for (double num : numArray) {
-            standardDeviation += Math.pow(num - mean, 2);
-        }
-
-        return Math.sqrt(standardDeviation / length);
+        
+        return new CameraCalibrationCoefficients(params.resolution, cameraMatrixMat, distortionCoefficientsMat, perViewErrorsArray, stdDev, true);
     }
 
     public static class CalibratePipeParams {

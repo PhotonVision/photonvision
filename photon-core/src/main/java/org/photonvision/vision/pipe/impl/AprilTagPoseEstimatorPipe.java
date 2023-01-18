@@ -21,9 +21,9 @@ import edu.wpi.first.apriltag.AprilTagDetection;
 import edu.wpi.first.apriltag.AprilTagPoseEstimate;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator;
 import edu.wpi.first.apriltag.AprilTagPoseEstimator.Config;
-import org.opencv.calib3d.Calib3d;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.photonvision.vision.calibration.Calib3dorFisheye;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 
@@ -54,7 +54,8 @@ public class AprilTagPoseEstimatorPipe
         temp.fromArray(corners);
 
         // Probably overwrites what was in temp before. I hope
-        Calib3d.undistortImagePoints(
+        Calib3dorFisheye.undistortImagePoints(
+                false,
                 temp,
                 temp,
                 params.calibration.getCameraIntrinsicsMat(),

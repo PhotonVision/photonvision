@@ -23,7 +23,6 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
-import org.opencv.calib3d.Calib3d;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint2f;
@@ -31,6 +30,7 @@ import org.opencv.core.Scalar;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.vision.calibration.Calib3dorFisheye;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.pipe.CVPipe;
 import org.photonvision.vision.target.TargetModel;
@@ -77,7 +77,8 @@ public class SolvePNPPipe
         var rVec = new Mat();
         var tVec = new Mat();
         try {
-            Calib3d.solvePnP(
+            Calib3dorFisheye.solvePnP(
+                    false,
                     params.targetModel.getRealWorldTargetCoordinates(),
                     imagePoints,
                     params.cameraCoefficients.getCameraIntrinsicsMat(),

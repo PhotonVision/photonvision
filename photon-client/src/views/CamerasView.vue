@@ -112,6 +112,14 @@
                     :rules="[v => (v >= 4) || 'Height must be at least 4']"
                     :label-cols="$vuetify.breakpoint.mdAndUp ? 5 : 7"
                   />
+                  <CVswitch
+                    v-model="isFisheye"
+                    class="pt-2"
+                    name="Fisheye"
+                    tooltip="is fisheye"
+                    :disabled="isCalibrating"
+                    @input="handleInput('isFisheye',isFisheye)"
+                  />
                 </v-form>
               </v-col>
 
@@ -547,6 +555,14 @@ export default {
             },
             set(value) {
                 this.$store.commit('mutateCalibrationState', {['squareSizeIn']: value})
+            }
+        },
+        isFisheye: {
+            get() {
+                return this.calibrationData.isFisheye
+            },
+            set(value) {
+                this.$store.commit('mutateCalibrationState', {['isFisheye']: value})
             }
         },
         calibrationData: {
