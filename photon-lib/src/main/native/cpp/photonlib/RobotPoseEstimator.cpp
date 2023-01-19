@@ -153,22 +153,23 @@ RobotPoseEstimator::ClosestToCameraHeightStrategy() {
         continue;
       }
       frc::Pose3d targetPose = fiducialPose.value();
-      units::meter_t alternativeDifference = units::math::abs(
-          p.second.Z() -
-          targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
-              .Z());
-      units::meter_t bestDifference = units::math::abs(
-          p.second.Z() -
-          targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()).Z());
-      if (alternativeDifference < smallestHeightDifference) {
+      auto altCameraTransform =
+          targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse());
+      units::meter_t alternativeDifference =
+          units::math::abs(p.second.Z() - altCameraTransform.Z());
+      auto bestCameraTransform =
+          targetPose.TransformBy(target.GetBestCameraToTarget().Inverse());
+      units::meter_t bestDifference =
+          units::math::abs(p.second.Z() - bestCameraTransform.Z());
+
+      if (alternativeDifference < smallestHeightDifference &&
+          alternativeDifference < bestDifference) {
         smallestHeightDifference = alternativeDifference;
-        pose = targetPose.TransformBy(
-            target.GetAlternateCameraToTarget().Inverse());
+        pose = altCameraTransform;
         stateTimestamp = p.first->GetLatestResult().GetTimestamp();
-      }
-      if (bestDifference < smallestHeightDifference) {
+      } else if (bestDifference < smallestHeightDifference) {
         smallestHeightDifference = bestDifference;
-        pose = targetPose.TransformBy(target.GetBestCameraToTarget().Inverse());
+        pose = bestCameraTransform;
         stateTimestamp = p.first->GetLatestResult().GetTimestamp();
       }
     }
@@ -198,25 +199,25 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
         continue;
       }
       frc::Pose3d targetPose = fiducialPose.value();
+      auto altCameraTransform =
+          targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse());
       units::meter_t alternativeDifference =
           units::math::abs(referencePose.Translation().Distance(
-              targetPose
-                  .TransformBy(target.GetAlternateCameraToTarget().Inverse())
-                  .Translation()));
+              altCameraTransform.Translation()));
+      auto bestCameraTansform =
+          targetPose.TransformBy(target.GetBestCameraToTarget().Inverse());
       units::meter_t bestDifference =
           units::math::abs(referencePose.Translation().Distance(
-              targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
-                  .Translation()));
-      if (alternativeDifference < smallestDifference) {
-        smallestDifference = alternativeDifference;
-        pose = targetPose.TransformBy(
-            target.GetAlternateCameraToTarget().Inverse());
-        stateTimestamp = p.first->GetLatestResult().GetTimestamp();
-      }
+              bestCameraTansform.Translation()));
 
-      if (bestDifference < smallestDifference) {
+      if (alternativeDifference < smallestDifference &&
+          alternativeDifference < bestDifference) {
+        smallestDifference = alternativeDifference;
+        pose = altCameraTransform;
+        stateTimestamp = p.first->GetLatestResult().GetTimestamp();
+      } else if (bestDifference < smallestDifference) {
         smallestDifference = bestDifference;
-        pose = targetPose.TransformBy(target.GetBestCameraToTarget().Inverse());
+        pose = besttCameraTransform;
         stateTimestamp = p.first->GetLatestResult().GetTimestamp();
       }
     }
