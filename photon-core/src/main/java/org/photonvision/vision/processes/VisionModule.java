@@ -586,4 +586,15 @@ public class VisionModule {
             logger.error("Cannot set target model of non-reflective pipe! Ignoring...");
         }
     }
+
+    public void addCalibrationToConfig(CameraCalibrationCoefficients newCalibration) {
+        if (newCalibration != null) {
+            logger.info("Got new calibration for " + newCalibration.resolution);
+            visionSource.getSettables().getConfiguration().addCalibration(newCalibration);
+        } else {
+            logger.error("Got null calibration?");
+        }
+
+        saveAndBroadcastAll();
+    }
 }

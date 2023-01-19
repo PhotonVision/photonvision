@@ -19,12 +19,15 @@ package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.HashMap;
 import java.util.Map;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.networking.NetworkMode;
+import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
     public int teamNumber = 0;
@@ -32,6 +35,16 @@ public class NetworkConfig {
     public String staticIp = "";
     public String hostname = "photonvision";
     public boolean runNTServer = false;
+
+    @JsonIgnore public static final String NM_IFACE_STRING = "${interface}";
+    @JsonIgnore public static final String NM_IP_STRING = "${ipaddr}";
+
+    public String networkManagerIface = "Wired\\ connection\\ 1";
+    public String physicalInterface = "eth0";
+    public String setStaticCommand =
+            "nmcli con mod ${interface} ipv4.addresses ${ipaddr}/8 ipv4.method \"manual\" ipv6.method \"disabled\"";
+    public String setDHCPcommand =
+            "nmcli con mod ${interface} ipv4.method \"auto\" ipv6.method \"disabled\"";
 
     private boolean shouldManage;
 
@@ -46,37 +59,39 @@ public class NetworkConfig {
             @JsonProperty("staticIp") String staticIp,
             @JsonProperty("hostname") String hostname,
             @JsonProperty("runNTServer") boolean runNTServer,
-            @JsonProperty("shouldManage") boolean shouldManage) {
+            @JsonProperty("shouldManage") boolean shouldManage,
+            @JsonProperty("networkManagerIface") String networkManagerIface,
+            @JsonProperty("physicalInterface") String physicalInterface,
+            @JsonProperty("setStaticCommand") String setStaticCommand,
+            @JsonProperty("setDHCPcommand") String setDHCPcommand) {
         this.teamNumber = teamNumber;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
         this.hostname = hostname;
         this.runNTServer = runNTServer;
+        this.networkManagerIface = networkManagerIface;
+        this.physicalInterface = physicalInterface;
+        this.setStaticCommand = setStaticCommand;
+        this.setDHCPcommand = setDHCPcommand;
         setShouldManage(shouldManage);
     }
 
     public static NetworkConfig fromHashMap(Map<String, Object> map) {
-        // teamNumber (int), supported (bool), connectionType (int),
-        // staticIp (str), netmask (str), hostname (str)
-        var ret = new NetworkConfig();
-        ret.teamNumber = Integer.parseInt(map.get("teamNumber").toString());
-        ret.connectionType = NetworkMode.values()[(Integer) map.get("connectionType")];
-        ret.staticIp = (String) map.get("staticIp");
-        ret.hostname = (String) map.get("hostname");
-        ret.runNTServer = (Boolean) map.get("runNTServer");
-        ret.setShouldManage((Boolean) map.get("supported"));
-        return ret;
+        try {
+            return new ObjectMapper().convertValue(map, NetworkConfig.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new NetworkConfig();
+        }
     }
 
-    public HashMap<String, Object> toHashMap() {
-        HashMap<String, Object> tmp = new HashMap<>();
-        tmp.put("teamNumber", teamNumber);
-        tmp.put("supported", shouldManage());
-        tmp.put("connectionType", connectionType.ordinal());
-        tmp.put("staticIp", staticIp);
-        tmp.put("hostname", hostname);
-        tmp.put("runNTServer", runNTServer);
-        return tmp;
+    public Map<String, Object> toHashMap() {
+        try {
+            return new ObjectMapper().convertValue(this, JacksonUtils.UIMap.class);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new HashMap<>();
+        }
     }
 
     @JsonGetter("shouldManage")

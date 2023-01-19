@@ -307,6 +307,19 @@
                   Download Target
                 </v-btn>
               </v-col>
+              <v-col>
+                <v-btn
+                  color="secondary"
+                  small
+                  style="width: 100%;"
+                  @click="$refs.importCalibrationFromCalibdb.click()"
+                >
+                  <v-icon left>
+                    mdi-upload
+                  </v-icon>
+                  Import From CalibDB
+                </v-btn>
+              </v-col>
             </v-row>
           </div>
         </v-card>
@@ -383,6 +396,20 @@
         </template>
       </v-col>
     </v-row>
+
+    <!-- Special hidden upload input that gets 'clicked' when the user imports settings -->
+    <input
+      ref="importCalibrationFromCalibdb"
+      type="file"
+      accept=".json"
+      style="display: none;"
+      @change="readImportedCalibration"
+    />
+
+    <v-snackbar v-model="uploadSnack" top :color="uploadSnackData.color" timeout="-1">
+      <span>{{ uploadSnackData.text }}</span>
+    </v-snackbar>
+
   </div>
 </template>
 
@@ -414,6 +441,11 @@ export default {
             filteredVideomodeIndex: 0,
             settingsValid: true,
             unfilteredStreamDivisors: [1, 2, 4],
+            uploadSnackData: {
+              color: "success",
+              text: "",
+            },
+            uploadSnack: false,
         }
     },
     computed: {
@@ -587,6 +619,57 @@ export default {
         },
     },
     methods: {
+
+    readImportedCalibration(event) {
+      // let formData = new FormData();
+      // formData.append("zipData", event.target.files[0]);
+      const filename = event.target.files[0].name;
+
+      event.target.files[0].text().then(fileText => {
+        const data = {
+          "cameraIndex": this.$store.getters.currentCameraIndex,
+          "payload": fileText,
+          "filename": filename,
+        };
+
+        this.axios
+          .post("http://" + this.$address + "/api/calibration/import", data, {
+            headers: { "Content-Type": "text/plain" },
+          })
+          .then(() => {
+            this.uploadSnackData = {
+              color: "success",
+              text:
+                "Calibration imported successfully! PhotonVision will restart in the background...",
+            };
+            this.uploadSnack = true;
+          })
+          .catch((err) => {
+            if (err.response) {
+              this.uploadSnackData = {
+                color: "error",
+                text:
+                  "Error while uploading calibration file! Could not process provided file.",
+              };
+            } else if (err.request) {
+              this.uploadSnackData = {
+                color: "error",
+                text:
+                  "Error while uploading calibration file! No respond to upload attempt.",
+              };
+            } else {
+              this.uploadSnackData = {
+                color: "error",
+                text: "Error while uploading calibration file!",
+              };
+            }
+            this.uploadSnack = true;
+          });
+
+        })
+
+    },
+
         closeDialog() {
             this.snack = false;
             this.calibrationInProgress = false;

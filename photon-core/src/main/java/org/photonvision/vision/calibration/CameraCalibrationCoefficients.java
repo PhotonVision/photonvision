@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Size;
@@ -91,5 +92,44 @@ public class CameraCalibrationCoefficients implements Releasable {
     public void release() {
         cameraIntrinsics.release();
         distCoeffs.release();
+    }
+
+    public static CameraCalibrationCoefficients parseFromCalibdbJson(JsonNode json) {
+        // camera_matrix is a row major, array of arrays
+        var cam_matrix = json.get("camera_matrix");
+
+        double[] cam_arr =
+                new double[] {
+                    cam_matrix.get(0).get(0).doubleValue(),
+                    cam_matrix.get(0).get(1).doubleValue(),
+                    cam_matrix.get(0).get(2).doubleValue(),
+                    cam_matrix.get(1).get(0).doubleValue(),
+                    cam_matrix.get(1).get(1).doubleValue(),
+                    cam_matrix.get(1).get(2).doubleValue(),
+                    cam_matrix.get(2).get(0).doubleValue(),
+                    cam_matrix.get(2).get(1).doubleValue(),
+                    cam_matrix.get(2).get(2).doubleValue()
+                };
+
+        var dist_coefs = json.get("distortion_coefficients");
+
+        double[] dist_array =
+                new double[] {
+                    dist_coefs.get(0).doubleValue(),
+                    dist_coefs.get(1).doubleValue(),
+                    dist_coefs.get(2).doubleValue(),
+                    dist_coefs.get(3).doubleValue(),
+                    dist_coefs.get(4).doubleValue(),
+                };
+
+        var cam_jsonmat = new JsonMat(3, 3, cam_arr);
+        var distortion_jsonmat = new JsonMat(1, 5, dist_array);
+
+        var error = json.get("avg_reprojection_error").asDouble();
+        var width = json.get("img_size").get(0).doubleValue();
+        var height = json.get("img_size").get(1).doubleValue();
+
+        return new CameraCalibrationCoefficients(
+                new Size(width, height), cam_jsonmat, distortion_jsonmat, new double[] {error}, 0);
     }
 }

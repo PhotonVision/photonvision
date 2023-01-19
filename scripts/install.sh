@@ -1,5 +1,9 @@
 #!/bin/bash
 
+package_is_installed(){
+    dpkg-query -W -f='${Status}' "$1" 2>/dev/null | grep -q "ok installed"
+}
+
 if [ "$(id -u)" != "0" ]; then
    echo "This script must be run as root" 1>&2
    exit 1
@@ -50,13 +54,24 @@ else
 fi
 
 echo "Installing the JDK..."
-if [ $(dpkg-query -W -f='${Status}' openjdk-11-jdk-headless 2>/dev/null | grep -c "ok installed") -eq 0 ];
+if ! package_is_installed openjdk-11-jdk-headless
 then
    apt-get update
    apt-get install --yes openjdk-11-jdk-headless
 fi
 echo "JDK installation complete."
 
+if [ "$ARCH" == "aarch64" ]
+then
+    if package_is_installed libopencv-core4.5
+    then
+        echo "libopencv-core4.5 already installed"
+    else
+        # libphotonlibcamera.so on raspberry pi has dep on libopencv_core
+        echo "Installing libopencv-core4.5 on aarch64"
+        apt-get install --yes libopencv-core4.5
+    fi
+fi
 
 echo "Downloading latest stable release of PhotonVision..."
 mkdir -p /opt/photonvision

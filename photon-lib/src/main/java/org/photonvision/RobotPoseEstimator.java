@@ -389,7 +389,7 @@ public class RobotPoseEstimator {
     }
 
     /**
-     * UPdate the stored last pose. Useful for setting the initial estimate with CLOSEST_TO_LAST_POSE
+     * Update the stored last pose. Useful for setting the initial estimate with CLOSEST_TO_LAST_POSE
      *
      * @param lastPose the lastPose to set
      */
@@ -400,7 +400,7 @@ public class RobotPoseEstimator {
     private void reportFiducialPoseError(int fiducialId) {
         if (!reportedErrors.contains(fiducialId)) {
             DriverStation.reportError(
-                    "[RobotPoseEstimator] Tried to get pose of unknown April Tag: " + fiducialId, false);
+                    "[RobotPoseEstimator] Tried to get pose of unknown AprilTag: " + fiducialId, false);
             reportedErrors.add(fiducialId);
         }
     }
