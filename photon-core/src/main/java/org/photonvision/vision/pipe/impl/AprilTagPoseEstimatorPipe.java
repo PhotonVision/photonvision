@@ -54,8 +54,7 @@ public class AprilTagPoseEstimatorPipe
         temp.fromArray(corners);
 
         // Probably overwrites what was in temp before. I hope
-        Calib3dorFisheye.undistortImagePoints(
-                false,
+        Calib3dorFisheye.undistortPoints(
                 temp,
                 temp,
                 params.calibration.getCameraIntrinsicsMat(),

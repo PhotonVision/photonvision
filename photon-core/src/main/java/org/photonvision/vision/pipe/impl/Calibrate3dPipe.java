@@ -91,7 +91,6 @@ public class Calibrate3dPipe
 
             calibrationAccuracy =
                     Calib3dorFisheye.calibrateCamera(
-                        false
                             objPoints,
                             imgPts,
                             new Size(in.get(0).getLeft().width, in.get(0).getLeft().height),

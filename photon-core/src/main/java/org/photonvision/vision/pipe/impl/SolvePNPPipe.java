@@ -78,7 +78,6 @@ public class SolvePNPPipe
         var tVec = new Mat();
         try {
             Calib3dorFisheye.solvePnP(
-                    false,
                     params.targetModel.getRealWorldTargetCoordinates(),
                     imagePoints,
                     params.cameraCoefficients.getCameraIntrinsicsMat(),

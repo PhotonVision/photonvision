@@ -86,7 +86,7 @@ public class Draw3dTargetsPipe
                 var topModel = params.targetModel.getVisualizationBoxTop();
 
                 Calib3dorFisheye.projectPoints(
-                        false,
+                     
                         bottomModel,
                         target.getCameraRelativeRvec(),
                         target.getCameraRelativeTvec(),
@@ -95,13 +95,13 @@ public class Draw3dTargetsPipe
                         tempMat);
             if (params.redistortPoints) {
                 // Distort the points so they match the image they're being overlaid on
-                Calib3dorFisheye.distortPoints(false, tempMat, tempMat, params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(), params.cameraCalibrationCoefficients.getDistCoeffsMat());
+                Calib3dorFisheye.distortPoints(tempMat, tempMat, params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(), params.cameraCalibrationCoefficients.getDistCoeffsMat());
             }
 
                 var bottomPoints = tempMat.toList();
 
                 Calib3dorFisheye.projectPoints(
-                        false,
+                       
                         topModel,
                         target.getCameraRelativeRvec(),
                         target.getCameraRelativeTvec(),
@@ -111,7 +111,7 @@ public class Draw3dTargetsPipe
 
                 if (params.redistortPoints) {
                     // Distort the points so they match the image they're being overlaid on
-                    Calib3dorFisheye.distortPoints(false, tempMat, tempMat, params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(), params.cameraCalibrationCoefficients.getDistCoeffsMat());
+                    Calib3dorFisheye.distortPoints(tempMat, tempMat, params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(), params.cameraCalibrationCoefficients.getDistCoeffsMat());
                 }
                 var topPoints = tempMat.toList();
 
@@ -145,7 +145,6 @@ public class Draw3dTargetsPipe
                 pointMat.fromList(list);
 
                 Calib3dorFisheye.projectPoints(
-                        false,
                         pointMat,
                         target.getCameraRelativeRvec(),
                         target.getCameraRelativeTvec(),
