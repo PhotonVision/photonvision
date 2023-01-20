@@ -127,8 +127,9 @@ public class Calibrate3dPipe
         } catch (JsonProcessingException e) {
             logger.error("Failed to parse calibration data to json!", e);
         }
-        
-        return new CameraCalibrationCoefficients(params.resolution, cameraMatrixMat, distortionCoefficientsMat, perViewErrorsArray, stdDev);
+
+        return new CameraCalibrationCoefficients(
+                params.resolution, cameraMatrixMat, distortionCoefficientsMat, perViewErrorsArray, stdDev);
     }
 
     public static class CalibratePipeParams {

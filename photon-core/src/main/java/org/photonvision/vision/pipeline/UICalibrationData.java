@@ -62,8 +62,7 @@ public class UICalibrationData {
                 ((Number) map.get("squareSizeIn")).doubleValue(),
                 ((Number) map.get("patternWidth")).intValue(),
                 ((Number) map.get("patternHeight")).intValue(),
-                BoardType.values()[(int) map.get("boardType")]
-                );
+                BoardType.values()[(int) map.get("boardType")]);
     }
 
     @Override

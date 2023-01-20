@@ -18,7 +18,6 @@
 package org.photonvision.vision.pipe.impl;
 
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import org.apache.commons.lang3.tuple.Pair;
 import org.opencv.core.Mat;
@@ -86,24 +85,25 @@ public class Draw3dTargetsPipe
                 var topModel = params.targetModel.getVisualizationBoxTop();
 
                 Calib3dorFisheye.projectPoints(
-                     
                         bottomModel,
                         target.getCameraRelativeRvec(),
                         target.getCameraRelativeTvec(),
                         params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
                         params.cameraCalibrationCoefficients.getDistCoeffsMat(),
                         tempMat);
-                
 
-            if (params.redistortPoints) {
-                // Distort the points so they match the image they're being overlaid on
-                Calib3dorFisheye.distortPoints(tempMat, tempMat, params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(), params.cameraCalibrationCoefficients.getDistCoeffsMat());
-            }
+                if (params.redistortPoints) {
+                    // Distort the points so they match the image they're being overlaid on
+                    Calib3dorFisheye.distortPoints(
+                            tempMat,
+                            tempMat,
+                            params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
+                            params.cameraCalibrationCoefficients.getDistCoeffsMat());
+                }
 
                 var bottomPoints = tempMat.toList();
 
                 Calib3dorFisheye.projectPoints(
-                       
                         topModel,
                         target.getCameraRelativeRvec(),
                         target.getCameraRelativeTvec(),
@@ -113,7 +113,11 @@ public class Draw3dTargetsPipe
 
                 if (params.redistortPoints) {
                     // Distort the points so they match the image they're being overlaid on
-                    Calib3dorFisheye.distortPoints(tempMat, tempMat, params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(), params.cameraCalibrationCoefficients.getDistCoeffsMat());
+                    Calib3dorFisheye.distortPoints(
+                            tempMat,
+                            tempMat,
+                            params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
+                            params.cameraCalibrationCoefficients.getDistCoeffsMat());
                 }
                 var topPoints = tempMat.toList();
 
