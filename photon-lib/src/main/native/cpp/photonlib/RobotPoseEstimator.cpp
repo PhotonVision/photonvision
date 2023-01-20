@@ -217,7 +217,7 @@ RobotPoseEstimator::ClosestToReferencePoseStrategy() {
         stateTimestamp = p.first->GetLatestResult().GetTimestamp();
       } else if (bestDifference < smallestDifference) {
         smallestDifference = bestDifference;
-        pose = besttCameraTransform;
+        pose = bestCameraTransform;
         stateTimestamp = p.first->GetLatestResult().GetTimestamp();
       }
     }
