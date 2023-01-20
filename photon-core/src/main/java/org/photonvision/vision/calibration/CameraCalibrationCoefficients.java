@@ -44,23 +44,18 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("standardDeviation")
     public final double standardDeviation;
 
-    @JsonProperty("isFisheye")
-    public final boolean isFisheye;
-
     @JsonCreator
     public CameraCalibrationCoefficients(
             @JsonProperty("resolution") Size resolution,
             @JsonProperty("cameraIntrinsics") JsonMat cameraIntrinsics,
             @JsonProperty("cameraExtrinsics") JsonMat distCoeffs,
             @JsonProperty("perViewErrors") double[] perViewErrors,
-            @JsonProperty("standardDeviation") double standardDeviation,
-            @JsonProperty("isFisheye") boolean isFisheye) {
+            @JsonProperty("standardDeviation") double standardDeviation) {
         this.resolution = resolution;
         this.cameraIntrinsics = cameraIntrinsics;
         this.distCoeffs = distCoeffs;
         this.perViewErrors = perViewErrors;
         this.standardDeviation = standardDeviation;
-        this.isFisheye = isFisheye;
     }
 
     @JsonIgnore
@@ -81,11 +76,6 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonIgnore
     public double getStandardDeviation() {
         return standardDeviation;
-    }
-
-    @JsonIgnore
-    public boolean getisFisheye() {
-        return isFisheye;
     }
 
     @Override
@@ -112,18 +102,35 @@ public class CameraCalibrationCoefficients implements Releasable {
                 };
 
         var dist_coefs = json.get("distortion_coefficients");
+        
+        double[] dist_array;
+        JsonMat distortion_jsonmat;
 
-        double[] dist_array =
-                new double[] {
-                    dist_coefs.get(0).doubleValue(),
-                    dist_coefs.get(1).doubleValue(),
-                    dist_coefs.get(2).doubleValue(),
-                    dist_coefs.get(3).doubleValue(),
-                    dist_coefs.get(4).doubleValue(),
-                };
+        if(dist_coefs.size() == 4){
+            dist_array =
+            new double[] {
+                dist_coefs.get(0).doubleValue(),
+                dist_coefs.get(1).doubleValue(),
+                dist_coefs.get(2).doubleValue(),
+                dist_coefs.get(3).doubleValue()
+            };
+
+            distortion_jsonmat = new JsonMat(1, 4, dist_array);
+        }
+        else{
+            dist_array =
+            new double[] {
+                dist_coefs.get(0).doubleValue(),
+                dist_coefs.get(1).doubleValue(),
+                dist_coefs.get(2).doubleValue(),
+                dist_coefs.get(3).doubleValue(),
+                dist_coefs.get(4).doubleValue()
+            };
+
+            distortion_jsonmat = new JsonMat(1, 5, dist_array);
+        }
 
         var cam_jsonmat = new JsonMat(3, 3, cam_arr);
-        var distortion_jsonmat = new JsonMat(1, 5, dist_array);
 
         var error = json.get("avg_reprojection_error").asDouble();
         var width = json.get("img_size").get(0).doubleValue();

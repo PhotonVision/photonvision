@@ -93,6 +93,8 @@ public class Draw3dTargetsPipe
                         params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(),
                         params.cameraCalibrationCoefficients.getDistCoeffsMat(),
                         tempMat);
+                
+
             if (params.redistortPoints) {
                 // Distort the points so they match the image they're being overlaid on
                 Calib3dorFisheye.distortPoints(tempMat, tempMat, params.cameraCalibrationCoefficients.getCameraIntrinsicsMat(), params.cameraCalibrationCoefficients.getDistCoeffsMat());

@@ -158,7 +158,6 @@ export default new Vuex.Store({
             patternWidth: 8,
             patternHeight: 8,
             boardType: 0, // Chessboard, dotboard
-            isFisheye: false
         },
         metrics: {
             cpuTemp: "N/A",

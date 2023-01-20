@@ -212,8 +212,7 @@ public class Calibrate3dPipeline
                                 Units.metersToInches(settings.gridSize),
                                 settings.boardWidth,
                                 settings.boardHeight,
-                                settings.boardType,
-                                settings.isFisheye));
+                                settings.boardType));
 
         DataChangeService.getInstance()
                 .publishEvent(OutgoingUIEvent.wrappedOf("calibrationData", state));
