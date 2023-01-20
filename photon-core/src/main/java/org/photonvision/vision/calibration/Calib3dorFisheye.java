@@ -85,8 +85,7 @@ public class Calib3dorFisheye {
         var fy = cameraMatrix.get(1, 1)[0];
 
         for (Point point : srcPtsList) {
-            // To relative coordinates <- this is the step you are missing.
-            double x = (point.x - cx) / fx; // cx, cy is the center of distortion
+            double x = (point.x - cx) / fx;
             double y = (point.y - cy) / fy;
             
             srcPtsListNormalized.add(new Point3(x, y, 1));
