@@ -86,8 +86,8 @@ model {
     }
 }
 
-def photonlibFileInput = file("src/generate/photonlib.json.in")
-ext.photonlibFileOutput = file("$buildDir/generated/vendordeps/photonlib.json")
+def photonlibFileInput = file("src/generate/PhotonLib.json.in")
+ext.photonlibFileOutput = file("$buildDir/generated/vendordeps/PhotonLib.json")
 
 task generateVendorJson() {
     description = "Generates the vendor JSON file"

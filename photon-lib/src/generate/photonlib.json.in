@@ -1,6 +1,6 @@
 {
-  "fileName": "photonlib.json",
-  "name": "photonlib",
+  "fileName": "PhotonLib.json",
+  "name": "PhotonLib",
   "version": "${photon_version}",
   "uuid": "515fe07e-bfc6-11fa-b3de-0242ac130004 ",
   "mavenUrls": [
