@@ -140,6 +140,9 @@ public class LibCameraJNI {
 
     // Exposure time, in microseconds
     public static native boolean setExposure(int exposureUs);
+    
+    // Set whether or not to use autofocus 
+    public static native boolean setAutoFocus(boolean doAutoFocus);
 
     // Set brighness on [-1, 1]
     public static native boolean setBrightness(double brightness);
