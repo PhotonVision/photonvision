@@ -46,8 +46,6 @@ public abstract class VisionSourceSettables {
 
     public abstract void setAutoExposure(boolean cameraAutoExposure);
     
-    public abstract void setAutoFocus(boolean cameraAutoFocus);
-
     public abstract void setBrightness(int brightness);
 
     public abstract void setGain(int gain);
@@ -58,6 +56,10 @@ public abstract class VisionSourceSettables {
     public void setBlueGain(int blue) {}
 
     public abstract VideoMode getCurrentVideoMode();
+
+    public void autofocus(){}
+
+    public int getAutofocusStatus(){return -1;}
 
     public void setVideoModeInternal(int index) {
         setVideoMode(getAllVideoModes().get(index));

@@ -187,6 +187,16 @@ public class LibcameraGpuSettables extends VisionSourceSettables {
         }
     }
 
+    @Override 
+    public int getAutofocusStatus() {
+      return LibCameraJNI.getAutofocusStatus();
+    }
+
+    @Override
+    public void autofocus() {
+      LibCameraJNI.setAutofocus(true);
+    }
+
     @Override
     public FPSRatedVideoMode getCurrentVideoMode() {
         return currentVideoMode;

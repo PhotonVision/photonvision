@@ -304,6 +304,19 @@
                   color="secondary"
                   small
                   style="width: 100%;"
+                  @click="focusCamera"
+                >
+                <v-icon left>
+                  mdi-camera-iris
+                </v-icon>
+                Focus Camera
+                </v-btn>
+              </v-col>
+              <v-col>
+                <v-btn
+                  color="secondary"
+                  small
+                  style="width: 100%;"
                   @click="$refs.importCalibrationFromCalibdb.click()"
                 >
                   <v-icon left>
@@ -761,6 +774,14 @@ export default {
 
             doc.save("calibrationTarget.pdf");
 
+        },
+        focusCamera() {
+          this.axios.post("http://" + this.$address + "/api/doesCameraSupportsAutofocus", {
+              "index": this.$store.state.currentCameraIndex
+          }).then(response => {
+            if (response.status != 200 || response
+            }
+          )
         },
         sendCameraSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {

@@ -317,6 +317,35 @@ public class RequestHandler {
         }
     }
 
+    public static void autofocusCamera(Context ctx) {
+        try {
+            var data = kObjectMapper.readValue(ctx.body(), HashMap.class);
+            int idx = Integer.parseInt(String.valueOf(data.get("cameraIndex")));
+            VisionModuleManager.getInstance().getModule(idx).autofocus();
+            ctx.status(200);
+            return;
+        } catch (Exception e) {
+          logger.warn("Failed to start autofocus!");  
+          e.printStackTrace();
+        }
+        ctx.status(500);
+    }
+    
+    public static void getAutofocusStatus(Context ctx) {
+        try {
+            var data = kObjectMapper.readValue(ctx.body(), HashMap.class);
+            int idx = Integer.parseInt(String.valueOf(data.get("cameraIndex")));
+            int status = VisionModuleManager.getInstance().getModule(idx).getAutofocusStatus();
+            ctx.result(String.valueOf(status));
+            ctx.status(200);
+            return;
+        } catch (Exception e) {
+          logger.warn("Could not check if camera supports autofocus!");  
+          e.printStackTrace();
+        }
+        ctx.status(500);
+    }
+
     public static void setCameraNickname(Context ctx) {
         try {
             var data = kObjectMapper.readValue(ctx.body(), HashMap.class);

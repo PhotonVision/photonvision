@@ -478,6 +478,14 @@ public class VisionModule {
         saveAndBroadcastAll();
     }
 
+    public int getAutofocusStatus() {
+      return visionSource.getSettables().getAutofocusStatus();
+    }
+
+    public void autofocus() {
+      visionSource.getSettables().autofocus();
+    }
+
     public PhotonConfiguration.UICameraConfiguration toUICameraConfig() {
         var ret = new PhotonConfiguration.UICameraConfiguration();
 
