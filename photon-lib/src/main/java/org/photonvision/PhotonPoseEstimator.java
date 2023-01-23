@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -243,7 +244,7 @@ public class PhotonPoseEstimator {
 
         double lowestAmbiguityScore = 10;
 
-        for (PhotonTrackedTarget target : result.targets) {
+        for (PhotonTrackedTarget target : getValidFiducialTargets(result)) {
             double targetPoseAmbiguity = target.getPoseAmbiguity();
             // Make sure the target is a Fiducial target.
             if (targetPoseAmbiguity != -1 && targetPoseAmbiguity < lowestAmbiguityScore) {
@@ -286,7 +287,7 @@ public class PhotonPoseEstimator {
         double smallestHeightDifference = 10e9;
         EstimatedRobotPose closestHeightTarget = null;
 
-        for (PhotonTrackedTarget target : result.targets) {
+        for (PhotonTrackedTarget target : getValidFiducialTargets(result)) {
             int targetFiducialId = target.getFiducialId();
 
             // Don't report errors for non-fiducial targets. This could also be resolved by
@@ -364,7 +365,7 @@ public class PhotonPoseEstimator {
         double smallestPoseDelta = 10e9;
         EstimatedRobotPose lowestDeltaPose = null;
 
-        for (PhotonTrackedTarget target : result.targets) {
+        for (PhotonTrackedTarget target : getValidFiducialTargets(result)) {
             int targetFiducialId = target.getFiducialId();
 
             // Don't report errors for non-fiducial targets. This could also be resolved by
@@ -418,7 +419,7 @@ public class PhotonPoseEstimator {
         List<Pair<PhotonTrackedTarget, Pose3d>> estimatedRobotPoses = new ArrayList<>();
         double totalAmbiguity = 0;
 
-        for (PhotonTrackedTarget target : result.targets) {
+        for (PhotonTrackedTarget target : getValidFiducialTargets(result)) {
             int targetFiducialId = target.getFiducialId();
 
             // Don't report errors for non-fiducial targets. This could also be resolved by
@@ -492,5 +493,18 @@ public class PhotonPoseEstimator {
                     "[PhotonPoseEstimator] Tried to get pose of unknown AprilTag: " + fiducialId, false);
             reportedErrors.add(fiducialId);
         }
+    }
+
+    /**
+     * Return a List of all the fiducial targets from a {@link PhotonPipelineResult} that are also in
+     * the field layout.
+     *
+     * @param result pipeline result.
+     * @return valid targets.
+     */
+    private List<PhotonTrackedTarget> getValidFiducialTargets(PhotonPipelineResult result) {
+        return result.targets.stream()
+                .filter(target -> fieldTags.getTagPose(target.getFiducialId()).isPresent())
+                .collect(Collectors.toList());
     }
 }
