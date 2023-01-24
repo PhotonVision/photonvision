@@ -66,7 +66,12 @@ public class NetworkTablesManager {
                 getInstance().broadcastConnectedStatus();
             } else if (event.logMessage.message.contains("connected")
                     && System.currentTimeMillis() - lastConnectMessageMillis > 125) {
-                logger.info("NT Connected!");
+                String connectionDescription = "(unknown)";
+                var connections = getInstance().ntInstance.getConnections();
+                if (connections.length > 0) {
+                    connectionDescription = connections[0].remote_ip + ":" + connections[0].remote_port;
+                }
+                logger.info("NT Connected to " + connectionDescription + "!");
                 hasReportedConnectionFailure = false;
                 lastConnectMessageMillis = System.currentTimeMillis();
                 ScriptManager.queueEvent(ScriptEventType.kNTConnected);
@@ -107,16 +112,22 @@ public class NetworkTablesManager {
         if (config.runNTServer) {
             setServerMode();
         } else {
-            setClientMode(config.teamNumber);
+            setClientMode(config.ntServerAddress);
         }
         broadcastVersion();
     }
 
-    private void setClientMode(int teamNumber) {
-        if (!isRetryingConnection) logger.info("Starting NT Client");
+    private void setClientMode(String ntServerAddress) {
         ntInstance.stopServer();
         ntInstance.startClient4("photonvision");
-        ntInstance.setServerTeam(teamNumber);
+        try {
+            Integer t = Integer.parseInt(ntServerAddress);
+            if (!isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
+            ntInstance.setServerTeam(t);
+        } catch (NumberFormatException e) {
+            if (!isRetryingConnection) logger.info("Starting NT Client, server IP is \"" + ntServerAddress + "\"");
+            ntInstance.setServer(ntServerAddress);
+        }
         ntInstance.startDSClient();
         broadcastVersion();
     }
