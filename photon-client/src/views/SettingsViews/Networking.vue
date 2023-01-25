@@ -4,21 +4,21 @@
       ref="form"
       v-model="valid"
     >
-      <CVnumberinput
-        v-model="teamNumber"
+      <CVinput
+        v-model="ntServerAddress"
+        :input-cols="inputCols"
         :disabled="settings.runNTServer"
         name="Team Number"
-        :rules="[v => (v > 0) || 'Team number must be greater than zero', v => (v < 10000) || 'Team number must have fewer than five digits']"
-        class="mb-4"
-        :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 5"
+        tooltip="enter the team number or the IP address of the robot NetworkTables server"
+        :rules="[v => (v != '') || 'Team Number must be non blank']"
       />
       <v-banner
-        v-show="(teamNumber < 1 || teamNumber > 10000) && !runNTServer"
+        v-show="(ntServerAddress == '') && !runNTServer"
         rounded
         color="red"
         text-color="white"
       >
-        Team number is unset or invalid. NetworkTables will not be able to connect.
+        "Team Number or NetworkTablesIP" is unset or invalid. NetworkTables will not be able to connect.
       </v-banner>
       <CVradio
         v-show="$store.state.settings.networkSettings.shouldManage"
@@ -165,7 +165,6 @@
 </template>
 
 <script>
-import CVnumberinput from '../../components/common/cv-number-input'
 import CVradio from '../../components/common/cv-radio'
 import CVinput from '../../components/common/cv-input'
 import CVSwitch from "@/components/common/cv-switch";
@@ -179,7 +178,6 @@ export default {
     name: 'Networking',
     components: {
         CVSwitch,
-        CVnumberinput,
         CVradio,
         CVinput
     },
@@ -205,12 +203,12 @@ export default {
         settings() {
             return this.$store.state.settings.networkSettings;
         },
-        teamNumber: {
+        ntServerAddress: {
             get() {
-                return this.settings.teamNumber
+                return this.settings.ntServerAddress
             },
             set(value) {
-                this.$store.commit('mutateNetworkSettings', {['teamNumber']: value || 0});
+                this.$store.commit('mutateNetworkSettings', {['ntServerAddress']: value || ""});
            }
         },
         runNTServer: {

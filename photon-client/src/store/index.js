@@ -135,7 +135,7 @@ export default new Vuex.Store({
                 hardwarePlatform: "Unknown",
             },
             networkSettings: {
-                teamNumber: 0,
+                ntServerAddress: "",
 
                 supported: true,
                 // Below options are only configurable if supported is true
