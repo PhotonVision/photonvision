@@ -41,7 +41,7 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(
           rootTable->GetRawTopic("rawBytes")
-              .Subscribe("raw", {}, {.periodic = 0.01, .sendAll = true})),
+              .Subscribe("rawBytes", {}, {.periodic = 0.01, .sendAll = true})),
       driverModeEntry(rootTable->GetBooleanTopic("driverMode").Publish()),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
