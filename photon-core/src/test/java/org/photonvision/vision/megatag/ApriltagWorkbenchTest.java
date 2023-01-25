@@ -45,6 +45,7 @@ public class ApriltagWorkbenchTest {
             var visCorners = new ArrayList<TargetCorner>();
             var knownVisTags = new ArrayList<AprilTag>();
             var fieldToCams = new ArrayList<Pose3d>();
+            var fieldToCamsAlt = new ArrayList<Pose3d>();
             var result = cam.getLatestResult();
             System.out.println(result.getTargets().size());
 
@@ -55,6 +56,7 @@ public class ApriltagWorkbenchTest {
                 knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
 
                 fieldToCams.add(tagPose.transformBy(target.getBestCameraToTarget().inverse()));
+                fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
             }
 
             final var data = new ArrayList<Double>();
@@ -67,6 +69,16 @@ public class ApriltagWorkbenchTest {
                     it.getRotation().getQuaternion().getY(),
                     it.getRotation().getQuaternion().getZ())));
             SmartDashboard.putNumberArray("fieldToCams", data.toArray(new Double[] {}));
+            data.clear();
+            fieldToCamsAlt.stream().forEach(it -> data.addAll(List.of(
+                    it.getX(),
+                    it.getY(),
+                    it.getZ(),
+                    it.getRotation().getQuaternion().getW(),
+                    it.getRotation().getQuaternion().getX(),
+                    it.getRotation().getQuaternion().getY(),
+                    it.getRotation().getQuaternion().getZ())));
+            SmartDashboard.putNumberArray("fieldToCamsAlt", data.toArray(new Double[] {}));
 
             // data = new ArrayList<Double>();o
             data.clear();
