@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class VisionEstimation {
 
-    public static final TargetModel kTagModel = TargetModel.ofPlanarRect(
+    public static final TargetModel kTagModel = new TargetModel(
             Units.inchesToMeters(6),
             Units.inchesToMeters(6));
 
@@ -48,7 +48,7 @@ public class VisionEstimation {
         }
         // single-tag pnp
         if (corners.size() == 4) {
-            var camToTag = OpenCVHelp.solveTagPNP(prop, kTagModel.cornerOffsets, corners);
+            var camToTag = OpenCVHelp.solvePNP_SQUARE(prop, kTagModel.getFieldVertices(knownTags.get(0).pose), corners);
             var bestPose = knownTags.get(0).pose.transformBy(camToTag.best.inverse());
             var altPose = new Pose3d();
             if (camToTag.ambiguity != 0)
@@ -75,8 +75,8 @@ public class VisionEstimation {
         else {
             var objectTrls = new ArrayList<Translation3d>();
             for (var tag : knownTags)
-                objectTrls.addAll(kTagModel.getFieldCorners(tag.pose));
-            var camToOrigin = OpenCVHelp.solveTagsPNP(prop, objectTrls, corners);
+                objectTrls.addAll(kTagModel.getFieldVertices(tag.pose));
+            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(prop, objectTrls, corners);
             // var camToOrigin = OpenCVHelp.solveTagsPNPRansac(prop, objectTrls, corners);
             return new PNPResults(
                     camToOrigin.best.inverse(),
@@ -85,43 +85,43 @@ public class VisionEstimation {
         }
     }
 
-    /**
-     * The best estimated transformation to the target, and possibly an alternate
-     * transformation
-     * depending on the solvePNP method. If an alternate solution is present, the
-     * ambiguity value
-     * represents the ratio of reprojection error in the best solution to the
-     * alternate (best / alternate).
-     */
-    public static class PNPResults {
-        public final Transform3d best;
-        public final double bestReprojErr;
+    // /**
+    //  * The best estimated transformation to the target, and possibly an alternate
+    //  * transformation
+    //  * depending on the solvePNP method. If an alternate solution is present, the
+    //  * ambiguity value
+    //  * represents the ratio of reprojection error in the best solution to the
+    //  * alternate (best / alternate).
+    //  */
+    // public static class PNPResults {
+    //     public final Transform3d best;
+    //     public final double bestReprojErr;
 
-        /**
-         * Alternate, ambiguous solution from solvepnp. This may be empty
-         * if no alternate solution is found.
-         */
-        public final Transform3d alt;
-        /** If no alternate solution is found, this is 0 */
-        public final double altReprojErr;
+    //     /**
+    //      * Alternate, ambiguous solution from solvepnp. This may be empty
+    //      * if no alternate solution is found.
+    //      */
+    //     public final Transform3d alt;
+    //     /** If no alternate solution is found, this is 0 */
+    //     public final double altReprojErr;
 
-        /** If no alternate solution is found, this is 0 */
-        public final double ambiguity;
+    //     /** If no alternate solution is found, this is 0 */
+    //     public final double ambiguity;
 
-        public PNPResults() {
-            this(new Transform3d(), new Transform3d(), 0, 0, 0);
-        }
+    //     public PNPResults() {
+    //         this(new Transform3d(), new Transform3d(), 0, 0, 0);
+    //     }
 
-        public PNPResults(
-                Transform3d best, Transform3d alt,
-                double ambiguity, double bestReprojErr, double altReprojErr) {
-            this.best = best;
-            this.alt = alt;
-            this.ambiguity = ambiguity;
-            this.bestReprojErr = bestReprojErr;
-            this.altReprojErr = altReprojErr;
-        }
-    }
+    //     public PNPResults(
+    //             Transform3d best, Transform3d alt,
+    //             double ambiguity, double bestReprojErr, double altReprojErr) {
+    //         this.best = best;
+    //         this.alt = alt;
+    //         this.ambiguity = ambiguity;
+    //         this.bestReprojErr = bestReprojErr;
+    //         this.altReprojErr = altReprojErr;
+    //     }
+    // }
 
     /**
      * The best estimated transformation (Rotation-translation composition) that

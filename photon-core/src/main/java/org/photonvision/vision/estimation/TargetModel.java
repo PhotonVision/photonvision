@@ -1,110 +1,121 @@
-package org.photonvision.vision.estimation;
+/*
+ * MIT License
+ *
+ * Copyright (c) 2022 PhotonVision
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
+package org.photonvision.vision.estimation;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * Describes the shape of the target
- */
+/** Describes the 3d model of a target. */
 public class TargetModel {
     /**
-     * Translations of this target's corners relative to its pose
+     * Translations of this target's vertices relative to its pose. If this target
+     * is spherical, this
+     * list has one translation with x == radius.
      */
-    public final List<Translation3d> cornerOffsets;
+    public final List<Translation3d> vertices;
+
     public final boolean isPlanar;
-    public final double widthMeters;
-    public final double heightMeters;
-    public final double areaSqMeters;
+    public final boolean isSpherical;
 
-    public TargetModel(List<Translation3d> cornerOffsets, double widthMeters, double heightMeters) {
-        if(cornerOffsets == null || cornerOffsets.size() <= 2) {
-            cornerOffsets = new ArrayList<>();
+    public static final TargetModel kTag16h5 = new TargetModel(Units.inchesToMeters(6), Units.inchesToMeters(6));
+
+    /** Creates a rectangular, planar target model given the width and height. */
+    public TargetModel(double widthMeters, double heightMeters) {
+        this.vertices = List.of(
+                // this order is relevant for AprilTag compatibility
+                new Translation3d(0, -widthMeters / 2.0, -heightMeters / 2.0),
+                new Translation3d(0, widthMeters / 2.0, -heightMeters / 2.0),
+                new Translation3d(0, widthMeters / 2.0, heightMeters / 2.0),
+                new Translation3d(0, -widthMeters / 2.0, heightMeters / 2.0));
+        this.isPlanar = true;
+        this.isSpherical = false;
+    }
+
+    /**
+     * Creates a spherical target model which has similar dimensions when viewed
+     * from any angle. This
+     * model will only have one vertex which has x == radius.
+     */
+    public TargetModel(double diameterMeters) {
+        this.vertices = List.of(new Translation3d(diameterMeters / 2.0, 0, 0));
+        this.isPlanar = false;
+        this.isSpherical = true;
+    }
+
+    /**
+     * Creates a target model from arbitrary 3d vertices. Automatically determines
+     * if the given
+     * vertices are planar(x == 0). More than 2 vertices must be given.
+     *
+     * @param vertices Translations representing the vertices of this target model
+     *                 relative to its
+     *                 pose.
+     */
+    public TargetModel(List<Translation3d> vertices) {
+        this.isSpherical = false;
+        if (vertices == null || vertices.size() <= 2) {
+            vertices = new ArrayList<>();
             this.isPlanar = false;
-        }
-        else {
+        } else {
             boolean cornersPlanar = true;
-            for(Translation3d corner : cornerOffsets) {
-                if(corner.getX() != 0) cornersPlanar = false;
+            for (Translation3d corner : vertices) {
+                if (corner.getX() != 0)
+                    cornersPlanar = false;
             }
-            if(cornerOffsets.size() != 4 || !cornersPlanar) {
-                throw new IllegalArgumentException(
-                    String.format(
-                        "Supplied target corners (%s) must total 4 and be planar (all X == 0).",
-                        cornerOffsets.size()
-                    )
-                );
-            };
-            this.isPlanar = true;
+            this.isPlanar = cornersPlanar;
         }
-        this.cornerOffsets = cornerOffsets;
-        this.widthMeters = widthMeters;
-        this.heightMeters = heightMeters;
-        this.areaSqMeters = widthMeters * heightMeters;
-    }
-    /**
-     * Creates a rectangular, planar target model given the width and height.
-     */
-    public static TargetModel ofPlanarRect(double widthMeters, double heightMeters) {
-        // 4 corners of rect with its pose as origin
-        return new TargetModel(
-            List.of(
-                // this order is relevant for solvePNP
-                new Translation3d(0, -widthMeters/2.0, heightMeters/2.0),
-                new Translation3d(0, widthMeters/2.0, heightMeters/2.0),
-                new Translation3d(0, widthMeters/2.0, -heightMeters/2.0),
-                new Translation3d(0, -widthMeters/2.0, -heightMeters/2.0)
-            ),
-            widthMeters, heightMeters
-        );
-    }
-    /**
-     * Creates a spherical target which has similar dimensions when viewed from any angle.
-     */
-    public static TargetModel ofSphere(double diameterMeters) {
-        // to get area = PI*r^2
-        double assocSideLengths = Math.sqrt(Math.PI)*(diameterMeters/2.0);
-        return new TargetModel(null, assocSideLengths, assocSideLengths);
+        this.vertices = vertices;
     }
 
     /**
-     * This target's corners offset from its field pose.
+     * This target's vertices offset from its field pose.
+     *
+     * <p>
+     * Note: If this target is spherical, only one vertex radius meters in front of
+     * the pose is
+     * returned.
      */
-    public List<Translation3d> getFieldCorners(Pose3d targetPose) {
-        return cornerOffsets.stream()
-            .map(t -> targetPose.plus(new Transform3d(t, new Rotation3d())).getTranslation())
-            .collect(Collectors.toList());
-    }
-
-    /**
-     * This target's corners offset from its field pose, which is facing the camera.
-     */
-    public List<Translation3d> getAgnosticFieldCorners(Pose3d cameraPose, Pose3d targetPose) {
-        var rel = new CameraTargetRelation(cameraPose, targetPose);
-        // this target's pose but facing the camera pose
-        var facingPose = new Pose3d(
-            targetPose.getTranslation(),
-            new Rotation3d(0, rel.camToTargPitch.getRadians(), rel.camToTargYaw.getRadians())
-        );
-        // find field corners based on this model's width/height if it was facing the camera
-        return TargetModel.ofPlanarRect(widthMeters, heightMeters)
-            .getFieldCorners(facingPose);
+    public List<Translation3d> getFieldVertices(Pose3d targetPose) {
+        return vertices.stream()
+                .map(t -> targetPose.plus(new Transform3d(t, new Rotation3d())).getTranslation())
+                .collect(Collectors.toList());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(this == obj) return true;
-        if(obj instanceof TargetModel) {
-            var o = (TargetModel)obj;
-            return cornerOffsets.equals(o.cornerOffsets) &&
-                    widthMeters == o.widthMeters &&
-                    heightMeters == o.heightMeters &&
-                    areaSqMeters == o.areaSqMeters;
+        if (this == obj)
+            return true;
+        if (obj instanceof TargetModel) {
+            var o = (TargetModel) obj;
+            return vertices.equals(o.vertices) && isPlanar == o.isPlanar && isSpherical == o.isSpherical;
         }
         return false;
     }

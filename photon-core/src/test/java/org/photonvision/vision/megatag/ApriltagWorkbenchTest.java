@@ -81,7 +81,7 @@ public class ApriltagWorkbenchTest {
             SmartDashboard.putNumberArray("seenTags", data.toArray(new Double[] {}));
 
             // multi-target solvePNP
-            if (result.getTargets().size() > 0) {
+            if (result.getTargets().size() > 1) {
                 data.clear();
                 visCorners.stream().forEach(it -> data.addAll(List.of(
                         it.x)));
