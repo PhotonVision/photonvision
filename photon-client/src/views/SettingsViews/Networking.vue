@@ -36,6 +36,7 @@
         name="IP"
       />
       <CVinput
+        v-show="$store.state.settings.networkSettings.shouldManage"
         v-model="hostname"
         :input-cols="inputCols"
         :rules="[v => isHostname(v) || 'Invalid hostname']"
