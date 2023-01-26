@@ -55,7 +55,8 @@ public class NetworkConfig {
 
     @JsonCreator
     public NetworkConfig(
-            @JsonProperty("ntServerAddress") @JsonAlias({"ntServerAddress", "teamNumber"}) String ntServerAddress,
+            @JsonProperty("ntServerAddress") @JsonAlias({"ntServerAddress", "teamNumber"})
+                    String ntServerAddress,
             @JsonProperty("connectionType") NetworkMode connectionType,
             @JsonProperty("staticIp") String staticIp,
             @JsonProperty("hostname") String hostname,

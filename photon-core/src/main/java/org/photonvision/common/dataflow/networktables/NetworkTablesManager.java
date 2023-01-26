@@ -125,7 +125,8 @@ public class NetworkTablesManager {
             if (!isRetryingConnection) logger.info("Starting NT Client, server team is " + t);
             ntInstance.setServerTeam(t);
         } catch (NumberFormatException e) {
-            if (!isRetryingConnection) logger.info("Starting NT Client, server IP is \"" + ntServerAddress + "\"");
+            if (!isRetryingConnection)
+                logger.info("Starting NT Client, server IP is \"" + ntServerAddress + "\"");
             ntInstance.setServer(ntServerAddress);
         }
         ntInstance.startDSClient();
