@@ -292,7 +292,7 @@ export default {
 .infoTable{
   border: 1px solid;
   border-collapse: separate;
-  border-spacing: 0px;
+  border-spacing: 0;
   border-radius: 5px;
   text-align: left;
   margin-bottom: 10px;
@@ -302,10 +302,7 @@ export default {
 }
 
 .infoElem {
-  padding-right: 15px;
-  padding-bottom: 1px;
-  padding-top: 1px;
-  padding-left: 10px;
+  padding: 1px 15px 1px 10px;
   border-right: 1px solid;
   font-weight: normal;
 }

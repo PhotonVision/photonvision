@@ -319,7 +319,7 @@ export default {
 .infoTable {
   border: 1px solid;
   border-collapse: separate;
-  border-spacing: 0px;
+  border-spacing: 0;
   border-radius: 5px;
   text-align: left;
   margin-bottom: 10px;
