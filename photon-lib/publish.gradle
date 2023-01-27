@@ -59,10 +59,10 @@ task cppHeadersZip(type: Zip) {
     }
 }
 
-task cppSourceZip(type: Zip) {
+task cppSourcesZip(type: Zip) {
     destinationDirectory = outputsFolder
     archiveBaseName = zipBaseName
-    classifier = "source"
+    classifier = "sources"
 
     from(licenseFile) {
         into '/'
@@ -75,8 +75,8 @@ task cppSourceZip(type: Zip) {
 
 build.dependsOn cppHeadersZip
 addTaskToCopyAllOutputs(cppHeadersZip)
-build.dependsOn cppSourceZip
-addTaskToCopyAllOutputs(cppSourceZip)
+build.dependsOn cppSourcesZip
+addTaskToCopyAllOutputs(cppSourcesZip)
 
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
@@ -162,7 +162,7 @@ model {
                     artifact it
                 }
                 artifact cppHeadersZip
-                artifact cppSourceZip
+                artifact cppSourcesZip
 
                 artifactId = "${baseArtifactId}-cpp"
                 groupId artifactGroupId
