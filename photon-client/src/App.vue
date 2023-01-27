@@ -16,12 +16,12 @@
               v-if="!compact"
               class="logo"
               src="./assets/logoLarge.png"
-            >
+             alt="large logo">
             <img
               v-else
               class="logo"
               src="./assets/logoSmall.png"
-            >
+             alt="small logo">
           </v-list-item-icon>
         </v-list-item>
 

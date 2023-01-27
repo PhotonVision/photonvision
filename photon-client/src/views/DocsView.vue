@@ -4,6 +4,7 @@
     height="100%"
     width="100%"
   >
+    <!--suppress HtmlUnknownTarget -->
     <iframe
       src="docs/index.html"
       frameborder="0"
