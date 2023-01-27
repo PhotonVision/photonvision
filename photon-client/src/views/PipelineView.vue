@@ -62,7 +62,7 @@
                     ref="streams"
                     :idx="idx"
                     :disconnected="!$store.state.backendConnected"
-                    scale="100"
+                    scale="95"
                     :max-height="$store.getters.isDriverMode ? '40vh' : '300px'"
                     :max-height-md="$store.getters.isDriverMode ? '50vh' : '380px'"
                     :max-height-lg="$store.getters.isDriverMode ? '55vh' : '390px'"
