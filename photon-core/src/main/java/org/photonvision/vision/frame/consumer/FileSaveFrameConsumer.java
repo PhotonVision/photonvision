@@ -17,8 +17,10 @@
 
 package org.photonvision.vision.frame.consumer;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -35,8 +37,17 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
     // Formatters to generate unique, timestamped file names
     private static String FILE_PATH = ConfigManager.getInstance().getImageSavePath().toString();
     private static String FILE_EXTENSION = ".jpg";
+
+    private final NetworkTable fmsTable =
+            NetworkTablesManager.getInstance().getNTInst().getTable("FMSInfo");
+
     DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
     DateFormat tf = new SimpleDateFormat("hhmmssSS");
+    private final NetworkTableEntry ntMatchNum;
+    private final NetworkTableEntry ntMatchType;
+    private final String[] matchTypes = {
+        "N/A", "P", "Q", "E", "EV"
+    }; // match type's values from the FMS.
     private final String NT_SUFFIX = "SaveImgCmd";
     private final String ntEntryName;
     private NetworkTable subTable;
@@ -51,6 +62,8 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         this.fnamePrefix = camNickname + "_" + streamPrefix;
         this.ntEntryName = streamPrefix + NT_SUFFIX;
         this.rootTable = NetworkTablesManager.getInstance().kRootTable;
+        this.ntMatchNum = fmsTable.getEntry("MatchNumber");
+        this.ntMatchType = fmsTable.getEntry("MatchType");
         updateCameraNickname(camNickname);
         this.logger = new Logger(FileSaveFrameConsumer.class, this.camNickname, LogGroup.General);
     }
@@ -72,6 +85,8 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
                                     + df.format(now)
                                     + "T"
                                     + tf.format(now)
+                                    + "_"
+                                    + getMatchData()
                                     + FILE_EXTENSION;
 
                     // write to file
@@ -101,5 +116,18 @@ public class FileSaveFrameConsumer implements Consumer<CVMat> {
         this.subTable = rootTable.getSubTable(this.camNickname);
         this.subTable.getEntry(ntEntryName).setInteger(imgSaveCountInternal);
         this.entry = subTable.getIntegerTopic(ntEntryName).getEntry(-1); // Default negative
+    }
+
+    private String getMatchData() {
+        /**
+         * Returns the match Data collected from the NT. eg : Q58 for qualfication match 58. If not in
+         * event, returns N/A-0
+         */
+        int matchTypeIndex = (int) ntMatchType.getDouble(0);
+        matchTypeIndex = MathUtil.clamp(matchTypeIndex, 0, matchTypes.length - 1);
+
+        String matchType = matchTypes[matchTypeIndex];
+        String matchNum = String.valueOf(ntMatchNum.getDouble(0));
+        return matchType + "-" + matchNum;
     }
 }

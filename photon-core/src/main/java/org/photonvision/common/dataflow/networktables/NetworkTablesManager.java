@@ -76,6 +76,10 @@ public class NetworkTablesManager {
         }
     }
 
+    public NetworkTableInstance getNTInst() {
+        return ntInstance;
+    }
+
     public void broadcastConnectedStatus() {
         TimedTaskManager.getInstance().addOneShotTask(this::broadcastConnectedStatusImpl, 1000L);
     }
