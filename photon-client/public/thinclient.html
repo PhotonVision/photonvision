@@ -87,8 +87,8 @@
 
             animationLoop(){
                 // Update time metrics
-                var now = window.performance.now();
-                var timeInState  = now - this.dsm_restart_start_time;
+                const now = window.performance.now();
+                const timeInState = now - this.dsm_restart_start_time;
 
                 // Save previous state
                 this.dsm_prev_state = this.dsm_cur_state;
@@ -160,35 +160,35 @@
 
                 //take current-state or state-transition actions
 
-                if(this.dsm_cur_state != this.dsm_prev_state){
+                if(this.dsm_cur_state !== this.dsm_prev_state){
                     //Any state transition
                     console.log("State Change: " + this.dsm_prev_state + " -> " + this.dsm_cur_state);
                 }
 
-                if(this.dsm_cur_state == this.DSM_SHOWING){
+                if(this.dsm_cur_state === this.DSM_SHOWING){
                     // Currently in SHOWING
                     this.dispImageData();
                 }
 
-                if(this.dsm_cur_state != this.DSM_SHOWING && this.dsm_prev_state == this.DSM_SHOWING ){
+                if(this.dsm_cur_state !== this.DSM_SHOWING && this.dsm_prev_state === this.DSM_SHOWING ){
                     //Any transition out of showing - no stream
                     this.dispNoStream();
                 }
 
-                if(this.dsm_cur_state == this.DSM_RESTART_UNSUBSCRIBE){
+                if(this.dsm_cur_state === this.DSM_RESTART_UNSUBSCRIBE){
                     // Currently in UNSUBSCRIBE, do the unsubscribe actions
                     this.stopStream();
                     this.dsm_restart_start_time = now;
                 }
 
-                if(this.dsm_cur_state == this.DSM_SUBSCRIBE){
+                if(this.dsm_cur_state === this.DSM_SUBSCRIBE){
                     // Currently in SUBSCRIBE, do the subscribe actions
                     this.startStream();
                     this.dsm_restart_start_time = now;
                 }
 
-                if(this.dsm_cur_state == this.DSM_WAIT_FOR_VALID_PORT){
-                    // Currently waiting for a vaild port to be requested
+                if(this.dsm_cur_state === this.DSM_WAIT_FOR_VALID_PORT){
+                    // Currently waiting for a valid port to be requested
                     if(this.newStreamPortReq != null){
                         this.streamPort = this.newStreamPortReq;
                         this.newStreamPortReq = null;
@@ -275,11 +275,11 @@
 
         }
 
-        var stream = null;
+        let stream = null;
 
         function streamStartRequest() {
-            var host = document.getElementById("host").value + ":5800";
-            var port = document.getElementById("port").value;
+            const host = document.getElementById("host").value + ":5800";
+            const port = document.getElementById("port").value;
             if(stream == null){
                 stream = new WebsocketVideoStream("streamImg",port,host);
             } else {
@@ -296,15 +296,15 @@
         const urlParams = new URLSearchParams(queryString);
         const port_in = urlParams.get('port')
         const host_in = urlParams.get('host')
-        if(port_in != ""){
+        if(port_in !== ""){
             document.getElementById("port").value = port_in;
         }
 
-        if(host_in != ""){
+        if(host_in !== ""){
             document.getElementById("host").value = host_in;
         }
 
-        if(port_in != "" && host_in != ""){
+        if(port_in !== "" && host_in !== ""){
             streamStartRequest(); //we got valid inputs, auto-start the stream
         }
 
