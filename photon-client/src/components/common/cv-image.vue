@@ -52,7 +52,7 @@
               get() {
                 var port = this.getCurPort();
                 if(port <= 0){
-                  //Invalid port, keep it spinny
+                  //Invalid port, keep it spiny
                   return require("../../assets/loading.gif");
                 } else {
                   //Valid port, connect

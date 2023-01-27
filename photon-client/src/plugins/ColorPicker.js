@@ -89,7 +89,7 @@ function createRange(HSVColors) {
     return range;//[[Hmin,Smin,Vmin],[Hmax,Smax,Vmax]]
 }
 
-//This function adds 10 extra units to each side of the sliders, not to be confued with the expand selection button
+//This function adds 10 extra units to each side of the sliders, not to be confused with the expand selection button
 function widenRange(range) {
     let expanded = [[], []];
     for (let i = 0; i < 3; i++) {

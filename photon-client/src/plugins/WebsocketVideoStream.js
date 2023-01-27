@@ -10,7 +10,7 @@ class StatsHistoryBuffer{
         this.frameCount = 0;
         this.bitAvgAccum = 0;
 
-        //calculated vals
+        //calculated values
         this.bitRate_Mbps = 0;
         this.framerate_fps = 0;
     }
