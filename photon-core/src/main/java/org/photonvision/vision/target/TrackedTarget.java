@@ -66,8 +66,10 @@ public class TrackedTarget implements Releasable {
         this.m_mainContour = origTarget.m_mainContour;
         this.m_subContours = origTarget.m_subContours;
         this.m_shape = shape;
-        Point[] corners = shape.contour.getConvexHull().toArray();
-        m_targetCorners = List.of(corners);
+        if (shape != null && shape.contour != null) {
+            Point[] corners = shape.contour.getConvexHull().toArray();
+            m_targetCorners = List.of(corners);
+        }
         calculateValues(params);
     }
 
