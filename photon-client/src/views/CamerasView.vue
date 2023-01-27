@@ -324,7 +324,7 @@
         <template>
           <CVimage
             :id="cameras-cal"
-            :idx=1
+            :idx="1"
             :disconnected="!$store.state.backendConnected"
             scale="100"
             style="border-radius: 5px;"
@@ -396,12 +396,16 @@
       accept=".json"
       style="display: none;"
       @change="readImportedCalibration"
-    />
+    >
 
-    <v-snackbar v-model="uploadSnack" top :color="uploadSnackData.color" timeout="-1">
+    <v-snackbar
+      v-model="uploadSnack"
+      top
+      :color="uploadSnackData.color"
+      timeout="-1"
+    >
       <span>{{ uploadSnackData.text }}</span>
     </v-snackbar>
-
   </div>
 </template>
 

@@ -76,7 +76,6 @@
     </v-snackbar>
 
     <template v-if="$store.state.settings.networkSettings.shouldManage && false">
-
       <!-- Advanced controls for changing DHCP settings and stuff -->
       <v-divider class="mt-4 mb-4" />
 
@@ -98,7 +97,6 @@
         :input-cols="inputCols"
         name="Physical interface"
       />
-
     </template>
 
     <!-- TEMP - RIO finder is not currently enabled
