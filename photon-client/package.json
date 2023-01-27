@@ -3,9 +3,9 @@
   "version": "3.0.0",
   "private": true,
   "scripts": {
-    "serve": "cross-env NODE_OPTIONS=--openssl-legacy-provider vue-cli-service serve",
-    "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider vue-cli-service build",
-    "lint": "cross-env NODE_OPTIONS=--openssl-legacy-provider vue-cli-service lint"
+    "serve": "cross-env NODE_OPTIONS=$(node -p 'parseInt(process.version.match(/\\d+/)) > 16 ? `--openssl-legacy-provider` : ``') vue-cli-service serve",
+    "build": "cross-env NODE_OPTIONS=$(node -p 'parseInt(process.version.match(/\\d+/)) > 16 ? `--openssl-legacy-provider` : ``') vue-cli-service build",
+    "lint": "cross-env NODE_OPTIONS=$(node -p 'parseInt(process.version.match(/\\d+/)) > 16 ? `--openssl-legacy-provider` : ``') vue-cli-service lint"
   },
   "dependencies": {
     "@femessage/log-viewer": "^1.4.2",
