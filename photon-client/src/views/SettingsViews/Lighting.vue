@@ -16,6 +16,7 @@
     import CVslider from "../../components/common/cv-slider";
 
     export default {
+        // eslint-disable-next-line
         name: 'LED Control',
         components: {
             CVslider,
