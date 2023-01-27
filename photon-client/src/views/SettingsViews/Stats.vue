@@ -3,16 +3,16 @@
     <v-row class="pa-4">
       <table class="infoTable">
         <tr>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             Version
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             Hardware Model
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             Platform
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             GPU Acceleration
           </th>
         </tr>
@@ -34,19 +34,19 @@
 
       <table class="infoTable">
         <tr>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             CPU Usage
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             CPU Temp
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             CPU Memory Usage
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             GPU Memory Usage
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             Disk Usage
           </th>
           <th class="infoElem">
@@ -54,9 +54,10 @@
               <template v-slot:activator="{ on, attrs }">
                 <span
                   v-bind="attrs"
+                  class="infoElemTitle"
                   v-on="on"
                 >
-                  ⓘ CPU Throttling
+                  CPU Throttling
                 </span>
               </template>
               <span>
@@ -64,7 +65,7 @@
               </span>
             </v-tooltip>
           </th>
-          <th class="infoElem">
+          <th class="infoElem infoElemTitle">
             CPU Uptime
           </th>
         </tr>
@@ -306,6 +307,13 @@ export default {
   padding-top: 1px;
   padding-left: 10px;
   border-right: 1px solid;
+  font-weight: normal;
+}
+
+.infoElemTitle {
+  font-size: 18px;
+  text-decoration: underline;
+  text-decoration-color: #ffd843;
 }
 
 </style>
