@@ -15,13 +15,13 @@
             <img
               v-if="!compact"
               class="logo"
-              src="./assets/logoLarge.png"
+              src="@/assets/logos/logoLarge.png"
               alt="large logo"
             >
             <img
               v-else
               class="logo"
-              src="./assets/logoSmall.png"
+              src="@/assets/logos/logoSmall.png"
               alt="small logo"
             >
           </v-list-item-icon>
@@ -101,14 +101,14 @@
               </v-icon>
               <img
                 v-else-if="$store.state.ntConnectionInfo.connected"
-                src="@/assets/robot.svg"
+                src="@/assets/icons/robot.svg"
                 alt=""
               >
               <img
                 v-else
                 class="pulse"
                 style="border-radius: 100%"
-                src="@/assets/robot-off.svg"
+                src="@/assets/icons/robot-off.svg"
                 alt=""
               >
             </v-list-item-icon>

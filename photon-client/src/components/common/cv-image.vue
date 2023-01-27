@@ -34,7 +34,7 @@
                       "margin-right": "auto",
                       "max-height": this.maxHeight,
                       height: `${this.scale}%`,
-                      cursor: (this.colorPicking ? `url(${require("../../assets/eyedropper.svg")}),` : "pointer") + "default",
+                      cursor: (this.colorPicking ? `url(${require("../../assets/icons/eyedropper.svg")}),` : "pointer") + "default",
                     };
 
                     if (this.$vuetify.breakpoint.xl) {

@@ -742,7 +742,7 @@ export default {
 
           // Add branding
           const logoImage = new Image();
-          logoImage.src = require('@/assets/logoMono.png');
+          logoImage.src = require('@/assets/logos/logoMono.png');
           doc.addImage(logoImage, 'PNG', 1.0, 0.75, 1.4, 0.5);
 
           doc.text(`${config.boardWidthIn} x ${config.boardHeightIn} | ${config.patternSpacingIn}in`, paperWidth - 1, 1.0,
