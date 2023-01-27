@@ -159,7 +159,7 @@
 
 <script>
 export default {
-  name: "DeviceControl",
+  name: "Device Control",
   data() {
     return {
       snack: false,

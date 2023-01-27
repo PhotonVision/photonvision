@@ -16,7 +16,7 @@
     import CVslider from "../../components/common/cv-slider";
 
     export default {
-        name: 'LEDs',
+        name: 'LED Control',
         components: {
             CVslider,
         },
