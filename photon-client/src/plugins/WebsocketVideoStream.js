@@ -17,23 +17,23 @@ class StatsHistoryBuffer{
 
     putAndPop(v){
         this.headPtr++;
-        var idx = (this.headPtr)%this._array.length;
-        var poppedVal = this._array[idx];
+        const idx = (this.headPtr) % this._array.length;
+        const poppedVal = this._array[idx];
         this._array[idx] = v;
         return poppedVal;
     }
 
     addSample(time, frameSize_bits, dispFrame_count) {
-        var oldVal = this.putAndPop([time, frameSize_bits, dispFrame_count]);
+        const oldVal = this.putAndPop([time, frameSize_bits, dispFrame_count]);
 
         this.bitAvgAccum += frameSize_bits;
 
         if(oldVal !=null){
-            var oldTime = oldVal[0];
-            var oldFrameSize = oldVal[1];
-            var oldFrameCount = oldVal[2];
+            const oldTime = oldVal[0];
+            const oldFrameSize = oldVal[1];
+            const oldFrameCount = oldVal[2];
 
-            var deltaTime_s = (time - oldTime);
+            const deltaTime_s = (time - oldTime);
 
             this.bitAvgAccum -= oldFrameSize;
 
@@ -128,7 +128,7 @@ export class WebsocketVideoStream{
         if(this.prevImgDataTime !== this.imgDataTime){
             //From https://stackoverflow.com/questions/67507616/set-image-src-from-image-blob/67507685#67507685
             //Ensure uniqueness by making the new one before revoking the old one.
-            var oldURL = this.imgObjURL
+            const oldURL = this.imgObjURL;
             this.imgObjURL = URL.createObjectURL(this.imgData);
             if(oldURL != null){
                 URL.revokeObjectURL(oldURL)
@@ -148,8 +148,8 @@ export class WebsocketVideoStream{
 
     animationLoop(){
         // Update time metrics
-        var curTime_s = window.performance.now() / 1000.0;
-        var timeInState  = curTime_s - this.dsm_restart_start_time;
+        const curTime_s = window.performance.now() / 1000.0;
+        const timeInState = curTime_s - this.dsm_restart_start_time;
 
         // Save previous state
         this.dsm_prev_state = this.dsm_cur_state;
@@ -315,7 +315,7 @@ export class WebsocketVideoStream{
 
     ws_onMessage(e){
         //console.log("Got message from " + this.serverAddr)
-        var msgTime_s = window.performance.now() / 1000.0;
+        const msgTime_s = window.performance.now() / 1000.0;
         if(typeof e.data === 'string'){
             //string data from host
             //TODO - anything to receive info here? Maybe "available streams?"

@@ -1,5 +1,5 @@
-var canvas = undefined;
-var image = undefined;
+let canvas = undefined;
+let image = undefined;
 
 function initColorPicker() {
     if (!canvas)
@@ -78,10 +78,10 @@ function RGBtoHSV(numbers) {
 //Loops though the colors array, finds the smallest and biggest value for H,S and V. Returns the range containing every color
 function createRange(HSVColors) {
     let range = [[], []];
-    for (var i = 0; i < 3; i++) {
+    for (let i = 0; i < 3; i++) {
         range[0][i] = HSVColors[0][i];
         range[1][i] = HSVColors[0][i];
-        for (var j = HSVColors.length - 1; j >= 0; j--) {
+        for (let j = HSVColors.length - 1; j >= 0; j--) {
             range[0][i] = Math.min(HSVColors[j][i], range[0][i]);
             range[1][i] = Math.max(HSVColors[j][i], range[1][i]);
         }

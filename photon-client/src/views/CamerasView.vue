@@ -478,7 +478,7 @@ export default {
         calibrationDivisors: {
           get() {
             return this.unfilteredStreamDivisors.filter(item => {
-              var res = this.stringResolutionList[this.selectedFilteredResIndex].split(" X ").map(it => parseInt(it));
+              const res = this.stringResolutionList[this.selectedFilteredResIndex].split(" X ").map(it => parseInt(it));
               console.log(res);
               console.log(item);
               // Realistically, we need more than 320x240, but lower than this is

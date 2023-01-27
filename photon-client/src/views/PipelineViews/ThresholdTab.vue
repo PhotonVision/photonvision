@@ -149,9 +149,9 @@ export default {
     },
     averageHue: {
       get() {
-        var isInverted = this.$store.getters.currentPipelineSettings.hueInverted;
+        const isInverted = this.$store.getters.currentPipelineSettings.hueInverted;
         const arr = this.$store.getters.currentPipelineSettings.hsvHue;
-        var retVal = 0;
+        let retVal = 0;
 
         if (Array.isArray(arr)) {
           retVal = (arr[0] + arr[1]);
