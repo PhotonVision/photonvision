@@ -669,98 +669,85 @@ export default {
             });
             return ret;
         },
+
         downloadBoard() {
-            // Generates a .pdf of a board for calibration and downloads it
+          const config = {
+            type: this.boardType === 0 ? "chessboard" : "dotgrid",
+            boardWidthIn: this.boardWidth,
+            boardHeightIn: this.boardHeight,
+            patternSpacingIn: this.squareSizeIn
+          }
 
-            //Murica paper.
-            var doc = new jsPDF({unit: 'in', format:'letter'});
-            var paper_x = 8.5;
-            var paper_y = 11.0;
+          const doc = new jsPDF({ unit: "in", format: "letter" })
 
-            //Load in custom fonts
-            console.log(doc.getFontList());
-            doc.setFont('Prompt-Regular');
-            doc.setFontSize(12);
+          doc.setFont("Prompt-Regular")
+          doc.setFontSize(12)
 
-            // Common Parameters
-            var num_x = this.boardWidth;
-            var num_y = this.boardHeight;
-            var patternSize = this.squareSizeIn;
-            var isCheckerboard = (this.boardType==0);
+          const paperWidth = 8.5
+          const paperHeight = 11.0
 
-            var x_coord = 0.0;
-            var y_coord = 0.0;
-            var x_idx = 0;
-            var y_idx = 0;
-            var start_x = 0;
-            var start_y = 0;
+          // Draw the selected pattern to the document
+          switch (config.type) {
+            case "chessboard":
+              // eslint-disable-next-line no-case-declarations
+              const chessboardStartX = (paperWidth - config.boardWidthIn * config.patternSpacingIn) / 2
+              // eslint-disable-next-line no-case-declarations
+              const chessboardStartY = (paperHeight - config.boardWidthIn * config.patternSpacingIn) / 2
 
-            var annotation = num_x + " x " + num_y + " | " + patternSize + "in "
+              for (let squareY = 0; squareY < config.boardHeightIn; squareY++) {
+                for (let squareX = 0; squareX < config.boardWidthIn; squareX++) {
+                  const xPos = chessboardStartX + squareX * config.patternSpacingIn
+                  const yPos = chessboardStartY + squareY * config.patternSpacingIn
 
-            if(isCheckerboard){
-              ///////////////////////////////////////////
-              // Checkerboard Pattern
-
-              start_x = paper_x/2.0 - (num_x * patternSize)/2.0;
-              start_y = paper_y/2.0 - (num_y * patternSize)/2.0;
-
-              for(y_idx = 0; y_idx < num_y; y_idx++){
-                for(x_idx = 0; x_idx < num_x; x_idx++){
-
-                  x_coord = start_x + x_idx * patternSize;
-                  y_coord = start_y + y_idx * patternSize;
-                  if((x_idx + y_idx) % 2 == 0){
-                    doc.rect(x_coord, y_coord, patternSize, patternSize, "F");
+                  // Only draw the odd squares to create the chessboard pattern
+                  if ((xPos + yPos + 0.25) % 2 === 0) {
+                    doc.rect(xPos, yPos, config.patternSpacingIn, config.patternSpacingIn, "F")
                   }
                 }
               }
+              break
+            case "dotgrid":
+              // eslint-disable-next-line no-case-declarations
+              const dotgridStartX = (paperWidth - (2 * (config.boardWidthIn - 1) + ((config.boardHeightIn - 1) % 2)) * config.patternSpacingIn) / 2.0
+              // eslint-disable-next-line no-case-declarations
+              const dotgridStartY = (paperHeight - (config.boardHeightIn - config.patternSpacingIn)) / 2
 
-            } else {
-              ///////////////////////////////////////////
-              // Assymetric Dot-Grid Pattern
-              // see https://github.com/opencv/opencv/blob/b450dd7a87bc69997a8417d94bdfb87427a9fe62/modules/calib3d/src/circlesgrid.cpp#L437
-              // as well as FindBoardCornersPipe.java's Dotboard implementation
+              for (let squareY = 0; squareY < config.boardHeightIn; squareY++) {
+                for (let squareX = 0; squareX < config.boardWidthIn; squareX++) {
+                  const xPos = dotgridStartX + (2 * squareX + (squareY % 2)) * config.patternSpacingIn
+                  const yPos = dotgridStartY + squareY * config.patternSpacingIn
 
-              start_x = paper_x/2.0 - ((2*(num_x-1) + (num_y-1) % 2) * patternSize)/2.0;
-              start_y = paper_y/2.0 - (num_y-1 * patternSize)/2.0;
-
-              // Dot Grid Pattern
-              for(y_idx = 0; y_idx < num_y; y_idx++){
-                for(x_idx = 0; x_idx < num_x; x_idx++){
-                  x_coord = start_x + (2*x_idx + y_idx % 2) * patternSize;
-                  y_coord = start_y + y_idx * patternSize;
-                  doc.circle(x_coord, y_coord, patternSize/4.0, "F");
+                  doc.circle(xPos, yPos, config.patternSpacingIn / 4, "F")
                 }
               }
-            }
+              break
+          }
 
-            ///////////////////////////////////////////
-            // Draw a fixed size inch ruler pattern to
-            // help users debug their printers
-            var lineStartX = 1.0;
-            var lineEndX = paper_x - lineStartX;
-            var lineY = paper_y - 1.0;
-            doc.setFont('Prompt-Regular');
-            doc.setLineWidth(0.01);
-            doc.line(lineStartX, lineY, lineEndX, lineY);
-            var segIdx = 0;
-            for(var tickX = lineStartX; tickX <= lineEndX; tickX += 1.0){
-              doc.line(tickX, lineY, tickX, lineY + 0.25);
-              doc.text(String(segIdx) + (segIdx == 0 ? " in" : ""), tickX + 0.1, lineY + 0.25);
-              segIdx++;
-            }
+          // Draw ruler pattern
+          const lineStartX = 1.0
+          const lineEndX = paperWidth - lineStartX
+          const lineY = paperHeight - 1.0
 
+          doc.setLineWidth(0.01)
+          doc.line(lineStartX, lineY, lineEndX, lineY)
 
-            ///////////////////////////////////////////
-            // Annotate what was drawn + branding
-            var img = new Image();
-            img.src = require('@/assets/logoMono.png');
-            doc.addImage(img, 'PNG', 1.0, 0.75, 1.4, 0.5 );
-            doc.setFont('Prompt-Regular');
-            doc.text(annotation, paper_x-1.0, 1.0, {maxWidth:(paper_x - 2.0)/2, align:"right"});
+          for (let tickX = lineStartX; tickX <= lineEndX; tickX++) {
+            doc.line(tickX, lineY, tickX, lineY + 0.25)
+            doc.text(`${tickX - 1}${tickX - 1 === 0 ? " in" : ""}`, tickX + 0.1, lineY + 0.25)
+          }
 
-            doc.save("calibrationTarget.pdf");
+          // Add branding
+          const logoImage = new Image();
+          logoImage.src = require('@/assets/logoMono.png');
+          doc.addImage(logoImage, 'PNG', 1.0, 0.75, 1.4, 0.5);
 
+          doc.text(`${config.boardWidthIn} x ${config.boardHeightIn} | ${config.patternSpacingIn}in`, paperWidth - 1, 1.0,
+              {
+                maxWidth: (paperWidth - 2.0) / 2,
+                align: "right",
+              }
+          )
+          doc.save(`calibrationTarget-${config.type}.pdf`)
         },
         sendCameraSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
