@@ -46,8 +46,8 @@ function expand(pixel, currentRange) {
 function shrink(pixel, currentRange) {
     let hsv = RGBtoHSV(pixel);
     let widenHSV = widenRange([[].concat(hsv), hsv]);
-    if (!shrinkRange(currentRange, widenHSV[0]))//Tries to shrink the lower part of the widen HSV
-        shrinkRange(currentRange, widenHSV[1]);//If the prev attempt failed, try to shrink the higher part of the widen HSV
+    if (!shrinkRange(currentRange, widenHSV[0])) //Tries to shrink the lower part of to widened HSV
+        shrinkRange(currentRange, widenHSV[1]); //If the prev attempt failed, try to shrink the higher part of to widened HSV
     return currentRange
 }
 

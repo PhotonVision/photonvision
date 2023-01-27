@@ -407,7 +407,7 @@ export default {
       }
     },
     selectedOutputs: {
-      // All this logic exists to deal with the reality that the output select buttons sometimes need an array and sometimes need a number (depending on whether or not they're exclusive)
+      // All this logic exists to deal with the reality that the output select buttons sometimes need an array and sometimes need a number (depending on whether they're exclusive)
       get() {
         // We switch the selector to single-select only on sm-and-down size devices, so we have to return a Number instead of an Array in that state
         let ret = [];
@@ -444,7 +444,7 @@ export default {
     },
     fpsTooLow: {
       get() {
-        // For now we only show the FPS is too low warning when GPU acceleration is enabled, because we don't really trust the presented video modes otherwise
+        // For now, we only show the FPS is too low warning when GPU acceleration is enabled, because we don't really trust the presented video modes otherwise
         const currFPS = this.$store.state.pipelineResults.fps;
         const targetFPS = this.$store.getters.currentVideoFormat.fps;
         const driverMode = this.$store.getters.isDriverMode;
