@@ -28,10 +28,10 @@
               Cameras
               <v-chip
                 :class="fpsTooLow ? 'ml-2 mt-1' : 'mt-2'"
-                x-small
                 label
                 :color="fpsTooLow ? 'error' : 'transparent'"
-                :text-color="fpsTooLow ? 'white' : 'grey'"
+                :text-color="fpsTooLow ? 'white' : 'red'"
+                style="font-size: 14px"
               >
                 <span class="pr-1">Processing @ {{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
                 <span v-if="fpsTooLow && !$store.getters.currentPipelineSettings.inputShouldShow && $store.getters.pipelineType === 2">HSV thresholds are too broad; narrow them for better performance</span>
