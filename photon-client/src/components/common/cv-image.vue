@@ -72,7 +72,7 @@
                 port = -1;
               } else {
                 //Connected - get the port
-                if(this.id == 'raw-stream'){
+                if(this.id === 'raw-stream'){
                   port = this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].inputStreamPort
                 } else {
                   port = this.$store.state.cameraSettings[this.$store.state.currentCameraIndex].outputStreamPort
