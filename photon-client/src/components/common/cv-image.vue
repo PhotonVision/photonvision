@@ -53,7 +53,7 @@
                 const port = this.getCurPort();
                 if(port <= 0){
                   //Invalid port, keep it spiny
-                  return require("../../assets/loading.gif");
+                  return require("../../assets/loading.svg");
                 } else {
                   //Valid port, connect
                   return this.getSrcURLFromPort(port);
