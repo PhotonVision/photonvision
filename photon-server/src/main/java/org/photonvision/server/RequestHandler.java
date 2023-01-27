@@ -320,7 +320,7 @@ public class RequestHandler {
     public static void autofocusCamera(Context ctx) {
         try {
             var data = kObjectMapper.readValue(ctx.body(), HashMap.class);
-            int idx = Integer.parseInt(String.valueOf(data.get("cameraIndex")));
+            int idx = Integer.parseInt(String.valueOf(data.get("index")));
             VisionModuleManager.getInstance().getModule(idx).autofocus();
             ctx.status(200);
             return;
@@ -334,7 +334,7 @@ public class RequestHandler {
     public static void getAutofocusStatus(Context ctx) {
         try {
             var data = kObjectMapper.readValue(ctx.body(), HashMap.class);
-            int idx = Integer.parseInt(String.valueOf(data.get("cameraIndex")));
+            int idx = Integer.parseInt(String.valueOf(data.get("index")));
             int status = VisionModuleManager.getInstance().getModule(idx).getAutofocusStatus();
             ctx.result(String.valueOf(status));
             ctx.status(200);

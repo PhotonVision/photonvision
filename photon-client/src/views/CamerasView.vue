@@ -343,7 +343,7 @@
             style="border-radius: 5px;"
           />
           <v-dialog
-            v-model="snack"
+            v-model="calibrationSnack"
             width="500px"
             :persistent="true"
           >
@@ -382,6 +382,77 @@
                       mdi-close
                     </v-icon>
                     <v-card-text>Camera calibration failed! Make sure that the photos are taken such that the rainbow grid circles align with the corners of the chessboard, and try again. More information is available in the program logs.</v-card-text>
+                  </template>
+                </v-col>
+              </div>
+              <v-card-actions>
+                <v-spacer />
+                <v-btn
+                  v-if="!calibrationInProgress || calibrationFailed"
+                  color="white"
+                  text
+                  @click="closeDialog"
+                >
+                  OK
+                </v-btn>
+              </v-card-actions>
+            </v-card>
+          </v-dialog>
+        </template>
+      </v-col>
+      <v-col
+        class="pl-md-3 pt-3 pt-md-0"
+        cols="12"
+        md="5"
+      >
+        <template>
+          <CVimage
+            :id="cameras-focus"
+            :idx=1
+            :disconnected="!$store.state.backendConnected"
+            scale="100"
+            style="border-radius: 5px;"
+          />
+          <v-dialog
+            v-model="focusSnack"
+            width="500px"
+            :persistent="true"
+          >
+            <v-card
+              color="primary"
+              dark
+            >
+              <v-card-title> Camera Autofocus </v-card-title>
+              <div
+                class="ml-3"
+              >
+                <v-col align="center">
+                  <template v-if="focusInProgress && !focusFailed">
+                    <v-progress-circular
+                      indeterminate
+                      :size="70"
+                      :width="8"
+                      color="accent"
+                    />
+                    <v-card-text>Camera is being autofocused...</v-card-text>
+                  </template>
+                  <template v-else-if="!focusFailed">
+                    <v-icon
+                      color="green"
+                      size="70"
+                    >
+                      mdi-check-bold
+                    </v-icon>
+                    <v-card-text>Camera has been successfully focused!</v-card-text>
+                  </template>
+                  <template v-else>
+                    <v-icon
+                      color="red"
+                      size="70"
+                    >
+                      mdi-close
+                    </v-icon>
+                    <v-card-text>Camera focus failed! This is likely due to your camera not supporting autofocus. More information is available in the program logs.</v-card-text>
                   </template>
                 </v-col>
               </div>
@@ -440,9 +511,13 @@ export default {
     },
     data() {
         return {
-            snack: false,
+            calibrationSnack: false,
+            focusSnack: false,
             calibrationInProgress: false,
             calibrationFailed: false,
+            focusInProgress: false,
+            focusFailed: false,
+            focusQueryInterval: null,
             filteredVideomodeIndex: 0,
             settingsValid: true,
             unfilteredStreamDivisors: [1, 2, 4],
@@ -668,9 +743,15 @@ export default {
     },
 
         closeDialog() {
-            this.snack = false;
+            this.calibrationSnack = false;
+            this.focusSnack = false;
+            
+            this.focusInProgress = false;
+            this.focusFailed = false;
             this.calibrationInProgress = false;
             this.calibrationFailed = false;
+           
+           clearInterval(this.focusQueryInterval);
         },
         getCalibrationCoeffs(resolution) {
             const calList = this.$store.getters.calibrationList;
@@ -776,12 +857,42 @@ export default {
 
         },
         focusCamera() {
-          this.axios.post("http://" + this.$address + "/api/doesCameraSupportsAutofocus", {
-              "index": this.$store.state.currentCameraIndex
+          this.focusSnack = true;
+          this.focusFailed = false;
+          this.focusInProgress = true;
+          
+          this.axios.post("http://" + this.$address + "/api/autofocusCamera", {
+                "index": this.$store.state.currentCameraIndex
+          }).then(()=> {
+              // check every 500ms
+                this.focusQueryInterval = setInterval(()=>this.checkFocusStatus(), 500) 
+              }
+            ).catch(res=>{
+              this.focusFailed = true;
+              clearInterval(this.focusQueryInterval);
+              console.error(res)
+            })
+        },
+        checkFocusStatus() {
+          console.log("Checking focus status...");
+          this.axios.post("http://" + this.$address + "/api/getAutofocusStatus", {
+                "index": this.$store.state.currentCameraIndex
           }).then(response => {
-            if (response.status != 200 || response
-            }
-          )
+              if(response == null || response.data == null || response.data == -1 || response.data == 0 || response.data == 3) {
+                this.focusFailed = true;
+                clearInterval(this.focusQueryInterval);
+                console.error(response)
+              } else if (response.data == 2) {
+                this.focusFailed = false;
+                clearInterval(this.focusQueryInterval);
+                this.focusInProgress = false;
+              }
+              }
+            ).catch(res=>{
+              this.focusFailed = true;
+              clearInterval(this.focusQueryInterval);
+              console.error(res)
+            })
         },
         sendCameraSettings() {
             this.axios.post("http://" + this.$address + "/api/settings/camera", {
@@ -821,7 +932,7 @@ export default {
         sendCalibrationFinish() {
             console.log("finishing calibration for index " + this.$store.getters.currentCameraIndex);
 
-            this.snack = true;
+            this.calibrationSnack = true;
             this.calibrationInProgress = true;
 
             this.axios.post("http://" + this.$address + "/api/settings/endCalibration", this.$store.getters.currentCameraIndex)
