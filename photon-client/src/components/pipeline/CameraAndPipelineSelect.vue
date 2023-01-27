@@ -288,7 +288,7 @@ export default {
       return "";
     },
     checkPipelineName() {
-      if (this.newPipelineName !== this.$store.getters.pipelineList[this.currentPipelineIndex - 1] || this.isPipelineNameEdit === false) {
+      if (this.newPipelineName !== this.$store.getters.pipelineList[this.currentPipelineIndex - 1] || !this.isPipelineNameEdit) {
         if (this.re.test(this.newPipelineName)) {
           for (let pipe in this.$store.getters.pipelineList) {
             if (this.$store.getters.pipelineList.hasOwnProperty(pipe)) {

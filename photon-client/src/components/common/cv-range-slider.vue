@@ -106,7 +106,7 @@ export default {
 
       await this.delay(200).then(() => {
         let i = 0;
-        if (this.prependFocused === false && this.appendFocused === true) {
+        if (!this.prependFocused && this.appendFocused) {
           i = 1;
         }
 

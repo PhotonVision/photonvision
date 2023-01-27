@@ -448,7 +448,7 @@ export default {
         const currFPS = this.$store.state.pipelineResults.fps;
         const targetFPS = this.$store.getters.currentVideoFormat.fps;
         const driverMode = this.$store.getters.isDriverMode;
-        const gpuAccel = this.$store.state.settings.general.gpuAcceleration === true;
+        const gpuAccel = this.$store.state.settings.general.gpuAcceleration;
         const isReflective = this.$store.getters.pipelineType === 2;
 
         return (currFPS - targetFPS) < -5 && this.$store.state.pipelineResults.fps !== 0 && !driverMode && gpuAccel && isReflective;
