@@ -73,6 +73,9 @@ public class PhotonPoseEstimator {
     private Pose3d referencePose;
     private final Set<Integer> reportedErrors = new HashSet<>();
 
+    private final static double IMPOSSIBLY_HIGH_POSE_AMBIGUITY = 10.0;
+    private double maximumPoseAmbiguityThreshold = IMPOSSIBLY_HIGH_POSE_AMBIGUITY;
+
     /**
      * Create a new PhotonPoseEstimator.
      *
@@ -184,6 +187,14 @@ public class PhotonPoseEstimator {
     }
 
     /**
+     * Set the maximum PoseAmbiguity a target can have and still be used for pose updates.
+     * @param maximumPoseAmbiguityThreshold
+     */
+    public void setMaximumPoseAmbiguityThreshold(double maximumPoseAmbiguityThreshold) {
+        this.maximumPoseAmbiguityThreshold = maximumPoseAmbiguityThreshold;
+    }
+
+    /**
      * Poll data from the configured cameras and update the estimated position of the robot. Returns
      * empty if there are no cameras set or no targets were found from the cameras.
      *
@@ -200,6 +211,10 @@ public class PhotonPoseEstimator {
         if (!cameraResult.hasTargets()) {
             return Optional.empty();
         }
+
+        // If target Pose Ambiguity is too high (typically due to the camera being distant from the AprilTag), one or
+        // more targets can be optionally removed from consideration.
+        cameraResult.targets.removeIf(target -> target.getPoseAmbiguity() > maximumPoseAmbiguityThreshold);
 
         Optional<EstimatedRobotPose> estimatedPose;
         switch (strategy) {
@@ -241,7 +256,7 @@ public class PhotonPoseEstimator {
     private Optional<EstimatedRobotPose> lowestAmbiguityStrategy(PhotonPipelineResult result) {
         PhotonTrackedTarget lowestAmbiguityTarget = null;
 
-        double lowestAmbiguityScore = 10;
+        double lowestAmbiguityScore = IMPOSSIBLY_HIGH_POSE_AMBIGUITY;
 
         for (PhotonTrackedTarget target : result.targets) {
             double targetPoseAmbiguity = target.getPoseAmbiguity();
