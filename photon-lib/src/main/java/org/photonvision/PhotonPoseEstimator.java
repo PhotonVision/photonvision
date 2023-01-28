@@ -73,7 +73,7 @@ public class PhotonPoseEstimator {
     private Pose3d referencePose;
     private final Set<Integer> reportedErrors = new HashSet<>();
 
-    private final static double IMPOSSIBLY_HIGH_POSE_AMBIGUITY = 10.0;
+    private static final double IMPOSSIBLY_HIGH_POSE_AMBIGUITY = 10.0;
     private double maximumPoseAmbiguityThreshold = IMPOSSIBLY_HIGH_POSE_AMBIGUITY;
 
     /**
@@ -188,6 +188,7 @@ public class PhotonPoseEstimator {
 
     /**
      * Set the maximum PoseAmbiguity a target can have and still be used for pose updates.
+     *
      * @param maximumPoseAmbiguityThreshold
      */
     public void setMaximumPoseAmbiguityThreshold(double maximumPoseAmbiguityThreshold) {
@@ -212,9 +213,11 @@ public class PhotonPoseEstimator {
             return Optional.empty();
         }
 
-        // If target Pose Ambiguity is too high (typically due to the camera being distant from the AprilTag), one or
+        // If target Pose Ambiguity is too high (typically due to the camera being distant from the
+        // AprilTag), one or
         // more targets can be optionally removed from consideration.
-        cameraResult.targets.removeIf(target -> target.getPoseAmbiguity() > maximumPoseAmbiguityThreshold);
+        cameraResult.targets.removeIf(
+                target -> target.getPoseAmbiguity() > maximumPoseAmbiguityThreshold);
 
         Optional<EstimatedRobotPose> estimatedPose;
         switch (strategy) {

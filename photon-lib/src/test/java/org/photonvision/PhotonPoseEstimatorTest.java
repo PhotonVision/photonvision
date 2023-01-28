@@ -559,7 +559,8 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void removeHighAmbiguityPoses() {
-        // Using the same test data as testLowestAmbiguityStrategy, but will manipulate the ambiguity and test thresholds.
+        // Using the same test data as testLowestAmbiguityStrategy, but will manipulate the ambiguity
+        // and test thresholds.
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         setTypicalTestData(cameraOne, 11);
 
@@ -567,7 +568,8 @@ class PhotonPoseEstimatorTest {
                 new PhotonPoseEstimator(
                         aprilTags, PoseStrategy.LOWEST_AMBIGUITY, cameraOne, new Transform3d());
 
-        // Set the threshold quite low. Since the results above have pose ambiguities at 0.7, 0.3, and 0.4, all will be removed.
+        // Set the threshold quite low. Since the results above have pose ambiguities at 0.7, 0.3, and
+        // 0.4, all will be removed.
         estimator.setMaximumPoseAmbiguityThreshold(0.1);
         Optional<EstimatedRobotPose> estimatedPose = estimator.update();
         assertTrue(estimatedPose.isEmpty());
