@@ -84,6 +84,13 @@ public class HardwareManager {
                         ? new StatusLED(hardwareConfig.statusRGBPins)
                         : null;
 
+        if(statusLED != null){
+            logger.debug("Configured 3 status LED's");
+        } else {
+            logger.debug("No Status LED configured");
+        }
+
+
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
                 hardwareConfig.ledPins.isEmpty()
@@ -128,6 +135,7 @@ public class HardwareManager {
     private void onJvmExit() {
         logger.info("Shutting down LEDs...");
         if (visionLED != null) visionLED.setState(false);
+        if (statusLED != null) statusLED.setRGB(false, false, false);
     }
 
     public boolean restartDevice() {
@@ -147,21 +155,34 @@ public class HardwareManager {
         }
     }
 
+    private boolean targetVisible = false;
+
     public void setStatus(ProgramStatus status) {
-        switch (status) {
-            case UHOH:
-                // red flashing, green off
-                break;
-            case RUNNING:
-                // red solid, green off
-                break;
-            case RUNNING_NT:
-                // red off, green solid
-                break;
-            case RUNNING_NT_TARGET:
-                // red off, green flashing
-                break;
+        if(statusLED != null){
+            switch (status) {
+                case UHOH:
+                    statusLED.setRGB(true, false, false);
+                    break;
+                case RUNNING:
+                    if(targetVisible){
+                        statusLED.setRGB(false, true, true);
+                    } else {
+                        statusLED.setRGB(true, true, false);
+                    }
+                    break;
+                case RUNNING_NT:
+                    if(targetVisible){
+                        statusLED.setRGB(false, true, true);
+                    } else {
+                        statusLED.setRGB(false, true, false);
+                    }
+                    break;
+            }
         }
+    }
+
+    public void setTargetVisible(boolean isVisible){
+        targetVisible = isVisible;
     }
 
     public HardwareConfig getConfig() {

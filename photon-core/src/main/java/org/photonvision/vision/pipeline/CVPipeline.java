@@ -17,6 +17,7 @@
 
 package org.photonvision.vision.pipeline;
 
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.vision.camera.QuirkyCamera;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameStaticProperties;
@@ -72,6 +73,8 @@ public abstract class CVPipeline<R extends CVPipelineResult, S extends CVPipelin
         R result = process(frame, settings);
 
         result.setImageCaptureTimestampNanos(frame.timestampNanos);
+
+        HardwareManager.getInstance().setTargetVisible(result.hasTargets());
 
         return result;
     }
