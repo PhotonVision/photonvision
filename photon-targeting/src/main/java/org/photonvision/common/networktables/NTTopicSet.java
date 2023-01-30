@@ -75,9 +75,11 @@ public class NTTopicSet {
         pipelineIndexPublisher = pipelineIndexTopic.publish();
         pipelineIndexSubscriber = pipelineIndexTopic.subscribe(0);
 
-        driverModeEntry = subTable.getBooleanTopic("driverMode");
-        driverModePublisher = driverModeEntry.publish();
-        driverModeSubscriber = driverModeEntry.subscribe(false);
+        driverModePublisher = subTable.getBooleanTopic("driverMode").publish();
+        driverModeSubscriber = subTable.getBooleanTopic("driverModeRequest").subscribe(false);
+
+        // Fun little hack to make the request show up
+        driverModeSubscriber.getTopic().publish().setDefault(false);
 
         latencyMillisEntry = subTable.getDoubleTopic("latencyMillis").publish();
         hasTargetEntry = subTable.getBooleanTopic("hasTarget").publish();
