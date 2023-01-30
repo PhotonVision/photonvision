@@ -42,6 +42,9 @@ public class PhotonCameraWrapper {
     public PhotonCamera photonCamera;
     public PhotonPoseEstimator photonPoseEstimator;
 
+    // Keep track of the last result timestamp, so we don't add duplicate pose estimates
+    private double lastResultTimestamp;
+
     public PhotonCameraWrapper() {
         // Set up a test arena of two apriltags at the center of each driver station set
         final AprilTag tag18 =
@@ -84,6 +87,11 @@ public class PhotonCameraWrapper {
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
         photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
-        return photonPoseEstimator.update();
+        EstimatedRobotPose ret = photonPoseEstimator.update();
+        if (Math.abs(ret.timestampSeconds - lastResultTimestamp) > 1e-6) {
+            return ret;
+        } else {
+            return Optional.empty();
+        }
     }
 }
