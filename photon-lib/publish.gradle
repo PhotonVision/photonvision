@@ -1,6 +1,7 @@
 apply plugin: 'maven-publish'
 
-ext.licenseFile = files("$rootDir/LICENSE.txt")
+ext.licenseFile = files("$rootDir/LICENSE")
+ext.photonVersionFile = files("$projectDir/src/generate/native/include")
 
 def outputsFolder = file("$buildDir/outputs")
 def allOutputsFolder = file("$buildDir/allOutputs")
@@ -54,6 +55,10 @@ task cppHeadersZip(type: Zip) {
         into '/'
     }
 
+    from(photonVersionFile) {
+        into '/'
+    }
+
     from('src/main/native/include/') {
         into '/'
     }
@@ -65,6 +70,10 @@ task cppSourcesZip(type: Zip) {
     classifier = "sources"
 
     from(licenseFile) {
+        into '/'
+    }
+
+    from(photonVersionFile) {
         into '/'
     }
 
