@@ -42,7 +42,6 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       rawBytesEntry(
           rootTable->GetRawTopic("rawBytes")
               .Subscribe("rawBytes", {}, {.periodic = 0.01, .sendAll = true})),
-      driverModeEntry(rootTable->GetBooleanTopic("driverMode").Publish()),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
       inputSaveImgSubscriber(
@@ -56,6 +55,8 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
       driverModeSubscriber(
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
+      driverModePublisher(
+          rootTable->GetBooleanTopic("driverModeRequest").Publish()),
       pipelineIndexSubscriber(
           rootTable->GetIntegerTopic("pipelineIndex").Subscribe(-1)),
       ledModeSubscriber(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
@@ -92,7 +93,7 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
 }
 
 void PhotonCamera::SetDriverMode(bool driverMode) {
-  driverModeEntry.Set(driverMode);
+  driverModePublisher.Set(driverMode);
 }
 
 void PhotonCamera::TakeInputSnapshot() {
