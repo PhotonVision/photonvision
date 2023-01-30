@@ -24,7 +24,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
@@ -50,7 +49,6 @@ public class PhotonCamera {
 
     protected final NetworkTable rootTable;
     RawSubscriber rawBytesEntry;
-    BooleanEntry driverModeEntry;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
     DoublePublisher latencyMillisEntry;
@@ -67,7 +65,6 @@ public class PhotonCamera {
 
     public void close() {
         rawBytesEntry.close();
-        driverModeEntry.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
         latencyMillisEntry.close();
@@ -121,7 +118,8 @@ public class PhotonCamera {
                         .getRawTopic("rawBytes")
                         .subscribe(
                                 "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
-        driverModeEntry = rootTable.getBooleanTopic("driverMode").getEntry(false);
+        driverModePublisher = rootTable.getBooleanTopic("driverMode").publish();
+        driverModeSubscriber = rootTable.getBooleanTopic("driverModeRequest").subscribe(false);
         inputSaveImgEntry = rootTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = rootTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexEntry = rootTable.getIntegerTopic("pipelineIndex").getEntry(0);
@@ -179,7 +177,7 @@ public class PhotonCamera {
      * @return Whether the camera is in driver mode.
      */
     public boolean getDriverMode() {
-        return driverModeEntry.get(false);
+        return driverModeSubscriber.get();
     }
 
     /**
@@ -188,7 +186,7 @@ public class PhotonCamera {
      * @param driverMode Whether to set driver mode.
      */
     public void setDriverMode(boolean driverMode) {
-        driverModeEntry.set(driverMode);
+        driverModePublisher.set(driverMode);
     }
 
     /**

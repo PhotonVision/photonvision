@@ -136,7 +136,7 @@ public class VisionModule {
                 new NTDataPublisher(
                         visionSource.getSettables().getConfiguration().nickname,
                         pipelineManager::getCurrentPipelineIndex,
-                        pipelineManager::setIndex,
+                        this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
         uiDataConsumer = new UIDataPublisher(index);
