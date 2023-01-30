@@ -88,7 +88,9 @@ public class PhotonCameraWrapper {
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
         photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
         Optional<EstimatedRobotPose> ret = photonPoseEstimator.update();
-        if (ret.isPresent() && ret.get() != null && Math.abs(ret.timestampSeconds - lastResultTimestamp) > 1e-6) {
+        if (ret.isPresent()
+                && ret.get() != null
+                && Math.abs(ret.timestampSeconds - lastResultTimestamp) > 1e-6) {
             return ret;
         } else {
             return Optional.empty();
