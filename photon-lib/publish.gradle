@@ -73,10 +73,6 @@ task cppSourcesZip(type: Zip) {
         into '/'
     }
 
-    from(photonVersionFile) {
-        into '/'
-    }
-
     from('src/main/native/cpp') {
         into '/'
     }
