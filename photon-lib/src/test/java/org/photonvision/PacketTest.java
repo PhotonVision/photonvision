@@ -30,6 +30,7 @@ import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.targeting.PhotonFrameProps;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -68,7 +69,10 @@ class PacketTest {
 
     @Test
     void testSimplePipelineResult() {
-        var result = new PhotonPipelineResult(1, new ArrayList<>());
+        PhotonFrameProps frameProps =
+                new PhotonFrameProps(
+                        320, 240, 90, new double[] {0, 0, 0, 0, 0, 0, 0, 0, 0}, new double[] {0, 0, 0, 0, 0});
+        var result = new PhotonPipelineResult(1, frameProps, new ArrayList<>());
         var p = new Packet(result.getPacketSize());
         result.populatePacket(p);
 
@@ -80,6 +84,7 @@ class PacketTest {
         var result2 =
                 new PhotonPipelineResult(
                         2,
+                        frameProps,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,

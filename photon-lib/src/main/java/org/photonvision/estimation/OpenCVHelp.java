@@ -249,15 +249,15 @@ public final class OpenCVHelp {
      * @return The 2d points in pixels which correspond to the image of the 3d points on the camera
      */
     public static List<TargetCorner> projectPoints(
-            CameraProperties camProp, Pose3d camPose, List<Translation3d> objectTranslations) {
+            PhotonFrameProps camProp, Pose3d camPose, List<Translation3d> objectTranslations) {
         // translate to opencv classes
         var objectPoints = translationToTvec(objectTranslations.toArray(new Translation3d[0]));
         // opencv rvec/tvec describe a change in basis from world to camera
         var basisChange = RotTrlTransform3d.makeRelativeTo(camPose);
         var rvec = rotationToRvec(basisChange.getRotation());
         var tvec = translationToTvec(basisChange.getTranslation());
-        var cameraMatrix = matrixToMat(camProp.getIntrinsics().getStorage());
-        var distCoeffs = matrixToMat(camProp.getDistCoeffs().getStorage());
+        var cameraMatrix = matrixToMat(camProp.intrinsicsMat.getStorage());
+        var distCoeffs = matrixToMat(camProp.distCoeffsMat.getStorage());
         var imagePoints = new MatOfPoint2f();
         // project to 2d
         Calib3d.projectPoints(objectPoints, rvec, tvec, cameraMatrix, distCoeffs, imagePoints);
@@ -288,11 +288,11 @@ public final class OpenCVHelp {
      * @return The undistorted image points
      */
     public static List<TargetCorner> undistortPoints(
-            CameraProperties camProp, List<TargetCorner> corners) {
+            PhotonFrameProps camProp, List<TargetCorner> corners) {
         var points_in = targetCornersToMat(corners);
         var points_out = new MatOfPoint2f();
-        var cameraMatrix = matrixToMat(camProp.getIntrinsics().getStorage());
-        var distCoeffs = matrixToMat(camProp.getDistCoeffs().getStorage());
+        var cameraMatrix = matrixToMat(camProp.intrinsicsMat.getStorage());
+        var distCoeffs = matrixToMat(camProp.distCoeffsMat.getStorage());
 
         Calib3d.undistortImagePoints(points_in, points_out, cameraMatrix, distCoeffs);
         var corners_out = matToTargetCorners(points_out);
@@ -398,8 +398,8 @@ public final class OpenCVHelp {
         // translate to opencv classes
         var objectPoints = translationToTvec(modelTrls.toArray(new Translation3d[0]));
         var imagePoints = targetCornersToMat(imageCorners);
-        var cameraMatrix = matrixToMat(camProp.camIntrinsics.getStorage());
-        var distCoeffs = matrixToMat(camProp.distCoeffs.getStorage());
+        var cameraMatrix = matrixToMat(camProp.intrinsicsMat.getStorage());
+        var distCoeffs = matrixToMat(camProp.distCoeffsMat.getStorage());
         var rvecs = new ArrayList<Mat>();
         var tvecs = new ArrayList<Mat>();
         var rvec = Mat.zeros(3, 1, CvType.CV_32F);
@@ -464,8 +464,8 @@ public final class OpenCVHelp {
         // translate to opencv classes
         var objectPoints = translationToTvec(objectTrls.toArray(new Translation3d[0]));
         var imagePoints = targetCornersToMat(imageCorners);
-        var cameraMatrix = matrixToMat(camProp.camIntrinsics.getStorage());
-        var distCoeffs = matrixToMat(camProp.distCoeffs.getStorage());
+        var cameraMatrix = matrixToMat(camProp.intrinsicsMat.getStorage());
+        var distCoeffs = matrixToMat(camProp.distCoeffsMat.getStorage());
         var rvecs = new ArrayList<Mat>();
         var tvecs = new ArrayList<Mat>();
         var rvec = Mat.zeros(3, 1, CvType.CV_32F);

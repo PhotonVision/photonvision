@@ -34,6 +34,11 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("wpilibj")
     implementation wpilibTools.deps.wpilibJava("apriltag")
 
+    testImplementation wpilibTools.deps.wpilibJava("cscore")
+    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
+    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-jni:$opencvVersion:$jniPlatform"
+    implementation "org.ejml:ejml-simple:0.41"
+
     // Junit
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.8.2")
@@ -147,3 +152,4 @@ testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+testNativeConfig.dependencies.add wpilibTools.deps.cscore()

@@ -19,7 +19,6 @@ package org.photonvision.targeting;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 
 /** Represents a pipeline result from a PhotonCamera. */
@@ -47,9 +46,11 @@ public class PhotonPipelineResult {
      * @param latencyMillis The latency in the pipeline.
      * @param targets The list of targets identified by the pipeline.
      */
-    public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets) {
+    public PhotonPipelineResult(
+            double latencyMillis, PhotonFrameProps props, List<PhotonTrackedTarget> targets) {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
+        this.frameProps = props;
     }
 
     /**
@@ -58,7 +59,10 @@ public class PhotonPipelineResult {
      * @return The size of the packet needed to store this pipeline result.
      */
     public int getPacketSize() {
-        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES + 8 + 2;
+        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES
+                + 8
+                + 2
+                + PhotonFrameProps.PACKED_SIZE_BYTES;
     }
 
     /**
@@ -134,21 +138,6 @@ public class PhotonPipelineResult {
         this.frameProps = props;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PhotonPipelineResult that = (PhotonPipelineResult) o;
-        boolean latencyMatch = Double.compare(that.latencyMillis, latencyMillis) == 0;
-        boolean targetsMatch = that.targets.equals(targets);
-        return latencyMatch && targetsMatch;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(latencyMillis, targets);
-    }
-
     /**
      * Populates the fields of the pipeline result from the packet.
      *
@@ -158,6 +147,7 @@ public class PhotonPipelineResult {
     public Packet createFromPacket(Packet packet) {
         // Decode latency, existence of targets, and number of targets.
         latencyMillis = packet.decodeDouble();
+        frameProps = PhotonFrameProps.createFromPacket(packet);
         byte targetCount = packet.decodeByte();
 
         targets.clear();
@@ -181,6 +171,7 @@ public class PhotonPipelineResult {
     public Packet populatePacket(Packet packet) {
         // Encode latency, existence of targets, and number of targets.
         packet.encode(latencyMillis);
+        frameProps.populatePacket(packet);
         packet.encode((byte) targets.size());
 
         // Encode the information of each target.
@@ -188,5 +179,38 @@ public class PhotonPipelineResult {
 
         // Return the packet.
         return packet;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((targets == null) ? 0 : targets.hashCode());
+        long temp;
+        temp = Double.doubleToLongBits(latencyMillis);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(timestampSeconds);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + ((frameProps == null) ? 0 : frameProps.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        PhotonPipelineResult other = (PhotonPipelineResult) obj;
+        if (targets == null) {
+            if (other.targets != null) return false;
+        } else if (!targets.equals(other.targets)) return false;
+        if (Double.doubleToLongBits(latencyMillis) != Double.doubleToLongBits(other.latencyMillis))
+            return false;
+        if (Double.doubleToLongBits(timestampSeconds)
+                != Double.doubleToLongBits(other.timestampSeconds)) return false;
+        if (frameProps == null) {
+            if (other.frameProps != null) return false;
+        } else if (!frameProps.equals(other.frameProps)) return false;
+        return true;
     }
 }

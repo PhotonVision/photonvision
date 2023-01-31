@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.targeting;
 
 import edu.wpi.first.math.Matrix;
@@ -14,16 +31,16 @@ public class PhotonFrameProps {
     public final int width;
     public final int height;
     public final double fov;
-    public final Matrix<N3, N3> camIntrinsics;
-    public final Matrix<N5, N1> distCoeffs;
+    public final Matrix<N3, N3> intrinsicsMat;
+    public final Matrix<N5, N1> distCoeffsMat;
 
     public PhotonFrameProps(
             int width, int height, double fov, Matrix<N3, N3> camIntrinsics, Matrix<N5, N1> distCoeffs) {
         this.width = width;
         this.height = height;
         this.fov = fov;
-        this.camIntrinsics = camIntrinsics;
-        this.distCoeffs = distCoeffs;
+        this.intrinsicsMat = camIntrinsics;
+        this.distCoeffsMat = distCoeffs;
     }
 
     public PhotonFrameProps(
@@ -53,9 +70,41 @@ public class PhotonFrameProps {
         packet.encode(fov);
 
         // We can safely assume camera calibration is at the above width/height
-        packet.encode(camIntrinsics.getData());
-        packet.encode(distCoeffs.getData());
+        packet.encode(intrinsicsMat.getData());
+        packet.encode(distCoeffsMat.getData());
 
         return packet;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + width;
+        result = prime * result + height;
+        long temp;
+        temp = Double.doubleToLongBits(fov);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        result = prime * result + ((intrinsicsMat == null) ? 0 : intrinsicsMat.hashCode());
+        result = prime * result + ((distCoeffsMat == null) ? 0 : distCoeffsMat.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        PhotonFrameProps other = (PhotonFrameProps) obj;
+        if (width != other.width) return false;
+        if (height != other.height) return false;
+        if (Double.doubleToLongBits(fov) != Double.doubleToLongBits(other.fov)) return false;
+        if (intrinsicsMat == null) {
+            if (other.intrinsicsMat != null) return false;
+        } else if (!intrinsicsMat.isIdentical(other.intrinsicsMat, 1e-6)) return false;
+        if (distCoeffsMat == null) {
+            if (other.distCoeffsMat != null) return false;
+        } else if (!distCoeffsMat.isIdentical(other.distCoeffsMat, 1e-6)) return false;
+        return true;
     }
 }

@@ -29,6 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
+import org.photonvision.targeting.PhotonFrameProps;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -37,6 +38,9 @@ public class SimPhotonCamera {
     NTTopicSet ts = new NTTopicSet();
     PhotonPipelineResult latestResult;
     private long heartbeatCounter = 0;
+    protected PhotonFrameProps frameProps =
+            new PhotonFrameProps(
+                    320, 240, 90, new double[] {0, 0, 0, 0, 0, 0, 0, 0, 0}, new double[] {0, 0, 0, 0, 0});
 
     /**
      * Constructs a Simulated PhotonCamera from a root table.
@@ -108,7 +112,8 @@ public class SimPhotonCamera {
             targetList.sort(sortMode.getComparator());
         }
 
-        PhotonPipelineResult newResult = new PhotonPipelineResult(latencyMillis, targetList);
+        PhotonPipelineResult newResult =
+                new PhotonPipelineResult(latencyMillis, frameProps, targetList);
         var newPacket = new Packet(newResult.getPacketSize());
         newResult.populatePacket(newPacket);
         ts.rawBytesEntry.set(newPacket.getData());
