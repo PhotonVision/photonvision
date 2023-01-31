@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.photonvision.vision.estimation;
+package org.photonvision.estimation;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -36,8 +36,7 @@ import java.util.stream.Collectors;
 /** Describes the 3d model of a target. */
 public class TargetModel {
     /**
-     * Translations of this target's vertices relative to its pose. If this target
-     * is spherical, this
+     * Translations of this target's vertices relative to its pose. If this target is spherical, this
      * list has one translation with x == radius.
      */
     public final List<Translation3d> vertices;
@@ -45,23 +44,24 @@ public class TargetModel {
     public final boolean isPlanar;
     public final boolean isSpherical;
 
-    public static final TargetModel kTag16h5 = new TargetModel(Units.inchesToMeters(6), Units.inchesToMeters(6));
+    public static final TargetModel kTag16h5 =
+            new TargetModel(Units.inchesToMeters(6), Units.inchesToMeters(6));
 
     /** Creates a rectangular, planar target model given the width and height. */
     public TargetModel(double widthMeters, double heightMeters) {
-        this.vertices = List.of(
-                // this order is relevant for AprilTag compatibility
-                new Translation3d(0, -widthMeters / 2.0, -heightMeters / 2.0),
-                new Translation3d(0, widthMeters / 2.0, -heightMeters / 2.0),
-                new Translation3d(0, widthMeters / 2.0, heightMeters / 2.0),
-                new Translation3d(0, -widthMeters / 2.0, heightMeters / 2.0));
+        this.vertices =
+                List.of(
+                        // this order is relevant for AprilTag compatibility
+                        new Translation3d(0, -widthMeters / 2.0, -heightMeters / 2.0),
+                        new Translation3d(0, widthMeters / 2.0, -heightMeters / 2.0),
+                        new Translation3d(0, widthMeters / 2.0, heightMeters / 2.0),
+                        new Translation3d(0, -widthMeters / 2.0, heightMeters / 2.0));
         this.isPlanar = true;
         this.isSpherical = false;
     }
 
     /**
-     * Creates a spherical target model which has similar dimensions when viewed
-     * from any angle. This
+     * Creates a spherical target model which has similar dimensions when viewed from any angle. This
      * model will only have one vertex which has x == radius.
      */
     public TargetModel(double diameterMeters) {
@@ -71,13 +71,11 @@ public class TargetModel {
     }
 
     /**
-     * Creates a target model from arbitrary 3d vertices. Automatically determines
-     * if the given
+     * Creates a target model from arbitrary 3d vertices. Automatically determines if the given
      * vertices are planar(x == 0). More than 2 vertices must be given.
      *
-     * @param vertices Translations representing the vertices of this target model
-     *                 relative to its
-     *                 pose.
+     * @param vertices Translations representing the vertices of this target model relative to its
+     *     pose.
      */
     public TargetModel(List<Translation3d> vertices) {
         this.isSpherical = false;
@@ -87,8 +85,7 @@ public class TargetModel {
         } else {
             boolean cornersPlanar = true;
             for (Translation3d corner : vertices) {
-                if (corner.getX() != 0)
-                    cornersPlanar = false;
+                if (corner.getX() != 0) cornersPlanar = false;
             }
             this.isPlanar = cornersPlanar;
         }
@@ -98,9 +95,7 @@ public class TargetModel {
     /**
      * This target's vertices offset from its field pose.
      *
-     * <p>
-     * Note: If this target is spherical, only one vertex radius meters in front of
-     * the pose is
+     * <p>Note: If this target is spherical, only one vertex radius meters in front of the pose is
      * returned.
      */
     public List<Translation3d> getFieldVertices(Pose3d targetPose) {
@@ -111,8 +106,7 @@ public class TargetModel {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
+        if (this == obj) return true;
         if (obj instanceof TargetModel) {
             var o = (TargetModel) obj;
             return vertices.equals(o.vertices) && isPlanar == o.isPlanar && isSpherical == o.isSpherical;

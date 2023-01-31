@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.photonvision.vision.estimation;
+package org.photonvision.estimation;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Nat;
@@ -53,6 +53,7 @@ import org.opencv.core.Point3;
 import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.targeting.PhotonFrameProps;
 import org.photonvision.targeting.TargetCorner;
 
 public final class OpenCVHelp {
@@ -390,15 +391,15 @@ public final class OpenCVHelp {
      *     ambiguity if an alternate solution is available.
      */
     public static PNPResults solvePNP_SQUARE(
-            CameraProperties camProp, List<Translation3d> modelTrls, List<TargetCorner> imageCorners) {
+            PhotonFrameProps camProp, List<Translation3d> modelTrls, List<TargetCorner> imageCorners) {
         // IPPE_SQUARE expects our corners in a specific order
         modelTrls = reorderCircular(modelTrls, true, -1);
         imageCorners = reorderCircular(imageCorners, true, -1);
         // translate to opencv classes
         var objectPoints = translationToTvec(modelTrls.toArray(new Translation3d[0]));
         var imagePoints = targetCornersToMat(imageCorners);
-        var cameraMatrix = matrixToMat(camProp.getIntrinsics().getStorage());
-        var distCoeffs = matrixToMat(camProp.getDistCoeffs().getStorage());
+        var cameraMatrix = matrixToMat(camProp.camIntrinsics.getStorage());
+        var distCoeffs = matrixToMat(camProp.distCoeffs.getStorage());
         var rvecs = new ArrayList<Mat>();
         var tvecs = new ArrayList<Mat>();
         var rvec = Mat.zeros(3, 1, CvType.CV_32F);
@@ -459,12 +460,12 @@ public final class OpenCVHelp {
      *     the origin.
      */
     public static PNPResults solvePNP_SQPNP(
-            CameraProperties camProp, List<Translation3d> objectTrls, List<TargetCorner> imageCorners) {
+            PhotonFrameProps camProp, List<Translation3d> objectTrls, List<TargetCorner> imageCorners) {
         // translate to opencv classes
         var objectPoints = translationToTvec(objectTrls.toArray(new Translation3d[0]));
         var imagePoints = targetCornersToMat(imageCorners);
-        var cameraMatrix = matrixToMat(camProp.getIntrinsics().getStorage());
-        var distCoeffs = matrixToMat(camProp.getDistCoeffs().getStorage());
+        var cameraMatrix = matrixToMat(camProp.camIntrinsics.getStorage());
+        var distCoeffs = matrixToMat(camProp.distCoeffs.getStorage());
         var rvecs = new ArrayList<Mat>();
         var tvecs = new ArrayList<Mat>();
         var rvec = Mat.zeros(3, 1, CvType.CV_32F);
