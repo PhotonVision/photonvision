@@ -232,11 +232,11 @@ public class PhotonPoseEstimator {
             case CLOSEST_TO_CAMERA_HEIGHT:
                 estimatedPose = closestToCameraHeightStrategy(cameraResult);
                 break;
-            case CLOSEST_TO_LAST_POSE:
-                setReferencePose(lastPose);
+            case CLOSEST_TO_REFERENCE_POSE:
                 estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
                 break;
-            case CLOSEST_TO_REFERENCE_POSE:
+            case CLOSEST_TO_LAST_POSE:
+                setReferencePose(lastPose);
                 estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
                 break;
             case AVERAGE_BEST_TARGETS:
