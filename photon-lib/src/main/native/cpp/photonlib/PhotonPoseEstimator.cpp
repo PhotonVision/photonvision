@@ -56,8 +56,14 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
   auto result = camera.GetLatestResult();
 
+  if (poseCacheTimestamp != -1 && (poseCacheTimestamp - result.GetTimestamp()) < 1e-6) {
+    return cachedPose;
+  }
+  poseCacheTimestamp = result.GetTimestamp();
+
   if (!result.HasTargets()) {
-    return std::nullopt;
+    cachedPose = std::nullopt;
+    return cachedPose;
   }
 
   std::optional<EstimatedRobotPose> ret = std::nullopt;
@@ -82,14 +88,16 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
                       "");
-      return std::nullopt;
+      cachedPose = std::nullopt;
+      return cachedPose;
   }
 
   if (!ret) {
     // TODO
   }
 
-  return ret;
+  cachedPose = ret;
+  return cachedPose;
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::LowestAmbiguityStrategy(

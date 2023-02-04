@@ -104,7 +104,12 @@ class PhotonPoseEstimator {
    *
    * @param strategy the strategy to set
    */
-  inline void SetPoseStrategy(PoseStrategy strat) { strategy = strat; }
+  inline void SetPoseStrategy(PoseStrategy strat) {
+    if (strategy != strat) {
+      InvalidatePoseCache();
+    }
+    strategy = strat;
+  }
 
   /**
    * Return the reference position that is being used by the estimator.
@@ -120,6 +125,9 @@ class PhotonPoseEstimator {
    * @param referencePose the referencePose to set
    */
   inline void SetReferencePose(frc::Pose3d referencePose) {
+    if (this->referencePose != referencePose) {
+      InvalidatePoseCache();
+    }
     this->referencePose = referencePose;
   }
 
@@ -148,6 +156,13 @@ class PhotonPoseEstimator {
 
   frc::Pose3d lastPose;
   frc::Pose3d referencePose;
+
+  std::optional<EstimatedRobotPose> cachedPose;
+  double poseCacheTimestamp;
+
+  inline void InvalidatePoseCache() {
+    poseCacheTimestamp = -1;
+  }
 
   /**
    * Return the estimated position of the robot with the lowest position
