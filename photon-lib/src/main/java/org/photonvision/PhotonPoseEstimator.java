@@ -71,6 +71,8 @@ public class PhotonPoseEstimator {
 
     private Pose3d lastPose;
     private Pose3d referencePose;
+    private Optional<EstimatedRobotPose> cachedPose;
+    private double poseCacheTimestampSeconds;
     private final Set<Integer> reportedErrors = new HashSet<>();
 
     /**
@@ -99,6 +101,13 @@ public class PhotonPoseEstimator {
     }
 
     /**
+     * Invalidates the pose cache.
+     */
+    private void invalidatePoseCache() {
+        poseCacheTimestampSeconds = -1;
+    }
+
+    /**
      * Get the AprilTagFieldLayout being used by the PositionEstimator.
      *
      * @return the AprilTagFieldLayout
@@ -113,6 +122,9 @@ public class PhotonPoseEstimator {
      * @param fieldTags the AprilTagFieldLayout
      */
     public void setFieldTags(AprilTagFieldLayout fieldTags) {
+        if (!this.fieldTags.equals(fieldTags)) {
+            invalidatePoseCache();
+        }
         this.fieldTags = fieldTags;
     }
 
@@ -131,6 +143,9 @@ public class PhotonPoseEstimator {
      * @param strategy the strategy to set
      */
     public void setStrategy(PoseStrategy strategy) {
+        if (this.strategy != strategy) {
+            invalidatePoseCache();
+        }
         this.strategy = strategy;
     }
 
@@ -150,6 +165,9 @@ public class PhotonPoseEstimator {
      * @param referencePose the referencePose to set
      */
     public void setReferencePose(Pose3d referencePose) {
+        if (!this.referencePose.equals(referencePose)) {
+            invalidatePoseCache();
+        }
         this.referencePose = referencePose;
     }
 
@@ -160,7 +178,7 @@ public class PhotonPoseEstimator {
      * @param referencePose the referencePose to set
      */
     public void setReferencePose(Pose2d referencePose) {
-        this.referencePose = new Pose3d(referencePose);
+        setReferencePose(new Pose3d(referencePose));
     }
 
     /**
@@ -197,8 +215,13 @@ public class PhotonPoseEstimator {
         }
 
         PhotonPipelineResult cameraResult = camera.getLatestResult();
+        if (poseCacheTimestampSeconds != -1 && Math.abs(poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()) < 1e-6) {
+            return cachedPose;
+        }
+        poseCacheTimestampSeconds = cameraResult.getTimestampSeconds();
         if (!cameraResult.hasTargets()) {
-            return Optional.empty();
+            cachedPose = Optional.empty();
+            return cachedPose;
         }
 
         Optional<EstimatedRobotPose> estimatedPose;
@@ -220,14 +243,16 @@ public class PhotonPoseEstimator {
             default:
                 DriverStation.reportError(
                         "[PhotonPoseEstimator] Unknown Position Estimation Strategy!", false);
-                return Optional.empty();
+                cachedPose = Optional.empty();
+                return cachedPose;
         }
 
         if (estimatedPose.isEmpty()) {
             lastPose = null;
         }
 
-        return estimatedPose;
+        cachedPose = estimatedPose;
+        return cachedPose;
     }
 
     /**
