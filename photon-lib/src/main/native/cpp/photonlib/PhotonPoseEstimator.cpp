@@ -24,6 +24,7 @@
 
 #include "photonlib/PhotonPoseEstimator.h"
 
+#include <cmath>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -56,7 +57,7 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
   auto result = camera.GetLatestResult();
 
-  if (poseCacheTimestamp != -1 && (poseCacheTimestamp - result.GetTimestamp()) < 1e-6) {
+  if (poseCacheTimestamp != -1 && std::abs(poseCacheTimestamp - result.GetTimestamp()) < 1e-6) {
     return cachedPose;
   }
   poseCacheTimestamp = result.GetTimestamp();
