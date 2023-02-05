@@ -72,7 +72,7 @@ public class PhotonPoseEstimator {
     private Pose3d lastPose;
     private Pose3d referencePose;
     private Optional<EstimatedRobotPose> cachedPose;
-    private double poseCacheTimestampSeconds;
+    private double poseCacheTimestampSeconds = -1;
     private final Set<Integer> reportedErrors = new HashSet<>();
 
     /**
@@ -107,6 +107,12 @@ public class PhotonPoseEstimator {
         poseCacheTimestampSeconds = -1;
     }
 
+    private void checkUpdate(Object oldObj, Object newObj) {
+        if (oldObj != newObj && oldObj != null && !oldObj.equals(newObj)) {
+            invalidatePoseCache();
+        }
+    }
+
     /**
      * Get the AprilTagFieldLayout being used by the PositionEstimator.
      *
@@ -122,9 +128,7 @@ public class PhotonPoseEstimator {
      * @param fieldTags the AprilTagFieldLayout
      */
     public void setFieldTags(AprilTagFieldLayout fieldTags) {
-        if (!this.fieldTags.equals(fieldTags)) {
-            invalidatePoseCache();
-        }
+        checkUpdate(this.fieldTags, fieldTags);
         this.fieldTags = fieldTags;
     }
 
@@ -143,9 +147,7 @@ public class PhotonPoseEstimator {
      * @param strategy the strategy to set
      */
     public void setStrategy(PoseStrategy strategy) {
-        if (this.strategy != strategy) {
-            invalidatePoseCache();
-        }
+        checkUpdate(this.strategy, strategy);
         this.strategy = strategy;
     }
 
@@ -165,9 +167,7 @@ public class PhotonPoseEstimator {
      * @param referencePose the referencePose to set
      */
     public void setReferencePose(Pose3d referencePose) {
-        if (!this.referencePose.equals(referencePose)) {
-            invalidatePoseCache();
-        }
+        checkUpdate(this.referencePose, referencePose);
         this.referencePose = referencePose;
     }
 
