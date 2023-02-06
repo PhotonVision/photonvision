@@ -58,7 +58,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
   return Update(result);
 }
 
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(const PhotonPipelineResult& result) {
+std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
+    const PhotonPipelineResult& result) {
   if (!result.HasTargets()) {
     return std::nullopt;
   }

@@ -217,11 +217,10 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Updates the estimated position of the robot. Returns
-     * empty if there are no cameras set or no targets were found from the cameras.
+     * Updates the estimated position of the robot. Returns empty if there are no cameras set or no
+     * targets were found from the cameras.
      *
      * @param cameraResult The latest pipeline result from the camera
-     *
      * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
      *     pipeline results used to create the estimate
      */
