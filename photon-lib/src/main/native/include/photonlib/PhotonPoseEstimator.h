@@ -124,6 +124,24 @@ class PhotonPoseEstimator {
   }
 
   /**
+   * @return The current transform from the center of the robot to the camera
+   *         mount position.
+   */
+  inline frc::Transform3d GetRobotToCameraTransform() {
+    return m_robotToCamera;
+  }
+
+  /**
+   * Useful for pan and tilt mechanisms, or cameras on turrets
+   *
+   * @param robotToCamera The current transform from the center of the robot to
+   * the camera mount position.
+   */
+  inline void SetRobotToCameraTransform(frc::Transform3d robotToCamera) {
+    m_robotToCamera = robotToCamera;
+  }
+
+  /**
    * Update the stored last pose. Useful for setting the initial estimate when
    * using the CLOSEST_TO_LAST_POSE strategy.
    *
