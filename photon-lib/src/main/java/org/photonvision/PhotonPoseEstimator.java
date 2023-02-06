@@ -194,8 +194,8 @@ public class PhotonPoseEstimator {
     /**
      * Useful for pan and tilt mechanisms and such.
      * 
-     * @param The current transform from the center of the robot to the camera
-     *            mount position
+     * @param robotToCamera The current transform from the center of the robot to the camera
+     *                      mount position
      */
     public void setRobotToCameraTransform(Transform3d robotToCamera) {
         this.robotToCamera = robotToCamera;

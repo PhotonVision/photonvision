@@ -134,8 +134,8 @@ class PhotonPoseEstimator {
   /**
    * Useful for pan and tilt mechanisms, or cameras on turrets
    *
-   * @param The current transform from the center of the robot to the camera
-   *            mount position
+   * @param robotToCamera The current transform from the center of the robot to the camera
+   *                      mount position
    */
   inline void SetRobotToCameraTransform(frc::Transform3d robotToCamera) {
     m_robotToCamera = robotToCamera;
