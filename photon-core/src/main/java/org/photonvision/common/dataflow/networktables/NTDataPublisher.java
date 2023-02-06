@@ -52,6 +52,8 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     private final Consumer<Boolean> driverModeConsumer;
 
     private long heartbeatCounter = 0;
+    private final double[] emptyIntrinsicArr = new double[9];
+    private final double[] emptyExtrinsicArr = new double[5];
 
     public NTDataPublisher(
             String cameraNickname,
@@ -180,6 +182,20 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.targetPoseEntry.set(new double[] {0, 0, 0});
             ts.bestTargetPosX.set(0);
             ts.bestTargetPosY.set(0);
+        }
+
+        var fsp = result.inputAndOutputFrame.frameStaticProperties;
+        if (fsp.cameraCalibration != null) {
+            ts.cameraIntrinsicsPublisher.accept(
+                fsp.cameraCalibration.getIntrinsicsArr()
+            );
+
+            ts.cameraExtrinsicsPublisher.accept(
+                fsp.cameraCalibration.getExtrinsicsArr()
+            );
+        } else {
+            ts.cameraIntrinsicsPublisher.accept(emptyIntrinsicArr);
+            ts.cameraExtrinsicsPublisher.accept(emptyExtrinsicArr);
         }
 
         ts.heartbeatPublisher.set(heartbeatCounter++);
