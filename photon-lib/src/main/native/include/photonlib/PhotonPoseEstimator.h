@@ -128,7 +128,7 @@ class PhotonPoseEstimator {
    *         mount position
    */
   inline frc::Transform3d GetRobotToCameraTransform() {
-    m_robotToCamera;
+    return m_robotToCamera;
   }
 
   /**
