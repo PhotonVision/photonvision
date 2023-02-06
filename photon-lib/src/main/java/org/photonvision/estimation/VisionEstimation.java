@@ -25,14 +25,15 @@
 package org.photonvision.estimation;
 
 import edu.wpi.first.apriltag.AprilTag;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.ArrayList;
 import java.util.List;
-import org.photonvision.targeting.PhotonFrameProps;
 import org.photonvision.targeting.TargetCorner;
 
 public class VisionEstimation {
@@ -51,7 +52,8 @@ public class VisionEstimation {
      * @return The transformation that maps the field origin to the camera pose
      */
     public static PNPResults estimateCamPosePNP(
-            PhotonFrameProps prop, List<TargetCorner> corners, List<AprilTag> knownTags) {
+            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs,
+            List<TargetCorner> corners, List<AprilTag> knownTags) {
         if (knownTags == null
                 || corners == null
                 || corners.size() != knownTags.size() * 4
@@ -62,7 +64,7 @@ public class VisionEstimation {
         if (corners.size() == 4) {
             var camToTag =
                     OpenCVHelp.solvePNP_SQUARE(
-                            prop, kTagModel.getFieldVertices(knownTags.get(0).pose), corners);
+                            cameraMatrix, distCoeffs, kTagModel.getFieldVertices(knownTags.get(0).pose), corners);
             var bestPose = knownTags.get(0).pose.transformBy(camToTag.best.inverse());
             var altPose = new Pose3d();
             if (camToTag.ambiguity != 0)
@@ -93,7 +95,7 @@ public class VisionEstimation {
         else {
             var objectTrls = new ArrayList<Translation3d>();
             for (var tag : knownTags) objectTrls.addAll(kTagModel.getFieldVertices(tag.pose));
-            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(prop, objectTrls, corners);
+            var camToOrigin = OpenCVHelp.solvePNP_SQPNP(cameraMatrix, distCoeffs, objectTrls, corners);
             // var camToOrigin = OpenCVHelp.solveTagsPNPRansac(prop, objectTrls, corners);
             return new PNPResults(
                     camToOrigin.best.inverse(),

@@ -34,9 +34,6 @@ public class PhotonPipelineResult {
     // Timestamp in milliseconds.
     private double timestampSeconds = -1;
 
-    // The frame properties used to capture the image processed by this result
-    private PhotonFrameProps frameProps;
-
     /** Constructs an empty pipeline result. */
     public PhotonPipelineResult() {}
 
@@ -47,10 +44,9 @@ public class PhotonPipelineResult {
      * @param targets The list of targets identified by the pipeline.
      */
     public PhotonPipelineResult(
-            double latencyMillis, PhotonFrameProps props, List<PhotonTrackedTarget> targets) {
+            double latencyMillis, List<PhotonTrackedTarget> targets) {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
-        this.frameProps = props;
     }
 
     /**
@@ -61,8 +57,7 @@ public class PhotonPipelineResult {
     public int getPacketSize() {
         return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES
                 + 8
-                + 2
-                + PhotonFrameProps.PACKED_SIZE_BYTES;
+                + 2;
     }
 
     /**
@@ -130,14 +125,6 @@ public class PhotonPipelineResult {
         return new ArrayList<>(targets);
     }
 
-    public PhotonFrameProps getFrameProperties() {
-        return frameProps;
-    }
-
-    protected void setFrameProperties(PhotonFrameProps props) {
-        this.frameProps = props;
-    }
-
     /**
      * Populates the fields of the pipeline result from the packet.
      *
@@ -147,7 +134,6 @@ public class PhotonPipelineResult {
     public Packet createFromPacket(Packet packet) {
         // Decode latency, existence of targets, and number of targets.
         latencyMillis = packet.decodeDouble();
-        frameProps = PhotonFrameProps.createFromPacket(packet);
         byte targetCount = packet.decodeByte();
 
         targets.clear();
@@ -171,7 +157,6 @@ public class PhotonPipelineResult {
     public Packet populatePacket(Packet packet) {
         // Encode latency, existence of targets, and number of targets.
         packet.encode(latencyMillis);
-        frameProps.populatePacket(packet);
         packet.encode((byte) targets.size());
 
         // Encode the information of each target.
@@ -191,7 +176,6 @@ public class PhotonPipelineResult {
         result = prime * result + (int) (temp ^ (temp >>> 32));
         temp = Double.doubleToLongBits(timestampSeconds);
         result = prime * result + (int) (temp ^ (temp >>> 32));
-        result = prime * result + ((frameProps == null) ? 0 : frameProps.hashCode());
         return result;
     }
 
@@ -208,9 +192,6 @@ public class PhotonPipelineResult {
             return false;
         if (Double.doubleToLongBits(timestampSeconds)
                 != Double.doubleToLongBits(other.timestampSeconds)) return false;
-        if (frameProps == null) {
-            if (other.frameProps != null) return false;
-        } else if (!frameProps.equals(other.frameProps)) return false;
         return true;
     }
 }

@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.hal.JNIWrapper;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -46,17 +45,12 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.targeting.PhotonFrameProps;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 class PhotonPoseEstimatorTest {
     static AprilTagFieldLayout aprilTags;
-
-    static PhotonFrameProps frameProps =
-            new PhotonFrameProps(
-                    320, 240, 90, new double[] {0, 0, 0, 0, 0, 0, 0, 0, 0}, new double[] {0, 0, 0, 0, 0});
 
     @BeforeAll
     public static void init() {
@@ -87,7 +81,6 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         2,
-                        frameProps,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -163,13 +156,10 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void testClosestToCameraHeightStrategy() {
-        ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
-
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
                         2,
-                        frameProps,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -253,7 +243,6 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         2,
-                        frameProps,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -337,7 +326,6 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         2,
-                        frameProps,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -412,7 +400,6 @@ class PhotonPoseEstimatorTest {
         cameraOne.result =
                 new PhotonPipelineResult(
                         2,
-                        frameProps,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,
@@ -484,13 +471,10 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void averageBestPoses() {
-        ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
-
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
                         2,
-                        frameProps,
                         List.of(
                                 new PhotonTrackedTarget(
                                         3.0,

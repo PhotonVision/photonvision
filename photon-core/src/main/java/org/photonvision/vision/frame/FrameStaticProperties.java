@@ -20,7 +20,6 @@ package org.photonvision.vision.frame;
 import edu.wpi.first.cscore.VideoMode;
 import org.opencv.core.Point;
 import org.photonvision.common.util.numbers.DoubleCouple;
-import org.photonvision.targeting.PhotonFrameProps;
 import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 
 /** Represents the properties of a frame. */
@@ -87,23 +86,5 @@ public class FrameStaticProperties {
                 Math.atan(Math.tan(diagonalView / 2) * (imageHeight / diagonalAspect)) * 2;
 
         return new DoubleCouple(horizontalView, verticalView);
-    }
-
-    public PhotonFrameProps toPhotonFrameProps() {
-        if (cameraCalibration != null) {
-            return new PhotonFrameProps(
-                    imageWidth,
-                    imageHeight,
-                    fov,
-                    cameraCalibration.cameraIntrinsics.data,
-                    cameraCalibration.distCoeffs.data);
-        } else {
-            return new PhotonFrameProps(
-                    imageWidth,
-                    imageHeight,
-                    fov,
-                    new double[] {0, 0, 0, 0, 0, 0, 0, 0, 0},
-                    new double[] {0, 0, 0, 0, 0});
-        }
     }
 }
