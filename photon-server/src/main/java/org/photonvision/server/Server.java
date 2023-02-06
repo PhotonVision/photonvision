@@ -92,6 +92,8 @@ public class Server {
         app.post("api/restartProgram", RequestHandler::restartProgram);
         app.post("api/vision/pnpModel", RequestHandler::uploadPnpModel);
         app.post("api/sendMetrics", RequestHandler::sendMetrics);
+        app.post("/api/getAutofocusStatus", RequestHandler::getAutofocusStatus);
+        app.post("/api/autofocusCamera", RequestHandler::autofocusCamera);
         app.post("api/setCameraNickname", RequestHandler::setCameraNickname);
         app.post("api/calibration/import", RequestHandler::importCalibrationFromCalibdb);
 

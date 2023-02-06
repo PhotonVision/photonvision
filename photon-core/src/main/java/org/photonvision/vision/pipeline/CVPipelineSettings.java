@@ -42,6 +42,7 @@ public class CVPipelineSettings implements Cloneable {
     public boolean cameraAutoExposure = false;
     // manual exposure only used if cameraAutoExposure if false
     public double cameraExposure = 20;
+    public boolean cameraAutoFocus = false;
     public int cameraBrightness = 50;
     // Currently only used by a few cameras (notably the zero-copy Pi Camera driver) with the Gain
     // quirk

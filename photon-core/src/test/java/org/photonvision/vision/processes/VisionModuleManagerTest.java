@@ -97,6 +97,9 @@ public class VisionModuleManagerTest {
 
         @Override
         public void setAutoExposure(boolean cameraAutoExposure) {}
+        
+        @Override
+        public void setAutoFocus(boolean cameraAutoFocus) {}
     }
 
     private static class TestDataConsumer implements CVPipelineResultConsumer {
