@@ -182,20 +182,17 @@ public class PhotonPoseEstimator {
     public void setLastPose(Pose2d lastPose) {
         setLastPose(new Pose3d(lastPose));
     }
-    
-    /**
-     * @return The current transform from the center of the robot to the camera
-     *         mount position
-     */
+
+    /** @return The current transform from the center of the robot to the camera mount position */
     public Transform3d getRobotToCameraTransform() {
         return robotToCamera;
     }
-    
+
     /**
      * Useful for pan and tilt mechanisms and such.
-     * 
-     * @param robotToCamera The current transform from the center of the robot to the camera
-     *                      mount position
+     *
+     * @param robotToCamera The current transform from the center of the robot to the camera mount
+     *     position
      */
     public void setRobotToCameraTransform(Transform3d robotToCamera) {
         this.robotToCamera = robotToCamera;
