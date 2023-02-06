@@ -371,15 +371,15 @@ public class VisionModule {
         return ret;
     }
 
-    void setPipeline(int index) {
+    boolean setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
         logger.info("Pipeline name: " + pipelineManager.getPipelineNickname(index));
         pipelineManager.setIndex(index);
         var pipelineSettings = pipelineManager.getPipelineSettings(index);
 
         if (pipelineSettings == null) {
-            logger.error("Config for index " + index + " was null!");
-            return;
+            logger.error("Config for index " + index + " was null! Not changing pipelines");
+            return false;
         }
 
         visionSource.getSettables().setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
@@ -422,6 +422,8 @@ public class VisionModule {
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
                 pipelineManager.getCurrentPipelineIndex();
+
+        return true;
     }
 
     private boolean camShouldControlLEDs() {
