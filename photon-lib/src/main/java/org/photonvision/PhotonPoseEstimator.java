@@ -257,14 +257,17 @@ public class PhotonPoseEstimator {
             fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
         }
 
-        boolean hasCalibData = false;
-
+        var cameraMatrixOpt = camera.getCameraMatrix();
+        var distCoeffsOpt = camera.getDistCoeffs();
+        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
+        
         // multi-target solvePNP
         if (result.getTargets().size() > 1 && hasCalibData) {
+            var cameraMatrix = cameraMatrixOpt.get();
+            var distCoeffs = distCoeffsOpt.get();
             var pnpResults =
                     VisionEstimation.estimateCamPosePNP(
-                            // TODO: get camera matrices from NT
-                            null, null, visCorners, knownVisTags);
+                            cameraMatrix, distCoeffs, visCorners, knownVisTags);
             var best =
                     new Pose3d()
                             .plus(pnpResults.best) // field-to-camera
