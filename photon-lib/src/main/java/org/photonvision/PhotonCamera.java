@@ -313,14 +313,14 @@ public class PhotonCamera {
 
     public Optional<Matrix<N3, N3>> getCameraMatrix() {
         var cameraMatrix = cameraIntrinsicsSubscriber.get();
-        if (cameraMatrix != null) {
+        if (cameraMatrix != null && cameraMatrix.length == 9) {
             return Optional.of(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(cameraMatrix));
         } else return Optional.empty();
     }
 
     public Optional<Matrix<N5, N1>> getDistCoeffs() {
         var distCoeffs = cameraDistortionSubscriber.get();
-        if (distCoeffs != null) {
+        if (distCoeffs != null && distCoeffs.length == 5) {
             return Optional.of(new MatBuilder<>(Nat.N5(), Nat.N1()).fill(distCoeffs));
         } else return Optional.empty();
     }
