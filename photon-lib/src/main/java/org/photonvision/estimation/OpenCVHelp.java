@@ -242,7 +242,8 @@ public final class OpenCVHelp {
      * Project object points from the 3d world into the 2d camera image. The camera
      * properties(intrinsics, distortion) determine the results of this projection.
      *
-     * @param camProp The properties of this camera
+     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
+     * @param distCoeffs the camera distortion matrix in standard opencv form
      * @param camPose The current camera pose in the 3d world
      * @param objectTranslations The 3d points to be projected
      * @return The 2d points in pixels which correspond to the image of the 3d points on the camera
@@ -281,11 +282,12 @@ public final class OpenCVHelp {
     /**
      * Undistort 2d image points using a given camera's intrinsics and distortion.
      *
-     * <p>2d image points from {@link #projectPoints(CameraProperties, Pose3d, List) projectPoints}
+     * <p>2d image points from {@link #org.photonvision.estimation.OpenCVHelp.projectPoints(CameraProperties, Pose3d, List) projectPoints}
      * will naturally be distorted, so this operation is important if the image points need to be
      * directly used (e.g. 2d yaw/pitch).
      *
-     * @param camProp The properties of this camera
+     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
+     * @param distCoeffs the camera distortion matrix in standard opencv form
      * @param corners The distorted image points
      * @return The undistorted image points
      */
@@ -377,7 +379,8 @@ public final class OpenCVHelp {
      * <p>This method is intended for use with individual AprilTags, and will not work unless 4 points
      * are provided.
      *
-     * @param camProp The properties of this camera
+     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
+     * @param distCoeffs the camera distortion matrix in standard opencv form
      * @param modelTrls The translations of the object corners. These should have the object pose as
      *     their origin. These must come in a specific, pose-relative order (in NWU):
      *     <ul>
@@ -456,7 +459,8 @@ public final class OpenCVHelp {
      * <p>This method is intended for use with multiple targets and has no alternate solutions. There
      * must be at least 3 points.
      *
-     * @param camProp The properties of this camera
+     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
+     * @param distCoeffs the camera distortion matrix in standard opencv form
      * @param objectTrls The translations of the object corners, relative to the field.
      * @param imageCorners The projection of these 3d object points into the 2d camera image. The
      *     order should match the given object point translations.
