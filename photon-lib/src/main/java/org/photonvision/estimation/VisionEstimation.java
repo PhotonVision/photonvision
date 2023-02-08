@@ -46,7 +46,8 @@ public class VisionEstimation {
      *
      * <p><b>Note:</b> The returned transformation is from the field origin to the camera pose!
      *
-     * @param prop The camera properties
+     * @param cameraMatrix the camera intrinsics matrix in standard opencv form
+     * @param distCoeffs the camera distortion matrix in standard opencv form
      * @param corners The visible tag corners in the 2d image
      * @param knownTags The known tag field poses corresponding to the visible tag IDs
      * @return The transformation that maps the field origin to the camera pose
