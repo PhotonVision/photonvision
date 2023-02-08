@@ -116,7 +116,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::LowestAmbiguityStrategy(
     PhotonPipelineResult result) {
   int lowestAJ = -1;
   double lowestAmbiguityScore = std::numeric_limits<double>::infinity();
-  auto targets = result.GetTargets();
+  auto const targets = result.GetTargets();
   for (PhotonPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
     if (targets[j].GetPoseAmbiguity() < lowestAmbiguityScore) {
       lowestAJ = j;
@@ -163,14 +163,14 @@ PhotonPoseEstimator::ClosestToCameraHeightStrategy(
                       target.GetFiducialId());
       continue;
     }
-    frc::Pose3d targetPose = fiducialPose.value();
+    frc::Pose3d const targetPose = fiducialPose.value();
 
-    units::meter_t alternativeDifference = units::math::abs(
+    units::meter_t const alternativeDifference = units::math::abs(
         m_robotToCamera.Z() -
         targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
             .Z());
 
-    units::meter_t bestDifference = units::math::abs(
+    units::meter_t const bestDifference = units::math::abs(
         m_robotToCamera.Z() -
         targetPose.TransformBy(target.GetBestCameraToTarget().Inverse()).Z());
 
@@ -221,9 +221,9 @@ PhotonPoseEstimator::ClosestToReferencePoseStrategy(
         targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
             .TransformBy(m_robotToCamera.Inverse());
 
-    units::meter_t alternativeDifference = units::math::abs(
+    units::meter_t const alternativeDifference = units::math::abs(
         referencePose.Translation().Distance(altPose.Translation()));
-    units::meter_t bestDifference = units::math::abs(
+    units::meter_t const bestDifference = units::math::abs(
         referencePose.Translation().Distance(bestPose.Translation()));
     if (alternativeDifference < smallestDifference) {
       smallestDifference = alternativeDifference;
@@ -249,7 +249,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
     return Update(result, this->multiTagFallbackStrategy);
   }
 
-  auto targets = result.GetTargets();
+  auto const targets = result.GetTargets();
 
   // List of corners mapped from 3d space (meters) to the 2d camera screen
   // (pixels).
@@ -259,8 +259,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   // Add all target corners to main list of corners
   for (auto target : targets) {
     int id = target.GetFiducialId();
-    if (auto tagCorners = CalcTagCorners(id); tagCorners.has_value()) {
-      auto targetCorners = target.GetDetectedCorners();
+    if (auto const tagCorners = CalcTagCorners(id); tagCorners.has_value()) {
+      auto const targetCorners = target.GetDetectedCorners();
       for (size_t cornerIdx = 0; cornerIdx < 4; ++cornerIdx) {
         imagePoints.emplace_back(targetCorners[cornerIdx].first,
                                  targetCorners[cornerIdx].second);
@@ -274,11 +274,11 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   }
 
   // Use OpenCV ITERATIVE solver
-  cv::Mat rvec(3, 1, cv::DataType<double>::type);
-  cv::Mat tvec(3, 1, cv::DataType<double>::type);
+  cv::Mat const rvec(3, 1, cv::DataType<double>::type);
+  cv::Mat const tvec(3, 1, cv::DataType<double>::type);
 
-  auto camMat = camera.GetCameraMatrix();
-  auto distCoeffs = camera.GetDistCoeffs();
+  auto const camMat = camera.GetCameraMatrix();
+  auto const distCoeffs = camera.GetDistCoeffs();
   if (!camMat || !distCoeffs) {
     return std::nullopt;
   }
@@ -286,7 +286,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   cv::solvePnP(objectPoints, imagePoints, camMat.value(), distCoeffs.value(),
                rvec, tvec, false, cv::SOLVEPNP_SQPNP);
 
-  Pose3d pose = ToPose3d(tvec, rvec);
+  Pose3d const pose = ToPose3d(tvec, rvec);
 
   return photonlib::EstimatedRobotPose(
       pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp());
@@ -355,7 +355,7 @@ PhotonPoseEstimator::AverageBestTargetsStrategy(PhotonPipelineResult result) {
 
   auto targets = result.GetTargets();
   for (PhotonPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
-    PhotonTrackedTarget target = targets[j];
+    PhotonTrackedTarget const target = targets[j];
     std::optional<frc::Pose3d> fiducialPose =
         aprilTags.GetTagPose(target.GetFiducialId());
     if (!fiducialPose) {
@@ -385,7 +385,7 @@ PhotonPoseEstimator::AverageBestTargetsStrategy(PhotonPipelineResult result) {
 
   for (std::pair<frc::Pose3d, std::pair<double, units::second_t>>& pair :
        tempPoses) {
-    double weight = (1. / pair.second.first) / totalAmbiguity;
+    double const weight = (1. / pair.second.first) / totalAmbiguity;
     transform = transform + pair.first.Translation() * weight;
     rotation = rotation + pair.first.Rotation() * weight;
   }
