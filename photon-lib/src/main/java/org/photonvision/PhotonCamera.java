@@ -68,8 +68,8 @@ public class PhotonCamera {
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
     IntegerEntry pipelineIndexEntry, ledModeEntry;
     IntegerSubscriber heartbeatEntry;
-    private DoubleArraySubscriber cameraIntrinsicsEntry;
-    private DoubleArraySubscriber cameraDistortionEntry;
+    private DoubleArraySubscriber cameraIntrinsicsSubscriber;
+    private DoubleArraySubscriber cameraDistortionSubscriber;
 
     public void close() {
         rawBytesEntry.close();
@@ -88,8 +88,8 @@ public class PhotonCamera {
         pipelineIndexEntry.close();
         ledModeEntry.close();
         heartbeatEntry.close();
-        cameraIntrinsicsEntry.close();
-        cameraDistortionEntry.close();
+        cameraIntrinsicsSubscriber.close();
+        cameraDistortionSubscriber.close();
     }
 
     private final String path;
@@ -137,8 +137,8 @@ public class PhotonCamera {
         heartbeatEntry = rootTable.getIntegerTopic("heartbeat").subscribe(-1);
         ledModeEntry = mainTable.getIntegerTopic("ledMode").getEntry(-1);
         versionEntry = mainTable.getStringTopic("version").subscribe("");
-        cameraIntrinsicsEntry = mainTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
-        cameraDistortionEntry = mainTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
+        cameraIntrinsicsSubscriber = mainTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
+        cameraDistortionSubscriber = mainTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
 
         m_topicNameSubscriber =
                 new MultiSubscriber(
@@ -312,14 +312,14 @@ public class PhotonCamera {
     }
 
     public Optional<Matrix<N3, N3>> getCameraMatrix() {
-        var cameraMatrix = cameraIntrinsicsEntry.get();
+        var cameraMatrix = cameraIntrinsicsSubscriber.get();
         if (cameraMatrix != null) {
             return Optional.of(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(cameraMatrix));
         } else return Optional.empty();
     }
 
     public Optional<Matrix<N5, N1>> getDistCoeffs() {
-        var distCoeffs = cameraDistortionEntry.get();
+        var distCoeffs = cameraDistortionSubscriber.get();
         if (distCoeffs != null) {
             return Optional.of(new MatBuilder<>(Nat.N5(), Nat.N1()).fill(distCoeffs));
         } else return Optional.empty();

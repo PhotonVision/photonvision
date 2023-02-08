@@ -54,9 +54,9 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       pipelineIndexEntry(rootTable->GetIntegerTopic("pipelineIndex").Publish()),
       ledModeEntry(mainTable->GetIntegerTopic("ledMode").Publish()),
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
-      cameraIntrinsicsEntry(
+      cameraIntrinsicsSubscriber(
           rootTable->GetDoubleArrayTopic("cameraIntrinsics").Subscribe({})),
-      cameraDistortionEntry(
+      cameraDistortionSubscriber(
           rootTable->GetDoubleArrayTopic("cameraDistortion").Subscribe({})),
       driverModeSubscriber(
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
@@ -124,7 +124,7 @@ LEDMode PhotonCamera::GetLEDMode() const {
 }
 
 std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
-  auto camCoeffs = cameraIntrinsicsEntry.Get();
+  auto camCoeffs = cameraIntrinsicsSubscriber.Get();
   if (camCoeffs.size() == 9) {
     // clone should deal with ownership concerns? not sure
     return cv::Mat(3, 3, CV_64FC1, camCoeffs.data()).clone();
@@ -133,7 +133,7 @@ std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
 }
 
 std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
-  auto distCoeffs = cameraDistortionEntry.Get();
+  auto distCoeffs = cameraDistortionSubscriber.Get();
   if (distCoeffs.size() == 5) {
     // clone should deal with ownership concerns? not sure
     return cv::Mat(5, 1, CV_64FC1, distCoeffs.data()).clone();

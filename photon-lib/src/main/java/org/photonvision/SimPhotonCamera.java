@@ -24,6 +24,10 @@
 
 package org.photonvision;
 
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N5;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.Arrays;
 import java.util.List;
@@ -51,6 +55,28 @@ public class SimPhotonCamera {
         ts.removeEntries();
         ts.subTable = instance.getTable(PhotonCamera.kTableName).getSubTable(cameraName);
         ts.updateEntries();
+    }
+
+    /**
+     * Publishes the camera intrinsics matrix. The matrix should be in the form: spotless:off
+     * fx  0   cx
+     * 0   fy  cy
+     * 0   0   1
+     * @param cameraMatrix The cam matrix
+     * spotless:on
+     */
+    public void setCameraIntrinsicsMat(Matrix<N3, N3> cameraMatrix) {
+        ts.cameraIntrinsicsPublisher.set(cameraMatrix.getData());
+    }
+
+    /**
+     * Publishes the camera distortion matrix. The matrix should be in the form [k1 k2 p1 p2 k3]. See
+     * more: https://docs.opencv.org/3.4/d4/d94/tutorial_camera_calibration.html
+     *
+     * @param distortionMat The distortion mat
+     */
+    public void setCameraDistortionMat(Matrix<N5, N1> distortionMat) {
+        ts.cameraDistortionPublisher.set(distortionMat.getData());
     }
 
     /**

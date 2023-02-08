@@ -184,8 +184,8 @@ class PhotonCamera {
   nt::IntegerPublisher ledModeEntry;
   nt::StringSubscriber versionEntry;
 
-  nt::DoubleArraySubscriber cameraIntrinsicsEntry;
-  nt::DoubleArraySubscriber cameraDistortionEntry;
+  nt::DoubleArraySubscriber cameraIntrinsicsSubscriber;
+  nt::DoubleArraySubscriber cameraDistortionSubscriber;
 
   nt::BooleanSubscriber driverModeSubscriber;
   nt::BooleanPublisher driverModePublisher;

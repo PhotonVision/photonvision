@@ -67,7 +67,7 @@ public class NTTopicSet {
 
     // Camera Calibration
     public DoubleArrayPublisher cameraIntrinsicsPublisher;
-    public DoubleArrayPublisher cameraExtrinsicsPublisher;
+    public DoubleArrayPublisher cameraDistortionPublisher;
 
     public void updateEntries() {
         rawBytesEntry =
@@ -101,7 +101,7 @@ public class NTTopicSet {
         heartbeatPublisher = heartbeatTopic.publish();
 
         cameraIntrinsicsPublisher = subTable.getDoubleArrayTopic("cameraIntrinsics").publish();
-        cameraExtrinsicsPublisher = subTable.getDoubleArrayTopic("cameraDistortion").publish();
+        cameraDistortionPublisher = subTable.getDoubleArrayTopic("cameraDistortion").publish();
     }
 
     @SuppressWarnings("DuplicatedCode")
@@ -126,6 +126,6 @@ public class NTTopicSet {
         if (heartbeatPublisher != null) heartbeatPublisher.close();
 
         if (cameraIntrinsicsPublisher != null) cameraIntrinsicsPublisher.close();
-        if (cameraExtrinsicsPublisher != null) cameraExtrinsicsPublisher.close();
+        if (cameraDistortionPublisher != null) cameraDistortionPublisher.close();
     }
 }
