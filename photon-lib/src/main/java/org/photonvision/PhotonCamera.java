@@ -43,7 +43,6 @@ import edu.wpi.first.networktables.RawSubscriber;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
-
 import java.util.Optional;
 import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;

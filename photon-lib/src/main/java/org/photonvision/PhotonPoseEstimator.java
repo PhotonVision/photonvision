@@ -266,8 +266,7 @@ public class PhotonPoseEstimator {
             var cameraMatrix = cameraMatrixOpt.get();
             var distCoeffs = distCoeffsOpt.get();
             var pnpResults =
-                    VisionEstimation.estimateCamPosePNP(
-                            cameraMatrix, distCoeffs, visCorners, knownVisTags);
+                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
             var best =
                     new Pose3d()
                             .plus(pnpResults.best) // field-to-camera

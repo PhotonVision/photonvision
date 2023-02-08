@@ -44,11 +44,9 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("standardDeviation")
     public final double standardDeviation;
 
-    @JsonIgnore
-    private final double[] intrinsicsArr = new double[9];
+    @JsonIgnore private final double[] intrinsicsArr = new double[9];
 
-    @JsonIgnore
-    private final double[] extrinsicsArr = new double[5];
+    @JsonIgnore private final double[] extrinsicsArr = new double[5];
 
     @JsonCreator
     public CameraCalibrationCoefficients(

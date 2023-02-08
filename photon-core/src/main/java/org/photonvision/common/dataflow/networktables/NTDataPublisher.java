@@ -136,8 +136,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
     public void accept(CVPipelineResult result) {
         var simplified =
                 new PhotonPipelineResult(
-                        result.getLatencyMillis(),
-                        simpleFromTrackedTargets(result.targets));
+                        result.getLatencyMillis(), simpleFromTrackedTargets(result.targets));
         Packet packet = new Packet(simplified.getPacketSize());
         simplified.populatePacket(packet);
 
@@ -183,16 +182,12 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         var fsp = result.inputAndOutputFrame.frameStaticProperties;
         if (fsp.cameraCalibration != null) {
-            ts.cameraIntrinsicsPublisher.accept(
-                fsp.cameraCalibration.getIntrinsicsArr()
-            );
+            ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
 
-            ts.cameraExtrinsicsPublisher.accept(
-                fsp.cameraCalibration.getExtrinsicsArr()
-            );
+            ts.cameraExtrinsicsPublisher.accept(fsp.cameraCalibration.getExtrinsicsArr());
         } else {
-            ts.cameraIntrinsicsPublisher.accept(new double[]{});
-            ts.cameraExtrinsicsPublisher.accept(new double[]{});
+            ts.cameraIntrinsicsPublisher.accept(new double[] {});
+            ts.cameraExtrinsicsPublisher.accept(new double[] {});
         }
 
         ts.heartbeatPublisher.set(heartbeatCounter++);

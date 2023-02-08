@@ -52,8 +52,10 @@ public class VisionEstimation {
      * @return The transformation that maps the field origin to the camera pose
      */
     public static PNPResults estimateCamPosePNP(
-            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs,
-            List<TargetCorner> corners, List<AprilTag> knownTags) {
+            Matrix<N3, N3> cameraMatrix,
+            Matrix<N5, N1> distCoeffs,
+            List<TargetCorner> corners,
+            List<AprilTag> knownTags) {
         if (knownTags == null
                 || corners == null
                 || corners.size() != knownTags.size() * 4

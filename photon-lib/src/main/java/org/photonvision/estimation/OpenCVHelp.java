@@ -248,8 +248,10 @@ public final class OpenCVHelp {
      * @return The 2d points in pixels which correspond to the image of the 3d points on the camera
      */
     public static List<TargetCorner> projectPoints(
-            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs,
-            Pose3d camPose, List<Translation3d> objectTranslations) {
+            Matrix<N3, N3> cameraMatrix,
+            Matrix<N5, N1> distCoeffs,
+            Pose3d camPose,
+            List<Translation3d> objectTranslations) {
         // translate to opencv classes
         var objectPoints = translationToTvec(objectTranslations.toArray(new Translation3d[0]));
         // opencv rvec/tvec describe a change in basis from world to camera
@@ -288,8 +290,7 @@ public final class OpenCVHelp {
      * @return The undistorted image points
      */
     public static List<TargetCorner> undistortPoints(
-            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs,
-            List<TargetCorner> corners) {
+            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs, List<TargetCorner> corners) {
         var points_in = targetCornersToMat(corners);
         var points_out = new MatOfPoint2f();
         var cameraMatrixMat = matrixToMat(cameraMatrix.getStorage());
@@ -392,8 +393,10 @@ public final class OpenCVHelp {
      *     ambiguity if an alternate solution is available.
      */
     public static PNPResults solvePNP_SQUARE(
-            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs,
-            List<Translation3d> modelTrls, List<TargetCorner> imageCorners) {
+            Matrix<N3, N3> cameraMatrix,
+            Matrix<N5, N1> distCoeffs,
+            List<Translation3d> modelTrls,
+            List<TargetCorner> imageCorners) {
         // IPPE_SQUARE expects our corners in a specific order
         modelTrls = reorderCircular(modelTrls, true, -1);
         imageCorners = reorderCircular(imageCorners, true, -1);
@@ -462,8 +465,10 @@ public final class OpenCVHelp {
      *     the origin.
      */
     public static PNPResults solvePNP_SQPNP(
-            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs,
-            List<Translation3d> objectTrls, List<TargetCorner> imageCorners) {
+            Matrix<N3, N3> cameraMatrix,
+            Matrix<N5, N1> distCoeffs,
+            List<Translation3d> objectTrls,
+            List<TargetCorner> imageCorners) {
         // translate to opencv classes
         var objectPoints = translationToTvec(objectTrls.toArray(new Translation3d[0]));
         var imagePoints = targetCornersToMat(imageCorners);

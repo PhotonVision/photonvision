@@ -43,8 +43,7 @@ public class PhotonPipelineResult {
      * @param latencyMillis The latency in the pipeline.
      * @param targets The list of targets identified by the pipeline.
      */
-    public PhotonPipelineResult(
-            double latencyMillis, List<PhotonTrackedTarget> targets) {
+    public PhotonPipelineResult(double latencyMillis, List<PhotonTrackedTarget> targets) {
         this.latencyMillis = latencyMillis;
         this.targets.addAll(targets);
     }
@@ -55,9 +54,7 @@ public class PhotonPipelineResult {
      * @return The size of the packet needed to store this pipeline result.
      */
     public int getPacketSize() {
-        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES
-                + 8
-                + 2;
+        return targets.size() * PhotonTrackedTarget.PACK_SIZE_BYTES + 8 + 2;
     }
 
     /**
