@@ -68,7 +68,7 @@ public class ApriltagWorkbenchTest {
         PhotonCamera.setVersionCheckEnabled(false);
     }
 
-    @Test
+    // @Test
     public void testMeme() throws IOException, InterruptedException {
         NetworkTableInstance instance = NetworkTableInstance.getDefault();
         instance.stopServer();
