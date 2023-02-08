@@ -153,3 +153,4 @@ photon-server/src/main/resources/nativelibraries/apriltag/*
 
 photonlib-java-examples/*/vendordeps/*
 photonlib-cpp-examples/*/vendordeps/*
+photon-lib/networktables.json
