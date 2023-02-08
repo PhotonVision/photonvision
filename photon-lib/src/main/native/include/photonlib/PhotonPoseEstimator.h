@@ -110,6 +110,14 @@ class PhotonPoseEstimator {
   inline void SetPoseStrategy(PoseStrategy strat) { strategy = strat; }
 
   /**
+   * Set the Position Estimation Strategy used in multi-tag mode when
+   * only one tag can be seen. Must NOT be MULTI_TAG_PNP
+   *
+   * @param strategy the strategy to set
+   */
+  void SetMultiTagFallbackStrategy(PoseStrategy strategy);
+
+  /**
    * Return the reference position that is being used by the estimator.
    *
    * @return the referencePose
@@ -145,12 +153,16 @@ class PhotonPoseEstimator {
  private:
   frc::AprilTagFieldLayout aprilTags;
   PoseStrategy strategy;
+  PoseStrategy multiTagFallbackStrategy = LOWEST_AMBIGUITY;
 
   PhotonCamera camera;
   frc::Transform3d m_robotToCamera;
 
   frc::Pose3d lastPose;
   frc::Pose3d referencePose;
+
+  std::optional<EstimatedRobotPose> Update(PhotonPipelineResult result,
+                                           PoseStrategy strategy);
 
   /**
    * Return the estimated position of the robot with the lowest position

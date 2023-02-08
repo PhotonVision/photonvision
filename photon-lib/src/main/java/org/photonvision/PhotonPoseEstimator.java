@@ -71,7 +71,8 @@ public class PhotonPoseEstimator {
     }
 
     private AprilTagFieldLayout fieldTags;
-    private PoseStrategy strategy;
+    private PoseStrategy primaryStrategy;
+    private PoseStrategy multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY;
     private final PhotonCamera camera;
     private final Transform3d robotToCamera;
 
@@ -99,7 +100,7 @@ public class PhotonPoseEstimator {
             PhotonCamera camera,
             Transform3d robotToCamera) {
         this.fieldTags = fieldTags;
-        this.strategy = strategy;
+        this.primaryStrategy = strategy;
         this.camera = camera;
         this.robotToCamera = robotToCamera;
     }
@@ -127,8 +128,8 @@ public class PhotonPoseEstimator {
      *
      * @return the strategy
      */
-    public PoseStrategy getStrategy() {
-        return strategy;
+    public PoseStrategy getPrimaryStrategy() {
+        return primaryStrategy;
     }
 
     /**
@@ -136,8 +137,23 @@ public class PhotonPoseEstimator {
      *
      * @param strategy the strategy to set
      */
-    public void setStrategy(PoseStrategy strategy) {
-        this.strategy = strategy;
+    public void setPrimaryStrategy(PoseStrategy strategy) {
+        this.primaryStrategy = strategy;
+    }
+
+    /**
+     * Set the Position Estimation Strategy used in multi-tag mode when only one tag can be seen. Must
+     * NOT be MULTI_TAG_PNP
+     *
+     * @param strategy the strategy to set
+     */
+    public void setMultiTagFallbackStrategy(PoseStrategy strategy) {
+        if (strategy == PoseStrategy.MULTI_TAG_PNP) {
+            DriverStation.reportWarning(
+                    "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity", null);
+            strategy = PoseStrategy.LOWEST_AMBIGUITY;
+        }
+        this.multiTagFallbackStrategy = strategy;
     }
 
     /**
@@ -207,8 +223,13 @@ public class PhotonPoseEstimator {
             return Optional.empty();
         }
 
+        return update(cameraResult, this.primaryStrategy);
+    }
+
+    private Optional<EstimatedRobotPose> update(
+            PhotonPipelineResult cameraResult, PoseStrategy strat) {
         Optional<EstimatedRobotPose> estimatedPose;
-        switch (strategy) {
+        switch (strat) {
             case LOWEST_AMBIGUITY:
                 estimatedPose = lowestAmbiguityStrategy(cameraResult);
                 break;
@@ -246,6 +267,11 @@ public class PhotonPoseEstimator {
         var fieldToCams = new ArrayList<Pose3d>();
         var fieldToCamsAlt = new ArrayList<Pose3d>();
 
+        if (result.getTargets().size() < 2) {
+            // Run fallback strategy instead
+            update(result, this.multiTagFallbackStrategy);
+        }
+
         for (var target : result.getTargets()) {
             visCorners.addAll(target.getDetectedCorners());
             Pose3d tagPose = fieldTags.getTagPose(target.getFiducialId()).get();
@@ -262,7 +288,7 @@ public class PhotonPoseEstimator {
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
 
         // multi-target solvePNP
-        if (result.getTargets().size() > 1 && hasCalibData) {
+        if (hasCalibData) {
             var cameraMatrix = cameraMatrixOpt.get();
             var distCoeffs = distCoeffsOpt.get();
             var pnpResults =

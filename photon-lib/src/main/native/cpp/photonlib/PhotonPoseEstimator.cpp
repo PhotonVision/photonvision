@@ -54,6 +54,17 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
       lastPose(frc::Pose3d()),
       referencePose(frc::Pose3d()) {}
 
+void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
+  if (strategy == MULTI_TAG_PNP) {
+    FRC_ReportError(
+        frc::warn::Warning,
+        "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity",
+        "");
+    strategy = LOWEST_AMBIGUITY;
+  }
+  multiTagFallbackStrategy = strategy;
+}
+
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
   auto result = camera.GetLatestResult();
 
@@ -61,6 +72,11 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
     return std::nullopt;
   }
 
+  return Update(result, this->strategy);
+}
+
+std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
+    PhotonPipelineResult result, PoseStrategy strategy) {
   std::optional<EstimatedRobotPose> ret = std::nullopt;
 
   switch (strategy) {
@@ -229,8 +245,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
     PhotonPipelineResult result) {
   using namespace frc;
 
-  if (!result.HasTargets()) {
-    return std::nullopt;
+  if (!result.HasTargets() || result.GetTargets().size() < 2) {
+    return Update(result, this->multiTagFallbackStrategy);
   }
 
   auto targets = result.GetTargets();
