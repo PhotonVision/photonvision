@@ -36,7 +36,11 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
+
+// Fun hack i have to add at least on my linux laptop
+#define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT 1
 #include <opencv2/core/eigen.hpp>
+
 #include <units/time.h>
 
 #include "photonlib/PhotonCamera.h"
