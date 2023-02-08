@@ -248,7 +248,7 @@ public final class OpenCVHelp {
      * @return The 2d points in pixels which correspond to the image of the 3d points on the camera
      */
     public static List<TargetCorner> projectPoints(
-            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs, 
+            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs,
             Pose3d camPose, List<Translation3d> objectTranslations) {
         // translate to opencv classes
         var objectPoints = translationToTvec(objectTranslations.toArray(new Translation3d[0]));
@@ -288,7 +288,7 @@ public final class OpenCVHelp {
      * @return The undistorted image points
      */
     public static List<TargetCorner> undistortPoints(
-            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs, 
+            Matrix<N3, N3> cameraMatrix, Matrix<N5, N1> distCoeffs,
             List<TargetCorner> corners) {
         var points_in = targetCornersToMat(corners);
         var points_out = new MatOfPoint2f();

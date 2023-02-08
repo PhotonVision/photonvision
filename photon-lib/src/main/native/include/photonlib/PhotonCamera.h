@@ -28,8 +28,8 @@
 #include <string>
 
 #include <networktables/BooleanTopic.h>
-#include <networktables/DoubleTopic.h>
 #include <networktables/DoubleArrayTopic.h>
+#include <networktables/DoubleTopic.h>
 #include <networktables/IntegerTopic.h>
 #include <networktables/MultiSubscriber.h>
 #include <networktables/NetworkTable.h>
@@ -41,7 +41,9 @@
 
 #include "photonlib/PhotonPipelineResult.h"
 
-namespace cv { class Mat; }
+namespace cv {
+class Mat;
+}  // namespace cv
 
 namespace photonlib {
 

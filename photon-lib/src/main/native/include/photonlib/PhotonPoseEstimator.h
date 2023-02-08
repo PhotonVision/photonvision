@@ -32,11 +32,10 @@
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
-
-#include "photonlib/PhotonCamera.h"
-
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/mat.hpp>
+
+#include "photonlib/PhotonCamera.h"
 
 namespace photonlib {
 enum PoseStrategy {
@@ -187,7 +186,8 @@ class PhotonPoseEstimator {
       PhotonPipelineResult result);
 
   /**
-   * Return the pose calculation using all targets in view in the same PNP() calculation
+   * Return the pose calculation using all targets in view in the same PNP()
+   calculation
 
    * @return the estimated position of the robot in the FCS and the estimated
    timestamp of this estimation.
@@ -205,8 +205,8 @@ class PhotonPoseEstimator {
       PhotonPipelineResult result);
 
   cv::Point3d TagCornerToObjectPoint(units::meter_t cornerX,
-                                                        units::meter_t cornerY,
-                                                        frc::Pose3d tagPose);
+                                     units::meter_t cornerY,
+                                     frc::Pose3d tagPose);
   cv::Point3d ToPoint3d(const frc::Translation3d& translation);
   std::optional<std::array<cv::Point3d, 4>> CalcTagCorners(int id);
   frc::Pose3d ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec);

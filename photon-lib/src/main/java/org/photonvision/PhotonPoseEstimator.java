@@ -260,7 +260,7 @@ public class PhotonPoseEstimator {
         var cameraMatrixOpt = camera.getCameraMatrix();
         var distCoeffsOpt = camera.getDistCoeffs();
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
-        
+
         // multi-target solvePNP
         if (result.getTargets().size() > 1 && hasCalibData) {
             var cameraMatrix = cameraMatrixOpt.get();
