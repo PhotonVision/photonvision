@@ -70,7 +70,7 @@ public class PhotonCamera {
     IntegerEntry pipelineIndexEntry, ledModeEntry;
     IntegerSubscriber heartbeatEntry;
     private DoubleArraySubscriber cameraIntrinsicsEntry;
-    private DoubleArraySubscriber cameraExtrinsicsEntry;
+    private DoubleArraySubscriber cameraDistortionEntry;
 
     public void close() {
         rawBytesEntry.close();
@@ -90,7 +90,7 @@ public class PhotonCamera {
         ledModeEntry.close();
         heartbeatEntry.close();
         cameraIntrinsicsEntry.close();
-        cameraExtrinsicsEntry.close();
+        cameraDistortionEntry.close();
     }
 
     private final String path;
@@ -139,7 +139,7 @@ public class PhotonCamera {
         ledModeEntry = mainTable.getIntegerTopic("ledMode").getEntry(-1);
         versionEntry = mainTable.getStringTopic("version").subscribe("");
         cameraIntrinsicsEntry = mainTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
-        cameraExtrinsicsEntry = mainTable.getDoubleArrayTopic("cameraExtrinsics").subscribe(null);
+        cameraDistortionEntry = mainTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
 
         m_topicNameSubscriber =
                 new MultiSubscriber(
@@ -320,7 +320,7 @@ public class PhotonCamera {
     }
 
     public Optional<Matrix<N5, N1>> getDistCoeffs() {
-        var distCoeffs = cameraExtrinsicsEntry.get();
+        var distCoeffs = cameraDistortionEntry.get();
         if (distCoeffs != null) {
             return Optional.of(new MatBuilder<>(Nat.N5(), Nat.N1()).fill(distCoeffs));
         } else return Optional.empty();

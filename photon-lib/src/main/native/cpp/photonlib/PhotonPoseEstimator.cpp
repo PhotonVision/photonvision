@@ -42,6 +42,8 @@
 #include "photonlib/PhotonPipelineResult.h"
 #include "photonlib/PhotonTrackedTarget.h"
 
+#include <opencv2/core/eigen.hpp>
+
 namespace photonlib {
 PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
                                          PoseStrategy strat, PhotonCamera&& cam,
@@ -78,6 +80,9 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
       break;
     case AVERAGE_BEST_TARGETS:
       ret = AverageBestTargetsStrategy(result);
+      break;
+    case ::photonlib::MULTI_TAG_PNP:
+      ret = MultiTagPnpStrategy(result);
       break;
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
@@ -219,6 +224,110 @@ PhotonPoseEstimator::ClosestToReferencePoseStrategy(
   }
 
   return EstimatedRobotPose{pose, stateTimestamp};
+}
+
+std::optional<EstimatedRobotPose>
+PhotonPoseEstimator::MultiTagPnpStrategy(PhotonPipelineResult result) {
+  using namespace frc;
+
+  if (!result.HasTargets()) {
+    return std::nullopt;
+  }
+
+  auto targets = result.GetTargets();
+
+  // List of corners mapped from 3d space (meters) to the 2d camera screen
+  // (pixels).
+  std::vector<cv::Point3f> objectPoints;
+  std::vector<cv::Point2f> imagePoints;
+
+  // Add all target corners to main list of corners
+  for (auto target : targets) {
+    int id = target.GetFiducialId();
+    if (auto tagCorners = CalcTagCorners(id); tagCorners.has_value()) {
+      auto targetCorners = target.GetDetectedCorners();
+      for (size_t cornerIdx = 0; cornerIdx < 4; ++cornerIdx) {
+        imagePoints.emplace_back(targetCorners[cornerIdx].first,
+                                 targetCorners[cornerIdx].second);
+        objectPoints.emplace_back((*tagCorners)[cornerIdx]);
+      }
+    }
+  }
+
+  if (imagePoints.empty()) {
+    return std::nullopt;
+  }
+
+  // Use OpenCV ITERATIVE solver
+  cv::Mat rvec(3, 1, cv::DataType<double>::type);
+  cv::Mat tvec(3, 1, cv::DataType<double>::type);
+
+  auto camMat = camera.GetCameraMatrix();
+  auto distCoeffs = camera.GetDistCoeffs();
+  if (!camMat || !distCoeffs) {
+    return std::nullopt;
+  }
+
+  cv::solvePnP(objectPoints, imagePoints, camMat.value(),
+               distCoeffs.value(), rvec, tvec, false, cv::SOLVEPNP_SQPNP);
+
+  Pose3d pose = ToPose3d(tvec, rvec);
+
+  return photonlib::EstimatedRobotPose(
+      pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp());
+}
+
+frc::Pose3d PhotonPoseEstimator::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
+  using namespace frc;
+  using namespace units;
+
+  cv::Mat R;
+  cv::Rodrigues(rvec, R);  // R is 3x3
+
+  R = R.t();                  // rotation of inverse
+  cv::Mat tvecI = -R * tvec;  // translation of inverse
+
+  Vectord<3> tv;
+  tv[0] = +tvecI.at<double>(2, 0);
+  tv[1] = -tvecI.at<double>(0, 0);
+  tv[2] = -tvecI.at<double>(1, 0);
+  Vectord<3> rv;
+  rv[0] = +rvec.at<double>(2, 0);
+  rv[1] = -rvec.at<double>(0, 0);
+  rv[2] = +rvec.at<double>(1, 0);
+
+  return Pose3d(Translation3d(meter_t{tv[0]}, meter_t{tv[1]}, meter_t{tv[2]}),
+                Rotation3d(
+                    // radian_t{rv[0]},
+                    // radian_t{rv[1]},
+                    // radian_t{rv[2]}
+                    rv, radian_t{rv.norm()}));
+}
+
+std::optional<std::array<cv::Point3d, 4>> PhotonPoseEstimator::CalcTagCorners(
+    int tagID) {
+  if (auto tagPose = aprilTags.GetTagPose(tagID); tagPose.has_value()) {
+    return std::array{TagCornerToObjectPoint(-3_in, -3_in, *tagPose),
+                      TagCornerToObjectPoint(+3_in, -3_in, *tagPose),
+                      TagCornerToObjectPoint(+3_in, +3_in, *tagPose),
+                      TagCornerToObjectPoint(-3_in, +3_in, *tagPose)};
+  } else {
+    return std::nullopt;
+  }
+}
+
+cv::Point3d PhotonPoseEstimator::ToPoint3d(const frc::Translation3d& translation) {
+  return cv::Point3d(-translation.Y().value(), -translation.Z().value(),
+                     +translation.X().value());
+}
+
+cv::Point3d PhotonPoseEstimator::TagCornerToObjectPoint(units::meter_t cornerX,
+                                                        units::meter_t cornerY,
+                                                        frc::Pose3d tagPose) {
+  frc::Translation3d cornerTrans =
+      tagPose.Translation() +
+      frc::Translation3d(0.0_m, cornerX, cornerY).RotateBy(tagPose.Rotation());
+  return ToPoint3d(cornerTrans);
 }
 
 std::optional<EstimatedRobotPose>

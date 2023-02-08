@@ -29,6 +29,7 @@
 
 #include <networktables/BooleanTopic.h>
 #include <networktables/DoubleTopic.h>
+#include <networktables/DoubleArrayTopic.h>
 #include <networktables/IntegerTopic.h>
 #include <networktables/MultiSubscriber.h>
 #include <networktables/NetworkTable.h>
@@ -39,6 +40,8 @@
 #include <wpi/deprecated.h>
 
 #include "photonlib/PhotonPipelineResult.h"
+
+namespace cv { class Mat; }
 
 namespace photonlib {
 
@@ -144,6 +147,9 @@ class PhotonCamera {
    */
   const std::string_view GetCameraName() const;
 
+  std::optional<cv::Mat> GetCameraMatrix();
+  std::optional<cv::Mat> GetDistCoeffs();
+
   /**
    * Returns whether the latest target result has targets.
    * This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should
@@ -175,6 +181,9 @@ class PhotonCamera {
   nt::IntegerPublisher pipelineIndexEntry;
   nt::IntegerPublisher ledModeEntry;
   nt::StringSubscriber versionEntry;
+
+  nt::DoubleArraySubscriber cameraIntrinsicsEntry;
+  nt::DoubleArraySubscriber cameraDistortionEntry;
 
   nt::BooleanSubscriber driverModeSubscriber;
   nt::BooleanPublisher driverModePublisher;

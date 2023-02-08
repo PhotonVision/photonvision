@@ -101,7 +101,7 @@ public class NTTopicSet {
         heartbeatPublisher = heartbeatTopic.publish();
 
         cameraIntrinsicsPublisher = subTable.getDoubleArrayTopic("cameraIntrinsics").publish();
-        cameraExtrinsicsPublisher = subTable.getDoubleArrayTopic("cameraExtrinsics").publish();
+        cameraExtrinsicsPublisher = subTable.getDoubleArrayTopic("cameraDistortion").publish();
     }
 
     @SuppressWarnings("DuplicatedCode")

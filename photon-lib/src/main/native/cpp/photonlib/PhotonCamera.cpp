@@ -29,6 +29,7 @@
 
 #include "PhotonVersion.h"
 #include "photonlib/Packet.h"
+#include <opencv2/core/mat.hpp>
 
 namespace photonlib {
 
@@ -53,6 +54,8 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       pipelineIndexEntry(rootTable->GetIntegerTopic("pipelineIndex").Publish()),
       ledModeEntry(mainTable->GetIntegerTopic("ledMode").Publish()),
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
+      cameraIntrinsicsEntry(rootTable->GetDoubleArrayTopic("cameraIntrinsics").Subscribe({})),
+      cameraDistortionEntry(rootTable->GetDoubleArrayTopic("cameraDistortion").Subscribe({})),
       driverModeSubscriber(
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
@@ -118,12 +121,22 @@ LEDMode PhotonCamera::GetLEDMode() const {
   return static_cast<LEDMode>(static_cast<int>(ledModeSubscriber.Get()));
 }
 
-void PhotonCamera::SetLEDMode(LEDMode mode) {
-  ledModeEntry.Set(static_cast<double>(static_cast<int>(mode)));
+std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
+    auto camCoeffs = cameraIntrinsicsEntry.Get();
+    if (camCoeffs.size() == 9) {
+      // clone should deal with ownership concerns? not sure
+      return cv::Mat(3, 3, CV_64FC1, camCoeffs.data()).clone();
+    } 
+    return std::nullopt;
 }
 
-const std::string_view PhotonCamera::GetCameraName() const {
-  return m_cameraName;
+std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
+    auto distCoeffs = cameraDistortionEntry.Get();
+    if (distCoeffs.size() == 5) {
+      // clone should deal with ownership concerns? not sure
+      return cv::Mat(5, 1, CV_64FC1, distCoeffs.data()).clone();
+    } 
+    return std::nullopt;
 }
 
 void PhotonCamera::VerifyVersion() {

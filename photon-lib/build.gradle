@@ -71,6 +71,7 @@ model {
             }
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
     testSuites {
@@ -87,6 +88,7 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
 }

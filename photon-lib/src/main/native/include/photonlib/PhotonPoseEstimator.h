@@ -35,13 +35,17 @@
 
 #include "photonlib/PhotonCamera.h"
 
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core/mat.hpp>
+
 namespace photonlib {
-enum PoseStrategy : int {
-  LOWEST_AMBIGUITY,
+enum PoseStrategy {
+  LOWEST_AMBIGUITY = 0,
   CLOSEST_TO_CAMERA_HEIGHT,
   CLOSEST_TO_REFERENCE_POSE,
   CLOSEST_TO_LAST_POSE,
-  AVERAGE_BEST_TARGETS
+  AVERAGE_BEST_TARGETS,
+  MULTI_TAG_PNP
 };
 
 struct EstimatedRobotPose {
@@ -183,14 +187,29 @@ class PhotonPoseEstimator {
       PhotonPipelineResult result);
 
   /**
+   * Return the pose calculation using all targets in view in the same PNP() calculation
+
+   * @return the estimated position of the robot in the FCS and the estimated
+   timestamp of this estimation.
+   */
+  std::optional<EstimatedRobotPose> MultiTagPnpStrategy(
+      PhotonPipelineResult result);
+
+  /**
    * Return the average of the best target poses using ambiguity as weight.
 
    * @return the estimated position of the robot in the FCS and the estimated
-   timestamp of this
-   *     estimation.
+   timestamp of this estimation.
    */
   std::optional<EstimatedRobotPose> AverageBestTargetsStrategy(
       PhotonPipelineResult result);
+
+  cv::Point3d TagCornerToObjectPoint(units::meter_t cornerX,
+                                                        units::meter_t cornerY,
+                                                        frc::Pose3d tagPose);
+  cv::Point3d ToPoint3d(const frc::Translation3d& translation);
+  std::optional<std::array<cv::Point3d, 4>> CalcTagCorners(int id);
+  frc::Pose3d ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec);
 };
 
 }  // namespace photonlib
