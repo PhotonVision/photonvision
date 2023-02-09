@@ -624,7 +624,7 @@ export default {
             this.uploadSnackData = {
               color: "success",
               text:
-                "Calibration imported successfully! PhotonVision will restart in the background...",
+                "Calibration imported successfully!",
             };
             this.uploadSnack = true;
           })
