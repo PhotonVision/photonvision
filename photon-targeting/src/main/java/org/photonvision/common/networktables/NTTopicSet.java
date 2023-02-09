@@ -41,9 +41,8 @@ public class NTTopicSet {
     public NetworkTable subTable;
     public RawPublisher rawBytesEntry;
 
-    public IntegerTopic pipelineIndexTopic;
     public IntegerPublisher pipelineIndexPublisher;
-    public IntegerSubscriber pipelineIndexSubscriber;
+    public IntegerSubscriber pipelineIndexRequestSub;
 
     public BooleanTopic driverModeEntry;
     public BooleanPublisher driverModePublisher;
@@ -71,9 +70,8 @@ public class NTTopicSet {
                         .getRawTopic("rawBytes")
                         .publish("rawBytes", PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
 
-        pipelineIndexTopic = subTable.getIntegerTopic("pipelineIndex");
-        pipelineIndexPublisher = pipelineIndexTopic.publish();
-        pipelineIndexSubscriber = pipelineIndexTopic.subscribe(0);
+        pipelineIndexPublisher = subTable.getIntegerTopic("pipelineIndexState").publish();
+        pipelineIndexRequestSub = subTable.getIntegerTopic("pipelineIndexRequest").subscribe(0);
 
         driverModePublisher = subTable.getBooleanTopic("driverMode").publish();
         driverModeSubscriber = subTable.getBooleanTopic("driverModeRequest").subscribe(false);
@@ -101,7 +99,7 @@ public class NTTopicSet {
     public void removeEntries() {
         if (rawBytesEntry != null) rawBytesEntry.close();
         if (pipelineIndexPublisher != null) pipelineIndexPublisher.close();
-        if (pipelineIndexSubscriber != null) pipelineIndexSubscriber.close();
+        if (pipelineIndexRequestSub != null) pipelineIndexRequestSub.close();
 
         if (driverModePublisher != null) driverModePublisher.close();
         if (driverModeSubscriber != null) driverModeSubscriber.close();

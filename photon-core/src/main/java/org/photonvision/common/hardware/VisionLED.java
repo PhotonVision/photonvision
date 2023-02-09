@@ -21,6 +21,7 @@ import edu.wpi.first.networktables.NetworkTableEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import org.photonvision.common.hardware.GPIO.CustomGPIO;
 import org.photonvision.common.hardware.GPIO.GPIOBase;
 import org.photonvision.common.hardware.GPIO.pi.PigpioException;
@@ -45,11 +46,18 @@ public class VisionLED {
 
     private int mappedBrightnessPercentage;
 
+    private Consumer<Integer> modeConsumer;
+
     public VisionLED(
-            List<Integer> ledPins, int brightnessMin, int brightnessMax, PigpioSocket pigpioSocket) {
+            List<Integer> ledPins,
+            int brightnessMin,
+            int brightnessMax,
+            PigpioSocket pigpioSocket,
+            Consumer<Integer> visionLEDmode) {
         this.brightnessMin = brightnessMin;
         this.brightnessMax = brightnessMax;
         this.pigpioSocket = pigpioSocket;
+        this.modeConsumer = visionLEDmode;
         this.ledPins = ledPins.stream().mapToInt(i -> i).toArray();
         ledPins.forEach(
                 pin -> {
@@ -123,7 +131,8 @@ public class VisionLED {
     }
 
     void onLedModeChange(NetworkTableEvent entryNotification) {
-        var newLedModeRaw = (int) entryNotification.valueData.value.getDouble();
+        var newLedModeRaw = (int) entryNotification.valueData.value.getInteger();
+        logger.debug("Got LED mode " + newLedModeRaw);
         if (newLedModeRaw != currentLedMode.value) {
             VisionLEDMode newLedMode;
             switch (newLedModeRaw) {
@@ -145,6 +154,8 @@ public class VisionLED {
                     break;
             }
             setInternal(newLedMode, true);
+
+            if (modeConsumer != null) modeConsumer.accept(newLedMode.value);
         }
     }
 
