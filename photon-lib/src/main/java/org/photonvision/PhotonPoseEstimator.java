@@ -67,7 +67,7 @@ public class PhotonPoseEstimator {
     private AprilTagFieldLayout fieldTags;
     private PoseStrategy strategy;
     private final PhotonCamera camera;
-    private final Transform3d robotToCamera;
+    private Transform3d robotToCamera;
 
     private Pose3d lastPose;
     private Pose3d referencePose;
@@ -181,6 +181,21 @@ public class PhotonPoseEstimator {
      */
     public void setLastPose(Pose2d lastPose) {
         setLastPose(new Pose3d(lastPose));
+    }
+
+    /** @return The current transform from the center of the robot to the camera mount position */
+    public Transform3d getRobotToCameraTransform() {
+        return robotToCamera;
+    }
+
+    /**
+     * Useful for pan and tilt mechanisms and such.
+     *
+     * @param robotToCamera The current transform from the center of the robot to the camera mount
+     *     position
+     */
+    public void setRobotToCameraTransform(Transform3d robotToCamera) {
+        this.robotToCamera = robotToCamera;
     }
 
     /**
