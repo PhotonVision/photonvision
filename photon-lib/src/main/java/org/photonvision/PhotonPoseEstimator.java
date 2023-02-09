@@ -41,7 +41,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 /**
- * The PhotonPoseEstimator class filters or combines readings from all the fiducials visible at a
+ * The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a
  * given timestamp on the field to produce a single robot in field pose, using the strategy set
  * below. Example usage can be found in our apriltagExample example project.
  */
@@ -67,7 +67,7 @@ public class PhotonPoseEstimator {
     private AprilTagFieldLayout fieldTags;
     private PoseStrategy strategy;
     private final PhotonCamera camera;
-    private final Transform3d robotToCamera;
+    private Transform3d robotToCamera;
 
     private Pose3d lastPose;
     private Pose3d referencePose;
@@ -76,12 +76,16 @@ public class PhotonPoseEstimator {
     /**
      * Create a new PhotonPoseEstimator.
      *
-     * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3ds with
-     *     respect to the FIRST field.
+     * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3d objects
+     *     with respect to the FIRST field using the <a
+     *     href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
+     *     Coordinate System</a>.
      * @param strategy The strategy it should use to determine the best pose.
      * @param camera PhotonCameras and
      * @param robotToCamera Transform3d from the center of the robot to the camera mount positions
-     *     (ie, robot ➔ camera).
+     *     (ie, robot ➔ camera) in the <a
+     *     href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
+     *     Coordinate System</a>.
      */
     public PhotonPoseEstimator(
             AprilTagFieldLayout fieldTags,
@@ -176,7 +180,22 @@ public class PhotonPoseEstimator {
      * @param lastPose the lastPose to set
      */
     public void setLastPose(Pose2d lastPose) {
-        this.lastPose = new Pose3d(lastPose);
+        setLastPose(new Pose3d(lastPose));
+    }
+
+    /** @return The current transform from the center of the robot to the camera mount position */
+    public Transform3d getRobotToCameraTransform() {
+        return robotToCamera;
+    }
+
+    /**
+     * Useful for pan and tilt mechanisms and such.
+     *
+     * @param robotToCamera The current transform from the center of the robot to the camera mount
+     *     position
+     */
+    public void setRobotToCameraTransform(Transform3d robotToCamera) {
+        this.robotToCamera = robotToCamera;
     }
 
     /**
@@ -193,6 +212,19 @@ public class PhotonPoseEstimator {
         }
 
         PhotonPipelineResult cameraResult = camera.getLatestResult();
+
+        return update(cameraResult);
+    }
+
+    /**
+     * Updates the estimated position of the robot. Returns empty if there are no cameras set or no
+     * targets were found from the cameras.
+     *
+     * @param cameraResult The latest pipeline result from the camera
+     * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
+     *     pipeline results used to create the estimate
+     */
+    public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
         if (!cameraResult.hasTargets()) {
             return Optional.empty();
         }
@@ -485,7 +517,7 @@ public class PhotonPoseEstimator {
     private void reportFiducialPoseError(int fiducialId) {
         if (!reportedErrors.contains(fiducialId)) {
             DriverStation.reportError(
-                    "[PhotonPoseEstimator] Tried to get pose of unknown April Tag: " + fiducialId, false);
+                    "[PhotonPoseEstimator] Tried to get pose of unknown AprilTag: " + fiducialId, false);
             reportedErrors.add(fiducialId);
         }
     }

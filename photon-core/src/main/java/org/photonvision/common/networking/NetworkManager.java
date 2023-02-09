@@ -18,6 +18,7 @@
 package org.photonvision.common.networking;
 
 import org.photonvision.common.configuration.ConfigManager;
+import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.hardware.Platform;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
@@ -48,8 +49,7 @@ public class NetworkManager {
         logger.info("Setting " + config.connectionType + " with team team " + config.teamNumber);
         if (Platform.isLinux()) {
             if (!Platform.isRoot()) {
-                logger.error("Cannot manage network without root!");
-                return;
+                logger.error("Cannot manage hostname without root!");
             }
 
             // always set hostname
@@ -96,10 +96,11 @@ public class NetworkManager {
             if (config.connectionType == NetworkMode.DHCP) {
                 var shell = new ShellExec();
                 try {
-                    if (!config.staticIp.equals("")) {
-                        shell.executeBashCommand("ip addr del " + config.staticIp + "/8 dev eth0");
-                    }
-                    shell.executeBashCommand("dhclient eth0", false);
+                    // set nmcli back to DHCP, and re-run dhclient -- this ought to grab a new IP address
+                    shell.executeBashCommand(
+                            config.setDHCPcommand.replace(
+                                    NetworkConfig.NM_IFACE_STRING, config.networkManagerIface));
+                    shell.executeBashCommand("dhclient " + config.physicalInterface, false);
                 } catch (Exception e) {
                     logger.error("Exception while setting DHCP!");
                 }
@@ -107,7 +108,30 @@ public class NetworkManager {
                 var shell = new ShellExec();
                 if (config.staticIp.length() > 0) {
                     try {
-                        shell.executeBashCommand("ip addr add " + config.staticIp + "/8" + " dev eth0");
+                        shell.executeBashCommand(
+                                config
+                                        .setStaticCommand
+                                        .replace(NetworkConfig.NM_IFACE_STRING, config.networkManagerIface)
+                                        .replace(NetworkConfig.NM_IP_STRING, config.staticIp));
+
+                        if (Platform.isRaspberryPi()) {
+                            // Pi's need to manually have their interface adjusted?? and the 5 second sleep is
+                            // integral in my testing (Matt)
+                            shell.executeBashCommand(
+                                    "sh -c 'nmcli con down "
+                                            + config.networkManagerIface
+                                            + "; nmcli con up "
+                                            + config.networkManagerIface
+                                            + "'");
+                        } else {
+                            // for now just bring down /up -- more testing needed on beelink et al
+                            shell.executeBashCommand(
+                                    "sh -c 'nmcli con down "
+                                            + config.networkManagerIface
+                                            + "; nmcli con up "
+                                            + config.networkManagerIface
+                                            + "'");
+                        }
                     } catch (Exception e) {
                         logger.error("Error while setting static IP!", e);
                     }

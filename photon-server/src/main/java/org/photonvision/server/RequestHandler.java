@@ -18,6 +18,7 @@
 package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
 import java.io.File;
@@ -33,6 +34,9 @@ import java.util.Map;
 import org.apache.commons.io.FileUtils;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
+import org.photonvision.common.dataflow.DataChangeDestination;
+import org.photonvision.common.dataflow.DataChangeService;
+import org.photonvision.common.dataflow.events.IncomingWebSocketEvent;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
 import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.hardware.Platform;
@@ -42,6 +46,7 @@ import org.photonvision.common.networking.NetworkManager;
 import org.photonvision.common.util.ShellExec;
 import org.photonvision.common.util.TimedTaskManager;
 import org.photonvision.common.util.file.ProgramDirectoryUtilities;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.target.TargetModel;
 
@@ -274,6 +279,44 @@ public class RequestHandler {
         }
     }
 
+    public static void importCalibrationFromCalibdb(Context ctx) {
+        var file = ctx.body();
+
+        if (file != null) {
+            // check if it's a JSON file
+            // Load using Jackson
+            try {
+                ObjectMapper mapper = new ObjectMapper();
+                JsonNode actualObj = mapper.readTree(file);
+
+                int cameraIndex = actualObj.get("cameraIndex").asInt();
+                String filename = actualObj.get("filename").asText();
+                var payload = mapper.readTree(actualObj.get("payload").asText());
+
+                var coeffs = CameraCalibrationCoefficients.parseFromCalibdbJson(payload);
+
+                var uploadCalibrationEvent =
+                        new IncomingWebSocketEvent<CameraCalibrationCoefficients>(
+                                DataChangeDestination.DCD_ACTIVEMODULE,
+                                "calibrationUploaded",
+                                coeffs,
+                                (Integer) cameraIndex,
+                                null);
+                DataChangeService.getInstance().publishEvent(uploadCalibrationEvent);
+
+                ctx.status(200);
+                logger.info("Calibration added!");
+            } catch (Exception e) {
+                logger.warn("Could not parse cal metaJSON!");
+                e.printStackTrace();
+                return;
+            }
+        } else {
+            ctx.status(500);
+            return;
+        }
+    }
+
     public static void setCameraNickname(Context ctx) {
         try {
             var data = kObjectMapper.readValue(ctx.body(), HashMap.class);
@@ -304,7 +347,8 @@ public class RequestHandler {
 
     public static void sendMetrics(Context ctx) {
         HardwareManager.getInstance().publishMetrics();
-        // TimedTaskManager.getInstance().addOneShotTask(() -> RoborioFinder.getInstance().findRios(),
+        // TimedTaskManager.getInstance().addOneShotTask(() ->
+        // RoborioFinder.getInstance().findRios(),
         // 0);
         ctx.status(200);
     }

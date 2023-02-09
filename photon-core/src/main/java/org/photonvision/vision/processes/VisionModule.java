@@ -136,7 +136,7 @@ public class VisionModule {
                 new NTDataPublisher(
                         visionSource.getSettables().getConfiguration().nickname,
                         pipelineManager::getCurrentPipelineIndex,
-                        pipelineManager::setIndex,
+                        this::setPipeline,
                         pipelineManager::getDriverMode,
                         this::setDriverMode);
         uiDataConsumer = new UIDataPublisher(index);
@@ -363,7 +363,7 @@ public class VisionModule {
 
         if (ret != null) {
             logger.debug("Saving calibration...");
-            visionSource.getSettables().getConfiguration().addCalibration(ret);
+            visionSource.getSettables().addCalibration(ret);
         } else {
             logger.error("Calibration failed...");
         }
@@ -371,15 +371,15 @@ public class VisionModule {
         return ret;
     }
 
-    void setPipeline(int index) {
+    boolean setPipeline(int index) {
         logger.info("Setting pipeline to " + index);
         logger.info("Pipeline name: " + pipelineManager.getPipelineNickname(index));
         pipelineManager.setIndex(index);
         var pipelineSettings = pipelineManager.getPipelineSettings(index);
 
         if (pipelineSettings == null) {
-            logger.error("Config for index " + index + " was null!");
-            return;
+            logger.error("Config for index " + index + " was null! Not changing pipelines");
+            return false;
         }
 
         visionSource.getSettables().setVideoModeInternal(pipelineSettings.cameraVideoModeIndex);
@@ -422,6 +422,8 @@ public class VisionModule {
 
         visionSource.getSettables().getConfiguration().currentPipelineIndex =
                 pipelineManager.getCurrentPipelineIndex();
+
+        return true;
     }
 
     private boolean camShouldControlLEDs() {
@@ -585,5 +587,16 @@ public class VisionModule {
         } else {
             logger.error("Cannot set target model of non-reflective pipe! Ignoring...");
         }
+    }
+
+    public void addCalibrationToConfig(CameraCalibrationCoefficients newCalibration) {
+        if (newCalibration != null) {
+            logger.info("Got new calibration for " + newCalibration.resolution);
+            visionSource.getSettables().getConfiguration().addCalibration(newCalibration);
+        } else {
+            logger.error("Got null calibration?");
+        }
+
+        saveAndBroadcastAll();
     }
 }

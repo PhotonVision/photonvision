@@ -93,6 +93,7 @@ public class Server {
         app.post("api/vision/pnpModel", RequestHandler::uploadPnpModel);
         app.post("api/sendMetrics", RequestHandler::sendMetrics);
         app.post("api/setCameraNickname", RequestHandler::setCameraNickname);
+        app.post("api/calibration/import", RequestHandler::importCalibrationFromCalibdb);
 
         app.start(port);
     }

@@ -41,8 +41,7 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       rootTable(mainTable->GetSubTable(cameraName)),
       rawBytesEntry(
           rootTable->GetRawTopic("rawBytes")
-              .Subscribe("raw", {}, {.periodic = 0.01, .sendAll = true})),
-      driverModeEntry(rootTable->GetBooleanTopic("driverMode").Publish()),
+              .Subscribe("rawBytes", {}, {.periodic = 0.01, .sendAll = true})),
       inputSaveImgEntry(
           rootTable->GetIntegerTopic("inputSaveImgCmd").Publish()),
       inputSaveImgSubscriber(
@@ -51,14 +50,17 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetIntegerTopic("outputSaveImgCmd").Publish()),
       outputSaveImgSubscriber(
           rootTable->GetIntegerTopic("outputSaveImgCmd").Subscribe(0)),
-      pipelineIndexEntry(rootTable->GetIntegerTopic("pipelineIndex").Publish()),
-      ledModeEntry(mainTable->GetIntegerTopic("ledMode").Publish()),
+      pipelineIndexPub(
+          rootTable->GetIntegerTopic("pipelineIndexRequest").Publish()),
+      pipelineIndexSub(
+          rootTable->GetIntegerTopic("pipelineIndexState").Subscribe(0)),
+      ledModePub(mainTable->GetIntegerTopic("ledMode").Publish()),
+      ledModeSub(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
       driverModeSubscriber(
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
-      pipelineIndexSubscriber(
-          rootTable->GetIntegerTopic("pipelineIndex").Subscribe(-1)),
-      ledModeSubscriber(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
+      driverModePublisher(
+          rootTable->GetBooleanTopic("driverModeRequest").Publish()),
       m_topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
       m_cameraName(cameraName) {}
@@ -92,7 +94,7 @@ PhotonPipelineResult PhotonCamera::GetLatestResult() {
 }
 
 void PhotonCamera::SetDriverMode(bool driverMode) {
-  driverModeEntry.Set(driverMode);
+  driverModePublisher.Set(driverMode);
 }
 
 void PhotonCamera::TakeInputSnapshot() {
@@ -106,19 +108,19 @@ void PhotonCamera::TakeOutputSnapshot() {
 bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 
 void PhotonCamera::SetPipelineIndex(int index) {
-  pipelineIndexEntry.Set(static_cast<double>(index));
+  pipelineIndexPub.Set(static_cast<double>(index));
 }
 
 int PhotonCamera::GetPipelineIndex() const {
-  return static_cast<int>(pipelineIndexSubscriber.Get());
+  return static_cast<int>(pipelineIndexSub.Get());
 }
 
 LEDMode PhotonCamera::GetLEDMode() const {
-  return static_cast<LEDMode>(static_cast<int>(ledModeSubscriber.Get()));
+  return static_cast<LEDMode>(static_cast<int>(ledModeSub.Get()));
 }
 
 void PhotonCamera::SetLEDMode(LEDMode mode) {
-  ledModeEntry.Set(static_cast<double>(static_cast<int>(mode)));
+  ledModePub.Set(static_cast<double>(static_cast<int>(mode)));
 }
 
 const std::string_view PhotonCamera::GetCameraName() const {

@@ -24,12 +24,12 @@
 
 package org.photonvision;
 
-import edu.wpi.first.networktables.BooleanEntry;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerEntry;
+import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
@@ -50,7 +50,6 @@ public class PhotonCamera implements AutoCloseable {
 
     protected final NetworkTable rootTable;
     RawSubscriber rawBytesEntry;
-    BooleanEntry driverModeEntry;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
     DoublePublisher latencyMillisEntry;
@@ -62,13 +61,13 @@ public class PhotonCamera implements AutoCloseable {
     DoublePublisher targetSkewEntry;
     StringSubscriber versionEntry;
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
-    IntegerEntry pipelineIndexEntry, ledModeEntry;
+    IntegerPublisher pipelineIndexRequest, ledModeRequest;
+    IntegerSubscriber pipelineIndexState, ledModeState;
     IntegerSubscriber heartbeatEntry;
 
     @Override
     public void close() {
         rawBytesEntry.close();
-        driverModeEntry.close();
         driverModePublisher.close();
         driverModeSubscriber.close();
         latencyMillisEntry.close();
@@ -81,8 +80,11 @@ public class PhotonCamera implements AutoCloseable {
         versionEntry.close();
         inputSaveImgEntry.close();
         outputSaveImgEntry.close();
-        pipelineIndexEntry.close();
-        ledModeEntry.close();
+        pipelineIndexRequest.close();
+        pipelineIndexState.close();
+        ledModeRequest.close();
+        ledModeState.close();
+        pipelineIndexRequest.close();
     }
 
     private final String path;
@@ -122,12 +124,15 @@ public class PhotonCamera implements AutoCloseable {
                         .getRawTopic("rawBytes")
                         .subscribe(
                                 "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
-        driverModeEntry = rootTable.getBooleanTopic("driverMode").getEntry(false);
+        driverModePublisher = rootTable.getBooleanTopic("driverMode").publish();
+        driverModeSubscriber = rootTable.getBooleanTopic("driverModeRequest").subscribe(false);
         inputSaveImgEntry = rootTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = rootTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
-        pipelineIndexEntry = rootTable.getIntegerTopic("pipelineIndex").getEntry(0);
+        pipelineIndexRequest = rootTable.getIntegerTopic("pipelineIndexRequest").publish();
+        pipelineIndexState = rootTable.getIntegerTopic("pipelineIndexState").subscribe(0);
         heartbeatEntry = rootTable.getIntegerTopic("heartbeat").subscribe(-1);
-        ledModeEntry = mainTable.getIntegerTopic("ledMode").getEntry(-1);
+        ledModeRequest = mainTable.getIntegerTopic("ledModeRequest").publish();
+        ledModeState = mainTable.getIntegerTopic("ledModeState").subscribe(-1);
         versionEntry = mainTable.getStringTopic("version").subscribe("");
 
         m_topicNameSubscriber =
@@ -180,7 +185,7 @@ public class PhotonCamera implements AutoCloseable {
      * @return Whether the camera is in driver mode.
      */
     public boolean getDriverMode() {
-        return driverModeEntry.get(false);
+        return driverModeSubscriber.get();
     }
 
     /**
@@ -189,7 +194,7 @@ public class PhotonCamera implements AutoCloseable {
      * @param driverMode Whether to set driver mode.
      */
     public void setDriverMode(boolean driverMode) {
-        driverModeEntry.set(driverMode);
+        driverModePublisher.set(driverMode);
     }
 
     /**
@@ -218,7 +223,7 @@ public class PhotonCamera implements AutoCloseable {
      * @return The active pipeline index.
      */
     public int getPipelineIndex() {
-        return (int) pipelineIndexEntry.get(0);
+        return (int) pipelineIndexState.get(0);
     }
 
     /**
@@ -227,7 +232,7 @@ public class PhotonCamera implements AutoCloseable {
      * @param index The active pipeline index.
      */
     public void setPipelineIndex(int index) {
-        pipelineIndexEntry.set(index);
+        pipelineIndexRequest.set(index);
     }
 
     /**
@@ -236,7 +241,7 @@ public class PhotonCamera implements AutoCloseable {
      * @return The current LED mode.
      */
     public VisionLEDMode getLEDMode() {
-        int value = (int) ledModeEntry.get(-1);
+        int value = (int) ledModeState.get(-1);
         switch (value) {
             case 0:
                 return VisionLEDMode.kOff;
@@ -256,7 +261,7 @@ public class PhotonCamera implements AutoCloseable {
      * @param led The mode to set to.
      */
     public void setLED(VisionLEDMode led) {
-        ledModeEntry.set(led.value);
+        ledModeRequest.set(led.value);
     }
 
     /**

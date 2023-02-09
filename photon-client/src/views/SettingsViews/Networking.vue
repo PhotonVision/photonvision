@@ -21,7 +21,7 @@
         Team number is unset or invalid. NetworkTables will not be able to connect.
       </v-banner>
       <CVradio
-        v-show="$store.state.settings.networkSettings.supported"
+        v-show="$store.state.settings.networkSettings.shouldManage"
         v-model="connectionType"
         :input-cols="inputCols"
         name="IP Assignment Mode"
@@ -74,7 +74,33 @@
     >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
-    <v-divider class="mt-4 mb-4" />
+
+    <template v-if="$store.state.settings.networkSettings.shouldManage && false">
+
+      <!-- Advanced controls for changing DHCP settings and stuff -->
+      <v-divider class="mt-4 mb-4" />
+
+      <v-title> Advanced </v-title>
+
+      <CVinput
+        :input-cols="inputCols"
+        name="Set DHCP command"
+      />
+      <CVinput
+        :input-cols="inputCols"
+        name="Set static command"
+      />
+      <CVinput
+        :input-cols="inputCols"
+        name="NetworkManager interface"
+      />
+      <CVinput
+        :input-cols="inputCols"
+        name="Physical interface"
+      />
+
+    </template>
+
     <!-- TEMP - RIO finder is not currently enabled
     <v-row>
       <v-col
@@ -246,6 +272,14 @@ export default {
             return true;
         },
         sendGeneralSettings() {
+            const changingStaticIp = !this.isDHCP;
+
+            this.snackbar = {
+                color: "secondary",
+                text: "Updating settings..."
+            };
+            this.snack = true;
+
             this.axios.post("http://" + this.$address + "/api/settings/general", this.settings).then(
                 response => {
                     if (response.status === 200) {
@@ -257,10 +291,17 @@ export default {
                     }
                 },
                 error => {
+                  if (error.status === 504 || changingStaticIp) {
+                    this.snackbar = {
+                        color: "error",
+                        text: (error.response || {data: `Connection lost! Try the new static IP at ${this.staticIp}:5800 or ${this.hostname}:5800 ?`}).data
+                    };
+                  } else {
                     this.snackbar = {
                         color: "error",
                         text: (error.response || {data: "Couldn't save settings"}).data
                     };
+                  }
                     this.snack = true;
                 }
             )

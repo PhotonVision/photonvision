@@ -55,7 +55,11 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
   auto result = camera.GetLatestResult();
+  return Update(result);
+}
 
+std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
+    const PhotonPipelineResult& result) {
   if (!result.HasTargets()) {
     return std::nullopt;
   }
