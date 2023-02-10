@@ -37,9 +37,9 @@
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
 
-// Fun hack i have to add at least on my linux laptop
-#define OPENCV_DISABLE_EIGEN_TENSOR_SUPPORT 1
-#include <opencv2/core/eigen.hpp>
+#include <opencv2/calib3d.hpp>
+#include <opencv2/core/mat.hpp>
+#include <opencv2/core/types.hpp>
 
 #include <units/time.h>
 
@@ -47,7 +47,18 @@
 #include "photonlib/PhotonPipelineResult.h"
 #include "photonlib/PhotonTrackedTarget.h"
 
+
 namespace photonlib {
+
+namespace detail {
+  cv::Point3d ToPoint3d(const frc::Translation3d& translation);
+  std::optional<std::array<cv::Point3d, 4>> CalcTagCorners(int tagID, const frc::AprilTagFieldLayout& aprilTags);
+  frc::Pose3d ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec);
+  cv::Point3d TagCornerToObjectPoint(units::meter_t cornerX,
+                                                        units::meter_t cornerY,
+                                                        frc::Pose3d tagPose);
+}
+
 PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
                                          PoseStrategy strat, PhotonCamera&& cam,
                                          frc::Transform3d robotToCamera)
@@ -245,59 +256,33 @@ PhotonPoseEstimator::ClosestToReferencePoseStrategy(
   return EstimatedRobotPose{pose, stateTimestamp};
 }
 
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
-    PhotonPipelineResult result) {
-  using namespace frc;
-
-  if (!result.HasTargets() || result.GetTargets().size() < 2) {
-    return Update(result, this->multiTagFallbackStrategy);
-  }
-
-  auto const targets = result.GetTargets();
-
-  // List of corners mapped from 3d space (meters) to the 2d camera screen
-  // (pixels).
-  std::vector<cv::Point3f> objectPoints;
-  std::vector<cv::Point2f> imagePoints;
-
-  // Add all target corners to main list of corners
-  for (auto target : targets) {
-    int id = target.GetFiducialId();
-    if (auto const tagCorners = CalcTagCorners(id); tagCorners.has_value()) {
-      auto const targetCorners = target.GetDetectedCorners();
-      for (size_t cornerIdx = 0; cornerIdx < 4; ++cornerIdx) {
-        imagePoints.emplace_back(targetCorners[cornerIdx].first,
-                                 targetCorners[cornerIdx].second);
-        objectPoints.emplace_back((*tagCorners)[cornerIdx]);
-      }
-    }
-  }
-
-  if (imagePoints.empty()) {
+std::optional<std::array<cv::Point3d, 4>> detail::CalcTagCorners(
+    int tagID, const frc::AprilTagFieldLayout& aprilTags) {
+  if (auto tagPose = aprilTags.GetTagPose(tagID); tagPose.has_value()) {
+    return std::array{TagCornerToObjectPoint(-3_in, -3_in, *tagPose),
+                      TagCornerToObjectPoint(+3_in, -3_in, *tagPose),
+                      TagCornerToObjectPoint(+3_in, +3_in, *tagPose),
+                      TagCornerToObjectPoint(-3_in, +3_in, *tagPose)};
+  } else {
     return std::nullopt;
   }
-
-  // Use OpenCV ITERATIVE solver
-  cv::Mat const rvec(3, 1, cv::DataType<double>::type);
-  cv::Mat const tvec(3, 1, cv::DataType<double>::type);
-
-  auto const camMat = camera.GetCameraMatrix();
-  auto const distCoeffs = camera.GetDistCoeffs();
-  if (!camMat || !distCoeffs) {
-    return std::nullopt;
-  }
-
-  cv::solvePnP(objectPoints, imagePoints, camMat.value(), distCoeffs.value(),
-               rvec, tvec, false, cv::SOLVEPNP_SQPNP);
-
-  Pose3d const pose = ToPose3d(tvec, rvec);
-
-  return photonlib::EstimatedRobotPose(
-      pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp());
 }
 
-frc::Pose3d PhotonPoseEstimator::ToPose3d(const cv::Mat& tvec,
-                                          const cv::Mat& rvec) {
+cv::Point3d detail::ToPoint3d(const frc::Translation3d& translation) {
+  return cv::Point3d(-translation.Y().value(), -translation.Z().value(),
+                     +translation.X().value());
+}
+
+cv::Point3d detail::TagCornerToObjectPoint(units::meter_t cornerX,
+                                                        units::meter_t cornerY,
+                                                        frc::Pose3d tagPose) {
+  frc::Translation3d cornerTrans =
+      tagPose.Translation() +
+      frc::Translation3d(0.0_m, cornerX, cornerY).RotateBy(tagPose.Rotation());
+  return ToPoint3d(cornerTrans);
+}
+
+frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
   using namespace frc;
   using namespace units;
 
@@ -324,31 +309,55 @@ frc::Pose3d PhotonPoseEstimator::ToPose3d(const cv::Mat& tvec,
                     rv, radian_t{rv.norm()}));
 }
 
-std::optional<std::array<cv::Point3d, 4>> PhotonPoseEstimator::CalcTagCorners(
-    int tagID) {
-  if (auto tagPose = aprilTags.GetTagPose(tagID); tagPose.has_value()) {
-    return std::array{TagCornerToObjectPoint(-3_in, -3_in, *tagPose),
-                      TagCornerToObjectPoint(+3_in, -3_in, *tagPose),
-                      TagCornerToObjectPoint(+3_in, +3_in, *tagPose),
-                      TagCornerToObjectPoint(-3_in, +3_in, *tagPose)};
-  } else {
+std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
+    PhotonPipelineResult result) {
+  using namespace frc;
+
+  if (!result.HasTargets() || result.GetTargets().size() < 2) {
+    return Update(result, this->multiTagFallbackStrategy);
+  }
+
+  auto const targets = result.GetTargets();
+
+  // List of corners mapped from 3d space (meters) to the 2d camera screen
+  // (pixels).
+  std::vector<cv::Point3f> objectPoints;
+  std::vector<cv::Point2f> imagePoints;
+
+  // Add all target corners to main list of corners
+  for (auto target : targets) {
+    int id = target.GetFiducialId();
+    if (auto const tagCorners = detail::CalcTagCorners(id, aprilTags); tagCorners.has_value()) {
+      auto const targetCorners = target.GetDetectedCorners();
+      for (size_t cornerIdx = 0; cornerIdx < 4; ++cornerIdx) {
+        imagePoints.emplace_back(targetCorners[cornerIdx].first,
+                                 targetCorners[cornerIdx].second);
+        objectPoints.emplace_back((*tagCorners)[cornerIdx]);
+      }
+    }
+  }
+
+  if (imagePoints.empty()) {
     return std::nullopt;
   }
-}
 
-cv::Point3d PhotonPoseEstimator::ToPoint3d(
-    const frc::Translation3d& translation) {
-  return cv::Point3d(-translation.Y().value(), -translation.Z().value(),
-                     +translation.X().value());
-}
+  // Use OpenCV ITERATIVE solver
+  cv::Mat const rvec(3, 1, cv::DataType<double>::type);
+  cv::Mat const tvec(3, 1, cv::DataType<double>::type);
 
-cv::Point3d PhotonPoseEstimator::TagCornerToObjectPoint(units::meter_t cornerX,
-                                                        units::meter_t cornerY,
-                                                        frc::Pose3d tagPose) {
-  frc::Translation3d cornerTrans =
-      tagPose.Translation() +
-      frc::Translation3d(0.0_m, cornerX, cornerY).RotateBy(tagPose.Rotation());
-  return ToPoint3d(cornerTrans);
+  auto const camMat = camera.GetCameraMatrix();
+  auto const distCoeffs = camera.GetDistCoeffs();
+  if (!camMat || !distCoeffs) {
+    return std::nullopt;
+  }
+
+  cv::solvePnP(objectPoints, imagePoints, camMat.value(), distCoeffs.value(),
+               rvec, tvec, false, cv::SOLVEPNP_SQPNP);
+
+  Pose3d const pose = detail::ToPose3d(tvec, rvec);
+
+  return photonlib::EstimatedRobotPose(
+      pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp());
 }
 
 std::optional<EstimatedRobotPose>
