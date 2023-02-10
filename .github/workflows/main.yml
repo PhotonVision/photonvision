@@ -11,6 +11,7 @@ on:
       - 'v*'
   pull_request:
     branches: [ master ]
+  merge_group:
 
 jobs:
   # This job builds the client (web view).

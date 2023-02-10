@@ -168,6 +168,11 @@ class PhotonPoseEstimator {
    */
   std::optional<EstimatedRobotPose> Update();
 
+  /**
+   * Update the pose estimator.
+   */
+  std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result);
+
   inline PhotonCamera& GetCamera() { return camera; }
 
  private:

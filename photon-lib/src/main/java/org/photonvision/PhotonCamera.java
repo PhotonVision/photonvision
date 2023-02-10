@@ -34,6 +34,7 @@ import edu.wpi.first.networktables.DoubleArrayPublisher;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerEntry;
+import edu.wpi.first.networktables.IntegerPublisher;
 import edu.wpi.first.networktables.IntegerSubscriber;
 import edu.wpi.first.networktables.MultiSubscriber;
 import edu.wpi.first.networktables.NetworkTable;
@@ -66,7 +67,8 @@ public class PhotonCamera {
     DoublePublisher targetSkewEntry;
     StringSubscriber versionEntry;
     IntegerEntry inputSaveImgEntry, outputSaveImgEntry;
-    IntegerEntry pipelineIndexEntry, ledModeEntry;
+    IntegerPublisher pipelineIndexRequest, ledModeRequest;
+    IntegerSubscriber pipelineIndexState, ledModeState;
     IntegerSubscriber heartbeatEntry;
     private DoubleArraySubscriber cameraIntrinsicsSubscriber;
     private DoubleArraySubscriber cameraDistortionSubscriber;
@@ -85,9 +87,11 @@ public class PhotonCamera {
         versionEntry.close();
         inputSaveImgEntry.close();
         outputSaveImgEntry.close();
-        pipelineIndexEntry.close();
-        ledModeEntry.close();
-        heartbeatEntry.close();
+        pipelineIndexRequest.close();
+        pipelineIndexState.close();
+        ledModeRequest.close();
+        ledModeState.close();
+        pipelineIndexRequest.close();
         cameraIntrinsicsSubscriber.close();
         cameraDistortionSubscriber.close();
     }
@@ -133,9 +137,11 @@ public class PhotonCamera {
         driverModeSubscriber = rootTable.getBooleanTopic("driverModeRequest").subscribe(false);
         inputSaveImgEntry = rootTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = rootTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
-        pipelineIndexEntry = rootTable.getIntegerTopic("pipelineIndex").getEntry(0);
+        pipelineIndexRequest = rootTable.getIntegerTopic("pipelineIndexRequest").publish();
+        pipelineIndexState = rootTable.getIntegerTopic("pipelineIndexState").subscribe(0);
         heartbeatEntry = rootTable.getIntegerTopic("heartbeat").subscribe(-1);
-        ledModeEntry = mainTable.getIntegerTopic("ledMode").getEntry(-1);
+        ledModeRequest = mainTable.getIntegerTopic("ledModeRequest").publish();
+        ledModeState = mainTable.getIntegerTopic("ledModeState").subscribe(-1);
         versionEntry = mainTable.getStringTopic("version").subscribe("");
         cameraIntrinsicsSubscriber = mainTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
         cameraDistortionSubscriber = mainTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
@@ -228,7 +234,7 @@ public class PhotonCamera {
      * @return The active pipeline index.
      */
     public int getPipelineIndex() {
-        return (int) pipelineIndexEntry.get(0);
+        return (int) pipelineIndexState.get(0);
     }
 
     /**
@@ -237,7 +243,7 @@ public class PhotonCamera {
      * @param index The active pipeline index.
      */
     public void setPipelineIndex(int index) {
-        pipelineIndexEntry.set(index);
+        pipelineIndexRequest.set(index);
     }
 
     /**
@@ -246,7 +252,7 @@ public class PhotonCamera {
      * @return The current LED mode.
      */
     public VisionLEDMode getLEDMode() {
-        int value = (int) ledModeEntry.get(-1);
+        int value = (int) ledModeState.get(-1);
         switch (value) {
             case 0:
                 return VisionLEDMode.kOff;
@@ -266,7 +272,7 @@ public class PhotonCamera {
      * @param led The mode to set to.
      */
     public void setLED(VisionLEDMode led) {
-        ledModeEntry.set(led.value);
+        ledModeRequest.set(led.value);
     }
 
     /**

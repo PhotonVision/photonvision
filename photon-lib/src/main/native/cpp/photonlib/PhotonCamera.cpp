@@ -51,8 +51,12 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetIntegerTopic("outputSaveImgCmd").Publish()),
       outputSaveImgSubscriber(
           rootTable->GetIntegerTopic("outputSaveImgCmd").Subscribe(0)),
-      pipelineIndexEntry(rootTable->GetIntegerTopic("pipelineIndex").Publish()),
-      ledModeEntry(mainTable->GetIntegerTopic("ledMode").Publish()),
+      pipelineIndexPub(
+          rootTable->GetIntegerTopic("pipelineIndexRequest").Publish()),
+      pipelineIndexSub(
+          rootTable->GetIntegerTopic("pipelineIndexState").Subscribe(0)),
+      ledModePub(mainTable->GetIntegerTopic("ledMode").Publish()),
+      ledModeSub(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
       cameraIntrinsicsSubscriber(
           rootTable->GetDoubleArrayTopic("cameraIntrinsics").Subscribe({})),
@@ -62,9 +66,6 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
           rootTable->GetBooleanTopic("driverModeRequest").Publish()),
-      pipelineIndexSubscriber(
-          rootTable->GetIntegerTopic("pipelineIndex").Subscribe(-1)),
-      ledModeSubscriber(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
       m_topicNameSubscriber(instance, PHOTON_PREFIX, {.topicsOnly = true}),
       path(rootTable->GetPath()),
       m_cameraName(cameraName) {}
@@ -112,15 +113,15 @@ void PhotonCamera::TakeOutputSnapshot() {
 bool PhotonCamera::GetDriverMode() const { return driverModeSubscriber.Get(); }
 
 void PhotonCamera::SetPipelineIndex(int index) {
-  pipelineIndexEntry.Set(static_cast<double>(index));
+  pipelineIndexPub.Set(static_cast<double>(index));
 }
 
 int PhotonCamera::GetPipelineIndex() const {
-  return static_cast<int>(pipelineIndexSubscriber.Get());
+  return static_cast<int>(pipelineIndexSub.Get());
 }
 
 LEDMode PhotonCamera::GetLEDMode() const {
-  return static_cast<LEDMode>(static_cast<int>(ledModeSubscriber.Get()));
+  return static_cast<LEDMode>(static_cast<int>(ledModeSub.Get()));
 }
 
 std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
@@ -130,6 +131,10 @@ std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
     return cv::Mat(3, 3, CV_64FC1, camCoeffs.data()).clone();
   }
   return std::nullopt;
+}
+
+void PhotonCamera::SetLEDMode(LEDMode mode) {
+  ledModePub.Set(static_cast<double>(static_cast<int>(mode)));
 }
 
 std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {

@@ -89,7 +89,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.pipelineIndexPublisher.set(setIndex);
             // TODO: Log
         }
-        logger.debug("Successfully set pipeline index to " + newIndex);
+        logger.debug("Set pipeline index to " + newIndex);
     }
 
     private void onDriverModeChange(NetworkTableEvent entryNotification) {
@@ -102,7 +102,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         }
 
         driverModeConsumer.accept(newDriverMode);
-        logger.debug("Successfully set driver mode to " + newDriverMode);
+        logger.debug("Set driver mode to " + newDriverMode);
     }
 
     private void removeEntries() {
@@ -119,7 +119,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         pipelineIndexListener =
                 new NTDataChangeListener(
-                        ts.subTable.getInstance(), ts.pipelineIndexSubscriber, this::onPipelineIndexChange);
+                        ts.subTable.getInstance(), ts.pipelineIndexRequestSub, this::onPipelineIndexChange);
 
         driverModeListener =
                 new NTDataChangeListener(

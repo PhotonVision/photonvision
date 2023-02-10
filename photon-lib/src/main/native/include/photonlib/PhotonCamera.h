@@ -180,8 +180,10 @@ class PhotonCamera {
   nt::IntegerSubscriber inputSaveImgSubscriber;
   nt::IntegerPublisher outputSaveImgEntry;
   nt::IntegerSubscriber outputSaveImgSubscriber;
-  nt::IntegerPublisher pipelineIndexEntry;
-  nt::IntegerPublisher ledModeEntry;
+  nt::IntegerPublisher pipelineIndexPub;
+  nt::IntegerSubscriber pipelineIndexSub;
+  nt::IntegerPublisher ledModePub;
+  nt::IntegerSubscriber ledModeSub;
   nt::StringSubscriber versionEntry;
 
   nt::DoubleArraySubscriber cameraIntrinsicsSubscriber;
@@ -189,7 +191,6 @@ class PhotonCamera {
 
   nt::BooleanSubscriber driverModeSubscriber;
   nt::BooleanPublisher driverModePublisher;
-  nt::IntegerSubscriber pipelineIndexSubscriber;
   nt::IntegerSubscriber ledModeSubscriber;
 
   nt::MultiSubscriber m_topicNameSubscriber;
