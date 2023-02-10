@@ -37,7 +37,6 @@ import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 @SuppressWarnings("unused")
-// TODO: Add method to set camera intr/extrinsics
 public class SimPhotonCamera {
     NTTopicSet ts = new NTTopicSet();
     PhotonPipelineResult latestResult;
