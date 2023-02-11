@@ -34,6 +34,7 @@
 #include <frc/geometry/Transform3d.h>
 
 #include "photonlib/PhotonCamera.h"
+#include "photonlib/PhotonPipelineResult.h"
 
 namespace photonlib {
 enum PoseStrategy : int {
