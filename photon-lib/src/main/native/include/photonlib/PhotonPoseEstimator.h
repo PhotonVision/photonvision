@@ -24,7 +24,6 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -34,6 +33,7 @@
 #include <frc/geometry/Transform3d.h>
 
 #include "photonlib/PhotonCamera.h"
+#include "photonlib/PhotonPipelineResult.h"
 
 namespace photonlib {
 enum PoseStrategy : int {
