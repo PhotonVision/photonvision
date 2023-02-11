@@ -30,7 +30,6 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
 
-#include "photonlib/PhotonCamera.h"
 #include "photonlib/PhotonPipelineResult.h"
 
 namespace cv {
@@ -82,12 +81,11 @@ class PhotonPoseEstimator {
    * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with
    * respect to the FIRST field.
    * @param strategy The strategy it should use to determine the best pose.
-   * @param camera PhotonCameras and
    * @param robotToCamera Transform3d from the center of the robot to the camera
    * mount positions (ie, robot ➔ camera).
    */
   explicit PhotonPoseEstimator(frc::AprilTagFieldLayout aprilTags,
-                               PoseStrategy strategy, PhotonCamera&& camera,
+                               PoseStrategy strategy,
                                frc::Transform3d robotToCamera);
 
   /**
@@ -171,24 +169,15 @@ class PhotonPoseEstimator {
   inline void SetLastPose(frc::Pose3d lastPose) { this->lastPose = lastPose; }
 
   /**
-   * Update the pose estimator. Internally grabs a new PhotonPipelineResult from
-   * the camera and process it.
-   */
-  std::optional<EstimatedRobotPose> Update();
-
-  /**
    * Update the pose estimator.
    */
   std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result);
-
-  inline PhotonCamera& GetCamera() { return camera; }
 
  private:
   frc::AprilTagFieldLayout aprilTags;
   PoseStrategy strategy;
   PoseStrategy multiTagFallbackStrategy = LOWEST_AMBIGUITY;
 
-  PhotonCamera camera;
   frc::Transform3d m_robotToCamera;
 
   frc::Pose3d lastPose;

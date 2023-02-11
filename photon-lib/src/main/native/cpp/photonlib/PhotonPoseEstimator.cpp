@@ -43,7 +43,6 @@
 #include <units/math.h>
 #include <units/time.h>
 
-#include "photonlib/PhotonCamera.h"
 #include "photonlib/PhotonPipelineResult.h"
 #include "photonlib/PhotonTrackedTarget.h"
 
@@ -59,11 +58,10 @@ cv::Point3d TagCornerToObjectPoint(units::meter_t cornerX,
 }  // namespace detail
 
 PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
-                                         PoseStrategy strat, PhotonCamera&& cam,
+                                         PoseStrategy strat,
                                          frc::Transform3d robotToCamera)
     : aprilTags(tags),
       strategy(strat),
-      camera(std::move(cam)),
       m_robotToCamera(robotToCamera),
       lastPose(frc::Pose3d()),
       referencePose(frc::Pose3d()),
@@ -81,11 +79,6 @@ void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
     InvalidatePoseCache();
   }
   multiTagFallbackStrategy = strategy;
-}
-
-std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
-  auto result = camera.GetLatestResult();
-  return Update(result);
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
