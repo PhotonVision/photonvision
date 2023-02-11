@@ -26,8 +26,6 @@
 
 #include <map>
 #include <memory>
-#include <utility>
-#include <vector>
 
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/geometry/Pose3d.h>
@@ -63,10 +61,6 @@ struct EstimatedRobotPose {
  */
 class PhotonPoseEstimator {
  public:
-  using map_value_type =
-      std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>;
-  using size_type = std::vector<map_value_type>::size_type;
-
   /**
    * Create a new PhotonPoseEstimator.
    *
