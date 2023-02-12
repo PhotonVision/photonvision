@@ -62,14 +62,22 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     const PhotonPipelineResult& result) {
 
-  if (poseCacheTimestamp != -1 && std::abs(poseCacheTimestamp - result.GetTimestamp()) < 1e-6) {
-    return cachedPose;
+  // Time in the past -- give up, since the following if expects times > 0
+  if (result.GetTimestamp()  < 0) {
+    return std::nullopt;
   }
+
+  // If the pose cache timestamp was set, and the result is from the same timestamp, return an empty result
+  if (poseCacheTimestamp > 0 && std::abs(poseCacheTimestamp - result.GetTimestamp()) < 1e-6) {
+    return std::nullopt;
+  }
+
+  // Remember the timestamp of the current result used
   poseCacheTimestamp = result.GetTimestamp();
 
+  // If no targets seen, trivial case -- return empty result
   if (!result.HasTargets()) {
-    cachedPose = std::nullopt;
-    return cachedPose;
+    return std::nullopt;
   }
 
   std::optional<EstimatedRobotPose> ret = std::nullopt;
@@ -94,16 +102,10 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
                       "");
-      cachedPose = std::nullopt;
-      return cachedPose;
+      ret = std::nullopt;
   }
 
-  if (!ret) {
-    // TODO
-  }
-
-  cachedPose = ret;
-  return cachedPose;
+  return ret;
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::LowestAmbiguityStrategy(

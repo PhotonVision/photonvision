@@ -174,8 +174,7 @@ class PhotonPoseEstimator {
   frc::Pose3d lastPose;
   frc::Pose3d referencePose;
 
-  std::optional<EstimatedRobotPose> cachedPose;
-units::second_t poseCacheTimestamp;
+  units::second_t poseCacheTimestamp;
 
   inline void InvalidatePoseCache() {
     poseCacheTimestamp = -1;
