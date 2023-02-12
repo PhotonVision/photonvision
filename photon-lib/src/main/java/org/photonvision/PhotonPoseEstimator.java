@@ -71,8 +71,7 @@ public class PhotonPoseEstimator {
 
     private Pose3d lastPose;
     private Pose3d referencePose;
-    private Optional<EstimatedRobotPose> cachedPose;
-    private double poseCacheTimestampSeconds = -1;
+    protected double poseCacheTimestampSeconds = -1;
     private final Set<Integer> reportedErrors = new HashSet<>();
 
     /**
@@ -243,14 +242,22 @@ public class PhotonPoseEstimator {
      *     pipeline results used to create the estimate
      */
     public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
-        if (poseCacheTimestampSeconds != -1 && Math.abs(poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()) < 1e-6) {
-            return cachedPose;
+        // Time in the past -- give up, since the following if expects times > 0
+        if (cameraResult.getTimestampSeconds() < 0) {
+            return Optional.empty();
         }
+
+        // If the pose cache timestamp was set, and the result is from the same timestamp, return an empty result
+        if (poseCacheTimestampSeconds > 0 && Math.abs(poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()) < 1e-6) {
+            return Optional.empty();
+        }
+
+        // Remember the timestamp of the current result used
         poseCacheTimestampSeconds = cameraResult.getTimestampSeconds();
 
+        // If no targets seen, trivial case -- return empty result
         if (!cameraResult.hasTargets()) {
-            cachedPose = Optional.empty();
-            return cachedPose;
+            return Optional.empty();
         }
 
         Optional<EstimatedRobotPose> estimatedPose;
@@ -274,16 +281,14 @@ public class PhotonPoseEstimator {
             default:
                 DriverStation.reportError(
                         "[PhotonPoseEstimator] Unknown Position Estimation Strategy!", false);
-                cachedPose = Optional.empty();
-                return cachedPose;
+                return Optional.empty();
         }
 
         if (estimatedPose.isEmpty()) {
             lastPose = null;
         }
 
-        cachedPose = estimatedPose;
-        return cachedPose;
+        return estimatedPose;
     }
 
     /**
