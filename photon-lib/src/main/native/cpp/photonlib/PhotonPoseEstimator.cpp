@@ -56,6 +56,11 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
   auto result = camera.GetLatestResult();
+  return Update(result);
+}
+
+std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
+    const PhotonPipelineResult& result) {
 
   if (poseCacheTimestamp != -1 && std::abs(poseCacheTimestamp - result.GetTimestamp()) < 1e-6) {
     return cachedPose;
@@ -103,21 +108,21 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::LowestAmbiguityStrategy(
     PhotonPipelineResult result) {
-  int lowestAJ = -1;
   double lowestAmbiguityScore = std::numeric_limits<double>::infinity();
   auto targets = result.GetTargets();
-  for (PhotonPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
-    if (targets[j].GetPoseAmbiguity() < lowestAmbiguityScore) {
-      lowestAJ = j;
-      lowestAmbiguityScore = targets[j].GetPoseAmbiguity();
+  auto foundIt = targets.end();
+  for (auto it = targets.begin(); it != targets.end(); ++it) {
+    if (it->GetPoseAmbiguity() < lowestAmbiguityScore) {
+      foundIt = it;
+      lowestAmbiguityScore = it->GetPoseAmbiguity();
     }
   }
 
-  if (lowestAJ == -1) {
+  if (foundIt == targets.end()) {
     return std::nullopt;
   }
 
-  PhotonTrackedTarget bestTarget = targets[lowestAJ];
+  auto& bestTarget = *foundIt;
 
   std::optional<frc::Pose3d> fiducialPose =
       aprilTags.GetTagPose(bestTarget.GetFiducialId());
@@ -191,8 +196,7 @@ PhotonPoseEstimator::ClosestToReferencePoseStrategy(
   frc::Pose3d pose = lastPose;
 
   auto targets = result.GetTargets();
-  for (PhotonPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
-    PhotonTrackedTarget target = targets[j];
+  for (auto& target : targets) {
     std::optional<frc::Pose3d> fiducialPose =
         aprilTags.GetTagPose(target.GetFiducialId());
     if (!fiducialPose) {
@@ -237,8 +241,7 @@ PhotonPoseEstimator::AverageBestTargetsStrategy(PhotonPipelineResult result) {
   double totalAmbiguity = 0;
 
   auto targets = result.GetTargets();
-  for (PhotonPoseEstimator::size_type j = 0; j < targets.size(); ++j) {
-    PhotonTrackedTarget target = targets[j];
+  for (auto& target : targets) {
     std::optional<frc::Pose3d> fiducialPose =
         aprilTags.GetTagPose(target.GetFiducialId());
     if (!fiducialPose) {

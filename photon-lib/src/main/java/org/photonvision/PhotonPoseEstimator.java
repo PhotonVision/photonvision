@@ -67,7 +67,7 @@ public class PhotonPoseEstimator {
     private AprilTagFieldLayout fieldTags;
     private PoseStrategy strategy;
     private final PhotonCamera camera;
-    private final Transform3d robotToCamera;
+    private Transform3d robotToCamera;
 
     private Pose3d lastPose;
     private Pose3d referencePose;
@@ -201,6 +201,21 @@ public class PhotonPoseEstimator {
         setLastPose(new Pose3d(lastPose));
     }
 
+    /** @return The current transform from the center of the robot to the camera mount position */
+    public Transform3d getRobotToCameraTransform() {
+        return robotToCamera;
+    }
+
+    /**
+     * Useful for pan and tilt mechanisms and such.
+     *
+     * @param robotToCamera The current transform from the center of the robot to the camera mount
+     *     position
+     */
+    public void setRobotToCameraTransform(Transform3d robotToCamera) {
+        this.robotToCamera = robotToCamera;
+    }
+
     /**
      * Poll data from the configured cameras and update the estimated position of the robot. Returns
      * empty if there are no cameras set or no targets were found from the cameras.
@@ -215,10 +230,24 @@ public class PhotonPoseEstimator {
         }
 
         PhotonPipelineResult cameraResult = camera.getLatestResult();
+
+        return update(cameraResult);
+    }
+
+    /**
+     * Updates the estimated position of the robot. Returns empty if there are no cameras set or no
+     * targets were found from the cameras.
+     *
+     * @param cameraResult The latest pipeline result from the camera
+     * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
+     *     pipeline results used to create the estimate
+     */
+    public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
         if (poseCacheTimestampSeconds != -1 && Math.abs(poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()) < 1e-6) {
             return cachedPose;
         }
         poseCacheTimestampSeconds = cameraResult.getTimestampSeconds();
+
         if (!cameraResult.hasTargets()) {
             cachedPose = Optional.empty();
             return cachedPose;

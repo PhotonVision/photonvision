@@ -24,16 +24,14 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
-#include <utility>
-#include <vector>
 
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
 
 #include "photonlib/PhotonCamera.h"
+#include "photonlib/PhotonPipelineResult.h"
 
 namespace photonlib {
 enum PoseStrategy : int {
@@ -63,10 +61,6 @@ struct EstimatedRobotPose {
  */
 class PhotonPoseEstimator {
  public:
-  using map_value_type =
-      std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>;
-  using size_type = std::vector<map_value_type>::size_type;
-
   /**
    * Create a new PhotonPoseEstimator.
    *
@@ -132,6 +126,24 @@ class PhotonPoseEstimator {
   }
 
   /**
+   * @return The current transform from the center of the robot to the camera
+   *         mount position.
+   */
+  inline frc::Transform3d GetRobotToCameraTransform() {
+    return m_robotToCamera;
+  }
+
+  /**
+   * Useful for pan and tilt mechanisms, or cameras on turrets
+   *
+   * @param robotToCamera The current transform from the center of the robot to
+   * the camera mount position.
+   */
+  inline void SetRobotToCameraTransform(frc::Transform3d robotToCamera) {
+    m_robotToCamera = robotToCamera;
+  }
+
+  /**
    * Update the stored last pose. Useful for setting the initial estimate when
    * using the CLOSEST_TO_LAST_POSE strategy.
    *
@@ -144,6 +156,11 @@ class PhotonPoseEstimator {
    * the camera and process it.
    */
   std::optional<EstimatedRobotPose> Update();
+
+  /**
+   * Update the pose estimator.
+   */
+  std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result);
 
   inline PhotonCamera& GetCamera() { return camera; }
 
