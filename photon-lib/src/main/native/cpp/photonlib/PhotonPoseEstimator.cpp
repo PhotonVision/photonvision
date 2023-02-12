@@ -38,6 +38,7 @@
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
 #include <units/time.h>
+#include <units/math.h>
 
 #include "photonlib/PhotonCamera.h"
 #include "photonlib/PhotonPipelineResult.h"
@@ -63,12 +64,14 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     const PhotonPipelineResult& result) {
 
   // Time in the past -- give up, since the following if expects times > 0
-  if (result.GetTimestamp()  < 0) {
+  if (result.GetTimestamp() < 0_s) {
+    printf("bad timestamp -- got %f\n", result.GetTimestamp().to<double>());
     return std::nullopt;
   }
 
   // If the pose cache timestamp was set, and the result is from the same timestamp, return an empty result
-  if (poseCacheTimestamp > 0 && std::abs(poseCacheTimestamp - result.GetTimestamp()) < 1e-6) {
+  if (poseCacheTimestamp > 0_s && units::math::abs(poseCacheTimestamp - result.GetTimestamp()) < 0.001_ms) {
+    printf("cached -- returning null\n");
     return std::nullopt;
   }
 
@@ -77,6 +80,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
 
   // If no targets seen, trivial case -- return empty result
   if (!result.HasTargets()) {
+    printf("no targets -- returning null\n");
     return std::nullopt;
   }
 

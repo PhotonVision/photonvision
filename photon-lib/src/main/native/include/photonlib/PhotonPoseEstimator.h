@@ -177,7 +177,7 @@ class PhotonPoseEstimator {
   units::second_t poseCacheTimestamp;
 
   inline void InvalidatePoseCache() {
-    poseCacheTimestamp = -1;
+    poseCacheTimestamp = -1_s;
   }
 
   /**

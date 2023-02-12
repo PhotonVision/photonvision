@@ -99,9 +99,7 @@ public class PhotonPoseEstimator {
         this.robotToCamera = robotToCamera;
     }
 
-    /**
-     * Invalidates the pose cache.
-     */
+    /** Invalidates the pose cache. */
     private void invalidatePoseCache() {
         poseCacheTimestampSeconds = -1;
     }
@@ -247,8 +245,10 @@ public class PhotonPoseEstimator {
             return Optional.empty();
         }
 
-        // If the pose cache timestamp was set, and the result is from the same timestamp, return an empty result
-        if (poseCacheTimestampSeconds > 0 && Math.abs(poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()) < 1e-6) {
+        // If the pose cache timestamp was set, and the result is from the same timestamp, return an
+        // empty result
+        if (poseCacheTimestampSeconds > 0
+                && Math.abs(poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()) < 1e-6) {
             return Optional.empty();
         }
 
