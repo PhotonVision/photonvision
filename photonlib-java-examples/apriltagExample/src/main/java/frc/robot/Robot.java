@@ -46,7 +46,7 @@ public class Robot extends TimedRobot {
             // set the NT server if simulating this code.
             // "localhost" for photon on desktop, or "photonvision.local" / "[ip-address]" for coprocessor
             instance.setServer("localhost");
-            instance.startClient4("myRobot");
+            instance.startClient4("Robot Simulation");
         }
 
         m_controller = new XboxController(0);

@@ -180,6 +180,15 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.bestTargetPosY.set(0);
         }
 
+        var fsp = result.inputAndOutputFrame.frameStaticProperties;
+        if (fsp.cameraCalibration != null) {
+            ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
+            ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getExtrinsicsArr());
+        } else {
+            ts.cameraIntrinsicsPublisher.accept(new double[] {});
+            ts.cameraDistortionPublisher.accept(new double[] {});
+        }
+
         ts.heartbeatPublisher.set(heartbeatCounter++);
 
         // TODO...nt4... is this needed?

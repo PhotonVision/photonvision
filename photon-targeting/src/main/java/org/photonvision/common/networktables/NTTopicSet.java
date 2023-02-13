@@ -64,6 +64,10 @@ public class NTTopicSet {
     public IntegerTopic heartbeatTopic;
     public IntegerPublisher heartbeatPublisher;
 
+    // Camera Calibration
+    public DoubleArrayPublisher cameraIntrinsicsPublisher;
+    public DoubleArrayPublisher cameraDistortionPublisher;
+
     public void updateEntries() {
         rawBytesEntry =
                 subTable
@@ -93,6 +97,9 @@ public class NTTopicSet {
 
         heartbeatTopic = subTable.getIntegerTopic("heartbeat");
         heartbeatPublisher = heartbeatTopic.publish();
+
+        cameraIntrinsicsPublisher = subTable.getDoubleArrayTopic("cameraIntrinsics").publish();
+        cameraDistortionPublisher = subTable.getDoubleArrayTopic("cameraDistortion").publish();
     }
 
     @SuppressWarnings("DuplicatedCode")
@@ -113,5 +120,10 @@ public class NTTopicSet {
         if (targetSkewEntry != null) targetSkewEntry.close();
         if (bestTargetPosX != null) bestTargetPosX.close();
         if (bestTargetPosY != null) bestTargetPosY.close();
+
+        if (heartbeatPublisher != null) heartbeatPublisher.close();
+
+        if (cameraIntrinsicsPublisher != null) cameraIntrinsicsPublisher.close();
+        if (cameraDistortionPublisher != null) cameraDistortionPublisher.close();
     }
 }
