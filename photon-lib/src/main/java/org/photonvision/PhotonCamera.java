@@ -24,9 +24,14 @@
 
 package org.photonvision;
 
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
+import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.IntegerPublisher;
@@ -39,6 +44,7 @@ import edu.wpi.first.networktables.RawSubscriber;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import java.util.Optional;
 import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
@@ -64,6 +70,8 @@ public class PhotonCamera {
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
     IntegerSubscriber pipelineIndexState, ledModeState;
     IntegerSubscriber heartbeatEntry;
+    private DoubleArraySubscriber cameraIntrinsicsSubscriber;
+    private DoubleArraySubscriber cameraDistortionSubscriber;
 
     public void close() {
         rawBytesEntry.close();
@@ -84,6 +92,8 @@ public class PhotonCamera {
         ledModeRequest.close();
         ledModeState.close();
         pipelineIndexRequest.close();
+        cameraIntrinsicsSubscriber.close();
+        cameraDistortionSubscriber.close();
     }
 
     private final String path;
@@ -133,6 +143,8 @@ public class PhotonCamera {
         ledModeRequest = mainTable.getIntegerTopic("ledModeRequest").publish();
         ledModeState = mainTable.getIntegerTopic("ledModeState").subscribe(-1);
         versionEntry = mainTable.getStringTopic("version").subscribe("");
+        cameraIntrinsicsSubscriber = mainTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
+        cameraDistortionSubscriber = mainTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
 
         m_topicNameSubscriber =
                 new MultiSubscriber(
@@ -303,6 +315,20 @@ public class PhotonCamera {
         }
 
         return (now - prevHeartbeatChangeTime) < HEARBEAT_DEBOUNCE_SEC;
+    }
+
+    public Optional<Matrix<N3, N3>> getCameraMatrix() {
+        var cameraMatrix = cameraIntrinsicsSubscriber.get();
+        if (cameraMatrix != null && cameraMatrix.length == 9) {
+            return Optional.of(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(cameraMatrix));
+        } else return Optional.empty();
+    }
+
+    public Optional<Matrix<N5, N1>> getDistCoeffs() {
+        var distCoeffs = cameraDistortionSubscriber.get();
+        if (distCoeffs != null && distCoeffs.length == 5) {
+            return Optional.of(new MatBuilder<>(Nat.N5(), Nat.N1()).fill(distCoeffs));
+        } else return Optional.empty();
     }
 
     private void verifyVersion() {

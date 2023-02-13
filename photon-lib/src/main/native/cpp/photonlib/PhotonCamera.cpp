@@ -26,6 +26,7 @@
 
 #include <frc/Errors.h>
 #include <frc/Timer.h>
+#include <opencv2/core/mat.hpp>
 
 #include "PhotonVersion.h"
 #include "photonlib/Packet.h"
@@ -57,6 +58,10 @@ PhotonCamera::PhotonCamera(nt::NetworkTableInstance instance,
       ledModePub(mainTable->GetIntegerTopic("ledMode").Publish()),
       ledModeSub(mainTable->GetIntegerTopic("ledMode").Subscribe(0)),
       versionEntry(mainTable->GetStringTopic("version").Subscribe("")),
+      cameraIntrinsicsSubscriber(
+          rootTable->GetDoubleArrayTopic("cameraIntrinsics").Subscribe({})),
+      cameraDistortionSubscriber(
+          rootTable->GetDoubleArrayTopic("cameraDistortion").Subscribe({})),
       driverModeSubscriber(
           rootTable->GetBooleanTopic("driverMode").Subscribe(false)),
       driverModePublisher(
@@ -119,12 +124,26 @@ LEDMode PhotonCamera::GetLEDMode() const {
   return static_cast<LEDMode>(static_cast<int>(ledModeSub.Get()));
 }
 
+std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
+  auto camCoeffs = cameraIntrinsicsSubscriber.Get();
+  if (camCoeffs.size() == 9) {
+    // clone should deal with ownership concerns? not sure
+    return cv::Mat(3, 3, CV_64FC1, camCoeffs.data()).clone();
+  }
+  return std::nullopt;
+}
+
 void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModePub.Set(static_cast<double>(static_cast<int>(mode)));
 }
 
-const std::string_view PhotonCamera::GetCameraName() const {
-  return m_cameraName;
+std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
+  auto distCoeffs = cameraDistortionSubscriber.Get();
+  if (distCoeffs.size() == 5) {
+    // clone should deal with ownership concerns? not sure
+    return cv::Mat(5, 1, CV_64FC1, distCoeffs.data()).clone();
+  }
+  return std::nullopt;
 }
 
 void PhotonCamera::VerifyVersion() {

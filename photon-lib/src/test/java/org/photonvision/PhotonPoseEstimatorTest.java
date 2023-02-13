@@ -29,7 +29,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.hal.JNIWrapper;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -157,8 +156,6 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void testClosestToCameraHeightStrategy() {
-        ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
-
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
@@ -474,8 +471,6 @@ class PhotonPoseEstimatorTest {
 
     @Test
     void averageBestPoses() {
-        ArrayList<Pair<PhotonCamera, Transform3d>> cameras = new ArrayList<>();
-
         PhotonCameraInjector cameraOne = new PhotonCameraInjector();
         cameraOne.result =
                 new PhotonPipelineResult(
