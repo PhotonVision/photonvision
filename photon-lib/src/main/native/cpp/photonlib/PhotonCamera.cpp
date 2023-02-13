@@ -70,7 +70,7 @@ PhotonCamera::PhotonCamera(const std::string_view cameraName)
 
 PhotonPipelineResult PhotonCamera::GetLatestResult() {
   if (test) {
-    printf("Test mode! %f\n", testResult.GetTimestamp().to<double>());
+    std::printf("Test mode! %f\n", testResult.GetTimestamp().to<double>());
     return testResult;
   }
 

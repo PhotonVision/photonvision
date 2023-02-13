@@ -338,10 +338,10 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
           0.4, corners, detectedCorners}};
 
   cameraOne.test = true;
-  
+
   photonlib::PhotonPoseEstimator estimator(
       aprilTags, photonlib::AVERAGE_BEST_TARGETS, std::move(cameraOne), {});
-  
+
   // empty input, expect empty out
   estimator.GetCamera().testResult = {2_ms, {}};
   estimator.GetCamera().testResult.SetTimestamp(units::second_t(1));

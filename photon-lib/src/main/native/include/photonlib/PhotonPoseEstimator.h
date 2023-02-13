@@ -176,9 +176,7 @@ class PhotonPoseEstimator {
 
   units::second_t poseCacheTimestamp;
 
-  inline void InvalidatePoseCache() {
-    poseCacheTimestamp = -1_s;
-  }
+  inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
 
   /**
    * Return the estimated position of the robot with the lowest position
