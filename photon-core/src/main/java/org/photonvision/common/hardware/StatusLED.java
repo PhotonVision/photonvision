@@ -46,14 +46,13 @@ public class StatusLED {
         }
     }
 
-
     public void setRGB(boolean r, boolean g, boolean b) {
-        //System.out.println("DEBUG setting LED's to %b %b %b");
+        // System.out.println("DEBUG setting LED's to %b %b %b");
         redLED.setState(!r);
-        redLED.setBrightness(r?0:100);
+        redLED.setBrightness(r ? 0 : 100);
         greenLED.setState(!g);
-        greenLED.setBrightness(g?0:100);
+        greenLED.setBrightness(g ? 0 : 100);
         blueLED.setState(!b);
-        blueLED.setBrightness(b?0:100);
+        blueLED.setBrightness(b ? 0 : 100);
     }
 }

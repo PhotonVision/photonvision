@@ -84,12 +84,11 @@ public class HardwareManager {
                         ? new StatusLED(hardwareConfig.statusRGBPins)
                         : null;
 
-        if(statusLED != null){
+        if (statusLED != null) {
             logger.debug("Configured 3 status LED's");
         } else {
             logger.debug("No Status LED configured");
         }
-
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
@@ -158,20 +157,20 @@ public class HardwareManager {
     private boolean targetVisible = false;
 
     public void setStatus(ProgramStatus status) {
-        if(statusLED != null){
+        if (statusLED != null) {
             switch (status) {
                 case UHOH:
                     statusLED.setRGB(true, false, false);
                     break;
                 case RUNNING:
-                    if(targetVisible){
+                    if (targetVisible) {
                         statusLED.setRGB(false, true, true);
                     } else {
                         statusLED.setRGB(true, true, false);
                     }
                     break;
                 case RUNNING_NT:
-                    if(targetVisible){
+                    if (targetVisible) {
                         statusLED.setRGB(false, true, true);
                     } else {
                         statusLED.setRGB(false, true, false);
@@ -181,7 +180,7 @@ public class HardwareManager {
         }
     }
 
-    public void setTargetVisible(boolean isVisible){
+    public void setTargetVisible(boolean isVisible) {
         targetVisible = isVisible;
     }
 
