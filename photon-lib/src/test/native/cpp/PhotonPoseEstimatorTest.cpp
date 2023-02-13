@@ -231,6 +231,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
   estimator.SetLastPose(
       frc::Pose3d(1_m, 1_m, 1_m, frc::Rotation3d(0_rad, 0_rad, 0_rad)));
   auto estimatedPose = estimator.Update();
+  ASSERT_TRUE(estimatedPose.value());
   frc::Pose3d pose = estimatedPose.value().estimatedPose;
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 3> targetsThree{
@@ -257,9 +258,10 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
           0.4, corners, detectedCorners}};
 
   estimator.GetCamera().testResult = {2_ms, targetsThree};
-  estimator.GetCamera().testResult.SetTimestamp(units::second_t(7));
+  estimator.GetCamera().testResult.SetTimestamp(units::second_t(21));
 
   estimatedPose = estimator.Update();
+  ASSERT_TRUE(estimatedPose.value());
   pose = estimatedPose.value().estimatedPose;
 
   EXPECT_NEAR(7.0, units::unit_cast<double>(estimatedPose.value().timestamp),
