@@ -34,8 +34,8 @@
 #include "photonlib/PhotonPipelineResult.h"
 
 namespace cv {
-  class Mat;
-}
+class Mat;
+}  // namespace cv
 
 namespace photonlib {
 enum PoseStrategy {
