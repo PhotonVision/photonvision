@@ -122,12 +122,7 @@ class PhotonPoseEstimator {
    *
    * @param strategy the strategy to set
    */
-  inline void SetMultiTagFallbackStrategy(PoseStrategy strategy) {
-    if (this->multiTagFallbackStrategy != strategy) {
-      InvalidatePoseCache();
-    }
-    this->multiTagFallbackStrategy = strategy;
-  }
+  void SetMultiTagFallbackStrategy(PoseStrategy strategy);
 
   /**
    * Return the reference position that is being used by the estimator.

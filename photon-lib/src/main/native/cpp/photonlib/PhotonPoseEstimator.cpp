@@ -37,10 +37,10 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Rotation3d.h>
 #include <frc/geometry/Transform3d.h>
-#include <units/math.h>
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
+#include <units/math.h>
 #include <units/time.h>
 
 #include "photonlib/PhotonCamera.h"
@@ -75,6 +75,9 @@ void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
         "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity",
         "");
     strategy = LOWEST_AMBIGUITY;
+  }
+  if (this->multiTagFallbackStrategy != strategy) {
+    InvalidatePoseCache();
   }
   multiTagFallbackStrategy = strategy;
 }
