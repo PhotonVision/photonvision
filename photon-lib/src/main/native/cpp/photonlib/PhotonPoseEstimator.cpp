@@ -159,7 +159,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::LowestAmbiguityStrategy(
       fiducialPose.value()
           .TransformBy(bestTarget.GetBestCameraToTarget().Inverse())
           .TransformBy(m_robotToCamera.Inverse()),
-      result.GetTimestamp()};
+      result.GetTimestamp(), result.GetTargets()};
 }
 
 std::optional<EstimatedRobotPose>
@@ -195,14 +195,14 @@ PhotonPoseEstimator::ClosestToCameraHeightStrategy(
       pose = EstimatedRobotPose{
           targetPose.TransformBy(target.GetAlternateCameraToTarget().Inverse())
               .TransformBy(m_robotToCamera.Inverse()),
-          result.GetTimestamp()};
+          result.GetTimestamp(), result.GetTargets()};
     }
     if (bestDifference < smallestHeightDifference) {
       smallestHeightDifference = bestDifference;
       pose = EstimatedRobotPose{
           targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
               .TransformBy(m_robotToCamera.Inverse()),
-          result.GetTimestamp()};
+          result.GetTimestamp(), result.GetTargets()};
     }
   }
 
@@ -253,7 +253,7 @@ PhotonPoseEstimator::ClosestToReferencePoseStrategy(
     }
   }
 
-  return EstimatedRobotPose{pose, stateTimestamp};
+  return EstimatedRobotPose{pose, stateTimestamp, result.GetTargets()};
 }
 
 std::optional<std::array<cv::Point3d, 4>> detail::CalcTagCorners(
@@ -358,7 +358,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   Pose3d const pose = detail::ToPose3d(tvec, rvec);
 
   return photonlib::EstimatedRobotPose(
-      pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp());
+      pose.TransformBy(m_robotToCamera.Inverse()), result.GetTimestamp(),
+      result.GetTargets());
 }
 
 std::optional<EstimatedRobotPose>
@@ -384,7 +385,7 @@ PhotonPoseEstimator::AverageBestTargetsStrategy(PhotonPipelineResult result) {
       return EstimatedRobotPose{
           targetPose.TransformBy(target.GetBestCameraToTarget().Inverse())
               .TransformBy(m_robotToCamera.Inverse()),
-          result.GetLatency()};
+          result.GetTimestamp(), result.GetTargets()};
     }
     totalAmbiguity += 1. / target.GetPoseAmbiguity();
 
@@ -404,6 +405,6 @@ PhotonPoseEstimator::AverageBestTargetsStrategy(PhotonPipelineResult result) {
   }
 
   return EstimatedRobotPose{frc::Pose3d(transform, rotation),
-                            result.GetTimestamp()};
+                            result.GetTimestamp(), result.GetTargets()};
 }
 }  // namespace photonlib

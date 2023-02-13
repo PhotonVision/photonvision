@@ -54,8 +54,14 @@ struct EstimatedRobotPose {
    * the same timebase as the RoboRIO FPGA Timestamp */
   units::second_t timestamp;
 
-  EstimatedRobotPose(frc::Pose3d pose_, units::second_t time_)
-      : estimatedPose(pose_), timestamp(time_) {}
+  /** A list of the targets used to compute this pose */
+  wpi::SmallVector<PhotonTrackedTarget, 10> targetsUsed;
+
+  EstimatedRobotPose(frc::Pose3d pose_, units::second_t time_,
+                     std::span<const PhotonTrackedTarget> targets)
+      : estimatedPose(pose_),
+        timestamp(time_),
+        targetsUsed(targets.data(), targets.data() + targets.size()) {}
 };
 
 /**
