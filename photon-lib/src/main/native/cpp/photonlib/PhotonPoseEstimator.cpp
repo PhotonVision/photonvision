@@ -66,7 +66,8 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
       camera(std::move(cam)),
       m_robotToCamera(robotToCamera),
       lastPose(frc::Pose3d()),
-      referencePose(frc::Pose3d()) {}
+      referencePose(frc::Pose3d()),
+      poseCacheTimestamp(-1_s) {}
 
 void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
   if (strategy == MULTI_TAG_PNP) {
