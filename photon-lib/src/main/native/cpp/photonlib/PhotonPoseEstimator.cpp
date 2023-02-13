@@ -92,8 +92,6 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     const PhotonPipelineResult& result) {
   // Time in the past -- give up, since the following if expects times > 0
   if (result.GetTimestamp() < 0_s) {
-    std::printf("bad timestamp -- got %f\n",
-                result.GetTimestamp().to<double>());
     return std::nullopt;
   }
 
@@ -101,7 +99,6 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
   // timestamp, return an empty result
   if (poseCacheTimestamp > 0_s &&
       units::math::abs(poseCacheTimestamp - result.GetTimestamp()) < 0.001_ms) {
-    std::printf("cached -- returning null\n");
     return std::nullopt;
   }
 
@@ -110,7 +107,6 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
 
   // If no targets seen, trivial case -- return empty result
   if (!result.HasTargets()) {
-    std::printf("no targets -- returning null\n");
     return std::nullopt;
   }
 
