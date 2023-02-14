@@ -63,7 +63,7 @@ public class PhotonPoseEstimator {
         /** Choose the Pose which is closest to the last pose calculated */
         CLOSEST_TO_LAST_POSE,
 
-        /** Choose the Pose with the lowest ambiguity. */
+        /** Return the average of the best target poses using ambiguity as weight. */
         AVERAGE_BEST_TARGETS,
 
         /** Use all visible tags to compute a single pose estimate.. */
@@ -89,9 +89,9 @@ public class PhotonPoseEstimator {
      *     href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
      *     Coordinate System</a>.
      * @param strategy The strategy it should use to determine the best pose.
-     * @param camera PhotonCameras and
-     * @param robotToCamera Transform3d from the center of the robot to the camera mount positions
-     *     (ie, robot ➔ camera) in the <a
+     * @param camera PhotonCamera
+     * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
+     *     robot ➔ camera) in the <a
      *     href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
      *     Coordinate System</a>.
      */
@@ -240,8 +240,8 @@ public class PhotonPoseEstimator {
      * Poll data from the configured cameras and update the estimated position of the robot. Returns
      * empty if there are no cameras set or no targets were found from the cameras.
      *
-     * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
-     *     pipeline results used to create the estimate
+     * @return an EstimatedRobotPose with an estimated pose, the timestamp, and targets used to create
+     *     the estimate
      */
     public Optional<EstimatedRobotPose> update() {
         if (camera == null) {
