@@ -25,8 +25,10 @@
 package frc.robot;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import frc.robot.Constants.VisionConstants;
+import java.io.IOException;
 import java.util.Optional;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -53,12 +55,13 @@ public class PhotonCameraWrapper {
         photonPoseEstimator =
                 new PhotonPoseEstimator(
                         fieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, photonCamera, VisionConstants.robotToCam);
+        photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
     }
 
     /**
      * @param estimatedRobotPose The current best guess at robot pose
-     * @return A pair of the fused camera observations to a single Pose2d on the field, and the time
-     *     of the observation. Assumes a planar field and the robot is always firmly on the ground
+     * @return an EstimatedRobotPose with an estimated pose, the timestamp, and targets used to create
+     *     the estimate
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
         photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
