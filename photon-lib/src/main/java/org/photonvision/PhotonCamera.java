@@ -54,7 +54,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 public class PhotonCamera {
     static final String kTableName = "photonvision";
 
-    protected final NetworkTable rootTable;
+    protected final NetworkTable cameraTable;
     RawSubscriber rawBytesEntry;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
@@ -125,26 +125,27 @@ public class PhotonCamera {
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
         name = cameraName;
-        var mainTable = instance.getTable(kTableName);
-        this.rootTable = mainTable.getSubTable(cameraName);
-        path = rootTable.getPath();
+        var photonvision_root_table = instance.getTable(kTableName);
+        this.cameraTable = photonvision_root_table.getSubTable(cameraName);
+        path = cameraTable.getPath();
         rawBytesEntry =
-                rootTable
+                cameraTable
                         .getRawTopic("rawBytes")
                         .subscribe(
                                 "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
-        driverModePublisher = rootTable.getBooleanTopic("driverMode").publish();
-        driverModeSubscriber = rootTable.getBooleanTopic("driverModeRequest").subscribe(false);
-        inputSaveImgEntry = rootTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
-        outputSaveImgEntry = rootTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
-        pipelineIndexRequest = rootTable.getIntegerTopic("pipelineIndexRequest").publish();
-        pipelineIndexState = rootTable.getIntegerTopic("pipelineIndexState").subscribe(0);
-        heartbeatEntry = rootTable.getIntegerTopic("heartbeat").subscribe(-1);
-        ledModeRequest = mainTable.getIntegerTopic("ledModeRequest").publish();
-        ledModeState = mainTable.getIntegerTopic("ledModeState").subscribe(-1);
-        versionEntry = mainTable.getStringTopic("version").subscribe("");
-        cameraIntrinsicsSubscriber = mainTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
-        cameraDistortionSubscriber = mainTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
+        driverModePublisher = cameraTable.getBooleanTopic("driverMode").publish();
+        driverModeSubscriber = cameraTable.getBooleanTopic("driverModeRequest").subscribe(false);
+        inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
+        outputSaveImgEntry = cameraTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
+        pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
+        pipelineIndexState = cameraTable.getIntegerTopic("pipelineIndexState").subscribe(0);
+        heartbeatEntry = cameraTable.getIntegerTopic("heartbeat").subscribe(-1);
+        cameraIntrinsicsSubscriber = cameraTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
+        cameraDistortionSubscriber = cameraTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
+
+        ledModeRequest = photonvision_root_table.getIntegerTopic("ledModeRequest").publish();
+        ledModeState = photonvision_root_table.getIntegerTopic("ledModeState").subscribe(-1);
+        versionEntry = photonvision_root_table.getStringTopic("version").subscribe("");
 
         m_topicNameSubscriber =
                 new MultiSubscriber(
@@ -340,7 +341,7 @@ public class PhotonCamera {
         // Heartbeat entry is assumed to always be present. If it's not present, we
         // assume that a camera with that name was never connected in the first place.
         if (!heartbeatEntry.exists()) {
-            Set<String> cameraNames = rootTable.getInstance().getTable(kTableName).getSubTables();
+            Set<String> cameraNames = cameraTable.getInstance().getTable(kTableName).getSubTables();
             if (cameraNames.isEmpty()) {
                 DriverStation.reportError(
                         "Could not find any PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",
