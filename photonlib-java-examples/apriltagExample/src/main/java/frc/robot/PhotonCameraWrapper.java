@@ -36,25 +36,27 @@ import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 
 public class PhotonCameraWrapper {
-    public PhotonCamera photonCamera;
-    public PhotonPoseEstimator photonPoseEstimator;
+    private PhotonCamera photonCamera;
+    private PhotonPoseEstimator photonPoseEstimator;
 
     public PhotonCameraWrapper() {
-        AprilTagFieldLayout atfl = null;
-        try {
-            atfl = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         // Change the name of your camera here to whatever it is in the PhotonVision UI.
         photonCamera = new PhotonCamera(VisionConstants.cameraName);
 
-        // Create pose estimator
-        photonPoseEstimator =
-                new PhotonPoseEstimator(
-                        atfl, PoseStrategy.MULTI_TAG_PNP, photonCamera, VisionConstants.robotToCam);
-        photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        try {
+            // Attempt to load the AprilTagFieldLayout that will tell us where the tags are on the field.
+            AprilTagFieldLayout fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+            // Create pose estimator
+            photonPoseEstimator =
+                    new PhotonPoseEstimator(
+                            fieldLayout, PoseStrategy.MULTI_TAG_PNP, photonCamera, VisionConstants.robotToCam);
+            photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
+        } catch (IOException e) {
+            // The AprilTagFieldLayout failed to load. We won't be able to estimate poses if we don't know
+            // where the tags are.
+            DriverStation.reportError("Failed to load AprilTagFieldLayout", e.getStackTrace());
+            photonPoseEstimator = null;
+        }
     }
 
     /**
@@ -63,6 +65,10 @@ public class PhotonCameraWrapper {
      *     the estimate
      */
     public Optional<EstimatedRobotPose> getEstimatedGlobalPose(Pose2d prevEstimatedRobotPose) {
+        if (photonPoseEstimator == null) {
+            // The field layout failed to load, so we cannot estimate poses.
+            return Optional.empty();
+        }
         photonPoseEstimator.setReferencePose(prevEstimatedRobotPose);
         return photonPoseEstimator.update();
     }
