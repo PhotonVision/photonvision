@@ -231,6 +231,7 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
   estimator.SetLastPose(
       frc::Pose3d(1_m, 1_m, 1_m, frc::Rotation3d(0_rad, 0_rad, 0_rad)));
   auto estimatedPose = estimator.Update();
+  ASSERT_TRUE(estimatedPose);
   frc::Pose3d pose = estimatedPose.value().estimatedPose;
 
   wpi::SmallVector<photonlib::PhotonTrackedTarget, 3> targetsThree{
@@ -257,12 +258,13 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
           0.4, corners, detectedCorners}};
 
   estimator.GetCamera().testResult = {2_ms, targetsThree};
-  estimator.GetCamera().testResult.SetTimestamp(units::second_t(7));
+  estimator.GetCamera().testResult.SetTimestamp(units::second_t(21));
 
   estimatedPose = estimator.Update();
+  ASSERT_TRUE(estimatedPose);
   pose = estimatedPose.value().estimatedPose;
 
-  EXPECT_NEAR(7.0, units::unit_cast<double>(estimatedPose.value().timestamp),
+  EXPECT_NEAR(21.0, units::unit_cast<double>(estimatedPose.value().timestamp),
               .01);
   EXPECT_NEAR(.9, units::unit_cast<double>(pose.X()), .01);
   EXPECT_NEAR(1.1, units::unit_cast<double>(pose.Y()), .01);
@@ -309,4 +311,53 @@ TEST(PhotonPoseEstimatorTest, AverageBestPoses) {
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.X()), .01);
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.Y()), .01);
   EXPECT_NEAR(2.15, units::unit_cast<double>(pose.Z()), .01);
+}
+
+TEST(PhotonPoseEstimatorTest, PoseCache) {
+  photonlib::PhotonCamera cameraOne = photonlib::PhotonCamera("test2");
+
+  wpi::SmallVector<photonlib::PhotonTrackedTarget, 3> targets{
+      photonlib::PhotonTrackedTarget{
+          3.0, -4.0, 9.0, 4.0, 0,
+          frc::Transform3d(frc::Translation3d(2_m, 2_m, 2_m),
+                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          frc::Transform3d(frc::Translation3d(1_m, 1_m, 1_m),
+                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          0.7, corners, detectedCorners},
+      photonlib::PhotonTrackedTarget{
+          3.0, -4.0, 9.1, 6.7, 1,
+          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
+                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          frc::Transform3d(frc::Translation3d(3_m, 3_m, 3_m),
+                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          0.3, corners, detectedCorners},
+      photonlib::PhotonTrackedTarget{
+          9.0, -2.0, 19.0, 3.0, 0,
+          frc::Transform3d(frc::Translation3d(0_m, 0_m, 0_m),
+                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          frc::Transform3d(frc::Translation3d(2_m, 1.9_m, 2.1_m),
+                           frc::Rotation3d(0_rad, 0_rad, 0_rad)),
+          0.4, corners, detectedCorners}};
+
+  cameraOne.test = true;
+
+  photonlib::PhotonPoseEstimator estimator(
+      aprilTags, photonlib::AVERAGE_BEST_TARGETS, std::move(cameraOne), {});
+
+  // empty input, expect empty out
+  estimator.GetCamera().testResult = {2_ms, {}};
+  estimator.GetCamera().testResult.SetTimestamp(units::second_t(1));
+  auto estimatedPose = estimator.Update();
+  EXPECT_FALSE(estimatedPose);
+
+  // Set result, and update -- expect present and timestamp to be 15
+  estimator.GetCamera().testResult = {3_ms, targets};
+  estimator.GetCamera().testResult.SetTimestamp(units::second_t(15));
+  estimatedPose = estimator.Update();
+  EXPECT_TRUE(estimatedPose);
+  EXPECT_NEAR(15, estimatedPose.value().timestamp.to<double>(), 1e-6);
+
+  // And again -- now pose cache should be empty
+  estimatedPose = estimator.Update();
+  EXPECT_FALSE(estimatedPose);
 }

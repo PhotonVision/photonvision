@@ -78,6 +78,7 @@ public class PhotonPoseEstimator {
 
     private Pose3d lastPose;
     private Pose3d referencePose;
+    protected double poseCacheTimestampSeconds = -1;
     private final Set<Integer> reportedErrors = new HashSet<>();
 
     /**
@@ -105,6 +106,17 @@ public class PhotonPoseEstimator {
         this.robotToCamera = robotToCamera;
     }
 
+    /** Invalidates the pose cache. */
+    private void invalidatePoseCache() {
+        poseCacheTimestampSeconds = -1;
+    }
+
+    private void checkUpdate(Object oldObj, Object newObj) {
+        if (oldObj != newObj && oldObj != null && !oldObj.equals(newObj)) {
+            invalidatePoseCache();
+        }
+    }
+
     /**
      * Get the AprilTagFieldLayout being used by the PositionEstimator.
      *
@@ -120,6 +132,7 @@ public class PhotonPoseEstimator {
      * @param fieldTags the AprilTagFieldLayout
      */
     public void setFieldTags(AprilTagFieldLayout fieldTags) {
+        checkUpdate(this.fieldTags, fieldTags);
         this.fieldTags = fieldTags;
     }
 
@@ -138,6 +151,7 @@ public class PhotonPoseEstimator {
      * @param strategy the strategy to set
      */
     public void setPrimaryStrategy(PoseStrategy strategy) {
+        checkUpdate(this.primaryStrategy, strategy);
         this.primaryStrategy = strategy;
     }
 
@@ -148,6 +162,7 @@ public class PhotonPoseEstimator {
      * @param strategy the strategy to set
      */
     public void setMultiTagFallbackStrategy(PoseStrategy strategy) {
+        checkUpdate(this.multiTagFallbackStrategy, strategy);
         if (strategy == PoseStrategy.MULTI_TAG_PNP) {
             DriverStation.reportWarning(
                     "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity", null);
@@ -172,6 +187,7 @@ public class PhotonPoseEstimator {
      * @param referencePose the referencePose to set
      */
     public void setReferencePose(Pose3d referencePose) {
+        checkUpdate(this.referencePose, referencePose);
         this.referencePose = referencePose;
     }
 
@@ -182,7 +198,7 @@ public class PhotonPoseEstimator {
      * @param referencePose the referencePose to set
      */
     public void setReferencePose(Pose2d referencePose) {
-        this.referencePose = new Pose3d(referencePose);
+        setReferencePose(new Pose3d(referencePose));
     }
 
     /**
@@ -247,6 +263,22 @@ public class PhotonPoseEstimator {
      *     pipeline results used to create the estimate
      */
     public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
+        // Time in the past -- give up, since the following if expects times > 0
+        if (cameraResult.getTimestampSeconds() < 0) {
+            return Optional.empty();
+        }
+
+        // If the pose cache timestamp was set, and the result is from the same timestamp, return an
+        // empty result
+        if (poseCacheTimestampSeconds > 0
+                && Math.abs(poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()) < 1e-6) {
+            return Optional.empty();
+        }
+
+        // Remember the timestamp of the current result used
+        poseCacheTimestampSeconds = cameraResult.getTimestampSeconds();
+
+        // If no targets seen, trivial case -- return empty result
         if (!cameraResult.hasTargets()) {
             return Optional.empty();
         }
@@ -264,9 +296,11 @@ public class PhotonPoseEstimator {
             case CLOSEST_TO_CAMERA_HEIGHT:
                 estimatedPose = closestToCameraHeightStrategy(cameraResult);
                 break;
+            case CLOSEST_TO_REFERENCE_POSE:
+                estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
+                break;
             case CLOSEST_TO_LAST_POSE:
                 setReferencePose(lastPose);
-            case CLOSEST_TO_REFERENCE_POSE:
                 estimatedPose = closestToReferencePoseStrategy(cameraResult, referencePose);
                 break;
             case AVERAGE_BEST_TARGETS:

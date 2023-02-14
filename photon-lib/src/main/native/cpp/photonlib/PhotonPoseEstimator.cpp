@@ -24,6 +24,7 @@
 
 #include "photonlib/PhotonPoseEstimator.h"
 
+#include <cmath>
 #include <iostream>
 #include <limits>
 #include <map>
@@ -39,6 +40,7 @@
 #include <opencv2/calib3d.hpp>
 #include <opencv2/core/mat.hpp>
 #include <opencv2/core/types.hpp>
+#include <units/math.h>
 #include <units/time.h>
 
 #include "photonlib/PhotonCamera.h"
@@ -64,7 +66,8 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
       camera(std::move(cam)),
       m_robotToCamera(robotToCamera),
       lastPose(frc::Pose3d()),
-      referencePose(frc::Pose3d()) {}
+      referencePose(frc::Pose3d()),
+      poseCacheTimestamp(-1_s) {}
 
 void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
   if (strategy == MULTI_TAG_PNP) {
@@ -73,6 +76,9 @@ void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
         "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity",
         "");
     strategy = LOWEST_AMBIGUITY;
+  }
+  if (this->multiTagFallbackStrategy != strategy) {
+    InvalidatePoseCache();
   }
   multiTagFallbackStrategy = strategy;
 }
@@ -84,6 +90,22 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     const PhotonPipelineResult& result) {
+  // Time in the past -- give up, since the following if expects times > 0
+  if (result.GetTimestamp() < 0_s) {
+    return std::nullopt;
+  }
+
+  // If the pose cache timestamp was set, and the result is from the same
+  // timestamp, return an empty result
+  if (poseCacheTimestamp > 0_s &&
+      units::math::abs(poseCacheTimestamp - result.GetTimestamp()) < 0.001_ms) {
+    return std::nullopt;
+  }
+
+  // Remember the timestamp of the current result used
+  poseCacheTimestamp = result.GetTimestamp();
+
+  // If no targets seen, trivial case -- return empty result
   if (!result.HasTargets()) {
     return std::nullopt;
   }
@@ -118,11 +140,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
                       "");
-      return std::nullopt;
-  }
-
-  if (!ret) {
-    // TODO
+      ret = std::nullopt;
   }
 
   return ret;

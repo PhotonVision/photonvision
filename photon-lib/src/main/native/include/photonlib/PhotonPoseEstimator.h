@@ -109,7 +109,12 @@ class PhotonPoseEstimator {
    *
    * @param strategy the strategy to set
    */
-  inline void SetPoseStrategy(PoseStrategy strat) { strategy = strat; }
+  inline void SetPoseStrategy(PoseStrategy strat) {
+    if (strategy != strat) {
+      InvalidatePoseCache();
+    }
+    strategy = strat;
+  }
 
   /**
    * Set the Position Estimation Strategy used in multi-tag mode when
@@ -133,6 +138,9 @@ class PhotonPoseEstimator {
    * @param referencePose the referencePose to set
    */
   inline void SetReferencePose(frc::Pose3d referencePose) {
+    if (this->referencePose != referencePose) {
+      InvalidatePoseCache();
+    }
     this->referencePose = referencePose;
   }
 
@@ -185,6 +193,10 @@ class PhotonPoseEstimator {
 
   frc::Pose3d lastPose;
   frc::Pose3d referencePose;
+
+  units::second_t poseCacheTimestamp;
+
+  inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
 
   std::optional<EstimatedRobotPose> Update(PhotonPipelineResult result,
                                            PoseStrategy strategy);
