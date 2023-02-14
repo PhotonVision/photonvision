@@ -140,8 +140,10 @@ public class PhotonCamera {
         pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
         pipelineIndexState = cameraTable.getIntegerTopic("pipelineIndexState").subscribe(0);
         heartbeatEntry = cameraTable.getIntegerTopic("heartbeat").subscribe(-1);
-        cameraIntrinsicsSubscriber = cameraTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
-        cameraDistortionSubscriber = cameraTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
+        cameraIntrinsicsSubscriber =
+                cameraTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
+        cameraDistortionSubscriber =
+                cameraTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
 
         ledModeRequest = photonvision_root_table.getIntegerTopic("ledModeRequest").publish();
         ledModeState = photonvision_root_table.getIntegerTopic("ledModeState").subscribe(-1);
