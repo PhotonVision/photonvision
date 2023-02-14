@@ -331,7 +331,7 @@ public class PhotonPoseEstimator {
 
         if (result.getTargets().size() < 2) {
             // Run fallback strategy instead
-            update(result, this.multiTagFallbackStrategy);
+            return update(result, this.multiTagFallbackStrategy);
         }
 
         for (var target : result.getTargets()) {
