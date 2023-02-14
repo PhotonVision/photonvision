@@ -40,7 +40,7 @@ public class PhotonCameraWrapper {
     public PhotonPoseEstimator photonPoseEstimator;
 
     public PhotonCameraWrapper() {
-        AprilTagFieldLayout fieldLayout;
+        AprilTagFieldLayout fieldLayout = null;
         try {
             fieldLayout = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
         } catch (IOException e) {
