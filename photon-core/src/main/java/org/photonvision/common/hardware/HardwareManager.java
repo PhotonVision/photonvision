@@ -59,6 +59,14 @@ public class HardwareManager {
     public static HardwareManager getInstance() {
         if (instance == null) {
             var conf = ConfigManager.getInstance().getConfig();
+
+            // Ensure we've loaded a valid config before proceeding.
+            // Currently this shsould only go active during unit tests.
+            if (conf == null) {
+                ConfigManager.getInstance().load();
+                conf = ConfigManager.getInstance().getConfig();
+            }
+
             instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
         }
         return instance;
