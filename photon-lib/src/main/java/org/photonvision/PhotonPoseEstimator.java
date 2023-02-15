@@ -331,12 +331,19 @@ public class PhotonPoseEstimator {
 
         if (result.getTargets().size() < 2) {
             // Run fallback strategy instead
-            update(result, this.multiTagFallbackStrategy);
+            return update(result, this.multiTagFallbackStrategy);
         }
 
         for (var target : result.getTargets()) {
             visCorners.addAll(target.getDetectedCorners());
-            Pose3d tagPose = fieldTags.getTagPose(target.getFiducialId()).get();
+
+            var tagPoseOpt = fieldTags.getTagPose(target.getFiducialId());
+            if (tagPoseOpt.isEmpty()) {
+                reportFiducialPoseError(target.getFiducialId());
+                continue;
+            }
+
+            var tagPose = tagPoseOpt.get();
 
             // actual layout poses of visible tags -- not exposed, so have to recreate
             knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
