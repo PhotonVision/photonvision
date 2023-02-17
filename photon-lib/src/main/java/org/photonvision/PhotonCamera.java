@@ -133,8 +133,8 @@ public class PhotonCamera {
                         .getRawTopic("rawBytes")
                         .subscribe(
                                 "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
-        driverModePublisher = cameraTable.getBooleanTopic("driverMode").publish();
-        driverModeSubscriber = cameraTable.getBooleanTopic("driverModeRequest").subscribe(false);
+        driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
+        driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
         inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
         outputSaveImgEntry = cameraTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
         pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
