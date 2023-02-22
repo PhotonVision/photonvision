@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
+import org.opencv.core.Size;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -39,7 +40,10 @@ import org.photonvision.common.util.TestUtils;
 import org.photonvision.common.util.numbers.IntegerCouple;
 import org.photonvision.raspi.LibCameraJNI;
 import org.photonvision.server.Server;
+import org.photonvision.vision.calibration.CameraCalibrationCoefficients;
+import org.photonvision.vision.calibration.JsonMat;
 import org.photonvision.vision.camera.FileVisionSource;
+import org.photonvision.vision.camera.ZmqVisionSource;
 import org.photonvision.vision.opencv.CVMat;
 import org.photonvision.vision.opencv.ContourGroupingMode;
 import org.photonvision.vision.opencv.ContourShape;
@@ -54,6 +58,9 @@ import org.photonvision.vision.processes.VisionSource;
 import org.photonvision.vision.processes.VisionSourceManager;
 import org.photonvision.vision.target.TargetModel;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class Main {
     public static final int DEFAULT_WEBPORT = 5800;
 
@@ -61,6 +68,7 @@ public class Main {
     private static final boolean isRelease = PhotonVersion.isRelease;
 
     private static boolean isTestMode = false;
+    private static String simModeUrl = null;
     private static Path testModeFolder = null;
     private static boolean printDebugLogs;
 
@@ -68,6 +76,11 @@ public class Main {
         final var options = new Options();
         options.addOption("d", "debug", false, "Enable debug logging prints");
         options.addOption("h", "help", false, "Show this help text and exit");
+        options.addOption(
+                "s",
+                "sim-mode",
+                true,
+                "Run in sim mode with a simulated ZMQ stream in place of cameras");
         options.addOption(
                 "t",
                 "test-mode",
@@ -89,6 +102,12 @@ public class Main {
                 logger.info("Enabled debug logging");
             }
 
+            if (cmd.hasOption("sim-mode")) {
+                isTestMode = true;
+                logger.info("Running in sim mode - Cameras will not be used");
+                simModeUrl = cmd.getOptionValue("sim-mode");
+            }
+
             if (cmd.hasOption("test-mode")) {
                 isTestMode = true;
                 logger.info("Running in test mode - Cameras will not be used");
@@ -101,6 +120,44 @@ public class Main {
             }
         }
         return true;
+    }
+
+    private static void addSimModeSources() {
+        ConfigManager.getInstance().load();
+
+        var aprilTag = new AprilTagPipelineSettings();
+        
+        CameraConfiguration camConf = new CameraConfiguration("sim-camera", simModeUrl);
+        camConf.FOV = 80; // Good guess?
+
+        // Hardcoded calibration performed in photonvision.
+        camConf.addCalibration(
+            new CameraCalibrationCoefficients(
+                new Size(848, 800),
+                new JsonMat(3, 3, new double[] { 1021.2912002409614, 0, 417.2110887660963, 0, 1026.934198818991, 384.0744520343236, 0, 0, 1 }),
+                new JsonMat(1, 5, new double[] { 0.06753595831687935, -0.4515291145626461, -0.0037180023023624144, 0.0011641168667318753, 0.8059800861441232 }),
+                new double[] { 0.3022509613442146 },
+                0.0826457500185341
+            ));
+
+        var pipeSettings = new AprilTagPipelineSettings();
+        pipeSettings.pipelineNickname = "sim-camera";
+        pipeSettings.outputShowMultipleTargets = true;
+        pipeSettings.inputShouldShow = true;
+        pipeSettings.outputShouldShow = false;
+        pipeSettings.solvePNPEnabled = true;
+
+        var psList = new ArrayList<CVPipelineSettings>();
+        psList.add(aprilTag);
+        camConf.pipelineSettings = psList;
+
+        var source = new ZmqVisionSource(camConf);
+        var collectedSources = new ArrayList<VisionSource>();
+        collectedSources.add(source);
+
+        ConfigManager.getInstance().unloadCameraConfigs();
+        VisionModuleManager.getInstance().addSources(collectedSources).forEach(VisionModule::start);
+        ConfigManager.getInstance().addCameraConfigurations(collectedSources);
     }
 
     private static void addTestModeFromFolder() {
@@ -352,7 +409,9 @@ public class Main {
 
             VisionSourceManager.getInstance().registerTimedTask();
         } else {
-            if (testModeFolder == null) {
+            if (simModeUrl != null) {
+                addSimModeSources();
+            } else if (testModeFolder == null) {
                 addTestModeSources();
             } else {
                 addTestModeFromFolder();

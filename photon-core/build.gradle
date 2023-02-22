@@ -24,6 +24,9 @@ dependencies {
     // Zip
     implementation 'org.zeroturnaround:zt-zip:1.14'
 
+    // ZeroMQ
+    implementation 'org.zeromq:jeromq:0.5.3'
+
     implementation wpilibTools.deps.wpilibJava("apriltag")
 }
 
