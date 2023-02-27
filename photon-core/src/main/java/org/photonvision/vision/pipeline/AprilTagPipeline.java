@@ -25,12 +25,16 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.util.Units;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.estimation.PNPResults;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
 import org.photonvision.vision.pipe.CVPipe.CVPipeResult;
 import org.photonvision.vision.pipe.impl.*;
 import org.photonvision.vision.pipe.impl.AprilTagPoseEstimatorPipe.AprilTagPoseEstimatorPipeParams;
+import org.photonvision.vision.pipe.impl.MultiTargetPNPPipe.MultiTargetPNPPipeParams;
 import org.photonvision.vision.pipeline.result.CVPipelineResult;
 import org.photonvision.vision.target.TrackedTarget;
 import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
@@ -38,7 +42,8 @@ import org.photonvision.vision.target.TrackedTarget.TargetCalculationParameters;
 @SuppressWarnings("DuplicatedCode")
 public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipelineSettings> {
     private final AprilTagDetectionPipe aprilTagDetectionPipe = new AprilTagDetectionPipe();
-    private final AprilTagPoseEstimatorPipe poseEstimatorPipe = new AprilTagPoseEstimatorPipe();
+    private final AprilTagPoseEstimatorPipe singleTagPoseEstimatorPipe = new AprilTagPoseEstimatorPipe();
+    private final MultiTargetPNPPipe multiTagPNPPipe = new MultiTargetPNPPipe();
     private final CalculateFPSPipe calculateFPSPipe = new CalculateFPSPipe();
 
     private static final FrameThresholdType PROCESSING_TYPE = FrameThresholdType.GREYSCALE;
@@ -95,11 +100,15 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                 var fx = cameraMatrix.get(0, 0)[0];
                 var fy = cameraMatrix.get(1, 1)[0];
 
-                poseEstimatorPipe.setParams(
+                singleTagPoseEstimatorPipe.setParams(
                         new AprilTagPoseEstimatorPipeParams(
                                 new Config(tagWidth, fx, fy, cx, cy),
                                 frameStaticProperties.cameraCalibration,
                                 settings.numIterations));
+
+                // TODO global state ew
+                var atfl = ConfigManager.getInstance().getConfig().getApriltagFieldLayout();
+                multiTagPNPPipe.setParams(new MultiTargetPNPPipeParams(frameStaticProperties.cameraCalibration, settings.targetModel, atfl));
             }
         }
     }
@@ -130,7 +139,7 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
 
             AprilTagPoseEstimate tagPoseEstimate = null;
             if (settings.solvePNPEnabled) {
-                var poseResult = poseEstimatorPipe.run(detection);
+                var poseResult = singleTagPoseEstimatorPipe.run(detection);
                 sumPipeNanosElapsed += poseResult.nanosElapsed;
                 tagPoseEstimate = poseResult.output;
             }
@@ -153,6 +162,13 @@ public class AprilTagPipeline extends CVPipeline<CVPipelineResult, AprilTagPipel
                     new Transform3d(correctedAltPose.getTranslation(), correctedAltPose.getRotation()));
 
             targetList.add(target);
+        }
+
+        PNPResults multiTagResult = new PNPResults();
+        if (settings.solvePNPEnabled && settings.doMultiTarget) {
+            var multiTagOutput = multiTagPNPPipe.run(targetList);
+            sumPipeNanosElapsed += multiTagOutput.nanosElapsed;
+            multiTagResult = multiTagOutput.output;
         }
 
         var fpsResult = calculateFPSPipe.run(null);

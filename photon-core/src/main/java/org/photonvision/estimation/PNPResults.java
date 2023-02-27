@@ -50,7 +50,7 @@ public class PNPResults {
     public final double ambiguity;
 
     public PNPResults() {
-        this(new Transform3d(), new Transform3d(), 0, 0, 0);
+        this(new Transform3d(), new Transform3d(), -1, 0, 0);
     }
 
     public PNPResults(Transform3d best, double bestReprojErr) {

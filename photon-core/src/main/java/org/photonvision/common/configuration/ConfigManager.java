@@ -18,6 +18,10 @@
 package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -46,11 +50,13 @@ public class ConfigManager {
     public static final String HW_CFG_FNAME = "hardwareConfig.json";
     public static final String HW_SET_FNAME = "hardwareSettings.json";
     public static final String NET_SET_FNAME = "networkSettings.json";
+    public static final String ATFL_SET_FNAME = "apriltagFieldLayout.json";
 
     private PhotonConfiguration config;
     private final File hardwareConfigFile;
     private final File hardwareSettingsFile;
     private final File networkConfigFile;
+    private final File apriltagFieldLayoutFile;
     private final File camerasFolder;
 
     final File configDirectoryFile;
@@ -95,6 +101,8 @@ public class ConfigManager {
                 new File(Path.of(configDirectoryFile.toString(), HW_SET_FNAME).toUri());
         this.networkConfigFile =
                 new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
+        this.apriltagFieldLayoutFile =
+                new File(Path.of(configDirectoryFile.toString(), ATFL_SET_FNAME).toUri());
         this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
 
         settingsSaveThread = new Thread(this::saveAndWriteTask);
@@ -124,6 +132,7 @@ public class ConfigManager {
         HardwareConfig hardwareConfig;
         HardwareSettings hardwareSettings;
         NetworkConfig networkConfig;
+        AprilTagFieldLayout atfl = null;
 
         if (hardwareConfigFile.exists()) {
             try {
@@ -175,6 +184,34 @@ public class ConfigManager {
             networkConfig = new NetworkConfig();
         }
 
+        if (apriltagFieldLayoutFile.exists()) {
+            try {
+                atfl = JacksonUtils.deserialize(apriltagFieldLayoutFile.toPath(), AprilTagFieldLayout.class);
+                if (atfl == null) {
+                    logger.error("Could not deserialize apriltag field layout!");
+                }
+            } catch (IOException e) {
+                logger.error("Could not deserialize apriltag field layout!");
+                atfl = null; // not required, nice to be explicit
+            }
+        } else {
+            logger.info("Apriltag layout file not saved!");
+            atfl = null; // not required, nice to be explicit
+        }
+        if (atfl == null) {
+            logger.info("Loading default for 2023 field...");
+            try {
+                atfl = AprilTagFields.k2023ChargedUp.loadAprilTagLayoutField();
+            } catch (IOException e) {
+                logger.error("Error loading WPILib field", e);
+                atfl = null;
+            }
+            if (atfl == null) {
+                // what do we even do here lmao -- wpilib should always work
+                logger.error("Field layout is *still* null??????");
+            }
+        }
+
         if (!camerasFolder.exists()) {
             if (camerasFolder.mkdirs()) {
                 logger.debug("Cameras config folder did not exist. Created!");
@@ -187,7 +224,7 @@ public class ConfigManager {
 
         this.config =
                 new PhotonConfiguration(
-                        hardwareConfig, hardwareSettings, networkConfig, cameraConfigurations);
+                        hardwareConfig, hardwareSettings, networkConfig, atfl, cameraConfigurations);
     }
 
     public void saveToDisk() {
@@ -199,10 +236,17 @@ public class ConfigManager {
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
         }
+
         try {
             JacksonUtils.serialize(hardwareSettingsFile.toPath(), config.getHardwareSettings());
         } catch (IOException e) {
             logger.error("Could not save hardware config!", e);
+        }
+
+        try {
+            JacksonUtils.serialize(apriltagFieldLayoutFile.toPath(), config.getApriltagFieldLayout());
+        } catch (IOException e) {
+            logger.error("Could not save AprilTag Field Layout!", e);
         }
 
         // save all of our cameras
@@ -419,6 +463,11 @@ public class ConfigManager {
     public void saveUploadedNetworkConfig(Path uploadPath) {
         FileUtils.deleteFile(this.getNetworkConfigFile());
         FileUtils.copyFile(uploadPath, this.getNetworkConfigFile());
+    }
+
+    public void saveUploadedApriltagLayout(Path uploadPath) {
+        FileUtils.deleteFile(this.apriltagFieldLayoutFile.toPath());
+        FileUtils.copyFile(uploadPath, this.apriltagFieldLayoutFile.toPath());
     }
 
     public void requestSave() {

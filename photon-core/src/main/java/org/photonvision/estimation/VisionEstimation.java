@@ -34,6 +34,9 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.photonvision.targeting.TargetCorner;
 
 public class VisionEstimation {
@@ -53,8 +56,8 @@ public class VisionEstimation {
      * @return The transformation that maps the field origin to the camera pose
      */
     public static PNPResults estimateCamPosePNP(
-            Matrix<N3, N3> cameraMatrix,
-            Matrix<N5, N1> distCoeffs,
+            Mat cameraMatrix,
+            Mat distCoeffs,
             List<TargetCorner> corners,
             List<AprilTag> knownTags) {
         if (knownTags == null

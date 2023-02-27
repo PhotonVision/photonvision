@@ -88,6 +88,12 @@ public class RequestHandler {
                 logger.debug("Processing uploaded hardware settings" + file.getFilename());
                 ConfigManager.getInstance().saveUploadedHardwareSettings(tempFilePath.toPath());
 
+            } else if (file.getFilename().equals(ConfigManager.ATFL_SET_FNAME)) {
+                // Filenames matching the tag layout .json file are assumed to be
+                // network config .json's
+                logger.debug("Processing uploaded tag layout " + file.getFilename());
+                ConfigManager.getInstance().saveUploadedApriltagLayout(tempFilePath.toPath());
+
             } else if (file.getFilename().equals(ConfigManager.NET_SET_FNAME)) {
                 // Filenames matching the network config .json file are assumed to be
                 // network config .json's

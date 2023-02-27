@@ -20,6 +20,7 @@ package org.photonvision.vision.pipeline.result;
 import java.util.Collections;
 import java.util.List;
 import org.photonvision.common.util.math.MathUtils;
+import org.photonvision.estimation.PNPResults;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.opencv.Releasable;
 import org.photonvision.vision.target.TrackedTarget;
@@ -32,7 +33,7 @@ public class CVPipelineResult implements Releasable {
     public final Frame inputAndOutputFrame;
 
     public CVPipelineResult(
-            double processingNanos, double fps, List<TrackedTarget> targets, Frame inputFrame) {
+            double processingNanos, double fps, List<TrackedTarget> targets, PNPResults multiTagResults, Frame inputFrame) {
         this.processingNanos = processingNanos;
         this.fps = fps;
         this.targets = targets != null ? targets : Collections.emptyList();
@@ -40,8 +41,8 @@ public class CVPipelineResult implements Releasable {
         this.inputAndOutputFrame = inputFrame;
     }
 
-    public CVPipelineResult(double processingNanos, double fps, List<TrackedTarget> targets) {
-        this(processingNanos, fps, targets, null);
+    public CVPipelineResult(double processingNanos, double fps, List<TrackedTarget> targets, PNPResults multiTagResults) {
+        this(processingNanos, fps, targets, multiTagResults, null);
     }
 
     public boolean hasTargets() {

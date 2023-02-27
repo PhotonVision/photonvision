@@ -30,29 +30,35 @@ import org.photonvision.vision.processes.VisionModule;
 import org.photonvision.vision.processes.VisionModuleManager;
 import org.photonvision.vision.processes.VisionSource;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+
 // TODO rename this class
 public class PhotonConfiguration {
     private HardwareConfig hardwareConfig;
     private HardwareSettings hardwareSettings;
     private NetworkConfig networkConfig;
+    private AprilTagFieldLayout atfl;
     private HashMap<String, CameraConfiguration> cameraConfigurations;
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
-            NetworkConfig networkConfig) {
-        this(hardwareConfig, hardwareSettings, networkConfig, new HashMap<>());
+            NetworkConfig networkConfig,
+            AprilTagFieldLayout atfl) {
+        this(hardwareConfig, hardwareSettings, networkConfig, atfl, new HashMap<>());
     }
 
     public PhotonConfiguration(
             HardwareConfig hardwareConfig,
             HardwareSettings hardwareSettings,
             NetworkConfig networkConfig,
+            AprilTagFieldLayout atfl,
             HashMap<String, CameraConfiguration> cameraConfigurations) {
         this.hardwareConfig = hardwareConfig;
         this.hardwareSettings = hardwareSettings;
         this.networkConfig = networkConfig;
         this.cameraConfigurations = cameraConfigurations;
+        this.atfl = atfl;
     }
 
     public HardwareConfig getHardwareConfig() {
@@ -65,6 +71,10 @@ public class PhotonConfiguration {
 
     public HardwareSettings getHardwareSettings() {
         return hardwareSettings;
+    }
+
+    public AprilTagFieldLayout getApriltagFieldLayout() {
+        return atfl;
     }
 
     public void setNetworkConfig(NetworkConfig networkConfig) {
@@ -140,4 +150,5 @@ public class PhotonConfiguration {
         public List<HashMap<String, Object>> calibrations;
         public boolean isFovConfigurable = true;
     }
+
 }

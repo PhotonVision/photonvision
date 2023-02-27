@@ -38,7 +38,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -65,14 +64,10 @@ public class PhotonPoseEstimator {
 
         /** Choose the Pose with the lowest ambiguity. */
         AVERAGE_BEST_TARGETS,
-
-        /** Use all visible tags to compute a single pose estimate.. */
-        MULTI_TAG_PNP
     }
 
     private AprilTagFieldLayout fieldTags;
     private PoseStrategy primaryStrategy;
-    private PoseStrategy multiTagFallbackStrategy = PoseStrategy.LOWEST_AMBIGUITY;
     private final PhotonCamera camera;
     private Transform3d robotToCamera;
 
@@ -139,21 +134,6 @@ public class PhotonPoseEstimator {
      */
     public void setPrimaryStrategy(PoseStrategy strategy) {
         this.primaryStrategy = strategy;
-    }
-
-    /**
-     * Set the Position Estimation Strategy used in multi-tag mode when only one tag can be seen. Must
-     * NOT be MULTI_TAG_PNP
-     *
-     * @param strategy the strategy to set
-     */
-    public void setMultiTagFallbackStrategy(PoseStrategy strategy) {
-        if (strategy == PoseStrategy.MULTI_TAG_PNP) {
-            DriverStation.reportWarning(
-                    "Fallback cannot be set to MULTI_TAG_PNP! Setting to lowest ambiguity", null);
-            strategy = PoseStrategy.LOWEST_AMBIGUITY;
-        }
-        this.multiTagFallbackStrategy = strategy;
     }
 
     /**
@@ -272,9 +252,6 @@ public class PhotonPoseEstimator {
             case AVERAGE_BEST_TARGETS:
                 estimatedPose = averageBestTargetsStrategy(cameraResult);
                 break;
-            case MULTI_TAG_PNP:
-                estimatedPose = multiTagPNPStrategy(cameraResult);
-                break;
             default:
                 DriverStation.reportError(
                         "[PhotonPoseEstimator] Unknown Position Estimation Strategy!", false);
@@ -286,55 +263,6 @@ public class PhotonPoseEstimator {
         }
 
         return estimatedPose;
-    }
-
-    private Optional<EstimatedRobotPose> multiTagPNPStrategy(PhotonPipelineResult result) {
-        // Arrays we need declared up front
-        var visCorners = new ArrayList<TargetCorner>();
-        var knownVisTags = new ArrayList<AprilTag>();
-        var fieldToCams = new ArrayList<Pose3d>();
-        var fieldToCamsAlt = new ArrayList<Pose3d>();
-
-        if (result.getTargets().size() < 2) {
-            // Run fallback strategy instead
-            update(result, this.multiTagFallbackStrategy);
-        }
-
-        for (var target : result.getTargets()) {
-            visCorners.addAll(target.getDetectedCorners());
-            Pose3d tagPose = fieldTags.getTagPose(target.getFiducialId()).get();
-
-            // actual layout poses of visible tags -- not exposed, so have to recreate
-            knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
-
-            fieldToCams.add(tagPose.transformBy(target.getBestCameraToTarget().inverse()));
-            fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
-        }
-
-        var cameraMatrixOpt = camera.getCameraMatrix();
-        var distCoeffsOpt = camera.getDistCoeffs();
-        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
-
-        // multi-target solvePNP
-        if (hasCalibData) {
-            var cameraMatrix = cameraMatrixOpt.get();
-            var distCoeffs = distCoeffsOpt.get();
-            var pnpResults =
-                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
-            var best =
-                    new Pose3d()
-                            .plus(pnpResults.best) // field-to-camera
-                            .plus(robotToCamera.inverse()); // field-to-robot
-            // var alt = new Pose3d()
-            // .plus(pnpResults.alt) // field-to-camera
-            // .plus(robotToCamera.inverse()); // field-to-robot
-
-            return Optional.of(
-                    new EstimatedRobotPose(best, result.getTimestampSeconds(), result.getTargets()));
-        } else {
-            // TODO fallback strategy? Should we just always do solvePNP?
-            return Optional.empty();
-        }
     }
 
     /**
