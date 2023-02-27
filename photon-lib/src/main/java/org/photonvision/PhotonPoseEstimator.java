@@ -326,8 +326,6 @@ public class PhotonPoseEstimator {
         // Arrays we need declared up front
         var visCorners = new ArrayList<TargetCorner>();
         var knownVisTags = new ArrayList<AprilTag>();
-        var fieldToCams = new ArrayList<Pose3d>();
-        var fieldToCamsAlt = new ArrayList<Pose3d>();
 
         if (result.getTargets().size() < 2) {
             // Run fallback strategy instead
@@ -335,21 +333,24 @@ public class PhotonPoseEstimator {
         }
 
         for (var target : result.getTargets()) {
-            visCorners.addAll(target.getDetectedCorners());
-
+            // Check if tag actually exists in the field layout
             var tagPoseOpt = fieldTags.getTagPose(target.getFiducialId());
             if (tagPoseOpt.isEmpty()) {
                 reportFiducialPoseError(target.getFiducialId());
                 continue;
             }
 
-            var tagPose = tagPoseOpt.get();
+            // Now that we know tag is valid, add detected corners
+            visCorners.addAll(target.getDetectedCorners());
 
             // actual layout poses of visible tags -- not exposed, so have to recreate
+            var tagPose = tagPoseOpt.get();
             knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
+        }
 
-            fieldToCams.add(tagPose.transformBy(target.getBestCameraToTarget().inverse()));
-            fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
+        if (result.getTargets().size() < 2 || knownVisTags.size() < 2) {
+            // Run fallback strategy instead
+            return update(result, this.multiTagFallbackStrategy);
         }
 
         var cameraMatrixOpt = camera.getCameraMatrix();
@@ -361,7 +362,7 @@ public class PhotonPoseEstimator {
             var cameraMatrix = cameraMatrixOpt.get();
             var distCoeffs = distCoeffsOpt.get();
             var pnpResults =
-                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
+                    VisionEstimation.estimateCamPoseSqpnp(cameraMatrix, distCoeffs, visCorners, knownVisTags);
             var best =
                     new Pose3d()
                             .plus(pnpResults.best) // field-to-camera
