@@ -17,14 +17,9 @@
 
 package org.photonvision.common.util.file;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
@@ -36,55 +31,58 @@ import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class JacksonUtils {
-    public static class UIMap extends HashMap<String, Object> {
-    }
+    public static class UIMap extends HashMap<String, Object> {}
 
     public static <T> void serialize(Path path, T object) throws IOException {
         serialize(path, object, true);
     }
 
     public static <T> String serializeToString(T object) throws IOException {
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass())
-                .build();
-        ObjectMapper objectMapper = JsonMapper.builder()
-                .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                .build();
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
+        ObjectMapper objectMapper =
+                JsonMapper.builder()
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .build();
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
     }
 
     public static <T> void serialize(Path path, T object, boolean forceSync) throws IOException {
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass())
-                .build();
-        ObjectMapper objectMapper = JsonMapper.builder()
-                .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                .build();
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
+        ObjectMapper objectMapper =
+                JsonMapper.builder()
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .build();
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
         saveJsonString(json, path, forceSync);
     }
 
     public static <T> T deserialize(String s, Class<T> ref) throws IOException {
-        System.out.println("Got string: " + s);
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
-        ObjectMapper objectMapper = JsonMapper.builder()
-                .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                .build();
-                
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
+        ObjectMapper objectMapper =
+                JsonMapper.builder()
+                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .build();
+
         return objectMapper.readValue(s, ref);
     }
 
     public static <T> T deserialize(Path path, Class<T> ref) throws IOException {
-        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
-        ObjectMapper objectMapper = JsonMapper.builder()
-                .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
-                .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-                .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
-                .build();
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(ref).build();
+        ObjectMapper objectMapper =
+                JsonMapper.builder()
+                        .configure(JsonReadFeature.ALLOW_JAVA_COMMENTS, true)
+                        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .build();
         File jsonFile = new File(path.toString());
         if (jsonFile.exists() && jsonFile.length() > 0) {
             return objectMapper.readValue(jsonFile, ref);

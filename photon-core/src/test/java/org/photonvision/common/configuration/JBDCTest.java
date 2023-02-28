@@ -27,13 +27,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.junit.jupiter.api.*;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.camera.CameraType;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
-
-import edu.wpi.first.util.RuntimeLoader;
 
 public class JBDCTest {
     static class TableKeys {
@@ -45,19 +42,25 @@ public class JBDCTest {
 
     private static void camtodb(Connection conn, CameraConfiguration config) {
         try {
-            PreparedStatement pstmt = conn.prepareStatement(
-                    "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES (?, ?, ?, ?)");
+            PreparedStatement pstmt =
+                    conn.prepareStatement(
+                            "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES (?, ?, ?, ?)");
             pstmt.setString(1, config.uniqueName);
             pstmt.setString(2, JacksonUtils.serializeToString(config));
             pstmt.setString(3, JacksonUtils.serializeToString(config.driveModeSettings));
-            List<String> settings = config.pipelineSettings.stream().map(it -> {
-                try {
-                    return JacksonUtils.serializeToString(it);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return null;
-                }
-            }).filter(Objects::nonNull).collect(Collectors.toList());
+            List<String> settings =
+                    config.pipelineSettings.stream()
+                            .map(
+                                    it -> {
+                                        try {
+                                            return JacksonUtils.serializeToString(it);
+                                        } catch (IOException e) {
+                                            e.printStackTrace();
+                                            return null;
+                                        }
+                                    })
+                            .filter(Objects::nonNull)
+                            .collect(Collectors.toList());
             pstmt.setString(4, JacksonUtils.serializeToString(settings));
             int i = pstmt.executeUpdate();
             System.out.println(i + " records mutated");
@@ -71,8 +74,9 @@ public class JBDCTest {
     private static CameraConfiguration dbToCam(Connection conn, String unique_name) {
         try {
             System.out.println("trying to get for " + unique_name);
-            PreparedStatement pstmt = conn.prepareStatement(
-                    "SELECT unique_name, config_json, drivermode_json, pipeline_jsons FROM cameras WHERE unique_name = ?");
+            PreparedStatement pstmt =
+                    conn.prepareStatement(
+                            "SELECT unique_name, config_json, drivermode_json, pipeline_jsons FROM cameras WHERE unique_name = ?");
             pstmt.setString(1, unique_name);
             var result = pstmt.executeQuery();
             System.out.println(result);
@@ -80,9 +84,15 @@ public class JBDCTest {
                 List<String> dummyList = new ArrayList<>();
 
                 var name = result.getString(TableKeys.CAM_UNIQUE_NAME);
-                var config = JacksonUtils.deserialize(result.getString(TableKeys.CONFIG_JSON), CameraConfiguration.class);
-                var driverMode = JacksonUtils.deserialize(result.getString(TableKeys.DRIVERMODE_JSON), DriverModePipelineSettings.class);
-                List<String> pipelineSettings = JacksonUtils.deserialize(result.getString(TableKeys.PIPELINE_JSONS), dummyList.getClass());
+                var config =
+                        JacksonUtils.deserialize(
+                                result.getString(TableKeys.CONFIG_JSON), CameraConfiguration.class);
+                var driverMode =
+                        JacksonUtils.deserialize(
+                                result.getString(TableKeys.DRIVERMODE_JSON), DriverModePipelineSettings.class);
+                List<String> pipelineSettings =
+                        JacksonUtils.deserialize(
+                                result.getString(TableKeys.PIPELINE_JSONS), dummyList.getClass());
 
                 System.out.println(pipelineSettings.get(0));
                 for (var str : pipelineSettings) {
@@ -116,50 +126,63 @@ public class JBDCTest {
                 System.out.println("The driver name is " + meta.getDriverName());
             }
 
-            String sql = "CREATE TABLE IF NOT EXISTS global (\n"
-                    + " filename TINYTEXT PRIMARY KEY,\n"
-                    + " contents mediumtext NOT NULL\n"
-                    + ");";
+            String sql =
+                    "CREATE TABLE IF NOT EXISTS global (\n"
+                            + " filename TINYTEXT PRIMARY KEY,\n"
+                            + " contents mediumtext NOT NULL\n"
+                            + ");";
 
             var stmt = conn.createStatement();
             stmt.execute(sql);
 
             try {
-                PreparedStatement pstmt = conn
-                        .prepareStatement("REPLACE INTO global (filename, contents) VALUES (?, ?)");
+                PreparedStatement pstmt =
+                        conn.prepareStatement("REPLACE INTO global (filename, contents) VALUES (?, ?)");
                 pstmt.setString(1, "hardwareSettings.json");
                 pstmt.setString(2, "{\n  \"ledBrightnessPercentage\" : 100\n}");
                 pstmt.executeUpdate();
 
                 pstmt = conn.prepareStatement("REPLACE INTO global (filename, contents) VALUES (?, ?)");
                 pstmt.setString(1, "networkSettings.json");
-                pstmt.setString(2,
+                pstmt.setString(
+                        2,
                         "{\"teamNumber\" : 7103,\"connectionType\" : \"DHCP\",\"staticIp\" : \"\",\"hostname\" : \"photonvision\",\"runNTServer\" : false,\"shouldManage\" : true}");
                 pstmt.executeUpdate();
             } catch (SQLException e) {
                 System.out.println(e.getMessage());
             }
 
-            sql = "CREATE TABLE IF NOT EXISTS cameras (\n"
-                    + " unique_name TINYTEXT PRIMARY KEY,\n"
-                    + " config_json text NOT NULL,\n"
-                    + " drivermode_json text NOT NULL,\n"
-                    + " pipeline_jsons mediumtext NOT NULL\n"
-                    + ");";
+            sql =
+                    "CREATE TABLE IF NOT EXISTS cameras (\n"
+                            + " unique_name TINYTEXT PRIMARY KEY,\n"
+                            + " config_json text NOT NULL,\n"
+                            + " drivermode_json text NOT NULL,\n"
+                            + " pipeline_jsons mediumtext NOT NULL\n"
+                            + ");";
 
             stmt = conn.createStatement();
             stmt.execute(sql);
 
-            var testcamcfg = new CameraConfiguration("basename", "a_unique_name", "a_nick_name", 69, "a/path/idk",
-                    CameraType.UsbCamera, List.of(), 0);
-            testcamcfg.pipelineSettings = List.of(
-                    new ReflectivePipelineSettings(),
-                    new AprilTagPipelineSettings(),
-                    new ColoredShapePipelineSettings());
+            var testcamcfg =
+                    new CameraConfiguration(
+                            "basename",
+                            "a_unique_name",
+                            "a_nick_name",
+                            69,
+                            "a/path/idk",
+                            CameraType.UsbCamera,
+                            List.of(),
+                            0);
+            testcamcfg.pipelineSettings =
+                    List.of(
+                            new ReflectivePipelineSettings(),
+                            new AprilTagPipelineSettings(),
+                            new ColoredShapePipelineSettings());
             camtodb(conn, testcamcfg);
             var deserialized = dbToCam(conn, "a_unique_name");
 
-            // testcamcfg = new CameraConfiguration("lifecam", "lifecam", "a_nick", 69, "a/path/idk", CameraType.UsbCamera,
+            // testcamcfg = new CameraConfiguration("lifecam", "lifecam", "a_nick", 69, "a/path/idk",
+            // CameraType.UsbCamera,
             //         List.of(), 0);
             // camtodb(conn, testcamcfg);
 
