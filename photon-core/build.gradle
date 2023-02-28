@@ -25,6 +25,8 @@ dependencies {
     implementation 'org.zeroturnaround:zt-zip:1.14'
 
     implementation wpilibTools.deps.wpilibJava("apriltag")
+
+    implementation "org.xerial:sqlite-jdbc:3.8.11.2"
 }
 
 task writeCurrentVersionJava {

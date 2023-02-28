@@ -40,6 +40,16 @@ public class JacksonUtils {
         serialize(path, object, true);
     }
 
+    public static <T> String serializeToString(T object) throws IOException {
+        PolymorphicTypeValidator ptv =
+                BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
+        ObjectMapper objectMapper =
+                JsonMapper.builder()
+                        .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT)
+                        .build();
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+    }
+
     public static <T> void serialize(Path path, T object, boolean forceSync) throws IOException {
         PolymorphicTypeValidator ptv =
                 BasicPolymorphicTypeValidator.builder().allowIfBaseType(object.getClass()).build();
