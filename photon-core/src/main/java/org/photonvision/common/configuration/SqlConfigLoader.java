@@ -10,11 +10,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 
 public class SqlConfigLoader {
+    private final Logger logger = new Logger(SqlConfigLoader.class, LogGroup.Config);
+
     static class TableKeys {
         static final String CAM_UNIQUE_NAME = "unique_name";
         static final String CONFIG_JSON = "config_json";
@@ -23,6 +28,10 @@ public class SqlConfigLoader {
     }
 
     private String dbPath = "test.db";
+
+    public SqlConfigLoader() {
+        initDatabase();
+    }
 
     private Connection createConn() {
         String url = "jdbc:sqlite:" + dbPath;
@@ -50,8 +59,7 @@ public class SqlConfigLoader {
             stmt.execute(sql);
 
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Err creating global table", e);
         }
 
         // Create cameras table, key is the camera unique name
@@ -65,12 +73,11 @@ public class SqlConfigLoader {
                             + ");";
             stmt.execute(sql);
         } catch (SQLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Err creating cameras table", e);
         }
     }
 
-    private void saveCameras(HashMap<String, CameraConfiguration> configMap) {
+    public void saveCameras(HashMap<String, CameraConfiguration> configMap) {
         var conn = createConn();
         if (conn == null) return;
         try {
@@ -78,10 +85,9 @@ public class SqlConfigLoader {
             var template = "(?,?,?,?)";
             var sqlString =
                     "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES "
-                            + template
-                            + ";";
+                            + template;
             var entries = configMap.entrySet();
-            for (var c : entries) {
+            for (final var c : entries) {
                 sqlString = sqlString + template + ", ";
             }
             sqlString = sqlString.substring(0, sqlString.length() - 1) + ";";
@@ -116,13 +122,13 @@ public class SqlConfigLoader {
             var rowsChanged = statement.executeUpdate();
             System.out.println(rowsChanged + " records mutated");
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            logger.error("Err saving cameras: ", e);
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("Err saving cameras: ", e);
         }
     }
 
-    private HashMap<String, CameraConfiguration> getAllConfigs() {
+    public HashMap<String, CameraConfiguration> getAllConfigs() {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
         var conn = createConn();
         if (conn == null) return loadedConfigurations;
@@ -160,8 +166,8 @@ public class SqlConfigLoader {
                 loadedConfigurations.put(uniqueName, config);
             }
         } catch (SQLException | IOException e) {
-            e.printStackTrace();
+            logger.error("Err loading cameras: ", e);
         }
-        return null;
+        return loadedConfigurations;
     }
 }
