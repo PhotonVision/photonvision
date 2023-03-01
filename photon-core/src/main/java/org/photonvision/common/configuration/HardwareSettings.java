@@ -19,4 +19,9 @@ package org.photonvision.common.configuration;
 
 public class HardwareSettings {
     public int ledBrightnessPercentage = 100;
+
+    @Override
+    public String toString() {
+        return "HardwareSettings [ledBrightnessPercentage=" + ledBrightnessPercentage + "]";
+    }
 }

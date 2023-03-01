@@ -1,11 +1,14 @@
 package org.photonvision.common.configuration;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,34 +20,38 @@ import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 
-public class SqlConfigLoader {
+public class SqlConfigLoader extends ConfigProvider {
     private final Logger logger = new Logger(SqlConfigLoader.class, LogGroup.Config);
-    private static SqlConfigLoader INSTANCE;
 
     static class TableKeys {
         static final String CAM_UNIQUE_NAME = "unique_name";
         static final String CONFIG_JSON = "config_json";
         static final String DRIVERMODE_JSON = "drivermode_json";
         static final String PIPELINE_JSONS = "pipeline_jsons";
+
+        static final String NETWORK_CONFIG = "networkConfig";
+        static final String HARDWARE_CONFIG = "hardwareConfig";
+        static final String HARDWARE_SETTINGS = "hardwareSettings";
     }
 
-    private static final String dbName = "test.db";
+    private static final String dbName = "photon.sqlite";
     private final String dbPath;
 
+    private PhotonConfiguration config;
+    private final Object m_mutex = new Object();
+    private final File rootFolder;
+
     public SqlConfigLoader(Path rootFolder) {
+        this.rootFolder = rootFolder.toFile();
         dbPath = Path.of(rootFolder.toString(), dbName).toAbsolutePath().toString();
         initDatabase();
     }
 
-    public static SqlConfigLoader getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new SqlConfigLoader(getRootFolder());
+    public PhotonConfiguration getConfig() {
+        if (config == null) {
+            logger.warn("CONFIG IS NULL!");
         }
-        return INSTANCE;
-    }
-
-    private static Path getRootFolder() {
-        return Path.of("photonvision_config");
+        return config;
     }
 
     private Connection createConn() {
@@ -55,56 +62,193 @@ public class SqlConfigLoader {
             conn.setAutoCommit(false);
             return conn;
         } catch (SQLException e) {
-            e.printStackTrace();
+            logger.error("Error creating connection", e);
             return null;
         }
     }
 
-    private void initDatabase() {
-        var conn = createConn();
-        if (conn == null) return;
-
-        // Create global settings table. Just a dumb table with list of jsons and their
-        // name
-        try (var stmt = conn.createStatement()) {
-            String sql =
-                    "CREATE TABLE IF NOT EXISTS global (\n"
-                            + " filename TINYTEXT PRIMARY KEY,\n"
-                            + " contents mediumtext NOT NULL\n"
-                            + ");";
-            stmt.execute(sql);
-
+    private void tryCommit(Connection conn) {
+        try {
+            conn.commit();
         } catch (SQLException e) {
-            logger.error("Err creating global table", e);
-        }
-
-        // Create cameras table, key is the camera unique name
-        try (var stmt = conn.createStatement()) {
-            var sql =
-                    "CREATE TABLE IF NOT EXISTS cameras (\n"
-                            + " unique_name TINYTEXT PRIMARY KEY,\n"
-                            + " config_json text NOT NULL,\n"
-                            + " drivermode_json text NOT NULL,\n"
-                            + " pipeline_jsons mediumtext NOT NULL\n"
-                            + ");";
-            stmt.execute(sql);
-        } catch (SQLException e) {
-            logger.error("Err creating cameras table", e);
+            logger.error("Err committing changes: ", e);
+            try {
+                conn.rollback();
+            } catch (SQLException e1) {
+                logger.error("Err rolling back changes: ", e);
+            }
         }
     }
 
-    private void saveCameras(HashMap<String, CameraConfiguration> configMap) {
+    private void initDatabase() {
+        // Make sure root dir exists
+
+        if (!rootFolder.exists()) {
+            if (rootFolder.mkdirs()) {
+                logger.debug("Root config folder did not exist. Created!");
+            } else {
+                logger.error("Failed to create root config folder!");
+            }
+        }
+
+        Connection conn = null;
+        Statement stmt1 = null, stmt2 = null;
+        try {
+
+            conn = createConn();
+            if (conn == null) {
+                logger.error("No connection, cannot init db");
+                return;
+            } 
+
+            // Create global settings table. Just a dumb table with list of jsons and their
+            // name
+            try {
+                stmt1 = conn.createStatement();
+                String sql =
+                        "CREATE TABLE IF NOT EXISTS global (\n"
+                                + " filename TINYTEXT PRIMARY KEY,\n"
+                                + " contents mediumtext NOT NULL\n"
+                                + ");";
+                stmt1.execute(sql);
+            } catch (SQLException e) {
+                logger.error("Err creating global table", e);
+            }
+
+            // Create cameras table, key is the camera unique name
+            try {
+                stmt2 = conn.createStatement();
+                var sql =
+                        "CREATE TABLE IF NOT EXISTS cameras (\n"
+                                + " unique_name TINYTEXT PRIMARY KEY,\n"
+                                + " config_json text NOT NULL,\n"
+                                + " drivermode_json text NOT NULL,\n"
+                                + " pipeline_jsons mediumtext NOT NULL\n"
+                                + ");";
+                stmt2.execute(sql);
+            } catch (SQLException e) {
+                logger.error("Err creating cameras table", e);
+            }
+
+            this.tryCommit(conn);
+        } finally {
+            try {
+                if (stmt1 != null) stmt1.close();
+                if (stmt2 != null) stmt2.close();
+                if (conn != null) conn.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void saveToDisk() {
         var conn = createConn();
         if (conn == null) return;
+        synchronized (m_mutex) {
+            if (config == null) {
+                logger.error("Config null! Cannot save");
+                return;
+            }
+
+            saveCameras(conn);
+            saveGlobal(conn);
+            tryCommit(conn);
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void load() {
+        var conn = createConn();
+        if (conn == null) return;
+
+        synchronized (m_mutex) {
+            HardwareConfig hardwareConfig;
+            HardwareSettings hardwareSettings;
+            NetworkConfig networkConfig;
+
+            try {
+                hardwareConfig =
+                        JacksonUtils.deserialize(
+                                getOneConfigFile(conn, TableKeys.HARDWARE_CONFIG), HardwareConfig.class);
+            } catch (IOException e) {
+                logger.error("Could not deserialize hardware config! Loading defaults");
+                hardwareConfig = new HardwareConfig();
+            }
+
+            try {
+                hardwareSettings =
+                        JacksonUtils.deserialize(
+                                getOneConfigFile(conn, TableKeys.HARDWARE_SETTINGS), HardwareSettings.class);
+            } catch (IOException e) {
+                logger.error("Could not deserialize hardware settings! Loading defaults");
+                hardwareSettings = new HardwareSettings();
+            }
+
+            try {
+                networkConfig =
+                        JacksonUtils.deserialize(getOneConfigFile(conn, TableKeys.NETWORK_CONFIG), NetworkConfig.class);
+            } catch (IOException e) {
+                logger.error("Could not deserialize network config! Loading defaults");
+                networkConfig = new NetworkConfig();
+            }
+
+            var cams = loadCameraConfigs(conn);
+
+            try {
+                conn.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            this.config = new PhotonConfiguration(hardwareConfig, hardwareSettings, networkConfig, cams);
+        }
+    }
+
+    private String getOneConfigFile(Connection conn, String filename) {
+        // Querry every single row of the global settings db
+        PreparedStatement querry = null;
         try {
+            querry = conn.prepareStatement("SELECT contents FROM global where filename=\"" + filename + "\"");
+
+            var result = querry.executeQuery();
+
+            while (result.next()) {
+                var contents = result.getString("contents");
+                return contents;
+            }
+        } catch (SQLException e) {
+            logger.error("Err getting file " + filename, e);
+        } finally {
+            try {
+                if (querry != null) querry.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+
+        return "";
+    }
+
+    private void saveCameras(Connection conn) {
+        try {
+
             // Replace this camera's row with the new settings
             var sqlString =
                     "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES "
                             + "(?,?,?,?);";
 
-            PreparedStatement statement = conn.prepareStatement(sqlString);
+            for (var c : config.getCameraConfigurations().entrySet()) {
+                PreparedStatement statement = conn.prepareStatement(sqlString);
 
-            for (var c : configMap.entrySet()) {
                 var config = c.getValue();
                 statement.setString(1, c.getKey());
                 statement.setString(2, JacksonUtils.serializeToString(config));
@@ -127,16 +271,12 @@ public class SqlConfigLoader {
                                 .collect(Collectors.toList());
                 statement.setString(4, JacksonUtils.serializeToString(settings));
 
-                // Add a new row
-                statement.addBatch();
+                var rowsChanged = statement.executeUpdate();
+                // System.out.println(rowsChanged + " records mutated");
             }
 
-            var rowsChanged = statement.executeUpdate();
-            conn.commit();
-            System.out.println(rowsChanged + " records mutated");
-            statement.addBatch(dbPath);
         } catch (SQLException | IOException e) {
-            logger.error("Err saving cameras: ", e);
+            logger.error("Err saving cameras", e);
             try {
                 conn.rollback();
             } catch (SQLException e1) {
@@ -145,15 +285,123 @@ public class SqlConfigLoader {
         }
     }
 
-    public HashMap<String, CameraConfiguration> getAllConfigs() {
+    private void addFile(PreparedStatement ps, String key, String value) throws SQLException {
+        ps.setString(1, key);
+        ps.setString(2, value);
+    }
+
+    private void saveGlobal(Connection conn) {
+        PreparedStatement statement1 = null;
+        PreparedStatement statement2 = null;
+        PreparedStatement statement3 = null;
+        try {
+            // Replace this camera's row with the new settings
+            var sqlString = "REPLACE INTO global (filename, contents) VALUES " + "(?,?);";
+
+            statement1 = conn.prepareStatement(sqlString);
+            addFile(
+                    statement1,
+                    TableKeys.HARDWARE_SETTINGS,
+                    JacksonUtils.serializeToString(config.getHardwareSettings()));
+            statement1.executeUpdate();
+
+            statement2 = conn.prepareStatement(sqlString);
+            addFile(
+                    statement2, TableKeys.NETWORK_CONFIG, JacksonUtils.serializeToString(config.getNetworkConfig()));
+            statement2.executeUpdate();
+            statement2.close();
+
+            statement3 = conn.prepareStatement(sqlString);
+            addFile(
+                    statement3, TableKeys.HARDWARE_CONFIG, JacksonUtils.serializeToString(config.getHardwareConfig()));
+            statement3.executeUpdate();
+            statement3.close();
+
+        } catch (SQLException | IOException e) {
+            logger.error("Err saving global", e);
+            try {
+                conn.rollback();
+            } catch (SQLException e1) {
+                logger.error("Err rolling back changes: ", e);
+            }
+        } finally {
+            try {
+                if (statement1 != null) statement1.close();
+                if (statement2 != null) statement2.close();
+                if (statement3 != null) statement3.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private <T> void saveOneFile(String fname, Path path) {
+        Connection conn = null;
+        PreparedStatement statement1 = null;
+        try {
+            conn = createConn();
+            if (conn == null) {
+                return;
+            }
+            // Replace this camera's row with the new settings
+            var sqlString = "REPLACE INTO global (filename, contents) VALUES " + "(?,?);";
+
+            statement1 = conn.prepareStatement(sqlString);
+            addFile(
+                    statement1,
+                    fname,
+                    Files.readString(path));
+            statement1.executeUpdate();
+
+            conn.commit();
+        } catch (SQLException | IOException e) {
+            logger.error("Err saving global", e);
+            try {
+                conn.rollback();
+            } catch (SQLException e1) {
+                logger.error("Err rolling back changes: ", e);
+            }
+        } finally {
+            try {
+                if (statement1 != null) statement1.close();
+                conn.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public void saveUploadedHardwareConfig(Path uploadPath) {
+        saveOneFile(TableKeys.HARDWARE_CONFIG, uploadPath);
+    }
+
+    @Override
+    public void saveUploadedHardwareSettings(Path uploadPath) {
+        saveOneFile(TableKeys.HARDWARE_SETTINGS, uploadPath);
+    }
+
+    @Override
+    public void saveUploadedNetworkConfig(Path uploadPath) {
+        saveOneFile(TableKeys.NETWORK_CONFIG, uploadPath);
+    }
+
+    @Override
+    void requestSave() {
+        this.saveToDisk();
+    }
+
+    private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
-        var conn = createConn();
-        if (conn == null) return loadedConfigurations;
 
         // Querry every single row of the cameras db
-        try (PreparedStatement querry =
-                conn.prepareStatement(
-                        "SELECT unique_name, config_json, drivermode_json, pipeline_jsons FROM cameras")) {
+        PreparedStatement querry = null;
+        try {
+            querry =
+                    conn.prepareStatement(
+                            "SELECT unique_name, config_json, drivermode_json, pipeline_jsons FROM cameras");
 
             var result = querry.executeQuery();
 
@@ -184,6 +432,13 @@ public class SqlConfigLoader {
             }
         } catch (SQLException | IOException e) {
             logger.error("Err loading cameras: ", e);
+        } finally {
+            try {
+                if (querry != null) querry.close();
+            } catch (SQLException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
         return loadedConfigurations;
     }

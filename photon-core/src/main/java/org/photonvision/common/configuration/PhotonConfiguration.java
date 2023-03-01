@@ -140,4 +140,10 @@ public class PhotonConfiguration {
         public List<HashMap<String, Object>> calibrations;
         public boolean isFovConfigurable = true;
     }
+
+    @Override
+    public String toString() {
+        return "PhotonConfiguration [hardwareConfig=" + hardwareConfig + ", hardwareSettings=" + hardwareSettings
+                + ", networkConfig=" + networkConfig + ", cameraConfigurations=" + cameraConfigurations + "]";
+    }
 }

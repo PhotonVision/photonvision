@@ -103,4 +103,12 @@ public class NetworkConfig {
     public void setShouldManage(boolean shouldManage) {
         this.shouldManage = shouldManage || Platform.isLinux();
     }
+
+    @Override
+    public String toString() {
+        return "NetworkConfig [teamNumber=" + teamNumber + ", connectionType=" + connectionType + ", staticIp="
+                + staticIp + ", hostname=" + hostname + ", runNTServer=" + runNTServer + ", networkManagerIface="
+                + networkManagerIface + ", physicalInterface=" + physicalInterface + ", setStaticCommand="
+                + setStaticCommand + ", setDHCPcommand=" + setDHCPcommand + ", shouldManage=" + shouldManage + "]";
+    }
 }
