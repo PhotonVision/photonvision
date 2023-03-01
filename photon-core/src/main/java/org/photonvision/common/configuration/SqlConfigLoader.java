@@ -169,6 +169,7 @@ public class SqlConfigLoader extends ConfigProvider {
     }
 
     public void load() {
+        logger.debug("Loading config...");
         var conn = createConn();
         if (conn == null) return;
 

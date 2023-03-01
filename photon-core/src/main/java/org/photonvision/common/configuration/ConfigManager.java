@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -54,8 +55,43 @@ public class ConfigManager {
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new ConfigManager(getRootFolder(), new SqlConfigLoader(getRootFolder()));
+            // INSTANCE = new ConfigManager(getRootFolder(), new LegacyConfigManager(getRootFolder()));
         }
         return INSTANCE;
+    }
+
+    private void translateLegacyIfPresent(Path folderPath) {
+        if (!(m_provider instanceof SqlConfigLoader)) {
+            // Cannot import
+            return;
+        }
+        logger.info("Translating settings zip!");
+
+        var maybeCams = Path.of(folderPath.toAbsolutePath().toString(), "cameras").toFile();
+        var maybeCamsBak = Path.of(folderPath.toAbsolutePath().toString(), "cameras_backup").toFile();
+
+        if (maybeCams.exists() && maybeCams.isDirectory()) {
+            var legacy = new LegacyConfigManager(folderPath);
+            legacy.load();
+            var loadedConfig = legacy.getConfig();
+
+            // yeet our current cameras directory, not needed anymore
+            if (maybeCamsBak.exists()) FileUtils.deleteDirectory(maybeCamsBak.toPath());
+            if (!maybeCams.canWrite()) {
+                maybeCams.setWritable(true);
+            }
+            try {
+                Files.move(maybeCams.toPath(), maybeCamsBak.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            // Save the same config out using SQL loader
+            var sql = new SqlConfigLoader(getRootFolder());
+            sql.setConfig(loadedConfig);
+            sql.saveToDisk();
+        } 
     }
 
     public static void saveUploadedSettingsZip(File uploadPath) {
@@ -71,7 +107,7 @@ public class ConfigManager {
         // old style
         var maybeCams = Path.of(folderPath.getAbsolutePath(), "cameras").toFile();
         if (maybeCams.exists() && maybeCams.isDirectory()) {
-            var legacy = new LegacyConfigManager(getRootFolder());
+            var legacy = new LegacyConfigManager(folderPath.toPath());
             legacy.load();
             var loadedConfig = legacy.getConfig();
 
@@ -101,10 +137,11 @@ public class ConfigManager {
     ConfigManager(Path configDirectory, ConfigProvider provider) {
         this.configDirectoryFile = new File(configDirectory.toUri());
         m_provider = provider;
-
+        
     }
 
     public void load() {
+        translateLegacyIfPresent(this.configDirectoryFile.toPath());
         m_provider.load();
     }
 
