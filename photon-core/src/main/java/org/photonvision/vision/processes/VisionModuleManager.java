@@ -19,7 +19,6 @@ package org.photonvision.vision.processes;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 
@@ -83,7 +82,8 @@ public class VisionModuleManager {
         // since we can only stream 5 cameras at once
 
         var bigList = new ArrayList<VisionSource>();
-        bigList.addAll(this.getModules().stream().map(it->it.visionSource).collect(Collectors.toList()));
+        bigList.addAll(
+                this.getModules().stream().map(it -> it.visionSource).collect(Collectors.toList()));
         bigList.addAll(config);
 
         for (var v : config) {

@@ -106,9 +106,26 @@ public class NetworkConfig {
 
     @Override
     public String toString() {
-        return "NetworkConfig [teamNumber=" + teamNumber + ", connectionType=" + connectionType + ", staticIp="
-                + staticIp + ", hostname=" + hostname + ", runNTServer=" + runNTServer + ", networkManagerIface="
-                + networkManagerIface + ", physicalInterface=" + physicalInterface + ", setStaticCommand="
-                + setStaticCommand + ", setDHCPcommand=" + setDHCPcommand + ", shouldManage=" + shouldManage + "]";
+        return "NetworkConfig [teamNumber="
+                + teamNumber
+                + ", connectionType="
+                + connectionType
+                + ", staticIp="
+                + staticIp
+                + ", hostname="
+                + hostname
+                + ", runNTServer="
+                + runNTServer
+                + ", networkManagerIface="
+                + networkManagerIface
+                + ", physicalInterface="
+                + physicalInterface
+                + ", setStaticCommand="
+                + setStaticCommand
+                + ", setDHCPcommand="
+                + setDHCPcommand
+                + ", shouldManage="
+                + shouldManage
+                + "]";
     }
 }

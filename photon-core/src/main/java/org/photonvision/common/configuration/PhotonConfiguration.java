@@ -143,7 +143,14 @@ public class PhotonConfiguration {
 
     @Override
     public String toString() {
-        return "PhotonConfiguration [hardwareConfig=" + hardwareConfig + ", hardwareSettings=" + hardwareSettings
-                + ", networkConfig=" + networkConfig + ", cameraConfigurations=" + cameraConfigurations + "]";
+        return "PhotonConfiguration [hardwareConfig="
+                + hardwareConfig
+                + ", hardwareSettings="
+                + hardwareSettings
+                + ", networkConfig="
+                + networkConfig
+                + ", cameraConfigurations="
+                + cameraConfigurations
+                + "]";
     }
 }

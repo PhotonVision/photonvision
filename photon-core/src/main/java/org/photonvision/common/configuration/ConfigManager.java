@@ -17,7 +17,6 @@
 
 package org.photonvision.common.configuration;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,13 +29,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
 import java.util.*;
-import java.util.stream.Collectors;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.FileUtils;
-import org.photonvision.common.util.file.JacksonUtils;
-import org.photonvision.vision.pipeline.CVPipelineSettings;
-import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
@@ -94,7 +89,7 @@ public class ConfigManager {
             var sql = new SqlConfigLoader(getRootFolder());
             sql.setConfig(loadedConfig);
             sql.saveToDisk();
-        } 
+        }
     }
 
     public static void saveUploadedSettingsZip(File uploadPath) {
@@ -126,7 +121,6 @@ public class ConfigManager {
                 logger.error("Exception copying uploaded settings!", e);
             }
         }
-
     }
 
     public PhotonConfiguration getConfig() {
@@ -140,7 +134,7 @@ public class ConfigManager {
     ConfigManager(Path configDirectory, ConfigProvider provider) {
         this.configDirectoryFile = new File(configDirectory.toUri());
         m_provider = provider;
-        
+
         settingsSaveThread = new Thread(this::saveAndWriteTask);
         settingsSaveThread.start();
     }
@@ -201,15 +195,13 @@ public class ConfigManager {
 
     public Path getLogPath() {
         var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
-        if (!logFile.getParentFile().exists())
-            logFile.getParentFile().mkdirs();
+        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
         return logFile.toPath();
     }
 
     public Path getImageSavePath() {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
-        if (!imgFilePath.exists())
-            imgFilePath.mkdirs();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 

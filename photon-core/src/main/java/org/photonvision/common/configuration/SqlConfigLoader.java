@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) Photon Vision.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 package org.photonvision.common.configuration;
 
 import java.io.File;
@@ -95,12 +112,11 @@ public class SqlConfigLoader extends ConfigProvider {
         Connection conn = null;
         Statement stmt1 = null, stmt2 = null;
         try {
-
             conn = createConn();
             if (conn == null) {
                 logger.error("No connection, cannot init db");
                 return;
-            } 
+            }
 
             // Create global settings table. Just a dumb table with list of jsons and their
             // name
@@ -165,7 +181,6 @@ public class SqlConfigLoader extends ConfigProvider {
             }
         }
 
-
         logger.info("Settings saved!");
     }
 
@@ -199,7 +214,8 @@ public class SqlConfigLoader extends ConfigProvider {
 
             try {
                 networkConfig =
-                        JacksonUtils.deserialize(getOneConfigFile(conn, TableKeys.NETWORK_CONFIG), NetworkConfig.class);
+                        JacksonUtils.deserialize(
+                                getOneConfigFile(conn, TableKeys.NETWORK_CONFIG), NetworkConfig.class);
             } catch (IOException e) {
                 logger.error("Could not deserialize network config! Loading defaults");
                 networkConfig = new NetworkConfig();
@@ -222,7 +238,8 @@ public class SqlConfigLoader extends ConfigProvider {
         // Querry every single row of the global settings db
         PreparedStatement querry = null;
         try {
-            querry = conn.prepareStatement("SELECT contents FROM global where filename=\"" + filename + "\"");
+            querry =
+                    conn.prepareStatement("SELECT contents FROM global where filename=\"" + filename + "\"");
 
             var result = querry.executeQuery();
 
@@ -246,7 +263,6 @@ public class SqlConfigLoader extends ConfigProvider {
 
     private void saveCameras(Connection conn) {
         try {
-
             // Replace this camera's row with the new settings
             var sqlString =
                     "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES "
@@ -313,13 +329,17 @@ public class SqlConfigLoader extends ConfigProvider {
 
             statement2 = conn.prepareStatement(sqlString);
             addFile(
-                    statement2, TableKeys.NETWORK_CONFIG, JacksonUtils.serializeToString(config.getNetworkConfig()));
+                    statement2,
+                    TableKeys.NETWORK_CONFIG,
+                    JacksonUtils.serializeToString(config.getNetworkConfig()));
             statement2.executeUpdate();
             statement2.close();
 
             statement3 = conn.prepareStatement(sqlString);
             addFile(
-                    statement3, TableKeys.HARDWARE_CONFIG, JacksonUtils.serializeToString(config.getHardwareConfig()));
+                    statement3,
+                    TableKeys.HARDWARE_CONFIG,
+                    JacksonUtils.serializeToString(config.getHardwareConfig()));
             statement3.executeUpdate();
             statement3.close();
 
@@ -354,10 +374,7 @@ public class SqlConfigLoader extends ConfigProvider {
             var sqlString = "REPLACE INTO global (filename, contents) VALUES " + "(?,?);";
 
             statement1 = conn.prepareStatement(sqlString);
-            addFile(
-                    statement1,
-                    fname,
-                    Files.readString(path));
+            addFile(statement1, fname, Files.readString(path));
             statement1.executeUpdate();
 
             conn.commit();
@@ -444,7 +461,7 @@ public class SqlConfigLoader extends ConfigProvider {
         return loadedConfigurations;
     }
 
-	public void setConfig(PhotonConfiguration config) {
+    public void setConfig(PhotonConfiguration config) {
         this.config = config;
-	}
+    }
 }

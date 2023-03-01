@@ -149,15 +149,50 @@ public class HardwareConfig {
 
     @Override
     public String toString() {
-        return "HardwareConfig [deviceName=" + deviceName + ", deviceLogoPath=" + deviceLogoPath + ", supportURL="
-                + supportURL + ", ledPins=" + ledPins + ", ledSetCommand=" + ledSetCommand + ", ledsCanDim="
-                + ledsCanDim + ", ledBrightnessRange=" + ledBrightnessRange + ", ledDimCommand=" + ledDimCommand
-                + ", ledBlinkCommand=" + ledBlinkCommand + ", statusRGBPins=" + statusRGBPins + ", cpuTempCommand="
-                + cpuTempCommand + ", cpuMemoryCommand=" + cpuMemoryCommand + ", cpuUtilCommand=" + cpuUtilCommand
-                + ", cpuThrottleReasonCmd=" + cpuThrottleReasonCmd + ", cpuUptimeCommand=" + cpuUptimeCommand
-                + ", gpuMemoryCommand=" + gpuMemoryCommand + ", ramUtilCommand=" + ramUtilCommand
-                + ", gpuMemUsageCommand=" + gpuMemUsageCommand + ", diskUsageCommand=" + diskUsageCommand
-                + ", restartHardwareCommand=" + restartHardwareCommand + ", vendorFOV=" + vendorFOV
-                + ", blacklistedResIndices=" + blacklistedResIndices + "]";
+        return "HardwareConfig [deviceName="
+                + deviceName
+                + ", deviceLogoPath="
+                + deviceLogoPath
+                + ", supportURL="
+                + supportURL
+                + ", ledPins="
+                + ledPins
+                + ", ledSetCommand="
+                + ledSetCommand
+                + ", ledsCanDim="
+                + ledsCanDim
+                + ", ledBrightnessRange="
+                + ledBrightnessRange
+                + ", ledDimCommand="
+                + ledDimCommand
+                + ", ledBlinkCommand="
+                + ledBlinkCommand
+                + ", statusRGBPins="
+                + statusRGBPins
+                + ", cpuTempCommand="
+                + cpuTempCommand
+                + ", cpuMemoryCommand="
+                + cpuMemoryCommand
+                + ", cpuUtilCommand="
+                + cpuUtilCommand
+                + ", cpuThrottleReasonCmd="
+                + cpuThrottleReasonCmd
+                + ", cpuUptimeCommand="
+                + cpuUptimeCommand
+                + ", gpuMemoryCommand="
+                + gpuMemoryCommand
+                + ", ramUtilCommand="
+                + ramUtilCommand
+                + ", gpuMemUsageCommand="
+                + gpuMemUsageCommand
+                + ", diskUsageCommand="
+                + diskUsageCommand
+                + ", restartHardwareCommand="
+                + restartHardwareCommand
+                + ", vendorFOV="
+                + vendorFOV
+                + ", blacklistedResIndices="
+                + blacklistedResIndices
+                + "]";
     }
 }
