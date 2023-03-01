@@ -137,6 +137,8 @@ public class VisionModuleManagerTest {
     public void testMultipleStreamIndex() {
         ConfigManager.getInstance().load();
 
+        var vmm = new VisionModuleManager();
+
         var conf = new CameraConfiguration("Foo", "Bar");
         conf.streamIndex = 1;
         var ffp =
@@ -162,7 +164,7 @@ public class VisionModuleManagerTest {
         var testSource3 = new TestSource(ffp3, conf3);
 
         var modules =
-                VisionModuleManager.getInstance().addSources(List.of(testSource, testSource2, testSource3));
+                vmm.addSources(List.of(testSource, testSource2, testSource3));
 
         System.out.println(
                 Arrays.toString(

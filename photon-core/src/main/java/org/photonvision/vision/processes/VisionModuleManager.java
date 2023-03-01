@@ -36,7 +36,7 @@ public class VisionModuleManager {
 
     protected final List<VisionModule> visionModules = new ArrayList<>();
 
-    private VisionModuleManager() {}
+    VisionModuleManager() {}
 
     public List<VisionModule> getModules() {
         return visionModules;
