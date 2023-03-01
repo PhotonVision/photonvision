@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.util.file.JacksonUtils;
@@ -52,7 +51,9 @@ public class SqlConfigLoader {
         String url = "jdbc:sqlite:" + dbPath;
 
         try {
-            return DriverManager.getConnection(url);
+            var conn = DriverManager.getConnection(url);
+            conn.setAutoCommit(false);
+            return conn;
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -97,23 +98,17 @@ public class SqlConfigLoader {
         if (conn == null) return;
         try {
             // Replace this camera's row with the new settings
-            var template = "(?,?,?,?)";
             var sqlString =
                     "REPLACE INTO cameras (unique_name, config_json, drivermode_json, pipeline_jsons) VALUES "
-                            + template;
-            var entries = configMap.entrySet();
-            for (final var c : entries) {
-                sqlString = sqlString + template + ", ";
-            }
-            sqlString = sqlString.substring(0, sqlString.length() - 1) + ";";
+                            + "(?,?,?,?);";
+
             PreparedStatement statement = conn.prepareStatement(sqlString);
 
-            int i = 0;
-            for (var c : entries) {
+            for (var c : configMap.entrySet()) {
                 var config = c.getValue();
-                statement.setString(i + 1, c.getKey());
-                statement.setString(i + 2, JacksonUtils.serializeToString(config));
-                statement.setString(i + 3, JacksonUtils.serializeToString(config.driveModeSettings));
+                statement.setString(1, c.getKey());
+                statement.setString(2, JacksonUtils.serializeToString(config));
+                statement.setString(3, JacksonUtils.serializeToString(config.driveModeSettings));
 
                 // Serializing a list of abstract classes sucks. Instead, make it into a array
                 // of strings, which we can later unpack back into individual settings
@@ -130,16 +125,23 @@ public class SqlConfigLoader {
                                         })
                                 .filter(Objects::nonNull)
                                 .collect(Collectors.toList());
-                statement.setString(i + 4, JacksonUtils.serializeToString(settings));
-                i = i + 4;
+                statement.setString(4, JacksonUtils.serializeToString(settings));
+
+                // Add a new row
+                statement.addBatch();
             }
 
             var rowsChanged = statement.executeUpdate();
+            conn.commit();
             System.out.println(rowsChanged + " records mutated");
-        } catch (SQLException e) {
+            statement.addBatch(dbPath);
+        } catch (SQLException | IOException e) {
             logger.error("Err saving cameras: ", e);
-        } catch (IOException e) {
-            logger.error("Err saving cameras: ", e);
+            try {
+                conn.rollback();
+            } catch (SQLException e1) {
+                logger.error("Err rolling back changes: ", e);
+            }
         }
     }
 
