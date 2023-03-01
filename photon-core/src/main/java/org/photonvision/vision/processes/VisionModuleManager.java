@@ -19,9 +19,13 @@ package org.photonvision.vision.processes;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import org.photonvision.common.logging.LogGroup;
+import org.photonvision.common.logging.Logger;
 
 /** VisionModuleManager has many VisionModules, and provides camera configuration data to them. */
 public class VisionModuleManager {
+    private final Logger logger = new Logger(VisionModuleManager.class, LogGroup.VisionModule);
+
     private static class ThreadSafeSingleton {
         private static final VisionModuleManager INSTANCE = new VisionModuleManager();
     }
@@ -32,7 +36,7 @@ public class VisionModuleManager {
 
     protected final List<VisionModule> visionModules = new ArrayList<>();
 
-    private VisionModuleManager() {}
+    VisionModuleManager() {}
 
     public List<VisionModule> getModules() {
         return visionModules;
@@ -77,8 +81,15 @@ public class VisionModuleManager {
         // The best we can do is try to avoid a case where the stream index runs away to infinity
         // since we can only stream 5 cameras at once
 
+        // Big list, which should contain every vision source (currently loaded plus the new ones being
+        // added)
+        var bigList = new ArrayList<VisionSource>();
+        bigList.addAll(
+                this.getModules().stream().map(it -> it.visionSource).collect(Collectors.toList()));
+        bigList.addAll(config);
+
         for (var v : config) {
-            var listNoV = new ArrayList<>(config);
+            var listNoV = new ArrayList<>(bigList);
             listNoV.remove(v);
             if (listNoV.stream()
                     .anyMatch(
@@ -92,6 +103,7 @@ public class VisionModuleManager {
                         .contains(idx)) {
                     idx++;
                 }
+                logger.debug("Assigning idx " + idx);
                 v.getCameraConfiguration().streamIndex = idx;
             }
         }
