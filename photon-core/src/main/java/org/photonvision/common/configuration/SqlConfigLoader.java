@@ -44,6 +44,7 @@ public class SqlConfigLoader extends ConfigProvider {
     public SqlConfigLoader(Path rootFolder) {
         this.rootFolder = rootFolder.toFile();
         dbPath = Path.of(rootFolder.toString(), dbName).toAbsolutePath().toString();
+        logger.debug("Using database " + dbPath);
         initDatabase();
     }
 
@@ -391,11 +392,6 @@ public class SqlConfigLoader extends ConfigProvider {
     @Override
     public void saveUploadedNetworkConfig(Path uploadPath) {
         saveOneFile(TableKeys.NETWORK_CONFIG, uploadPath);
-    }
-
-    @Override
-    void requestSave() {
-        this.saveToDisk();
     }
 
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Connection conn) {

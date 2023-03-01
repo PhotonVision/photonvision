@@ -5,7 +5,6 @@ import java.nio.file.Path;
 public abstract class ConfigProvider {
     private PhotonConfiguration config;
     abstract void load();
-    abstract void requestSave();
     void saveToDisk() {};
     PhotonConfiguration getConfig() { return config; }
 

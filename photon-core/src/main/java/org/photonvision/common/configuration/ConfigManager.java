@@ -52,6 +52,9 @@ public class ConfigManager {
 
     private final ConfigProvider m_provider;
 
+    private Thread settingsSaveThread;
+    private long saveRequestTimestamp = -1;
+
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new ConfigManager(getRootFolder(), new SqlConfigLoader(getRootFolder()));
@@ -138,6 +141,8 @@ public class ConfigManager {
         this.configDirectoryFile = new File(configDirectory.toUri());
         m_provider = provider;
         
+        settingsSaveThread = new Thread(this::saveAndWriteTask);
+        settingsSaveThread.start();
     }
 
     public void load() {
@@ -222,7 +227,7 @@ public class ConfigManager {
 
     public void requestSave() {
         logger.trace("Requesting save...");
-        m_provider.requestSave();
+        saveRequestTimestamp = System.currentTimeMillis();
     }
 
     public void unloadCameraConfigs() {
@@ -231,5 +236,22 @@ public class ConfigManager {
 
     public void saveToDisk() {
         m_provider.saveToDisk();
+    }
+
+    private void saveAndWriteTask() {
+        // Only save if 1 second has past since the request was made
+        while (!Thread.currentThread().isInterrupted()) {
+            if (saveRequestTimestamp > 0 && (System.currentTimeMillis() - saveRequestTimestamp) > 1000L) {
+                saveRequestTimestamp = -1;
+                logger.debug("Saving to disk...");
+                saveToDisk();
+            }
+
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                logger.error("Exception waiting for settings semaphore", e);
+            }
+        }
     }
 }
