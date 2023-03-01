@@ -163,8 +163,7 @@ public class VisionModuleManagerTest {
                         TestUtils.WPI2019Image.FOV);
         var testSource3 = new TestSource(ffp3, conf3);
 
-        var modules =
-                vmm.addSources(List.of(testSource, testSource2, testSource3));
+        var modules = vmm.addSources(List.of(testSource, testSource2, testSource3));
 
         System.out.println(
                 Arrays.toString(
