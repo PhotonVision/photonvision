@@ -1,6 +1,7 @@
 package org.photonvision.common.configuration;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -19,6 +20,7 @@ import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 
 public class SqlConfigLoader {
     private final Logger logger = new Logger(SqlConfigLoader.class, LogGroup.Config);
+    private static SqlConfigLoader INSTANCE;
 
     static class TableKeys {
         static final String CAM_UNIQUE_NAME = "unique_name";
@@ -27,10 +29,23 @@ public class SqlConfigLoader {
         static final String PIPELINE_JSONS = "pipeline_jsons";
     }
 
-    private String dbPath = "test.db";
+    private static final String dbName = "test.db";
+    private final String dbPath;
 
-    public SqlConfigLoader() {
+    public SqlConfigLoader(Path rootFolder) {
+        dbPath = Path.of(rootFolder.toString(), dbName).toAbsolutePath().toString();
         initDatabase();
+    }
+
+    public static SqlConfigLoader getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new SqlConfigLoader(getRootFolder());
+        }
+        return INSTANCE;
+    }
+
+    private static Path getRootFolder() {
+        return Path.of("photonvision_config");
     }
 
     private Connection createConn() {
@@ -77,7 +92,7 @@ public class SqlConfigLoader {
         }
     }
 
-    public void saveCameras(HashMap<String, CameraConfiguration> configMap) {
+    private void saveCameras(HashMap<String, CameraConfiguration> configMap) {
         var conn = createConn();
         if (conn == null) return;
         try {
