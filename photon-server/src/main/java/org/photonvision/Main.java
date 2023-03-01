@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.apache.commons.cli.*;
+import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.CameraConfiguration;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.dataflow.networktables.NetworkTablesManager;
@@ -338,7 +339,8 @@ public class Main {
         ConfigManager.getInstance().requestSave();
 
         // Force load the hardware manager
-        HardwareManager.getInstance();
+        var hm = HardwareManager.getInstance();
+        hm.setStatus(ProgramStatus.UHOH); // default to "nope not working"
 
         NetworkManager.getInstance().reinitialize();
 
@@ -359,6 +361,7 @@ public class Main {
             }
         }
 
+        hm.setStatus(ProgramStatus.RUNNING);
         Server.main(DEFAULT_WEBPORT);
     }
 }

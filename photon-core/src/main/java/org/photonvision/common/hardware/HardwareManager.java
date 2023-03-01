@@ -62,6 +62,14 @@ public class HardwareManager {
     public static HardwareManager getInstance() {
         if (instance == null) {
             var conf = ConfigManager.getInstance().getConfig();
+
+            // Ensure we've loaded a valid config before proceeding.
+            // Currently this shsould only go active during unit tests.
+            if (conf == null) {
+                ConfigManager.getInstance().load();
+                conf = ConfigManager.getInstance().getConfig();
+            }
+
             instance = new HardwareManager(conf.getHardwareConfig(), conf.getHardwareSettings());
         }
         return instance;
@@ -95,6 +103,12 @@ public class HardwareManager {
                 hardwareConfig.statusRGBPins.size() == 3
                         ? new StatusLED(hardwareConfig.statusRGBPins)
                         : null;
+
+        if (statusLED != null) {
+            logger.debug("Configured 3 status LED's");
+        } else {
+            logger.debug("No Status LED configured");
+        }
 
         var hasBrightnessRange = hardwareConfig.ledBrightnessRange.size() == 2;
         visionLED =
@@ -138,6 +152,7 @@ public class HardwareManager {
     private void onJvmExit() {
         logger.info("Shutting down LEDs...");
         if (visionLED != null) visionLED.setState(false);
+        if (statusLED != null) statusLED.setRGB(false, false, false);
     }
 
     public boolean restartDevice() {
@@ -157,21 +172,34 @@ public class HardwareManager {
         }
     }
 
+    private boolean targetVisible = false;
+
     public void setStatus(ProgramStatus status) {
-        switch (status) {
-            case UHOH:
-                // red flashing, green off
-                break;
-            case RUNNING:
-                // red solid, green off
-                break;
-            case RUNNING_NT:
-                // red off, green solid
-                break;
-            case RUNNING_NT_TARGET:
-                // red off, green flashing
-                break;
+        if (statusLED != null) {
+            switch (status) {
+                case UHOH:
+                    statusLED.setRGB(true, false, false);
+                    break;
+                case RUNNING:
+                    if (targetVisible) {
+                        statusLED.setRGB(false, true, true);
+                    } else {
+                        statusLED.setRGB(true, true, false);
+                    }
+                    break;
+                case RUNNING_NT:
+                    if (targetVisible) {
+                        statusLED.setRGB(false, true, true);
+                    } else {
+                        statusLED.setRGB(false, true, false);
+                    }
+                    break;
+            }
         }
+    }
+
+    public void setTargetVisible(boolean isVisible) {
+        targetVisible = isVisible;
     }
 
     public HardwareConfig getConfig() {

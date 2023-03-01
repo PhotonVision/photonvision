@@ -23,10 +23,12 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.HashMap;
 import java.util.function.Consumer;
 import org.photonvision.PhotonVersion;
+import org.photonvision.common.ProgramStatus;
 import org.photonvision.common.configuration.ConfigManager;
 import org.photonvision.common.configuration.NetworkConfig;
 import org.photonvision.common.dataflow.DataChangeService;
 import org.photonvision.common.dataflow.events.OutgoingUIEvent;
+import org.photonvision.common.hardware.HardwareManager;
 import org.photonvision.common.logging.LogGroup;
 import org.photonvision.common.logging.Logger;
 import org.photonvision.common.scripting.ScriptEventType;
@@ -143,6 +145,9 @@ public class NetworkTablesManager {
             isRetryingConnection = true;
             logger.error(
                     "[NetworkTablesManager] Could not connect to the robot! Will retry in the background...");
+            HardwareManager.getInstance().setStatus(ProgramStatus.RUNNING);
+        } else {
+            HardwareManager.getInstance().setStatus(ProgramStatus.RUNNING_NT);
         }
     }
 }
