@@ -144,6 +144,7 @@ public class SqlConfigLoader extends ConfigProvider {
 
     @Override
     public void saveToDisk() {
+        logger.debug("Saving to disk");
         var conn = createConn();
         if (conn == null) return;
         synchronized (m_mutex) {
@@ -162,6 +163,9 @@ public class SqlConfigLoader extends ConfigProvider {
                 e.printStackTrace();
             }
         }
+
+
+        logger.info("Settings saved!");
     }
 
     public void load() {
@@ -442,4 +446,8 @@ public class SqlConfigLoader extends ConfigProvider {
         }
         return loadedConfigurations;
     }
+
+	public void setConfig(PhotonConfiguration config) {
+        this.config = config;
+	}
 }

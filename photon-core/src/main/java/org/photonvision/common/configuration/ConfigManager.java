@@ -59,17 +59,35 @@ public class ConfigManager {
     }
 
     public static void saveUploadedSettingsZip(File uploadPath) {
+        // Unpack to /tmp/something/photonvision
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
         folderPath.mkdirs();
         ZipUtil.unpack(uploadPath, folderPath);
+
+        // Nuke the current settings directory
         FileUtils.deleteDirectory(getRootFolder());
-        try {
-            org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
-            logger.info("Copied settings successfully!");
-        } catch (IOException e) {
-            logger.error("Exception copying uploaded settings!", e);
-            return;
+
+        // If there's a cameras folder in the upload, we know we need to import from the
+        // old style
+        var maybeCams = Path.of(folderPath.getAbsolutePath(), "cameras").toFile();
+        if (maybeCams.exists() && maybeCams.isDirectory()) {
+            var legacy = new LegacyConfigManager(getRootFolder());
+            legacy.load();
+            var loadedConfig = legacy.getConfig();
+
+            var sql = new SqlConfigLoader(getRootFolder());
+            sql.setConfig(loadedConfig);
+            sql.saveToDisk();
+        } else {
+            // new structure -- just copy and save like we used to
+            try {
+                org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
+                logger.info("Copied settings successfully!");
+            } catch (IOException e) {
+                logger.error("Exception copying uploaded settings!", e);
+            }
         }
+
     }
 
     public PhotonConfiguration getConfig() {
@@ -87,7 +105,7 @@ public class ConfigManager {
     }
 
     public void load() {
-       m_provider.load();
+        m_provider.load();
     }
 
     public void addCameraConfigurations(List<VisionSource> sources) {
@@ -141,13 +159,15 @@ public class ConfigManager {
 
     public Path getLogPath() {
         var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
-        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
+        if (!logFile.getParentFile().exists())
+            logFile.getParentFile().mkdirs();
         return logFile.toPath();
     }
 
     public Path getImageSavePath() {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
-        if (!imgFilePath.exists()) imgFilePath.mkdirs();
+        if (!imgFilePath.exists())
+            imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
@@ -167,7 +187,6 @@ public class ConfigManager {
         logger.trace("Requesting save...");
         m_provider.requestSave();
     }
-
 
     public void unloadCameraConfigs() {
         this.getConfig().getCameraConfigurations().clear();
