@@ -18,9 +18,6 @@
 package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import io.javalin.core.util.FileUtil;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -92,10 +89,14 @@ public class ConfigManager {
 
     ConfigManager(Path configDirectoryFile) {
         this.configDirectoryFile = new File(configDirectoryFile.toUri());
-        // this.hardwareConfigFile = new File(Path.of(configDirectoryFile.toString(), "config", HW_CFG_FNAME).toUri());
-        // this.hardwareSettingsFile = new File(Path.of(configDirectoryFile.toString(), "config", HW_SET_FNAME).toUri());
-        // this.networkConfigFile = new File(Path.of(configDirectoryFile.toString(), "config", NET_SET_FNAME).toUri());
-        // this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "config", "cameras").toUri());
+        // this.hardwareConfigFile = new File(Path.of(configDirectoryFile.toString(), "config",
+        // HW_CFG_FNAME).toUri());
+        // this.hardwareSettingsFile = new File(Path.of(configDirectoryFile.toString(), "config",
+        // HW_SET_FNAME).toUri());
+        // this.networkConfigFile = new File(Path.of(configDirectoryFile.toString(), "config",
+        // NET_SET_FNAME).toUri());
+        // this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "config",
+        // "cameras").toUri());
 
         settingsSaveThread = new Thread(this::saveAndWriteTask);
         settingsSaveThread.start();
@@ -114,10 +115,8 @@ public class ConfigManager {
             logger.debug("Making root dir writeable...");
             try {
                 var success = configDirectoryFile.setWritable(true);
-                if (success)
-                    logger.debug("Set root dir writeable!");
-                else
-                    logger.error("Could not make root dir writeable!");
+                if (success) logger.debug("Set root dir writeable!");
+                else logger.error("Could not make root dir writeable!");
             } catch (SecurityException e) {
                 logger.error("Could not make root dir writeable!", e);
             }
@@ -137,8 +136,7 @@ public class ConfigManager {
         }
         try {
             var p = Path.of(configDirectoryFile.toString(), "config.zip");
-            if (p.toFile().exists())
-                ZipUtil.unpack(p.toFile(), tempFolder.toFile());
+            if (p.toFile().exists()) ZipUtil.unpack(p.toFile(), tempFolder.toFile());
         } catch (Exception e) {
             logger.error("", e);
         }
@@ -150,7 +148,8 @@ public class ConfigManager {
 
         if (hardwareConfigFile.exists()) {
             try {
-                hardwareConfig = JacksonUtils.deserialize(hardwareConfigFile.toPath(), HardwareConfig.class);
+                hardwareConfig =
+                        JacksonUtils.deserialize(hardwareConfigFile.toPath(), HardwareConfig.class);
                 if (hardwareConfig == null) {
                     logger.error("Could not deserialize hardware config! Loading defaults");
                     hardwareConfig = new HardwareConfig();
@@ -168,7 +167,8 @@ public class ConfigManager {
         printExistsWarning(hardwareSettingsFile.toPath(), "HW Settings");
         if (hardwareSettingsFile.exists()) {
             try {
-                hardwareSettings = JacksonUtils.deserialize(hardwareSettingsFile.toPath(), HardwareSettings.class);
+                hardwareSettings =
+                        JacksonUtils.deserialize(hardwareSettingsFile.toPath(), HardwareSettings.class);
                 if (hardwareSettings == null) {
                     logger.error("Could not deserialize hardware settings! Loading defaults");
                     hardwareSettings = new HardwareSettings();
@@ -209,11 +209,13 @@ public class ConfigManager {
             }
         }
 
-        HashMap<String, CameraConfiguration> cameraConfigurations = loadCameraConfigs(camerasFolder.toPath());
+        HashMap<String, CameraConfiguration> cameraConfigurations =
+                loadCameraConfigs(camerasFolder.toPath());
 
-        this.config = new PhotonConfiguration(
-                hardwareConfig, hardwareSettings, networkConfig, cameraConfigurations);
-        
+        this.config =
+                new PhotonConfiguration(
+                        hardwareConfig, hardwareSettings, networkConfig, cameraConfigurations);
+
         // clean up
         FileUtils.deleteDirectory(tempFolder);
     }
@@ -230,9 +232,12 @@ public class ConfigManager {
         }
 
         // Create files in our temp directory to save to
-        var temp_hardwareConfigFile = new File(Path.of(tempDirWithPrefix.toString(), HW_CFG_FNAME).toUri());
-        var temp_hardwareSettingsFile = new File(Path.of(tempDirWithPrefix.toString(), HW_SET_FNAME).toUri());
-        var temp_networkConfigFile = new File(Path.of(tempDirWithPrefix.toString(), NET_SET_FNAME).toUri());
+        var temp_hardwareConfigFile =
+                new File(Path.of(tempDirWithPrefix.toString(), HW_CFG_FNAME).toUri());
+        var temp_hardwareSettingsFile =
+                new File(Path.of(tempDirWithPrefix.toString(), HW_SET_FNAME).toUri());
+        var temp_networkConfigFile =
+                new File(Path.of(tempDirWithPrefix.toString(), NET_SET_FNAME).toUri());
         var temp_camerasFolder = new File(Path.of(tempDirWithPrefix.toString(), "cameras").toUri());
 
         try {
@@ -319,8 +324,7 @@ public class ConfigManager {
 
     private void printFileContents(Path path) {
         try {
-            if (path.toFile().exists())
-                logger.error(Files.readString(path));
+            if (path.toFile().exists()) logger.error(Files.readString(path));
         } catch (Exception e) {
             // it's ok to ignore
         }
@@ -329,24 +333,29 @@ public class ConfigManager {
     private HashMap<String, CameraConfiguration> loadCameraConfigs(Path camerasFolder) {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
         try {
-            var subdirectories = Files.list(camerasFolder)
-                    .filter(f -> f.toFile().isDirectory())
-                    .collect(Collectors.toList());
+            var subdirectories =
+                    Files.list(camerasFolder)
+                            .filter(f -> f.toFile().isDirectory())
+                            .collect(Collectors.toList());
 
             for (var subdir : subdirectories) {
                 var cameraConfigPath = Path.of(subdir.toString(), "config.json");
                 CameraConfiguration loadedConfig = null;
 
                 try {
-                    loadedConfig = JacksonUtils.deserialize(
-                            cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
+                    loadedConfig =
+                            JacksonUtils.deserialize(
+                                    cameraConfigPath.toAbsolutePath(), CameraConfiguration.class);
                 } catch (JsonProcessingException e) {
                     logger.error("Camera config deserialization failed!", e);
                     e.printStackTrace();
                 }
                 if (loadedConfig == null) { // If the file could not be deserialized
                     logger.warn(
-                            "Could not load camera " + subdir + "'s config.json! Loading " + "default. File contents:");
+                            "Could not load camera "
+                                    + subdir
+                                    + "'s config.json! Loading "
+                                    + "default. File contents:");
 
                     printFileContents(cameraConfigPath);
 
@@ -360,8 +369,9 @@ public class ConfigManager {
                 printExistsWarning(driverModeFile, "Drivermode");
                 DriverModePipelineSettings driverMode;
                 try {
-                    driverMode = JacksonUtils.deserialize(
-                            driverModeFile.toAbsolutePath(), DriverModePipelineSettings.class);
+                    driverMode =
+                            JacksonUtils.deserialize(
+                                    driverModeFile.toAbsolutePath(), DriverModePipelineSettings.class);
                 } catch (JsonProcessingException e) {
                     logger.error("Could not deserialize drivermode.json! Loading defaults");
                     logger.debug(Arrays.toString(e.getStackTrace()));
@@ -377,33 +387,35 @@ public class ConfigManager {
                 // Load pipelines by mapping the files within the pipelines subdir
                 // to their deserialized equivalents
                 var pipelineSubdirectory = Path.of(subdir.toString(), "pipelines");
-                List<CVPipelineSettings> settings = pipelineSubdirectory.toFile().exists()
-                        ? Files.list(pipelineSubdirectory)
-                                .filter(p -> p.toFile().isFile())
-                                .map(
-                                        p -> {
-                                            var relativizedFilePath = configDirectoryFile
-                                                    .toPath()
-                                                    .toAbsolutePath()
-                                                    .relativize(p)
-                                                    .toString();
-                                            try {
-                                                return JacksonUtils.deserialize(p, CVPipelineSettings.class);
-                                            } catch (JsonProcessingException e) {
-                                                logger.error("Exception while deserializing " + relativizedFilePath, e);
-                                                printFileContents(cameraConfigPath);
-                                            } catch (IOException e) {
-                                                logger.warn(
-                                                        "Could not load pipeline at "
-                                                                + relativizedFilePath
-                                                                + "! Skipping...");
-                                                printFileContents(cameraConfigPath);
-                                            }
-                                            return null;
-                                        })
-                                .filter(Objects::nonNull)
-                                .collect(Collectors.toList())
-                        : Collections.emptyList();
+                List<CVPipelineSettings> settings =
+                        pipelineSubdirectory.toFile().exists()
+                                ? Files.list(pipelineSubdirectory)
+                                        .filter(p -> p.toFile().isFile())
+                                        .map(
+                                                p -> {
+                                                    var relativizedFilePath =
+                                                            configDirectoryFile
+                                                                    .toPath()
+                                                                    .toAbsolutePath()
+                                                                    .relativize(p)
+                                                                    .toString();
+                                                    try {
+                                                        return JacksonUtils.deserialize(p, CVPipelineSettings.class);
+                                                    } catch (JsonProcessingException e) {
+                                                        logger.error("Exception while deserializing " + relativizedFilePath, e);
+                                                        printFileContents(cameraConfigPath);
+                                                    } catch (IOException e) {
+                                                        logger.warn(
+                                                                "Could not load pipeline at "
+                                                                        + relativizedFilePath
+                                                                        + "! Skipping...");
+                                                        printFileContents(cameraConfigPath);
+                                                    }
+                                                    return null;
+                                                })
+                                        .filter(Objects::nonNull)
+                                        .collect(Collectors.toList())
+                                : Collections.emptyList();
 
                 loadedConfig.driveModeSettings = driverMode;
                 loadedConfig.addPipelineSettings(settings);
@@ -467,15 +479,13 @@ public class ConfigManager {
 
     public Path getLogPath() {
         var logFile = Path.of(this.getLogsDir().toString(), taToLogFname(LocalDateTime.now())).toFile();
-        if (!logFile.getParentFile().exists())
-            logFile.getParentFile().mkdirs();
+        if (!logFile.getParentFile().exists()) logFile.getParentFile().mkdirs();
         return logFile.toPath();
     }
 
     public Path getImageSavePath() {
         var imgFilePath = Path.of(configDirectoryFile.toString(), "imgSaves").toFile();
-        if (!imgFilePath.exists())
-            imgFilePath.mkdirs();
+        if (!imgFilePath.exists()) imgFilePath.mkdirs();
         return imgFilePath.toPath();
     }
 
