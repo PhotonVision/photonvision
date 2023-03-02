@@ -75,13 +75,11 @@ public class RequestHandler {
                 // .zip files are assumed to be full packages of configuration files
                 logger.debug("Processing uploaded settings zip " + file.getFilename());
                 ConfigManager.saveUploadedSettingsZip(tempFilePath);
-
             } else if (file.getFilename().equals(ConfigManager.HW_CFG_FNAME)) {
                 // Filenames matching the hardware config .json file are assumed to be
                 // hardware config .json's
                 logger.debug("Processing uploaded hardware config " + file.getFilename());
                 ConfigManager.getInstance().saveUploadedHardwareConfig(tempFilePath.toPath());
-
             } else if (file.getFilename().equals(ConfigManager.HW_SET_FNAME)) {
                 // Filenames matching the hardware settings .json file are assumed to be
                 // hardware settings.json's
@@ -93,7 +91,6 @@ public class RequestHandler {
                 // network config .json's
                 logger.debug("Processing uploaded network config " + file.getFilename());
                 ConfigManager.getInstance().saveUploadedNetworkConfig(tempFilePath.toPath());
-
             } else {
                 logger.error(
                         "Couldn't apply provided settings file - did not recognize "

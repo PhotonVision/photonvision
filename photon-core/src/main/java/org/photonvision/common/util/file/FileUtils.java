@@ -20,9 +20,11 @@ package org.photonvision.common.util.file;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.PosixFileAttributes;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.Arrays;
@@ -107,6 +109,24 @@ public class FileUtils {
             }
         } else {
             logger.info("Cannot set directory permissions on Windows!");
+        }
+    }
+
+    public static void renameAtmoic(Path origPath, Path newPath) {
+        if (origPath.toFile().isDirectory()) {
+            logger.error("Attempt to move directory instead of file!");
+            return;
+        }
+
+        try {
+            try {
+                Files.move(
+                        origPath, newPath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(origPath, newPath, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } catch (IOException e) {
+            logger.error("Exception renaming " + origPath + " to " + newPath + "!", e);
         }
     }
 }

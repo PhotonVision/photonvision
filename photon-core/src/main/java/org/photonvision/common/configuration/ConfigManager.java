@@ -18,6 +18,9 @@
 package org.photonvision.common.configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import io.javalin.core.util.FileUtil;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -48,10 +51,10 @@ public class ConfigManager {
     public static final String NET_SET_FNAME = "networkSettings.json";
 
     private PhotonConfiguration config;
-    private final File hardwareConfigFile;
-    private final File hardwareSettingsFile;
-    private final File networkConfigFile;
-    private final File camerasFolder;
+    // private final File hardwareConfigFile;
+    // private final File hardwareSettingsFile;
+    // private final File networkConfigFile;
+    // private final File camerasFolder;
 
     final File configDirectoryFile;
 
@@ -89,10 +92,10 @@ public class ConfigManager {
 
     ConfigManager(Path configDirectoryFile) {
         this.configDirectoryFile = new File(configDirectoryFile.toUri());
-        this.hardwareConfigFile = new File(Path.of(configDirectoryFile.toString(), HW_CFG_FNAME).toUri());
-        this.hardwareSettingsFile = new File(Path.of(configDirectoryFile.toString(), HW_SET_FNAME).toUri());
-        this.networkConfigFile = new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
-        this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
+        // this.hardwareConfigFile = new File(Path.of(configDirectoryFile.toString(), "config", HW_CFG_FNAME).toUri());
+        // this.hardwareSettingsFile = new File(Path.of(configDirectoryFile.toString(), "config", HW_SET_FNAME).toUri());
+        // this.networkConfigFile = new File(Path.of(configDirectoryFile.toString(), "config", NET_SET_FNAME).toUri());
+        // this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "config", "cameras").toUri());
 
         settingsSaveThread = new Thread(this::saveAndWriteTask);
         settingsSaveThread.start();
@@ -123,6 +126,27 @@ public class ConfigManager {
         HardwareConfig hardwareConfig;
         HardwareSettings hardwareSettings;
         NetworkConfig networkConfig;
+
+        Path tempFolder = null;
+        try {
+            tempFolder = Path.of(configDirectoryFile.toString(), "config_temp");
+            if (!tempFolder.toFile().exists()) tempFolder.toFile().mkdirs();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        try {
+            var p = Path.of(configDirectoryFile.toString(), "config.zip");
+            if (p.toFile().exists())
+                ZipUtil.unpack(p.toFile(), tempFolder.toFile());
+        } catch (Exception e) {
+            logger.error("", e);
+        }
+
+        var hardwareConfigFile = new File(Path.of(tempFolder.toString(), HW_CFG_FNAME).toUri());
+        var hardwareSettingsFile = new File(Path.of(tempFolder.toString(), HW_SET_FNAME).toUri());
+        var networkConfigFile = new File(Path.of(tempFolder.toString(), NET_SET_FNAME).toUri());
+        var camerasFolder = new File(Path.of(tempFolder.toString(), "cameras").toUri());
 
         if (hardwareConfigFile.exists()) {
             try {
@@ -185,25 +209,51 @@ public class ConfigManager {
             }
         }
 
-        HashMap<String, CameraConfiguration> cameraConfigurations = loadCameraConfigs();
+        HashMap<String, CameraConfiguration> cameraConfigurations = loadCameraConfigs(camerasFolder.toPath());
 
         this.config = new PhotonConfiguration(
                 hardwareConfig, hardwareSettings, networkConfig, cameraConfigurations);
+        
+        // clean up
+        FileUtils.deleteDirectory(tempFolder);
     }
 
     public void saveToDisk() {
         logger.debug("Starting save to disk...");
 
-        // Delete old configs
-        FileUtils.deleteDirectory(camerasFolder.toPath());
+        Path tempDirWithPrefix = null;
+        try {
+            tempDirWithPrefix = Files.createTempDirectory("config");
+        } catch (IOException e) {
+            logger.error("Could not create temp dir to save to!");
+            return;
+        }
+
+        // Create files in our temp directory to save to
+        var temp_hardwareConfigFile = new File(Path.of(tempDirWithPrefix.toString(), HW_CFG_FNAME).toUri());
+        var temp_hardwareSettingsFile = new File(Path.of(tempDirWithPrefix.toString(), HW_SET_FNAME).toUri());
+        var temp_networkConfigFile = new File(Path.of(tempDirWithPrefix.toString(), NET_SET_FNAME).toUri());
+        var temp_camerasFolder = new File(Path.of(tempDirWithPrefix.toString(), "cameras").toUri());
 
         try {
-            JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
+            JacksonUtils.serialize(temp_hardwareConfigFile.toPath(), config.getHardwareConfig());
+        } catch (IOException e) {
+            logger.error("Could not save hardware config!", e);
+        }
+
+        try {
+            JacksonUtils.serialize(temp_hardwareSettingsFile.toPath(), config.getHardwareSettings());
+        } catch (IOException e) {
+            logger.error("Could not save hardware config!", e);
+        }
+
+        try {
+            JacksonUtils.serialize(temp_networkConfigFile.toPath(), config.getNetworkConfig());
         } catch (IOException e) {
             logger.error("Could not save network config!", e);
         }
         try {
-            JacksonUtils.serialize(hardwareSettingsFile.toPath(), config.getHardwareSettings());
+            JacksonUtils.serialize(temp_hardwareSettingsFile.toPath(), config.getHardwareSettings());
         } catch (IOException e) {
             logger.error("Could not save hardware config!", e);
         }
@@ -212,7 +262,7 @@ public class ConfigManager {
         var cameraConfigMap = config.getCameraConfigurations();
         for (var subdirName : cameraConfigMap.keySet()) {
             var camConfig = cameraConfigMap.get(subdirName);
-            var subdir = Path.of(camerasFolder.toPath().toString(), subdirName);
+            var subdir = Path.of(temp_camerasFolder.toPath().toString(), subdirName);
 
             if (!subdir.toFile().exists()) {
                 // TODO: check for error
@@ -247,6 +297,17 @@ public class ConfigManager {
                 }
             }
         }
+
+        try {
+            // Must be in the same mount point, so create inside the config folder for now
+            File tempZip = Path.of(this.configDirectoryFile.toString(), "config.zip.temp").toFile();
+            File realZip = Path.of(this.configDirectoryFile.toString(), "config.zip").toFile();
+            ZipUtil.pack(tempDirWithPrefix.toFile(), tempZip);
+            FileUtils.renameAtmoic(tempZip.toPath(), realZip.toPath());
+        } catch (Exception e) {
+            logger.error("Error creating temp file for zipping", e);
+        }
+
         logger.info("Settings saved!");
     }
 
@@ -265,10 +326,10 @@ public class ConfigManager {
         }
     }
 
-    private HashMap<String, CameraConfiguration> loadCameraConfigs() {
+    private HashMap<String, CameraConfiguration> loadCameraConfigs(Path camerasFolder) {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
         try {
-            var subdirectories = Files.list(camerasFolder.toPath())
+            var subdirectories = Files.list(camerasFolder)
                     .filter(f -> f.toFile().isDirectory())
                     .collect(Collectors.toList());
 
@@ -418,31 +479,67 @@ public class ConfigManager {
         return imgFilePath.toPath();
     }
 
-    public Path getHardwareConfigFile() {
-        return this.hardwareConfigFile.toPath();
-    }
+    // private Path getHardwareConfigFile() {
+    //     return this.hardwareConfigFile.toPath();
+    // }
 
-    public Path getHardwareSettingsFile() {
-        return this.hardwareSettingsFile.toPath();
-    }
+    // private Path getHardwareSettingsFile() {
+    //     return this.hardwareSettingsFile.toPath();
+    // }
 
-    public Path getNetworkConfigFile() {
-        return this.networkConfigFile.toPath();
-    }
+    // public Path getNetworkConfigFile() {
+    //     return this.networkConfigFile.toPath();
+    // }
 
     public void saveUploadedHardwareConfig(Path uploadPath) {
-        FileUtils.deleteFile(this.getHardwareConfigFile());
-        FileUtils.copyFile(uploadPath, this.getHardwareConfigFile());
+        HardwareConfig hardwareConfig;
+        try {
+            hardwareConfig = JacksonUtils.deserialize(uploadPath, HardwareConfig.class);
+            if (hardwareConfig == null) {
+                logger.error("Could not deserialize uploaded hardware config!");
+                return;
+            }
+        } catch (IOException e) {
+            logger.error("Could not deserialize uploaded hardware config!");
+            printFileContents(uploadPath);
+            return;
+        }
+        getConfig().setHardwareConfig(hardwareConfig);
+        saveToDisk();
     }
 
     public void saveUploadedHardwareSettings(Path uploadPath) {
-        FileUtils.deleteFile(this.getHardwareSettingsFile());
-        FileUtils.copyFile(uploadPath, this.getHardwareSettingsFile());
+        HardwareSettings hardwareSettings;
+        try {
+            hardwareSettings = JacksonUtils.deserialize(uploadPath, HardwareSettings.class);
+            if (hardwareSettings == null) {
+                logger.error("Could not deserialize uploaded hardware config!");
+                return;
+            }
+        } catch (IOException e) {
+            logger.error("Could not deserialize uploaded hardware settings!");
+            printFileContents(uploadPath);
+            return;
+        }
+        getConfig().setHardwareSettings(hardwareSettings);
+        saveToDisk();
     }
 
     public void saveUploadedNetworkConfig(Path uploadPath) {
-        FileUtils.deleteFile(this.getNetworkConfigFile());
-        FileUtils.copyFile(uploadPath, this.getNetworkConfigFile());
+        NetworkConfig netConfig;
+        try {
+            netConfig = JacksonUtils.deserialize(uploadPath, NetworkConfig.class);
+            if (netConfig == null) {
+                logger.error("Could not deserialize uploaded network config!");
+                return;
+            }
+        } catch (IOException e) {
+            logger.error("Could not deserialize uploaded network settings!");
+            printFileContents(uploadPath);
+            return;
+        }
+        getConfig().setNetworkConfig(netConfig);
+        saveToDisk();
     }
 
     public void requestSave() {

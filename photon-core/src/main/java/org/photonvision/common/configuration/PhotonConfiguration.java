@@ -71,6 +71,14 @@ public class PhotonConfiguration {
         this.networkConfig = networkConfig;
     }
 
+    public void setHardwareConfig(HardwareConfig hwConfig) {
+        this.hardwareConfig = hwConfig;
+    }
+
+    public void setHardwareSettings(HardwareSettings hardwareSettings2) {
+        this.hardwareSettings = hardwareSettings2;
+    }
+
     public HashMap<String, CameraConfiguration> getCameraConfigurations() {
         return cameraConfigurations;
     }
