@@ -58,6 +58,8 @@ public class ConfigManager {
     private long saveRequestTimestamp = -1;
     private Thread settingsSaveThread;
 
+    static boolean useSettingsZip = true;
+
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new ConfigManager(getRootFolder());
@@ -112,7 +114,7 @@ public class ConfigManager {
             }
         }
         if (!configDirectoryFile.canWrite()) {
-            logger.debug("Making root dir writeable...");
+            logger.debug("Making root config dir writeable...");
             try {
                 var success = configDirectoryFile.setWritable(true);
                 if (success) logger.debug("Set root dir writeable!");
@@ -122,29 +124,53 @@ public class ConfigManager {
             }
         }
 
+        // If a file called config.zip exists in our root folder, load from it
+        if (Path.of(configDirectoryFile.toString(), "config.zip").toFile().exists()
+                && this.useSettingsZip) {
+            logger.debug("Loading from ZIP file");
+
+            // Create a folder called "config_temp" inside the cofig directory, and unpack the config.zip
+            // into it
+            Path tempFolder = null;
+            try {
+                tempFolder = Path.of(configDirectoryFile.toString(), "config_temp");
+                if (!tempFolder.toFile().exists()) {
+                    tempFolder.toFile().mkdirs();
+                }
+
+                var p = Path.of(configDirectoryFile.toString(), "config.zip");
+                if (p.toFile().exists()) {
+                    ZipUtil.unpack(p.toFile(), tempFolder.toFile());
+                }
+            } catch (Exception e) {
+                logger.error("Error unpacking for load", e);
+                tempFolder = null;
+            }
+
+            if (tempFolder == null) {
+                logger.error("Settings could not be extracted -- is the system writable?");
+            }
+
+            // Now that our folder is extracted, parse it
+            loadFromPath(tempFolder.toFile());
+
+            // clean up the temp folder we made
+            FileUtils.deleteDirectory(tempFolder);
+        } else {
+            logger.debug("Loading from legacy settings folder");
+            loadFromPath(configDirectoryFile);
+        }
+    }
+
+    private void loadFromPath(File configDir) {
         HardwareConfig hardwareConfig;
         HardwareSettings hardwareSettings;
         NetworkConfig networkConfig;
 
-        Path tempFolder = null;
-        try {
-            tempFolder = Path.of(configDirectoryFile.toString(), "config_temp");
-            if (!tempFolder.toFile().exists()) tempFolder.toFile().mkdirs();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        try {
-            var p = Path.of(configDirectoryFile.toString(), "config.zip");
-            if (p.toFile().exists()) ZipUtil.unpack(p.toFile(), tempFolder.toFile());
-        } catch (Exception e) {
-            logger.error("", e);
-        }
-
-        var hardwareConfigFile = new File(Path.of(tempFolder.toString(), HW_CFG_FNAME).toUri());
-        var hardwareSettingsFile = new File(Path.of(tempFolder.toString(), HW_SET_FNAME).toUri());
-        var networkConfigFile = new File(Path.of(tempFolder.toString(), NET_SET_FNAME).toUri());
-        var camerasFolder = new File(Path.of(tempFolder.toString(), "cameras").toUri());
+        var hardwareConfigFile = new File(Path.of(configDir.toString(), HW_CFG_FNAME).toUri());
+        var hardwareSettingsFile = new File(Path.of(configDir.toString(), HW_SET_FNAME).toUri());
+        var networkConfigFile = new File(Path.of(configDir.toString(), NET_SET_FNAME).toUri());
+        var camerasFolder = new File(Path.of(configDir.toString(), "cameras").toUri());
 
         if (hardwareConfigFile.exists()) {
             try {
@@ -215,13 +241,83 @@ public class ConfigManager {
         this.config =
                 new PhotonConfiguration(
                         hardwareConfig, hardwareSettings, networkConfig, cameraConfigurations);
-
-        // clean up
-        FileUtils.deleteDirectory(tempFolder);
     }
 
     public void saveToDisk() {
-        logger.debug("Starting save to disk...");
+        if (this.useSettingsZip) {
+            this.saveToDiskSettingsZip();
+        } else {
+            this.saveToDiskLegacy();
+        }
+    }
+
+    private void saveToDiskLegacy() {
+        logger.debug("Saving in legacy mode");
+
+        var hardwareSettingsFile =
+                new File(Path.of(configDirectoryFile.toString(), HW_SET_FNAME).toUri());
+        var networkConfigFile =
+                new File(Path.of(configDirectoryFile.toString(), NET_SET_FNAME).toUri());
+        var camerasFolder = new File(Path.of(configDirectoryFile.toString(), "cameras").toUri());
+
+        // Delete old configs
+        FileUtils.deleteDirectory(camerasFolder.toPath());
+
+        try {
+            JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
+        } catch (IOException e) {
+            logger.error("Could not save network config!", e);
+        }
+        try {
+            JacksonUtils.serialize(hardwareSettingsFile.toPath(), config.getHardwareSettings());
+        } catch (IOException e) {
+            logger.error("Could not save hardware config!", e);
+        }
+
+        // save all of our cameras
+        var cameraConfigMap = config.getCameraConfigurations();
+        for (var subdirName : cameraConfigMap.keySet()) {
+            var camConfig = cameraConfigMap.get(subdirName);
+            var subdir = Path.of(camerasFolder.toPath().toString(), subdirName);
+
+            if (!subdir.toFile().exists()) {
+                // TODO: check for error
+                subdir.toFile().mkdirs();
+            }
+
+            try {
+                JacksonUtils.serialize(Path.of(subdir.toString(), "config.json"), camConfig);
+            } catch (IOException e) {
+                logger.error("Could not save config.json for " + subdir, e);
+            }
+
+            try {
+                JacksonUtils.serialize(
+                        Path.of(subdir.toString(), "drivermode.json"), camConfig.driveModeSettings);
+            } catch (IOException e) {
+                logger.error("Could not save drivermode.json for " + subdir, e);
+            }
+
+            for (var pipe : camConfig.pipelineSettings) {
+                var pipePath = Path.of(subdir.toString(), "pipelines", pipe.pipelineNickname + ".json");
+
+                if (!pipePath.getParent().toFile().exists()) {
+                    // TODO: check for error
+                    pipePath.getParent().toFile().mkdirs();
+                }
+
+                try {
+                    JacksonUtils.serialize(pipePath, pipe);
+                } catch (IOException e) {
+                    logger.error("Could not save " + pipe.pipelineNickname + ".json!", e);
+                }
+            }
+        }
+        logger.info("Settings saved!");
+    }
+
+    public void saveToDiskSettingsZip() {
+        logger.debug("Starting save using settings zip...");
 
         Path tempDirWithPrefix = null;
         try {

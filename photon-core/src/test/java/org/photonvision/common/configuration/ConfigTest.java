@@ -45,6 +45,7 @@ public class ConfigTest {
 
     @BeforeAll
     public static void init() {
+        ConfigManager.useSettingsZip = false;
         TestUtils.loadLibraries();
         configMgr = new ConfigManager(Path.of("testconfigdir"));
         configMgr.load();
@@ -128,6 +129,8 @@ public class ConfigTest {
 
         FileUtils.cleanDirectory(configMgr.configDirectoryFile);
         configMgr.configDirectoryFile.delete();
+
+        ConfigManager.useSettingsZip = false;
     }
 
     @Test
