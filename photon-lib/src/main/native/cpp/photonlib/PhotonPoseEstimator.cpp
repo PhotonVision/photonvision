@@ -359,12 +359,13 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
     std::optional<cv::Mat> distCoeffs) {
   using namespace frc;
 
+  // Need at least 2 targets
   if (!result.HasTargets() || result.GetTargets().size() < 2) {
     return Update(result, std::nullopt, std::nullopt,
                   this->multiTagFallbackStrategy);
   }
 
-  // 
+  // Check calibration data preconditions
   auto const camMat = camera.GetCameraMatrix();
   auto const distCoeffs = camera.GetDistCoeffs();
   if (!camMat || !distCoeffs) {
