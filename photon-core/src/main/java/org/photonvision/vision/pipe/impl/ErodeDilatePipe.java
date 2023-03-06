@@ -26,10 +26,10 @@ public class ErodeDilatePipe extends MutatingPipe<Mat, ErodeDilatePipe.ErodeDila
     @Override
     protected Void process(Mat in) {
         if (params.shouldErode()) {
-            Imgproc.erode(in, in, params.getKernel());
+            Imgproc.erode(in, in, params.getErodeKernel());
         }
         if (params.shouldDilate()) {
-            Imgproc.dilate(in, in, params.getKernel());
+            Imgproc.dilate(in, in, params.getDilateKernel());
         }
         return null;
     }
@@ -37,13 +37,16 @@ public class ErodeDilatePipe extends MutatingPipe<Mat, ErodeDilatePipe.ErodeDila
     public static class ErodeDilateParams {
         private final boolean m_erode;
         private final boolean m_dilate;
-        private final Mat m_kernel;
+        private final Mat m_erodeKernel;
+        private final Mat m_dilateKernel;
 
-        public ErodeDilateParams(boolean erode, boolean dilate, int kernelSize) {
+        public ErodeDilateParams(boolean erode, boolean dilate, int erodeKernelSize, int dilateKernelSize) {
             m_erode = erode;
             m_dilate = dilate;
-            m_kernel =
-                    Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(kernelSize, kernelSize));
+            m_erodeKernel =
+                    Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(erodeKernelSize, erodeKernelSize));
+            m_dilateKernel =
+                    Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(dilateKernelSize, dilateKernelSize));
         }
 
         public boolean shouldErode() {
@@ -54,8 +57,12 @@ public class ErodeDilatePipe extends MutatingPipe<Mat, ErodeDilatePipe.ErodeDila
             return m_dilate;
         }
 
-        public Mat getKernel() {
-            return m_kernel;
+        public Mat getErodeKernel() {
+            return m_erodeKernel;
+        }
+
+        public Mat getDilateKernel() {
+            return m_dilateKernel;
         }
     }
 }

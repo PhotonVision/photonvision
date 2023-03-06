@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.photonvision.vision.frame.Frame;
 import org.photonvision.vision.frame.FrameThresholdType;
@@ -73,8 +74,11 @@ public class ColoredShapePipeline
                         settings.offsetDualPointBArea);
 
         ErodeDilatePipe.ErodeDilateParams erodeDilateParams =
-                new ErodeDilatePipe.ErodeDilateParams(settings.erode, settings.dilate, 5);
-        // TODO: add kernel size to pipeline settings
+                new ErodeDilatePipe.ErodeDilateParams(
+                        settings.erode,
+                        settings.dilate,
+                        settings.erodeKernelSize,
+                        settings.dilateKernelSize);
         erodeDilatePipe.setParams(erodeDilateParams);
 
         SpeckleRejectPipe.SpeckleRejectParams speckleRejectParams =
@@ -175,9 +179,9 @@ public class ColoredShapePipeline
     protected CVPipelineResult process(Frame frame, ColoredShapePipelineSettings settings) {
         long sumPipeNanosElapsed = 0L;
 
-        //        var erodeDilateResult = erodeDilatePipe.run(rawInputMat);
-        //        sumPipeNanosElapsed += erodeDilateResult.nanosElapsed;
-        //
+        var erodeDilateResult = erodeDilatePipe.run(frame.processedImage.getMat());
+        sumPipeNanosElapsed += erodeDilateResult.nanosElapsed;
+
         //        CVPipeResult<Mat> hsvPipeResult = hsvPipe.run(rawInputMat);
         //        sumPipeNanosElapsed += hsvPipeResult.nanosElapsed;
 

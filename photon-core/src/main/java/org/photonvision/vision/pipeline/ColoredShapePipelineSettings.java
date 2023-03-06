@@ -40,7 +40,9 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
     public CameraCalibrationCoefficients cameraCalibration;
 
     public boolean erode = false;
+    public int erodeKernelSize = 5;
     public boolean dilate = false;
+    public int dilateKernelSize = 5;
 
     public ColoredShapePipelineSettings() {
         super();
@@ -65,7 +67,9 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                 && Double.compare(that.cornerDetectionAccuracyPercentage, cornerDetectionAccuracyPercentage)
                         == 0
                 && erode == that.erode
+                && erodeKernelSize == that.erodeKernelSize
                 && dilate == that.dilate
+                && dilateKernelSize == that.dilateKernelSize
                 && contourShape == that.contourShape
                 && Objects.equals(contourArea, that.contourArea)
                 && Objects.equals(contourPerimeter, that.contourPerimeter)
@@ -98,6 +102,8 @@ public class ColoredShapePipelineSettings extends AdvancedPipelineSettings {
                 cornerDetectionSideCount,
                 cornerDetectionAccuracyPercentage,
                 erode,
-                dilate);
+                erodeKernelSize,
+                dilate,
+                dilateKernelSize);
     }
 }

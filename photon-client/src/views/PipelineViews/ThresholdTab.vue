@@ -49,6 +49,17 @@
         @input="handlePipelineData('erode')"
         @rollback="e => rollback('erode',e)"
       />
+      <CVslider
+        id="erode-slider"
+        v-model="erodeKernelSize"
+        :disabled="!erode"
+        name="Erode Kernel Size"
+        tooltip="Controls the size of the kernel used for erosion"
+        :min="1"
+        :max="20"
+        @input="handlePipelineData('erodeKernelSize')"
+        @rollback="e => rollback('erodeKernelSize',e)"
+      />
       <CVSwitch
         v-model="dilate"
         class="mb-0"
@@ -56,6 +67,17 @@
         tooltip="Adds pixels around the edges of white areas in the thresholded image"
         @input="handlePipelineData('dilate')"
         @rollback="e => rollback('dilate',e)"
+      />
+      <CVslider
+        id="dilate-slider"
+        v-model="dilateKernelSize"
+        :disabled="!dilate"
+        name="Dilate Kernel Size"
+        tooltip="Controls the size of the kernel used for dilation"
+        :min="1"
+        :max="20"
+        @input="handlePipelineData('dilateKernelSize')"
+        @rollback="e => rollback('dilateKernelSize',e)"
       />
     </template>
     <div class="pt-3 white--text">
@@ -121,13 +143,15 @@
 
 <script>
 import CVrangeSlider from '../../components/common/cv-range-slider'
+import CVslider from '../../components/common/cv-slider'
 import CVSwitch from "@/components/common/cv-switch";
 
 export default {
   name: 'Threshold',
   components: {
     CVSwitch,
-    CVrangeSlider
+    CVrangeSlider,
+    CVslider
   },
   // eslint-disable-next-line vue/require-prop-types
   props: ['value'],
@@ -203,12 +227,28 @@ export default {
         this.$store.commit("mutatePipeline", {"erode": val});
       }
     },
+    erodeKernelSize: {
+      get() {
+        return this.$store.getters.currentPipelineSettings.erodeKernelSize;
+      },
+      set(val) {
+        this.$store.commit("mutatePipeline", {"erodeKernelSize": val})
+      }
+    },
     dilate: {
       get() {
         return this.$store.getters.currentPipelineSettings.dilate;
       },
       set(val) {
         this.$store.commit("mutatePipeline", {"dilate": val});
+      }
+    },
+    dilateKernelSize: {
+      get() {
+        return this.$store.getters.currentPipelineSettings.dilateKernelSize;
+      },
+      set(val) {
+        this.$store.commit("mutatePipeline", {"dilateKernelSize": val})
       }
     },
   },
@@ -281,6 +321,12 @@ export default {
 </script>
 
 <style lang="css" scoped>
+#erode-slider >>> .v-slider__thumb {
+  outline: none;
+}
+#dilate-slider >>> .v-slider__thumb {
+  outline: none;
+}
 #hue-slider >>> .v-slider {
   background: linear-gradient( to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100% );
   border-radius: 10px;
