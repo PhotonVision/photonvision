@@ -42,6 +42,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.photonvision.estimation.PNPResults;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
@@ -364,57 +365,50 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
             Optional<Matrix<N5, N1>> distCoeffsOpt) {
-        // Arrays we need declared up front
-        var visCorners = new ArrayList<TargetCorner>();
-        var knownVisTags = new ArrayList<AprilTag>();
-        var fieldToCams = new ArrayList<Pose3d>();
-        var fieldToCamsAlt = new ArrayList<Pose3d>();
 
         if (result.getTargets().size() < 2) {
-            // Run fallback strategy instead
+            // Not enough targets -- run fallback strategy instead
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         }
 
-        for (var target : result.getTargets()) {
+        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
+        if (!hasCalibData) {
+            // no calibration data -- run fallback strategy instead
+            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
+        }
+        Matrix<N3, N3> cameraMatrix = cameraMatrixOpt.get();
+        Matrix<N5, N1> distCoeffs = distCoeffsOpt.get();
+
+
+        ArrayList<TargetCorner> visCorners = new ArrayList<>();
+        ArrayList<AprilTag> knownVisTags = new ArrayList<>();
+
+        for (PhotonTrackedTarget target : result.getTargets()) {
             visCorners.addAll(target.getDetectedCorners());
 
-            var tagPoseOpt = fieldTags.getTagPose(target.getFiducialId());
+            Optional<Pose3d> tagPoseOpt = fieldTags.getTagPose(target.getFiducialId());
+
             if (tagPoseOpt.isEmpty()) {
                 reportFiducialPoseError(target.getFiducialId());
                 continue;
             }
 
-            var tagPose = tagPoseOpt.get();
+            Pose3d tagPose = tagPoseOpt.get();
 
             // actual layout poses of visible tags -- not exposed, so have to recreate
             knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
-
-            fieldToCams.add(tagPose.transformBy(target.getBestCameraToTarget().inverse()));
-            fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
         }
 
-        boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
+        // run the multi-target solvePNP algorithm
+        PNPResults pnpResults =
+                VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
+        Pose3d fieldToRobot =
+                new Pose3d()
+                        .plus(pnpResults.best) // field-to-camera
+                        .plus(robotToCamera.inverse()); // field-to-robot
 
-        // multi-target solvePNP
-        if (hasCalibData) {
-            var cameraMatrix = cameraMatrixOpt.get();
-            var distCoeffs = distCoeffsOpt.get();
-            var pnpResults =
-                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
-            var best =
-                    new Pose3d()
-                            .plus(pnpResults.best) // field-to-camera
-                            .plus(robotToCamera.inverse()); // field-to-robot
-            // var alt = new Pose3d()
-            // .plus(pnpResults.alt) // field-to-camera
-            // .plus(robotToCamera.inverse()); // field-to-robot
-
-            return Optional.of(
-                    new EstimatedRobotPose(best, result.getTimestampSeconds(), result.getTargets()));
-        } else {
-            // TODO fallback strategy? Should we just always do solvePNP?
-            return Optional.empty();
-        }
+        return Optional.of(
+                new EstimatedRobotPose(fieldToRobot, result.getTimestampSeconds(), result.getTargets()));
     }
 
     /**

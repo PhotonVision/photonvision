@@ -364,6 +364,13 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
                   this->multiTagFallbackStrategy);
   }
 
+  // 
+  auto const camMat = camera.GetCameraMatrix();
+  auto const distCoeffs = camera.GetDistCoeffs();
+  if (!camMat || !distCoeffs) {
+    return std::nullopt;
+  }
+
   auto const targets = result.GetTargets();
 
   // List of corners mapped from 3d space (meters) to the 2d camera screen
@@ -392,10 +399,6 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   // Use OpenCV ITERATIVE solver
   cv::Mat const rvec(3, 1, cv::DataType<double>::type);
   cv::Mat const tvec(3, 1, cv::DataType<double>::type);
-
-  if (!camMat || !distCoeffs) {
-    return std::nullopt;
-  }
 
   cv::solvePnP(objectPoints, imagePoints, camMat.value(), distCoeffs.value(),
                rvec, tvec, false, cv::SOLVEPNP_SQPNP);
