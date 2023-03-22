@@ -91,15 +91,6 @@ public class ConfigManager {
 
     ConfigManager(Path configDirectoryFile) {
         this.configDirectoryFile = new File(configDirectoryFile.toUri());
-        // this.hardwareConfigFile = new File(Path.of(configDirectoryFile.toString(), "config",
-        // HW_CFG_FNAME).toUri());
-        // this.hardwareSettingsFile = new File(Path.of(configDirectoryFile.toString(), "config",
-        // HW_SET_FNAME).toUri());
-        // this.networkConfigFile = new File(Path.of(configDirectoryFile.toString(), "config",
-        // NET_SET_FNAME).toUri());
-        // this.camerasFolder = new File(Path.of(configDirectoryFile.toString(), "config",
-        // "cameras").toUri());
-
         settingsSaveThread = new Thread(this::saveAndWriteTask);
         settingsSaveThread.start();
     }

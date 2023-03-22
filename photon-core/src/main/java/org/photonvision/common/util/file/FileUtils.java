@@ -123,6 +123,7 @@ public class FileUtils {
                 Files.move(
                         origPath, newPath, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
             } catch (AtomicMoveNotSupportedException e) {
+                logger.error("Atomic move not supported for moving from " + origPath + " to "+newPath+"!", e);
                 Files.move(origPath, newPath, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
