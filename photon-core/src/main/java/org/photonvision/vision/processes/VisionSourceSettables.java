@@ -62,6 +62,10 @@ public abstract class VisionSourceSettables {
     }
 
     public void setVideoMode(VideoMode mode) {
+        if (mode.equals(getCurrentVideoMode())) {
+            logger.info("Requested video mode is already the current video mode");
+            return;
+        }
         logger.info(
                 "Setting video mode to "
                         + "FPS: "
