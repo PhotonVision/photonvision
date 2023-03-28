@@ -23,6 +23,7 @@ import java.util.Arrays;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
+import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.vision.opencv.Releasable;
 
 public class JsonMat implements Releasable {
@@ -105,5 +106,10 @@ public class JsonMat implements Releasable {
     @Override
     public void release() {
         getAsMat().release();
+    }
+
+    public Packet populatePacket(Packet packet) {
+        packet.encode(this.data);
+        return packet;
     }
 }

@@ -22,6 +22,14 @@ targetCompatibility = JavaVersion.VERSION_11
 wpilibTools.deps.wpilibVersion = wpilibVersion
 println("Buidling for wpilib ${wpilibTools.deps.wpilibVersion}")
 
+// From wpilib shared/config.gradle:
+// NativeUtils adds the following OpenCV warning suppression for Linux, but not
+// for macOS
+// https://github.com/opencv/opencv/issues/20269
+nativeUtils.platformConfigs.osxuniversal.cppCompiler.args.add("-Wno-deprecated-anon-enum-enum-conversion")
+nativeUtils.platformConfigs.linuxathena.cppCompiler.args.add("-Wno-deprecated-anon-enum-enum-conversion")
+// nativeUtils.platformConfigs.linuxx64.cppCompiler.args.add("-Wno-deprecated-anon-enum-enum-conversion")
+
 // Apply Java configuration
 dependencies {
     implementation project(":photon-targeting")
@@ -33,6 +41,11 @@ dependencies {
     implementation wpilibTools.deps.wpilibJava("ntcore")
     implementation wpilibTools.deps.wpilibJava("wpilibj")
     implementation wpilibTools.deps.wpilibJava("apriltag")
+
+    testImplementation wpilibTools.deps.wpilibJava("cscore")
+    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-java:$opencvVersion"
+    implementation "edu.wpi.first.thirdparty.frc2023.opencv:opencv-jni:$opencvVersion:$jniPlatform"
+    implementation "org.ejml:ejml-simple:0.41"
 
     // Junit
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.2")
@@ -66,6 +79,7 @@ model {
             }
             nativeUtils.useRequiredLibrary(it, "wpilib_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
     testSuites {
@@ -82,6 +96,7 @@ model {
             nativeUtils.useRequiredLibrary(it, "wpilib_executable_shared")
             nativeUtils.useRequiredLibrary(it, "apriltag_shared")
             nativeUtils.useRequiredLibrary(it, "googletest_static")
+            nativeUtils.useRequiredLibrary(it, "opencv_shared")
         }
     }
 }
@@ -147,3 +162,4 @@ testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpinet")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("hal")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpiutil")
 testNativeConfig.dependencies.add wpilibTools.deps.wpilib("wpimath")
+testNativeConfig.dependencies.add wpilibTools.deps.cscore()

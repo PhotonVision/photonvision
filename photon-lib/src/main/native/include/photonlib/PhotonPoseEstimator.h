@@ -24,24 +24,27 @@
 
 #pragma once
 
-#include <map>
 #include <memory>
-#include <utility>
-#include <vector>
 
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include <frc/geometry/Pose3d.h>
 #include <frc/geometry/Transform3d.h>
 
 #include "photonlib/PhotonCamera.h"
+#include "photonlib/PhotonPipelineResult.h"
+
+namespace cv {
+class Mat;
+}  // namespace cv
 
 namespace photonlib {
-enum PoseStrategy : int {
-  LOWEST_AMBIGUITY,
+enum PoseStrategy {
+  LOWEST_AMBIGUITY = 0,
   CLOSEST_TO_CAMERA_HEIGHT,
   CLOSEST_TO_REFERENCE_POSE,
   CLOSEST_TO_LAST_POSE,
-  AVERAGE_BEST_TARGETS
+  AVERAGE_BEST_TARGETS,
+  MULTI_TAG_PNP
 };
 
 struct EstimatedRobotPose {
@@ -51,8 +54,14 @@ struct EstimatedRobotPose {
    * the same timebase as the RoboRIO FPGA Timestamp */
   units::second_t timestamp;
 
-  EstimatedRobotPose(frc::Pose3d pose_, units::second_t time_)
-      : estimatedPose(pose_), timestamp(time_) {}
+  /** A list of the targets used to compute this pose */
+  wpi::SmallVector<PhotonTrackedTarget, 10> targetsUsed;
+
+  EstimatedRobotPose(frc::Pose3d pose_, units::second_t time_,
+                     std::span<const PhotonTrackedTarget> targets)
+      : estimatedPose(pose_),
+        timestamp(time_),
+        targetsUsed(targets.data(), targets.data() + targets.size()) {}
 };
 
 /**
@@ -63,10 +72,6 @@ struct EstimatedRobotPose {
  */
 class PhotonPoseEstimator {
  public:
-  using map_value_type =
-      std::pair<std::shared_ptr<PhotonCamera>, frc::Transform3d>;
-  using size_type = std::vector<map_value_type>::size_type;
-
   /**
    * Create a new PhotonPoseEstimator.
    *
@@ -104,7 +109,20 @@ class PhotonPoseEstimator {
    *
    * @param strategy the strategy to set
    */
-  inline void SetPoseStrategy(PoseStrategy strat) { strategy = strat; }
+  inline void SetPoseStrategy(PoseStrategy strat) {
+    if (strategy != strat) {
+      InvalidatePoseCache();
+    }
+    strategy = strat;
+  }
+
+  /**
+   * Set the Position Estimation Strategy used in multi-tag mode when
+   * only one tag can be seen. Must NOT be MULTI_TAG_PNP
+   *
+   * @param strategy the strategy to set
+   */
+  void SetMultiTagFallbackStrategy(PoseStrategy strategy);
 
   /**
    * Return the reference position that is being used by the estimator.
@@ -120,7 +138,28 @@ class PhotonPoseEstimator {
    * @param referencePose the referencePose to set
    */
   inline void SetReferencePose(frc::Pose3d referencePose) {
+    if (this->referencePose != referencePose) {
+      InvalidatePoseCache();
+    }
     this->referencePose = referencePose;
+  }
+
+  /**
+   * @return The current transform from the center of the robot to the camera
+   *         mount position.
+   */
+  inline frc::Transform3d GetRobotToCameraTransform() {
+    return m_robotToCamera;
+  }
+
+  /**
+   * Useful for pan and tilt mechanisms, or cameras on turrets
+   *
+   * @param robotToCamera The current transform from the center of the robot to
+   * the camera mount position.
+   */
+  inline void SetRobotToCameraTransform(frc::Transform3d robotToCamera) {
+    m_robotToCamera = robotToCamera;
   }
 
   /**
@@ -137,17 +176,30 @@ class PhotonPoseEstimator {
    */
   std::optional<EstimatedRobotPose> Update();
 
+  /**
+   * Update the pose estimator.
+   */
+  std::optional<EstimatedRobotPose> Update(const PhotonPipelineResult& result);
+
   inline PhotonCamera& GetCamera() { return camera; }
 
  private:
   frc::AprilTagFieldLayout aprilTags;
   PoseStrategy strategy;
+  PoseStrategy multiTagFallbackStrategy = LOWEST_AMBIGUITY;
 
   PhotonCamera camera;
   frc::Transform3d m_robotToCamera;
 
   frc::Pose3d lastPose;
   frc::Pose3d referencePose;
+
+  units::second_t poseCacheTimestamp;
+
+  inline void InvalidatePoseCache() { poseCacheTimestamp = -1_s; }
+
+  std::optional<EstimatedRobotPose> Update(PhotonPipelineResult result,
+                                           PoseStrategy strategy);
 
   /**
    * Return the estimated position of the robot with the lowest position
@@ -183,11 +235,20 @@ class PhotonPoseEstimator {
       PhotonPipelineResult result);
 
   /**
+   * Return the pose calculation using all targets in view in the same PNP()
+   calculation
+
+   * @return the estimated position of the robot in the FCS and the estimated
+   timestamp of this estimation.
+   */
+  std::optional<EstimatedRobotPose> MultiTagPnpStrategy(
+      PhotonPipelineResult result);
+
+  /**
    * Return the average of the best target poses using ambiguity as weight.
 
    * @return the estimated position of the robot in the FCS and the estimated
-   timestamp of this
-   *     estimation.
+   timestamp of this estimation.
    */
   std::optional<EstimatedRobotPose> AverageBestTargetsStrategy(
       PhotonPipelineResult result);
