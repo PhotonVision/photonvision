@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@femessage/log-viewer": "^1.4.2",
+    "@fontsource/prompt": "^4.5.10",
     "@vue/eslint-config-prettier": "^6.0.0",
     "axios": "^0.19.2",
     "core-js": "^2.6.11",
