@@ -26,9 +26,7 @@ package org.photonvision;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.MatBuilder;
 import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.Nat;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -265,7 +263,7 @@ public class PhotonPoseEstimator {
 
         PhotonPipelineResult cameraResult = camera.getLatestResult();
 
-        return update(cameraResult, null, null);
+        return update(cameraResult, Optional.empty(), Optional.empty());
     }
 
     /**
@@ -277,7 +275,7 @@ public class PhotonPoseEstimator {
      *     pipeline results used to create the estimate
      */
     public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
-        return update(cameraResult, null, null);
+        return update(cameraResult, Optional.empty(), Optional.empty());
     }
 
     /**
@@ -293,7 +291,9 @@ public class PhotonPoseEstimator {
      *     pipeline results used to create the estimate
      */
     public Optional<EstimatedRobotPose> update(
-            PhotonPipelineResult cameraResult, double[] cameraMatrixData, double[] coeffsData) {
+            PhotonPipelineResult cameraResult,
+            Optional<Matrix<N3, N3>> cameraMatrixData,
+            Optional<Matrix<N5, N1>> coeffsData) {
         // Time in the past -- give up, since the following if expects times > 0
         if (cameraResult.getTimestampSeconds() < 0) {
             return Optional.empty();
@@ -320,8 +320,8 @@ public class PhotonPoseEstimator {
 
     private Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
-            double[] cameraMatrixData,
-            double[] coeffsData,
+            Optional<Matrix<N3, N3>> cameraMatrixData,
+            Optional<Matrix<N5, N1>> coeffsData,
             PoseStrategy strat) {
         Optional<EstimatedRobotPose> estimatedPose;
         switch (strat) {
@@ -358,7 +358,9 @@ public class PhotonPoseEstimator {
     }
 
     private Optional<EstimatedRobotPose> multiTagPNPStrategy(
-            PhotonPipelineResult result, double[] cameraMatrixData, double[] coeffsData) {
+            PhotonPipelineResult result,
+            Optional<Matrix<N3, N3>> cameraMatrixOpt,
+            Optional<Matrix<N5, N1>> distCoeffsOpt) {
         // Arrays we need declared up front
         var visCorners = new ArrayList<TargetCorner>();
         var knownVisTags = new ArrayList<AprilTag>();
@@ -367,7 +369,7 @@ public class PhotonPoseEstimator {
 
         if (result.getTargets().size() < 2) {
             // Run fallback strategy instead
-            return update(result, cameraMatrixData, coeffsData, this.multiTagFallbackStrategy);
+            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         }
 
         for (var target : result.getTargets()) {
@@ -388,20 +390,9 @@ public class PhotonPoseEstimator {
             fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
         }
 
-        Optional<Matrix<N3, N3>> cameraMatrixOpt = Optional.empty();
-        Optional<Matrix<N5, N1>> distCoeffsOpt = Optional.empty();
-
-        if (camera != null) {
+        if (camera != null && cameraMatrixOpt.isEmpty() && distCoeffsOpt.isEmpty()) {
             cameraMatrixOpt = camera.getCameraMatrix();
             distCoeffsOpt = camera.getDistCoeffs();
-        }
-
-        if (cameraMatrixData != null && cameraMatrixData.length == 9) {
-            cameraMatrixOpt = Optional.of(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(cameraMatrixData));
-        }
-
-        if (coeffsData != null && coeffsData.length == 5) {
-            distCoeffsOpt = Optional.of(new MatBuilder<>(Nat.N5(), Nat.N1()).fill(coeffsData));
         }
 
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
