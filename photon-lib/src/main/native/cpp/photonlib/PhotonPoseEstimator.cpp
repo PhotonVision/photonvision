@@ -63,7 +63,7 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
                                          frc::Transform3d robotToCamera)
     : aprilTags(tags),
       strategy(strat),
-      nullptr,
+      camera(nullptr),
       m_robotToCamera(robotToCamera),
       lastPose(frc::Pose3d()),
       referencePose(frc::Pose3d()),
@@ -129,8 +129,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    const PhotonPipelineResult& result, optional<cv::Mat> cameraMatrixData,
-    optional<cv::Mat> coeffsData, ) {
+    const PhotonPipelineResult& result, std::optional<cv::Mat> cameraMatrixData,
+    std::optional<cv::Mat> coeffsData) {
   // Time in the past -- give up, since the following if expects times > 0
   if (result.GetTimestamp() < 0_s) {
     return std::nullopt;
@@ -155,8 +155,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    PhotonPipelineResult result, optional<cv::Mat> cameraMatrixData,
-    optional<cv::Mat> coeffsData, PoseStrategy strategy) {
+    PhotonPipelineResult result, std::optional<cv::Mat> cameraMatrixData,
+    std::optional<cv::Mat> coeffsData, PoseStrategy strategy) {
   std::optional<EstimatedRobotPose> ret = std::nullopt;
 
   switch (strategy) {
@@ -370,12 +370,13 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
-    PhotonPipelineResult result, optional<cv::Mat> camMat,
-    optional<cv::Mat> distCoeffs) {
+    PhotonPipelineResult result, std::optional<cv::Mat> camMat,
+    std::optional<cv::Mat> distCoeffs) {
   using namespace frc;
 
   if (!result.HasTargets() || result.GetTargets().size() < 2) {
-    return Update(result, this->multiTagFallbackStrategy);
+    return Update(result, std::nullopt, std::nullopt,
+                  this->multiTagFallbackStrategy);
   }
 
   auto const targets = result.GetTargets();
