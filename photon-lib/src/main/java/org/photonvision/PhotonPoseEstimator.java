@@ -48,17 +48,12 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
 /**
- * The PhotonPoseEstimator class filters or combines readings from all the
- * AprilTags visible at a
- * given timestamp on the field to produce a single robot in field pose, using
- * the strategy set
+ * The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a
+ * given timestamp on the field to produce a single robot in field pose, using the strategy set
  * below. Example usage can be found in our apriltagExample example project.
  */
 public class PhotonPoseEstimator {
-    /**
-     * Position estimation strategies that can be used by the
-     * {@link PhotonPoseEstimator} class.
-     */
+    /** Position estimation strategies that can be used by the {@link PhotonPoseEstimator} class. */
     public enum PoseStrategy {
         /** Choose the Pose with the lowest ambiguity. */
         LOWEST_AMBIGUITY,
@@ -93,18 +88,16 @@ public class PhotonPoseEstimator {
     /**
      * Create a new PhotonPoseEstimator.
      *
-     * @param fieldTags     A WPILib {@link AprilTagFieldLayout} linking AprilTag
-     *                      IDs to Pose3d objects
-     *                      with respect to the FIRST field using the <a href=
-     *                      "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
-     *                      Coordinate System</a>.
-     * @param strategy      The strategy it should use to determine the best pose.
-     * @param camera        PhotonCamera
-     * @param robotToCamera Transform3d from the center of the robot to the camera
-     *                      mount position (ie,
-     *                      robot ➔ camera) in the <a href=
-     *                      "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
-     *                      Coordinate System</a>.
+     * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3d objects
+     *     with respect to the FIRST field using the <a href=
+     *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
+     *     Coordinate System</a>.
+     * @param strategy The strategy it should use to determine the best pose.
+     * @param camera PhotonCamera
+     * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
+     *     robot ➔ camera) in the <a href=
+     *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
+     *     Coordinate System</a>.
      */
     public PhotonPoseEstimator(
             AprilTagFieldLayout fieldTags,
@@ -175,8 +168,7 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Set the Position Estimation Strategy used in multi-tag mode when only one tag
-     * can be seen. Must
+     * Set the Position Estimation Strategy used in multi-tag mode when only one tag can be seen. Must
      * NOT be MULTI_TAG_PNP
      *
      * @param strategy the strategy to set
@@ -201,8 +193,7 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Update the stored reference pose for use when using the
-     * <b>CLOSEST_TO_REFERENCE_POSE</b>
+     * Update the stored reference pose for use when using the <b>CLOSEST_TO_REFERENCE_POSE</b>
      * strategy.
      *
      * @param referencePose the referencePose to set
@@ -213,8 +204,7 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Update the stored reference pose for use when using the
-     * <b>CLOSEST_TO_REFERENCE_POSE</b>
+     * Update the stored reference pose for use when using the <b>CLOSEST_TO_REFERENCE_POSE</b>
      * strategy.
      *
      * @param referencePose the referencePose to set
@@ -224,8 +214,7 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Update the stored last pose. Useful for setting the initial estimate when
-     * using the
+     * Update the stored last pose. Useful for setting the initial estimate when using the
      * <b>CLOSEST_TO_LAST_POSE</b> strategy.
      *
      * @param lastPose the lastPose to set
@@ -235,8 +224,7 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Update the stored last pose. Useful for setting the initial estimate when
-     * using the
+     * Update the stored last pose. Useful for setting the initial estimate when using the
      * <b>CLOSEST_TO_LAST_POSE</b> strategy.
      *
      * @param lastPose the lastPose to set
@@ -245,10 +233,7 @@ public class PhotonPoseEstimator {
         setLastPose(new Pose3d(lastPose));
     }
 
-    /**
-     * @return The current transform from the center of the robot to the camera
-     *         mount position
-     */
+    /** @return The current transform from the center of the robot to the camera mount position */
     public Transform3d getRobotToCameraTransform() {
         return robotToCamera;
     }
@@ -256,22 +241,19 @@ public class PhotonPoseEstimator {
     /**
      * Useful for pan and tilt mechanisms and such.
      *
-     * @param robotToCamera The current transform from the center of the robot to
-     *                      the camera mount
-     *                      position
+     * @param robotToCamera The current transform from the center of the robot to the camera mount
+     *     position
      */
     public void setRobotToCameraTransform(Transform3d robotToCamera) {
         this.robotToCamera = robotToCamera;
     }
 
     /**
-     * Poll data from the configured cameras and update the estimated position of
-     * the robot. Returns
+     * Poll data from the configured cameras and update the estimated position of the robot. Returns
      * empty if there are no cameras set or no targets were found from the cameras.
      *
-     * @return an EstimatedRobotPose with an estimated pose, the timestamp, and
-     *         targets used to create
-     *         the estimate
+     * @return an EstimatedRobotPose with an estimated pose, the timestamp, and targets used to create
+     *     the estimate
      */
     public Optional<EstimatedRobotPose> update() {
         if (camera == null) {
@@ -285,34 +267,28 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Updates the estimated position of the robot. Returns empty if there are no
-     * cameras set or no
+     * Updates the estimated position of the robot. Returns empty if there are no cameras set or no
      * targets were found from the cameras.
      *
      * @param cameraResult The latest pipeline result from the camera
-     * @return an EstimatedRobotPose with an estimated pose, and information about
-     *         the camera(s) and
-     *         pipeline results used to create the estimate
+     * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
+     *     pipeline results used to create the estimate
      */
     public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
         return update(cameraResult, Optional.empty(), Optional.empty());
     }
 
     /**
-     * Updates the estimated position of the robot. Returns empty if there are no
-     * cameras set or no
+     * Updates the estimated position of the robot. Returns empty if there are no cameras set or no
      * targets were found from the cameras.
      *
-     * @param cameraResult     The latest pipeline result from the camera
-     * @param cameraMatrixData Camera calibration data that can be used in the case
-     *                         of no assigned
-     *                         PhotonCamera.
-     * @param coeffsData       Camera calibration data that can be used in the case
-     *                         of no assigned
-     *                         PhotonCamera
-     * @return an EstimatedRobotPose with an estimated pose, and information about
-     *         the camera(s) and
-     *         pipeline results used to create the estimate
+     * @param cameraResult The latest pipeline result from the camera
+     * @param cameraMatrixData Camera calibration data that can be used in the case of no assigned
+     *     PhotonCamera.
+     * @param coeffsData Camera calibration data that can be used in the case of no assigned
+     *     PhotonCamera
+     * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
+     *     pipeline results used to create the estimate
      */
     public Optional<EstimatedRobotPose> update(
             PhotonPipelineResult cameraResult,
@@ -420,10 +396,12 @@ public class PhotonPoseEstimator {
         if (hasCalibData) {
             var cameraMatrix = cameraMatrixOpt.get();
             var distCoeffs = distCoeffsOpt.get();
-            var pnpResults = VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
-            var best = new Pose3d()
-                    .plus(pnpResults.best) // field-to-camera
-                    .plus(robotToCamera.inverse()); // field-to-robot
+            var pnpResults =
+                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
+            var best =
+                    new Pose3d()
+                            .plus(pnpResults.best) // field-to-camera
+                            .plus(robotToCamera.inverse()); // field-to-robot
             // var alt = new Pose3d()
             // .plus(pnpResults.alt) // field-to-camera
             // .plus(robotToCamera.inverse()); // field-to-robot
@@ -437,14 +415,12 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Return the estimated position of the robot with the lowest position ambiguity
-     * from a List of
+     * Return the estimated position of the robot with the lowest position ambiguity from a List of
      * pipeline results.
      *
      * @param result pipeline result
-     * @return the estimated position of the robot in the FCS and the estimated
-     *         timestamp of this
-     *         estimation.
+     * @return the estimated position of the robot in the FCS and the estimated timestamp of this
+     *     estimation.
      */
     private Optional<EstimatedRobotPose> lowestAmbiguityStrategy(PhotonPipelineResult result) {
         PhotonTrackedTarget lowestAmbiguityTarget = null;
@@ -462,8 +438,7 @@ public class PhotonPoseEstimator {
 
         // Although there are confirmed to be targets, none of them may be fiducial
         // targets.
-        if (lowestAmbiguityTarget == null)
-            return Optional.empty();
+        if (lowestAmbiguityTarget == null) return Optional.empty();
 
         int targetFiducialId = lowestAmbiguityTarget.getFiducialId();
 
@@ -485,14 +460,12 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Return the estimated position of the robot using the target with the lowest
-     * delta height
+     * Return the estimated position of the robot using the target with the lowest delta height
      * difference between the estimated and actual height of the camera.
      *
      * @param result pipeline result
-     * @return the estimated position of the robot in the FCS and the estimated
-     *         timestamp of this
-     *         estimation.
+     * @return the estimated position of the robot in the FCS and the estimated timestamp of this
+     *     estimation.
      */
     private Optional<EstimatedRobotPose> closestToCameraHeightStrategy(PhotonPipelineResult result) {
         double smallestHeightDifference = 10e9;
@@ -504,8 +477,7 @@ public class PhotonPoseEstimator {
             // Don't report errors for non-fiducial targets. This could also be resolved by
             // adding -1 to
             // the initial HashSet.
-            if (targetFiducialId == -1)
-                continue;
+            if (targetFiducialId == -1) continue;
 
             Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
 
@@ -514,39 +486,43 @@ public class PhotonPoseEstimator {
                 continue;
             }
 
-            double alternateTransformDelta = Math.abs(
-                    robotToCamera.getZ()
-                            - targetPosition
-                                    .get()
-                                    .transformBy(target.getAlternateCameraToTarget().inverse())
-                                    .getZ());
-            double bestTransformDelta = Math.abs(
-                    robotToCamera.getZ()
-                            - targetPosition
-                                    .get()
-                                    .transformBy(target.getBestCameraToTarget().inverse())
-                                    .getZ());
+            double alternateTransformDelta =
+                    Math.abs(
+                            robotToCamera.getZ()
+                                    - targetPosition
+                                            .get()
+                                            .transformBy(target.getAlternateCameraToTarget().inverse())
+                                            .getZ());
+            double bestTransformDelta =
+                    Math.abs(
+                            robotToCamera.getZ()
+                                    - targetPosition
+                                            .get()
+                                            .transformBy(target.getBestCameraToTarget().inverse())
+                                            .getZ());
 
             if (alternateTransformDelta < smallestHeightDifference) {
                 smallestHeightDifference = alternateTransformDelta;
-                closestHeightTarget = new EstimatedRobotPose(
-                        targetPosition
-                                .get()
-                                .transformBy(target.getAlternateCameraToTarget().inverse())
-                                .transformBy(robotToCamera.inverse()),
-                        result.getTimestampSeconds(),
-                        result.getTargets());
+                closestHeightTarget =
+                        new EstimatedRobotPose(
+                                targetPosition
+                                        .get()
+                                        .transformBy(target.getAlternateCameraToTarget().inverse())
+                                        .transformBy(robotToCamera.inverse()),
+                                result.getTimestampSeconds(),
+                                result.getTargets());
             }
 
             if (bestTransformDelta < smallestHeightDifference) {
                 smallestHeightDifference = bestTransformDelta;
-                closestHeightTarget = new EstimatedRobotPose(
-                        targetPosition
-                                .get()
-                                .transformBy(target.getBestCameraToTarget().inverse())
-                                .transformBy(robotToCamera.inverse()),
-                        result.getTimestampSeconds(),
-                        result.getTargets());
+                closestHeightTarget =
+                        new EstimatedRobotPose(
+                                targetPosition
+                                        .get()
+                                        .transformBy(target.getBestCameraToTarget().inverse())
+                                        .transformBy(robotToCamera.inverse()),
+                                result.getTimestampSeconds(),
+                                result.getTargets());
             }
         }
 
@@ -555,16 +531,13 @@ public class PhotonPoseEstimator {
     }
 
     /**
-     * Return the estimated position of the robot using the target with the lowest
-     * delta in the vector
+     * Return the estimated position of the robot using the target with the lowest delta in the vector
      * magnitude between it and the reference pose.
      *
-     * @param result        pipeline result
-     * @param referencePose reference pose to check vector magnitude difference
-     *                      against.
-     * @return the estimated position of the robot in the FCS and the estimated
-     *         timestamp of this
-     *         estimation.
+     * @param result pipeline result
+     * @param referencePose reference pose to check vector magnitude difference against.
+     * @return the estimated position of the robot in the FCS and the estimated timestamp of this
+     *     estimation.
      */
     private Optional<EstimatedRobotPose> closestToReferencePoseStrategy(
             PhotonPipelineResult result, Pose3d referencePose) {
@@ -584,8 +557,7 @@ public class PhotonPoseEstimator {
             // Don't report errors for non-fiducial targets. This could also be resolved by
             // adding -1 to
             // the initial HashSet.
-            if (targetFiducialId == -1)
-                continue;
+            if (targetFiducialId == -1) continue;
 
             Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
 
@@ -594,27 +566,31 @@ public class PhotonPoseEstimator {
                 continue;
             }
 
-            Pose3d altTransformPosition = targetPosition
-                    .get()
-                    .transformBy(target.getAlternateCameraToTarget().inverse())
-                    .transformBy(robotToCamera.inverse());
-            Pose3d bestTransformPosition = targetPosition
-                    .get()
-                    .transformBy(target.getBestCameraToTarget().inverse())
-                    .transformBy(robotToCamera.inverse());
+            Pose3d altTransformPosition =
+                    targetPosition
+                            .get()
+                            .transformBy(target.getAlternateCameraToTarget().inverse())
+                            .transformBy(robotToCamera.inverse());
+            Pose3d bestTransformPosition =
+                    targetPosition
+                            .get()
+                            .transformBy(target.getBestCameraToTarget().inverse())
+                            .transformBy(robotToCamera.inverse());
 
             double altDifference = Math.abs(calculateDifference(referencePose, altTransformPosition));
             double bestDifference = Math.abs(calculateDifference(referencePose, bestTransformPosition));
 
             if (altDifference < smallestPoseDelta) {
                 smallestPoseDelta = altDifference;
-                lowestDeltaPose = new EstimatedRobotPose(
-                        altTransformPosition, result.getTimestampSeconds(), result.getTargets());
+                lowestDeltaPose =
+                        new EstimatedRobotPose(
+                                altTransformPosition, result.getTimestampSeconds(), result.getTargets());
             }
             if (bestDifference < smallestPoseDelta) {
                 smallestPoseDelta = bestDifference;
-                lowestDeltaPose = new EstimatedRobotPose(
-                        bestTransformPosition, result.getTimestampSeconds(), result.getTargets());
+                lowestDeltaPose =
+                        new EstimatedRobotPose(
+                                bestTransformPosition, result.getTimestampSeconds(), result.getTargets());
             }
         }
         return Optional.ofNullable(lowestDeltaPose);
@@ -624,9 +600,8 @@ public class PhotonPoseEstimator {
      * Return the average of the best target poses using ambiguity as weight.
      *
      * @param result pipeline result
-     * @return the estimated position of the robot in the FCS and the estimated
-     *         timestamp of this
-     *         estimation.
+     * @return the estimated position of the robot in the FCS and the estimated timestamp of this
+     *     estimation.
      */
     private Optional<EstimatedRobotPose> averageBestTargetsStrategy(PhotonPipelineResult result) {
         List<Pair<PhotonTrackedTarget, Pose3d>> estimatedRobotPoses = new ArrayList<>();
@@ -638,8 +613,7 @@ public class PhotonPoseEstimator {
             // Don't report errors for non-fiducial targets. This could also be resolved by
             // adding -1 to
             // the initial HashSet.
-            if (targetFiducialId == -1)
-                continue;
+            if (targetFiducialId == -1) continue;
 
             Optional<Pose3d> targetPosition = fieldTags.getTagPose(target.getFiducialId());
 
@@ -678,8 +652,7 @@ public class PhotonPoseEstimator {
         Translation3d transform = new Translation3d();
         Rotation3d rotation = new Rotation3d();
 
-        if (estimatedRobotPoses.isEmpty())
-            return Optional.empty();
+        if (estimatedRobotPoses.isEmpty()) return Optional.empty();
 
         for (Pair<PhotonTrackedTarget, Pose3d> pair : estimatedRobotPoses) {
             // Total ambiguity is non-zero confirmed because if it was zero, that pose was
