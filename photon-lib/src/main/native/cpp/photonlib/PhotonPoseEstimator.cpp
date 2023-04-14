@@ -59,6 +59,17 @@ cv::Point3d TagCornerToObjectPoint(units::meter_t cornerX,
 }  // namespace detail
 
 PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
+                                         PoseStrategy strat,
+                                         frc::Transform3d robotToCamera)
+    : aprilTags(tags),
+      strategy(strat),
+      nullptr,
+      m_robotToCamera(robotToCamera),
+      lastPose(frc::Pose3d()),
+      referencePose(frc::Pose3d()),
+      poseCacheTimestamp(-1_s) {}
+
+PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
                                          PoseStrategy strat, PhotonCamera&& cam,
                                          frc::Transform3d robotToCamera)
     : aprilTags(tags),
@@ -84,8 +95,12 @@ void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
+  if (camera == nullptr) {
+    FRC_ReportError(frc::warn::Warning, "[PhotonPoseEstimator] Missing camera!", "");
+    return std::nullopt;
+  }
   auto result = camera.GetLatestResult();
-  return Update(result);
+  return Update(result, camera.GetCameraMatrix(), camera.GetDistCoeffs());
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
@@ -110,11 +125,38 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     return std::nullopt;
   }
 
-  return Update(result, this->strategy);
+  return Update(result, std::nullopt, std::nullopt, this->strategy);
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    PhotonPipelineResult result, PoseStrategy strategy) {
+    const PhotonPipelineResult& result, optional<cv::Mat> cameraMatrixData,
+    optional<cv::Mat> coeffsData, ) {
+  // Time in the past -- give up, since the following if expects times > 0
+  if (result.GetTimestamp() < 0_s) {
+    return std::nullopt;
+  }
+
+  // If the pose cache timestamp was set, and the result is from the same
+  // timestamp, return an empty result
+  if (poseCacheTimestamp > 0_s &&
+      units::math::abs(poseCacheTimestamp - result.GetTimestamp()) < 0.001_ms) {
+    return std::nullopt;
+  }
+
+  // Remember the timestamp of the current result used
+  poseCacheTimestamp = result.GetTimestamp();
+
+  // If no targets seen, trivial case -- return empty result
+  if (!result.HasTargets()) {
+    return std::nullopt;
+  }
+
+  return Update(result, cameraMatrixData, coeffsData, this->strategy);
+}
+
+std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
+    PhotonPipelineResult result, optional<cv::Mat> cameraMatrixData,
+    optional<cv::Mat> coeffsData, PoseStrategy strategy) {
   std::optional<EstimatedRobotPose> ret = std::nullopt;
 
   switch (strategy) {
@@ -135,7 +177,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
       ret = AverageBestTargetsStrategy(result);
       break;
     case ::photonlib::MULTI_TAG_PNP:
-      ret = MultiTagPnpStrategy(result);
+      ret = MultiTagPnpStrategy(result, coeffsData, cameraMatrixData);
       break;
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
@@ -328,7 +370,8 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
-    PhotonPipelineResult result) {
+    PhotonPipelineResult result, optional<cv::Mat> camMat,
+    optional<cv::Mat> distCoeffs) {
   using namespace frc;
 
   if (!result.HasTargets() || result.GetTargets().size() < 2) {
@@ -364,8 +407,6 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   cv::Mat const rvec(3, 1, cv::DataType<double>::type);
   cv::Mat const tvec(3, 1, cv::DataType<double>::type);
 
-  auto const camMat = camera.GetCameraMatrix();
-  auto const distCoeffs = camera.GetDistCoeffs();
   if (!camMat || !distCoeffs) {
     return std::nullopt;
   }
