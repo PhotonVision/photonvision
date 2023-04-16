@@ -91,6 +91,21 @@ class PhotonPoseEstimator {
                                frc::Transform3d robotToCamera);
 
   /**
+   * Create a new PhotonPoseEstimator.
+   *
+   * @param aprilTags A AprilTagFieldLayout linking AprilTag IDs to Pose3ds with
+   * respect to the FIRST field.
+   * @param strategy The strategy it should use to determine the best pose.
+   * @param camera The PhotonCamera.
+   * @param robotToCamera Transform3d from the center of the robot to the camera
+   * mount positions (ie, robot ➔ camera).
+   */
+  explicit PhotonPoseEstimator(frc::AprilTagFieldLayout aprilTags,
+                               PoseStrategy strategy,
+                               std::unique_ptr<PhotonCamera> camera,
+                               frc::Transform3d robotToCamera);
+
+  /**
    * Get the AprilTagFieldLayout being used by the PositionEstimator.
    *
    * @return the AprilTagFieldLayout
