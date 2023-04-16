@@ -96,7 +96,8 @@ void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
   if (camera == nullptr) {
-    FRC_ReportError(frc::warn::Warning, "[PhotonPoseEstimator] Missing camera!", "");
+    FRC_ReportError(frc::warn::Warning, "[PhotonPoseEstimator] Missing camera!",
+                    "");
     return std::nullopt;
   }
   auto result = camera.GetLatestResult();
