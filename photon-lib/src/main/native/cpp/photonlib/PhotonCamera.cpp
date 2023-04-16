@@ -140,6 +140,10 @@ void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModePub.Set(static_cast<double>(static_cast<int>(mode)));
 }
 
+const std::string_view PhotonCamera::GetCameraName() const {
+  return m_cameraName;
+}
+
 std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {
   auto distCoeffs = cameraDistortionSubscriber.Get();
   if (distCoeffs.size() == 5) {
