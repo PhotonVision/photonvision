@@ -275,7 +275,8 @@ public class PhotonPoseEstimator {
      *     pipeline results used to create the estimate
      */
     public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
-        return update(cameraResult, Optional.empty(), Optional.empty());
+        if (camera == null) return update(cameraResult, Optional.empty(), Optional.empty());
+        return update(cameraResult, camera.getCameraMatrix(), camera.getDistCoeffs());
     }
 
     /**

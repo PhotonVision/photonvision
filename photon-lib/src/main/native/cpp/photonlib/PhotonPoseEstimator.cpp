@@ -106,27 +106,10 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     const PhotonPipelineResult& result) {
-  // Time in the past -- give up, since the following if expects times > 0
-  if (result.GetTimestamp() < 0_s) {
-    return std::nullopt;
+  if (camera == nullptr) {
+    return Update(result, std::nullopt, std::nullopt, this->strategy);
   }
-
-  // If the pose cache timestamp was set, and the result is from the same
-  // timestamp, return an empty result
-  if (poseCacheTimestamp > 0_s &&
-      units::math::abs(poseCacheTimestamp - result.GetTimestamp()) < 0.001_ms) {
-    return std::nullopt;
-  }
-
-  // Remember the timestamp of the current result used
-  poseCacheTimestamp = result.GetTimestamp();
-
-  // If no targets seen, trivial case -- return empty result
-  if (!result.HasTargets()) {
-    return std::nullopt;
-  }
-
-  return Update(result, std::nullopt, std::nullopt, this->strategy);
+  return Update(result, camera->GetCameraMatrix(), camera->GetDistCoeffs());
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
