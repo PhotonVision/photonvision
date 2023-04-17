@@ -74,7 +74,7 @@ PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
                                          frc::Transform3d robotToCamera)
     : aprilTags(tags),
       strategy(strat),
-      camera(std::move(cam)),
+      camera(std::make_shared<PhotonCamera>(std::move(cam))),
       m_robotToCamera(robotToCamera),
       lastPose(frc::Pose3d()),
       referencePose(frc::Pose3d()),
@@ -100,8 +100,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
                     "");
     return std::nullopt;
   }
-  auto result = camera.GetLatestResult();
-  return Update(result, camera.GetCameraMatrix(), camera.GetDistCoeffs());
+  auto result = camera->GetLatestResult();
+  return Update(result, camera->GetCameraMatrix(), camera->GetDistCoeffs());
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
