@@ -257,8 +257,8 @@ TEST(PhotonPoseEstimatorTest, ClosestToLastPose) {
                            frc::Rotation3d(0_rad, 0_rad, 0_rad)),
           0.4, corners, detectedCorners}};
 
-  estimator.GetCamera().testResult = {2_ms, targetsThree};
-  estimator.GetCamera().testResult.SetTimestamp(units::second_t(21));
+  estimator.GetCamera()->testResult = {2_ms, targetsThree};
+  estimator.GetCamera()->testResult.SetTimestamp(units::second_t(21));
 
   estimatedPose = estimator.Update();
   ASSERT_TRUE(estimatedPose);
@@ -345,14 +345,14 @@ TEST(PhotonPoseEstimatorTest, PoseCache) {
       aprilTags, photonlib::AVERAGE_BEST_TARGETS, std::move(cameraOne), {});
 
   // empty input, expect empty out
-  estimator.GetCamera().testResult = {2_ms, {}};
-  estimator.GetCamera().testResult.SetTimestamp(units::second_t(1));
+  estimator.GetCamera()->testResult = {2_ms, {}};
+  estimator.GetCamera()->testResult.SetTimestamp(units::second_t(1));
   auto estimatedPose = estimator.Update();
   EXPECT_FALSE(estimatedPose);
 
   // Set result, and update -- expect present and timestamp to be 15
-  estimator.GetCamera().testResult = {3_ms, targets};
-  estimator.GetCamera().testResult.SetTimestamp(units::second_t(15));
+  estimator.GetCamera()->testResult = {3_ms, targets};
+  estimator.GetCamera()->testResult.SetTimestamp(units::second_t(15));
   estimatedPose = estimator.Update();
   EXPECT_TRUE(estimatedPose);
   EXPECT_NEAR(15, estimatedPose.value().timestamp.to<double>(), 1e-6);
