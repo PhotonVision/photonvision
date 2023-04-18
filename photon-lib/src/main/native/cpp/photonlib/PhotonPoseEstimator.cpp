@@ -95,7 +95,7 @@ void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
-  if (camera) {
+  if (!camera) {
     FRC_ReportError(frc::warn::Warning, "[PhotonPoseEstimator] Missing camera!",
                     "");
     return std::nullopt;
@@ -106,7 +106,8 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     const PhotonPipelineResult& result) {
-  if (camera) {
+  // If camera is null, best we can do is pass null calibration data
+  if (!camera) {
     return Update(result, std::nullopt, std::nullopt, this->strategy);
   }
   return Update(result, camera->GetCameraMatrix(), camera->GetDistCoeffs());
