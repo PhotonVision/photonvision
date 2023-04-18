@@ -10,6 +10,8 @@ Python/app/handlers/__pycache__/
 
 \.vscode/
 
+/.vs
+
 backend/settings/
 /.vscode/
 # Compiled class file

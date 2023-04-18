@@ -59,11 +59,22 @@ cv::Point3d TagCornerToObjectPoint(units::meter_t cornerX,
 }  // namespace detail
 
 PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
+                                         PoseStrategy strat,
+                                         frc::Transform3d robotToCamera)
+    : aprilTags(tags),
+      strategy(strat),
+      camera(nullptr),
+      m_robotToCamera(robotToCamera),
+      lastPose(frc::Pose3d()),
+      referencePose(frc::Pose3d()),
+      poseCacheTimestamp(-1_s) {}
+
+PhotonPoseEstimator::PhotonPoseEstimator(frc::AprilTagFieldLayout tags,
                                          PoseStrategy strat, PhotonCamera&& cam,
                                          frc::Transform3d robotToCamera)
     : aprilTags(tags),
       strategy(strat),
-      camera(std::move(cam)),
+      camera(std::make_shared<PhotonCamera>(std::move(cam))),
       m_robotToCamera(robotToCamera),
       lastPose(frc::Pose3d()),
       referencePose(frc::Pose3d()),
@@ -84,12 +95,27 @@ void PhotonPoseEstimator::SetMultiTagFallbackStrategy(PoseStrategy strategy) {
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update() {
-  auto result = camera.GetLatestResult();
-  return Update(result);
+  if (!camera) {
+    FRC_ReportError(frc::warn::Warning, "[PhotonPoseEstimator] Missing camera!",
+                    "");
+    return std::nullopt;
+  }
+  auto result = camera->GetLatestResult();
+  return Update(result, camera->GetCameraMatrix(), camera->GetDistCoeffs());
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     const PhotonPipelineResult& result) {
+  // If camera is null, best we can do is pass null calibration data
+  if (!camera) {
+    return Update(result, std::nullopt, std::nullopt, this->strategy);
+  }
+  return Update(result, camera->GetCameraMatrix(), camera->GetDistCoeffs());
+}
+
+std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
+    const PhotonPipelineResult& result, std::optional<cv::Mat> cameraMatrixData,
+    std::optional<cv::Mat> coeffsData) {
   // Time in the past -- give up, since the following if expects times > 0
   if (result.GetTimestamp() < 0_s) {
     return std::nullopt;
@@ -110,11 +136,12 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
     return std::nullopt;
   }
 
-  return Update(result, this->strategy);
+  return Update(result, cameraMatrixData, coeffsData, this->strategy);
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
-    PhotonPipelineResult result, PoseStrategy strategy) {
+    PhotonPipelineResult result, std::optional<cv::Mat> cameraMatrixData,
+    std::optional<cv::Mat> coeffsData, PoseStrategy strategy) {
   std::optional<EstimatedRobotPose> ret = std::nullopt;
 
   switch (strategy) {
@@ -135,7 +162,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::Update(
       ret = AverageBestTargetsStrategy(result);
       break;
     case ::photonlib::MULTI_TAG_PNP:
-      ret = MultiTagPnpStrategy(result);
+      ret = MultiTagPnpStrategy(result, coeffsData, cameraMatrixData);
       break;
     default:
       FRC_ReportError(frc::warn::Warning, "Invalid Pose Strategy selected!",
@@ -328,11 +355,13 @@ frc::Pose3d detail::ToPose3d(const cv::Mat& tvec, const cv::Mat& rvec) {
 }
 
 std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
-    PhotonPipelineResult result) {
+    PhotonPipelineResult result, std::optional<cv::Mat> camMat,
+    std::optional<cv::Mat> distCoeffs) {
   using namespace frc;
 
   if (!result.HasTargets() || result.GetTargets().size() < 2) {
-    return Update(result, this->multiTagFallbackStrategy);
+    return Update(result, std::nullopt, std::nullopt,
+                  this->multiTagFallbackStrategy);
   }
 
   auto const targets = result.GetTargets();
@@ -364,8 +393,6 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   cv::Mat const rvec(3, 1, cv::DataType<double>::type);
   cv::Mat const tvec(3, 1, cv::DataType<double>::type);
 
-  auto const camMat = camera.GetCameraMatrix();
-  auto const distCoeffs = camera.GetDistCoeffs();
   if (!camMat || !distCoeffs) {
     return std::nullopt;
   }
