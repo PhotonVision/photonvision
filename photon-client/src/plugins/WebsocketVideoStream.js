@@ -143,7 +143,7 @@ export class WebsocketVideoStream{
     }
 
     dispNoStream() {
-        this.image.src = require("../assets/loading.svg");
+        this.image.src = require("../../public/loading.svg");
     }
 
     animationLoop(){

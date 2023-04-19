@@ -9,15 +9,9 @@
             margin: 0;
             padding: 0;
         }
-        .imgbox {
-            display: grid;
+        .img-container {
             height: 100%;
-            width: 100%;
-        }
-        .center-fit {
-
-            width: 90vw;
-            margin: auto;
+            width: 40vw;
         }
     </style>
 
@@ -25,18 +19,15 @@
 
 <body>
     <hr>
-        <div class="imgbox">
-            <img id="streamImg" class="center-fit" src=''>
+        <div class="img-container">
+            <img id="streamImg" src='' alt="">
         </div>
     <hr>
-
     <form id="frm1">
         Host <input type="text" id="host" value="photonvision.local"><br>
         Port <input type="text" id="port" value="1181"><br>
     </form>
-
     <button>Start Stream</button>
-
     <script type="module">
         class WebsocketVideoStream{
 
@@ -312,6 +303,4 @@
     </script>
 
 </body>
-
-
 </html>
