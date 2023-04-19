@@ -41,10 +41,10 @@
                 </v-chip>
               </div>
               <v-switch
-                      v-model="driverMode"
-                      label="Driver Mode"
-                      style="margin-left: auto;"
-                      color="accent"
+                v-model="driverMode"
+                label="Driver Mode"
+                style="margin-left: auto;"
+                color="accent"
               />
             </v-card-title>
             <v-divider />
