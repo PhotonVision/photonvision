@@ -113,7 +113,7 @@
                   <v-btn
                     color="secondary"
                   >
-                    <v-icon>mdi-crop-square</v-icon>
+                    <v-icon>mdi-square-outline</v-icon>
                     <span>2D</span>
                   </v-btn>
                   <v-btn
