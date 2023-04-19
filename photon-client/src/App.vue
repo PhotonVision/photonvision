@@ -18,13 +18,13 @@
             <img
               v-if="!compact"
               class="logo"
-              src="@/assets/logos/logoLarge.png"
+              src="@/assets/logos/logoLarge.svg"
               alt="large logo"
             >
             <img
               v-else
               class="logo"
-              src="@/assets/logos/logoSmall.png"
+              src="@/assets/logos/logoSmall.svg"
               alt="small logo"
             >
           </v-list-item-icon>
