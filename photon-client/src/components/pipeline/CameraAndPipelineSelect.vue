@@ -31,6 +31,7 @@
         cols="2"
         md="1"
         lg="2"
+        class="pl-5"
       >
         <CVicon
           v-if="isCameraNameEdit === false"
@@ -79,6 +80,7 @@
         cols="2"
         md="1"
         lg="2"
+        class="pl-5"
       >
         <v-menu
           v-if="!$store.getters.isDriverMode"
