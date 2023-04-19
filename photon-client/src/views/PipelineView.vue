@@ -25,24 +25,26 @@
               class="pb-0 mb-0 pl-4 pt-1"
               style="height: 15%; min-height: 50px;"
             >
-              Cameras
-              <v-chip
-                :class="fpsTooLow ? 'ml-2 mt-1' : 'mt-2'"
-                label
-                :color="fpsTooLow ? 'error' : 'transparent'"
-                :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
-                style="font-size: 14px"
-              >
-                <span class="pr-1">Processing @ {{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
-                <span v-if="fpsTooLow && !$store.getters.currentPipelineSettings.inputShouldShow && $store.getters.pipelineType === 2">HSV thresholds are too broad; narrow them for better performance</span>
-                <span v-else-if="fpsTooLow && getters.currentCameraSettings.inputShouldShow">stop viewing the raw stream for better performance</span>
-                <span v-else>{{ Math.min(Math.round($store.state.pipelineResults.latency), 9999) }} ms latency</span>
-              </v-chip>
+              <div>
+                <span>Cameras</span>
+                <v-chip
+                  label
+                  class="ml-2"
+                  :color="fpsTooLow ? 'error' : 'transparent'"
+                  :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
+                  style="font-size: 1rem"
+                >
+                  <span class="pr-1">Processing @ {{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
+                  <span v-if="fpsTooLow && !$store.getters.currentPipelineSettings.inputShouldShow && $store.getters.pipelineType === 2">HSV thresholds are too broad; narrow them for better performance</span>
+                  <span v-else-if="fpsTooLow && $store.getters.currentCameraSettings.inputShouldShow">stop viewing the raw stream for better performance</span>
+                  <span v-else>{{ Math.min(Math.round($store.state.pipelineResults.latency), 9999) }} ms latency</span>
+                </v-chip>
+              </div>
               <v-switch
-                v-model="driverMode"
-                label="Driver Mode"
-                style="margin-left: auto;"
-                color="accent"
+                      v-model="driverMode"
+                      label="Driver Mode"
+                      style="margin-left: auto;"
+                      color="accent"
               />
             </v-card-title>
             <v-divider />
