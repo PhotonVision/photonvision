@@ -30,7 +30,7 @@
                 :class="fpsTooLow ? 'ml-2 mt-1' : 'mt-2'"
                 label
                 :color="fpsTooLow ? 'error' : 'transparent'"
-                :text-color="fpsTooLow ? 'white' : 'red'"
+                :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
                 style="font-size: 14px"
               >
                 <span class="pr-1">Processing @ {{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
