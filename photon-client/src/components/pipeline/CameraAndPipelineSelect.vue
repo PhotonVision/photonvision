@@ -2,7 +2,7 @@
   <div>
     <v-row
       align="center"
-      class="pl-6"
+      style="padding: 12px 12px 12px 24px"
     >
       <v-col
         cols="10"

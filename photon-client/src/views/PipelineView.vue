@@ -80,7 +80,7 @@
           cols="12"
           class="pb-3"
           lg="4"
-          align-self="stretch"
+          style="display: flex; flex-direction: column"
         >
           <v-card
             color="primary"
@@ -94,7 +94,7 @@
           >
             <v-row
               align="center"
-              class="pl-3 pr-3"
+              class="pa-sm-3"
             >
               <v-col lg="12">
                 <p style="color: white;">
@@ -181,7 +181,7 @@
                 {{ tab.name }}
               </v-tab>
             </v-tabs>
-            <div class="pl-4 pr-4 pt-2">
+            <div class="pl-4 pr-4 pt-2 pb-2">
               <keep-alive>
                 <component
                   :is="(tabs[selectedTabs[idx]] || tabs[0]).component"
