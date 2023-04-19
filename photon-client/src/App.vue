@@ -10,7 +10,10 @@
     >
       <v-list>
         <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
-        <v-list-item :class="compact ? 'pr-0 pl-0' : ''">
+        <v-list-item
+          :class="compact ? 'pr-0 pl-0' : ''"
+          style="display: flex; justify-content: center"
+        >
           <v-list-item-icon class="mr-0">
             <img
               v-if="!compact"
