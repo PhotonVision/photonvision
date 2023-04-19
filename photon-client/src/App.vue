@@ -99,18 +99,16 @@
               <v-icon v-if="$store.state.settings.networkSettings.runNTServer">
                 mdi-server
               </v-icon>
-              <img
-                v-else-if="$store.state.ntConnectionInfo.connected"
-                src="@/assets/icons/robot.svg"
-                alt=""
-              >
-              <img
+              <v-icon v-else-if="$store.state.ntConnectionInfo.connected">
+                mdi-robot
+              </v-icon>
+              <v-icon
                 v-else
                 class="pulse"
                 style="border-radius: 100%"
-                src="@/assets/icons/robot-off.svg"
-                alt=""
               >
+                mdi-robot-off
+              </v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title
