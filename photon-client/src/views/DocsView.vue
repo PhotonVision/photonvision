@@ -6,7 +6,7 @@
       v-if="() => process.env.NODE_ENV === 'development'"
       style="width: 100%; height: 100%; padding: 16px"
     >
-      <span style="color: white; font-weight: bold">PhotonClient is in development mode so the Documentation page will not load. Please recompile in production mode with the documentation copied over after a full build. If you believe this is an error, please relaunch with <code>NODE_ENV</code> set to "production".</span>
+      <span style="color: white; font-weight: bold">PhotonClient is in development mode so the documentation page will not load. Please recompile in production mode with the documentation copied over after a full build.</span>
     </div>
     <div
       v-else
