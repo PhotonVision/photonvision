@@ -12,6 +12,7 @@
       v-else
       style="width: 100%; height: 100%"
     >
+      <!--suppress HtmlUnknownTarget -->
       <iframe
         src="docs/index.html"
         style="overflow:hidden; height:100%; width:100%; border: 0"

@@ -45,7 +45,7 @@
       class="pt-2"
       slider-cols="8"
       name="Refine Edges"
-      tooltip="Further refines the apriltag corner position initial estimate, suggested left on"
+      tooltip="Further refines the AprilTag corner position initial estimate, suggested left on"
       @input="handlePipelineData('refineEdges')"
     />
     <CVslider

@@ -46,7 +46,7 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-divider style="margin: 12px 0px;" />
+    <v-divider style="margin: 12px 0;" />
     <v-row>
       <v-col
         cols="12"
@@ -328,12 +328,9 @@ export default {
   display: block;
   overflow-x: auto;
 }
-
+w
 .infoElem {
-  padding-right: 15px;
-  padding-bottom: 1px;
-  padding-top: 1px;
-  padding-left: 10px;
-  border-right: 1px solid;
+    padding: 1px 15px 1px 10px;
+    border-right: 1px solid;
 }
 </style>

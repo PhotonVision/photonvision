@@ -78,9 +78,7 @@
     <template v-if="$store.state.settings.networkSettings.shouldManage && false">
       <!-- Advanced controls for changing DHCP settings and stuff -->
       <v-divider class="mt-4 mb-4" />
-
-      <v-title> Advanced </v-title>
-
+      <v-card-title> Advanced </v-card-title>
       <CVinput
         :input-cols="inputCols"
         name="Set DHCP command"
