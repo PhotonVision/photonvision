@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -28,6 +28,7 @@
 #include <string>
 
 #include <networktables/BooleanTopic.h>
+#include <networktables/DoubleArrayTopic.h>
 #include <networktables/DoubleTopic.h>
 #include <networktables/IntegerTopic.h>
 #include <networktables/MultiSubscriber.h>
@@ -39,6 +40,10 @@
 #include <wpi/deprecated.h>
 
 #include "photonlib/PhotonPipelineResult.h"
+
+namespace cv {
+class Mat;
+}  // namespace cv
 
 namespace photonlib {
 
@@ -144,6 +149,9 @@ class PhotonCamera {
    */
   const std::string_view GetCameraName() const;
 
+  std::optional<cv::Mat> GetCameraMatrix();
+  std::optional<cv::Mat> GetDistCoeffs();
+
   /**
    * Returns whether the latest target result has targets.
    * This method is deprecated; {@link PhotonPipelineResult#hasTargets()} should
@@ -172,13 +180,17 @@ class PhotonCamera {
   nt::IntegerSubscriber inputSaveImgSubscriber;
   nt::IntegerPublisher outputSaveImgEntry;
   nt::IntegerSubscriber outputSaveImgSubscriber;
-  nt::IntegerPublisher pipelineIndexEntry;
-  nt::IntegerPublisher ledModeEntry;
+  nt::IntegerPublisher pipelineIndexPub;
+  nt::IntegerSubscriber pipelineIndexSub;
+  nt::IntegerPublisher ledModePub;
+  nt::IntegerSubscriber ledModeSub;
   nt::StringSubscriber versionEntry;
+
+  nt::DoubleArraySubscriber cameraIntrinsicsSubscriber;
+  nt::DoubleArraySubscriber cameraDistortionSubscriber;
 
   nt::BooleanSubscriber driverModeSubscriber;
   nt::BooleanPublisher driverModePublisher;
-  nt::IntegerSubscriber pipelineIndexSubscriber;
   nt::IntegerSubscriber ledModeSubscriber;
 
   nt::MultiSubscriber m_topicNameSubscriber;

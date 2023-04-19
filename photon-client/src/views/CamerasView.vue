@@ -350,7 +350,7 @@
                       :width="8"
                       color="accent"
                     />
-                    <v-card-text>Camera is being calibrated. This process make take several minutes...</v-card-text>
+                    <v-card-text>Camera is being calibrated. This process may take several minutes...</v-card-text>
                   </template>
                   <template v-else-if="!calibrationFailed">
                     <v-icon
@@ -628,7 +628,7 @@ export default {
             this.uploadSnackData = {
               color: "success",
               text:
-                "Calibration imported successfully! PhotonVision will restart in the background...",
+                "Calibration imported successfully!",
             };
             this.uploadSnack = true;
           })

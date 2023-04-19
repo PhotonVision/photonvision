@@ -89,7 +89,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.pipelineIndexPublisher.set(setIndex);
             // TODO: Log
         }
-        logger.debug("Successfully set pipeline index to " + newIndex);
+        logger.debug("Set pipeline index to " + newIndex);
     }
 
     private void onDriverModeChange(NetworkTableEvent entryNotification) {
@@ -102,7 +102,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
         }
 
         driverModeConsumer.accept(newDriverMode);
-        logger.debug("Successfully set driver mode to " + newDriverMode);
+        logger.debug("Set driver mode to " + newDriverMode);
     }
 
     private void removeEntries() {
@@ -119,7 +119,7 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
 
         pipelineIndexListener =
                 new NTDataChangeListener(
-                        ts.subTable.getInstance(), ts.pipelineIndexSubscriber, this::onPipelineIndexChange);
+                        ts.subTable.getInstance(), ts.pipelineIndexRequestSub, this::onPipelineIndexChange);
 
         driverModeListener =
                 new NTDataChangeListener(
@@ -178,6 +178,21 @@ public class NTDataPublisher implements CVPipelineResultConsumer {
             ts.targetPoseEntry.set(new double[] {0, 0, 0});
             ts.bestTargetPosX.set(0);
             ts.bestTargetPosY.set(0);
+        }
+
+        // Something in the result can sometimes be null -- so check probably too many things
+        if (result != null
+                && result.inputAndOutputFrame != null
+                && result.inputAndOutputFrame.frameStaticProperties != null
+                && result.inputAndOutputFrame.frameStaticProperties.cameraCalibration != null) {
+            var fsp = result.inputAndOutputFrame.frameStaticProperties;
+            if (fsp.cameraCalibration != null) {
+                ts.cameraIntrinsicsPublisher.accept(fsp.cameraCalibration.getIntrinsicsArr());
+                ts.cameraDistortionPublisher.accept(fsp.cameraCalibration.getExtrinsicsArr());
+            }
+        } else {
+            ts.cameraIntrinsicsPublisher.accept(new double[] {});
+            ts.cameraDistortionPublisher.accept(new double[] {});
         }
 
         ts.heartbeatPublisher.set(heartbeatCounter++);

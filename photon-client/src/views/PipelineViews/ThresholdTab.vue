@@ -41,23 +41,6 @@
       @input="handlePipelineData('hueInverted')"
       @rollback="e => rollback('hueInverted',e)"
     />
-    <template v-if="currentPipelineType() === 3">
-      <CVSwitch
-        v-model="erode"
-        name="Erode"
-        tooltip="Removes pixels around the edges of white areas in the thresholded image"
-        @input="handlePipelineData('erode')"
-        @rollback="e => rollback('erode',e)"
-      />
-      <CVSwitch
-        v-model="dilate"
-        class="mb-0"
-        name="Dilate"
-        tooltip="Adds pixels around the edges of white areas in the thresholded image"
-        @input="handlePipelineData('dilate')"
-        @rollback="e => rollback('dilate',e)"
-      />
-    </template>
     <div class="pt-3 white--text">
       Color Picker
     </div>
@@ -193,22 +176,6 @@ export default {
       },
       set(val) {
         this.$store.commit("mutatePipeline", {"hsvValue": val});
-      }
-    },
-    erode: {
-      get() {
-        return this.$store.getters.currentPipelineSettings.erode;
-      },
-      set(val) {
-        this.$store.commit("mutatePipeline", {"erode": val});
-      }
-    },
-    dilate: {
-      get() {
-        return this.$store.getters.currentPipelineSettings.dilate;
-      },
-      set(val) {
-        this.$store.commit("mutatePipeline", {"dilate": val});
       }
     },
   },
