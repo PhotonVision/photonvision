@@ -45,15 +45,16 @@
                 color="accent"
               />
             </v-card-title>
+            <v-divider />
             <v-row
               align="center"
+              class="pl-3 pr-3"
             >
               <v-col
                 v-for="idx in (selectedOutputs instanceof Array ? selectedOutputs : [selectedOutputs])"
                 :key="idx"
                 cols="12"
                 :md="selectedOutputs.length === 1 ? 12 : Math.floor(12 / selectedOutputs.length)"
-                class="pb-0 pt-0"
                 style="height: 100%;"
               >
                 <div style="position: relative; width: 100%; height: 100%;">
@@ -69,6 +70,7 @@
                     :max-height-xl="$store.getters.isDriverMode ? '60vh' : '450px'"
                     :alt="idx === 0 ? 'Raw stream' : 'Processed stream'"
                     :color-picking="$store.state.colorPicking && idx === 0"
+                    style="padding-top: 22px;"
                     @click="onImageClick"
                   />
                 </div>
