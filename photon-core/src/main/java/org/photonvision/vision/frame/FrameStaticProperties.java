@@ -61,10 +61,12 @@ public class FrameStaticProperties {
 
         imageArea = this.imageWidth * this.imageHeight;
 
+        // Todo -- if we have calibration, use it's center point?
         centerX = ((double) this.imageWidth / 2) - 0.5;
         centerY = ((double) this.imageHeight / 2) - 0.5;
         centerPoint = new Point(centerX, centerY);
 
+        // TODO if we have calibration use it here instead
         // pinhole model calculations
         DoubleCouple horizVertViews =
                 calculateHorizontalVerticalFoV(this.fov, this.imageWidth, this.imageHeight);

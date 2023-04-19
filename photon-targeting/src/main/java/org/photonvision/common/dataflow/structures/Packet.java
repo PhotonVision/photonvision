@@ -182,4 +182,18 @@ public class Packet {
         }
         return packetData[readPos++] == 1;
     }
+
+    public void encode(double[] data) {
+        for (double d : data) {
+            encode(d);
+        }
+    }
+
+    public double[] decodeDoubleArray(int len) {
+        double[] ret = new double[len];
+        for (int i = 0; i < len; i++) {
+            ret[i] = decodeDouble();
+        }
+        return ret;
+    }
 }

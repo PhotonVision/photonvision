@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -181,9 +181,6 @@ public class Drivetrain {
         m_poseEstimator.update(
                 m_gyro.getRotation2d(), m_leftEncoder.getDistance(), m_rightEncoder.getDistance());
 
-        // Also apply vision measurements. We use 0.3 seconds in the past as an example
-        // -- on
-        // a real robot, this must be calculated based either on latency or timestamps.
         Optional<EstimatedRobotPose> result =
                 pcw.getEstimatedGlobalPose(m_poseEstimator.getEstimatedPosition());
 
