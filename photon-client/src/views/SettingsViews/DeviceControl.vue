@@ -46,7 +46,7 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-divider />
+    <v-divider style="margin: 12px 0px;" />
     <v-row>
       <v-col
         cols="12"
