@@ -69,13 +69,13 @@ public class ConfigManager {
         var folderPath = Path.of(System.getProperty("java.io.tmpdir"), "photonvision").toFile();
         folderPath.mkdirs();
         ZipUtil.unpack(uploadPath, folderPath);
-        FileUtils.deleteDirectory(getRootFolder());
+
+        FileUtils.renameDirectory(getRootFolder(), Path.of(getRootFolder() + "_old"));
         try {
             org.apache.commons.io.FileUtils.copyDirectory(folderPath, getRootFolder().toFile());
             logger.info("Copied settings successfully!");
         } catch (IOException e) {
             logger.error("Exception copying uploaded settings!", e);
-            return;
         }
     }
 
@@ -104,10 +104,16 @@ public class ConfigManager {
     public void load() {
         logger.info("Loading settings...");
         if (!configDirectoryFile.exists()) {
-            if (configDirectoryFile.mkdirs()) {
-                logger.debug("Root config folder did not exist. Created!");
+            var oldConfigPath = Path.of(configDirectoryFile + "_old");
+            if (oldConfigPath.toFile().exists()) {
+                FileUtils.renameDirectory(oldConfigPath, configDirectoryFile.toPath());
+                logger.debug("Found backup config folder, loading.");
             } else {
-                logger.error("Failed to create root config folder!");
+                if (configDirectoryFile.mkdirs()) {
+                    logger.debug("Root config folder did not exist. Created!");
+                } else {
+                    logger.error("Failed to create root config folder!");
+                }
             }
         }
         if (!configDirectoryFile.canWrite()) {
@@ -176,10 +182,16 @@ public class ConfigManager {
         }
 
         if (!camerasFolder.exists()) {
-            if (camerasFolder.mkdirs()) {
-                logger.debug("Cameras config folder did not exist. Created!");
+            var oldPath = Path.of(camerasFolder.toPath() + "_old");
+            if (oldPath.toFile().exists()) {
+                FileUtils.renameDirectory(oldPath, camerasFolder.toPath());
+                logger.debug("Found backup cameras folder, loading.");
             } else {
-                logger.error("Failed to create cameras config folder!");
+                if (camerasFolder.mkdirs()) {
+                    logger.debug("Cameras config folder did not exist. Created!");
+                } else {
+                    logger.error("Failed to create cameras config folder!");
+                }
             }
         }
 
@@ -191,8 +203,8 @@ public class ConfigManager {
     }
 
     public void saveToDisk() {
-        // Delete old configs
-        FileUtils.deleteDirectory(camerasFolder.toPath());
+        // Move old configs
+        FileUtils.renameDirectory(camerasFolder.toPath(), Path.of(camerasFolder + "_old"));
 
         try {
             JacksonUtils.serialize(networkConfigFile.toPath(), config.getNetworkConfig());
