@@ -57,11 +57,13 @@ import {
   PerspectiveCamera,
   Quaternion,
   Scene,
-  TrackballControls,
   Vector3,
     Color,
   WebGLRenderer
-} from "three-full";
+} from "three";
+
+import { TrackballControls } from "three/addons/controls/TrackballControls.js"
+
 
 export default {
   name: "MiniMap",
