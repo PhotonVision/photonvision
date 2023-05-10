@@ -185,7 +185,7 @@
                 {{ tab.name }}
               </v-tab>
             </v-tabs>
-            <div class="pl-4 pr-4 pt-2 pb-2">
+            <div class="pl-4 pr-4 pt-4 pb-2">
               <keep-alive>
                 <component
                   :is="(tabs[selectedTabs[idx]] || tabs[0]).component"
