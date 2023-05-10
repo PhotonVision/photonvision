@@ -62,8 +62,8 @@ import {
   WebGLRenderer
 } from "three";
 
-import { TrackballControls } from "three/addons/controls/TrackballControls.js"
-
+// This import conflicts with Three.js docs but is required for the build to succeed
+import { TrackballControls } from "three/examples/jsm/controls/TrackballControls"
 
 export default {
   name: "MiniMap",
