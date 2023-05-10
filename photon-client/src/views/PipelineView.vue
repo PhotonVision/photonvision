@@ -23,16 +23,15 @@
           >
             <v-card-title
               class="pb-0 mb-0 pl-4 pt-1"
-              style="height: 15%; min-height: 50px;"
+              style="min-height: 50px; justify-content: space-between; align-content: center"
             >
-              <div>
-                <span>Cameras</span>
+              <div class="pt-2">
+                <span class="mr-4">Cameras</span>
                 <v-chip
                   label
-                  class="ml-2"
                   :color="fpsTooLow ? 'error' : 'transparent'"
                   :text-color="fpsTooLow ? '#C7EA46' : '#ff4d00'"
-                  style="font-size: 1rem"
+                  style="font-size: 1rem; padding: 0; margin: 0"
                 >
                   <span class="pr-1">Processing @ {{ Math.round($store.state.pipelineResults.fps) }}&nbsp;FPS &ndash;</span>
                   <span v-if="fpsTooLow && !$store.getters.currentPipelineSettings.inputShouldShow && $store.getters.pipelineType === 2">HSV thresholds are too broad; narrow them for better performance</span>
@@ -40,12 +39,15 @@
                   <span v-else>{{ Math.min(Math.round($store.state.pipelineResults.latency), 9999) }} ms latency</span>
                 </v-chip>
               </div>
-              <v-switch
-                v-model="driverMode"
-                label="Driver Mode"
-                style="margin-left: auto;"
-                color="accent"
-              />
+              <div>
+                <v-switch
+                  v-model="driverMode"
+                  label="Driver Mode"
+                  style="margin-left: auto;"
+                  color="accent"
+                  class="pt-2"
+                />
+              </div>
             </v-card-title>
             <v-divider />
             <v-row
