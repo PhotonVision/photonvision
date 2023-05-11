@@ -19,7 +19,6 @@ package org.photonvision.targeting;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import org.photonvision.common.dataflow.structures.Packet;
 
 /** Represents a pipeline result from a PhotonCamera. */
@@ -123,21 +122,6 @@ public class PhotonPipelineResult {
         return new ArrayList<>(targets);
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        PhotonPipelineResult that = (PhotonPipelineResult) o;
-        boolean latencyMatch = Double.compare(that.latencyMillis, latencyMillis) == 0;
-        boolean targetsMatch = that.targets.equals(targets);
-        return latencyMatch && targetsMatch;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(latencyMillis, targets);
-    }
-
     /**
      * Populates the fields of the pipeline result from the packet.
      *
@@ -177,5 +161,34 @@ public class PhotonPipelineResult {
 
         // Return the packet.
         return packet;
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((targets == null) ? 0 : targets.hashCode());
+        long temp;
+        temp = Double.doubleToLongBits(latencyMillis);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(timestampSeconds);
+        result = prime * result + (int) (temp ^ (temp >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
+        PhotonPipelineResult other = (PhotonPipelineResult) obj;
+        if (targets == null) {
+            if (other.targets != null) return false;
+        } else if (!targets.equals(other.targets)) return false;
+        if (Double.doubleToLongBits(latencyMillis) != Double.doubleToLongBits(other.latencyMillis))
+            return false;
+        if (Double.doubleToLongBits(timestampSeconds)
+                != Double.doubleToLongBits(other.timestampSeconds)) return false;
+        return true;
     }
 }
