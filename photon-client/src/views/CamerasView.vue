@@ -607,57 +607,54 @@ export default {
         },
     },
     methods: {
+        readImportedCalibration(event) {
+            // let formData = new FormData();
+            // formData.append("zipData", event.target.files[0]);
+            const filename = event.target.files[0].name;
 
-    readImportedCalibration(event) {
-      // let formData = new FormData();
-      // formData.append("zipData", event.target.files[0]);
-      const filename = event.target.files[0].name;
-
-      event.target.files[0].text().then(fileText => {
-        const data = {
-          "cameraIndex": this.$store.getters.currentCameraIndex,
-          "payload": fileText,
-          "filename": filename,
-        };
-
-        this.axios
-          .post("http://" + this.$address + "/api/calibration/import", data, {
-            headers: { "Content-Type": "text/plain" },
-          })
-          .then(() => {
-            this.uploadSnackData = {
-              color: "success",
-              text:
-                "Calibration imported successfully!",
-            };
-            this.uploadSnack = true;
-          })
-          .catch((err) => {
-            if (err.response) {
-              this.uploadSnackData = {
-                color: "error",
-                text:
-                  "Error while uploading calibration file! Could not process provided file.",
+            event.target.files[0].text().then(fileText => {
+              const data = {
+                "cameraIndex": this.$store.getters.currentCameraIndex,
+                "payload": fileText,
+                "filename": filename,
               };
-            } else if (err.request) {
-              this.uploadSnackData = {
-                color: "error",
-                text:
-                  "Error while uploading calibration file! No respond to upload attempt.",
-              };
-            } else {
-              this.uploadSnackData = {
-                color: "error",
-                text: "Error while uploading calibration file!",
-              };
-            }
-            this.uploadSnack = true;
-          });
 
-        })
+              this.axios
+                .post("http://" + this.$address + "/api/calibration/import", data, {
+                  headers: { "Content-Type": "text/plain" },
+                })
+                .then(() => {
+                  this.uploadSnackData = {
+                    color: "success",
+                    text:
+                      "Calibration imported successfully!",
+                  };
+                  this.uploadSnack = true;
+                })
+                .catch((err) => {
+                  if (err.response) {
+                    this.uploadSnackData = {
+                      color: "error",
+                      text:
+                        "Error while uploading calibration file! Could not process provided file.",
+                    };
+                  } else if (err.request) {
+                    this.uploadSnackData = {
+                      color: "error",
+                      text:
+                        "Error while uploading calibration file! No respond to upload attempt.",
+                    };
+                  } else {
+                    this.uploadSnackData = {
+                      color: "error",
+                      text: "Error while uploading calibration file!",
+                    };
+                  }
+                  this.uploadSnack = true;
+                });
 
+              })
     },
-
         closeDialog() {
             this.snack = false;
             this.calibrationInProgress = false;
@@ -673,7 +670,6 @@ export default {
             });
             return ret;
         },
-
         downloadBoard() {
           const config = {
             type: this.boardType === 0 ? "chessboard" : "dotgrid",
@@ -764,12 +760,10 @@ export default {
                 }
             )
         },
-
         isCalibrated(resolution) {
             return this.$store.getters.currentCameraSettings.calibrations
                 .some(e => e.width === resolution.width && e.height === resolution.height);
         },
-
         sendCalibrationMode() {
             let data = {
                 ['cameraIndex']: this.$store.state.currentCameraIndex

@@ -140,9 +140,7 @@
     <a
       ref="exportSettings"
       style="color: black; text-decoration: none; display: none"
-      :href="
-        'http://' + this.$address + '/api/settings/photonvision_config.zip'
-      "
+      :href="'http://' + this.$address + '/api/settings/photonvision_config.zip'"
       download="photonvision-settings.zip"
     />
 
