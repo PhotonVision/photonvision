@@ -475,7 +475,7 @@ export default {
     },
     showNTWarning: {
       get() {
-        return (!this.$store.state.ntConnectionInfo.connected || this.$store.state.settings.networkSettings.runNTServer) && this.$store.state.settings.networkSettings.teamNumber > 0 && this.$store.state.backendConnected && !this.hideNTWarning;
+        return (!this.$store.state.ntConnectionInfo.connected || this.$store.state.settings.networkSettings.runNTServer) && this.$store.state.settings.networkSettings.ntServerAddress != "" && this.$store.state.backendConnected && !this.hideNTWarning;
       }
     },
   },

@@ -81,7 +81,7 @@
               </v-list-item-title>
               <router-link v-if="!$store.state.settings.networkSettings.runNTServer" to="settings" class="accent--text"
                 @click="switchToSettingsTab">
-                Team number is {{ $store.state.settings.networkSettings.teamNumber }}
+                NT server is {{ $store.state.settings.networkSettings.ntServerAddress }}
               </router-link>
             </v-list-item-content>
           </v-list-item>
@@ -151,7 +151,7 @@ export default {
   computed: {
     needsTeamNumberSet: {
       get() {
-        return this.$store.state.settings.networkSettings.teamNumber < 1
+        return this.$store.state.settings.networkSettings.ntServerAddress == ""
           && this.teamNumberDialog && this.$store.state.backendConnected
           && !this.$route.name.toLowerCase().includes("settings");
       }
