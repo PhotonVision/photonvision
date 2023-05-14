@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -24,9 +24,14 @@
 
 package org.photonvision;
 
+import edu.wpi.first.math.MatBuilder;
+import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.Nat;
+import edu.wpi.first.math.numbers.*;
 import edu.wpi.first.networktables.BooleanPublisher;
 import edu.wpi.first.networktables.BooleanSubscriber;
 import edu.wpi.first.networktables.DoubleArrayPublisher;
+import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.DoublePublisher;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.IntegerPublisher;
@@ -39,6 +44,7 @@ import edu.wpi.first.networktables.RawSubscriber;
 import edu.wpi.first.networktables.StringSubscriber;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
+import java.util.Optional;
 import java.util.Set;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.hardware.VisionLEDMode;
@@ -48,7 +54,7 @@ import org.photonvision.targeting.PhotonPipelineResult;
 public class PhotonCamera implements AutoCloseable {
     static final String kTableName = "photonvision";
 
-    protected final NetworkTable rootTable;
+    protected final NetworkTable cameraTable;
     RawSubscriber rawBytesEntry;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
@@ -64,6 +70,8 @@ public class PhotonCamera implements AutoCloseable {
     IntegerPublisher pipelineIndexRequest, ledModeRequest;
     IntegerSubscriber pipelineIndexState, ledModeState;
     IntegerSubscriber heartbeatEntry;
+    private DoubleArraySubscriber cameraIntrinsicsSubscriber;
+    private DoubleArraySubscriber cameraDistortionSubscriber;
 
     @Override
     public void close() {
@@ -85,6 +93,8 @@ public class PhotonCamera implements AutoCloseable {
         ledModeRequest.close();
         ledModeState.close();
         pipelineIndexRequest.close();
+        cameraIntrinsicsSubscriber.close();
+        cameraDistortionSubscriber.close();
     }
 
     private final String path;
@@ -116,24 +126,29 @@ public class PhotonCamera implements AutoCloseable {
      */
     public PhotonCamera(NetworkTableInstance instance, String cameraName) {
         name = cameraName;
-        var mainTable = instance.getTable(kTableName);
-        this.rootTable = mainTable.getSubTable(cameraName);
-        path = rootTable.getPath();
+        var photonvision_root_table = instance.getTable(kTableName);
+        this.cameraTable = photonvision_root_table.getSubTable(cameraName);
+        path = cameraTable.getPath();
         rawBytesEntry =
-                rootTable
+                cameraTable
                         .getRawTopic("rawBytes")
                         .subscribe(
                                 "rawBytes", new byte[] {}, PubSubOption.periodic(0.01), PubSubOption.sendAll(true));
-        driverModePublisher = rootTable.getBooleanTopic("driverMode").publish();
-        driverModeSubscriber = rootTable.getBooleanTopic("driverModeRequest").subscribe(false);
-        inputSaveImgEntry = rootTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
-        outputSaveImgEntry = rootTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
-        pipelineIndexRequest = rootTable.getIntegerTopic("pipelineIndexRequest").publish();
-        pipelineIndexState = rootTable.getIntegerTopic("pipelineIndexState").subscribe(0);
-        heartbeatEntry = rootTable.getIntegerTopic("heartbeat").subscribe(-1);
-        ledModeRequest = mainTable.getIntegerTopic("ledModeRequest").publish();
-        ledModeState = mainTable.getIntegerTopic("ledModeState").subscribe(-1);
-        versionEntry = mainTable.getStringTopic("version").subscribe("");
+        driverModePublisher = cameraTable.getBooleanTopic("driverModeRequest").publish();
+        driverModeSubscriber = cameraTable.getBooleanTopic("driverMode").subscribe(false);
+        inputSaveImgEntry = cameraTable.getIntegerTopic("inputSaveImgCmd").getEntry(0);
+        outputSaveImgEntry = cameraTable.getIntegerTopic("outputSaveImgCmd").getEntry(0);
+        pipelineIndexRequest = cameraTable.getIntegerTopic("pipelineIndexRequest").publish();
+        pipelineIndexState = cameraTable.getIntegerTopic("pipelineIndexState").subscribe(0);
+        heartbeatEntry = cameraTable.getIntegerTopic("heartbeat").subscribe(-1);
+        cameraIntrinsicsSubscriber =
+                cameraTable.getDoubleArrayTopic("cameraIntrinsics").subscribe(null);
+        cameraDistortionSubscriber =
+                cameraTable.getDoubleArrayTopic("cameraDistortion").subscribe(null);
+
+        ledModeRequest = photonvision_root_table.getIntegerTopic("ledModeRequest").publish();
+        ledModeState = photonvision_root_table.getIntegerTopic("ledModeState").subscribe(-1);
+        versionEntry = photonvision_root_table.getStringTopic("version").subscribe("");
 
         m_topicNameSubscriber =
                 new MultiSubscriber(
@@ -306,6 +321,20 @@ public class PhotonCamera implements AutoCloseable {
         return (now - prevHeartbeatChangeTime) < HEARBEAT_DEBOUNCE_SEC;
     }
 
+    public Optional<Matrix<N3, N3>> getCameraMatrix() {
+        var cameraMatrix = cameraIntrinsicsSubscriber.get();
+        if (cameraMatrix != null && cameraMatrix.length == 9) {
+            return Optional.of(new MatBuilder<>(Nat.N3(), Nat.N3()).fill(cameraMatrix));
+        } else return Optional.empty();
+    }
+
+    public Optional<Matrix<N5, N1>> getDistCoeffs() {
+        var distCoeffs = cameraDistortionSubscriber.get();
+        if (distCoeffs != null && distCoeffs.length == 5) {
+            return Optional.of(new MatBuilder<>(Nat.N5(), Nat.N1()).fill(distCoeffs));
+        } else return Optional.empty();
+    }
+
     private void verifyVersion() {
         if (!VERSION_CHECK_ENABLED) return;
 
@@ -315,7 +344,7 @@ public class PhotonCamera implements AutoCloseable {
         // Heartbeat entry is assumed to always be present. If it's not present, we
         // assume that a camera with that name was never connected in the first place.
         if (!heartbeatEntry.exists()) {
-            Set<String> cameraNames = rootTable.getInstance().getTable(kTableName).getSubTables();
+            Set<String> cameraNames = cameraTable.getInstance().getTable(kTableName).getSubTables();
             if (cameraNames.isEmpty()) {
                 DriverStation.reportError(
                         "Could not find any PhotonVision coprocessors on NetworkTables. Double check that PhotonVision is running, and that your camera is connected!",

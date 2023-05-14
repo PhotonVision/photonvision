@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -50,9 +50,7 @@ public class Robot extends TimedRobot {
             // set the NT server if simulating this code.
             // "localhost" for photon on desktop, or "photonvision.local" / "[ip-address]" for coprocessor
             instance.setServer("localhost");
-            instance.startClient4("myRobot");
-
-            DriverStationSim.setEnabled(true);
+            instance.startClient4("Robot Simulation");
         }
 
         m_controller = new XboxController(0);

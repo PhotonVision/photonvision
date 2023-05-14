@@ -10,6 +10,8 @@ Python/app/handlers/__pycache__/
 
 \.vscode/
 
+/.vs
+
 backend/settings/
 /.vscode/
 # Compiled class file
@@ -154,3 +156,5 @@ photon-server/src/main/resources/nativelibraries/apriltag/*
 
 photonlib-java-examples/*/vendordeps/*
 photonlib-cpp-examples/*/vendordeps/*
+
+*/networktables.json

@@ -44,6 +44,10 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonProperty("standardDeviation")
     public final double standardDeviation;
 
+    @JsonIgnore private final double[] intrinsicsArr = new double[9];
+
+    @JsonIgnore private final double[] extrinsicsArr = new double[5];
+
     @JsonCreator
     public CameraCalibrationCoefficients(
             @JsonProperty("resolution") Size resolution,
@@ -56,6 +60,10 @@ public class CameraCalibrationCoefficients implements Releasable {
         this.distCoeffs = distCoeffs;
         this.perViewErrors = perViewErrors;
         this.standardDeviation = standardDeviation;
+
+        // do this once so gets are quick
+        getCameraIntrinsicsMat().get(0, 0, intrinsicsArr);
+        getDistCoeffsMat().get(0, 0, extrinsicsArr);
     }
 
     @JsonIgnore
@@ -66,6 +74,16 @@ public class CameraCalibrationCoefficients implements Releasable {
     @JsonIgnore
     public MatOfDouble getDistCoeffsMat() {
         return distCoeffs.getAsMatOfDouble();
+    }
+
+    @JsonIgnore
+    public double[] getIntrinsicsArr() {
+        return intrinsicsArr;
+    }
+
+    @JsonIgnore
+    public double[] getExtrinsicsArr() {
+        return extrinsicsArr;
     }
 
     @JsonIgnore
