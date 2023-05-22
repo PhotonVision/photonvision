@@ -46,7 +46,9 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.opencv.core.Core;
-import org.photonvision.util.OpenCVHelp;
+import org.photonvision.estimation.CameraTargetRelation;
+import org.photonvision.estimation.OpenCVHelp;
+import org.photonvision.estimation.TargetModel;
 
 public class OpenCVTest {
     private static final double kTrlDelta = 0.005;
@@ -138,7 +140,7 @@ public class OpenCVTest {
                 new VisionTargetSim(
                         new Pose3d(1, 0, 0, new Rotation3d(0, 0, Math.PI)), TargetModel.kTag16h5, 0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
-        var targetCorners = OpenCVHelp.projectPoints(prop, cameraPose, target.getFieldVertices());
+        var targetCorners = OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, target.getFieldVertices());
         // find circulation (counter/clockwise-ness)
         double circulation = 0;
         for (int i = 0; i < targetCorners.size(); i++) {
@@ -152,7 +154,7 @@ public class OpenCVTest {
         var avgCenterRot1 = prop.getPixelRot(OpenCVHelp.averageCorner(targetCorners));
         cameraPose =
                 cameraPose.plus(new Transform3d(new Translation3d(), new Rotation3d(0, 0.25, 0.25)));
-        targetCorners = OpenCVHelp.projectPoints(prop, cameraPose, target.getFieldVertices());
+        targetCorners = OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, target.getFieldVertices());
         var avgCenterRot2 = prop.getPixelRot(OpenCVHelp.averageCorner(targetCorners));
         var yaw2d = new Rotation2d(avgCenterRot2.getZ());
         var pitch2d = new Rotation2d(avgCenterRot2.getY());
@@ -180,8 +182,8 @@ public class OpenCVTest {
                         new Pose3d(5, 0.5, 1, new Rotation3d(0, 0, Math.PI)), TargetModel.kTag16h5, 0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
         var actualRelation = new CameraTargetRelation(cameraPose, target.getPose());
-        var targetCorners = OpenCVHelp.projectPoints(prop, cameraPose, target.getFieldVertices());
-        var pnpSim = OpenCVHelp.solvePNP_SQUARE(prop, target.getModel().vertices, targetCorners);
+        var targetCorners = OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, target.getFieldVertices());
+        var pnpSim = OpenCVHelp.solvePNP_SQUARE(prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
         var estRelation = new CameraTargetRelation(cameraPose, cameraPose.plus(pnpSim.best));
         assertSame(actualRelation.camToTarg, estRelation.camToTarg);
     }
@@ -204,8 +206,8 @@ public class OpenCVTest {
                         0);
         var cameraPose = new Pose3d(0, 0, 0, new Rotation3d());
         var actualRelation = new CameraTargetRelation(cameraPose, target.getPose());
-        var targetCorners = OpenCVHelp.projectPoints(prop, cameraPose, target.getFieldVertices());
-        var pnpSim = OpenCVHelp.solvePNP_SQPNP(prop, target.getModel().vertices, targetCorners);
+        var targetCorners = OpenCVHelp.projectPoints(prop.getIntrinsics(), prop.getDistCoeffs(), cameraPose, target.getFieldVertices());
+        var pnpSim = OpenCVHelp.solvePNP_SQPNP(prop.getIntrinsics(), prop.getDistCoeffs(), target.getModel().vertices, targetCorners);
         var estRelation = new CameraTargetRelation(cameraPose, cameraPose.plus(pnpSim.best));
         assertSame(actualRelation.camToTarg, estRelation.camToTarg);
     }

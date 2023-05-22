@@ -38,8 +38,9 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
+
+import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.targeting.TargetCorner;
-import org.photonvision.util.OpenCVHelp;
 
 /**
  * Calibration and performance values for this camera.
@@ -278,7 +279,7 @@ public class CameraProperties {
     }
 
     public List<TargetCorner> undistort(List<TargetCorner> points) {
-        return OpenCVHelp.undistortPoints(this, points);
+        return OpenCVHelp.undistortPoints(camIntrinsics, distCoeffs, points);
     }
 
     /**

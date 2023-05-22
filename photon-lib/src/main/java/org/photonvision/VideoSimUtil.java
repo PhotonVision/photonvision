@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.photonvision.util;
+package org.photonvision;
 
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.util.RuntimeLoader;
@@ -44,7 +44,6 @@ import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
-import org.photonvision.CameraProperties;
 
 public class VideoSimUtil {
     public static final String kLocalTagImagesPath = "./src/main/resources/images/apriltags/";

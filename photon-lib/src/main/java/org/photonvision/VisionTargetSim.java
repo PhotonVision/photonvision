@@ -28,6 +28,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import java.util.List;
 
+import org.photonvision.estimation.TargetModel;
+
 /** Describes a vision target located somewhere on the field that your vision system can detect. */
 public class VisionTargetSim {
     private Pose3d pose;

@@ -43,6 +43,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.photonvision.estimation.TargetModel;
+
 /**
  * A simulated vision system involving a camera(s) and coprocessor(s) mounted on a mobile robot
  * running PhotonVision, detecting targets placed on the field. {@link VisionTargetSim}s added to
