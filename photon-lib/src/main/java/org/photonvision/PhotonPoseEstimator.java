@@ -24,7 +24,6 @@
 
 package org.photonvision;
 
-import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
@@ -45,7 +44,6 @@ import java.util.Set;
 import org.photonvision.estimation.VisionEstimation;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import org.photonvision.targeting.TargetCorner;
 
 /**
  * The PhotonPoseEstimator class filters or combines readings from all the AprilTags visible at a
@@ -362,33 +360,10 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
             Optional<Matrix<N5, N1>> distCoeffsOpt) {
-        // Arrays we need declared up front
-        var visCorners = new ArrayList<TargetCorner>();
-        var knownVisTags = new ArrayList<AprilTag>();
-        var fieldToCams = new ArrayList<Pose3d>();
-        var fieldToCamsAlt = new ArrayList<Pose3d>();
 
         if (result.getTargets().size() < 2) {
             // Run fallback strategy instead
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
-        }
-
-        for (var target : result.getTargets()) {
-            visCorners.addAll(target.getDetectedCorners());
-
-            var tagPoseOpt = fieldTags.getTagPose(target.getFiducialId());
-            if (tagPoseOpt.isEmpty()) {
-                reportFiducialPoseError(target.getFiducialId());
-                continue;
-            }
-
-            var tagPose = tagPoseOpt.get();
-
-            // actual layout poses of visible tags -- not exposed, so have to recreate
-            knownVisTags.add(new AprilTag(target.getFiducialId(), tagPose));
-
-            fieldToCams.add(tagPose.transformBy(target.getBestCameraToTarget().inverse()));
-            fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
         }
 
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
@@ -398,7 +373,7 @@ public class PhotonPoseEstimator {
             var cameraMatrix = cameraMatrixOpt.get();
             var distCoeffs = distCoeffsOpt.get();
             var pnpResults =
-                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, visCorners, knownVisTags);
+                    VisionEstimation.estimateCamPosePNP(cameraMatrix, distCoeffs, result.getTargets(), fieldTags);
             var best =
                     new Pose3d()
                             .plus(pnpResults.best) // field-to-camera
