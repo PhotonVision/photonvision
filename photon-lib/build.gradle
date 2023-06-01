@@ -78,6 +78,7 @@ model {
                 cpp {
                     source {
                         srcDirs "src/main/native/cpp"
+                        srcDirs "src/generate/native/cpp"
                         include "**/*.cpp"
                     }
                     exportedHeaders {
@@ -140,8 +141,8 @@ task writeCurrentVersion {
     def versionFileIn = file("${rootDir}/shared/PhotonVersion.java.in")
     writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "main", "java", "org", "photonvision", "PhotonVersion.java"),
             versionString)
-    versionFileIn = file("${rootDir}/shared/PhotonVersion.h.in")
-    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "generate", "native", "include", "PhotonVersion.h"),
+    versionFileIn = file("${rootDir}/shared/PhotonVersion.cpp.in")
+    writePhotonVersionFile(versionFileIn, Path.of("$projectDir", "src", "generate", "native", "cpp", "PhotonVersion.cpp"),
             versionString)
 }
 
