@@ -108,8 +108,8 @@ public class NetworkConfig {
 
     @Override
     public String toString() {
-        return "NetworkConfig [teamNumber="
-                + teamNumber
+        return "NetworkConfig [serverAddr="
+                + ntServerAddress
                 + ", connectionType="
                 + connectionType
                 + ", staticIp="
