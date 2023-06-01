@@ -389,7 +389,7 @@ public class PhotonPoseEstimator {
 
         if (result.getTargets().size() < 2 || knownVisTags.size() < 2) {
             // Run fallback strategy instead
-            return update(result, this.multiTagFallbackStrategy);
+            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         }
 
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();

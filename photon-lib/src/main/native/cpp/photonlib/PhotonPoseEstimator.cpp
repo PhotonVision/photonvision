@@ -387,7 +387,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
 
   // We should only do multi-tag if at least 2 tags (* 4 corners/tag)
   if (imagePoints.empty() || imagePoints.size() < 8) {
-    return Update(result, this->multiTagFallbackStrategy);
+    return Update(result, camMat, distCoeffs, this->multiTagFallbackStrategy);
   }
 
   // Use OpenCV ITERATIVE solver
@@ -395,7 +395,7 @@ std::optional<EstimatedRobotPose> PhotonPoseEstimator::MultiTagPnpStrategy(
   cv::Mat const tvec(3, 1, cv::DataType<double>::type);
 
   if (!camMat || !distCoeffs) {
-    return Update(result, this->multiTagFallbackStrategy);
+    return Update(result, camMat, distCoeffs, this->multiTagFallbackStrategy);
   }
 
   cv::solvePnP(objectPoints, imagePoints, camMat.value(), distCoeffs.value(),

@@ -146,44 +146,6 @@ public class VisionEstimation {
                 camToOrigin.altReprojErr);
     }
 
-    // /**
-    // * The best estimated transformation to the target, and possibly an alternate
-    // * transformation
-    // * depending on the solvePNP method. If an alternate solution is present, the
-    // * ambiguity value
-    // * represents the ratio of reprojection error in the best solution to the
-    // * alternate (best / alternate).
-    // */
-    // public static class PNPResults {
-    // public final Transform3d best;
-    // public final double bestReprojErr;
-
-    // /**
-    // * Alternate, ambiguous solution from solvepnp. This may be empty
-    // * if no alternate solution is found.
-    // */
-    // public final Transform3d alt;
-    // /** If no alternate solution is found, this is 0 */
-    // public final double altReprojErr;
-
-    // /** If no alternate solution is found, this is 0 */
-    // public final double ambiguity;
-
-    // public PNPResults() {
-    // this(new Transform3d(), new Transform3d(), 0, 0, 0);
-    // }
-
-    // public PNPResults(
-    // Transform3d best, Transform3d alt,
-    // double ambiguity, double bestReprojErr, double altReprojErr) {
-    // this.best = best;
-    // this.alt = alt;
-    // this.ambiguity = ambiguity;
-    // this.bestReprojErr = bestReprojErr;
-    // this.altReprojErr = altReprojErr;
-    // }
-    // }
-
     /**
      * The best estimated transformation (Rotation-translation composition) that maps a set of
      * translations onto another with point correspondences, and its RMSE.
