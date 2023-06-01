@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -138,6 +138,10 @@ std::optional<cv::Mat> PhotonCamera::GetCameraMatrix() {
 
 void PhotonCamera::SetLEDMode(LEDMode mode) {
   ledModePub.Set(static_cast<double>(static_cast<int>(mode)));
+}
+
+const std::string_view PhotonCamera::GetCameraName() const {
+  return m_cameraName;
 }
 
 std::optional<cv::Mat> PhotonCamera::GetDistCoeffs() {

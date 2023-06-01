@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2022 PhotonVision
+ * Copyright (c) PhotonVision
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -26,12 +26,16 @@ package org.photonvision;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.numbers.N5;
 import edu.wpi.first.wpilibj.DriverStation;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -85,14 +89,14 @@ public class PhotonPoseEstimator {
      * Create a new PhotonPoseEstimator.
      *
      * @param fieldTags A WPILib {@link AprilTagFieldLayout} linking AprilTag IDs to Pose3d objects
-     *     with respect to the FIRST field using the <a
-     *     href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
+     *     with respect to the FIRST field using the <a href=
+     *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#field-coordinate-system">Field
      *     Coordinate System</a>.
      * @param strategy The strategy it should use to determine the best pose.
      * @param camera PhotonCamera
      * @param robotToCamera Transform3d from the center of the robot to the camera mount position (ie,
-     *     robot ➔ camera) in the <a
-     *     href="https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
+     *     robot ➔ camera) in the <a href=
+     *     "https://docs.wpilib.org/en/stable/docs/software/advanced-controls/geometry/coordinate-systems.html#robot-coordinate-system">Robot
      *     Coordinate System</a>.
      */
     public PhotonPoseEstimator(
@@ -103,6 +107,14 @@ public class PhotonPoseEstimator {
         this.fieldTags = fieldTags;
         this.primaryStrategy = strategy;
         this.camera = camera;
+        this.robotToCamera = robotToCamera;
+    }
+
+    public PhotonPoseEstimator(
+            AprilTagFieldLayout fieldTags, PoseStrategy strategy, Transform3d robotToCamera) {
+        this.fieldTags = fieldTags;
+        this.primaryStrategy = strategy;
+        this.camera = null;
         this.robotToCamera = robotToCamera;
     }
 
@@ -251,7 +263,7 @@ public class PhotonPoseEstimator {
 
         PhotonPipelineResult cameraResult = camera.getLatestResult();
 
-        return update(cameraResult);
+        return update(cameraResult, camera.getCameraMatrix(), camera.getDistCoeffs());
     }
 
     /**
@@ -263,12 +275,33 @@ public class PhotonPoseEstimator {
      *     pipeline results used to create the estimate
      */
     public Optional<EstimatedRobotPose> update(PhotonPipelineResult cameraResult) {
+        if (camera == null) return update(cameraResult, Optional.empty(), Optional.empty());
+        return update(cameraResult, camera.getCameraMatrix(), camera.getDistCoeffs());
+    }
+
+    /**
+     * Updates the estimated position of the robot. Returns empty if there are no cameras set or no
+     * targets were found from the cameras.
+     *
+     * @param cameraResult The latest pipeline result from the camera
+     * @param cameraMatrixData Camera calibration data that can be used in the case of no assigned
+     *     PhotonCamera.
+     * @param coeffsData Camera calibration data that can be used in the case of no assigned
+     *     PhotonCamera
+     * @return an EstimatedRobotPose with an estimated pose, and information about the camera(s) and
+     *     pipeline results used to create the estimate
+     */
+    public Optional<EstimatedRobotPose> update(
+            PhotonPipelineResult cameraResult,
+            Optional<Matrix<N3, N3>> cameraMatrixData,
+            Optional<Matrix<N5, N1>> coeffsData) {
         // Time in the past -- give up, since the following if expects times > 0
         if (cameraResult.getTimestampSeconds() < 0) {
             return Optional.empty();
         }
 
-        // If the pose cache timestamp was set, and the result is from the same timestamp, return an
+        // If the pose cache timestamp was set, and the result is from the same
+        // timestamp, return an
         // empty result
         if (poseCacheTimestampSeconds > 0
                 && Math.abs(poseCacheTimestampSeconds - cameraResult.getTimestampSeconds()) < 1e-6) {
@@ -283,11 +316,14 @@ public class PhotonPoseEstimator {
             return Optional.empty();
         }
 
-        return update(cameraResult, this.primaryStrategy);
+        return update(cameraResult, cameraMatrixData, coeffsData, this.primaryStrategy);
     }
 
     private Optional<EstimatedRobotPose> update(
-            PhotonPipelineResult cameraResult, PoseStrategy strat) {
+            PhotonPipelineResult cameraResult,
+            Optional<Matrix<N3, N3>> cameraMatrixData,
+            Optional<Matrix<N5, N1>> coeffsData,
+            PoseStrategy strat) {
         Optional<EstimatedRobotPose> estimatedPose;
         switch (strat) {
             case LOWEST_AMBIGUITY:
@@ -307,7 +343,7 @@ public class PhotonPoseEstimator {
                 estimatedPose = averageBestTargetsStrategy(cameraResult);
                 break;
             case MULTI_TAG_PNP:
-                estimatedPose = multiTagPNPStrategy(cameraResult);
+                estimatedPose = multiTagPNPStrategy(cameraResult, cameraMatrixData, coeffsData);
                 break;
             default:
                 DriverStation.reportError(
@@ -322,7 +358,10 @@ public class PhotonPoseEstimator {
         return estimatedPose;
     }
 
-    private Optional<EstimatedRobotPose> multiTagPNPStrategy(PhotonPipelineResult result) {
+    private Optional<EstimatedRobotPose> multiTagPNPStrategy(
+            PhotonPipelineResult result,
+            Optional<Matrix<N3, N3>> cameraMatrixOpt,
+            Optional<Matrix<N5, N1>> distCoeffsOpt) {
         // Arrays we need declared up front
         var visCorners = new ArrayList<TargetCorner>();
         var knownVisTags = new ArrayList<AprilTag>();
@@ -331,7 +370,7 @@ public class PhotonPoseEstimator {
 
         if (result.getTargets().size() < 2) {
             // Run fallback strategy instead
-            return update(result, this.multiTagFallbackStrategy);
+            return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
         }
 
         for (var target : result.getTargets()) {
@@ -352,8 +391,6 @@ public class PhotonPoseEstimator {
             fieldToCamsAlt.add(tagPose.transformBy(target.getAlternateCameraToTarget().inverse()));
         }
 
-        var cameraMatrixOpt = camera.getCameraMatrix();
-        var distCoeffsOpt = camera.getDistCoeffs();
         boolean hasCalibData = cameraMatrixOpt.isPresent() && distCoeffsOpt.isPresent();
 
         // multi-target solvePNP

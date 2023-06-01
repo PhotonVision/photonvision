@@ -17,6 +17,7 @@
 
 package org.photonvision.common.configuration;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -30,7 +31,7 @@ import org.photonvision.common.networking.NetworkMode;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
-    public int teamNumber = 0;
+    public String ntServerAddress = "0";
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String staticIp = "";
     public String hostname = "photonvision";
@@ -54,7 +55,8 @@ public class NetworkConfig {
 
     @JsonCreator
     public NetworkConfig(
-            @JsonProperty("teamNumber") int teamNumber,
+            @JsonProperty("ntServerAddress") @JsonAlias({"ntServerAddress", "teamNumber"})
+                    String ntServerAddress,
             @JsonProperty("connectionType") NetworkMode connectionType,
             @JsonProperty("staticIp") String staticIp,
             @JsonProperty("hostname") String hostname,
@@ -64,7 +66,7 @@ public class NetworkConfig {
             @JsonProperty("physicalInterface") String physicalInterface,
             @JsonProperty("setStaticCommand") String setStaticCommand,
             @JsonProperty("setDHCPcommand") String setDHCPcommand) {
-        this.teamNumber = teamNumber;
+        this.ntServerAddress = ntServerAddress;
         this.connectionType = connectionType;
         this.staticIp = staticIp;
         this.hostname = hostname;
