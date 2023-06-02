@@ -18,7 +18,6 @@
 package org.photonvision.server;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.javalin.http.Context;
@@ -241,13 +240,13 @@ public class RequestHandler {
         logger.info("Calibrating camera! This will take a long time...");
 
         int index;
-		try {
-			index = (int) kObjectMapper.readValue(ctx.body(), HashMap.class).get("idx");
-		} catch (Exception e) {
+        try {
+            index = (int) kObjectMapper.readValue(ctx.body(), HashMap.class).get("idx");
+        } catch (Exception e) {
             logger.error("Cannot parse calibration idx", e);
             ctx.status(500);
             return;
-		}
+        }
 
         var calData = VisionModuleManager.getInstance().getModule(index).endCalibration();
         if (calData == null) {
