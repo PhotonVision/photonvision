@@ -125,23 +125,31 @@
               <v-list-item-title
                 v-else-if="$store.state.ntConnectionInfo.connected && $store.state.backendConnected"
                 class="text-wrap"
+                style="flex-direction: column; display: flex"
               >
                 Robot connected! {{ $store.state.ntConnectionInfo.address }}
+                <router-link
+                  to="settings"
+                  class="accent--text"
+                  @click="switchToSettingsTab"
+                >
+                  NT server is {{ $store.state.settings.networkSettings.ntServerAddress }}
+                </router-link>
               </v-list-item-title>
               <v-list-item-title
                 v-else
                 class="text-wrap"
+                style="flex-direction: column; display: flex"
               >
                 Not connected to robot!
+                <router-link
+                  to="settings"
+                  class="accent--text"
+                  @click="switchToSettingsTab"
+                >
+                  Open Network Settings
+                </router-link>
               </v-list-item-title>
-              <router-link
-                v-if="!$store.state.settings.networkSettings.runNTServer"
-                to="settings"
-                class="accent--text"
-                @click="switchToSettingsTab"
-              >
-                NT server is {{ $store.state.settings.networkSettings.ntServerAddress }}
-              </router-link>
             </v-list-item-content>
           </v-list-item>
 
