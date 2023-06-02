@@ -134,8 +134,12 @@
               >
                 Not connected to robot!
               </v-list-item-title>
-              <router-link v-if="!$store.state.settings.networkSettings.runNTServer" to="settings" class="accent--text"
-                @click="switchToSettingsTab">
+              <router-link
+                v-if="!$store.state.settings.networkSettings.runNTServer"
+                to="settings"
+                class="accent--text"
+                @click="switchToSettingsTab"
+              >
                 NT server is {{ $store.state.settings.networkSettings.ntServerAddress }}
               </router-link>
             </v-list-item-content>
