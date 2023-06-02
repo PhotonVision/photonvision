@@ -281,11 +281,11 @@ jobs:
         run: |
           sudo sh -c "echo 'deb http://archive.ubuntu.com/ubuntu/ $(lsb_release -cs)-proposed restricted main multiverse universe' >> /etc/apt/sources.list.d/proposed-repositories.list"
           sudo apt-get update -q
-          sudo apt-get install -y clang-format-12
+          sudo apt-get install -y clang-format-14
       - name: Install wpiformat
         run: pip3 install wpiformat
       - name: Run
-        run: wpiformat -clang 12
+        run: wpiformat -clang 14
       - name: Check Output
         run: git --no-pager diff --exit-code HEAD
       - name: Generate diff
