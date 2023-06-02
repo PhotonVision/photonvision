@@ -31,6 +31,7 @@ import org.photonvision.common.networking.NetworkMode;
 import org.photonvision.common.util.file.JacksonUtils;
 
 public class NetworkConfig {
+    // Can be a integer team number, or a IP address
     public String ntServerAddress = "0";
     public NetworkMode connectionType = NetworkMode.DHCP;
     public String staticIp = "";

@@ -37,8 +37,16 @@ import org.photonvision.common.util.file.JacksonUtils;
 import org.photonvision.vision.pipeline.CVPipelineSettings;
 import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 
-public class SqlConfigLoader extends ConfigProvider {
-    private final Logger logger = new Logger(SqlConfigLoader.class, LogGroup.Config);
+/**
+ * Saves settings in a SQLite database file (called photon.sqlite).
+ *
+ * <p>Within this database we have a cameras database, which has one row per camera, and holds:
+ * unique_name, config_json, drivermode_json, pipeline_jsons.
+ *
+ * <p>Global has one row per global config file (like hardware settings and network settings)
+ */
+public class SqlConfigProvider extends ConfigProvider {
+    private final Logger logger = new Logger(SqlConfigProvider.class, LogGroup.Config);
 
     static class TableKeys {
         static final String CAM_UNIQUE_NAME = "unique_name";
@@ -58,7 +66,7 @@ public class SqlConfigLoader extends ConfigProvider {
     private final Object m_mutex = new Object();
     private final File rootFolder;
 
-    public SqlConfigLoader(Path rootFolder) {
+    public SqlConfigProvider(Path rootFolder) {
         this.rootFolder = rootFolder.toFile();
         dbPath = Path.of(rootFolder.toString(), dbName).toAbsolutePath().toString();
         logger.debug("Using database " + dbPath);
@@ -110,7 +118,7 @@ public class SqlConfigLoader extends ConfigProvider {
         }
 
         Connection conn = null;
-        Statement stmt1 = null, stmt2 = null;
+        Statement createGlobalTableStatement = null, createCameraTableStatement = null;
         try {
             conn = createConn();
             if (conn == null) {
@@ -121,20 +129,20 @@ public class SqlConfigLoader extends ConfigProvider {
             // Create global settings table. Just a dumb table with list of jsons and their
             // name
             try {
-                stmt1 = conn.createStatement();
+                createGlobalTableStatement = conn.createStatement();
                 String sql =
                         "CREATE TABLE IF NOT EXISTS global (\n"
                                 + " filename TINYTEXT PRIMARY KEY,\n"
                                 + " contents mediumtext NOT NULL\n"
                                 + ");";
-                stmt1.execute(sql);
+                createGlobalTableStatement.execute(sql);
             } catch (SQLException e) {
                 logger.error("Err creating global table", e);
             }
 
             // Create cameras table, key is the camera unique name
             try {
-                stmt2 = conn.createStatement();
+                createCameraTableStatement = conn.createStatement();
                 var sql =
                         "CREATE TABLE IF NOT EXISTS cameras (\n"
                                 + " unique_name TINYTEXT PRIMARY KEY,\n"
@@ -142,7 +150,7 @@ public class SqlConfigLoader extends ConfigProvider {
                                 + " drivermode_json text NOT NULL,\n"
                                 + " pipeline_jsons mediumtext NOT NULL\n"
                                 + ");";
-                stmt2.execute(sql);
+                createCameraTableStatement.execute(sql);
             } catch (SQLException e) {
                 logger.error("Err creating cameras table", e);
             }
@@ -150,8 +158,8 @@ public class SqlConfigLoader extends ConfigProvider {
             this.tryCommit(conn);
         } finally {
             try {
-                if (stmt1 != null) stmt1.close();
-                if (stmt2 != null) stmt2.close();
+                if (createGlobalTableStatement != null) createGlobalTableStatement.close();
+                if (createCameraTableStatement != null) createCameraTableStatement.close();
                 if (conn != null) conn.close();
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -173,17 +181,18 @@ public class SqlConfigLoader extends ConfigProvider {
             saveCameras(conn);
             saveGlobal(conn);
             tryCommit(conn);
+
             try {
                 conn.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("SQL Err closing connection while saving to disk: ", e);
             }
         }
 
         logger.info("Settings saved!");
     }
 
+    @Override
     public void load() {
         logger.debug("Loading config...");
         var conn = createConn();
@@ -226,8 +235,7 @@ public class SqlConfigLoader extends ConfigProvider {
             try {
                 conn.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("SQL Err closing connection while loading: ", e);
             }
 
             this.config = new PhotonConfiguration(hardwareConfig, hardwareSettings, networkConfig, cams);
@@ -235,7 +243,7 @@ public class SqlConfigLoader extends ConfigProvider {
     }
 
     private String getOneConfigFile(Connection conn, String filename) {
-        // Querry every single row of the global settings db
+        // Query every single row of the global settings db
         PreparedStatement querry = null;
         try {
             querry =
@@ -248,13 +256,12 @@ public class SqlConfigLoader extends ConfigProvider {
                 return contents;
             }
         } catch (SQLException e) {
-            logger.error("Err getting file " + filename, e);
+            logger.error("SQL Err getting file " + filename, e);
         } finally {
             try {
                 if (querry != null) querry.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("SQL Err closing config file querry " + filename, e);
             }
         }
 
@@ -292,9 +299,6 @@ public class SqlConfigLoader extends ConfigProvider {
                                 .filter(Objects::nonNull)
                                 .collect(Collectors.toList());
                 statement.setString(4, JacksonUtils.serializeToString(settings));
-
-                var rowsChanged = statement.executeUpdate();
-                // System.out.println(rowsChanged + " records mutated");
             }
 
         } catch (SQLException | IOException e) {
@@ -356,8 +360,7 @@ public class SqlConfigLoader extends ConfigProvider {
                 if (statement2 != null) statement2.close();
                 if (statement3 != null) statement3.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("SQL Err closing global settings querry ", e);
             }
         }
     }
@@ -390,8 +393,7 @@ public class SqlConfigLoader extends ConfigProvider {
                 if (statement1 != null) statement1.close();
                 conn.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("SQL Err saving file " + fname, e);
             }
         }
     }
@@ -419,10 +421,16 @@ public class SqlConfigLoader extends ConfigProvider {
         try {
             querry =
                     conn.prepareStatement(
-                            "SELECT unique_name, config_json, drivermode_json, pipeline_jsons FROM cameras");
+                            String.format(
+                                    "SELECT %s, %s, %s, %s FROM cameras",
+                                    TableKeys.CAM_UNIQUE_NAME,
+                                    TableKeys.CONFIG_JSON,
+                                    TableKeys.DRIVERMODE_JSON,
+                                    TableKeys.PIPELINE_JSONS));
 
             var result = querry.executeQuery();
 
+            // Iterate over every row/"camera" in the table
             while (result.next()) {
                 List<String> dummyList = new ArrayList<>();
 
@@ -454,8 +462,7 @@ public class SqlConfigLoader extends ConfigProvider {
             try {
                 if (querry != null) querry.close();
             } catch (SQLException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                logger.error("SQL Err closing connection while loading cameras ", e);
             }
         }
         return loadedConfigurations;

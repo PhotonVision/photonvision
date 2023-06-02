@@ -24,8 +24,7 @@ public abstract class ConfigProvider {
 
     abstract void load();
 
-    void saveToDisk() {}
-    ;
+    abstract void saveToDisk();
 
     PhotonConfiguration getConfig() {
         return config;

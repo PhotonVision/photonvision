@@ -50,17 +50,36 @@ public class ConfigManager {
     private Thread settingsSaveThread;
     private long saveRequestTimestamp = -1;
 
+    enum ConfigSaveStrategy {
+        SQL,
+        LEGACY,
+        ATOMIC_ZIP;
+    }
+    // This logic decides which kind of ConfigManager we load as the default. If we want
+    // to switch back to the legacy config manager, change this constant
+    private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
+
     public static ConfigManager getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new ConfigManager(getRootFolder(), new SqlConfigLoader(getRootFolder()));
-            // INSTANCE = new ConfigManager(getRootFolder(), new LegacyConfigManager(getRootFolder()));
+            switch (m_saveStrat) {
+                case SQL:
+                    INSTANCE = new ConfigManager(getRootFolder(), new SqlConfigProvider(getRootFolder()));
+                    break;
+                case LEGACY:
+                    INSTANCE = new ConfigManager(getRootFolder(), new LegacyConfigProvider(getRootFolder()));
+                    break;
+                case ATOMIC_ZIP:
+                    // not yet done, fall through
+                default:
+                    break;
+            }
         }
         return INSTANCE;
     }
 
     private void translateLegacyIfPresent(Path folderPath) {
-        if (!(m_provider instanceof SqlConfigLoader)) {
-            // Cannot import
+        if (!(m_provider instanceof SqlConfigProvider)) {
+            // Cannot import into SQL if we aren't in SQL mode rn
             return;
         }
         logger.info("Translating settings zip!");
@@ -69,7 +88,7 @@ public class ConfigManager {
         var maybeCamsBak = Path.of(folderPath.toAbsolutePath().toString(), "cameras_backup").toFile();
 
         if (maybeCams.exists() && maybeCams.isDirectory()) {
-            var legacy = new LegacyConfigManager(folderPath);
+            var legacy = new LegacyConfigProvider(folderPath);
             legacy.load();
             var loadedConfig = legacy.getConfig();
 
@@ -86,7 +105,7 @@ public class ConfigManager {
             }
 
             // Save the same config out using SQL loader
-            var sql = new SqlConfigLoader(getRootFolder());
+            var sql = new SqlConfigProvider(getRootFolder());
             sql.setConfig(loadedConfig);
             sql.saveToDisk();
         }
@@ -105,11 +124,11 @@ public class ConfigManager {
         // old style
         var maybeCams = Path.of(folderPath.getAbsolutePath(), "cameras").toFile();
         if (maybeCams.exists() && maybeCams.isDirectory()) {
-            var legacy = new LegacyConfigManager(folderPath.toPath());
+            var legacy = new LegacyConfigProvider(folderPath.toPath());
             legacy.load();
             var loadedConfig = legacy.getConfig();
 
-            var sql = new SqlConfigLoader(getRootFolder());
+            var sql = new SqlConfigProvider(getRootFolder());
             sql.setConfig(loadedConfig);
             sql.saveToDisk();
         } else {

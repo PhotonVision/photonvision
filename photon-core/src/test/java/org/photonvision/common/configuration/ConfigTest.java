@@ -47,7 +47,7 @@ public class ConfigTest {
     public static void init() {
         TestUtils.loadLibraries();
         var path = Path.of("testconfigdir");
-        configMgr = new ConfigManager(path, new LegacyConfigManager(path));
+        configMgr = new ConfigManager(path, new LegacyConfigProvider(path));
         configMgr.load();
 
         Logger.setLevel(LogGroup.General, LogLevel.TRACE);

@@ -36,7 +36,7 @@ public class SQLConfigTest {
 
     @Test
     public void testLoad() {
-        var cfgLoader = new SqlConfigLoader(Path.of("jdbc_test"));
+        var cfgLoader = new SqlConfigProvider(Path.of("jdbc_test"));
 
         cfgLoader.load();
 
@@ -57,12 +57,12 @@ public class SQLConfigTest {
                         new ColoredShapePipelineSettings());
 
         cfgLoader.getConfig().addCameraConfig(testcamcfg);
-        cfgLoader.getConfig().getNetworkConfig().teamNumber = 5940;
+        cfgLoader.getConfig().getNetworkConfig().ntServerAddress = "5940";
         cfgLoader.saveToDisk();
 
         cfgLoader.load();
         System.out.println(cfgLoader.getConfig());
 
-        assertEquals(cfgLoader.getConfig().getNetworkConfig().teamNumber, 5940);
+        assertEquals(cfgLoader.getConfig().getNetworkConfig().ntServerAddress, "5940");
     }
 }

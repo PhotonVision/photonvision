@@ -39,8 +39,8 @@ import org.photonvision.vision.pipeline.DriverModePipelineSettings;
 import org.photonvision.vision.processes.VisionSource;
 import org.zeroturnaround.zip.ZipUtil;
 
-class LegacyConfigManager extends ConfigProvider {
-    private static final Logger logger = new Logger(LegacyConfigManager.class, LogGroup.General);
+class LegacyConfigProvider extends ConfigProvider {
+    private static final Logger logger = new Logger(LegacyConfigProvider.class, LogGroup.General);
 
     public static final String HW_CFG_FNAME = "hardwareConfig.json";
     public static final String HW_SET_FNAME = "hardwareSettings.json";
@@ -79,7 +79,7 @@ class LegacyConfigManager extends ConfigProvider {
         return Path.of("photonvision_config");
     }
 
-    protected LegacyConfigManager(Path configDirectoryFile) {
+    protected LegacyConfigProvider(Path configDirectoryFile) {
         this.configDirectoryFile = new File(configDirectoryFile.toUri());
         this.hardwareConfigFile =
                 new File(Path.of(configDirectoryFile.toString(), HW_CFG_FNAME).toUri());
@@ -183,6 +183,7 @@ class LegacyConfigManager extends ConfigProvider {
                         hardwareConfig, hardwareSettings, networkConfig, cameraConfigurations);
     }
 
+    @Override
     public void saveToDisk() {
         // Delete old configs
         FileUtils.deleteDirectory(camerasFolder.toPath());
