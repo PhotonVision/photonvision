@@ -389,7 +389,7 @@
       </v-col>
     </v-row>
 
-    <!-- Special hidden upload input that gets 'clicked' when the user imports settings -->
+    <!-- Special hidden upload input that gets 'clicked' when the user imports calibdb data -->
     <input
       ref="importCalibrationFromCalibdb"
       type="file"
@@ -788,7 +788,7 @@ export default {
             this.snack = true;
             this.calibrationInProgress = true;
 
-            this.axios.post("http://" + this.$address + "/api/settings/endCalibration", this.$store.getters.currentCameraIndex)
+            this.axios.post("http://" + this.$address + "/api/settings/endCalibration", {idx: this.$store.getters.currentCameraIndex})
                 .then((response) => {
                         if (response.status === 200) {
                             this.calibrationInProgress = false;
