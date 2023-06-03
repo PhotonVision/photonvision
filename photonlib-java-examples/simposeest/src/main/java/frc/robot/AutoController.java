@@ -61,7 +61,9 @@ public class AutoController {
                         new TrajectoryConfig(2, 2));
     }
 
-    /** @return The starting (initial) pose of the currently-active trajectory */
+    /**
+     * @return The starting (initial) pose of the currently-active trajectory
+     */
     public Pose2d getInitialPose() {
         return trajectory.getInitialPose();
     }
