@@ -55,6 +55,7 @@ public class ConfigManager {
         LEGACY,
         ATOMIC_ZIP;
     }
+
     // This logic decides which kind of ConfigManager we load as the default. If we want
     // to switch back to the legacy config manager, change this constant
     private static final ConfigSaveStrategy m_saveStrat = ConfigSaveStrategy.SQL;
