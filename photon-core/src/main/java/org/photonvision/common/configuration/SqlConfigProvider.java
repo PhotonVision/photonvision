@@ -244,12 +244,12 @@ public class SqlConfigProvider extends ConfigProvider {
 
     private String getOneConfigFile(Connection conn, String filename) {
         // Query every single row of the global settings db
-        PreparedStatement querry = null;
+        PreparedStatement query = null;
         try {
-            querry =
+            query =
                     conn.prepareStatement("SELECT contents FROM global where filename=\"" + filename + "\"");
 
-            var result = querry.executeQuery();
+            var result = query.executeQuery();
 
             while (result.next()) {
                 var contents = result.getString("contents");
@@ -259,9 +259,9 @@ public class SqlConfigProvider extends ConfigProvider {
             logger.error("SQL Err getting file " + filename, e);
         } finally {
             try {
-                if (querry != null) querry.close();
+                if (query != null) query.close();
             } catch (SQLException e) {
-                logger.error("SQL Err closing config file querry " + filename, e);
+                logger.error("SQL Err closing config file query " + filename, e);
             }
         }
 
@@ -360,7 +360,7 @@ public class SqlConfigProvider extends ConfigProvider {
                 if (statement2 != null) statement2.close();
                 if (statement3 != null) statement3.close();
             } catch (SQLException e) {
-                logger.error("SQL Err closing global settings querry ", e);
+                logger.error("SQL Err closing global settings query ", e);
             }
         }
     }
@@ -417,9 +417,9 @@ public class SqlConfigProvider extends ConfigProvider {
         HashMap<String, CameraConfiguration> loadedConfigurations = new HashMap<>();
 
         // Querry every single row of the cameras db
-        PreparedStatement querry = null;
+        PreparedStatement query = null;
         try {
-            querry =
+            query =
                     conn.prepareStatement(
                             String.format(
                                     "SELECT %s, %s, %s, %s FROM cameras",
@@ -428,7 +428,7 @@ public class SqlConfigProvider extends ConfigProvider {
                                     TableKeys.DRIVERMODE_JSON,
                                     TableKeys.PIPELINE_JSONS));
 
-            var result = querry.executeQuery();
+            var result = query.executeQuery();
 
             // Iterate over every row/"camera" in the table
             while (result.next()) {
@@ -460,7 +460,7 @@ public class SqlConfigProvider extends ConfigProvider {
             logger.error("Err loading cameras: ", e);
         } finally {
             try {
-                if (querry != null) querry.close();
+                if (query != null) query.close();
             } catch (SQLException e) {
                 logger.error("SQL Err closing connection while loading cameras ", e);
             }
