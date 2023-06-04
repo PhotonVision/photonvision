@@ -30,6 +30,8 @@
           </v-list-item-icon>
         </v-list-item>
 
+        <hr>
+
         <v-list-item
           link
           to="dashboard"
