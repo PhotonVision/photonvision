@@ -107,7 +107,6 @@
               </v-icon>
               <v-icon
                 v-else
-                class="pulse"
                 style="border-radius: 100%"
               >
                 mdi-robot-off
@@ -160,7 +159,6 @@
               </v-icon>
               <v-icon
                 v-else
-                class="pulse"
                 style="border-radius: 100%;"
               >
                 mdi-wifi-off
