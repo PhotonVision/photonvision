@@ -117,37 +117,26 @@
                 v-if="$store.state.settings.networkSettings.runNTServer"
                 class="text-wrap"
               >
-                NetworkTables server running for {{ $store.state.ntConnectionInfo.clients ?
-                  $store.state.ntConnectionInfo.clients : 'zero'
-                }} clients!
+                NetworkTables server running for <span class="accent--text">{{ $store.state.ntConnectionInfo.clients }}</span> clients!
               </v-list-item-title>
               <v-list-item-title
                 v-else-if="$store.state.ntConnectionInfo.connected && $store.state.backendConnected"
                 class="text-wrap"
                 style="flex-direction: column; display: flex"
               >
-                Robot connected! {{ $store.state.ntConnectionInfo.address }}
-                <router-link
-                  to="settings"
+                NetworkTables Server Connected!
+                <span
                   class="accent--text"
-                  @click="switchToSettingsTab"
                 >
-                  NT server is {{ $store.state.settings.networkSettings.ntServerAddress }}
-                </router-link>
+                  {{ $store.state.ntConnectionInfo.address }}
+                </span>
               </v-list-item-title>
               <v-list-item-title
                 v-else
                 class="text-wrap"
                 style="flex-direction: column; display: flex"
               >
-                Not connected to robot!
-                <router-link
-                  to="settings"
-                  class="accent--text"
-                  @click="switchToSettingsTab"
-                >
-                  Open Network Settings
-                </router-link>
+                Not connected to NetworkTables Server!
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
@@ -155,18 +144,18 @@
           <v-list-item>
             <v-list-item-icon>
               <v-icon v-if="$store.state.backendConnected">
-                mdi-wifi
+                mdi-server-network
               </v-icon>
               <v-icon
                 v-else
                 style="border-radius: 100%;"
               >
-                mdi-wifi-off
+                mdi-server-network-off
               </v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title class="text-wrap">
-                {{ $store.state.backendConnected ? "Backend Connected" : "Trying to connect..." }}
+                {{ $store.state.backendConnected ? "Backend Connected" : "Trying to connect to Backend" }}
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
@@ -204,17 +193,17 @@
         color="primary"
         flat
       >
-        <v-card-title>No team number set!</v-card-title>
+        <v-card-title>NetworkTables Server Address Not Set</v-card-title>
         <v-card-text>
-          PhotonVision cannot connect to your robot! Please
+          PhotonVision cannot connect to the NetworkTables Server. Please visit the
           <router-link
             to="settings"
             class="accent--text"
             @click="switchToSettingsTab"
           >
-            visit the settings tab
+            networking settings tab
           </router-link>
-          and set your team number.
+          and set the NetworkTables Server Address.
         </v-card-text>
       </v-card>
     </v-dialog>

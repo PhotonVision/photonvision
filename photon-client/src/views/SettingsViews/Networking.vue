@@ -58,7 +58,7 @@
         text-color="white"
         icon="mdi-information-outline"
       >
-        This mode is intended for testing; it should be off on a robot. PhotonLib will NOT work!
+        This mode is intended for debugging; it should be off for proper usage. PhotonLib will NOT work!
       </v-banner>
     </v-form>
     <v-btn
