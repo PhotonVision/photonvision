@@ -16,6 +16,7 @@
  */
 
 package org.photonvision.common;
+
 /*
  * Copyright (C) 2020 Photon Vision.
  *

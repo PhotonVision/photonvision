@@ -149,7 +149,9 @@ public class DrivetrainSim {
         drivetrainSimulator.setPose(pose);
     }
 
-    /** @return The simulated robot's position, in meters. */
+    /**
+     * @return The simulated robot's position, in meters.
+     */
     public Pose2d getCurPose() {
         return drivetrainSimulator.getPose();
     }

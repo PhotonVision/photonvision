@@ -130,7 +130,9 @@ public class Drivetrain {
         poseEst.resetToPose(pose, leftEncoder.getDistance(), rightEncoder.getDistance());
     }
 
-    /** @return The current best-guess at drivetrain Pose on the field. */
+    /**
+     * @return The current best-guess at drivetrain Pose on the field.
+     */
     public Pose2d getCtrlsPoseEstimate() {
         return poseEst.getPoseEst();
     }

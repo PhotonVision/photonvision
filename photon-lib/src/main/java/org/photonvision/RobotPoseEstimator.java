@@ -40,7 +40,9 @@ import java.util.Set;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-/** @deprecated Use {@link PhotonPoseEstimator} */
+/**
+ * @deprecated Use {@link PhotonPoseEstimator}
+ */
 @Deprecated
 public class RobotPoseEstimator {
     /**
@@ -345,27 +347,37 @@ public class RobotPoseEstimator {
         return x.getTranslation().getDistance(y.getTranslation());
     }
 
-    /** @param aprilTags the aprilTags to set */
+    /**
+     * @param aprilTags the aprilTags to set
+     */
     public void setAprilTags(AprilTagFieldLayout aprilTags) {
         this.aprilTags = aprilTags;
     }
 
-    /** @return the aprilTags */
+    /**
+     * @return the aprilTags
+     */
     public AprilTagFieldLayout getAprilTags() {
         return aprilTags;
     }
 
-    /** @return the strategy */
+    /**
+     * @return the strategy
+     */
     public PoseStrategy getStrategy() {
         return strategy;
     }
 
-    /** @param strategy the strategy to set */
+    /**
+     * @param strategy the strategy to set
+     */
     public void setStrategy(PoseStrategy strategy) {
         this.strategy = strategy;
     }
 
-    /** @return the referencePose */
+    /**
+     * @return the referencePose
+     */
     public Pose3d getReferencePose() {
         return referencePose;
     }
