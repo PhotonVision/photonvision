@@ -8,9 +8,9 @@
         v-model="ntServerAddress"
         :input-cols="inputCols"
         :disabled="settings.runNTServer"
-        name="Team Number"
-        tooltip="enter the team number or the IP address of the robot NetworkTables server"
-        :rules="[v => isValidTeamNumber(v) || 'Team Number must be non blank and a team number, IP address, or hostname']"
+        name="NetworkTables Server Address"
+        tooltip="Enter the Team Number or the IP address of the NetworkTables Server"
+        :rules="[v => isValidTeamNumber(v) || 'The NetworkTables Server Address must be a non blank team number, IP address, or hostname']"
       />
       <v-banner
         v-show="!isValidTeamNumber(ntServerAddress) && !runNTServer"
@@ -97,67 +97,6 @@
         name="Physical interface"
       />
     </template>
-
-    <!-- TEMP - RIO finder is not currently enabled
-    <v-row>
-      <v-col
-        cols="12"
-        sm="6"
-      >
-        <v-simple-table
-          fixed-header
-          height="100%"
-          dense
-        >
-          <template v-slot:default>
-            <thead style="font-size: 1.25rem;">
-              <tr>
-                <th>
-                  Device IPs
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(value, index) in $store.state.networkInfo.deviceips"
-                :key="index"
-              >
-                <td>{{ value }}</td>
-              </tr>
-            </tbody>
-          </template>
-        </v-simple-table>
-      </v-col>
-      <v-col
-        cols="12"
-        sm="6"
-      >
-        <v-simple-table
-          fixed-header
-          height="100%"
-          dense
-        >
-          <template v-slot:default>
-            <thead style="font-size: 1.25rem;">
-              <tr>
-                <th>
-                  Possible RoboRIOs
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(value, index) in $store.state.networkInfo.possibleRios"
-                :key="index"
-              >
-                <td>{{ value }}</td>
-              </tr>
-            </tbody>
-          </template>
-        </v-simple-table>
-      </v-col>
-    </v-row>
-    -->
   </div>
 </template>
 
