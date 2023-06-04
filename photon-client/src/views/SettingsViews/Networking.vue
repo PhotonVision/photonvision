@@ -17,8 +17,10 @@
         rounded
         color="red"
         text-color="white"
+        style="margin: 8px 0"
+        icon="mdi-alert-circle-outline"
       >
-        Team Number unset or invalid. NetworkTables will not be able to connect.
+        NetworkTables Server Address is unset or invalid. NetworkTables is unable to connect
       </v-banner>
       <CVradio
         v-show="$store.state.settings.networkSettings.shouldManage"
@@ -54,8 +56,9 @@
         rounded
         color="red"
         text-color="white"
+        icon="mdi-information-outline"
       >
-        This switch is intended for testing; it should be off on a robot. PhotonLib will NOT work!
+        This mode is intended for testing; it should be off on a robot. PhotonLib will NOT work!
       </v-banner>
     </v-form>
     <v-btn
@@ -277,4 +280,9 @@ export default {
     .v-data-table td {
       font-family: monospace !important;
     }
+</style>
+<style>
+.v-banner__wrapper {
+  padding: 6px !important;
+}
 </style>
