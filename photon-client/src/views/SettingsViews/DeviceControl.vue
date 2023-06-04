@@ -49,12 +49,12 @@
     <v-divider style="margin: 12px 0;" />
     <v-row>
       <v-col
-          cols="12"
-          sm="6"
+        cols="12"
+        sm="6"
       >
         <v-btn
-            color="secondary"
-            @click="$refs.importSettings.click()"
+          color="secondary"
+          @click="$refs.importSettings.click()"
         >
           <v-icon left>
             mdi-import
