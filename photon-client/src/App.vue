@@ -390,7 +390,6 @@ export default {
   border-radius: 10px;
 }
 
-
 ::-webkit-scrollbar-thumb {
   background-color: #ffd843;
   border-radius: 10px;

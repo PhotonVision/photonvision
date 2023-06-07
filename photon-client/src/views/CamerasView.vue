@@ -804,6 +804,12 @@ export default {
 }
 </script>
 
+<style>
+::-webkit-scrollbar{
+  height: 0.55em;
+}
+</style>
+
 <style scoped>
 .v-data-table {
     text-align: center;
