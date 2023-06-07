@@ -63,7 +63,7 @@ export default {
       },
       cornerAccuracy: {
           get() {
-            return this.$store.getters.currentPipelineSettings.cornerAccuracy
+            return this.$store.getters.currentPipelineSettings.cornerDetectionAccuracyPercentage
           },
           set(val) {
             this.$store.commit("mutatePipeline", {"cornerAccuracy": val});
