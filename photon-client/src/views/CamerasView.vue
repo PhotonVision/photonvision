@@ -26,7 +26,7 @@
             <CVnumberinput
               v-model="cameraSettings.fov"
               :tooltip="cameraSettings.isFovConfigurable ? 'Field of view (in degrees) of the camera measured across the diagonal of the frame, in a video mode which covers the whole sensor area.' : 'This setting is managed by a vendor'"
-              name="Maximum diagonal FOV"
+              name="Maximum Diagonal FOV"
               :disabled="!cameraSettings.isFovConfigurable"
               :label-cols="$vuetify.breakpoint.mdAndUp ? undefined : 7"
             />
@@ -98,7 +98,7 @@
                   />
                   <CVnumberinput
                     v-model="boardWidth"
-                    name="Board width"
+                    name="Board Width"
                     tooltip="Width of the board in dots or chessboard squares"
                     :disabled="isCalibrating"
                     :rules="[v => (v >= 4) || 'Width must be at least 4']"
@@ -106,7 +106,7 @@
                   />
                   <CVnumberinput
                     v-model="boardHeight"
-                    name="Board height"
+                    name="Board Height"
                     tooltip="Height of the board in dots or chessboard squares"
                     :disabled="isCalibrating"
                     :rules="[v => (v >= 4) || 'Height must be at least 4']"

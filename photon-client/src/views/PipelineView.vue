@@ -104,7 +104,7 @@
             >
               <v-col lg="12">
                 <p style="color: white;">
-                  Processing mode:
+                  Processing Mode
                 </p>
                 <v-btn-toggle
                   v-model="processingMode"
@@ -129,7 +129,7 @@
               </v-col>
               <v-col lg="12">
                 <p style="color: white;">
-                  Stream display:
+                  Stream Display
                 </p>
                 <v-btn-toggle
                   v-model="selectedOutputs"
