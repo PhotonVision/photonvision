@@ -119,7 +119,7 @@
                 v-if="$store.state.settings.networkSettings.runNTServer"
                 class="text-wrap"
               >
-                NetworkTables server running for <span class="accent--text">{{ $store.state.ntConnectionInfo.clients }}</span> clients!
+                NetworkTables server running for <span class="accent--text">{{ $store.state.ntConnectionInfo.clients }}</span> clients
               </v-list-item-title>
               <v-list-item-title
                 v-else-if="$store.state.ntConnectionInfo.connected && $store.state.backendConnected"
