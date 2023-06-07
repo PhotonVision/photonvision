@@ -7,7 +7,7 @@
       name="Decimate"
       min="1"
       max="8"
-      step=".5"
+      step="0.5"
       tooltip="Increases FPS at the expense of range by reducing image resolution initially"
       @input="handlePipelineData('decimate')"
     />
@@ -27,9 +27,9 @@
       class="pt-2"
       slider-cols="8"
       name="Corner Accuracy"
-      min=".01"
+      min="0.01"
       max="100"
-      step=".01"
+      step="0.01"
       tooltip="Minimum accuracy for the corners, lower is better but more performance intensive "
       @input="handlePipelineData('cornerAccuracy')"
     />
@@ -61,7 +61,7 @@ export default {
           this.$store.commit("mutatePipeline", {"numIterations": val});
         },
       },
-        cornerAccuracy: {
+      cornerAccuracy: {
           get() {
             return this.$store.getters.currentPipelineSettings.cornerAccuracy
           },

@@ -106,24 +106,26 @@ export default new Vuex.Store({
         pipelineResults: {
                 fps: 0,
                 latency: 0,
-                targets: [{
-                    // Available in both 2D and 3D
-                    pitch: 0,
-                    yaw: 0,
-                    skew: 0,
-                    area: 0,
-                    // 3D only
-                    pose: {x: 1, y: 1, z: 0, qw: 1, qx: 0, qy: 0, qz: 0},
-                },
-            {
-                // Available in both 2D and 3D
-                pitch: 0,
-                yaw: 0,
-                skew: 0,
-                area: 0,
-                // 3D only
-                pose: {x: 2, y: 3, z: 0, qw: 1, qx: 0, qy: 0, qz: 0},
-            }]
+                targets: [
+                    {
+                        // Available in both 2D and 3D
+                        pitch: 0,
+                        yaw: 0,
+                        skew: 0,
+                        area: 0,
+                        // 3D only
+                        pose: {x: 1, y: 1, z: 0, qw: 1, qx: 0, qy: 0, qz: 0},
+                    },
+                    {
+                        // Available in both 2D and 3D
+                        pitch: 0,
+                        yaw: 0,
+                        skew: 0,
+                        area: 0,
+                        // 3D only
+                        pose: {x: 2, y: 3, z: 0, qw: 1, qx: 0, qy: 0, qz: 0},
+                    }
+                ]
         },
         settings: {
             general: {
