@@ -6,9 +6,10 @@
     >
       <CVinput
         v-model="ntServerAddress"
-        :input-cols="inputCols"
+        :input-cols="inputCols - 1"
+        :label-cols="3"
         :disabled="settings.runNTServer"
-        name="NetworkTables Server Address"
+        name="Team Number/NetworkTables Server Address"
         tooltip="Enter the Team Number or the IP address of the NetworkTables Server"
         :rules="[v => isValidTeamNumber(v) || 'The NetworkTables Server Address must be a non blank team number, IP address, or hostname']"
       />
