@@ -296,7 +296,7 @@
                   <v-icon left>
                     mdi-download
                   </v-icon>
-                  Download Target
+                  Download Calibration Target
                 </v-btn>
               </v-col>
               <v-col>
