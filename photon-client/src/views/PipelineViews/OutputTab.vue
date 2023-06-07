@@ -18,19 +18,15 @@
       @input="handlePipelineData('contourTargetOrientation')"
       @rollback="e=> rollback('contourTargetOrientation', e)"
     />
-
     <CVswitch
       v-model="outputShowMultipleTargets"
       name="Show Multiple Targets"
       tooltip="If enabled, up to five targets will be displayed and sent to user code, instead of just one"
       :disabled="isTagPipeline"
-      class="mb-4"
       text-cols="3"
       @input="handlePipelineData('outputShowMultipleTargets')"
-
       @rollback="e=> rollback('outputShowMultipleTargets', e)"
     />
-    <v-divider />
     <CVselect
       v-model="offsetRobotOffsetMode"
       name="Robot Offset Mode"
