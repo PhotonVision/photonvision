@@ -8,7 +8,7 @@
         align="center"
         cols="12"
       >
-        <span class="white--text">Target Location</span>
+        <span class="white--text">Target Visualization</span>
       </v-col>
     </v-row>
     <v-row>
@@ -22,19 +22,17 @@
           style="width:100%;height:100%"
         />
       </v-col>
-      <v-row>
-        <v-col>
+      <v-row style="margin-bottom: 24px">
+        <v-col style="display: flex; justify-content: center">
           <v-btn
-            class="ml-10"
             color="secondary"
             @click="resetCamFirstPerson"
           >
             First Person
           </v-btn>
         </v-col>
-        <v-col>
+        <v-col style="display: flex; justify-content: center">
           <v-btn
-            class="ml-10"
             color="secondary"
             @click="resetCamThirdPerson"
           >
