@@ -267,7 +267,7 @@ import AprilTagTab from './PipelineViews/AprilTagTab';
 import ArucoTab from './PipelineViews/ArucoTab';
 
 export default {
-  name: 'Pipeline',
+  name: 'Dashboard',
   components: {
     CameraAndPipelineSelect,
     cvImage,

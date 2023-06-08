@@ -8,7 +8,7 @@ import Docs from "./views/DocsView";
 Vue.use(Router);
 
 export default new Router({
-    // mode: 'history',
+    mode: 'history',
     base: process.env.BASE_URL,
     routes: [{
         path: '/',
