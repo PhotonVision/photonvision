@@ -1,24 +1,44 @@
 <template>
   <div>
     <v-row>
-      <v-col cols="12" lg="4" md="6">
-        <v-btn color="red" @click="restartProgram()">
+      <v-col
+        cols="12"
+        lg="4"
+        md="6"
+      >
+        <v-btn
+          color="red"
+          @click="restartProgram()"
+        >
           <v-icon left>
             mdi-restart
           </v-icon>
           Restart PhotonVision
         </v-btn>
       </v-col>
-      <v-col cols="12" lg="4" md="6">
-        <v-btn color="red" @click="restartDevice()">
+      <v-col
+        cols="12"
+        lg="4"
+        md="6"
+      >
+        <v-btn
+          color="red"
+          @click="restartDevice()"
+        >
           <v-icon left>
             mdi-restart-alert
           </v-icon>
           Restart Device
         </v-btn>
       </v-col>
-      <v-col cols="12" lg="4">
-        <v-btn color="secondary" @click="$refs.offlineUpdate.click()">
+      <v-col
+        cols="12"
+        lg="4"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.offlineUpdate.click()"
+        >
           <v-icon left>
             mdi-update
           </v-icon>
@@ -28,16 +48,28 @@
     </v-row>
     <v-divider />
     <v-row>
-      <v-col cols="12" sm="6">
-        <v-btn color="secondary" @click="$refs.exportSettings.click()">
+      <v-col
+        cols="12"
+        sm="6"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.exportSettings.click()"
+        >
           <v-icon left>
             mdi-download
           </v-icon>
           Export Settings
         </v-btn>
       </v-col>
-      <v-col cols="12" sm="6">
-        <v-btn color="secondary" @click="$refs.importSettings.click()">
+      <v-col
+        cols="12"
+        sm="6"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.importSettings.click()"
+        >
           <v-icon left>
             mdi-upload
           </v-icon>
@@ -45,8 +77,14 @@
         </v-btn>
       </v-col>
 
-      <v-col cols="12" sm="6">
-        <v-btn color="secondary" @click="$refs.exportLogFile.click()">
+      <v-col
+        cols="12"
+        sm="6"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.exportLogFile.click()"
+        >
           <v-icon left>
             mdi-file
           </v-icon>
@@ -66,8 +104,14 @@
         </v-btn>
       </v-col>
 
-      <v-col cols="12" sm="6">
-        <v-btn color="secondary" @click="showLogs()">
+      <v-col
+        cols="12"
+        sm="6"
+      >
+        <v-btn
+          color="secondary"
+          @click="showLogs()"
+        >
           <v-icon left>
             mdi-bug
           </v-icon>
@@ -75,7 +119,12 @@
         </v-btn>
       </v-col>
     </v-row>
-    <v-snackbar v-model="snack" top :color="snackbar.color" timeout="-1">
+    <v-snackbar
+      v-model="snack"
+      top
+      :color="snackbar.color"
+      timeout="-1"
+    >
       <span>{{ snackbar.text }}</span>
     </v-snackbar>
 
@@ -86,7 +135,7 @@
       accept=".zip, .json"
       style="display: none;"
       @change="readImportedSettings"
-    />
+    >
     <!-- Special hidden link that gets 'clicked' when the user exports settings -->
     <a
       ref="exportSettings"
@@ -104,13 +153,13 @@
       accept=".jar"
       style="display: none;"
       @change="doOfflineUpdate"
-    />
+    >
   </div>
 </template>
 
 <script>
 export default {
-  name: "Device Control",
+  name: "DeviceControl",
   data() {
     return {
       snack: false,

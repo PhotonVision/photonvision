@@ -19,7 +19,7 @@
                 Target
               </th>
               <th
-                  v-if="$store.getters.pipelineType === 4 || (($store.getters.pipelineType - 2) === 3)"
+                v-if="$store.getters.pipelineType === 4 || (($store.getters.pipelineType - 2) === 3)"
                 class="text-center"
               >
                 Fiducial ID

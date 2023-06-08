@@ -7,7 +7,7 @@
     :alt="alt"
     @click="clickHandler"
     @error="loadErrHandler"
-  />
+  >
 </template>
 
 <script>

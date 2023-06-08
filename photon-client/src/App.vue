@@ -1,17 +1,35 @@
 <template>
   <v-app>
     <!-- Although most of the app runs with the "light" theme, the navigation drawer needs to have white text and icons so it uses the dark theme-->
-    <v-navigation-drawer dark app permanent :mini-variant="compact" color="primary">
+    <v-navigation-drawer
+      dark
+      app
+      permanent
+      :mini-variant="compact"
+      color="primary"
+    >
       <v-list>
         <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
         <v-list-item :class="compact ? 'pr-0 pl-0' : ''">
           <v-list-item-icon class="mr-0">
-            <img v-if="!compact" class="logo" src="./assets/logoLarge.png">
-            <img v-else class="logo" src="./assets/logoSmall.png">
+            <img
+              v-if="!compact"
+              class="logo"
+              src="./assets/logoLarge.png"
+            >
+            <img
+              v-else
+              class="logo"
+              src="./assets/logoSmall.png"
+            >
           </v-list-item-icon>
         </v-list-item>
 
-        <v-list-item link to="dashboard" @click="rollbackPipelineIndex()">
+        <v-list-item
+          link
+          to="dashboard"
+          @click="rollbackPipelineIndex()"
+        >
           <v-list-item-icon>
             <v-icon>mdi-view-dashboard</v-icon>
           </v-list-item-icon>
@@ -19,7 +37,12 @@
             <v-list-item-title>Dashboard</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item ref="camerasTabOpener" link to="cameras" @click="switchToDriverMode()">
+        <v-list-item
+          ref="camerasTabOpener"
+          link
+          to="cameras"
+          @click="switchToDriverMode()"
+        >
           <v-list-item-icon>
             <v-icon>mdi-camera</v-icon>
           </v-list-item-icon>
@@ -27,7 +50,11 @@
             <v-list-item-title>Cameras</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item link to="settings" @click="switchToSettingsTab()">
+        <v-list-item
+          link
+          to="settings"
+          @click="switchToSettingsTab()"
+        >
           <v-list-item-icon>
             <v-icon>mdi-settings</v-icon>
           </v-list-item-icon>
@@ -35,7 +62,10 @@
             <v-list-item-title>Settings</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item link to="docs">
+        <v-list-item
+          link
+          to="docs"
+        >
           <v-list-item-icon>
             <v-icon>mdi-bookshelf</v-icon>
           </v-list-item-icon>
@@ -43,7 +73,11 @@
             <v-list-item-title>Documentation</v-list-item-title>
           </v-list-item-content>
         </v-list-item>
-        <v-list-item v-if="this.$vuetify.breakpoint.mdAndUp" link @click.stop="toggleCompactMode">
+        <v-list-item
+          v-if="this.$vuetify.breakpoint.mdAndUp"
+          link
+          @click.stop="toggleCompactMode"
+        >
           <v-list-item-icon>
             <v-icon v-if="compact">
               mdi-chevron-right
@@ -63,24 +97,46 @@
               <v-icon v-if="$store.state.settings.networkSettings.runNTServer">
                 mdi-server
               </v-icon>
-              <img v-else-if="$store.state.ntConnectionInfo.connected" src="@/assets/robot.svg" alt="">
-              <img v-else class="pulse" style="border-radius: 100%" src="@/assets/robot-off.svg" alt="">
+              <img
+                v-else-if="$store.state.ntConnectionInfo.connected"
+                src="@/assets/robot.svg"
+                alt=""
+              >
+              <img
+                v-else
+                class="pulse"
+                style="border-radius: 100%"
+                src="@/assets/robot-off.svg"
+                alt=""
+              >
             </v-list-item-icon>
             <v-list-item-content>
-              <v-list-item-title v-if="$store.state.settings.networkSettings.runNTServer" class="text-wrap">
+              <v-list-item-title
+                v-if="$store.state.settings.networkSettings.runNTServer"
+                class="text-wrap"
+              >
                 NetworkTables server running for {{ $store.state.ntConnectionInfo.clients ?
-                    $store.state.ntConnectionInfo.clients : 'zero'
+                  $store.state.ntConnectionInfo.clients : 'zero'
                 }} clients!
               </v-list-item-title>
-              <v-list-item-title v-else-if="$store.state.ntConnectionInfo.connected && $store.state.backendConnected"
-                class="text-wrap">
+              <v-list-item-title
+                v-else-if="$store.state.ntConnectionInfo.connected && $store.state.backendConnected"
+                class="text-wrap"
+              >
                 Robot connected! {{ $store.state.ntConnectionInfo.address }}
               </v-list-item-title>
-              <v-list-item-title v-else class="text-wrap">
+              <v-list-item-title
+                v-else
+                class="text-wrap"
+              >
                 Not connected to robot!
               </v-list-item-title>
-              <router-link v-if="!$store.state.settings.networkSettings.runNTServer" to="settings" class="accent--text"
-                @click="switchToSettingsTab">
+              <router-link
+                v-if="!$store.state.settings.networkSettings.runNTServer"
+                to="settings"
+                class="accent--text"
+                @click="switchToSettingsTab"
+              >
                 NT server is {{ $store.state.settings.networkSettings.ntServerAddress }}
               </router-link>
             </v-list-item-content>
@@ -91,7 +147,11 @@
               <v-icon v-if="$store.state.backendConnected">
                 mdi-wifi
               </v-icon>
-              <v-icon v-else class="pulse" style="border-radius: 100%;">
+              <v-icon
+                v-else
+                class="pulse"
+                style="border-radius: 100%;"
+              >
                 mdi-wifi-off
               </v-icon>
             </v-list-item-icon>
@@ -105,7 +165,10 @@
       </v-list>
     </v-navigation-drawer>
     <v-main>
-      <v-container fluid fill-height>
+      <v-container
+        fluid
+        fill-height
+      >
         <v-layout>
           <v-flex>
             <router-view @switch-to-cameras="switchToDriverMode" />
@@ -114,15 +177,32 @@
       </v-container>
     </v-main>
 
-    <v-dialog v-model="$store.state.logsOverlay" width="1500" dark>
+    <v-dialog
+      v-model="$store.state.logsOverlay"
+      width="1500"
+      dark
+    >
       <logs />
     </v-dialog>
-    <v-dialog v-model="needsTeamNumberSet" width="500" dark persistent>
-      <v-card dark color="primary" flat>
+    <v-dialog
+      v-model="needsTeamNumberSet"
+      width="500"
+      dark
+      persistent
+    >
+      <v-card
+        dark
+        color="primary"
+        flat
+      >
         <v-card-title>No team number set!</v-card-title>
         <v-card-text>
           PhotonVision cannot connect to your robot! Please
-          <router-link to="settings" class="accent--text" @click="switchToSettingsTab">
+          <router-link
+            to="settings"
+            class="accent--text"
+            @click="switchToSettingsTab"
+          >
             visit the settings tab
           </router-link>
           and set your team number.
