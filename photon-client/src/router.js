@@ -17,22 +17,22 @@ export default new Router({
         {
             path: '/',
             redirect: '/dashboard'
-        }, 
+        },
         {
             path: '/dashboard',
             name: 'Dashboard',
             component: Dashboard
-        }, 
+        },
         {
             path: '/cameras',
             name: 'Cameras',
             component: Cameras
-        }, 
+        },
         {
             path: '/settings',
             name: 'Settings',
             component: Settings
-        }, 
+        },
         {
             path: '/docs',
             name: 'Docs',
