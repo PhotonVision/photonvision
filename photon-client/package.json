@@ -23,7 +23,8 @@
     "vue-native-websocket": "git+https://git@github.com/PhotonVision/vue-native-websocket.git#5189f29",
     "vue-router": "^3.4.3",
     "vuetify": "^2.3.10",
-    "vuex": "^3.5.1"
+    "vuex": "^3.5.1",
+    "@vue/compiler-sfc": "^3.3.4"
   },
   "devDependencies": {
     "@mdi/font": "^4.9.95",
