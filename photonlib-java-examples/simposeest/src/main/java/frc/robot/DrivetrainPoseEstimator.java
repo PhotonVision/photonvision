@@ -100,7 +100,9 @@ public class DrivetrainPoseEstimator {
         m_poseEstimator.resetPosition(gyro.getRotation2d(), leftDist, rightDist, pose);
     }
 
-    /** @return The current best-guess at drivetrain position on the field. */
+    /**
+     * @return The current best-guess at drivetrain position on the field.
+     */
     public Pose2d getPoseEst() {
         return m_poseEstimator.getEstimatedPosition();
     }

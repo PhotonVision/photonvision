@@ -128,12 +128,16 @@ public class HardwareConfig {
         this.blacklistedResIndices = blacklistedResIndices;
     }
 
-    /** @return True if the FOV has been preset to a sane value, false otherwise */
+    /**
+     * @return True if the FOV has been preset to a sane value, false otherwise
+     */
     public final boolean hasPresetFOV() {
         return vendorFOV > 0;
     }
 
-    /** @return True if any command has been configured to a non-default empty, false otherwise */
+    /**
+     * @return True if any command has been configured to a non-default empty, false otherwise
+     */
     public final boolean hasCommandsConfigured() {
         return cpuTempCommand != ""
                 || cpuMemoryCommand != ""
