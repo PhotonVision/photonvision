@@ -10,17 +10,22 @@
     >
       <v-list>
         <!-- List item for the heading; note that there are some tricks in setting padding and image width make things look right -->
-        <v-list-item :class="compact ? 'pr-0 pl-0' : ''">
+        <v-list-item
+          :class="compact ? 'pr-0 pl-0' : ''"
+          style="display: flex; justify-content: center"
+        >
           <v-list-item-icon class="mr-0">
             <img
               v-if="!compact"
               class="logo"
-              src="./assets/logoLarge.png"
+              src="@/assets/logos/logoLarge.svg"
+              alt="large logo"
             >
             <img
               v-else
               class="logo"
-              src="./assets/logoSmall.png"
+              src="@/assets/logos/logoSmall.svg"
+              alt="small logo"
             >
           </v-list-item-icon>
         </v-list-item>
@@ -56,7 +61,7 @@
           @click="switchToSettingsTab()"
         >
           <v-list-item-icon>
-            <v-icon>mdi-settings</v-icon>
+            <v-icon>mdi-cog</v-icon>
           </v-list-item-icon>
           <v-list-item-content>
             <v-list-item-title>Settings</v-list-item-title>
@@ -97,67 +102,60 @@
               <v-icon v-if="$store.state.settings.networkSettings.runNTServer">
                 mdi-server
               </v-icon>
-              <img
-                v-else-if="$store.state.ntConnectionInfo.connected"
-                src="@/assets/robot.svg"
-                alt=""
-              >
-              <img
+              <v-icon v-else-if="$store.state.ntConnectionInfo.connected">
+                mdi-robot
+              </v-icon>
+              <v-icon
                 v-else
-                class="pulse"
                 style="border-radius: 100%"
-                src="@/assets/robot-off.svg"
-                alt=""
               >
+                mdi-robot-off
+              </v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title
                 v-if="$store.state.settings.networkSettings.runNTServer"
                 class="text-wrap"
               >
-                NetworkTables server running for {{ $store.state.ntConnectionInfo.clients ?
-                  $store.state.ntConnectionInfo.clients : 'zero'
-                }} clients!
+                NetworkTables server running for <span class="accent--text">{{ $store.state.ntConnectionInfo.clients }}</span> clients
               </v-list-item-title>
               <v-list-item-title
                 v-else-if="$store.state.ntConnectionInfo.connected && $store.state.backendConnected"
                 class="text-wrap"
+                style="flex-direction: column; display: flex"
               >
-                Robot connected! {{ $store.state.ntConnectionInfo.address }}
+                NetworkTables Server Connected!
+                <span
+                  class="accent--text"
+                >
+                  {{ $store.state.ntConnectionInfo.address }}
+                </span>
               </v-list-item-title>
               <v-list-item-title
                 v-else
                 class="text-wrap"
+                style="flex-direction: column; display: flex"
               >
-                Not connected to robot!
+                Not connected to NetworkTables Server!
               </v-list-item-title>
-              <router-link
-                v-if="!$store.state.settings.networkSettings.runNTServer"
-                to="settings"
-                class="accent--text"
-                @click="switchToSettingsTab"
-              >
-                NT server is {{ $store.state.settings.networkSettings.ntServerAddress }}
-              </router-link>
             </v-list-item-content>
           </v-list-item>
 
           <v-list-item>
             <v-list-item-icon>
               <v-icon v-if="$store.state.backendConnected">
-                mdi-wifi
+                mdi-server-network
               </v-icon>
               <v-icon
                 v-else
-                class="pulse"
                 style="border-radius: 100%;"
               >
-                mdi-wifi-off
+                mdi-server-network-off
               </v-icon>
             </v-list-item-icon>
             <v-list-item-content>
               <v-list-item-title class="text-wrap">
-                {{ $store.state.backendConnected ? "Backend Connected" : "Trying to connect..." }}
+                {{ $store.state.backendConnected ? "Backend Connected" : "Trying to connect to Backend" }}
               </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
@@ -195,17 +193,17 @@
         color="primary"
         flat
       >
-        <v-card-title>No team number set!</v-card-title>
+        <v-card-title>NetworkTables Server Address Not Set</v-card-title>
         <v-card-text>
-          PhotonVision cannot connect to your robot! Please
+          PhotonVision cannot connect to the NetworkTables Server. Please visit the
           <router-link
             to="settings"
             class="accent--text"
             @click="switchToSettingsTab"
           >
-            visit the settings tab
+            networking settings tab
           </router-link>
-          and set your team number.
+          and set the NetworkTables Server Address.
         </v-card-text>
       </v-card>
     </v-dialog>
@@ -364,7 +362,7 @@ export default {
 
 @keyframes pulse-animation {
   0% {
-    box-shadow: 0 0 0 0px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.2);
     background-color: rgba(0, 0, 0, 0.2);
   }
 
@@ -389,7 +387,6 @@ export default {
   -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
   border-radius: 10px;
 }
-
 
 ::-webkit-scrollbar-thumb {
   background-color: #ffd843;

@@ -16,7 +16,7 @@
           <thead style="font-size: 1.25rem;">
             <tr>
               <th class="text-center">
-                Target
+                Target Count
               </th>
               <th
                 v-if="$store.getters.pipelineType === 4 || (($store.getters.pipelineType - 2) === 3)"
@@ -26,32 +26,32 @@
               </th>
               <template v-if="!$store.getters.currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center">
-                  Pitch,&nbsp;&deg;
+                  Pitch &theta;&deg;
                 </th>
                 <th class="text-center">
-                  Yaw,&nbsp;&deg;
+                  Yaw &theta;&deg;
                 </th>
                 <th class="text-center">
-                  Skew,&nbsp;&deg;
+                  Skew &theta;&deg;
                 </th>
                 <th class="text-center">
-                  Area, %
+                  Area %
                 </th>
               </template>
               <template v-else>
                 <th class="text-center">
-                  X,&nbsp;m
+                  X meters
                 </th>
                 <th class="text-center">
-                  Y,&nbsp;m
+                  Y meters
                 </th>
                 <th class="text-center">
-                  Z Angle,&nbsp;&deg;
+                  Z Angle &theta;&deg;
                 </th>
               </template>
               <template v-if="$store.getters.pipelineType === 4 && $store.getters.currentPipelineSettings.solvePNPEnabled">
                 <th class="text-center">
-                  Ambiguity
+                  Ambiguity %
                 </th>
               </template>
             </tr>

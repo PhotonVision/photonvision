@@ -40,28 +40,14 @@
           @click="$refs.offlineUpdate.click()"
         >
           <v-icon left>
-            mdi-update
+            mdi-upload
           </v-icon>
           Offline Update
         </v-btn>
       </v-col>
     </v-row>
-    <v-divider />
+    <v-divider style="margin: 12px 0;" />
     <v-row>
-      <v-col
-        cols="12"
-        sm="6"
-      >
-        <v-btn
-          color="secondary"
-          @click="$refs.exportSettings.click()"
-        >
-          <v-icon left>
-            mdi-download
-          </v-icon>
-          Export Settings
-        </v-btn>
-      </v-col>
       <v-col
         cols="12"
         sm="6"
@@ -71,9 +57,24 @@
           @click="$refs.importSettings.click()"
         >
           <v-icon left>
-            mdi-upload
+            mdi-import
           </v-icon>
           Import Settings
+        </v-btn>
+      </v-col>
+
+      <v-col
+        cols="12"
+        sm="6"
+      >
+        <v-btn
+          color="secondary"
+          @click="$refs.exportSettings.click()"
+        >
+          <v-icon left>
+            mdi-export
+          </v-icon>
+          Export Settings
         </v-btn>
       </v-col>
 
@@ -86,9 +87,9 @@
           @click="$refs.exportLogFile.click()"
         >
           <v-icon left>
-            mdi-file
+            mdi-download
           </v-icon>
-          Export current log
+          Download Current Log
 
           <!-- Special hidden link that gets 'clicked' when the user exports journalctl logs -->
           <a
@@ -113,7 +114,7 @@
           @click="showLogs()"
         >
           <v-icon left>
-            mdi-bug
+            mdi-eye
           </v-icon>
           Show log viewer
         </v-btn>
@@ -140,9 +141,7 @@
     <a
       ref="exportSettings"
       style="color: black; text-decoration: none; display: none"
-      :href="
-        'http://' + this.$address + '/api/settings/photonvision_config.zip'
-      "
+      :href="'http://' + this.$address + '/api/settings/photonvision_config.zip'"
       download="photonvision-settings.zip"
     />
 
@@ -159,7 +158,8 @@
 
 <script>
 export default {
-  name: "DeviceControl",
+  // eslint-disable-next-line
+  name: "Device Control",
   data() {
     return {
       snack: false,
@@ -319,7 +319,7 @@ export default {
 .infoTable {
   border: 1px solid;
   border-collapse: separate;
-  border-spacing: 0px;
+  border-spacing: 0;
   border-radius: 5px;
   text-align: left;
   margin-bottom: 10px;
@@ -327,12 +327,9 @@ export default {
   display: block;
   overflow-x: auto;
 }
-
+w
 .infoElem {
-  padding-right: 15px;
-  padding-bottom: 1px;
-  padding-top: 1px;
-  padding-left: 10px;
-  border-right: 1px solid;
+    padding: 1px 15px 1px 10px;
+    border-right: 1px solid;
 }
 </style>
