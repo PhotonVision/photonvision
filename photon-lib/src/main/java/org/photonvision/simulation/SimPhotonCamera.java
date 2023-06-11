@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.photonvision;
+package org.photonvision.simulation;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.numbers.N1;
@@ -31,6 +31,8 @@ import edu.wpi.first.math.numbers.N5;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.Arrays;
 import java.util.List;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonTargetSortMode;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.targeting.PhotonPipelineResult;

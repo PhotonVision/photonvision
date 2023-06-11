@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.photonvision;
+package org.photonvision.simulation;
 
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;

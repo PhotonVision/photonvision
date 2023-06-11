@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.photonvision;
+package org.photonvision.simulation;
 
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation3d;

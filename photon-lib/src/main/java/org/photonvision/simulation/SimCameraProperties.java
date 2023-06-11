@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.photonvision;
+package org.photonvision.simulation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.wpi.first.math.Matrix;
@@ -55,7 +55,7 @@ import org.photonvision.targeting.TargetCorner;
  * can inhibit target detection while moving. Note that latency estimation does not account for
  * network latency and the latency reported will always be perfect.
  */
-public class CameraProperties {
+public class SimCameraProperties {
     private final Random rand = new Random();
     // calibration
     private int resWidth;
@@ -71,7 +71,7 @@ public class CameraProperties {
     private double latencyStdDevMs = 0;
 
     /** Default constructor which is the same as {@link #PERFECT_90DEG} */
-    public CameraProperties() {
+    public SimCameraProperties() {
         setCalibration(960, 720, Rotation2d.fromDegrees(90));
     }
 
@@ -86,7 +86,7 @@ public class CameraProperties {
      * @throws IOException If reading the JSON fails, either from an invalid path or a missing/invalid
      *     calibrated resolution.
      */
-    public CameraProperties(String path, int width, int height) throws IOException {
+    public SimCameraProperties(String path, int width, int height) throws IOException {
         this(Path.of(path), width, height);
     }
 
@@ -101,7 +101,7 @@ public class CameraProperties {
      * @throws IOException If reading the JSON fails, either from an invalid path or a missing/invalid
      *     calibrated resolution.
      */
-    public CameraProperties(Path path, int width, int height) throws IOException {
+    public SimCameraProperties(Path path, int width, int height) throws IOException {
         var mapper = new ObjectMapper();
         var json = mapper.readTree(path.toFile());
         json = json.get("calibrations");
@@ -273,8 +273,8 @@ public class CameraProperties {
         return latencyStdDevMs;
     }
 
-    public CameraProperties copy() {
-        var newProp = new CameraProperties();
+    public SimCameraProperties copy() {
+        var newProp = new SimCameraProperties();
         newProp.setCalibration(resWidth, resHeight, camIntrinsics, distCoeffs);
         newProp.setCalibError(avgErrorPx, errorStdDevPx);
         newProp.setFPS(getFPS());
@@ -450,12 +450,12 @@ public class CameraProperties {
     // pre-calibrated example cameras
 
     /** 960x720 resolution, 90 degree FOV, "perfect" lagless camera */
-    public static CameraProperties PERFECT_90DEG() {
-        return new CameraProperties();
+    public static SimCameraProperties PERFECT_90DEG() {
+        return new SimCameraProperties();
     }
 
-    public static CameraProperties PI4_LIFECAM_320_240() {
-        var prop = new CameraProperties();
+    public static SimCameraProperties PI4_LIFECAM_320_240() {
+        var prop = new SimCameraProperties();
         prop.setCalibration(
                 320,
                 240,
@@ -483,8 +483,8 @@ public class CameraProperties {
         return prop;
     }
 
-    public static CameraProperties PI4_LIFECAM_640_480() {
-        var prop = new CameraProperties();
+    public static SimCameraProperties PI4_LIFECAM_640_480() {
+        var prop = new SimCameraProperties();
         prop.setCalibration(
                 640,
                 480,
@@ -512,8 +512,8 @@ public class CameraProperties {
         return prop;
     }
 
-    public static CameraProperties LL2_640_480() {
-        var prop = new CameraProperties();
+    public static SimCameraProperties LL2_640_480() {
+        var prop = new SimCameraProperties();
         prop.setCalibration(
                 640,
                 480,
@@ -541,8 +541,8 @@ public class CameraProperties {
         return prop;
     }
 
-    public static CameraProperties LL2_960_720() {
-        var prop = new CameraProperties();
+    public static SimCameraProperties LL2_960_720() {
+        var prop = new SimCameraProperties();
         prop.setCalibration(
                 960,
                 720,
@@ -570,8 +570,8 @@ public class CameraProperties {
         return prop;
     }
 
-    public static CameraProperties LL2_1280_720() {
-        var prop = new CameraProperties();
+    public static SimCameraProperties LL2_1280_720() {
+        var prop = new SimCameraProperties();
         prop.setCalibration(
                 1280,
                 720,

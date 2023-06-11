@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.photonvision;
+package org.photonvision.simulation;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.CvSource;
@@ -42,6 +42,8 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
+import org.photonvision.PhotonCamera;
+import org.photonvision.PhotonTargetSortMode;
 import org.photonvision.common.dataflow.structures.Packet;
 import org.photonvision.common.networktables.NTTopicSet;
 import org.photonvision.estimation.CameraTargetRelation;
@@ -62,8 +64,8 @@ public class PhotonCameraSim implements AutoCloseable {
     NTTopicSet ts = new NTTopicSet();
     private long heartbeatCounter = 0;
 
-    /** This simulated camera's {@link CameraProperties} */
-    public final CameraProperties prop;
+    /** This simulated camera's {@link SimCameraProperties} */
+    public final SimCameraProperties prop;
 
     private long nextNTEntryTime = WPIUtilJNI.now();
 
@@ -110,7 +112,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param camera The camera to be simulated
      */
     public PhotonCameraSim(PhotonCamera camera) {
-        this(camera, CameraProperties.PERFECT_90DEG());
+        this(camera, SimCameraProperties.PERFECT_90DEG());
     }
 
     /**
@@ -122,7 +124,7 @@ public class PhotonCameraSim implements AutoCloseable {
      * @param camera The camera to be simulated
      * @param prop Properties of this camera such as FOV and FPS
      */
-    public PhotonCameraSim(PhotonCamera camera, CameraProperties prop) {
+    public PhotonCameraSim(PhotonCamera camera, SimCameraProperties prop) {
         this.cam = camera;
         this.prop = prop;
         setMinTargetAreaPixels(kDefaultMinAreaPx);
@@ -135,7 +137,7 @@ public class PhotonCameraSim implements AutoCloseable {
                         camera.getName() + "-processed", prop.getResWidth(), prop.getResHeight());
 
         ts.removeEntries();
-        ts.subTable = camera.cameraTable;
+        ts.subTable = camera.getCameraTable();
         ts.updateEntries();
     }
 
@@ -153,7 +155,7 @@ public class PhotonCameraSim implements AutoCloseable {
      */
     public PhotonCameraSim(
             PhotonCamera camera,
-            CameraProperties prop,
+            SimCameraProperties prop,
             double minTargetAreaPercent,
             double maxSightRangeMeters) {
         this(camera, prop);

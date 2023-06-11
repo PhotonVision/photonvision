@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-package org.photonvision;
+package org.photonvision.simulation;
 
 import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.util.RuntimeLoader;
@@ -77,7 +77,7 @@ public class VideoSimUtil {
     }
 
     /** Updates the properties of this CvSource video stream with the given camera properties. */
-    public static void updateVideoProp(CvSource video, CameraProperties prop) {
+    public static void updateVideoProp(CvSource video, SimCameraProperties prop) {
         video.setResolution(prop.getResWidth(), prop.getResHeight());
         video.setFPS((int) prop.getFPS());
     }

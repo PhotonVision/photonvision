@@ -49,6 +49,9 @@ import org.opencv.core.Core;
 import org.photonvision.estimation.CameraTargetRelation;
 import org.photonvision.estimation.OpenCVHelp;
 import org.photonvision.estimation.TargetModel;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.simulation.VisionTargetSim;
 
 public class OpenCVTest {
     private static final double kTrlDelta = 0.005;
@@ -78,7 +81,7 @@ public class OpenCVTest {
         assertSame(trf1.getRotation(), trf2.getRotation());
     }
 
-    private static final CameraProperties prop = new CameraProperties();
+    private static final SimCameraProperties prop = new SimCameraProperties();
 
     @BeforeAll
     public static void setUp() {

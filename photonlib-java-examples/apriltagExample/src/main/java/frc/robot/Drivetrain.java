@@ -50,10 +50,10 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.DriveTrainConstants;
 import java.util.Optional;
-import org.photonvision.CameraProperties;
 import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonCameraSim;
-import org.photonvision.VisionSystemSim;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
 
 /** Represents a differential drive style drivetrain. */
 public class Drivetrain {
@@ -139,7 +139,8 @@ public class Drivetrain {
         // Only simulate our PhotonCamera in simulation
         if (RobotBase.isSimulation()) {
             m_visionSystemSim = new VisionSystemSim(Constants.VisionConstants.cameraName);
-            var cameraSim = new PhotonCameraSim(pcw.photonCamera, CameraProperties.PI4_LIFECAM_640_480());
+            var cameraSim =
+                    new PhotonCameraSim(pcw.photonCamera, SimCameraProperties.PI4_LIFECAM_640_480());
             m_visionSystemSim.addCamera(cameraSim, Constants.VisionConstants.robotToCam);
             m_visionSystemSim.addVisionTargets(pcw.photonPoseEstimator.getFieldTags());
         }

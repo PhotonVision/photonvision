@@ -52,9 +52,9 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 /** Represents a camera that is connected to PhotonVision. */
 public class PhotonCamera implements AutoCloseable {
-    static final String kTableName = "photonvision";
+    public static final String kTableName = "photonvision";
 
-    protected final NetworkTable cameraTable;
+    private final NetworkTable cameraTable;
     RawSubscriber rawBytesEntry;
     BooleanPublisher driverModePublisher;
     BooleanSubscriber driverModeSubscriber;
@@ -333,6 +333,14 @@ public class PhotonCamera implements AutoCloseable {
         if (distCoeffs != null && distCoeffs.length == 5) {
             return Optional.of(new MatBuilder<>(Nat.N5(), Nat.N1()).fill(distCoeffs));
         } else return Optional.empty();
+    }
+
+    /**
+     * Gets the NetworkTable representing this camera's subtable. You probably don't ever need to call
+     * this.
+     */
+    public final NetworkTable getCameraTable() {
+        return cameraTable;
     }
 
     private void verifyVersion() {
