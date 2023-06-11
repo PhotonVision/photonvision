@@ -181,8 +181,8 @@ public class VisionSystemSim {
         double now = Timer.getFPGATimestamp();
         var trfBuffer = camTrfMap.get(cameraSim);
         if (trfBuffer == null) return false;
-        trfBuffer.clear();
         var lastTrf = new Transform3d(new Pose3d(), trfBuffer.getSample(now).orElse(new Pose3d()));
+        trfBuffer.clear();
         adjustCamera(cameraSim, lastTrf);
         return true;
     }
