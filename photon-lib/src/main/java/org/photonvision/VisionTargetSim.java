@@ -76,6 +76,7 @@ public class VisionTargetSim {
     public TargetModel getModel() {
         return model;
     }
+
     /** This target's vertices offset from its field pose. */
     public List<Translation3d> getFieldVertices() {
         return model.getFieldVertices(pose);

@@ -87,10 +87,12 @@ public class VisionSystemSim {
     public Optional<PhotonCameraSim> getCameraSim(String name) {
         return Optional.ofNullable(camSimMap.get(name));
     }
+
     /** Get all of the simulated cameras. */
     public Collection<PhotonCameraSim> getCameraSims() {
         return camSimMap.values();
     }
+
     /**
      * Adds a simulated camera to this vision system with a specified robot-to-camera transformation.
      * The vision targets registered with this vision system simulation will be observed by the
@@ -108,11 +110,13 @@ public class VisionSystemSim {
                     .addSample(Timer.getFPGATimestamp(), new Pose3d().plus(robotToCamera));
         }
     }
+
     /** Remove all simulated cameras from this vision system. */
     public void clearCameras() {
         camSimMap.clear();
         camTrfMap.clear();
     }
+
     /**
      * Remove a simulated camera from this vision system.
      *
@@ -133,6 +137,7 @@ public class VisionSystemSim {
     public Optional<Transform3d> getRobotToCamera(PhotonCameraSim cameraSim) {
         return getRobotToCamera(cameraSim, Timer.getFPGATimestamp());
     }
+
     /**
      * Get a simulated camera's position relative to the robot. If the requested camera is invalid, an
      * empty optional is returned.
@@ -148,6 +153,7 @@ public class VisionSystemSim {
         if (sample.isEmpty()) return Optional.empty();
         return Optional.of(new Transform3d(new Pose3d(), sample.orElse(new Pose3d())));
     }
+
     /**
      * Adjust a camera's position relative to the robot. Use this if your camera is on a gimbal or
      * turret or some other mobile platform.
@@ -162,10 +168,12 @@ public class VisionSystemSim {
         trfBuffer.addSample(Timer.getFPGATimestamp(), new Pose3d().plus(robotToCamera));
         return true;
     }
+
     /** Reset the previous transforms for all cameras to their current transform. */
     public void resetCameraTransforms() {
         for (var cam : camTrfMap.keySet()) resetCameraTransforms(cam);
     }
+
     /**
      * Reset the transform history for this camera to just the current transform.
      *
@@ -192,6 +200,7 @@ public class VisionSystemSim {
     public Set<VisionTargetSim> getVisionTargets(String type) {
         return targetSets.get(type);
     }
+
     /**
      * Adds targets on the field which your vision system is designed to detect. The {@link
      * PhotonCamera}s simulated from this system will report the location of the camera relative to
@@ -204,6 +213,7 @@ public class VisionSystemSim {
     public void addVisionTargets(VisionTargetSim... targets) {
         addVisionTargets("targets", targets);
     }
+
     /**
      * Adds targets on the field which your vision system is designed to detect. The {@link
      * PhotonCamera}s simulated from this system will report the location of the camera relative to
@@ -224,6 +234,7 @@ public class VisionSystemSim {
                             tag.ID));
         }
     }
+
     /**
      * Adds targets on the field which your vision system is designed to detect. The {@link
      * PhotonCamera}s simulated from this system will report the location of the camera relative to
@@ -268,6 +279,7 @@ public class VisionSystemSim {
     public Pose3d getRobotPose() {
         return getRobotPose(Timer.getFPGATimestamp());
     }
+
     /**
      * Get the robot pose in meters saved by the vision system at this timestamp.
      *
@@ -276,10 +288,12 @@ public class VisionSystemSim {
     public Pose3d getRobotPose(double timestamp) {
         return robotPoseBuffer.getSample(timestamp).orElse(new Pose3d());
     }
+
     /** Clears all previous robot poses and sets robotPose at current time. */
     public void resetRobotPose(Pose2d robotPose) {
         resetRobotPose(new Pose3d(robotPose));
     }
+
     /** Clears all previous robot poses and sets robotPose at current time. */
     public void resetRobotPose(Pose3d robotPose) {
         robotPoseBuffer.clear();
@@ -299,6 +313,7 @@ public class VisionSystemSim {
     public void update(Pose2d robotPoseMeters) {
         update(new Pose3d(robotPoseMeters));
     }
+
     /**
      * Periodic update. Ensure this is called repeatedly-- camera performance is used to automatically
      * determine if a new frame should be submitted.
