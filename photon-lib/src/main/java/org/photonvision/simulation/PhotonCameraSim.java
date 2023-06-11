@@ -258,7 +258,7 @@ public class PhotonCameraSim implements AutoCloseable {
         }
         // return the timestamp of the latest update
         if (timestamp >= 0) return Optional.of(timestamp);
-        // or this camera isnt ready to process yet
+        // or this camera isn't ready to process yet
         else return Optional.empty();
     }
 
