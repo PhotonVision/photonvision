@@ -365,7 +365,6 @@ public class PhotonPoseEstimator {
             PhotonPipelineResult result,
             Optional<Matrix<N3, N3>> cameraMatrixOpt,
             Optional<Matrix<N5, N1>> distCoeffsOpt) {
-
         if (result.getTargets().size() < 2) {
             // Not enough targets -- run fallback strategy instead
             return update(result, cameraMatrixOpt, distCoeffsOpt, this.multiTagFallbackStrategy);
